@@ -1,8 +1,340 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "functions": {
-    "api/agent/*.js": {
-      "maxDuration": 30
+  "ignoreCommand": "node scripts/vercel/ignore-build.cjs",
+  "builds": [
+    {
+      "src": "api/agent/*.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/polly/*.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/billing/*.js",
+      "use": "@vercel/node"
     }
-  }
+  ],
+  "routes": [
+    {
+      "src": "^/$",
+      "dest": "/api/agent/launch.js"
+    },
+    {
+      "src": "^/launch$",
+      "dest": "/api/agent/launch.js"
+    },
+    {
+      "src": "^/index\\.html$",
+      "dest": "/api/agent/launch.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/?$",
+      "dest": "/api/agent/launch.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/index\\.html$",
+      "dest": "/api/agent/launch.js"
+    },
+    {
+      "src": "^/offers\\.json$",
+      "dest": "/api/agent/offers-file.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/offers\\.json$",
+      "dest": "/api/agent/offers-file.js"
+    },
+    {
+      "src": "^/app-config\\.json$",
+      "dest": "/api/agent/app-config-file.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/app-config\\.json$",
+      "dest": "/api/agent/app-config-file.js"
+    },
+    {
+      "src": "^/robots\\.txt$",
+      "dest": "/api/agent/robots.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/robots\\.txt$",
+      "dest": "/api/agent/robots.js"
+    },
+    {
+      "src": "^/sitemap\\.xml$",
+      "dest": "/api/agent/sitemap.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/sitemap\\.xml$",
+      "dest": "/api/agent/sitemap.js"
+    },
+    {
+      "src": "^/hire/?$",
+      "dest": "/api/agent/hire.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/hire\\.html$",
+      "dest": "/api/agent/hire.js"
+    },
+    {
+      "src": "^/hire-b/?$",
+      "dest": "/api/agent/hire-b.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/hire-b\\.html$",
+      "dest": "/api/agent/hire-b.js"
+    },
+    {
+      "src": "^/products/?$",
+      "dest": "/api/agent/products.js"
+    },
+    {
+      "src": "^/atomic-lab/?$",
+      "dest": "/api/agent/atomic-lab-page.js"
+    },
+    {
+      "src": "^/ai-chemistry-set/?$",
+      "dest": "/api/agent/ai-chemistry-set-page.js"
+    },
+    {
+      "src": "^/ai-materials-bench/?$",
+      "dest": "/api/agent/ai-materials-bench-page.js"
+    },
+    {
+      "src": "^/ai-waves-lab/?$",
+      "dest": "/api/agent/ai-waves-lab-page.js"
+    },
+    {
+      "src": "^/geoseal-hermes/?$",
+      "dest": "/api/agent/geoseal-hermes-page.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/atomic-lab\\.html$",
+      "dest": "/api/agent/atomic-lab-page.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/ai-chemistry-set\\.html$",
+      "dest": "/api/agent/ai-chemistry-set-page.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/ai-materials-bench\\.html$",
+      "dest": "/api/agent/ai-materials-bench-page.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/ai-waves-lab\\.html$",
+      "dest": "/api/agent/ai-waves-lab-page.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/geoseal-hermes\\.html$",
+      "dest": "/api/agent/geoseal-hermes-page.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/products\\.html$",
+      "dest": "/api/agent/products.js"
+    },
+    {
+      "src": "^/solutions/?$",
+      "dest": "/api/agent/solutions.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/solutions\\.html$",
+      "dest": "/api/agent/solutions.js"
+    },
+    {
+      "src": "^/start-here/?$",
+      "dest": "/api/agent/start-here.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/start-here\\.html$",
+      "dest": "/api/agent/start-here.js"
+    },
+    {
+      "src": "^/agents/?$",
+      "dest": "/api/agent/agents.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/agents\\.html$",
+      "dest": "/api/agent/agents.js"
+    },
+    {
+      "src": "^/chat/?$",
+      "dest": "/api/agent/chat-page.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/chat\\.html$",
+      "dest": "/api/agent/chat-page.js"
+    },
+    {
+      "src": "^/payments/?$",
+      "dest": "/api/agent/payments.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/payments\\.html$",
+      "dest": "/api/agent/payments.js"
+    },
+    {
+      "src": "^/shopify-command-center/?$",
+      "dest": "/api/agent/shopify-command-center.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/shopify-command-center\\.html$",
+      "dest": "/api/agent/shopify-command-center.js"
+    },
+    {
+      "src": "^/workflow-snapshot/?$",
+      "dest": "/api/agent/workflow-snapshot.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/workflow-snapshot\\.html$",
+      "dest": "/api/agent/workflow-snapshot.js"
+    },
+    {
+      "src": "^/governance-snapshot/?$",
+      "dest": "/api/agent/governance-snapshot.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/governance-snapshot\\.html$",
+      "dest": "/api/agent/governance-snapshot.js"
+    },
+    {
+      "src": "^/service-credits/?$",
+      "dest": "/api/agent/service-credits.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/service-credits\\.html$",
+      "dest": "/api/agent/service-credits.js"
+    },
+    {
+      "src": "^/supporter/?$",
+      "dest": "/api/agent/supporter.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/supporter\\.html$",
+      "dest": "/api/agent/supporter.js"
+    },
+    {
+      "src": "^/hosted-run/?$",
+      "dest": "/api/agent/hosted-run.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/hosted-run\\.html$",
+      "dest": "/api/agent/hosted-run.js"
+    },
+    {
+      "src": "^/legal/privacy/?$",
+      "dest": "/api/agent/legal-privacy.js"
+    },
+    {
+      "src": "^/privacy/?$",
+      "dest": "/api/agent/legal-privacy.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/privacy\\.html$",
+      "dest": "/api/agent/legal-privacy.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/legal/privacy\\.html$",
+      "dest": "/api/agent/legal-privacy.js"
+    },
+    {
+      "src": "^/legal/terms/?$",
+      "dest": "/api/agent/legal-terms.js"
+    },
+    {
+      "src": "^/terms/?$",
+      "dest": "/api/agent/legal-terms.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/terms\\.html$",
+      "dest": "/api/agent/legal-terms.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/legal/terms\\.html$",
+      "dest": "/api/agent/legal-terms.js"
+    },
+    {
+      "src": "^/robot\\.html$",
+      "dest": "/api/agent/robot-page.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/robot\\.html$",
+      "dest": "/api/agent/robot-page.js"
+    },
+    {
+      "src": "^/robot\\.md$",
+      "dest": "/api/agent/robot-md.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/robot\\.md$",
+      "dest": "/api/agent/robot-md.js"
+    },
+    {
+      "src": "^/llms\\.txt$",
+      "dest": "/api/agent/llms.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/llms\\.txt$",
+      "dest": "/api/agent/llms.js"
+    },
+    {
+      "src": "^/static/(.*)$",
+      "dest": "/api/agent/static.js?path=$1"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/static/(.*)$",
+      "dest": "/api/agent/static.js?path=$1"
+    },
+    {
+      "src": "^/(?:SCBE-AETHERMOORE/)?product-manual/service-fast-start\\.html$",
+      "dest": "/api/agent/service-fast-start.js"
+    },
+    {
+      "src": "^/api/agent/(.*)$",
+      "dest": "/api/agent/$1.js"
+    },
+    {
+      "src": "^/api/polly/(.*)$",
+      "dest": "/api/polly/$1.js"
+    },
+    {
+      "src": "^/v1/polly/chat/?$",
+      "dest": "/api/polly/chat.js"
+    },
+    {
+      "src": "^/v1/chat/completions/?$",
+      "dest": "/api/agent/governed-chat.js"
+    },
+    {
+      "src": "^/v1/governed/chat/completions/?$",
+      "dest": "/api/agent/governed-chat.js"
+    },
+    {
+      "src": "^/v1/polly/feedback/?$",
+      "dest": "/api/polly/feedback.js"
+    },
+    {
+      "src": "^/v1/polly/catalog/?$",
+      "dest": "/api/polly/catalog.js"
+    },
+    {
+      "src": "^/v1/polly/lead/?$",
+      "dest": "/api/polly/lead.js"
+    },
+    {
+      "src": "^/v1/polly/hosted-run/?$",
+      "dest": "/api/polly/hosted-run.js"
+    },
+    {
+      "src": "^/v1/polly/stats/?$",
+      "dest": "/api/polly/stats.js"
+    },
+    {
+      "src": "^/v1/polly/funnel/?$",
+      "dest": "/api/polly/funnel.js"
+    },
+    {
+      "src": "^/v1/billing/stripe-webhook/?$",
+      "dest": "/api/billing/stripe_webhook.js"
+    }
+  ]
 }

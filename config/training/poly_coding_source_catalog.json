@@ -1,0 +1,149 @@
+{
+  "schema_version": "scbe_poly_coding_source_catalog_v1",
+  "created_at": "2026-04-30",
+  "policy": {
+    "default_mode": "metadata_first",
+    "do_not_bulk_download_by_default": true,
+    "training_rule": "Prefer generated task specs and permissively licensed snippets with provenance. Do not ingest restricted solicitation attachments, credentials, private notebooks, or account-only portal data.",
+    "poly_encoding_goal": "Represent each task as one contract across code lenses, binary/hex transport, CA operation hints, and GeoSeal tokenizer metadata."
+  },
+  "sources": [
+    {
+      "source_id": "sam_gov_opportunities_api",
+      "title": "SAM.gov Contract Opportunities API",
+      "organization": "GSA / SAM.gov",
+      "source_url": "https://open.gsa.gov/api/opportunities-api/",
+      "source_family": "government_opportunity_metadata",
+      "access": "public_api_with_personal_key",
+      "license_or_terms": "public government metadata; attachments may have separate restrictions",
+      "allowed_use": "Search software/coding opportunities and derive high-level task shapes from public descriptions.",
+      "blocked_use": "Do not train on private account data, controlled attachments, proprietary PWS/SOW text, or offeror submissions.",
+      "ingest_status": "metadata_only",
+      "seed_categories": ["api_integration", "data_pipeline", "portal_modernization", "test_automation"]
+    },
+    {
+      "source_id": "darpa_aixcc_public",
+      "title": "DARPA AI Cyber Challenge public materials",
+      "organization": "DARPA",
+      "source_url": "https://www.darpa.mil/news/2024/ai-cyber-challenge-cybersecurity",
+      "source_family": "cyber_patch_benchmark",
+      "access": "public",
+      "license_or_terms": "public program/news materials; challenge project repos have their own licenses",
+      "allowed_use": "Generate vulnerability-finding and patching task templates based on public challenge structure.",
+      "blocked_use": "Do not copy exploit payloads or unsafe operational details into general SFT without a security gate.",
+      "ingest_status": "template_only",
+      "seed_categories": ["vulnerability_patch", "regression_test", "static_analysis", "sandbox_verifier"]
+    },
+    {
+      "source_id": "nasa_open_source_catalog",
+      "title": "NASA Open Source Software Catalog",
+      "organization": "NASA",
+      "source_url": "https://github.com/nasa/Open-Source-Catalog",
+      "source_family": "open_source_software_catalog",
+      "access": "public",
+      "license_or_terms": "project-specific open-source licenses",
+      "allowed_use": "Discover NASA software projects and derive mission/data-processing task specs from permissively licensed repositories.",
+      "blocked_use": "Do not assume all catalog entries share one license; verify per repository before snippet ingestion.",
+      "ingest_status": "catalog_metadata",
+      "seed_categories": ["scientific_data_processing", "telemetry_validation", "geospatial_indexing", "simulation_utilities"]
+    },
+    {
+      "source_id": "kaggle_meta_kaggle_code",
+      "title": "Meta Kaggle Code",
+      "organization": "Kaggle",
+      "source_url": "https://www.kaggle.com/datasets/kaggle/meta-kaggle-code",
+      "source_family": "public_notebook_code",
+      "access": "public_dataset",
+      "license_or_terms": "Apache-2.0 public notebook code dataset with sensitive-information caveat",
+      "allowed_use": "Extract notebook task patterns, data-cleaning idioms, and ML workflow skeletons after secret filtering.",
+      "blocked_use": "Do not ingest raw notebooks without secret scans, license metadata, and user-data filtering.",
+      "ingest_status": "pattern_only",
+      "seed_categories": ["data_cleaning", "feature_engineering", "model_training_loop", "metric_evaluation"]
+    },
+    {
+      "source_id": "bigcode_the_stack",
+      "title": "The Stack",
+      "organization": "BigCode / Hugging Face",
+      "source_url": "https://huggingface.co/datasets/bigcode/the-stack",
+      "source_family": "permissive_code_corpus",
+      "access": "public_dataset",
+      "license_or_terms": "permissively licensed code subset with opt-out governance and per-file license metadata",
+      "allowed_use": "Use as a source of permissive coding patterns after language/license filtering and malware/secret filtering.",
+      "blocked_use": "Do not mix licenses blindly or ingest code without preserving license and repository provenance.",
+      "ingest_status": "candidate_large_corpus",
+      "seed_categories": ["multi_language_code", "api_usage", "algorithm_implementation", "unit_tests"]
+    }
+  ],
+  "seed_tasks": [
+    {
+      "task_id": "external_safe_divide",
+      "source_family": "sam_gov_opportunities_api",
+      "domain": "api_integration",
+      "instruction": "Implement safe_divide(a, b) so division by zero returns None/null and normal division returns the quotient.",
+      "contract": {
+        "name": "safe_divide",
+        "signature": "safe_divide(a, b)",
+        "imports": [],
+        "guards": ["b == 0 returns null/None"],
+        "tests": ["safe_divide(6, 3) == 2", "safe_divide(1, 0) is None"]
+      },
+      "operation_plan": ["eq", "div"]
+    },
+    {
+      "task_id": "external_parse_json_name",
+      "source_family": "kaggle_meta_kaggle_code",
+      "domain": "data_cleaning",
+      "instruction": "Implement parse_json_name(payload) so it returns the name field from a JSON object string, or None/null on invalid JSON or missing name.",
+      "contract": {
+        "name": "parse_json_name",
+        "signature": "parse_json_name(payload)",
+        "imports": ["json"],
+        "guards": ["invalid JSON returns null/None", "missing name returns null/None"],
+        "tests": ["parse_json_name('{\"name\":\"Ada\"}') == 'Ada'", "parse_json_name('bad') is None"]
+      },
+      "operation_plan": ["map", "filter"]
+    },
+    {
+      "task_id": "external_grid_neighbors",
+      "source_family": "nasa_open_source_catalog",
+      "domain": "geospatial_indexing",
+      "instruction": "Implement grid_neighbors(row, col, rows, cols) returning valid 4-neighbor grid coordinates inside bounds.",
+      "contract": {
+        "name": "grid_neighbors",
+        "signature": "grid_neighbors(row, col, rows, cols)",
+        "imports": [],
+        "guards": ["exclude out-of-bounds cells", "return deterministic row-major order"],
+        "tests": ["grid_neighbors(0,0,2,2) == [(0,1),(1,0)]"]
+      },
+      "operation_plan": ["within", "filter"]
+    },
+    {
+      "task_id": "external_patch_bounds_check",
+      "source_family": "darpa_aixcc_public",
+      "domain": "vulnerability_patch",
+      "instruction": "Patch read_at(buf, idx) so it returns None/null when idx is outside the buffer instead of reading out of bounds.",
+      "contract": {
+        "name": "read_at",
+        "signature": "read_at(buf, idx)",
+        "imports": [],
+        "guards": ["idx < 0 returns null/None", "idx >= len(buf) returns null/None"],
+        "tests": ["read_at([1,2], 1) == 2", "read_at([1,2], 2) is None"]
+      },
+      "operation_plan": ["lt", "gte"]
+    },
+    {
+      "task_id": "external_normalize_scores",
+      "source_family": "bigcode_the_stack",
+      "domain": "algorithm_implementation",
+      "instruction": "Implement normalize_scores(values) returning min-max normalized floats, or all zeros when the range is zero.",
+      "contract": {
+        "name": "normalize_scores",
+        "signature": "normalize_scores(values)",
+        "imports": [],
+        "guards": ["empty list returns empty list", "constant list returns zeros"],
+        "tests": ["normalize_scores([2,4,6]) == [0.0,0.5,1.0]", "normalize_scores([3,3]) == [0.0,0.0]"]
+      },
+      "operation_plan": ["min", "max", "sub", "div"]
+    }
+  ]
+}

@@ -21,39 +21,52 @@ from __future__ import annotations
 import hashlib
 import math
 import secrets
+import warnings
 from dataclasses import dataclass, field
 from typing import Optional, Tuple, List, Dict, Any
 from enum import Enum
 
 # Import AETHERMOORE constants
 from ..constants import (
-    PHI, R_FIFTH, PHI_AETHER, LAMBDA_ISAAC, OMEGA_SPIRAL,
-    DEFAULT_R, DEFAULT_D_MAX, DEFAULT_BASE_BITS,
-    harmonic_scale, security_bits, security_level,
+    PHI,
+    R_FIFTH,
+    PHI_AETHER,
+    LAMBDA_ISAAC,
+    OMEGA_SPIRAL,
+    DEFAULT_R,
+    DEFAULT_D_MAX,
+    DEFAULT_BASE_BITS,
+    harmonic_scale,
+    security_bits,
+    security_level,
     harmonic_distance,
 )
 
 # Import PQC primitives
 from .pqc_core import (
-    Kyber768, KyberKeyPair, EncapsulationResult,
-    Dilithium3, DilithiumKeyPair,
+    Kyber768,
+    KyberKeyPair,
+    EncapsulationResult,
+    Dilithium3,
+    DilithiumKeyPair,
     derive_hybrid_key,
 )
-
 
 # =============================================================================
 # CONSTANTS
 # =============================================================================
 
+
 # Security dimension levels
 class SecurityDimension(Enum):
     """Security dimension levels for harmonic enhancement."""
-    D1_BASIC = 1      # R^1 = 1.5x multiplier
-    D2_STANDARD = 2   # R^4 = 5.0625x multiplier
-    D3_ELEVATED = 3   # R^9 = 38.44x multiplier
-    D4_HIGH = 4       # R^16 = 656.84x multiplier
-    D5_CRITICAL = 5   # R^25 = 25,629x multiplier
-    D6_MAXIMUM = 6    # R^36 = 2,184,164x multiplier
+
+    D1_BASIC = 1  # R^1 = 1.5x multiplier
+    D2_STANDARD = 2  # R^4 = 5.0625x multiplier
+    D3_ELEVATED = 3  # R^9 = 38.44x multiplier
+    D4_HIGH = 4  # R^16 = 656.84x multiplier
+    D5_CRITICAL = 5  # R^25 = 25,629x multiplier
+    D6_MAXIMUM = 6  # R^36 = 2,184,164x multiplier
 
 
 # Harmonic scaling reference table
@@ -80,9 +93,11 @@ BASE_SECURITY_BITS = {
 # HARMONIC KEY DERIVATION
 # =============================================================================
 
+
 @dataclass
 class HarmonicKeyMaterial:
     """Key material enhanced with harmonic scaling."""
+
     base_key: bytes
     dimension: int
     harmonic_ratio: float
@@ -90,6 +105,8 @@ class HarmonicKeyMaterial:
     iteration_count: int
     salt: bytes
     info: bytes = b""
+    requested_iterations: int = 0
+    cap_engaged: bool = False
 
     @property
     def harmonic_multiplier(self) -> float:
@@ -103,7 +120,8 @@ def harmonic_key_stretch(
     R: float = DEFAULT_R,
     salt: Optional[bytes] = None,
     info: bytes = b"aethermoore-harmonic-key",
-    output_length: int = 32
+    output_length: int = 32,
+    max_iterations: int = 10_000_000,
 ) -> HarmonicKeyMaterial:
     """
     Stretch a key using harmonic scaling for enhanced security.
@@ -118,6 +136,12 @@ def harmonic_key_stretch(
         salt: Optional salt for derivation
         info: Context info for derivation
         output_length: Output key length in bytes
+        max_iterations: Upper bound on SHAKE-256 iterations. The default 10M
+            keeps derivation practical, but caps the super-exponential cost
+            curve: beyond it, attacker and defender pay the same flat cost.
+            Raise it to preserve the cost-scaling claim at high (d, R), at the
+            expense of wall-clock time. ``HarmonicKeyMaterial.cap_engaged``
+            reports whether the cap actually bound the iteration count.
 
     Returns:
         HarmonicKeyMaterial with enhanced key
@@ -130,6 +154,9 @@ def harmonic_key_stretch(
     if dimension < 1 or dimension > 6:
         raise ValueError(f"Dimension must be 1-6, got {dimension}")
 
+    if max_iterations < 1:
+        raise ValueError(f"max_iterations must be >= 1, got {max_iterations}")
+
     if salt is None:
         salt = secrets.token_bytes(16)
 
@@ -138,17 +165,22 @@ def harmonic_key_stretch(
     h_value = harmonic_scale(dimension, R)
     iteration_count = int(math.ceil(h_value))
 
-    # Cap iterations at a reasonable maximum (10M) for practicality
-    # while maintaining the security claim
-    max_iterations = 10_000_000
+    # Cap iterations at max_iterations for practicality. Beyond the cap the
+    # super-exponential cost curve flattens, so we record cap_engaged and warn.
     actual_iterations = min(iteration_count, max_iterations)
+    cap_engaged = iteration_count > max_iterations
+    if cap_engaged:
+        warnings.warn(
+            f"harmonic_key_stretch cap engaged: requested {iteration_count} iterations "
+            f"(d={dimension}, R={R}), capped to {max_iterations}. "
+            f"Exponential cost-scaling claim degrades beyond this point.",
+            stacklevel=2,
+        )
 
     # Progressive key strengthening through iterated hashing
     # Each iteration incorporates dimension and ratio info
     current = hashlib.shake_256(
-        input_key + salt + info +
-        dimension.to_bytes(2, 'big') +
-        int(R * 1000).to_bytes(4, 'big')
+        input_key + salt + info + dimension.to_bytes(2, "big") + int(R * 1000).to_bytes(4, "big")
     ).digest(64)
 
     # Apply iterations in batches for efficiency
@@ -156,16 +188,10 @@ def harmonic_key_stretch(
     for batch_start in range(0, actual_iterations, batch_size):
         batch_end = min(batch_start + batch_size, actual_iterations)
         for i in range(batch_start, batch_end):
-            current = hashlib.shake_256(
-                current +
-                i.to_bytes(4, 'big') +
-                dimension.to_bytes(1, 'big')
-            ).digest(64)
+            current = hashlib.shake_256(current + i.to_bytes(4, "big") + dimension.to_bytes(1, "big")).digest(64)
 
     # Final key extraction
-    final_key = hashlib.shake_256(
-        current + b"final" + info
-    ).digest(output_length)
+    final_key = hashlib.shake_256(current + b"final" + info).digest(output_length)
 
     # Calculate effective security bits
     base_bits = len(input_key) * 8
@@ -178,7 +204,9 @@ def harmonic_key_stretch(
         effective_security_bits=eff_bits,
         iteration_count=actual_iterations,
         salt=salt,
-        info=info
+        info=info,
+        requested_iterations=iteration_count,
+        cap_engaged=cap_engaged,
     )
 
 
@@ -188,7 +216,7 @@ def fast_harmonic_key(
     R: float = DEFAULT_R,
     salt: Optional[bytes] = None,
     info: bytes = b"aethermoore-fast",
-    output_length: int = 32
+    output_length: int = 32,
 ) -> bytes:
     """
     Fast harmonic key derivation using dimension-based mixing.
@@ -209,28 +237,23 @@ def fast_harmonic_key(
         Derived key bytes
     """
     if salt is None:
-        salt = b'\x00' * 16
+        salt = b"\x00" * 16
 
     # Encode harmonic parameters
     h_value = harmonic_scale(dimension, R)
-    h_bytes = int(h_value * 1000000).to_bytes(8, 'big')
+    h_bytes = int(h_value * 1000000).to_bytes(8, "big")
 
     # Include AETHERMOORE constants in derivation
     aether_bytes = (
-        int(PHI_AETHER * 1e15).to_bytes(8, 'big') +
-        int(LAMBDA_ISAAC * 1e15).to_bytes(8, 'big') +
-        int(OMEGA_SPIRAL * 1e15).to_bytes(8, 'big')
+        int(PHI_AETHER * 1e15).to_bytes(8, "big")
+        + int(LAMBDA_ISAAC * 1e15).to_bytes(8, "big")
+        + int(OMEGA_SPIRAL * 1e15).to_bytes(8, "big")
     )
 
     # Single-pass derivation with all parameters
-    derived = hashlib.shake_256(
-        input_key +
-        salt +
-        info +
-        h_bytes +
-        aether_bytes +
-        dimension.to_bytes(1, 'big')
-    ).digest(output_length)
+    derived = hashlib.shake_256(input_key + salt + info + h_bytes + aether_bytes + dimension.to_bytes(1, "big")).digest(
+        output_length
+    )
 
     return derived
 
@@ -239,9 +262,11 @@ def fast_harmonic_key(
 # HARMONIC-ENHANCED PQC SESSIONS
 # =============================================================================
 
+
 @dataclass
 class HarmonicPQCSession:
     """PQC session enhanced with harmonic security scaling."""
+
     session_id: bytes
     dimension: int
     harmonic_ratio: float
@@ -278,7 +303,7 @@ def create_harmonic_pqc_session(
     R: float = DEFAULT_R,
     vector_key: Optional[Tuple[float, ...]] = None,
     session_id: Optional[bytes] = None,
-    fast_mode: bool = True
+    fast_mode: bool = True,
 ) -> HarmonicPQCSession:
     """
     Create a PQC session with harmonic security enhancement.
@@ -314,74 +339,51 @@ def create_harmonic_pqc_session(
     if vector_key is not None:
         if len(vector_key) != 6:
             raise ValueError("Vector key must be 6-dimensional")
-        vector_bytes = b"".join(
-            int(v * 1e9).to_bytes(8, 'big', signed=True)
-            for v in vector_key
-        )
+        vector_bytes = b"".join(int(v * 1e9).to_bytes(8, "big", signed=True) for v in vector_key)
 
     # Sign the exchange
     sign_data = (
-        encap_result.ciphertext +
-        session_id +
-        initiator_kem_keypair.public_key +
-        vector_bytes +
-        dimension.to_bytes(1, 'big')
+        encap_result.ciphertext
+        + session_id
+        + initiator_kem_keypair.public_key
+        + vector_bytes
+        + dimension.to_bytes(1, "big")
     )
     signature = Dilithium3.sign(initiator_sig_keypair.secret_key, sign_data)
 
     # Derive harmonic-enhanced keys
     if fast_mode:
         enc_key_bytes = fast_harmonic_key(
-            encap_result.shared_secret,
-            dimension=dimension,
-            R=R,
-            salt=session_id,
-            info=b"encryption" + vector_bytes
+            encap_result.shared_secret, dimension=dimension, R=R, salt=session_id, info=b"encryption" + vector_bytes
         )
         enc_key = HarmonicKeyMaterial(
             base_key=enc_key_bytes,
             dimension=dimension,
             harmonic_ratio=R,
-            effective_security_bits=security_bits(
-                BASE_SECURITY_BITS["Kyber768"], dimension, R
-            ),
+            effective_security_bits=security_bits(BASE_SECURITY_BITS["Kyber768"], dimension, R),
             iteration_count=1,
             salt=session_id,
-            info=b"encryption"
+            info=b"encryption",
         )
 
         mac_key_bytes = fast_harmonic_key(
-            encap_result.shared_secret,
-            dimension=dimension,
-            R=R,
-            salt=session_id,
-            info=b"mac" + vector_bytes
+            encap_result.shared_secret, dimension=dimension, R=R, salt=session_id, info=b"mac" + vector_bytes
         )
         mac_key = HarmonicKeyMaterial(
             base_key=mac_key_bytes,
             dimension=dimension,
             harmonic_ratio=R,
-            effective_security_bits=security_bits(
-                BASE_SECURITY_BITS["SHA3-256"], dimension, R
-            ),
+            effective_security_bits=security_bits(BASE_SECURITY_BITS["SHA3-256"], dimension, R),
             iteration_count=1,
             salt=session_id,
-            info=b"mac"
+            info=b"mac",
         )
     else:
         enc_key = harmonic_key_stretch(
-            encap_result.shared_secret,
-            dimension=dimension,
-            R=R,
-            salt=session_id,
-            info=b"encryption" + vector_bytes
+            encap_result.shared_secret, dimension=dimension, R=R, salt=session_id, info=b"encryption" + vector_bytes
         )
         mac_key = harmonic_key_stretch(
-            encap_result.shared_secret,
-            dimension=dimension,
-            R=R,
-            salt=session_id,
-            info=b"mac" + vector_bytes
+            encap_result.shared_secret, dimension=dimension, R=R, salt=session_id, info=b"mac" + vector_bytes
         )
 
     # Calculate effective security
@@ -398,7 +400,7 @@ def create_harmonic_pqc_session(
         signature=signature,
         initiator_public_key=initiator_kem_keypair.public_key,
         effective_security_bits=eff_bits,
-        vector_key=vector_key
+        vector_key=vector_key,
     )
 
 
@@ -406,7 +408,7 @@ def verify_harmonic_pqc_session(
     session: HarmonicPQCSession,
     responder_kem_keypair: KyberKeyPair,
     initiator_sig_public_key: bytes,
-    fast_mode: bool = True
+    fast_mode: bool = True,
 ) -> Optional[HarmonicPQCSession]:
     """
     Verify and complete harmonic PQC session on responder side.
@@ -423,28 +425,22 @@ def verify_harmonic_pqc_session(
     # Reconstruct vector bytes
     vector_bytes = b""
     if session.vector_key is not None:
-        vector_bytes = b"".join(
-            int(v * 1e9).to_bytes(8, 'big', signed=True)
-            for v in session.vector_key
-        )
+        vector_bytes = b"".join(int(v * 1e9).to_bytes(8, "big", signed=True) for v in session.vector_key)
 
     # Verify signature
     sign_data = (
-        session.ciphertext +
-        session.session_id +
-        session.initiator_public_key +
-        vector_bytes +
-        session.dimension.to_bytes(1, 'big')
+        session.ciphertext
+        + session.session_id
+        + session.initiator_public_key
+        + vector_bytes
+        + session.dimension.to_bytes(1, "big")
     )
 
     if not Dilithium3.verify(initiator_sig_public_key, sign_data, session.signature):
         return None
 
     # Decapsulate shared secret
-    shared_secret = Kyber768.decapsulate(
-        responder_kem_keypair.secret_key,
-        session.ciphertext
-    )
+    shared_secret = Kyber768.decapsulate(responder_kem_keypair.secret_key, session.ciphertext)
 
     # Derive same harmonic-enhanced keys
     if fast_mode:
@@ -453,20 +449,18 @@ def verify_harmonic_pqc_session(
             dimension=session.dimension,
             R=session.harmonic_ratio,
             salt=session.session_id,
-            info=b"encryption" + vector_bytes
+            info=b"encryption" + vector_bytes,
         )
         enc_key = HarmonicKeyMaterial(
             base_key=enc_key_bytes,
             dimension=session.dimension,
             harmonic_ratio=session.harmonic_ratio,
             effective_security_bits=security_bits(
-                BASE_SECURITY_BITS["Kyber768"],
-                session.dimension,
-                session.harmonic_ratio
+                BASE_SECURITY_BITS["Kyber768"], session.dimension, session.harmonic_ratio
             ),
             iteration_count=1,
             salt=session.session_id,
-            info=b"encryption"
+            info=b"encryption",
         )
 
         mac_key_bytes = fast_harmonic_key(
@@ -474,20 +468,18 @@ def verify_harmonic_pqc_session(
             dimension=session.dimension,
             R=session.harmonic_ratio,
             salt=session.session_id,
-            info=b"mac" + vector_bytes
+            info=b"mac" + vector_bytes,
         )
         mac_key = HarmonicKeyMaterial(
             base_key=mac_key_bytes,
             dimension=session.dimension,
             harmonic_ratio=session.harmonic_ratio,
             effective_security_bits=security_bits(
-                BASE_SECURITY_BITS["SHA3-256"],
-                session.dimension,
-                session.harmonic_ratio
+                BASE_SECURITY_BITS["SHA3-256"], session.dimension, session.harmonic_ratio
             ),
             iteration_count=1,
             salt=session.session_id,
-            info=b"mac"
+            info=b"mac",
         )
     else:
         enc_key = harmonic_key_stretch(
@@ -495,14 +487,14 @@ def verify_harmonic_pqc_session(
             dimension=session.dimension,
             R=session.harmonic_ratio,
             salt=session.session_id,
-            info=b"encryption" + vector_bytes
+            info=b"encryption" + vector_bytes,
         )
         mac_key = harmonic_key_stretch(
             shared_secret,
             dimension=session.dimension,
             R=session.harmonic_ratio,
             salt=session.session_id,
-            info=b"mac" + vector_bytes
+            info=b"mac" + vector_bytes,
         )
 
     return HarmonicPQCSession(
@@ -516,7 +508,7 @@ def verify_harmonic_pqc_session(
         signature=session.signature,
         initiator_public_key=session.initiator_public_key,
         effective_security_bits=session.effective_security_bits,
-        vector_key=session.vector_key
+        vector_key=session.vector_key,
     )
 
 
@@ -524,9 +516,11 @@ def verify_harmonic_pqc_session(
 # 6D VECTOR-KEYED ENCRYPTION
 # =============================================================================
 
+
 @dataclass
 class Vector6DKey:
     """6D vector key for harmonic access control."""
+
     x: float
     y: float
     z: float
@@ -540,46 +534,37 @@ class Vector6DKey:
 
     def to_bytes(self) -> bytes:
         """Serialize to bytes."""
-        return b"".join(
-            int(v * 1e9).to_bytes(8, 'big', signed=True)
-            for v in self.as_tuple()
-        )
+        return b"".join(int(v * 1e9).to_bytes(8, "big", signed=True) for v in self.as_tuple())
 
     @classmethod
-    def from_bytes(cls, data: bytes) -> 'Vector6DKey':
+    def from_bytes(cls, data: bytes) -> "Vector6DKey":
         """Deserialize from bytes."""
         if len(data) != 48:  # 6 × 8 bytes
             raise ValueError(f"Invalid vector key bytes length: {len(data)}")
-        values = [
-            int.from_bytes(data[i:i+8], 'big', signed=True) / 1e9
-            for i in range(0, 48, 8)
-        ]
+        values = [int.from_bytes(data[i : i + 8], "big", signed=True) / 1e9 for i in range(0, 48, 8)]
         return cls(*values)
 
-    def distance_to(self, other: 'Vector6DKey', R: float = DEFAULT_R) -> float:
+    def distance_to(self, other: "Vector6DKey", R: float = DEFAULT_R) -> float:
         """Compute harmonic distance to another vector."""
         return harmonic_distance(self.as_tuple(), other.as_tuple(), R)
 
     @classmethod
-    def random(cls, scale: float = 100.0) -> 'Vector6DKey':
+    def random(cls, scale: float = 100.0) -> "Vector6DKey":
         """Generate a random vector key."""
         import random
+
         return cls(
             x=random.uniform(-scale, scale),
             y=random.uniform(-scale, scale),
             z=random.uniform(-scale, scale),
             velocity=random.uniform(0, scale),
             priority=random.uniform(0, 10),
-            security=random.uniform(1, 6)
+            security=random.uniform(1, 6),
         )
 
 
 def derive_key_from_vector(
-    vector: Vector6DKey,
-    salt: bytes,
-    dimension: int = DEFAULT_D_MAX,
-    R: float = DEFAULT_R,
-    output_length: int = 32
+    vector: Vector6DKey, salt: bytes, dimension: int = DEFAULT_D_MAX, R: float = DEFAULT_R, output_length: int = 32
 ) -> bytes:
     """
     Derive an encryption key from a 6D vector position.
@@ -598,21 +583,12 @@ def derive_key_from_vector(
         Derived key bytes
     """
     return fast_harmonic_key(
-        vector.to_bytes(),
-        dimension=dimension,
-        R=R,
-        salt=salt,
-        info=b"v6-spatial-key",
-        output_length=output_length
+        vector.to_bytes(), dimension=dimension, R=R, salt=salt, info=b"v6-spatial-key", output_length=output_length
     )
 
 
 def vector_proximity_key(
-    agent_vector: Vector6DKey,
-    target_vector: Vector6DKey,
-    tolerance: float,
-    salt: bytes,
-    R: float = DEFAULT_R
+    agent_vector: Vector6DKey, target_vector: Vector6DKey, tolerance: float, salt: bytes, R: float = DEFAULT_R
 ) -> Optional[bytes]:
     """
     Derive a key only if agent is within harmonic proximity of target.
@@ -637,29 +613,18 @@ def vector_proximity_key(
 
     # Key is derived from both vectors, weighted by proximity
     proximity_factor = 1.0 - (distance / tolerance)
-    combined = (
-        agent_vector.to_bytes() +
-        target_vector.to_bytes() +
-        int(proximity_factor * 1e9).to_bytes(8, 'big')
-    )
+    combined = agent_vector.to_bytes() + target_vector.to_bytes() + int(proximity_factor * 1e9).to_bytes(8, "big")
 
-    return fast_harmonic_key(
-        combined,
-        dimension=int(target_vector.security),
-        R=R,
-        salt=salt,
-        info=b"proximity-access"
-    )
+    return fast_harmonic_key(combined, dimension=int(target_vector.security), R=R, salt=salt, info=b"proximity-access")
 
 
 # =============================================================================
 # SECURITY ANALYSIS UTILITIES
 # =============================================================================
 
+
 def analyze_harmonic_security(
-    base_algorithm: str,
-    dimension: int = DEFAULT_D_MAX,
-    R: float = DEFAULT_R
+    base_algorithm: str, dimension: int = DEFAULT_D_MAX, R: float = DEFAULT_R
 ) -> Dict[str, Any]:
     """
     Analyze security enhancement from harmonic scaling.
@@ -682,14 +647,14 @@ def analyze_harmonic_security(
         "base_security_bits": base_bits,
         "dimension": dimension,
         "harmonic_ratio": R,
-        "d_squared": dimension ** 2,
+        "d_squared": dimension**2,
         "H_value": h_value,
         "effective_security_bits": eff_bits,
         "enhancement_bits": enhancement_bits,
         "computational_multiplier": h_value,
         "equivalent_aes": f"AES-{int(eff_bits)}",
         "quantum_resistance": "NIST Level 3+" if base_algorithm == "Kyber768" else "varies",
-        "formula": f"S = {base_bits} + {dimension}² × log₂({R}) = {eff_bits:.2f} bits"
+        "formula": f"S = {base_bits} + {dimension}² × log₂({R}) = {eff_bits:.2f} bits",
     }
 
 
@@ -708,16 +673,14 @@ def print_security_table(R: float = DEFAULT_R) -> str:
         f"R = {R} (Perfect Fifth Ratio)",
         "=" * 70,
         f"{'d':>3} | {'d²':>4} | {'H(d,R)':>15} | {'log₂(H)':>10} | {'AES Equiv':>12}",
-        "-" * 70
+        "-" * 70,
     ]
 
     for d in range(1, 7):
         h = harmonic_scale(d, R)
         log2_h = math.log2(h)
         aes = 128 + int(log2_h)
-        lines.append(
-            f"{d:>3} | {d*d:>4} | {h:>15,.2f} | {log2_h:>10.2f} | AES-{aes:>7}"
-        )
+        lines.append(f"{d:>3} | {d*d:>4} | {h:>15,.2f} | {log2_h:>10.2f} | AES-{aes:>7}")
 
     lines.append("=" * 70)
     lines.append("Base: AES-128 (128 bits)")
@@ -730,6 +693,7 @@ def print_security_table(R: float = DEFAULT_R) -> str:
 # KYBER ORCHESTRATOR INTEGRATION
 # =============================================================================
 
+
 class HarmonicKyberOrchestrator:
     """
     High-level orchestrator for harmonic-enhanced Kyber operations.
@@ -738,12 +702,7 @@ class HarmonicKyberOrchestrator:
     AETHERMOORE harmonic security enhancement.
     """
 
-    def __init__(
-        self,
-        dimension: int = DEFAULT_D_MAX,
-        R: float = DEFAULT_R,
-        fast_mode: bool = True
-    ):
+    def __init__(self, dimension: int = DEFAULT_D_MAX, R: float = DEFAULT_R, fast_mode: bool = True):
         """
         Initialize orchestrator.
 
@@ -761,10 +720,7 @@ class HarmonicKyberOrchestrator:
         self.sig_keypair = Dilithium3.generate_keypair()
 
     def create_session(
-        self,
-        recipient_public_key: bytes,
-        vector_key: Optional[Vector6DKey] = None,
-        dimension: Optional[int] = None
+        self, recipient_public_key: bytes, vector_key: Optional[Vector6DKey] = None, dimension: Optional[int] = None
     ) -> HarmonicPQCSession:
         """
         Create a harmonic PQC session with a recipient.
@@ -787,13 +743,11 @@ class HarmonicKyberOrchestrator:
             dimension=d,
             R=self.R,
             vector_key=vk,
-            fast_mode=self.fast_mode
+            fast_mode=self.fast_mode,
         )
 
     def verify_session(
-        self,
-        session: HarmonicPQCSession,
-        initiator_sig_public_key: bytes
+        self, session: HarmonicPQCSession, initiator_sig_public_key: bytes
     ) -> Optional[HarmonicPQCSession]:
         """
         Verify an incoming session.
@@ -809,7 +763,7 @@ class HarmonicKyberOrchestrator:
             session=session,
             responder_kem_keypair=self.kem_keypair,
             initiator_sig_public_key=initiator_sig_public_key,
-            fast_mode=self.fast_mode
+            fast_mode=self.fast_mode,
         )
 
     def get_public_keys(self) -> Tuple[bytes, bytes]:

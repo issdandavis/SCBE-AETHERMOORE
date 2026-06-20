@@ -13,6 +13,7 @@ Commands:
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import functools
 import hashlib
 import importlib.util
@@ -32,11 +33,12 @@ from urllib.request import Request, urlopen
 from urllib.parse import parse_qs, urlsplit, urlunsplit
 from pathlib import Path
 
-
 DEFAULT_REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_PAD_ROOT = Path(".scbe") / "polly-pads"
 DEFAULT_AGENT_REGISTRY = Path(".scbe") / "agent_squad.json"
 DEFAULT_CLI_CONTEXT = Path(".scbe") / "cli-context.json"
+DEFAULT_ROOT_LAYOUT_CONFIG = Path("config") / "repo_consolidation_inventory.json"
+DEFAULT_OFFLINE_BUNDLE_PROFILES = Path("config") / "offline_bundle_profiles.json"
 DEFAULT_NOTEBOOKLM_PAD_ID = "notebooklm-main"
 DEFAULT_NOTEBOOKLM_URL = "https://notebooklm.google.com/notebook/bf1e9a1b-b49c-4343-8f0e-8494546e4f24"
 SENSITIVE_METADATA_ITERATIONS = 120_000
@@ -494,7 +496,6 @@ def _load_model_training_module_cached(repo_root_str: str):
     return module
 
 
-
 @functools.lru_cache(maxsize=4)
 def _load_agentbus_module(repo_root_str: str):
     repo_root = Path(repo_root_str)
@@ -551,6 +552,7 @@ def _load_free_llm_routes_module(repo_root: Path):
     except Exception:
         return None
     return free_llm_routes
+
 
 def _tongue_attestation(repo_root: Path, tongue: str, payload: bytes, max_tokens: int = 6) -> str:
     module = _load_tongues_module(repo_root)
@@ -849,6 +851,13 @@ def _load_flow_json(path: Path) -> dict[str, object]:
 def _ensure_flow_plan_packet(payload: dict[str, object]) -> None:
     if payload.get("schema_version") != "scbe_flow_plan_v1":
         raise ValueError("Input file is not an SCBE flow plan packet.")
+
+
+def _ensure_work_packet_bundle(payload: dict[str, object]) -> None:
+    if payload.get("schema_version") != "scbe_work_packet_bundle_v1":
+        raise ValueError("Input file is not an SCBE work packet bundle.")
+    if not isinstance(payload.get("packets"), list):
+        raise ValueError("Work packet bundle is missing packets.")
 
 
 def _role_paths(owner_role: str) -> dict[str, list[str]]:
@@ -1258,6 +1267,73 @@ def _step_support_cells(step: dict[str, object], count: int) -> list[dict[str, o
     return cells
 
 
+def _packet_workingness_gate(step: dict[str, object]) -> dict[str, object]:
+    return {
+        "authority": "workingness_over_consensus",
+        "consensus_role": "advisory_signal_only",
+        "pass_condition": str(step["acceptance"]),
+        "evidence_required": [
+            "changed_files_or_none",
+            "commands_run",
+            "command_results",
+            "artifact_paths",
+            "known_failures_or_empty",
+        ],
+        "retry_rule": (
+            "If evidence fails, update the failure notes and retry from the smallest affected packet; "
+            "do not replay completed dependency packets unless their inputs changed."
+        ),
+    }
+
+
+def _packet_handoff_contract(step: dict[str, object], task: str) -> dict[str, object]:
+    return {
+        "who": str(step["owner_agent_id"]),
+        "what": f"{step['name']} for {task}",
+        "when": {
+            "start_after": list(step["depends_on"]),
+            "finish_when": str(step["acceptance"]),
+        },
+        "where": {
+            "owner_role": str(step["owner_role"]),
+            "owner_tongue": str(step["owner_tongue"]),
+            "handoff_tag": str(step["handoff_tag"]),
+        },
+        "why": list(step["deliverables"]),
+        "how": [
+            "read declared inputs first",
+            "operate only inside allowed paths",
+            "return evidence in the required format",
+            "escalate instead of guessing when blocked",
+        ],
+    }
+
+
+def _build_coordination_contract(work_packets: list[dict[str, object]]) -> dict[str, object]:
+    owners = sorted({str(packet["owner_agent_id"]) for packet in work_packets})
+    blocked_paths = sorted({str(path) for packet in work_packets for path in packet.get("blocked_paths", [])})
+    return {
+        "schema_version": "scbe_coordination_contract_v1",
+        "policy": "many agents may work in parallel, but one packet owns one bounded responsibility",
+        "agent_count": len(owners),
+        "packet_count": len(work_packets),
+        "owners": owners,
+        "proof_authority": "runnable checks, artifacts, and changed files outrank model agreement",
+        "consensus_policy": (
+            "Consensus helps identify risk and overlap, but it cannot block a packet that has satisfied "
+            "its workingness gate unless a hard safety rule is triggered."
+        ),
+        "blocked_paths": blocked_paths,
+        "completion_checklist": [
+            "every packet status is completed or intentionally blocked",
+            "all dependencies point to packet step ids that exist",
+            "changed files stay inside allowed paths",
+            "proof commands or artifacts are present for completed packets",
+            "known failures are captured with retry guidance",
+        ],
+    }
+
+
 def _build_work_packets(flow_packet: dict[str, object], support_units: int) -> list[dict[str, object]]:
     packets: list[dict[str, object]] = []
     task = str(flow_packet["task"])
@@ -1306,6 +1382,8 @@ def _build_work_packets(flow_packet: dict[str, object], support_units: int) -> l
                     ],
                     "status_values": ["completed", "blocked", "needs_review"],
                 },
+                "handoff_contract": _packet_handoff_contract(step, task),
+                "workingness_gate": _packet_workingness_gate(step),
                 "support_cells": _step_support_cells(step, support_units),
                 "telemetry": {
                     "lane": "system-cli",
@@ -1337,7 +1415,6 @@ def _execute_runtime(args: argparse.Namespace, *, app_entry: dict | None = None)
     run_id = uuid.uuid4().hex[:12]
     agent_id = getattr(args, "agent_id", "") or ""
     pad_dir: Path | None = None
-    manifest: dict | None = None
     if agent_id:
         if not _ensure_agent_id(agent_id):
             print("Invalid --agent-id. Use 2-64 chars: letters, numbers, . _ -")
@@ -1677,7 +1754,11 @@ def _resolve_agent_api_key(agent: dict, env_cache: dict[str, str]) -> tuple[str 
         env_var = (
             "ANTHROPIC_API_KEY"
             if provider == "anthropic"
-            else "OPENAI_API_KEY" if provider in {"openai", "openai-compatible"} else "GOOGLE_API_KEY" if provider == "gemini" else None
+            else (
+                "OPENAI_API_KEY"
+                if provider in {"openai", "openai-compatible"}
+                else "GOOGLE_API_KEY" if provider == "gemini" else None
+            )
         )
     if not env_var:
         return None, None
@@ -1714,10 +1795,7 @@ def _build_agent_messages(agent: dict, prompt: str, repo_root: Path) -> list[dic
     user_prompt = prompt
     if context_text:
         user_prompt = (
-            "Persistent context from Obsidian memory note:\n"
-            f"{context_text}\n\n"
-            "Current user turn:\n"
-            f"{prompt}"
+            "Persistent context from Obsidian memory note:\n" f"{context_text}\n\n" "Current user turn:\n" f"{prompt}"
         )
     return [
         {"role": "system", "content": system_prompt},
@@ -1814,7 +1892,8 @@ def _call_openai_agent(
             "ok": False,
             "agent_id": agent.get("agent_id"),
             "provider": provider,
-            "error": f"HTTP {exc.code}: upstream_error body_present={body_summary['present']} body_length={body_summary['length']}",
+            "error": f"HTTP {exc.code}: upstream_error body_present={body_summary['present']} "
+            f"body_length={body_summary['length']}",
         }
     except Exception as exc:  # pragma: no cover - defensive
         return {
@@ -2209,6 +2288,9 @@ def cmd_self_improve(args: argparse.Namespace) -> int:
 
 
 def cmd_web(args: argparse.Namespace) -> int:
+    if args.engine == "parallel":
+        return cmd_web_parallel(args)
+
     script = args.repo_root / "scripts" / "agentic_web_tool.py"
     if not script.exists():
         print(f"Missing web tool script: {script}")
@@ -2235,6 +2317,103 @@ def cmd_web(args: argparse.Namespace) -> int:
     return _run_script(script, base)
 
 
+def _run_parallel_cli_command(argv: list[str], cwd: Path | None = None) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        argv,
+        cwd=str(cwd or DEFAULT_REPO_ROOT),
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
+
+
+def _parallel_cli_ready(repo_root: Path) -> tuple[bool, str]:
+    if not shutil.which("parallel-cli"):
+        return False, "parallel-cli is not installed. Run `/parallel-setup`."
+
+    auth = _run_parallel_cli_command(["parallel-cli", "auth"], cwd=repo_root)
+    auth_output = f"{auth.stdout}\n{auth.stderr}".lower()
+    if "not authenticated" in auth_output:
+        return False, "parallel-cli is not authenticated. Run `parallel-cli login`."
+    return True, ""
+
+
+def cmd_web_parallel(args: argparse.Namespace) -> int:
+    if args.web_cmd != "search":
+        payload = {
+            "schema_version": "scbe_parallel_web_error_v1",
+            "engine": "parallel",
+            "error": "Parallel engine currently supports only `web search`.",
+        }
+        _json_result(args, payload, ["Parallel engine currently supports only `web search`."])
+        return 2
+
+    if not args.query:
+        payload = {
+            "schema_version": "scbe_parallel_web_error_v1",
+            "engine": "parallel",
+            "error": "Missing --query",
+        }
+        _json_result(args, payload, ["Missing --query"])
+        return 2
+
+    is_ready, issue = _parallel_cli_ready(args.repo_root)
+    if not is_ready:
+        payload = {
+            "schema_version": "scbe_parallel_web_error_v1",
+            "engine": "parallel",
+            "error": issue,
+        }
+        _json_result(args, payload, [issue])
+        return 2
+
+    output_dir = _repo_path(args.repo_root, str(args.output_dir))
+    output_dir.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    out_file = output_dir / f"parallel-search-{stamp}.json"
+
+    cmd = [
+        "parallel-cli",
+        "search",
+        args.query,
+        "--json",
+        "--max-results",
+        str(args.max_results),
+        "--excerpt-max-chars-total",
+        "27000",
+        "-o",
+        str(out_file),
+    ]
+    result = _run_parallel_cli_command(cmd, cwd=args.repo_root)
+    ok = result.returncode == 0
+
+    payload = {
+        "schema_version": "scbe_parallel_web_search_v1",
+        "engine": "parallel",
+        "ok": ok,
+        "query": args.query,
+        "max_results": args.max_results,
+        "output_file": str(out_file),
+        "return_code": result.returncode,
+        "stdout_tail": result.stdout[-1500:] if result.stdout else "",
+        "stderr_tail": result.stderr[-1500:] if result.stderr else "",
+    }
+    lines = [
+        "Parallel web search complete" if ok else "Parallel web search failed",
+        "-" * 28,
+        f"Query: {args.query}",
+        f"Output: {out_file}",
+        f"Return code: {result.returncode}",
+    ]
+    if not ok and result.stderr.strip():
+        lines.append("Error:")
+        lines.append(result.stderr.strip()[:300])
+    _json_result(args, payload, lines)
+    return 0 if ok else 1
+
+
 def cmd_antivirus(args: argparse.Namespace) -> int:
     script = args.repo_root / "scripts" / "agentic_antivirus.py"
     if not script.exists():
@@ -2256,6 +2435,26 @@ def cmd_antivirus(args: argparse.Namespace) -> int:
             *(["--geoseal"] if args.geoseal else []),
         ],
     )
+
+
+def cmd_antivirus_fuse(args: argparse.Namespace) -> int:
+    script = args.repo_root / "scripts" / "security" / "av_signal_fusion.py"
+    if not script.exists():
+        print(f"Missing AV signal fusion script: {script}")
+        return 1
+    command = [
+        "--input",
+        str(args.input),
+        "--provider",
+        str(args.provider),
+        "--output-dir",
+        str(args.output_dir),
+    ]
+    if args.artifact:
+        command.extend(["--artifact", str(args.artifact)])
+    if args.print_json:
+        command.append("--json")
+    return _run_script(script, command)
 
 
 def cmd_aetherauth(args: argparse.Namespace) -> int:
@@ -2615,7 +2814,6 @@ def cmd_agent_cycle(args: argparse.Namespace) -> int:
     return run_turn(prompt)
 
 
-
 def cmd_agentbus_run(args: argparse.Namespace) -> int:
     repo_root = args.repo_root
     agentbus = _load_agentbus_module(str(repo_root.resolve()))
@@ -2643,14 +2841,70 @@ def cmd_agentbus_run(args: argparse.Namespace) -> int:
         operation_command=args.operation_command,
     )
 
+    hydra_bridge_path = output_dir / "hydra_tokenizer_bridge.json"
+    hydra_bridge_summary: dict[str, object] = {"enabled": False}
+    try:
+        from src.coding_spine.agent_tool_bridge import build_hydra_tokenizer_bridge_v1
+
+        hydra_bridge = build_hydra_tokenizer_bridge_v1(
+            goal=args.task,
+            preferred_language="python",
+            permission_mode="observe" if args.privacy == "local_only" else "cloud-dispatch",
+        )
+        token_rows = hydra_bridge.get("tokenizer_packet", {}).get("rows", [])
+        hydra_bridge_summary = {
+            "enabled": True,
+            "schema_version": hydra_bridge.get("schema_version"),
+            "goal_sha256": hashlib.sha256(args.task.encode("utf-8")).hexdigest(),
+            "selected_language": hydra_bridge.get("selected_language", {}),
+            "head_count": len(hydra_bridge.get("hydra_heads", [])),
+            "heads": [
+                {"head": row.get("head"), "tongue": row.get("tongue")}
+                for row in hydra_bridge.get("hydra_heads", [])
+                if isinstance(row, dict)
+            ],
+            "tokenizer_packet": {
+                "payload_sha256": hydra_bridge.get("tokenizer_packet", {}).get("payload_sha256"),
+                "selected_tongue": hydra_bridge.get("tokenizer_packet", {}).get("selected_tongue"),
+                "row_count": len(token_rows) if isinstance(token_rows, list) else 0,
+                "token_sha256_prefixes": [
+                    str(row.get("token_sha256", ""))[:16] for row in token_rows if isinstance(row, dict)
+                ],
+            },
+            "artifact": _display_path(hydra_bridge_path, repo_root),
+        }
+        hydra_bridge_path.write_text(
+            json.dumps(
+                {
+                    **hydra_bridge,
+                    "goal_excerpt": "",
+                    "privacy_note": "Agent-bus artifact strips raw task text; use goal_sha256 in summary.",
+                },
+                indent=2,
+                ensure_ascii=True,
+            ),
+            encoding="utf-8",
+        )
+        round_packet["hydra_tokenizer_bridge"] = hydra_bridge_summary
+        latest_round_path = mirror_root / series_id / "latest_round.json"
+        latest_round_path.write_text(json.dumps(round_packet, indent=2, ensure_ascii=True), encoding="utf-8")
+    except Exception as exc:  # noqa: BLE001
+        hydra_bridge_summary = {
+            "enabled": False,
+            "error": exc.__class__.__name__,
+            "reason": str(exc)[:240],
+        }
+        round_packet["hydra_tokenizer_bridge"] = hydra_bridge_summary
+
     dispatch_payload: dict[str, object] = {"enabled": False}
     if args.dispatch:
         free_llm = _load_free_llm_routes_module(repo_root)
         if free_llm is None:
             print("Free LLM dispatch module is unavailable.")
             return 2
-        provider = args.dispatch_provider or str(round_packet["selected_provider"])
-        if provider not in {"offline", "ollama", "huggingface"}:
+        requested_provider = (args.dispatch_provider or "auto").strip().lower()
+        provider = None if requested_provider in {"", "auto"} else requested_provider
+        if provider is not None and provider not in {"offline", "ollama", "huggingface"}:
             provider = "offline"
         free_llm.REPO_ROOT = repo_root
         response = free_llm.dispatch_free_llm_request(
@@ -2667,12 +2921,14 @@ def cmd_agentbus_run(args: argparse.Namespace) -> int:
             origin="inside",
         )
         data = dict(response.get("data", {}))
+        route = data.get("route", {}) if isinstance(data.get("route"), dict) else {}
         event = data.get("bus_event", {}) if isinstance(data.get("bus_event"), dict) else {}
         dispatch_payload = {
             "enabled": True,
-            "provider": provider,
+            "provider": route.get("provider", provider or "auto"),
+            "requested_provider": requested_provider,
             "event_id": event.get("event_id"),
-            "route": data.get("route", {}),
+            "route": route,
             "result": data.get("result", {}),
         }
 
@@ -2680,10 +2936,13 @@ def cmd_agentbus_run(args: argparse.Namespace) -> int:
     dispatch_log = repo_root / ".scbe" / "packets" / "free_llm_dispatch.jsonl"
     tracked_paths = [
         latest_round,
+        hydra_bridge_path,
         dispatch_log,
         repo_root / "scripts" / "system" / "mirror_room_agent_bus.py",
         repo_root / "scripts" / "system" / "observable_state_watcher.py",
         repo_root / "src" / "tokenizer" / "topological_operator_tree.py",
+        repo_root / "src" / "coding_spine" / "agent_tool_bridge.py",
+        repo_root / "src" / "geoseal_cli.py",
     ]
     snapshot = tracker.build_snapshot(tracked_paths, label=f"agentbus-user-run-{series_id}", repo_root=repo_root)
     tracker_output_dir = _repo_path(repo_root, args.tracker_output_dir)
@@ -2711,9 +2970,11 @@ def cmd_agentbus_run(args: argparse.Namespace) -> int:
         "primary_bus": round_packet.get("primary_bus", []),
         "secondary_bus": round_packet.get("secondary_bus", []),
         "tertiary_bus_count": len(round_packet.get("tertiary_bus", [])),
+        "hydra_tokenizer_bridge": hydra_bridge_summary,
         "dispatch": dispatch_payload,
         "artifacts": {
             "latest_round": _display_path(latest_round, repo_root),
+            "hydra_tokenizer_bridge": _display_path(hydra_bridge_path, repo_root),
             "tracker_snapshot": _display_path(tracker_paths["snapshot"], repo_root),
             "tracker_changed": _display_path(tracker_paths["changed"], repo_root),
             "watcher": _display_path(watcher_output, repo_root),
@@ -2733,6 +2994,7 @@ def cmd_agentbus_run(args: argparse.Namespace) -> int:
         f"  Summary:  {summary['artifacts']['summary']}",
     ]
     return _json_result(args, summary, lines)
+
 
 def cmd_flow_plan(args: argparse.Namespace) -> int:
     repo_root = args.repo_root
@@ -2905,6 +3167,7 @@ def cmd_flow_packetize(args: argparse.Namespace) -> int:
         "formation": flow_packet["formation"],
         "support_units_per_step": support_units,
         "packet_count": len(work_packets),
+        "coordination_contract": _build_coordination_contract(work_packets),
         "packets": work_packets,
         "action_map": {},
     }
@@ -2989,6 +3252,636 @@ def cmd_flow_packetize(args: argparse.Namespace) -> int:
     ]
     if packet_manifest["action_map"].get("enabled"):
         lines.append(f"Action map: {packet_manifest['action_map']['run_id']}")
+    return _json_result(args, payload, lines)
+
+
+def _default_flow_status_output_path(repo_root: Path, packets_path: Path) -> Path:
+    return repo_root / "artifacts" / "flow_status" / f"{packets_path.stem}-status.json"
+
+
+def _default_flow_status_markdown_path(output_path: Path) -> Path:
+    return output_path.with_suffix(".md")
+
+
+def _packet_dispatch_command(packet: dict[str, object], repo_root: Path) -> list[str]:
+    task_type_by_role = {
+        "Architecture Curator": "research",
+        "Documentation Specialist": "research",
+        "Implementation Engineer": "coding",
+        "Integration Coordinator": "governance",
+        "Security Auditor": "review",
+        "Telemetry Archivist": "training",
+    }
+    role = str(packet.get("owner_role") or "")
+    task_type = task_type_by_role.get(role, "general")
+    return [
+        "python",
+        "scripts/scbe-system-cli.py",
+        "--repo-root",
+        _display_path(repo_root, repo_root),
+        "agentbus",
+        "run",
+        "--task",
+        str(packet.get("goal") or packet.get("task") or ""),
+        "--task-type",
+        task_type,
+        "--series-id",
+        _flow_slug(str(packet.get("task_id") or "packet"), fallback="packet"),
+        "--privacy",
+        "local_only",
+        "--json",
+    ]
+
+
+def _build_flow_status_board(
+    bundle: dict[str, object],
+    repo_root: Path,
+    completed_steps: set[str],
+    blocked_steps: set[str],
+) -> dict[str, object]:
+    packets = list(bundle.get("packets", []))
+    known_steps = {str(packet.get("step_id")) for packet in packets}
+    rows: list[dict[str, object]] = []
+    for packet in packets:
+        step_id = str(packet.get("step_id") or "")
+        dependencies = [str(dep) for dep in packet.get("dependencies", [])]
+        missing_dependencies = [dep for dep in dependencies if dep not in known_steps]
+        unmet_dependencies = [dep for dep in dependencies if dep not in completed_steps]
+        if step_id in blocked_steps:
+            status = "blocked"
+        elif step_id in completed_steps:
+            status = "completed"
+        elif missing_dependencies:
+            status = "invalid"
+        elif unmet_dependencies:
+            status = "waiting"
+        else:
+            status = "ready"
+        rows.append(
+            {
+                "task_id": packet.get("task_id"),
+                "step_id": step_id,
+                "status": status,
+                "owner_agent_id": packet.get("owner_agent_id"),
+                "owner_role": packet.get("owner_role"),
+                "goal": packet.get("goal"),
+                "dependencies": dependencies,
+                "unmet_dependencies": unmet_dependencies,
+                "missing_dependencies": missing_dependencies,
+                "allowed_paths": packet.get("allowed_paths", []),
+                "blocked_paths": packet.get("blocked_paths", []),
+                "workingness_gate": packet.get("workingness_gate", {}),
+                "dispatch_command": _packet_dispatch_command(packet, repo_root),
+            }
+        )
+    counts = {
+        status: sum(1 for row in rows if row["status"] == status) for status in sorted({row["status"] for row in rows})
+    }
+    return {
+        "schema_version": "scbe_flow_status_board_v1",
+        "generated_at": _now_iso(),
+        "source_bundle": str(bundle.get("source_plan", "")),
+        "task": bundle.get("task"),
+        "workflow_template": bundle.get("workflow_template"),
+        "coordination_contract": bundle.get("coordination_contract", {}),
+        "counts": counts,
+        "ready_count": counts.get("ready", 0),
+        "completed_steps": sorted(completed_steps),
+        "blocked_steps": sorted(blocked_steps),
+        "rows": rows,
+        "next_packets": [row for row in rows if row["status"] == "ready"],
+    }
+
+
+def _render_flow_status_markdown(board: dict[str, object]) -> str:
+    rows = list(board.get("rows", []))
+    lines = [
+        "# SCBE Flow Status Board",
+        "",
+        f"Task: {board.get('task')}",
+        f"Template: `{board.get('workflow_template')}`",
+        f"Ready packets: `{board.get('ready_count')}`",
+        "",
+        "## Packet State",
+        "",
+        "| Step | Status | Owner | Goal |",
+        "| --- | --- | --- | --- |",
+    ]
+    for row in rows:
+        goal = str(row.get("goal") or "").replace("|", "\\|")
+        lines.append(f"| `{row.get('step_id')}` | `{row.get('status')}` | `{row.get('owner_agent_id')}` | {goal} |")
+    lines.extend(["", "## Next Work"])
+    ready_rows = [row for row in rows if row.get("status") == "ready"]
+    if not ready_rows:
+        lines.append("- No ready packets.")
+    for row in ready_rows:
+        lines.append(f"- `{row.get('step_id')}` owned by `{row.get('owner_agent_id')}`")
+        lines.append(f"  - Goal: {row.get('goal')}")
+        lines.append(f"  - Dispatch argv: `{json.dumps(row.get('dispatch_command', []), ensure_ascii=True)}`")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def _flow_tail(text: str, limit: int = 1600) -> str:
+    cleaned = str(text or "").strip()
+    if len(cleaned) <= limit:
+        return cleaned
+    return cleaned[-limit:]
+
+
+def _write_flow_status_outputs(
+    board: dict[str, object],
+    output_path: Path,
+    markdown_path: Path,
+) -> None:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    markdown_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(board, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+    markdown_path.write_text(_render_flow_status_markdown(board), encoding="utf-8")
+
+
+def _execute_flow_packet(
+    packet: dict[str, object],
+    repo_root: Path,
+    timeout_seconds: int,
+    *,
+    dry_run: bool = False,
+) -> dict[str, object]:
+    command = [str(part) for part in packet.get("dispatch_command", [])]
+    if not command:
+        return {
+            "schema_version": "scbe_flow_run_next_result_v1",
+            "executed": False,
+            "dry_run": dry_run,
+            "step_id": packet.get("step_id"),
+            "task_id": packet.get("task_id"),
+            "command": command,
+            "returncode": 2,
+            "stdout_tail": "",
+            "stderr_tail": "Ready packet is missing dispatch_command.",
+        }
+
+    if dry_run:
+        return {
+            "schema_version": "scbe_flow_run_next_result_v1",
+            "executed": False,
+            "dry_run": True,
+            "step_id": packet["step_id"],
+            "task_id": packet["task_id"],
+            "command": command,
+            "returncode": None,
+            "stdout_tail": "",
+            "stderr_tail": "",
+        }
+
+    try:
+        proc = subprocess.run(
+            command,
+            cwd=str(repo_root),
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=max(1, int(timeout_seconds)),
+            check=False,
+        )
+        return {
+            "schema_version": "scbe_flow_run_next_result_v1",
+            "executed": True,
+            "dry_run": False,
+            "step_id": packet["step_id"],
+            "task_id": packet["task_id"],
+            "command": command,
+            "returncode": proc.returncode,
+            "stdout_tail": _flow_tail(proc.stdout),
+            "stderr_tail": _flow_tail(proc.stderr),
+        }
+    except subprocess.TimeoutExpired as exc:
+        return {
+            "schema_version": "scbe_flow_run_next_result_v1",
+            "executed": True,
+            "dry_run": False,
+            "step_id": packet["step_id"],
+            "task_id": packet["task_id"],
+            "command": command,
+            "returncode": 124,
+            "stdout_tail": _flow_tail(exc.stdout or ""),
+            "stderr_tail": _flow_tail(exc.stderr or "flow packet execution timed out"),
+        }
+
+
+def cmd_flow_status(args: argparse.Namespace) -> int:
+    repo_root = args.repo_root
+    packets_path = _repo_path(repo_root, args.packets)
+    if not packets_path.exists():
+        print(f"Work packet bundle not found: {packets_path}")
+        return 2
+    try:
+        bundle = _load_flow_json(packets_path)
+        _ensure_work_packet_bundle(bundle)
+    except (json.JSONDecodeError, ValueError) as exc:
+        print(str(exc))
+        return 2
+
+    completed_steps = {str(item).strip() for item in args.completed if str(item).strip()}
+    blocked_steps = {str(item).strip() for item in args.blocked if str(item).strip()}
+    board = _build_flow_status_board(bundle, repo_root, completed_steps, blocked_steps)
+
+    output_path = (
+        _repo_path(repo_root, args.output) if args.output else _default_flow_status_output_path(repo_root, packets_path)
+    )
+    markdown_path = (
+        _repo_path(repo_root, args.markdown_output)
+        if args.markdown_output
+        else _default_flow_status_markdown_path(output_path)
+    )
+    _write_flow_status_outputs(board, output_path, markdown_path)
+
+    payload = {
+        "schema_version": "scbe_flow_status_result_v1",
+        "output_path": _display_path(output_path, repo_root),
+        "markdown_path": _display_path(markdown_path, repo_root),
+        "ready_count": board["ready_count"],
+        "counts": board["counts"],
+        "next_packet_ids": [row["task_id"] for row in board["next_packets"]],
+    }
+    lines = [
+        f"Saved flow status: {output_path}",
+        f"Saved operator board: {markdown_path}",
+        f"Ready packets: {board['ready_count']}",
+    ]
+    return _json_result(args, payload, lines)
+
+
+def cmd_flow_run_next(args: argparse.Namespace) -> int:
+    repo_root = args.repo_root
+    packets_path = _repo_path(repo_root, args.packets)
+    if not packets_path.exists():
+        print(f"Work packet bundle not found: {packets_path}")
+        return 2
+    try:
+        bundle = _load_flow_json(packets_path)
+        _ensure_work_packet_bundle(bundle)
+    except (json.JSONDecodeError, ValueError) as exc:
+        print(str(exc))
+        return 2
+
+    completed_steps = {str(item).strip() for item in args.completed if str(item).strip()}
+    blocked_steps = {str(item).strip() for item in args.blocked if str(item).strip()}
+    before_board = _build_flow_status_board(bundle, repo_root, completed_steps, blocked_steps)
+    ready_packets = list(before_board["next_packets"])
+
+    output_path = (
+        _repo_path(repo_root, args.output) if args.output else _default_flow_status_output_path(repo_root, packets_path)
+    )
+    markdown_path = (
+        _repo_path(repo_root, args.markdown_output)
+        if args.markdown_output
+        else _default_flow_status_markdown_path(output_path)
+    )
+    run_output_path = (
+        _repo_path(repo_root, args.run_output)
+        if args.run_output
+        else output_path.with_name(f"{output_path.stem}-run.json")
+    )
+
+    if not ready_packets:
+        before_board["run_next"] = {
+            "schema_version": "scbe_flow_run_next_result_v1",
+            "executed": False,
+            "reason": "no_ready_packet",
+        }
+        _write_flow_status_outputs(before_board, output_path, markdown_path)
+        run_output_path.parent.mkdir(parents=True, exist_ok=True)
+        run_output_path.write_text(
+            json.dumps(before_board["run_next"], indent=2, ensure_ascii=True) + "\n",
+            encoding="utf-8",
+        )
+        payload = {
+            "schema_version": "scbe_flow_run_next_result_v1",
+            "executed": False,
+            "reason": "no_ready_packet",
+            "output_path": _display_path(output_path, repo_root),
+            "markdown_path": _display_path(markdown_path, repo_root),
+            "run_output": _display_path(run_output_path, repo_root),
+        }
+        return _json_result(args, payload, ["No ready packet."])
+
+    packet = ready_packets[0]
+
+    run_result = _execute_flow_packet(
+        packet,
+        repo_root,
+        args.timeout_seconds,
+        dry_run=bool(args.dry_run),
+    )
+    after_completed = set(completed_steps)
+    after_blocked = set(blocked_steps)
+    if not args.dry_run:
+        if run_result["returncode"] == 0:
+            after_completed.add(str(packet["step_id"]))
+        else:
+            after_blocked.add(str(packet["step_id"]))
+
+    after_board = _build_flow_status_board(bundle, repo_root, after_completed, after_blocked)
+    run_result.update(
+        {
+            "completed_steps": after_board["completed_steps"],
+            "blocked_steps": after_board["blocked_steps"],
+            "ready_count": after_board["ready_count"],
+            "next_packet_ids": [row["task_id"] for row in after_board["next_packets"]],
+        }
+    )
+    after_board["run_next"] = run_result
+    _write_flow_status_outputs(after_board, output_path, markdown_path)
+    run_output_path.parent.mkdir(parents=True, exist_ok=True)
+    run_output_path.write_text(json.dumps(run_result, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+
+    payload = {
+        "schema_version": "scbe_flow_run_next_result_v1",
+        "executed": run_result["executed"],
+        "dry_run": run_result["dry_run"],
+        "step_id": run_result["step_id"],
+        "task_id": run_result["task_id"],
+        "returncode": run_result["returncode"],
+        "completed_steps": after_board["completed_steps"],
+        "blocked_steps": after_board["blocked_steps"],
+        "ready_count": after_board["ready_count"],
+        "next_packet_ids": [row["task_id"] for row in after_board["next_packets"]],
+        "output_path": _display_path(output_path, repo_root),
+        "markdown_path": _display_path(markdown_path, repo_root),
+        "run_output": _display_path(run_output_path, repo_root),
+    }
+    lines = [
+        f"Ran packet: {run_result['step_id']}",
+        f"Return code: {run_result['returncode']}",
+        f"Saved flow status: {output_path}",
+        f"Saved run result: {run_output_path}",
+    ]
+    return _json_result(args, payload, lines)
+
+
+def cmd_flow_continue(args: argparse.Namespace) -> int:
+    repo_root = args.repo_root
+    packets_path = _repo_path(repo_root, args.packets)
+    if not packets_path.exists():
+        print(f"Work packet bundle not found: {packets_path}")
+        return 2
+    try:
+        bundle = _load_flow_json(packets_path)
+        _ensure_work_packet_bundle(bundle)
+    except (json.JSONDecodeError, ValueError) as exc:
+        print(str(exc))
+        return 2
+
+    completed_steps = {str(item).strip() for item in args.completed if str(item).strip()}
+    blocked_steps = {str(item).strip() for item in args.blocked if str(item).strip()}
+    output_path = (
+        _repo_path(repo_root, args.output) if args.output else _default_flow_status_output_path(repo_root, packets_path)
+    )
+    markdown_path = (
+        _repo_path(repo_root, args.markdown_output)
+        if args.markdown_output
+        else _default_flow_status_markdown_path(output_path)
+    )
+    run_output_path = (
+        _repo_path(repo_root, args.run_output)
+        if args.run_output
+        else output_path.with_name(f"{output_path.stem}-continue.json")
+    )
+
+    runs: list[dict[str, object]] = []
+    stop_reason = "max_steps_reached"
+    max_steps = max(1, int(args.max_steps))
+
+    for _ in range(max_steps):
+        board = _build_flow_status_board(bundle, repo_root, completed_steps, blocked_steps)
+        ready_packets = list(board["next_packets"])
+        if blocked_steps:
+            stop_reason = "blocked"
+            break
+        if not ready_packets:
+            counts = dict(board.get("counts", {}))
+            if counts.get("waiting", 0) or counts.get("invalid", 0):
+                stop_reason = "no_ready_packet"
+            else:
+                stop_reason = "completed"
+            break
+
+        packet = ready_packets[0]
+        run_result = _execute_flow_packet(
+            packet,
+            repo_root,
+            args.timeout_seconds,
+            dry_run=bool(args.dry_run),
+        )
+        runs.append(run_result)
+        if args.dry_run:
+            stop_reason = "dry_run"
+            break
+        if run_result["returncode"] == 0:
+            completed_steps.add(str(packet["step_id"]))
+        else:
+            blocked_steps.add(str(packet["step_id"]))
+            stop_reason = "blocked"
+            break
+
+    final_board = _build_flow_status_board(bundle, repo_root, completed_steps, blocked_steps)
+    if stop_reason == "max_steps_reached" and not final_board["next_packets"]:
+        stop_reason = "completed" if not blocked_steps else "blocked"
+    continue_result = {
+        "schema_version": "scbe_flow_continue_result_v1",
+        "executed_count": sum(1 for run in runs if run.get("executed")),
+        "dry_run": bool(args.dry_run),
+        "stop_reason": stop_reason,
+        "max_steps": max_steps,
+        "completed_steps": final_board["completed_steps"],
+        "blocked_steps": final_board["blocked_steps"],
+        "ready_count": final_board["ready_count"],
+        "next_packet_ids": [row["task_id"] for row in final_board["next_packets"]],
+        "runs": runs,
+    }
+    final_board["flow_continue"] = continue_result
+    _write_flow_status_outputs(final_board, output_path, markdown_path)
+    run_output_path.parent.mkdir(parents=True, exist_ok=True)
+    run_output_path.write_text(json.dumps(continue_result, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+
+    payload = {
+        "schema_version": "scbe_flow_continue_result_v1",
+        "executed_count": continue_result["executed_count"],
+        "dry_run": continue_result["dry_run"],
+        "stop_reason": stop_reason,
+        "completed_steps": final_board["completed_steps"],
+        "blocked_steps": final_board["blocked_steps"],
+        "ready_count": final_board["ready_count"],
+        "next_packet_ids": continue_result["next_packet_ids"],
+        "output_path": _display_path(output_path, repo_root),
+        "markdown_path": _display_path(markdown_path, repo_root),
+        "run_output": _display_path(run_output_path, repo_root),
+    }
+    lines = [
+        f"Flow continue stopped: {stop_reason}",
+        f"Executed packets: {continue_result['executed_count']}",
+        f"Completed steps: {len(final_board['completed_steps'])}",
+        f"Blocked steps: {len(final_board['blocked_steps'])}",
+        f"Saved flow status: {output_path}",
+        f"Saved continue result: {run_output_path}",
+    ]
+    return _json_result(args, payload, lines)
+
+
+def _flow_report_verdict(board: dict[str, object]) -> tuple[str, str]:
+    blocked_steps = list(board.get("blocked_steps", []))
+    ready_count = int(board.get("ready_count") or 0)
+    rows = list(board.get("rows", []))
+    if blocked_steps:
+        return "blocked", "retry_or_escalate"
+    if ready_count:
+        return "in_progress", "run_continue"
+    if any(row.get("status") in {"waiting", "invalid"} for row in rows):
+        return "waiting", "resolve_dependencies"
+    return "completed", "archive_or_deliver"
+
+
+def _build_flow_report(board: dict[str, object], status_path: Path, repo_root: Path) -> dict[str, object]:
+    rows = list(board.get("rows", []))
+    counts = dict(board.get("counts", {}))
+    verdict, next_action = _flow_report_verdict(board)
+    continue_result = dict(board.get("flow_continue", {}))
+    run_next_result = dict(board.get("run_next", {}))
+    run_source = "flow_continue" if continue_result else "run_next" if run_next_result else "status"
+    runs = list(continue_result.get("runs", []))
+    if not runs and run_next_result:
+        runs = [run_next_result]
+    completion = {
+        "total": len(rows),
+        "completed": len([row for row in rows if row.get("status") == "completed"]),
+        "blocked": len([row for row in rows if row.get("status") == "blocked"]),
+        "ready": len([row for row in rows if row.get("status") == "ready"]),
+        "waiting": len([row for row in rows if row.get("status") == "waiting"]),
+        "invalid": len([row for row in rows if row.get("status") == "invalid"]),
+    }
+    return {
+        "schema_version": "scbe_flow_report_v1",
+        "generated_at": _now_iso(),
+        "source_status": _display_path(status_path, repo_root),
+        "task": board.get("task"),
+        "workflow_template": board.get("workflow_template"),
+        "verdict": verdict,
+        "next_action": next_action,
+        "completion": completion,
+        "counts": counts,
+        "completed_steps": list(board.get("completed_steps", [])),
+        "blocked_steps": list(board.get("blocked_steps", [])),
+        "ready_count": board.get("ready_count", 0),
+        "next_packet_ids": [row.get("task_id") for row in board.get("next_packets", [])],
+        "run_source": run_source,
+        "stop_reason": continue_result.get("stop_reason") or run_next_result.get("reason") or "",
+        "executed_count": continue_result.get("executed_count") or int(bool(run_next_result.get("executed"))),
+        "runs": [
+            {
+                "step_id": run.get("step_id"),
+                "task_id": run.get("task_id"),
+                "returncode": run.get("returncode"),
+                "executed": run.get("executed"),
+            }
+            for run in runs
+        ],
+        "steps": [
+            {
+                "step_id": row.get("step_id"),
+                "status": row.get("status"),
+                "owner_agent_id": row.get("owner_agent_id"),
+                "goal": row.get("goal"),
+            }
+            for row in rows
+        ],
+    }
+
+
+def _render_flow_report_markdown(report: dict[str, object]) -> str:
+    completion = dict(report.get("completion", {}))
+    lines = [
+        "# SCBE Flow Report",
+        "",
+        f"Task: {report.get('task')}",
+        f"Template: `{report.get('workflow_template')}`",
+        f"Verdict: `{report.get('verdict')}`",
+        f"Next action: `{report.get('next_action')}`",
+        f"Source status: `{report.get('source_status')}`",
+        "",
+        "## Completion",
+        "",
+        f"- Total steps: `{completion.get('total', 0)}`",
+        f"- Completed: `{completion.get('completed', 0)}`",
+        f"- Blocked: `{completion.get('blocked', 0)}`",
+        f"- Ready: `{completion.get('ready', 0)}`",
+        f"- Waiting: `{completion.get('waiting', 0)}`",
+        f"- Invalid: `{completion.get('invalid', 0)}`",
+        "",
+        "## Step Results",
+        "",
+        "| Step | Status | Owner | Goal |",
+        "| --- | --- | --- | --- |",
+    ]
+    for step in report.get("steps", []):
+        goal = str(step.get("goal") or "").replace("|", "\\|")
+        lines.append(f"| `{step.get('step_id')}` | `{step.get('status')}` | `{step.get('owner_agent_id')}` | {goal} |")
+    lines.extend(["", "## Run Evidence", ""])
+    runs = list(report.get("runs", []))
+    if not runs:
+        lines.append("- No packet execution evidence attached to this status board.")
+    for run in runs:
+        lines.append(f"- `{run.get('step_id')}` returncode `{run.get('returncode')}` executed `{run.get('executed')}`")
+    blocked_steps = list(report.get("blocked_steps", []))
+    if blocked_steps:
+        lines.extend(["", "## Retry Focus", ""])
+        for step in blocked_steps:
+            lines.append(f"- Retry or escalate blocked step `{step}` with the saved run evidence.")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def cmd_flow_report(args: argparse.Namespace) -> int:
+    repo_root = args.repo_root
+    status_path = _repo_path(repo_root, args.status)
+    if not status_path.exists():
+        print(f"Flow status board not found: {status_path}")
+        return 2
+    try:
+        board = _load_flow_json(status_path)
+    except json.JSONDecodeError as exc:
+        print(f"Invalid flow status board JSON: {exc}")
+        return 2
+    if board.get("schema_version") != "scbe_flow_status_board_v1":
+        print("Expected scbe_flow_status_board_v1 status board.")
+        return 2
+
+    output_path = (
+        _repo_path(repo_root, args.output) if args.output else status_path.with_name(f"{status_path.stem}-report.md")
+    )
+    json_output_path = (
+        _repo_path(repo_root, args.json_output) if args.json_output else output_path.with_suffix(".report.json")
+    )
+    report = _build_flow_report(board, status_path, repo_root)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    json_output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(_render_flow_report_markdown(report), encoding="utf-8")
+    json_output_path.write_text(json.dumps(report, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+
+    payload = {
+        "schema_version": "scbe_flow_report_v1",
+        "verdict": report["verdict"],
+        "next_action": report["next_action"],
+        "completion": report["completion"],
+        "output_path": _display_path(output_path, repo_root),
+        "json_output": _display_path(json_output_path, repo_root),
+    }
+    lines = [
+        f"Flow report verdict: {report['verdict']}",
+        f"Next action: {report['next_action']}",
+        f"Saved flow report: {output_path}",
+        f"Saved flow report JSON: {json_output_path}",
+    ]
     return _json_result(args, payload, lines)
 
 
@@ -3239,7 +4132,11 @@ def _model_profile_selection(args: argparse.Namespace) -> tuple[Path, str, str, 
         or safe_text(defaults.get("model_profile"))
         or "coder-qwen-local"
     )
-    profile_dir = safe_text(getattr(args, "profile_dir", "")) or safe_text(context_payload.get("model_profile_dir")) or safe_text(defaults.get("model_profile_dir"))
+    profile_dir = (
+        safe_text(getattr(args, "profile_dir", ""))
+        or safe_text(context_payload.get("model_profile_dir"))
+        or safe_text(defaults.get("model_profile_dir"))
+    )
     profile_path = safe_text(getattr(args, "profile_path", ""))
     return config_path, profile_name, profile_dir, profile_path
 
@@ -3356,16 +4253,10 @@ def cmd_model_preflight(args: argparse.Namespace) -> int:
         hf_cli = toolchain.get("hf_cli") or {}
         ollama = toolchain.get("ollama") or {}
         lines.append(f"- python: {python_cfg.get('path', 'missing')}")
-        lines.append(
-            f"- hf-cli: {hf_cli.get('path', 'missing') if hf_cli.get('available') else 'missing'}"
-        )
-        lines.append(
-            f"- ollama: {ollama.get('path', 'missing') if ollama.get('available') else 'missing'}"
-        )
+        lines.append(f"- hf-cli: {hf_cli.get('path', 'missing') if hf_cli.get('available') else 'missing'}")
+        lines.append(f"- ollama: {ollama.get('path', 'missing') if ollama.get('available') else 'missing'}")
         lines.append(f"- colab-catalog: {(toolchain.get('colab_catalog') or {}).get('path', 'missing')}")
-        lines.append(
-            f"- model-host-quickcall: {(toolchain.get('model_host_quickcall') or {}).get('path', 'missing')}"
-        )
+        lines.append(f"- model-host-quickcall: {(toolchain.get('model_host_quickcall') or {}).get('path', 'missing')}")
         runtime = toolchain.get("runtime") or {}
         if runtime:
             lines.append(
@@ -3413,7 +4304,7 @@ def cmd_model_train(args: argparse.Namespace) -> int:
         payload["returncode"] = result.returncode
         lines = [
             f"Script: {script_path}",
-            f"Executed: yes",
+            "Executed: yes",
             f"Return code: {result.returncode}",
         ]
         _json_result(args, payload, lines)
@@ -3573,7 +4464,265 @@ def cmd_status(args: argparse.Namespace) -> int:
     return _json_result(args, payload, lines)
 
 
-# â”€â”€ GitHub operations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+def _load_layout_inventory(repo_root: Path, config_path: str) -> dict:
+    layout_path = (repo_root / config_path).resolve()
+    with layout_path.open("r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _parse_csv_values(raw: str) -> list[str]:
+    return [item.strip() for item in raw.split(",") if item.strip()]
+
+
+def cmd_layout_plan(args: argparse.Namespace) -> int:
+    inventory = _load_layout_inventory(args.repo_root, args.layout_config)
+    root_classification = inventory.get("root_classification", {})
+    product = set(root_classification.get("product", []))
+    platform = set(root_classification.get("platform", []))
+    research = set(root_classification.get("research", []))
+    archive = set(root_classification.get("archive", []))
+
+    deploy_names = product | platform | set(_parse_csv_values(args.include_deploy))
+    non_deploy_research_names = research | set(_parse_csv_values(args.include_research))
+    non_deploy_archive_names = archive | set(_parse_csv_values(args.include_archive))
+
+    plan_entries: list[dict[str, str]] = []
+
+    def add_entries(names: set[str], lane: str, dest_prefix: Path) -> None:
+        for name in sorted(names):
+            source = args.repo_root / name
+            if not source.exists():
+                continue
+            destination = dest_prefix / name
+            plan_entries.append(
+                {
+                    "name": name,
+                    "lane": lane,
+                    "source": str(source),
+                    "destination": str(args.repo_root / destination),
+                }
+            )
+
+    add_entries(deploy_names, "deploy", Path(args.deploy_root))
+    add_entries(non_deploy_research_names, "non_deploy_research", Path(args.non_deploy_root) / "research")
+    add_entries(non_deploy_archive_names, "non_deploy_archive", Path(args.non_deploy_root) / "archive")
+
+    payload = {
+        "schema_version": "scbe_root_layout_plan_v1",
+        "generated_at": _now_iso(),
+        "repo_root": str(args.repo_root),
+        "layout_config": str((args.repo_root / args.layout_config).resolve()),
+        "deploy_root": args.deploy_root,
+        "non_deploy_root": args.non_deploy_root,
+        "entry_count": len(plan_entries),
+        "entries": plan_entries,
+        "notes": [
+            "This command does not move files.",
+            "Run `layout scaffold` to create target roots.",
+            "Perform moves only after reviewing compatibility impacts.",
+        ],
+    }
+
+    output_path = Path(args.output) if args.output else (args.repo_root / "artifacts" / "root_layout_plan.json")
+    if not output_path.is_absolute():
+        output_path = (args.repo_root / output_path).resolve()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(payload, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+    payload["output"] = str(output_path)
+
+    lines = [
+        "Root layout plan generated",
+        "-" * 28,
+        f"Deploy root: {args.deploy_root}",
+        f"Non-deploy root: {args.non_deploy_root}",
+        f"Planned entries: {len(plan_entries)}",
+        f"Plan file: {output_path}",
+    ]
+    return _json_result(args, payload, lines)
+
+
+def cmd_layout_scaffold(args: argparse.Namespace) -> int:
+    roots = [
+        args.repo_root / args.deploy_root,
+        args.repo_root / args.non_deploy_root,
+        args.repo_root / args.non_deploy_root / "research",
+        args.repo_root / args.non_deploy_root / "archive",
+        args.repo_root / args.non_deploy_root / "dev",
+    ]
+    for root in roots:
+        root.mkdir(parents=True, exist_ok=True)
+        readme = root / "README.md"
+        if not readme.exists():
+            readme.write_text(
+                (
+                    f"# {root.name}\n\n"
+                    "Created by `scbe-system layout scaffold`.\n"
+                    "Use `scbe-system layout plan` to map current root entries into this lane.\n"
+                ),
+                encoding="utf-8",
+            )
+
+    payload = {
+        "schema_version": "scbe_root_layout_scaffold_v1",
+        "generated_at": _now_iso(),
+        "repo_root": str(args.repo_root),
+        "created": [str(p) for p in roots],
+    }
+    lines = ["Created layout roots:"] + [f"- {path}" for path in payload["created"]]
+    return _json_result(args, payload, lines)
+
+
+def _load_offline_profiles(repo_root: Path, profiles_path: str) -> dict:
+    path = Path(profiles_path)
+    if not path.is_absolute():
+        path = (repo_root / path).resolve()
+    with path.open("r", encoding="utf-8") as f:
+        data = json.load(f)
+    return data
+
+
+def _path_is_excluded(relative_path: str, exclude_patterns: list[str]) -> bool:
+    normalized = relative_path.replace("\\", "/")
+    return any(fnmatch.fnmatch(normalized, pattern) for pattern in exclude_patterns)
+
+
+def _copy_for_bundle(repo_root: Path, src: Path, dst_root: Path, exclude_patterns: list[str]) -> int:
+    copied = 0
+    rel = src.relative_to(repo_root)
+    if src.is_file():
+        rel_str = rel.as_posix()
+        if not _path_is_excluded(rel_str, exclude_patterns):
+            dst = dst_root / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src, dst)
+            copied += 1
+        return copied
+
+    for child in src.rglob("*"):
+        if not child.is_file():
+            continue
+        child_rel = child.relative_to(repo_root).as_posix()
+        if _path_is_excluded(child_rel, exclude_patterns):
+            continue
+        dst = dst_root / child.relative_to(repo_root)
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(child, dst)
+        copied += 1
+    return copied
+
+
+def cmd_offline_bundle_build(args: argparse.Namespace) -> int:
+    profiles = _load_offline_profiles(args.repo_root, args.profiles)
+    profile = profiles.get("profiles", {}).get(args.profile, {})
+    if not profile:
+        raise SystemExit(f"Unknown offline profile: {args.profile}")
+
+    includes = profile.get("include", [])
+    excludes = profile.get("exclude", [])
+    if not isinstance(includes, list) or not includes:
+        raise SystemExit(f"Offline profile `{args.profile}` has no include paths.")
+    if not isinstance(excludes, list):
+        excludes = []
+
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    output_dir = (
+        Path(args.output)
+        if args.output
+        else (args.repo_root / "artifacts" / "offline_kits" / f"{args.profile}-{timestamp}")
+    )
+    if not output_dir.is_absolute():
+        output_dir = (args.repo_root / output_dir).resolve()
+    payload_root = output_dir / "payload"
+    payload_root.mkdir(parents=True, exist_ok=True)
+
+    copied_files = 0
+    missing_paths: list[str] = []
+    resolved_includes: list[str] = []
+    for rel_path in includes:
+        src = (args.repo_root / rel_path).resolve()
+        if not src.exists():
+            missing_paths.append(rel_path)
+            continue
+        resolved_includes.append(rel_path)
+        copied_files += _copy_for_bundle(args.repo_root, src, payload_root, excludes)
+
+    manifest = {
+        "schema_version": "scbe_offline_bundle_v1",
+        "generated_at": _now_iso(),
+        "profile": args.profile,
+        "description": profile.get("description", ""),
+        "repo_root": str(args.repo_root),
+        "payload_root": "payload",
+        "include": resolved_includes,
+        "exclude": excludes,
+        "missing": missing_paths,
+        "copied_files": copied_files,
+    }
+    manifest_path = output_dir / "bundle_manifest.json"
+    manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+
+    payload = {
+        "schema_version": "scbe_offline_bundle_build_result_v1",
+        "bundle_dir": str(output_dir),
+        "manifest": str(manifest_path),
+        "copied_files": copied_files,
+        "missing": missing_paths,
+        "profile": args.profile,
+    }
+    lines = [
+        "Offline bundle created",
+        "-" * 23,
+        f"Profile: {args.profile}",
+        f"Bundle: {output_dir}",
+        f"Files copied: {copied_files}",
+    ]
+    if missing_paths:
+        lines.append("Missing include paths:")
+        lines.extend(f"- {item}" for item in missing_paths)
+    return _json_result(args, payload, lines)
+
+
+def cmd_offline_bundle_install(args: argparse.Namespace) -> int:
+    bundle_dir = Path(args.bundle)
+    if not bundle_dir.is_absolute():
+        bundle_dir = bundle_dir.resolve()
+    manifest_path = bundle_dir / "bundle_manifest.json"
+    payload_root = bundle_dir / "payload"
+    if not manifest_path.exists() or not payload_root.exists():
+        raise SystemExit("Bundle is missing `bundle_manifest.json` or `payload/`.")
+
+    target_root = Path(args.target)
+    if not target_root.is_absolute():
+        target_root = target_root.resolve()
+    target_root.mkdir(parents=True, exist_ok=True)
+
+    installed = 0
+    for file_path in payload_root.rglob("*"):
+        if not file_path.is_file():
+            continue
+        rel = file_path.relative_to(payload_root)
+        dst = target_root / rel
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(file_path, dst)
+        installed += 1
+
+    payload = {
+        "schema_version": "scbe_offline_bundle_install_result_v1",
+        "bundle_dir": str(bundle_dir),
+        "target_root": str(target_root),
+        "installed_files": installed,
+    }
+    lines = [
+        "Offline bundle installed",
+        "-" * 24,
+        f"Bundle: {bundle_dir}",
+        f"Target: {target_root}",
+        f"Installed files: {installed}",
+    ]
+    return _json_result(args, payload, lines)
+
+
+# -- GitHub operations ---------------------------------------------------------------------------
 
 
 def _gh(args: list, capture: bool = True) -> str:
@@ -3785,7 +4934,8 @@ def _gh_pulse_payload() -> dict[str, object]:
             "--json",
             "conclusion",
             "--jq",
-            '[.[] | .conclusion] | {pass: [.[] | select(. == "success")] | length, fail: [.[] | select(. == "failure")] | length}',
+            '[.[] | .conclusion] | {pass: [.[] | select(. == "success")] | length, '
+            'fail: [.[] | select(. == "failure")] | length}',
         ]
     )
     ci_pass_count = 0
@@ -3813,7 +4963,9 @@ def _gh_pulse_payload() -> dict[str, object]:
     }
 
 
-def _gh_doctor_payload(repo_root: str, pr: int | None = None, verify: bool = False, limit: int = 5) -> dict[str, object]:
+def _gh_doctor_payload(
+    repo_root: str, pr: int | None = None, verify: bool = False, limit: int = 5
+) -> dict[str, object]:
     ci = _gh_ci_payload(pr)
     scan = _gh_scan_payload(repo_root, verify=verify)
     prs = _gh_prs_payload(limit=limit)
@@ -3884,7 +5036,8 @@ def cmd_gh_ci(args: argparse.Namespace) -> int:
     """Check CI status for current branch or a PR."""
     payload = _gh_ci_payload(args.pr)
     lines = [
-        f"CI for {payload['branch']}: {payload['pass_count']} pass, {payload['fail_count']} fail, {payload['pending_count']} pending"
+        f"CI for {payload['branch']}: {payload['pass_count']} pass, "
+        f"{payload['fail_count']} fail, {payload['pending_count']} pending"
     ]
     if not payload["checks_known"]:
         lines.append("  No open PR detected for the current branch.")
@@ -4048,7 +5201,7 @@ def cmd_gh_cleanup(args: argparse.Namespace) -> int:
                 if "models/hf/" not in gi_text:
                     with open(gitignore, "a") as f:
                         f.write("\n# Local model weights â€” pull from HuggingFace on demand\nmodels/hf/\n")
-                    print(f"    Added models/hf/ to .gitignore")
+                    print("    Added models/hf/ to .gitignore")
                 print(f"    Models kept locally but excluded from git ({size} MB)")
             continue
 
@@ -4102,7 +5255,11 @@ def cmd_gh_pulse(args: argparse.Namespace) -> int:
         f"  Open PRs:      {payload['open_pr_count']}",
         f"  Open issues:   {payload['open_issue_count']}",
         f"  Open scans:    {payload['open_scan_alerts']}",
-        f"  CI pass rate:  {payload['ci_pass_rate']:.0f}% ({payload['ci_pass_count']}/{total_runs} last 20 runs)" if total_runs else "  CI pass rate:  n/a",
+        (
+            f"  CI pass rate:  {payload['ci_pass_rate']:.0f}% ({payload['ci_pass_count']}/{total_runs} last 20 runs)"
+            if total_runs
+            else "  CI pass rate:  n/a"
+        ),
     ]
     return _json_result(args, payload, lines)
 
@@ -4115,7 +5272,8 @@ def cmd_gh_doctor(args: argparse.Namespace) -> int:
         "=" * 40,
         f"  Branch:        {payload['ci']['branch']}",
         f"  PR:            {payload['ci']['pr'] or 'none'}",
-        f"  CI:            {payload['ci']['pass_count']} pass / {payload['ci']['fail_count']} fail / {payload['ci']['pending_count']} pending",
+        f"  CI:            {payload['ci']['pass_count']} pass / {payload['ci']['fail_count']} fail / "
+        f"{payload['ci']['pending_count']} pending",
         f"  Scan alerts:   {payload['scan']['open_alerts']}",
         f"  Open PRs:      {payload['prs']['count']}",
         f"  Open issues:   {payload['issues']['count']}",
@@ -4315,7 +5473,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     web = sub.add_parser("web", help="Run web lookup/capture helpers")
     add_runtime_cli_flags(web)
-    web.add_argument("--engine", choices=("auto", "playwright", "http"), default="auto")
+    web.add_argument("--engine", choices=("auto", "playwright", "http", "parallel"), default="auto")
     web.add_argument("--output-dir", default="artifacts/web_tool")
     web_sub = web.add_subparsers(dest="web_cmd", required=True)
     web_search = web_sub.add_parser("search", help="DuckDuckGo search capture")
@@ -4333,6 +5491,15 @@ def build_parser() -> argparse.ArgumentParser:
     av.add_argument("--ring-core", type=float, default=0.70, help="Trust threshold for CORE ring")
     av.add_argument("--ring-outer", type=float, default=0.45, help="Trust threshold for OUTER ring")
     av.set_defaults(func=cmd_antivirus)
+
+    av_fuse = sub.add_parser("antivirus-fuse", help="Fuse AV/EDR/SIEM/runtime alerts into a SCBE decision")
+    add_runtime_cli_flags(av_fuse)
+    av_fuse.add_argument("--input", type=Path, required=True, help="JSON, JSONL, or log file with alerts")
+    av_fuse.add_argument("--artifact", type=Path, default=None, help="Optional local artifact to triage")
+    av_fuse.add_argument("--provider", default="generic", help="Provider hint when auto-detection is not enough")
+    av_fuse.add_argument("--output-dir", default="artifacts/security/av_signal_fusion")
+    av_fuse.add_argument("--print-json", action="store_true", help="Print full JSON receipt")
+    av_fuse.set_defaults(func=cmd_antivirus_fuse)
 
     auth = sub.add_parser("aetherauth", help="Run context-bound AetherAuth-style access decision")
     add_runtime_cli_flags(auth)
@@ -4490,7 +5657,9 @@ def build_parser() -> argparse.ArgumentParser:
     add_model_profile_flags(model_plan)
     model_plan.set_defaults(func=cmd_model_plan)
 
-    model_preflight = model_sub.add_parser("preflight", help="Check whether a model profile should run locally, on Colab, or on HF Jobs")
+    model_preflight = model_sub.add_parser(
+        "preflight", help="Check whether a model profile should run locally, on Colab, or on HF Jobs"
+    )
     add_runtime_cli_flags(model_preflight)
     add_model_profile_flags(model_preflight)
     model_preflight.set_defaults(func=cmd_model_preflight)
@@ -4628,15 +5797,87 @@ def build_parser() -> argparse.ArgumentParser:
         help="Skip action-map emission and only write the packet bundle",
     )
     flow_packetize.set_defaults(func=cmd_flow_packetize, emit_action_map=True)
-
+    flow_status = flow_sub.add_parser("status", help="Build a ready/waiting/completed board from work packets")
+    add_runtime_cli_flags(flow_status)
+    flow_status.add_argument("--packets", required=True, help="Path to an SCBE work packet bundle JSON")
+    flow_status.add_argument(
+        "--completed",
+        action="append",
+        default=[],
+        help="Step id already completed; repeat for multiple completed packets",
+    )
+    flow_status.add_argument(
+        "--blocked",
+        action="append",
+        default=[],
+        help="Step id intentionally blocked; repeat for multiple blocked packets",
+    )
+    flow_status.add_argument("--output", default="", help="Output JSON path for the status board")
+    flow_status.add_argument("--markdown-output", default="", help="Output Markdown path for the operator board")
+    flow_status.set_defaults(func=cmd_flow_status)
+    flow_run_next = flow_sub.add_parser("run-next", help="Run the first ready work packet through the agent bus")
+    add_runtime_cli_flags(flow_run_next)
+    flow_run_next.add_argument("--packets", required=True, help="Path to an SCBE work packet bundle JSON")
+    flow_run_next.add_argument(
+        "--completed",
+        action="append",
+        default=[],
+        help="Step id already completed; repeat for multiple completed packets",
+    )
+    flow_run_next.add_argument(
+        "--blocked",
+        action="append",
+        default=[],
+        help="Step id intentionally blocked; repeat for multiple blocked packets",
+    )
+    flow_run_next.add_argument("--output", default="", help="Output JSON path for the updated status board")
+    flow_run_next.add_argument("--markdown-output", default="", help="Output Markdown path for the operator board")
+    flow_run_next.add_argument("--run-output", default="", help="Output JSON path for the selected packet run result")
+    flow_run_next.add_argument("--timeout-seconds", type=int, default=120)
+    flow_run_next.add_argument("--dry-run", action="store_true", help="Show the selected packet without running it")
+    flow_run_next.set_defaults(func=cmd_flow_run_next)
+    flow_continue = flow_sub.add_parser("continue", help="Run ready work packets until completion, block, or limit")
+    add_runtime_cli_flags(flow_continue)
+    flow_continue.add_argument("--packets", required=True, help="Path to an SCBE work packet bundle JSON")
+    flow_continue.add_argument(
+        "--completed",
+        action="append",
+        default=[],
+        help="Step id already completed; repeat for multiple completed packets",
+    )
+    flow_continue.add_argument(
+        "--blocked",
+        action="append",
+        default=[],
+        help="Step id intentionally blocked; repeat for multiple blocked packets",
+    )
+    flow_continue.add_argument("--output", default="", help="Output JSON path for the updated status board")
+    flow_continue.add_argument("--markdown-output", default="", help="Output Markdown path for the operator board")
+    flow_continue.add_argument("--run-output", default="", help="Output JSON path for the continue run log")
+    flow_continue.add_argument(
+        "--max-steps", type=int, default=8, help="Maximum packet executions in one continue call"
+    )
+    flow_continue.add_argument("--timeout-seconds", type=int, default=120, help="Per-packet execution timeout")
+    flow_continue.add_argument("--dry-run", action="store_true", help="Select the next packet without running it")
+    flow_continue.set_defaults(func=cmd_flow_continue)
+    flow_report = flow_sub.add_parser("report", help="Render a deliverable report from a flow status board")
+    add_runtime_cli_flags(flow_report)
+    flow_report.add_argument("--status", required=True, help="Path to a flow status board JSON")
+    flow_report.add_argument("--output", default="", help="Output Markdown report path")
+    flow_report.add_argument("--json-output", default="", help="Output machine-readable report JSON path")
+    flow_report.set_defaults(func=cmd_flow_report)
 
     agentbus = sub.add_parser("agentbus", help="Run a user-facing shaped agent-bus task")
     add_runtime_cli_flags(agentbus)
     agentbus_sub = agentbus.add_subparsers(dest="agentbus_cmd", required=True)
-    agentbus_run = agentbus_sub.add_parser("run", help="Intake task, braid operation shape, route bus, dispatch, track, and watch")
+    agentbus_run = agentbus_sub.add_parser(
+        "run", help="Intake task, braid operation shape, route bus, dispatch, track, and watch"
+    )
     add_runtime_cli_flags(agentbus_run)
     agentbus_run.add_argument("--task", required=True, help="User-facing task to route")
-    agentbus_run.add_argument("--operation-command", default="", help="Optional operation command, e.g. 'korah aelin dahru'")
+    agentbus_run.add_argument(
+        "--operation-command", default="", help="Optional operation command, e.g. 'korah aelin dahru'"
+    )
     agentbus_run.add_argument(
         "--task-type",
         choices=["coding", "review", "research", "governance", "training", "general"],
@@ -4647,8 +5888,14 @@ def build_parser() -> argparse.ArgumentParser:
     agentbus_run.add_argument("--privacy", choices=["local_only", "remote_ok"], default="local_only")
     agentbus_run.add_argument("--budget-cents", type=float, default=0.0)
     agentbus_run.add_argument("--max-players", type=int, default=1)
-    agentbus_run.add_argument("--dispatch", action="store_true", help="Dispatch the task through the free/local LLM bus")
-    agentbus_run.add_argument("--dispatch-provider", default="offline")
+    agentbus_run.add_argument(
+        "--dispatch", action="store_true", help="Dispatch the task through the free/local LLM bus"
+    )
+    agentbus_run.add_argument(
+        "--dispatch-provider",
+        default="auto",
+        help="Provider for dispatch: auto, offline, ollama, or huggingface. Auto prefers local free providers.",
+    )
     agentbus_run.add_argument("--dispatch-tail", type=int, default=5)
     agentbus_run.add_argument("--mirror-root", default="artifacts/agent_bus/mirror_room")
     agentbus_run.add_argument("--tracker-output-dir", default="artifacts/file_tracking/latest")
@@ -4662,6 +5909,46 @@ def build_parser() -> argparse.ArgumentParser:
     status = sub.add_parser("status", help="Show artifact presence for last cycle")
     add_runtime_cli_flags(status)
     status.set_defaults(func=cmd_status)
+
+    layout = sub.add_parser("layout", help="Plan and scaffold deploy/non-deploy root layout lanes")
+    add_runtime_cli_flags(layout)
+    layout_sub = layout.add_subparsers(dest="layout_cmd", required=True)
+    layout_plan = layout_sub.add_parser("plan", help="Build a non-destructive root partition plan")
+    add_runtime_cli_flags(layout_plan)
+    layout_plan.add_argument("--layout-config", default=str(DEFAULT_ROOT_LAYOUT_CONFIG))
+    layout_plan.add_argument("--deploy-root", default="deploy_runtime")
+    layout_plan.add_argument("--non-deploy-root", default="non_deploy")
+    layout_plan.add_argument("--include-deploy", default="", help="Extra comma-separated root entries for deploy lane")
+    layout_plan.add_argument(
+        "--include-research", default="", help="Extra comma-separated root entries for non_deploy/research"
+    )
+    layout_plan.add_argument(
+        "--include-archive", default="", help="Extra comma-separated root entries for non_deploy/archive"
+    )
+    layout_plan.add_argument("--output", default="artifacts/root_layout_plan.json")
+    layout_plan.set_defaults(func=cmd_layout_plan)
+
+    layout_scaffold = layout_sub.add_parser("scaffold", help="Create deploy/non-deploy root directories")
+    add_runtime_cli_flags(layout_scaffold)
+    layout_scaffold.add_argument("--deploy-root", default="deploy_runtime")
+    layout_scaffold.add_argument("--non-deploy-root", default="non_deploy")
+    layout_scaffold.set_defaults(func=cmd_layout_scaffold)
+
+    offline = sub.add_parser("offline", help="Build and install offline capability bundles")
+    add_runtime_cli_flags(offline)
+    offline_sub = offline.add_subparsers(dest="offline_cmd", required=True)
+    offline_build = offline_sub.add_parser("build", help="Build an offline bundle from a profile")
+    add_runtime_cli_flags(offline_build)
+    offline_build.add_argument("--profiles", default=str(DEFAULT_OFFLINE_BUNDLE_PROFILES))
+    offline_build.add_argument("--profile", default="cli-offline-core")
+    offline_build.add_argument("--output", default="")
+    offline_build.set_defaults(func=cmd_offline_bundle_build)
+
+    offline_install = offline_sub.add_parser("install", help="Install a built offline bundle into a target path")
+    add_runtime_cli_flags(offline_install)
+    offline_install.add_argument("--bundle", required=True, help="Path to the bundle directory")
+    offline_install.add_argument("--target", required=True, help="Target directory for offline installation")
+    offline_install.set_defaults(func=cmd_offline_bundle_install)
 
     pollypad = sub.add_parser("pollypad", help="Agent personal storage capsule (Kindle-style)")
     add_runtime_cli_flags(pollypad)
@@ -4732,36 +6019,61 @@ def build_parser() -> argparse.ArgumentParser:
     pp_snapshot.add_argument("--output")
     pp_snapshot.set_defaults(func=cmd_pollypad_snapshot)
 
-    # â”€â”€ publish: Post content to platforms â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # -- publish: Post content to platforms ------------------------------------------------------
     pub_parser = sub.add_parser("publish", help="Post content â€” Bluesky, GitHub Discussions, or all")
     pub_sub = pub_parser.add_subparsers(dest="pub_cmd", required=True)
 
     pub_bsky = pub_sub.add_parser("bluesky", help="Post to Bluesky")
-    pub_bsky.add_argument("content", choices=["book-promo", "chapter-1", "chapter-2", "chapter-3", "governance", "design-partner"], help="What to post")
-    pub_bsky.set_defaults(func=lambda args: subprocess.call(
-        [sys.executable, str(Path(args.repo_root) / "scripts" / "publish" / "post_to_bluesky.py"), "--promo", args.content]
-    ))
+    pub_bsky.add_argument(
+        "content",
+        choices=["book-promo", "chapter-1", "chapter-2", "chapter-3", "governance", "design-partner"],
+        help="What to post",
+    )
+    pub_bsky.set_defaults(
+        func=lambda args: subprocess.call(
+            [
+                sys.executable,
+                str(Path(args.repo_root) / "scripts" / "publish" / "post_to_bluesky.py"),
+                "--promo",
+                args.content,
+            ]
+        )
+    )
 
     pub_bsky_custom = pub_sub.add_parser("post", help="Post custom text to Bluesky")
     pub_bsky_custom.add_argument("text", help="Text to post")
-    pub_bsky_custom.set_defaults(func=lambda args: subprocess.call(
-        [sys.executable, str(Path(args.repo_root) / "scripts" / "publish" / "post_to_bluesky.py"), "--text", args.text]
-    ))
+    pub_bsky_custom.set_defaults(
+        func=lambda args: subprocess.call(
+            [
+                sys.executable,
+                str(Path(args.repo_root) / "scripts" / "publish" / "post_to_bluesky.py"),
+                "--text",
+                args.text,
+            ]
+        )
+    )
 
     pub_all = pub_sub.add_parser("all", help="Post to all platforms via GitHub Actions")
-    pub_all.add_argument("content", choices=["book-promo", "chapter-1", "chapter-2", "chapter-3", "governance", "design-partner"])
-    pub_all.set_defaults(func=lambda args: subprocess.call(
-        ["gh", "workflow", "run", "publish-content.yml", "-f", "platform=all", "-f", f"content={args.content}"]
-    ))
+    pub_all.add_argument(
+        "content", choices=["book-promo", "chapter-1", "chapter-2", "chapter-3", "governance", "design-partner"]
+    )
+    pub_all.set_defaults(
+        func=lambda args: subprocess.call(
+            ["gh", "workflow", "run", "publish-content.yml", "-f", "platform=all", "-f", f"content={args.content}"]
+        )
+    )
 
-    # â”€â”€ outreach: Cold outreach pipeline â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # -- outreach: Cold outreach pipeline ---------------------------------------------------------
     outreach_parser = sub.add_parser("outreach", help="Cold outreach â€” draft, preview, send partnership emails")
     outreach_parser.add_argument("outreach_args", nargs=argparse.REMAINDER, help="Args for outreach pipeline")
-    outreach_parser.set_defaults(func=lambda args: subprocess.call(
-        [sys.executable, str(Path(args.repo_root) / "scripts" / "outreach" / "cold_outreach_pipeline.py")] + args.outreach_args
-    ))
+    outreach_parser.set_defaults(
+        func=lambda args: subprocess.call(
+            [sys.executable, str(Path(args.repo_root) / "scripts" / "outreach" / "cold_outreach_pipeline.py")]
+            + args.outreach_args
+        )
+    )
 
-    # â”€â”€ gh: GitHub operations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # -- gh: GitHub operations ---------------------------------------------------------------------
     gh_parser = sub.add_parser("gh", help="GitHub operations - PRs, CI, issues, code scanning, releases")
     gh_sub = gh_parser.add_subparsers(dest="gh_cmd", required=True)
 
@@ -4842,7 +6154,9 @@ def build_parser() -> argparse.ArgumentParser:
     add_runtime_cli_flags(ops_sweep)
     ops_sweep.add_argument("--limit", type=int, default=5, help="Max GitHub PR/issue samples to include")
     ops_sweep.add_argument("--verify-scan", action="store_true", help="Ask GitHub doctor/sweep to verify code scanning")
-    ops_sweep.add_argument("--include-release", action="store_true", help="Include latest release summary in GitHub sweep")
+    ops_sweep.add_argument(
+        "--include-release", action="store_true", help="Include latest release summary in GitHub sweep"
+    )
     ops_sweep.add_argument("--skip-github", action="store_true", help="Skip GitHub inside the board phase")
     ops_sweep.add_argument("--skip-colab", action="store_true", help="Skip Colab inside the board phase")
     ops_sweep.set_defaults(func=cmd_ops_sweep)
@@ -4892,4 +6206,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

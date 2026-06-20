@@ -1,0 +1,686 @@
+{
+  "schema_version": "scbe.agentic_os_cli_benchmark.v1",
+  "generated_at": "2026-05-29T22:56:56.652Z",
+  "repo_root": "C:\\Users\\issda\\SCBE-AETHERMOORE",
+  "benchmark_id": "328dd1aeaf5839e2",
+  "summary": {
+    "case_count": 16,
+    "passed": 16,
+    "failed": 0,
+    "pass_rate": 1,
+    "median_ms": 12.409,
+    "p95_ms": 3822.292,
+    "hardening_candidate_count": 11,
+    "hardening_passed": 10,
+    "hardening_failed": 1,
+    "next_round_flag_count": 1
+  },
+  "lanes": {
+    "agent_harness": "tools audit + governed state CLI",
+    "cross_language_compiler": "geoseal cross-build Tier 1 lexicon-bounded IR",
+    "binary_hexa_interpolation": "agent-bus semantic bridge 6D -> 48-bit binary -> 12-char hex -> recomposition",
+    "compass_front_door": "SCBE formation classifier + adapter slots + local/free-tier/paid model lane planner + writing/YouTube route examples",
+    "board_mechanics": "Pazaak bitboard planner + coding-board legality probe + octree/chessboard source anchors",
+    "internal_hardening_candidates": "Vault-surfaced higher-security probes are benchmarked here but are not published as public CLI tools",
+    "governance": "durable trajectory start set observe/read/verify"
+  },
+  "best_in_class_gaps": [
+    {
+      "gap": "atomic-tokenizer bus surface is now registered but still only smoke-tests byte bijection",
+      "impact": "patent-ready atomic tokenizer needs a stronger task corpus covering semantic atoms, code slots, and transport packets"
+    },
+    {
+      "gap": "cross-build is Tier 1 lexicon-bounded, not arbitrary AST translation",
+      "impact": "64 ops close cleanly, but best-in-class cross-domain compiler needs Tier 2 parser-backed lift into same LatticeOp schema"
+    },
+    {
+      "gap": "semantic hex recomposition is nearest-atom, not lossless semantic identity",
+      "impact": "good for routing/interpolation, but benchmark should not claim perfect natural-language bijection"
+    },
+    {
+      "gap": "YouTube upload lane is registered but intentionally unlisted-first",
+      "impact": "public publish remains a human approval gate; benchmark validates route availability, not live upload success"
+    }
+  ],
+  "cases": [
+    {
+      "label": "tool_registry_audit_full_surface",
+      "ok": true,
+      "elapsed_ms": 2.739,
+      "result": {
+        "ok": true,
+        "tool_count": 37,
+        "surface_counts": {
+          "hyperbolic-governance": 4,
+          "bijective-transport": 3,
+          "runtime-persistence": 2,
+          "tamper-detection": 1,
+          "agent-harness": 15,
+          "research-evidence": 9,
+          "video-lattice": 1,
+          "atomic-tokenizer": 2,
+          "unknown": 0
+        },
+        "missing_required_env": {
+          "research-sam-gov": ["SAM_GOV_API_KEY"],
+          "research-uspto": ["USPTO_ODP_API_KEY"]
+        }
+      },
+      "error": null
+    },
+    {
+      "label": "semantic_hex_roundtrip:compile add operation across lan",
+      "ok": true,
+      "elapsed_ms": 12.409,
+      "result": {
+        "ok": true,
+        "input_hash": "8fdf5701f5f75ed5",
+        "combined_hex": "80d1c7eb268c",
+        "combined_binary": "10000000 11010001 11000111 11101011 00100110 10001100",
+        "dominant": "TRANSFORM",
+        "recomposed_closest": {
+          "semanticId": "TRANSFORM",
+          "bucketId": "CORE:OPERATION:STATE_CHANGE",
+          "similarity": 0.9999986254005828,
+          "taskType": "coding"
+        }
+      },
+      "error": null
+    },
+    {
+      "label": "semantic_hex_roundtrip:block denied command but preserv",
+      "ok": true,
+      "elapsed_ms": 5.055,
+      "result": {
+        "ok": true,
+        "input_hash": "1409837270b745e0",
+        "combined_hex": "e27d82bfd249",
+        "combined_binary": "11100010 01111101 10000010 10111111 11010010 01001001",
+        "dominant": "BLOCK",
+        "recomposed_closest": {
+          "semanticId": "PIVOT",
+          "bucketId": "DISCOURSE:STEER:REDIRECT",
+          "similarity": 0.9353496120861399,
+          "taskType": "governance"
+        }
+      },
+      "error": null
+    },
+    {
+      "label": "semantic_hex_roundtrip:transform water flow into a comp",
+      "ok": true,
+      "elapsed_ms": 0.593,
+      "result": {
+        "ok": true,
+        "input_hash": "d9184d81c13fcc1b",
+        "combined_hex": "a4e7856163af",
+        "combined_binary": "10100100 11100111 10000101 01100001 01100011 10101111",
+        "dominant": "FLOW",
+        "recomposed_closest": {
+          "semanticId": "FLOW",
+          "bucketId": "CORE:MOTION:DIRECTED_CONTINUITY",
+          "similarity": 0.9927700898874885,
+          "taskType": "research"
+        }
+      },
+      "error": null
+    },
+    {
+      "label": "semantic_hex_roundtrip:convert prompt to tokens then re",
+      "ok": true,
+      "elapsed_ms": 0.442,
+      "result": {
+        "ok": true,
+        "input_hash": "58cb7ed060c5adbf",
+        "combined_hex": "80d1c7eb268c",
+        "combined_binary": "10000000 11010001 11000111 11101011 00100110 10001100",
+        "dominant": "TRANSFORM",
+        "recomposed_closest": {
+          "semanticId": "TRANSFORM",
+          "bucketId": "CORE:OPERATION:STATE_CHANGE",
+          "similarity": 0.9999986254005828,
+          "taskType": "coding"
+        }
+      },
+      "error": null
+    },
+    {
+      "label": "compass_plan_forge_cross_domain",
+      "ok": true,
+      "elapsed_ms": 1.417,
+      "result": {
+        "ok": true,
+        "mode": "compiler",
+        "formation": "forge",
+        "command_path": "CA.forge.compiler",
+        "primary_tools": [
+          "geoseal-cross-build",
+          "geoseal-encode",
+          "semantic-hex-bridge",
+          "tokenizer-atomic-selfcheck"
+        ],
+        "octree_surfaces": [
+          "dense local view",
+          "compressed sparse view",
+          "heavily compressed anchor view",
+          "octree spatial / structural retrieval"
+        ],
+        "adapter_slots": [
+          "tool-registry adapter for any CLI with deterministic argv",
+          "model-provider adapter with local/free-tier/paid cost metadata",
+          "receipt adapter for replayable JSON evidence",
+          "benchmark adapter for pass/fail and latency evidence",
+          "parser adapter for Tree-sitter/Babel/other AST front ends",
+          "IR adapter for MLIR-style dialect lowering into LatticeOp",
+          "target-language emitter adapter"
+        ],
+        "model_cost_tiers": [
+          "offline",
+          "local-free-after-install",
+          "remote-free-tier-limited",
+          "paid-remote"
+        ],
+        "blocked_actions": [
+          "public YouTube publish without explicit approval",
+          "remote provider call containing secrets or private manuscript text without approval",
+          "arbitrary cross-language code translation outside Tier 1 LatticeOp coverage"
+        ]
+      },
+      "error": null
+    },
+    {
+      "label": "compass_plan_broadcast_youtube_pipeline",
+      "ok": true,
+      "elapsed_ms": 0.175,
+      "result": {
+        "ok": true,
+        "mode": "youtube",
+        "formation": "broadcast",
+        "command_path": "AV.broadcast.youtube",
+        "primary_tools": [
+          "youtube-video-review",
+          "youtube-article-dry-run",
+          "youtube-upload-unlisted"
+        ],
+        "octree_surfaces": [
+          "dense local view",
+          "compressed sparse view",
+          "heavily compressed anchor view",
+          "octree spatial / structural retrieval"
+        ],
+        "adapter_slots": [
+          "tool-registry adapter for any CLI with deterministic argv",
+          "model-provider adapter with local/free-tier/paid cost metadata",
+          "receipt adapter for replayable JSON evidence",
+          "benchmark adapter for pass/fail and latency evidence",
+          "content-source adapter for articles, transcripts, manuscripts, and notes",
+          "media-render adapter for local renderers or external video APIs",
+          "publisher adapter for unlisted-first YouTube and other channels"
+        ],
+        "model_cost_tiers": [
+          "offline",
+          "local-free-after-install",
+          "remote-free-tier-limited",
+          "paid-remote"
+        ],
+        "blocked_actions": [
+          "public YouTube publish without explicit approval",
+          "remote provider call containing secrets or private manuscript text without approval",
+          "arbitrary cross-language code translation outside Tier 1 LatticeOp coverage"
+        ]
+      },
+      "error": null
+    },
+    {
+      "label": "compass_plan_council_model_lanes_free_limits",
+      "ok": true,
+      "elapsed_ms": 0.35,
+      "result": {
+        "ok": true,
+        "mode": "model",
+        "formation": "council",
+        "command_path": "KO+DR.architectural-command",
+        "primary_tools": ["ai-router-health", "ai-router-call", "research-hf-models"],
+        "octree_surfaces": [
+          "dense local view",
+          "compressed sparse view",
+          "heavily compressed anchor view",
+          "octree spatial / structural retrieval"
+        ],
+        "adapter_slots": [
+          "tool-registry adapter for any CLI with deterministic argv",
+          "model-provider adapter with local/free-tier/paid cost metadata",
+          "receipt adapter for replayable JSON evidence",
+          "benchmark adapter for pass/fail and latency evidence",
+          "OpenAI-compatible chat adapter",
+          "Ollama/local HTTP adapter",
+          "Hugging Face/free-tier adapter",
+          "structured-output validator adapter"
+        ],
+        "model_cost_tiers": [
+          "offline",
+          "local-free-after-install",
+          "remote-free-tier-limited",
+          "paid-remote"
+        ],
+        "blocked_actions": [
+          "public YouTube publish without explicit approval",
+          "remote provider call containing secrets or private manuscript text without approval",
+          "arbitrary cross-language code translation outside Tier 1 LatticeOp coverage"
+        ]
+      },
+      "error": null
+    },
+    {
+      "label": "compass_board_rules_source_anchored",
+      "ok": true,
+      "elapsed_ms": 0.253,
+      "result": {
+        "ok": true,
+        "mechanic_count": 5,
+        "mechanics": [
+          "octree-sector",
+          "go-board-territory",
+          "pazaak-hand",
+          "chessboard-stack",
+          "go-board-territory"
+        ],
+        "source_paths": [
+          "notes/sphere-grid/Agentic Sphere Grid.md",
+          "notes/round-table/2026-05-01-night-agentic-public-ai-and-runtime-routing.md",
+          "src/crypto/octree.py",
+          "src/ai_brain/quasi-space.ts",
+          "hydra/octree_sphere_grid.py",
+          "src/kernel/context_grid.py",
+          "src/coding_board/pipeline.py",
+          "src/coding_board/probe.py",
+          "src/coding_board/__init__.py",
+          "tests/coding_board/test_coding_board.py",
+          "scripts/system/agentic_pazaak_board.py",
+          "config/eval/agentic_pazaak_cards.v1.json",
+          "tests/system/test_agentic_pazaak_board.py",
+          "scripts/system/chessboard_dev_stack.py",
+          "workflows/momentum/chessboard_dev_stack_train.json",
+          "docs/specs/AGENTIC_DEV_CHESSBOARD_STACK.md",
+          "src/coding_board/pipeline.py",
+          "src/coding_board/probe.py",
+          "tests/coding_board/test_coding_board.py",
+          "src/geoseal_cli.py"
+        ],
+        "schemas": [
+          "scbe.agent_bus.octree_context_pack.v1",
+          "scbe-coding-trial-v1",
+          "scbe_agentic_pazaak_board_report_v1",
+          "scbe_agentic_pazaak_cards_v1",
+          "scbe_chessboard_packets_v1",
+          "scbe-coding-trial-v1",
+          "scbe_command_plan_v1"
+        ]
+      },
+      "error": null
+    },
+    {
+      "label": "agentic_pazaak_board_default_moves",
+      "ok": true,
+      "elapsed_ms": 371.573,
+      "result": {
+        "exit_code": 0,
+        "schema": "scbe_agentic_pazaak_board_report_v1",
+        "top_move": {
+          "lane_id": "integration",
+          "card_id": "claim_territory",
+          "card_name": "Claim Territory",
+          "symbol": "+1",
+          "score": 12.75,
+          "reason": "matched file_conflict, go_influence, multi_agent",
+          "before": {
+            "lane_id": "integration",
+            "value": 5,
+            "risk": 3,
+            "verified": false,
+            "blocked": false,
+            "context_noise": false,
+            "conflict": true,
+            "stalled": false,
+            "owner": ""
+          },
+          "after": {
+            "lane_id": "integration",
+            "value": 7,
+            "risk": 1,
+            "verified": false,
+            "blocked": false,
+            "context_noise": false,
+            "conflict": true,
+            "stalled": false,
+            "owner": "assigned"
+          }
+        },
+        "bitboards": {
+          "high_value": 11,
+          "high_risk": 10,
+          "unverified": 11,
+          "blocked": 0,
+          "context_noise": 1,
+          "conflict": 8,
+          "stalled": 0,
+          "owned": 0
+        }
+      },
+      "error": null
+    },
+    {
+      "label": "cross_build_ko_to_ru_add",
+      "ok": true,
+      "elapsed_ms": 2871.213,
+      "result": {
+        "exit_code": 0,
+        "stdout_chars": 388,
+        "parsed_summary": {
+          "mode": "single",
+          "src_tongue": "KO",
+          "dst_tongue": "RU",
+          "dst_code": "x.wrapping_add(y)",
+          "op_name": "add",
+          "op_id": 0
+        }
+      },
+      "error": null
+    },
+    {
+      "label": "cross_build_av_to_dr_xor",
+      "ok": true,
+      "elapsed_ms": 3030.093,
+      "result": {
+        "exit_code": 0,
+        "stdout_chars": 383,
+        "parsed_summary": {
+          "mode": "single",
+          "src_tongue": "AV",
+          "dst_tongue": "DR",
+          "dst_code": "(xor p q)",
+          "op_name": "xor",
+          "op_id": 19
+        }
+      },
+      "error": null
+    },
+    {
+      "label": "cross_build_broadcast_add_all_tongues",
+      "ok": true,
+      "elapsed_ms": 3822.292,
+      "result": {
+        "exit_code": 0,
+        "stdout_chars": 422,
+        "parsed_summary": {
+          "mode": "broadcast",
+          "src_tongue": "KO",
+          "op_name": "add",
+          "op_id": 0
+        }
+      },
+      "error": null
+    },
+    {
+      "label": "cross_build_list_ops_64",
+      "ok": true,
+      "elapsed_ms": 1536.12,
+      "result": {
+        "exit_code": 0,
+        "stdout_chars": 1094,
+        "parsed_summary": {
+          "participating_count": 64,
+          "excluded_count": 0
+        }
+      },
+      "error": null
+    },
+    {
+      "label": "cross_build_quarantine_arbitrary_code",
+      "ok": true,
+      "elapsed_ms": 1313.773,
+      "result": {
+        "exit_code": 2,
+        "stdout_chars": 179,
+        "parsed_summary": {
+          "verdict": "QUARANTINE",
+          "error_type": "LiftFailure"
+        }
+      },
+      "error": null
+    },
+    {
+      "label": "pipeline_state_init_governed_lane",
+      "ok": true,
+      "elapsed_ms": 245.705,
+      "result": {
+        "schema_version": "scbe.agent_bus.governed_state_summary.v1",
+        "session_id": "bench-agentic-os",
+        "state_path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\.aethermoor-bus\\tmp-bench-governed-state\\bench-agentic-os.json",
+        "accepted_count": 0,
+        "rejected_count": 0,
+        "reachable_set": ["observe", "read", "verify"],
+        "last_accepted": null,
+        "last_rejected": null
+      },
+      "error": null
+    }
+  ],
+  "hardening_candidates": [
+    {
+      "label": "geoseal_binary_tokenizer_roundtrip",
+      "surface": "internal-tokenizer",
+      "source_paths": ["src/geoseal_cli.py", "src/tokenizer/ss1.ts"],
+      "ok": true,
+      "maturity": "hold-internal",
+      "elapsed_ms": 2923.863,
+      "exit_code": 0,
+      "result": {
+        "version": "geoseal-binary-tokenizer-map-v1",
+        "token": "keth'ae",
+        "roundtrip": {
+          "bytes_ok": true,
+          "decoded_utf8": "A"
+        }
+      },
+      "error": null,
+      "next_round": "Keep out of published CLI; promote only after threat model, input bounds, and redaction policy are documented.",
+      "published_cli": false
+    },
+    {
+      "label": "lightning_indexer_octree_context",
+      "surface": "internal-context-retrieval",
+      "source_paths": [
+        "src/coding_spine/lightning_indexer.py",
+        "tests/coding_spine/test_lightning_indexer.py"
+      ],
+      "ok": true,
+      "maturity": "hold-internal",
+      "elapsed_ms": 3078.822,
+      "exit_code": 0,
+      "result": {
+        "schema_version": "scbe_lightning_indexer_v1",
+        "selected": ["compiler", "governance"],
+        "octree_schema": "scbe_sparse_octree_retrieval_v1"
+      },
+      "error": null,
+      "next_round": "Keep as internal sparse-context benchmark until candidate redaction and prompt-injection isolation are added.",
+      "published_cli": false
+    },
+    {
+      "label": "op_binary_inverse_complexity_demo",
+      "surface": "internal-adaptive-tokenizer",
+      "source_paths": ["src/symphonic/multipath/op_binary.py"],
+      "ok": true,
+      "maturity": "hold-internal",
+      "elapsed_ms": 1056.657,
+      "exit_code": 0,
+      "result": {
+        "stdout_chars": 805,
+        "evidence": "op sequence / KO cost / DR cost table emitted"
+      },
+      "error": null,
+      "next_round": "Needs structured JSON output and deterministic bounds before any public tool exposure.",
+      "published_cli": false
+    },
+    {
+      "label": "attention_fft_synthetic_control",
+      "surface": "internal-attention-telemetry",
+      "source_paths": ["scripts/probe_attention_fft.py", "src/minimal/mirror_problem_fft.py"],
+      "ok": true,
+      "maturity": "hold-internal",
+      "elapsed_ms": 1501.87,
+      "exit_code": 0,
+      "result": {
+        "record_type": "attention_fft_probe_v1",
+        "control_kind": "banded",
+        "closer_to_banded_than_random": true
+      },
+      "error": null,
+      "next_round": "Synthetic control is safe; model-backed probing stays internal until model/download and secret gates are explicit.",
+      "published_cli": false
+    },
+    {
+      "label": "storage_compaction_lab_candidate",
+      "surface": "internal-storage-geometry",
+      "source_paths": ["scripts/system/storage_compaction_lab.py", "src/crypto/octree.py"],
+      "ok": true,
+      "maturity": "candidate-ready-internal",
+      "elapsed_ms": 835.646,
+      "exit_code": 0,
+      "result": {
+        "experiment": "storage_compaction_lab",
+        "best_value": 2,
+        "best_verdict": "best-current-tradeoff"
+      },
+      "error": null,
+      "next_round": "Add generated-artifact cleanup, fixed output schema, and wider fixture set before CLI exposure.",
+      "published_cli": false
+    },
+    {
+      "label": "storage_interaction_mesh_candidate",
+      "surface": "internal-storage-mesh",
+      "source_paths": [
+        "scripts/system/storage_interaction_mesh_lab.py",
+        "src/knowledge/storage_interaction_mesh.py"
+      ],
+      "ok": true,
+      "maturity": "candidate-ready-internal",
+      "elapsed_ms": 1334.547,
+      "exit_code": 0,
+      "result": {
+        "experiment": "storage_interaction_mesh",
+        "note_count": 4,
+        "record_count": 4
+      },
+      "error": null,
+      "next_round": "Keep internal until note-ingest privacy labels and artifact retention rules are wired.",
+      "published_cli": false
+    },
+    {
+      "label": "core_python_checks_dry_run_candidate",
+      "surface": "internal-test-lane",
+      "source_paths": ["scripts/system/run_core_python_checks.py"],
+      "ok": true,
+      "maturity": "candidate-ready-internal",
+      "elapsed_ms": 283.31,
+      "exit_code": 0,
+      "result": {
+        "command_count": 33,
+        "optional_ignores": 12
+      },
+      "error": null,
+      "next_round": "Can be used as internal merge-readiness evidence; public CLI should expose only summarized pass/fail receipts.",
+      "published_cli": false
+    },
+    {
+      "label": "system_card_deck_candidate",
+      "surface": "internal-system-map",
+      "source_paths": ["scripts/system/system_card_deck.py"],
+      "ok": false,
+      "maturity": "flag-for-hardening",
+      "elapsed_ms": 294.856,
+      "exit_code": 1,
+      "result": {
+        "exit_code": 1
+      },
+      "error": " raise SystemExit(main())\r\n                     ~~~~^^\r\n  File \"C:\\Users\\issda\\SCBE-AETHERMOORE\\scripts\\system\\system_card_deck.py\", line 144, in main\r\n    repo_ordering = load_json(Path(args.repo_ordering))\r\n  File \"C:\\Users\\issda\\SCBE-AETHERMOORE\\scripts\\system\\system_card_deck.py\", line 46, in load_json\r\n    return json.loads(path.read_text(encoding=\"utf-8\"))\r\n                      ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^\r\n  File \"C:\\Python314\\Lib\\pathlib\\__init__.py\", line 792, in read_text\r\n    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:\r\n         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\r\n  File \"C:\\Python314\\Lib\\pathlib\\__init__.py\", line 776, in open\r\n    return io.open(self, mode, buffering, encoding, errors, newline)\r\n           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\r\nFileNotFoundError: [Errno 2] No such file or directory: 'C:\\\\Users\\\\issda\\\\SCBE-AETHERMOORE\\\\artifacts\\\\repo-ordering\\\\latest.json'\r\n",
+      "next_round": "Fails without artifacts/repo-ordering/latest.json; add a dry-run/sample fallback before promotion.",
+      "published_cli": false
+    },
+    {
+      "label": "spiralverse_space_commerce_lineage",
+      "surface": "internal-origin-lineage",
+      "source_paths": [
+        "external_repos/spiralverse-protocol/docs/SPACE_DEBRIS_FLEET.md",
+        "external_repos/spiralverse-protocol/README.md"
+      ],
+      "ok": true,
+      "maturity": "candidate-ready-internal",
+      "elapsed_ms": 0.989,
+      "exit_code": 0,
+      "result": {
+        "relation": "space commerce origin for SCBE fleet/governance concepts",
+        "published_cli": false,
+        "matched_count": 7,
+        "missing_count": 0
+      },
+      "error": null,
+      "next_round": "Keep as lineage/evidence. Promote only as a read-only provenance report, not an execution tool.",
+      "published_cli": false
+    },
+    {
+      "label": "spiralverse_polly_tier_lineage",
+      "surface": "internal-fleet-lineage",
+      "source_paths": [
+        "external_repos/spiralverse-protocol/src/fleet/polly-pad.ts",
+        "external_repos/spiralverse-protocol/src/fleet/types.ts",
+        "external_repos/spiralverse-protocol/src/fleet/governance.ts"
+      ],
+      "ok": true,
+      "maturity": "candidate-ready-internal",
+      "elapsed_ms": 1.579,
+      "exit_code": 0,
+      "result": {
+        "relation": "Polly Pads and grade-level governance predate SCBE Sacred Tongue tiers",
+        "published_cli": false,
+        "matched_count": 11,
+        "missing_count": 0
+      },
+      "error": null,
+      "next_round": "Use as provenance for SCBE fleet tiers; do not expose raw pad/workspace controls in the public CLI.",
+      "published_cli": false
+    },
+    {
+      "label": "spiralverse_patent_sync_candidate",
+      "surface": "internal-ip-lineage",
+      "source_paths": [
+        "external_repos/spiralverse-protocol/PATENT_PROCESS_TRACKER.md",
+        "external_repos/spiralverse-protocol/PATENT_PREREQUISITES.md",
+        "external_repos/spiralverse-protocol/patent/MASTER_PATENT_DOCUMENT.md",
+        "external_repos/spiralverse-protocol/patent/RESEARCH_PATENT_ANALYSIS.md"
+      ],
+      "ok": true,
+      "maturity": "flag-for-sync-review",
+      "elapsed_ms": 1.762,
+      "exit_code": 0,
+      "result": {
+        "relation": "older Spiralverse IP packet should stay synced but not merged blindly",
+        "published_cli": false,
+        "matched_count": 7,
+        "missing_count": 0
+      },
+      "error": null,
+      "next_round": "Reconcile with SCBE patent workbench before copying any claim language; keep separate evidence layer.",
+      "published_cli": false
+    }
+  ],
+  "next_round_flags": [
+    {
+      "label": "system_card_deck_candidate",
+      "surface": "internal-system-map",
+      "next_round": "Fails without artifacts/repo-ordering/latest.json; add a dry-run/sample fallback before promotion.",
+      "error": " raise SystemExit(main())\r\n                     ~~~~^^\r\n  File \"C:\\Users\\issda\\SCBE-AETHERMOORE\\scripts\\system\\system_card_deck.py\", line 144, in main\r\n    repo_ordering = load_json(Path(args.repo_ordering))\r\n  File \"C:\\Users\\issda\\SCBE-AETHERMOORE\\scripts\\system\\system_card_deck.py\", line 46, in load_json\r\n    return json.loads(path.read_text(encoding=\"utf-8\"))\r\n                      ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^\r\n  File \"C:\\Python314\\Lib\\pathlib\\__init__.py\", line 792, in read_text\r\n    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:\r\n         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\r\n  File \"C:\\Python314\\Lib\\pathlib\\__init__.py\", line 776, in open\r\n    return io.open(self, mode, buffering, encoding, errors, newline)\r\n           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\r\nFileNotFoundError: [Errno 2] No such file or directory: 'C:\\\\Users\\\\issda\\\\SCBE-AETHERMOORE\\\\artifacts\\\\repo-ordering\\\\latest.json'\r\n"
+    }
+  ]
+}

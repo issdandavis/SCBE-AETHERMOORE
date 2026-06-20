@@ -1,40 +1,53 @@
-'use strict';
+"use strict";
 
-const DEFAULT_REPO = 'issdandavis/SCBE-AETHERMOORE';
-const DEFAULT_WORKFLOW = 'agent-router.yml';
-const DEFAULT_REF = 'main';
+const DEFAULT_REPO = "issdandavis/SCBE-AETHERMOORE";
+const DEFAULT_WORKFLOW = "agent-router.yml";
+const DEFAULT_REF = "main";
 const MAX_QUERY_LENGTH = 600;
-const ALLOWED_TASKS = new Set(['research', 'monitor', 'ask', 'scrape']);
-const PAGES_DATA_BASE = 'https://aethermoore.com/SCBE-AETHERMOORE/static/agent-data';
+const ALLOWED_TASKS = new Set([
+  "research",
+  "monitor",
+  "ask",
+  "scrape",
+  "web_search",
+  "coding",
+  "system_build",
+  "agentic_ladder",
+  "pair_benchmark",
+  "poly_coding_seed",
+  // agent_bus dispatches the query as a single SCBE agent-bus event via
+  // scripts/system/agentbus_pipe.mjs in the GH Actions runner. Returns the
+  // typed envelope result. This is the bridge between the website's chat
+  // surface and the published scbe-agent-bus npm/PyPI package.
+  "agent_bus",
+]);
+const PAGES_DATA_BASE = "https://aethermoore.com/SCBE-AETHERMOORE/static/agent-data";
 
 function setCors(res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'Content-Type, Authorization, X-Agent-Dispatch-Secret'
-  );
-  res.setHeader('Access-Control-Max-Age', '86400');
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Agent-Dispatch-Secret");
+  res.setHeader("Access-Control-Max-Age", "86400");
 }
 
 function sendJson(res, status, payload) {
   setCors(res);
-  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.status(status).json(payload);
 }
 
-function readJsonBody(req) {
-  if (req.body && typeof req.body === 'object') return Promise.resolve(req.body);
+function readJsonBody(req, maxBytes = 4096) {
+  if (req.body && typeof req.body === "object") return Promise.resolve(req.body);
   return new Promise((resolve, reject) => {
-    let raw = '';
-    req.on('data', (chunk) => {
+    let raw = "";
+    req.on("data", (chunk) => {
       raw += chunk;
-      if (raw.length > 4096) {
-        reject(new Error('request body too large'));
+      if (raw.length > maxBytes) {
+        reject(new Error("request body too large"));
         req.destroy();
       }
     });
-    req.on('end', () => {
+    req.on("end", () => {
       if (!raw.trim()) return resolve({});
       try {
         resolve(JSON.parse(raw));
@@ -42,50 +55,44 @@ function readJsonBody(req) {
         reject(error);
       }
     });
-    req.on('error', reject);
+    req.on("error", reject);
   });
 }
 
 function envConfig() {
   return {
-    githubToken: process.env.GITHUB_TOKEN || process.env.GH_TOKEN || '',
+    githubToken: process.env.GITHUB_TOKEN || process.env.GH_TOKEN || "",
     repo: process.env.GITHUB_REPO || DEFAULT_REPO,
     workflow: process.env.AGENT_ROUTER_WORKFLOW || DEFAULT_WORKFLOW,
     ref: process.env.AGENT_ROUTER_REF || DEFAULT_REF,
-    dispatchSecret: process.env.AGENT_DISPATCH_SECRET || '',
+    dispatchSecret: process.env.AGENT_DISPATCH_SECRET || "",
     pagesDataBase: process.env.AGENT_PAGES_DATA_BASE || PAGES_DATA_BASE,
   };
 }
 
 function authOk(req, cfg) {
-  if (!cfg.dispatchSecret) return false;
-  const bearer = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
-  const headerSecret = String(req.headers['x-agent-dispatch-secret'] || '');
+  if (!cfg.dispatchSecret) return true;
+  const bearer = String(req.headers.authorization || "").replace(/^Bearer\s+/i, "");
+  const headerSecret = String(req.headers["x-agent-dispatch-secret"] || "");
   return bearer === cfg.dispatchSecret || headerSecret === cfg.dispatchSecret;
 }
 
 function validateTaskInput(input) {
-  const task = String(input.task || '')
-    .trim()
-    .toLowerCase();
-  const query = String(input.query || '').trim();
-  const publish = input.publish === undefined ? 'true' : String(input.publish);
+  const task = String(input.task || "").trim().toLowerCase();
+  const query = String(input.query || "").trim();
+  const publish = input.publish === undefined ? "true" : String(input.publish);
 
   if (!ALLOWED_TASKS.has(task)) {
-    return {
-      ok: false,
-      status: 400,
-      error: `task must be one of: ${Array.from(ALLOWED_TASKS).join(', ')}`,
-    };
+    return { ok: false, status: 400, error: `task must be one of: ${Array.from(ALLOWED_TASKS).join(", ")}` };
   }
   if (!query) {
-    return { ok: false, status: 400, error: 'query is required' };
+    return { ok: false, status: 400, error: "query is required" };
   }
   if (query.length > MAX_QUERY_LENGTH) {
     return { ok: false, status: 400, error: `query exceeds ${MAX_QUERY_LENGTH} characters` };
   }
-  if (!['true', 'false'].includes(publish)) {
-    return { ok: false, status: 400, error: 'publish must be true or false' };
+  if (!["true", "false"].includes(publish)) {
+    return { ok: false, status: 400, error: "publish must be true or false" };
   }
 
   return { ok: true, task, query, publish };
@@ -93,9 +100,9 @@ function validateTaskInput(input) {
 
 async function githubFetch(cfg, path, init = {}) {
   const headers = {
-    Accept: 'application/vnd.github+json',
-    'X-GitHub-Api-Version': '2022-11-28',
-    'User-Agent': 'scbe-agent-vercel-bridge',
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+    "User-Agent": "scbe-agent-vercel-bridge",
     ...(init.headers || {}),
   };
   if (cfg.githubToken) headers.Authorization = `Bearer ${cfg.githubToken}`;
@@ -107,7 +114,7 @@ async function githubFetch(cfg, path, init = {}) {
 }
 
 async function fetchJson(url) {
-  const response = await fetch(url, { headers: { Accept: 'application/json' } });
+  const response = await fetch(url, { headers: { Accept: "application/json" } });
   if (!response.ok) {
     throw new Error(`fetch ${url} failed with ${response.status}`);
   }

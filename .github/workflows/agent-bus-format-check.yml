@@ -1,0 +1,35 @@
+name: agent-bus · Format Check
+
+on:
+  pull_request:
+    branches: ["main", "master", "dev"]
+    paths:
+      - "packages/agent-bus/**"
+      - ".github/workflows/agent-bus-*.yml"
+  push:
+    branches: ["main", "master", "dev"]
+    paths:
+      - "packages/agent-bus/**"
+      - ".github/workflows/agent-bus-*.yml"
+
+defaults:
+  run:
+    working-directory: packages/agent-bus
+
+permissions:
+  contents: read
+
+jobs:
+  prettier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: packages/agent-bus/package-lock.json
+      - name: Install dependencies
+        run: npm install --ignore-scripts
+      - name: Prettier check
+        run: npm run format:check

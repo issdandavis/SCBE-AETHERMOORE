@@ -112,7 +112,9 @@ def test_build_report_holds_on_false_positive_pressure(tmp_path: Path) -> None:
         _row(
             ["semantic_gate_eval"],
             {
-                "decision_policy": "facts remain separated from analogy and experimental signals unless explicitly allowed",
+                "decision_policy": (
+                    "facts remain separated from analogy and experimental signals unless explicitly allowed"
+                ),
                 "expected_use": "frozen eval",
                 "test_name": "test_fact_required_for_action",
             },

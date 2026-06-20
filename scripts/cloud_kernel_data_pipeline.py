@@ -20,7 +20,6 @@ from typing import Any, Dict, Iterable, List, Tuple
 
 from training_auditor import audit_dataset_records
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_CONFIG = "training/cloud_kernel_pipeline.json"
 DEFAULT_RUN_ROOT = "training/runs/cloud_kernel_sync"
@@ -493,12 +492,14 @@ def annotate_records(
         else:
             quarantined.append(enriched)
 
-    sort_key = lambda row: (
-        as_text(row.get("category")),
-        normalize_path(as_text(row.get("source_path"))),
-        int(row.get("chunk_index", 0) or 0),
-        int(row.get("record_index", 0) or 0),
-    )
+    def sort_key(row):
+        return (
+            as_text(row.get("category")),
+            normalize_path(as_text(row.get("source_path"))),
+            int(row.get("chunk_index", 0) or 0),
+            int(row.get("record_index", 0) or 0),
+        )
+
     all_rows.sort(key=sort_key)
     allowed.sort(key=sort_key)
     quarantined.sort(key=sort_key)

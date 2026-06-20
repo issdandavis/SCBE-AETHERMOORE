@@ -219,7 +219,7 @@ export function detectEscape(
   if (currentNorm > EPSILON) {
     // Dot product of -gradient (drift direction) with radial unit vector
     for (let i = 0; i < 6; i++) {
-      radialVelocity += (-grad[i]) * (state.position[i] / currentNorm);
+      radialVelocity += -grad[i] * (state.position[i] / currentNorm);
     }
   }
 
@@ -277,10 +277,7 @@ export function computeThreatLevel(state: CHSFNState): number {
   const energyThreat = 1 / (1 + Math.exp(-0.5 * (energy - 3)));
 
   // Weighted combination
-  return Math.min(
-    0.4 * distThreat + 0.3 * avgImpedance + 0.3 * energyThreat,
-    1
-  );
+  return Math.min(0.4 * distThreat + 0.3 * avgImpedance + 0.3 * energyThreat, 1);
 }
 
 /**
@@ -532,8 +529,8 @@ export function assess(
 
   // Composite entropic risk
   const escapeRisk = escape.escaping ? 0.8 : escape.basinFraction * 0.3;
-  const expansionRisk = expansion.accelerating ? 0.6 : (expansion.growthRate > 0 ? 0.3 : 0);
-  const loopRisk = dilation.hostile ? 0.9 : (dilation.loopCount > 0 ? dilation.loopCount * 0.15 : 0);
+  const expansionRisk = expansion.accelerating ? 0.6 : expansion.growthRate > 0 ? 0.3 : 0;
+  const loopRisk = dilation.hostile ? 0.9 : dilation.loopCount > 0 ? dilation.loopCount * 0.15 : 0;
   const threatRisk = ak.threatLevel;
 
   const entropicRisk = Math.min(

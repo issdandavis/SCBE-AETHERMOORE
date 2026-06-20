@@ -28,7 +28,7 @@ def _can_import_cryptography():
 
 # Configure pytest-asyncio
 pytestmark = pytest.mark.asyncio(loop_scope="function")
-from datetime import datetime
+from datetime import timedelta
 
 # Import modules to test
 import sys
@@ -763,10 +763,18 @@ class TestMetricsCollector:
     def test_filter_by_time(self, metrics_collector):
         """Test filtering metrics by time."""
         metrics_collector.record("test", 1.0)
+        # Pin the first point strictly before the cutoff so the filter is not
+        # dependent on wall-clock resolution (datetime.now() can be too coarse
+        # on some platforms for three back-to-back records to differ).
+        first_point = metrics_collector.get_metric("test")[0]
+        start_time = first_point.timestamp + timedelta(microseconds=1)
 
-        start_time = datetime.now()
         metrics_collector.record("test", 2.0)
         metrics_collector.record("test", 3.0)
+        # Ensure the later points are strictly at/after the cutoff regardless of
+        # clock granularity.
+        for point in metrics_collector.get_metric("test")[1:]:
+            point.timestamp = start_time + timedelta(microseconds=1)
 
         filtered = metrics_collector.get_metric("test", start_time=start_time)
         assert len(filtered) == 2

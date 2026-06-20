@@ -70,7 +70,7 @@ def seed_from_anchors(dry_run: bool = False):
         tongue_counts[d.dominant_tongue] = tongue_counts.get(d.dominant_tongue, 0) + 1
         gov_counts[d.governance_tier] = gov_counts.get(d.governance_tier, 0) + 1
 
-    print(f"\n--- Enrichment Summary ---")
+    print("\n--- Enrichment Summary ---")
     print(f"Total: {len(enriched)}")
     print(f"Tongues: {tongue_counts}")
     print(f"Governance: {gov_counts}")

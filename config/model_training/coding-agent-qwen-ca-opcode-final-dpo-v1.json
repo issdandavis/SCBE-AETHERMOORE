@@ -1,0 +1,65 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "coding-agent-qwen-ca-opcode-final-dpo-v1",
+  "title": "SCBE coding agent Qwen CA opcode final DPO v1",
+  "description": "Focused preference repair after direct smoke showed the model knows abs/add names but omits the add hex byte. This trains against the exact bad patterns observed in HF smoke jobs and promotes the contiguous CA sequence 0x09, 0x09, 0x00.",
+  "backend": "hf-jobs-peft-dpo",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "system_prompt": "You are an SCBE-AETHERMOORE GeoSeal coding agent. For CA arithmetic, abs is opcode 0x09 and add is opcode 0x00. The sequence for abs(a)+abs(b) is exactly 0x09, 0x09, 0x00. Always include the add byte.",
+  "dataset": {
+    "root": "training-data/dpo",
+    "train_files": [
+      "ca_opcode_final_dpo_v1_train.jsonl"
+    ],
+    "eval_files": []
+  },
+  "training": {
+    "max_seq_length": 512,
+    "max_prompt_length": 256,
+    "lora_rank": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "learning_rate": 7e-5,
+    "beta": 0.12,
+    "num_train_epochs": 1,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 8,
+    "warmup_ratio": 0.05,
+    "max_steps": 96,
+    "max_train_records": 160,
+    "logging_steps": 8,
+    "save_steps": 96,
+    "save_total_limit": 1,
+    "gradient_checkpointing": true,
+    "seed": 91,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "output_dir": "training/runs/coding-agent-qwen-ca-opcode-final-dpo-v1"
+  },
+  "hub": {
+    "token_env": "HF_TOKEN",
+    "dataset_repo": "issdandavis/scbe-coding-agent-dpo-ca-opcode-final-v1",
+    "push_adapter": true,
+    "adapter_repo": "issdandavis/scbe-coding-agent-qwen-ca-opcode-final-dpo-v1",
+    "push_merged": false,
+    "gate_required": true
+  },
+  "execution": {
+    "recommended_target": "hf-jobs",
+    "hf_flavor": "t4-small",
+    "timeout": "2h",
+    "default_emit_path": "artifacts/model_training/coding-agent-qwen-ca-opcode-final-dpo-v1-train.py"
+  },
+  "evaluation": {
+    "contract_path": "config/model_training/ca_opcode_exact_eval_contract.json",
+    "constrained_gate_scaffold": true,
+    "notes": "Promotion still requires scripts/eval/smoke_merged_coding_model_hf.py to pass the raw CA opcode case after adapter or merged-model smoke."
+  }
+}

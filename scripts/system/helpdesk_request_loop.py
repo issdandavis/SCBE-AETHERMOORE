@@ -35,12 +35,7 @@ def _slug(text: str, fallback: str = "ticket") -> str:
 def _append_jsonl(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as handle:
-        handle.write(
-            json.dumps(
-                payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True
-            )
-            + "\n"
-        )
+        handle.write(json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True) + "\n")
 
 
 def _load_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -100,9 +95,7 @@ def _classify_paths(title: str, body: str) -> list[str]:
     return sorted(set(paths or ["scripts/scbe-system-cli.py"]))
 
 
-def evaluate_ticket(
-    ticket: dict[str, Any], *, root: Path = DEFAULT_ROOT
-) -> dict[str, Any]:
+def evaluate_ticket(ticket: dict[str, Any], *, root: Path = DEFAULT_ROOT) -> dict[str, Any]:
     title = str(ticket.get("title", ""))
     kind = str(ticket.get("kind", "feature"))
     severity = "high" if kind == "bug" else "medium"
@@ -128,9 +121,7 @@ def evaluate_ticket(
     return evaluation
 
 
-def build_fix_plan(
-    ticket: dict[str, Any], evaluation: dict[str, Any], *, root: Path = DEFAULT_ROOT
-) -> dict[str, Any]:
+def build_fix_plan(ticket: dict[str, Any], evaluation: dict[str, Any], *, root: Path = DEFAULT_ROOT) -> dict[str, Any]:
     plan = {
         "schema_version": "scbe-helpdesk-fix-plan-v1",
         "ticket_id": ticket["ticket_id"],
@@ -147,9 +138,7 @@ def build_fix_plan(
         "commands": evaluation["required_checks"],
         "execution_policy": "plan_only_no_source_edits",
     }
-    out_path = (
-        root / "fix_plans" / f"{ticket['ticket_id']}-{_slug(str(ticket['title']))}.json"
-    )
+    out_path = root / "fix_plans" / f"{ticket['ticket_id']}-{_slug(str(ticket['title']))}.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(plan, indent=2, ensure_ascii=True), encoding="utf-8")
     return {**plan, "path": str(out_path)}
@@ -175,14 +164,10 @@ def seed_demo(root: Path = DEFAULT_ROOT) -> dict[str, Any]:
         ),
     ]
     for kind, title, body in requests:
-        ticket = submit_ticket(
-            title=title, body=body, kind=kind, requester="system-helpdesk", root=root
-        )
+        ticket = submit_ticket(title=title, body=body, kind=kind, requester="system-helpdesk", root=root)
         evaluation = evaluate_ticket(ticket, root=root)
         plan = build_fix_plan(ticket, evaluation, root=root)
-        seeded.append(
-            {"ticket": ticket, "evaluation": evaluation, "plan_path": plan["path"]}
-        )
+        seeded.append({"ticket": ticket, "evaluation": evaluation, "plan_path": plan["path"]})
     return {
         "schema_version": "scbe-helpdesk-seed-result-v1",
         "root": str(root),
@@ -192,9 +177,7 @@ def seed_demo(root: Path = DEFAULT_ROOT) -> dict[str, Any]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="SCBE local help-desk request and fix-plan loop"
-    )
+    parser = argparse.ArgumentParser(description="SCBE local help-desk request and fix-plan loop")
     parser.add_argument("--root", default=str(DEFAULT_ROOT))
     sub = parser.add_subparsers(dest="cmd", required=True)
 

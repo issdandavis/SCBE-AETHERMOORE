@@ -1,0 +1,86 @@
+{
+  "name": "scbe-agent-bus",
+  "version": "0.4.1",
+  "description": "SCBE agent-bus — typed Node.js library for governed multi-agent event routing. Dispatches tasks through the 14-layer harmonic-wall pipeline; manages audit-chain workspaces (create/ingest/export/verify/lineage); exposes Sacred Tongue semantic bridge (48-bit hex/binary 6D DimVec encoding KO/AV/RU/CA/UM/DR axes), quasi-sphere overlap/slice/drift surfaces, and 25 built-in research tools (arXiv, Semantic Scholar, OpenAlex, CrossRef, PubMed, SAM.gov, USPTO, HuggingFace models, GitHub repos). TypeScript-first with full Zod-validated envelopes.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "scbe-agent-bus": "bin/scbe-agent-bus.cjs"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "src",
+    "tsconfig.json",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "LICENSE-APACHE",
+    "LICENSE-NOTICE.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "prettier --check .",
+    "benchmark:agentic-os": "node scripts/bench_agentic_os_cli.cjs",
+    "benchmark:pathfinding-suite": "node scripts/bench_pathfinding_suite.cjs",
+    "benchmark:projection-board": "node scripts/bench_projection_board_pathfinding.cjs",
+    "benchmark:roll-stack-maze": "node scripts/bench_roll_stack_maze.cjs",
+    "benchmark:worm-adapter": "node scripts/bench_worm_environment_adapter.cjs",
+    "benchmark:vector-field-nav": "node scripts/vector_field_bench.cjs",
+    "benchmark:semantic-sphere": "node scripts/bench_semantic_sphere.cjs",
+    "agentbus:pipe": "node ../../scripts/system/agentbus_pipe.mjs",
+    "pack:dry": "npm pack --dry-run --json",
+    "prepublishOnly": "npm run build",
+    "prepack": "npm run build",
+    "prepare": "cd ../.. && husky install packages/agent-bus/.husky"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "scbe",
+    "agent-bus",
+    "governance",
+    "harmonic-wall",
+    "agent-orchestration",
+    "ai-safety",
+    "workspace",
+    "audit-chain",
+    "agentic-cli",
+    "chain-of-custody"
+  ],
+  "author": "Issac Daniel Davis <issdandavis@gmail.com>",
+  "license": "MIT OR Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/issdandavis/SCBE-AETHERMOORE.git",
+    "directory": "packages/agent-bus"
+  },
+  "bugs": {
+    "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"
+  },
+  "homepage": "https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/packages/agent-bus#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "husky": "^8.0.0",
+    "lint-staged": "^15.5.2",
+    "prettier": "^3.2.0",
+    "typescript": "^6.0.2",
+    "vitest": "^4.0.17"
+  },
+  "lint-staged": {
+    "*.{ts,js,json,md}": [
+      "prettier --write"
+    ]
+  }
+}

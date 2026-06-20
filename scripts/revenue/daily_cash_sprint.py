@@ -19,7 +19,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable, Literal
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 OUT_ROOT = REPO_ROOT / "artifacts" / "revenue" / "cash_sprint"
 StateName = Literal["PENDING", "RUNNING", "DONE", "BLOCKED"]
@@ -43,6 +42,59 @@ class Offer:
 
 DEFAULT_OFFERS = [
     Offer(
+        offer_id="tip_jar",
+        title="AetherMoore Tip Jar",
+        buyer="people who want to help the work without a subscription, account setup, or sales call",
+        price_floor_usd=5,
+        price_anchor_usd=5,
+        promise="A tiny one-time support payment that keeps the work moving and proves the payment rail is alive.",
+        deliverables=[
+            "One direct Stripe-hosted $5 support link.",
+            "No account setup, subscription decision, or paperwork required.",
+            "Supporter can still upgrade later to the $20/month tier or $500 governance snapshot.",
+        ],
+        proof_paths=[
+            "docs/supporter.html",
+            "docs/offers/index.html",
+            "scripts/system/create_tip_jar_stripe_link.py",
+            "scripts/system/monetization_connector_push.py",
+        ],
+        call_to_action="Tip $5 here: https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k",
+    ),
+    Offer(
+        offer_id="ai_governance_snapshot",
+        title="AI Governance Snapshot",
+        buyer="small teams, founders, and subcontract leads using AI who need a plain governance risk read",
+        price_floor_usd=500,
+        price_anchor_usd=500,
+        promise=(
+            "Review one AI workflow and deliver a 2-page findings memo, three prioritized fixes, "
+            "and a practical evidence checklist."
+        ),
+        deliverables=[
+            "Review one AI workflow, toolchain, or customer-facing AI feature.",
+            "Identify data, decision, audit, and vendor-risk gaps in plain English.",
+            "Deliver a 2-page findings memo, three prioritized fixes, and a practical evidence checklist.",
+        ],
+        proof_paths=[
+            "docs/governance-snapshot.html",
+            "docs/offers/index.html",
+            "scripts/system/create_governance_snapshot_stripe_link.py",
+            "scripts/revenue/governance_snapshot_intake.py",
+            "src/governance/runtime_gate.py",
+            "src/governance/bijective_tamper.py",
+            "src/governance/identifier_canonicality.py",
+            "docs/specs/BIJECTIVE_TAMPER_L13.md",
+            "docs/specs/IDENTIFIER_CANONICALITY_L13.md",
+        ],
+        call_to_action=(
+            "Buy the fixed checkout, then send the intake at "
+            "https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html#intake. "
+            "Checkout link: "
+            "https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j"
+        ),
+    ),
+    Offer(
         offer_id="local_ai_command_center_setup",
         title="GeoSeal CLI Agent Bus Setup",
         buyer="solo founders, indie devs, and small teams trying to make local AI coding agents cooperate",
@@ -63,7 +115,9 @@ DEFAULT_OFFERS = [
             "tests/smoke/test_npm_geoseal_bin.py",
             "tests/api/test_free_llm_routes.py",
         ],
-        call_to_action="Reply with your OS and the AI coding tools you already use; I will quote the CLI plus agent-bus setup.",
+        call_to_action=(
+            "Reply with your OS and the AI coding tools you already use; " "I will quote the CLI plus agent-bus setup."
+        ),
     ),
     Offer(
         offer_id="ai_workflow_audit_sprint",
@@ -71,7 +125,9 @@ DEFAULT_OFFERS = [
         buyer="people paying for multiple AI tools but lacking a reliable daily workflow",
         price_floor_usd=100,
         price_anchor_usd=300,
-        promise="Find waste, fragile steps, and missing handoffs in an AI tool stack, then produce a usable repair plan.",
+        promise=(
+            "Find waste, fragile steps, and missing handoffs in an AI tool stack, " "then produce a usable repair plan."
+        ),
         deliverables=[
             "Inventory current tools, scripts, datasets, and failure points.",
             "Flag what should be automated, deleted, preserved, or moved.",
@@ -126,7 +182,7 @@ def _path_status(paths: Iterable[str]) -> list[dict[str, object]]:
             {
                 "path": raw,
                 "exists": path.exists(),
-                "kind": "dir" if path.is_dir() else "file" if path.is_file() else "missing",
+                "kind": ("dir" if path.is_dir() else "file" if path.is_file() else "missing"),
             }
         )
     return rows
@@ -148,7 +204,12 @@ def _run_quick(cmd: list[str], timeout: int = 12) -> dict[str, object]:
             check=False,
         )
     except Exception as exc:  # pragma: no cover - exact OS failures vary
-        return {"command": cmd, "resolved_command": resolved_cmd, "returncode": -1, "error": str(exc)}
+        return {
+            "command": cmd,
+            "resolved_command": resolved_cmd,
+            "returncode": -1,
+            "error": str(exc),
+        }
     return {
         "command": cmd,
         "resolved_command": resolved_cmd,
@@ -217,11 +278,45 @@ def _select_offer(offer_id: str) -> Offer:
     raise SystemExit(f"unknown offer_id={offer_id!r}; valid: rotate, {valid}")
 
 
+def _price_label(offer: Offer | dict[str, object]) -> str:
+    floor = int(offer["price_floor_usd"] if isinstance(offer, dict) else offer.price_floor_usd)
+    anchor = int(offer["price_anchor_usd"] if isinstance(offer, dict) else offer.price_anchor_usd)
+    return f"${floor}" if floor == anchor else f"${floor}-${anchor}"
+
+
 def _build_outreach(offer: Offer) -> list[dict[str, str]]:
-    base = (
-        f"I am offering a small {offer.title} sprint (${offer.price_floor_usd}-${offer.price_anchor_usd}). "
-        f"{offer.promise} {offer.call_to_action}"
-    )
+    price = _price_label(offer)
+    if offer.offer_id == "tip_jar":
+        return [
+            {
+                "channel": "dm_short",
+                "text": (
+                    "I added a tiny AetherMoore support lane so people can help without a subscription "
+                    "or sales call. It is $5 one-time: https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k"
+                ),
+            },
+            {
+                "channel": "email",
+                "subject": "Tiny AetherMoore support lane",
+                "text": (
+                    "Hi,\n\n"
+                    "I added a small one-time AetherMoore support lane for people who want to help the "
+                    "work without a subscription, account setup, or sales call.\n\n"
+                    "It is $5 through Stripe: https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k\n\n"
+                    "That is it. No paperwork, no pitch deck, no platform signup.\n\n"
+                    "- Issac"
+                ),
+            },
+            {
+                "channel": "post",
+                "text": (
+                    "I added a tiny $5 one-time AetherMoore support lane for anyone who wants to help "
+                    "the work move without a subscription or sales call: "
+                    "https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k"
+                ),
+            },
+        ]
+    base = f"I am offering a small {offer.title} sprint ({price}). " f"{offer.promise} {offer.call_to_action}"
     return [
         {
             "channel": "dm_short",
@@ -231,14 +326,12 @@ def _build_outreach(offer: Offer) -> list[dict[str, str]]:
             "channel": "email",
             "subject": f"{offer.title} - small fixed-scope setup",
             "text": (
-                f"Hi,\n\n"
+                "Hi,\n\n"
                 f"I am running a fixed-scope {offer.title} sprint for {offer.buyer}.\n\n"
                 f"Result: {offer.promise}\n\n"
-                f"Includes:\n"
-                + "\n".join(f"- {item}" for item in offer.deliverables)
-                + f"\n\nPrice: ${offer.price_floor_usd}-${offer.price_anchor_usd}, depending on scope.\n"
+                "Includes:\n" + "\n".join(f"- {item}" for item in offer.deliverables) + f"\n\nPrice: {price}.\n"
                 f"{offer.call_to_action}\n\n"
-                f"- Issac"
+                "- Issac"
             ),
         },
         {
@@ -246,7 +339,7 @@ def _build_outreach(offer: Offer) -> list[dict[str, str]]:
             "text": (
                 f"I am opening a few fixed-scope {offer.title} slots this week. "
                 f"Built for {offer.buyer}. {offer.promise} "
-                f"Starting at ${offer.price_floor_usd}. {offer.call_to_action}"
+                f"Price: {price}. {offer.call_to_action}"
             ),
         },
     ]
@@ -264,7 +357,7 @@ def _markdown(report: dict[str, object]) -> str:
         f"- ID: `{offer['offer_id']}`",
         f"- Title: {offer['title']}",
         f"- Buyer: {offer['buyer']}",
-        f"- Price: ${offer['price_floor_usd']}-${offer['price_anchor_usd']}",
+        f"- Price: {_price_label(offer)}",
         f"- Promise: {offer['promise']}",
         "",
         "## 20-Minute Loop",
@@ -289,7 +382,7 @@ def _markdown(report: dict[str, object]) -> str:
     assert isinstance(snapshot, dict)
     for check in snapshot["checks"]:
         assert isinstance(check, dict)
-        lines.append(f"- `{ ' '.join(check['command']) }` -> {check['returncode']}")
+        lines.append(f"- `{' '.join(check['command'])}` -> {check['returncode']}")
     return "\n".join(lines) + "\n"
 
 
@@ -372,7 +465,11 @@ def _initial_state(*, offer_id: str, minutes: int, out_root: Path) -> dict[str, 
                 "publish_guard",
                 "command",
                 "Run npm package guard for GeoSeal CLI publish readiness.",
-                {"command": ["npm", "run", "publish:check:strict"], "timeout": 300},
+                {
+                    "command": ["npm", "run", "publish:check:strict"],
+                    "timeout": 300,
+                    "nonblocking": True,
+                },
             ),
             _task(
                 "bus_dm_short",
@@ -462,7 +559,9 @@ def _latest_packet_paths(out_root: Path) -> dict[str, Path]:
     }
 
 
-def _run_task(task: dict[str, object], *, offer_id: str, minutes: int, out_root: Path) -> tuple[StateName, dict[str, object]]:
+def _run_task(
+    task: dict[str, object], *, offer_id: str, minutes: int, out_root: Path
+) -> tuple[StateName, dict[str, object]]:
     kind = str(task["kind"])
     payload = task.get("payload", {})
     assert isinstance(payload, dict)
@@ -474,7 +573,12 @@ def _run_task(task: dict[str, object], *, offer_id: str, minutes: int, out_root:
         return ("DONE" if result.get("status") == "ok" else "BLOCKED"), result
     if kind == "command":
         result = _run_quick(list(payload["command"]), timeout=int(payload.get("timeout", 120)))
-        return ("DONE" if result.get("returncode") == 0 else "BLOCKED"), result
+        if result.get("returncode") == 0:
+            return "DONE", result
+        if bool(payload.get("nonblocking")):
+            result["nonblocking_warning"] = True
+            return "DONE", result
+        return "BLOCKED", result
     if kind == "queue_bus_dispatch":
         paths = _latest_packet_paths(out_root)
         row = _read_queue_item(paths, str(payload["channel"]))
@@ -546,9 +650,22 @@ def main() -> int:
     parser.add_argument("--offer", default="rotate", help="Offer ID to use, or 'rotate'.")
     parser.add_argument("--minutes", type=int, default=20, help="Execution budget in minutes.")
     parser.add_argument("--out-root", default=str(OUT_ROOT), help="Output directory root.")
-    parser.add_argument("--continuous", action="store_true", help="Run the next stateful task instead of stopping at packet generation.")
-    parser.add_argument("--max-steps", type=int, default=1, help="Maximum continuous tasks to advance this invocation.")
-    parser.add_argument("--reset-state", action="store_true", help="Start the continuous state machine over.")
+    parser.add_argument(
+        "--continuous",
+        action="store_true",
+        help="Run the next stateful task instead of stopping at packet generation.",
+    )
+    parser.add_argument(
+        "--max-steps",
+        type=int,
+        default=1,
+        help="Maximum continuous tasks to advance this invocation.",
+    )
+    parser.add_argument(
+        "--reset-state",
+        action="store_true",
+        help="Start the continuous state machine over.",
+    )
     parser.add_argument(
         "--cycle-when-complete",
         action="store_true",

@@ -1,14 +1,14 @@
 # ToyPHDM Prototype Dependencies
 
 # Core
-numpy>=1.24.0
+numpy>=2.4.6
 
 # Visualization
-matplotlib>=3.7.0
-plotly>=6.7.0
+matplotlib>=3.11.0
+plotly>=6.8.0
 
 # Interactive demo
-streamlit>=1.29.0
+streamlit>=1.58.0
 
 # Optional: For advanced embeddings
 # sentence-transformers>=2.2.0

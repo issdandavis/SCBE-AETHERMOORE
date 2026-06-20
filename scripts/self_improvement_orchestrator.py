@@ -18,7 +18,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -37,7 +36,7 @@ class ImprovementTask:
 
 
 def _hash_id(*parts: str) -> str:
-    return hashlib.sha1("|".join(parts).encode("utf-8")).hexdigest()[:12]
+    return hashlib.sha256("|".join(parts).encode("utf-8")).hexdigest()[:12]
 
 
 def _safe_load_json(path: Path) -> Optional[Dict[str, Any]]:

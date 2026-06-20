@@ -1,6 +1,6 @@
 ---
 name: hydra-deep-research-self-healing
-description: Run deep-research loops with HYDRA/Clawbot using self-healing workflow methods (sense, plan, execute, verify, recover), combining arXiv routing, Playwright evidence capture, synthesis smoke checks, and CI triage hooks. Use when operating long-running 24/7 research automation with deterministic cross-talk logging.
+description: Run deep-research loops with HYDRA/Agent Relay using self-healing workflow methods (sense, plan, execute, verify, recover), combining arXiv routing, Playwright evidence capture, synthesis smoke checks, and CI triage hooks. Use when operating long-running 24/7 research automation with deterministic cross-talk logging.
 ---
 
 # Hydra Deep Research Self-Healing
@@ -23,11 +23,11 @@ python C:\Users\issda\SCBE-AETHERMOORE\scripts\system\playwriter_lane_runner.py 
 2. `PLAN`
 - Run synthesis planner packet.
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\system\run_hydra_clawbot_synthesis.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\system\run_hydra_agent-relay_synthesis.ps1
 ```
 
 3. `EXECUTE`
-- Run stack readiness + OpenClaw lane.
+- Run stack readiness + External Agent lane.
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\system\run_hydra_research.ps1 -All
 ```
@@ -65,7 +65,7 @@ Emit packet each state transition (`start`, `blocked`, `done`) with where/why/ho
 Use VM control wrapper for remote operation:
 
 ```powershell
-& C:\Users\issda\SCBE-AETHERMOORE\scripts\system\vm_clawbot_24x7.ps1 -Action status -VmHost <VM_IP> -User ubuntu -KeyPath <SSH_KEY>
+& C:\Users\issda\SCBE-AETHERMOORE\scripts\system\vm_agent-relay_24x7.ps1 -Action status -VmHost <VM_IP> -User ubuntu -KeyPath <SSH_KEY>
 ```
 
 Run deep-research loop continuously:

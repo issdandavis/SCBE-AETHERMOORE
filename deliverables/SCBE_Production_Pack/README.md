@@ -13,7 +13,7 @@ Contents:
 - `packages/content-spin-engine/` - content adaptation templates and trackers
 
 Support:
-- `aethermoregames@pm.me`
+- `ai@aethermoore.com`
 
 Important:
 - This is a usage bundle, not the full SCBE research archive.

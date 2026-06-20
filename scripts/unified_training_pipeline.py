@@ -78,6 +78,7 @@ def ensure_kaggle_env() -> None:
 #  Step 1: Load data from all sources
 # ---------------------------------------------------------------------------
 
+
 def load_kaggle_data(max_samples: int = 10000) -> List[Dict[str, Any]]:
     """Pull adversarial prompt dataset from Kaggle."""
     ensure_kaggle_env()
@@ -94,16 +95,28 @@ def load_kaggle_data(max_samples: int = 10000) -> List[Dict[str, Any]]:
 
     try:
         import kagglehub
+
         path = kagglehub.dataset_download(KAGGLE_DATASET)
         logger.info("  Downloaded to: %s", path)
     except Exception:
         # Fallback: try kaggle CLI
         try:
             import subprocess
+
             subprocess.run(
-                ["kaggle", "datasets", "download", "-d", KAGGLE_DATASET, "-p",
-                 str(ARTIFACTS_DIR / "kaggle_downloads"), "--unzip"],
-                capture_output=True, text=True, timeout=120,
+                [
+                    "kaggle",
+                    "datasets",
+                    "download",
+                    "-d",
+                    KAGGLE_DATASET,
+                    "-p",
+                    str(ARTIFACTS_DIR / "kaggle_downloads"),
+                    "--unzip",
+                ],
+                capture_output=True,
+                text=True,
+                timeout=120,
             )
             path = str(ARTIFACTS_DIR / "kaggle_downloads")
             logger.info("  Downloaded via CLI to: %s", path)
@@ -116,8 +129,13 @@ def load_kaggle_data(max_samples: int = 10000) -> List[Dict[str, Any]]:
     import csv
 
     # Files that are implicitly ALL adversarial (no label column)
-    IMPLICIT_MALICIOUS = {"forbidden_question_set_df", "jailbreak_prompts",
-                          "malicous_deepset", "malignant", "predictionguard_df"}
+    IMPLICIT_MALICIOUS = {
+        "forbidden_question_set_df",
+        "jailbreak_prompts",
+        "malicous_deepset",
+        "malignant",
+        "predictionguard_df",
+    }
 
     for csv_file in Path(path).rglob("*.csv"):
         stem = csv_file.stem
@@ -163,11 +181,13 @@ def load_kaggle_data(max_samples: int = 10000) -> List[Dict[str, Any]]:
                 else:
                     label = 0  # Default to benign if no label
 
-                records.append({
-                    "text": text[:2000],
-                    "label": label,
-                    "source": f"kaggle_{stem}",
-                })
+                records.append(
+                    {
+                        "text": text[:2000],
+                        "label": label,
+                        "source": f"kaggle_{stem}",
+                    }
+                )
                 file_count += 1
 
         if file_count > 0:
@@ -175,6 +195,7 @@ def load_kaggle_data(max_samples: int = 10000) -> List[Dict[str, Any]]:
 
     # Apply max_samples BEFORE caching (per-label cap to keep balance)
     import random as _rng
+
     _rng.seed(42)
     pos_recs = [r for r in records if r["label"] == 1]
     neg_recs = [r for r in records if r["label"] == 0]
@@ -186,8 +207,9 @@ def load_kaggle_data(max_samples: int = 10000) -> List[Dict[str, Any]]:
     records = pos_recs + neg_recs
     _rng.shuffle(records)
 
-    logger.info("  After balance cap: %d adversarial + %d benign = %d total",
-                len(pos_recs), len(neg_recs), len(records))
+    logger.info(
+        "  After balance cap: %d adversarial + %d benign = %d total", len(pos_recs), len(neg_recs), len(records)
+    )
 
     # Cache for next run
     with open(cache_path, "w") as f:
@@ -200,14 +222,17 @@ def load_kaggle_data(max_samples: int = 10000) -> List[Dict[str, Any]]:
 def _generate_synthetic_adversarial(n: int) -> List[Dict[str, Any]]:
     """Fallback: generate adversarial data from SCBE benchmark suite."""
     from benchmarks.scbe.attacks.generator import generate_attacks
+
     attacks = generate_attacks(scale=max(10, n // 20))
     records = []
     for atk in attacks[:n]:
-        records.append({
-            "text": atk["prompt"][:2000],
-            "label": 1,
-            "source": f"scbe_benchmark_{atk['class']}",
-        })
+        records.append(
+            {
+                "text": atk["prompt"][:2000],
+                "label": 1,
+                "source": f"scbe_benchmark_{atk['class']}",
+            }
+        )
     # Add benign samples
     benign = [
         "Summarize this quarterly financial report.",
@@ -253,11 +278,13 @@ def load_local_sft() -> List[Dict[str, Any]]:
                         text = rec["input"]
 
                     if text.strip():
-                        records.append({
-                            "text": text.strip()[:2000],
-                            "label": 0,  # SFT records are legitimate by definition
-                            "source": f"local_sft_{jsonl_file.stem}",
-                        })
+                        records.append(
+                            {
+                                "text": text.strip()[:2000],
+                                "label": 0,  # SFT records are legitimate by definition
+                                "source": f"local_sft_{jsonl_file.stem}",
+                            }
+                        )
                 except json.JSONDecodeError:
                     continue
 
@@ -274,15 +301,18 @@ def load_scbe_benchmark_attacks() -> List[Dict[str, Any]]:
     """
     logger.info("[1c] Loading SCBE benchmark attacks (20 categories) — HOLDOUT ONLY")
     from benchmarks.scbe.attacks.generator import generate_attacks
+
     attacks = generate_attacks(scale=20)
     records = []
     for atk in attacks:
-        records.append({
-            "text": atk["prompt"][:2000],
-            "label": 1,
-            "source": f"scbe_benchmark_{atk['class']}",
-            "category": atk["class"],
-        })
+        records.append(
+            {
+                "text": atk["prompt"][:2000],
+                "label": 1,
+                "source": f"scbe_benchmark_{atk['class']}",
+                "category": atk["class"],
+            }
+        )
     logger.info("  Loaded %d benchmark attacks (reserved for blind test)", len(records))
     return records
 
@@ -303,17 +333,21 @@ def load_additional_benign() -> List[Dict[str, Any]]:
             # Extract paragraphs (lines with 30+ chars that aren't headers/code)
             for line in text.split("\n"):
                 line = line.strip()
-                if (len(line) >= 40
+                if (
+                    len(line) >= 40
                     and not line.startswith("#")
                     and not line.startswith("```")
                     and not line.startswith("|")
                     and not line.startswith("-")
-                    and "http" not in line.lower()):
-                    records.append({
-                        "text": line[:500],
-                        "label": 0,
-                        "source": f"docs_{md_file.stem}",
-                    })
+                    and "http" not in line.lower()
+                ):
+                    records.append(
+                        {
+                            "text": line[:500],
+                            "label": 0,
+                            "source": f"docs_{md_file.stem}",
+                        }
+                    )
                     count += 1
                     if count >= 500:
                         break
@@ -327,6 +361,7 @@ def load_additional_benign() -> List[Dict[str, Any]]:
 # ---------------------------------------------------------------------------
 #  Step 2: Prepare dataset with STRICT DATA ISOLATION
 # ---------------------------------------------------------------------------
+
 
 def prepare_dataset(
     train_records: List[Dict[str, Any]],
@@ -345,7 +380,7 @@ def prepare_dataset(
     # Hash all holdout texts to ensure no contamination
     holdout_hashes = set()
     for r in holdout_records:
-        holdout_hashes.add(hashlib.md5(r["text"].encode()).hexdigest())
+        holdout_hashes.add(hashlib.sha256(r["text"].encode()).hexdigest())
     logger.info("  Holdout fingerprints: %d (these MUST NOT appear in training)", len(holdout_hashes))
 
     # Deduplicate training data AND filter out any holdout contamination
@@ -353,7 +388,7 @@ def prepare_dataset(
     clean_train = []
     contamination_count = 0
     for r in train_records:
-        h = hashlib.md5(r["text"].encode()).hexdigest()
+        h = hashlib.sha256(r["text"].encode()).hexdigest()
         if h in holdout_hashes:
             contamination_count += 1
             continue  # BLOCK: this text is in the holdout set
@@ -375,6 +410,7 @@ def prepare_dataset(
 
     # Balance classes
     import random
+
     random.seed(42)
     if len(pos) == 0 or len(neg) == 0:
         logger.warning("  One class is empty! Using all data unbalanced.")
@@ -408,6 +444,7 @@ def prepare_dataset(
 # ---------------------------------------------------------------------------
 #  Step 3: Train classifier
 # ---------------------------------------------------------------------------
+
 
 def train_classifier(
     dataset: Dict[str, Any],
@@ -451,7 +488,9 @@ def train_classifier(
             self.records = records
             self.encodings = tokenizer(
                 [r["text"] for r in records],
-                truncation=True, padding=True, max_length=256,
+                truncation=True,
+                padding=True,
+                max_length=256,
                 return_tensors="pt",
             )
 
@@ -491,6 +530,7 @@ def train_classifier(
 
     def compute_metrics(eval_pred):
         import numpy as np
+
         logits, labels = eval_pred
         preds = np.argmax(logits, axis=-1)
         acc = (preds == labels).mean()
@@ -573,6 +613,7 @@ def _train_sklearn(dataset: Dict[str, Any]) -> Dict[str, Any]:
 #  Step 4: Evaluate against SCBE benchmark
 # ---------------------------------------------------------------------------
 
+
 def evaluate_against_benchmark(model_path: str, dry_run: bool = False) -> Dict[str, Any]:
     """Run the trained model against SCBE's 20-category attack suite."""
     logger.info("[4] Evaluating against SCBE benchmark (20 categories)")
@@ -588,12 +629,14 @@ def evaluate_against_benchmark(model_path: str, dry_run: bool = False) -> Dict[s
     # Try to load model
     try:
         import joblib
+
         model = joblib.load(Path(model_path) / "model.joblib")
         vectorizer = joblib.load(Path(model_path) / "vectorizer.joblib")
         use_sklearn = True
     except Exception:
         try:
             from transformers import pipeline
+
             classifier = pipeline("text-classification", model=model_path)
             use_sklearn = False
         except Exception:
@@ -644,6 +687,7 @@ def evaluate_against_benchmark(model_path: str, dry_run: bool = False) -> Dict[s
 #  Step 5: Push to HuggingFace
 # ---------------------------------------------------------------------------
 
+
 def push_to_huggingface(
     model_path: str,
     training_results: Dict[str, Any],
@@ -664,6 +708,7 @@ def push_to_huggingface(
 
     try:
         from huggingface_hub import HfApi
+
         api = HfApi(token=hf_token)
 
         # Push training report as dataset artifact
@@ -721,8 +766,16 @@ def push_to_kaggle(report: Dict[str, Any], push: bool = False) -> None:
             b = report.get("blind_benchmark_eval", {})
             w.writerow(["Training Samples", t.get("train_size", "N/A"), "Kaggle + local SFT + benign docs"])
             w.writerow(["Train-Eval Accuracy", f"{t.get('eval_accuracy', 0):.1%}", "In-distribution holdout"])
-            w.writerow(["Blind Detection Rate", f"{b.get('overall_detection_rate', 0):.1%}", "20 categories, strict isolation"])
-            w.writerow(["Contamination", report.get("data_isolation", {}).get("contamination_blocked", 0), "Records blocked from training"])
+            w.writerow(
+                ["Blind Detection Rate", f"{b.get('overall_detection_rate', 0):.1%}", "20 categories, strict isolation"]
+            )
+            w.writerow(
+                [
+                    "Contamination",
+                    report.get("data_isolation", {}).get("contamination_blocked", 0),
+                    "Records blocked from training",
+                ]
+            )
             w.writerow(["Timestamp", report.get("timestamp", ""), "Pipeline run time"])
 
         # Build per-category CSV
@@ -738,6 +791,7 @@ def push_to_kaggle(report: Dict[str, Any], push: bool = False) -> None:
         report_path = ARTIFACTS_DIR / "training_report.json"
         if report_path.exists():
             import shutil
+
             shutil.copy2(report_path, kaggle_dir / "training_report.json")
 
         # Write metadata
@@ -754,9 +808,18 @@ def push_to_kaggle(report: Dict[str, Any], push: bool = False) -> None:
 
         # Push new version
         result = subprocess.run(
-            ["kaggle", "datasets", "version", "-p", str(kaggle_dir),
-             "-m", f"Auto-update from training pipeline ({report.get('timestamp', 'unknown')})"],
-            capture_output=True, text=True, timeout=120,
+            [
+                "kaggle",
+                "datasets",
+                "version",
+                "-p",
+                str(kaggle_dir),
+                "-m",
+                f"Auto-update from training pipeline ({report.get('timestamp', 'unknown')})",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=120,
         )
         if result.returncode == 0:
             logger.info("  Pushed results to Kaggle: issacizrealdavis/scbe-governance-research-results")
@@ -771,13 +834,16 @@ def push_to_kaggle(report: Dict[str, Any], push: bool = False) -> None:
 #  Main
 # ---------------------------------------------------------------------------
 
+
 def main():
     parser = argparse.ArgumentParser(description="Unified SCBE Training Pipeline")
     parser.add_argument("--push", action="store_true", help="Push results to HuggingFace")
     parser.add_argument("--dry-run", action="store_true", help="Test pipeline without training")
     parser.add_argument("--epochs", type=int, default=3, help="Training epochs (default: 3)")
     parser.add_argument("--batch-size", type=int, default=32, help="Batch size (default: 32)")
-    parser.add_argument("--max-kaggle", type=int, default=40000, help="Max Kaggle samples (default: 40000, full dataset)")
+    parser.add_argument(
+        "--max-kaggle", type=int, default=40000, help="Max Kaggle samples (default: 40000, full dataset)"
+    )
     parser.add_argument("--sklearn", action="store_true", help="Force sklearn fallback (faster, no GPU needed)")
     args = parser.parse_args()
 
@@ -800,10 +866,14 @@ def main():
 
     # Training pool = Kaggle + Local SFT + extra benign docs (NO benchmark attacks)
     train_pool = kaggle_data + local_sft + extra_benign
-    logger.info("[1] Training pool: %d (Kaggle: %d, Local SFT: %d, Benign docs: %d)",
-                len(train_pool), len(kaggle_data), len(local_sft), len(extra_benign))
-    logger.info("    Blind holdout: %d benchmark attacks (NEVER seen during training)",
-                len(benchmark_holdout))
+    logger.info(
+        "[1] Training pool: %d (Kaggle: %d, Local SFT: %d, Benign docs: %d)",
+        len(train_pool),
+        len(kaggle_data),
+        len(local_sft),
+        len(extra_benign),
+    )
+    logger.info("    Blind holdout: %d benchmark attacks (NEVER seen during training)", len(benchmark_holdout))
 
     # Step 2: Prepare dataset with strict isolation
     dataset = prepare_dataset(train_pool, benchmark_holdout)
@@ -813,14 +883,18 @@ def main():
         training_results = _train_sklearn(dataset)
     else:
         training_results = train_classifier(
-            dataset, epochs=args.epochs, batch_size=args.batch_size, dry_run=args.dry_run,
+            dataset,
+            epochs=args.epochs,
+            batch_size=args.batch_size,
+            dry_run=args.dry_run,
         )
 
     # Step 4: BLIND EVALUATION against holdout benchmark
     # The model has NEVER seen these attacks during training.
     # This is the only number that matters.
     benchmark_results = evaluate_against_benchmark(
-        training_results["model_path"], dry_run=args.dry_run,
+        training_results["model_path"],
+        dry_run=args.dry_run,
     )
 
     # Step 5: Save report
@@ -862,7 +936,10 @@ def main():
 
     # Step 6: Push to HuggingFace (trained model + report)
     push_to_huggingface(
-        training_results["model_path"], training_results, benchmark_results, push=args.push,
+        training_results["model_path"],
+        training_results,
+        benchmark_results,
+        push=args.push,
     )
 
     # Step 7: Push eval results back to Kaggle (closes the feedback loop)
@@ -876,19 +953,25 @@ def main():
     print("  TRAINING COMPLETE — STRICT DATA ISOLATION")
     print("=" * 70)
     print(f"  Time:              {elapsed:.1f}s")
-    print(f"  Training data:     Kaggle ({len(kaggle_data)}) + Local SFT ({len(local_sft)}) + Benign docs ({len(extra_benign)})")
+    print(
+        f"  Training data:     Kaggle ({len(kaggle_data)}) + Local SFT ({len(local_sft)}) "
+        f"+ Benign docs ({len(extra_benign)})"
+    )
     print(f"  Train / Train-eval: {len(dataset['train'])} / {len(dataset['eval'])}")
     print(f"  Train-eval acc:    {training_results.get('eval_accuracy', 'N/A')}")
     print("")
     print("  --- BLIND HOLDOUT (model NEVER saw these during training) ---")
     print(f"  Holdout attacks:   {len(benchmark_holdout)} (20 categories)")
     if isinstance(benchmark_results.get("overall_detection_rate"), float):
-        print(f"  Blind detection:   {benchmark_results['overall_detection_rate']:.1%} ({benchmark_results['overall_detected']}/{benchmark_results['overall_total']})")
+        print(
+            f"  Blind detection:   {benchmark_results['overall_detection_rate']:.1%} "
+            f"({benchmark_results['overall_detected']}/{benchmark_results['overall_total']})"
+        )
     contaminated = dataset.get("contamination_blocked", 0)
     if contaminated > 0:
         print(f"  Contamination:     {contaminated} records BLOCKED from training")
     else:
-        print(f"  Contamination:     CLEAN (zero holdout leaks)")
+        print("  Contamination:     CLEAN (zero holdout leaks)")
     print("")
     print(f"  Report:            {report_path}")
     if args.push:

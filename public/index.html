@@ -1,416 +1,947 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AetherCode Arena — AI Round Table</title>
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#17c6cf">
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg:#070b12;--surface:rgba(11,19,31,.9);--card:rgba(20,30,46,.8);--border:rgba(142,170,199,.28);
-  --text:#e8f0fb;--dim:#a2b6cc;--accent:#17c6cf;--accent2:#ff9152;
-  --green:#2dd3a6;--red:#ff7272;--amber:#ffb84a;
-  --mono:'Cascadia Code','JetBrains Mono','Consolas',monospace;
-  --font:'Space Grotesk','Sora','Trebuchet MS',sans-serif;
-}
-body{
-  background:
-    radial-gradient(900px 500px at 8% -10%, rgba(23,198,207,.24), transparent 60%),
-    radial-gradient(760px 440px at 96% 0%, rgba(255,145,82,.2), transparent 58%),
-    linear-gradient(160deg, #070b12, #10182a);
-  color:var(--text);font-family:var(--font);height:100vh;overflow:hidden;display:flex;flex-direction:column
-}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AetherCode Arena — AI Round Table</title>
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#17c6cf" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      :root {
+        --bg: #070b12;
+        --surface: rgba(11, 19, 31, 0.9);
+        --card: rgba(20, 30, 46, 0.8);
+        --border: rgba(142, 170, 199, 0.28);
+        --text: #e8f0fb;
+        --dim: #a2b6cc;
+        --accent: #17c6cf;
+        --accent2: #ff9152;
+        --green: #2dd3a6;
+        --red: #ff7272;
+        --amber: #ffb84a;
+        --mono: 'Cascadia Code', 'JetBrains Mono', 'Consolas', monospace;
+        --font: 'Space Grotesk', 'Sora', 'Trebuchet MS', sans-serif;
+      }
+      body {
+        background:
+          radial-gradient(900px 500px at 8% -10%, rgba(23, 198, 207, 0.24), transparent 60%),
+          radial-gradient(760px 440px at 96% 0%, rgba(255, 145, 82, 0.2), transparent 58%),
+          linear-gradient(160deg, #070b12, #10182a);
+        color: var(--text);
+        font-family: var(--font);
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
 
-/* Top bar */
-.topbar{
-  display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid var(--border);
-  background:linear-gradient(180deg,rgba(14,22,34,.92),rgba(10,17,27,.82));flex-shrink:0;gap:14px
-}
-.topbar h1{font-size:16px;font-weight:700}
-.topbar h1 span{color:var(--accent)}
-.topbar-right{display:flex;gap:12px;align-items:center;font-size:12px;color:var(--dim)}
-.status-cluster{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.status-chip{
-  display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;
-  border:1px solid var(--border);background:rgba(255,255,255,.04);font-size:11px;color:var(--dim)
-}
-.status-chip strong{color:var(--text);font-weight:700}
-.status-chip.online{border-color:rgba(45,211,166,.45);color:#bdeedd;background:rgba(45,211,166,.08)}
-.status-chip.offline{border-color:rgba(255,114,114,.4);color:#ffc2c2;background:rgba(255,114,114,.08)}
-.status-chip a{color:inherit;text-decoration:none}
-.status-chip a:hover{text-decoration:underline}
-.deal-btn{background:linear-gradient(135deg,var(--accent),#2e98dd);color:#fff;border:none;padding:8px 20px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer}
-.deal-btn:hover{opacity:0.9}
-.deal-btn:disabled{opacity:0.5;cursor:not-allowed}
-.train-btn{background:var(--green);color:#fff;border:none;padding:6px 14px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer}
-.train-btn:hover{opacity:0.9}
-.train-btn:disabled{opacity:0.5}
-.install-btn{
-  background:rgba(23,198,207,.16);color:var(--accent);border:1px solid rgba(23,198,207,.45);
-  padding:6px 10px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer
-}
-.install-btn:disabled{opacity:.55;cursor:default}
-.xtalk-btn{
-  background:rgba(255,145,82,.14);color:var(--accent2);border:1px solid rgba(255,145,82,.45);
-  padding:6px 10px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer
-}
-.scout-btn{
-  background:rgba(45,211,166,.14);color:var(--green);border:1px solid rgba(45,211,166,.45);
-  padding:6px 10px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer
-}
-.lore-strip{display:flex;gap:6px;align-items:center}
-.lore-thumb{
-  width:38px;height:24px;border-radius:6px;overflow:hidden;border:1px solid var(--border);
-  background:linear-gradient(145deg,rgba(31,45,67,.8),rgba(15,23,38,.75))
-}
-.lore-thumb img{width:100%;height:100%;object-fit:cover}
-.mission-bar{
-  display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 16px;border-bottom:1px solid var(--border);
-  background:linear-gradient(180deg,rgba(8,13,22,.96),rgba(9,14,23,.82));flex-shrink:0
-}
-.mission-copy{display:flex;flex-direction:column;gap:4px;min-width:0}
-.mission-kicker{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);font-weight:700}
-.mission-copy strong{font-size:15px;line-height:1.2}
-.mission-copy span{font-size:12px;color:var(--dim);line-height:1.4}
-.mission-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-.mission-pill{
-  display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;
-  border:1px solid var(--border);background:rgba(255,255,255,.03);font-size:11px;color:var(--dim)
-}
-.mission-link{
-  display:inline-flex;align-items:center;justify-content:center;padding:7px 11px;border-radius:999px;
-  border:1px solid rgba(23,198,207,.34);background:rgba(23,198,207,.1);color:var(--text);text-decoration:none;
-  font-size:11px;font-weight:700
-}
-.mission-link:hover{border-color:rgba(23,198,207,.62);background:rgba(23,198,207,.16)}
+      /* Top bar */
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 16px;
+        border-bottom: 1px solid var(--border);
+        background: linear-gradient(180deg, rgba(14, 22, 34, 0.92), rgba(10, 17, 27, 0.82));
+        flex-shrink: 0;
+        gap: 14px;
+      }
+      .topbar h1 {
+        font-size: 16px;
+        font-weight: 700;
+      }
+      .topbar h1 span {
+        color: var(--accent);
+      }
+      .topbar-right {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        font-size: 12px;
+        color: var(--dim);
+      }
+      .status-cluster {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .status-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 9px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.04);
+        font-size: 11px;
+        color: var(--dim);
+      }
+      .status-chip strong {
+        color: var(--text);
+        font-weight: 700;
+      }
+      .status-chip.online {
+        border-color: rgba(45, 211, 166, 0.45);
+        color: #bdeedd;
+        background: rgba(45, 211, 166, 0.08);
+      }
+      .status-chip.offline {
+        border-color: rgba(255, 114, 114, 0.4);
+        color: #ffc2c2;
+        background: rgba(255, 114, 114, 0.08);
+      }
+      .status-chip a {
+        color: inherit;
+        text-decoration: none;
+      }
+      .status-chip a:hover {
+        text-decoration: underline;
+      }
+      .deal-btn {
+        background: linear-gradient(135deg, var(--accent), #2e98dd);
+        color: #fff;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .deal-btn:hover {
+        opacity: 0.9;
+      }
+      .deal-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .train-btn {
+        background: var(--green);
+        color: #fff;
+        border: none;
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 11px;
+        cursor: pointer;
+      }
+      .train-btn:hover {
+        opacity: 0.9;
+      }
+      .train-btn:disabled {
+        opacity: 0.5;
+      }
+      .install-btn {
+        background: rgba(23, 198, 207, 0.16);
+        color: var(--accent);
+        border: 1px solid rgba(23, 198, 207, 0.45);
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 11px;
+        cursor: pointer;
+      }
+      .install-btn:disabled {
+        opacity: 0.55;
+        cursor: default;
+      }
+      .xtalk-btn {
+        background: rgba(255, 145, 82, 0.14);
+        color: var(--accent2);
+        border: 1px solid rgba(255, 145, 82, 0.45);
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 11px;
+        cursor: pointer;
+      }
+      .scout-btn {
+        background: rgba(45, 211, 166, 0.14);
+        color: var(--green);
+        border: 1px solid rgba(45, 211, 166, 0.45);
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 11px;
+        cursor: pointer;
+      }
+      .lore-strip {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+      .lore-thumb {
+        width: 38px;
+        height: 24px;
+        border-radius: 6px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        background: linear-gradient(145deg, rgba(31, 45, 67, 0.8), rgba(15, 23, 38, 0.75));
+      }
+      .lore-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .mission-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 10px 16px;
+        border-bottom: 1px solid var(--border);
+        background: linear-gradient(180deg, rgba(8, 13, 22, 0.96), rgba(9, 14, 23, 0.82));
+        flex-shrink: 0;
+      }
+      .mission-copy {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+      }
+      .mission-kicker {
+        font-size: 10px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--accent);
+        font-weight: 700;
+      }
+      .mission-copy strong {
+        font-size: 15px;
+        line-height: 1.2;
+      }
+      .mission-copy span {
+        font-size: 12px;
+        color: var(--dim);
+        line-height: 1.4;
+      }
+      .mission-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+      .mission-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.03);
+        font-size: 11px;
+        color: var(--dim);
+      }
+      .mission-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 7px 11px;
+        border-radius: 999px;
+        border: 1px solid rgba(23, 198, 207, 0.34);
+        background: rgba(23, 198, 207, 0.1);
+        color: var(--text);
+        text-decoration: none;
+        font-size: 11px;
+        font-weight: 700;
+      }
+      .mission-link:hover {
+        border-color: rgba(23, 198, 207, 0.62);
+        background: rgba(23, 198, 207, 0.16);
+      }
 
-/* Main layout: 3 columns */
-.table-layout{display:grid;grid-template-columns:1fr 2fr 1fr;flex:1;gap:1px;background:var(--border);overflow:hidden;min-height:0}
+      /* Main layout: 3 columns */
+      .table-layout {
+        display: grid;
+        grid-template-columns: 1fr 2fr 1fr;
+        flex: 1;
+        gap: 1px;
+        background: var(--border);
+        overflow: hidden;
+        min-height: 0;
+      }
 
-/* Left/right columns stack seats */
-.seat-column{display:flex;flex-direction:column;gap:1px;overflow:hidden;min-height:0}
+      /* Left/right columns stack seats */
+      .seat-column {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        overflow: hidden;
+        min-height: 0;
+      }
 
-/* Player seats */
-.seat{background:rgba(10,16,25,.85);display:flex;flex-direction:column;overflow:hidden;flex:1;min-height:0}
-.seat-header{display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
-.seat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.seat-name{font-size:12px;font-weight:700;flex:1}
-.seat-model{font-size:9px;color:var(--dim);background:var(--card);padding:2px 5px;border-radius:4px}
-.seat-tongue{font-size:9px;color:var(--accent);background:rgba(99,102,241,0.15);padding:2px 5px;border-radius:4px;font-weight:700}
-.seat-role{font-size:8px;color:var(--dim);width:100%;margin-top:2px}
-.seat-status{font-size:9px;padding:2px 5px;border-radius:4px}
-.seat-status.idle{color:var(--green);background:rgba(16,185,129,0.1)}
-.seat-status.thinking{color:var(--amber);background:rgba(245,158,11,0.1)}
-.seat-status.error{color:var(--red);background:rgba(239,68,68,0.1)}
-.seat-status.offline{color:var(--dim);background:rgba(148,163,184,0.1)}
-.seat-status.proxy{color:#67e8f9;background:rgba(6,182,212,0.14)}
+      /* Player seats */
+      .seat {
+        background: rgba(10, 16, 25, 0.85);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        flex: 1;
+        min-height: 0;
+      }
+      .seat-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+        flex-wrap: wrap;
+      }
+      .seat-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .seat-name {
+        font-size: 12px;
+        font-weight: 700;
+        flex: 1;
+      }
+      .seat-model {
+        font-size: 9px;
+        color: var(--dim);
+        background: var(--card);
+        padding: 2px 5px;
+        border-radius: 4px;
+      }
+      .seat-tongue {
+        font-size: 9px;
+        color: var(--accent);
+        background: rgba(99, 102, 241, 0.15);
+        padding: 2px 5px;
+        border-radius: 4px;
+        font-weight: 700;
+      }
+      .seat-role {
+        font-size: 8px;
+        color: var(--dim);
+        width: 100%;
+        margin-top: 2px;
+      }
+      .seat-status {
+        font-size: 9px;
+        padding: 2px 5px;
+        border-radius: 4px;
+      }
+      .seat-status.idle {
+        color: var(--green);
+        background: rgba(16, 185, 129, 0.1);
+      }
+      .seat-status.thinking {
+        color: var(--amber);
+        background: rgba(245, 158, 11, 0.1);
+      }
+      .seat-status.error {
+        color: var(--red);
+        background: rgba(239, 68, 68, 0.1);
+      }
+      .seat-status.offline {
+        color: var(--dim);
+        background: rgba(148, 163, 184, 0.1);
+      }
+      .seat-status.proxy {
+        color: #67e8f9;
+        background: rgba(6, 182, 212, 0.14);
+      }
 
-.seat-chat{flex:1;overflow-y:auto;padding:6px 10px;font-size:12px;line-height:1.4;min-height:0}
-.seat-chat .msg{margin-bottom:6px;padding:5px 8px;border-radius:6px;word-wrap:break-word}
-.seat-chat .msg.user{background:rgba(23,198,207,0.15);color:var(--accent);border:1px solid rgba(23,198,207,0.2)}
-.seat-chat .msg.ai{background:var(--card);border:1px solid var(--border)}
-.seat-chat .msg.err{background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
-.seat-chat .msg.synthesis{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:var(--green)}
-.seat-chat .msg pre{font-family:var(--mono);font-size:11px;white-space:pre-wrap;margin-top:4px}
-.seat-chat .meta{font-size:9px;color:var(--dim);margin-top:3px}
-.seat-input-row{display:flex;gap:4px;padding:4px 6px;border-top:1px solid var(--border);flex-shrink:0}
-.seat-input{flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:5px;font-size:11px;font-family:var(--font)}
-.seat-input:focus{border-color:var(--accent);outline:none}
-.seat-send{background:linear-gradient(135deg,var(--accent),#2e98dd);color:#fff;border:none;padding:4px 10px;border-radius:5px;font-size:11px;cursor:pointer;font-weight:600}
-.seat-send:hover{opacity:0.9}
+      .seat-chat {
+        flex: 1;
+        overflow-y: auto;
+        padding: 6px 10px;
+        font-size: 12px;
+        line-height: 1.4;
+        min-height: 0;
+      }
+      .seat-chat .msg {
+        margin-bottom: 6px;
+        padding: 5px 8px;
+        border-radius: 6px;
+        word-wrap: break-word;
+      }
+      .seat-chat .msg.user {
+        background: rgba(23, 198, 207, 0.15);
+        color: var(--accent);
+        border: 1px solid rgba(23, 198, 207, 0.2);
+      }
+      .seat-chat .msg.ai {
+        background: var(--card);
+        border: 1px solid var(--border);
+      }
+      .seat-chat .msg.err {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--red);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+      }
+      .seat-chat .msg.synthesis {
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        color: var(--green);
+      }
+      .seat-chat .msg .answer-summary {
+        white-space: pre-wrap;
+      }
+      .seat-chat .msg .raw-toggle {
+        margin-top: 6px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        padding-top: 6px;
+      }
+      .seat-chat .msg .raw-toggle summary {
+        cursor: pointer;
+        color: var(--dim);
+        font-size: 10px;
+        font-weight: 700;
+      }
+      .seat-chat .msg .raw-toggle pre {
+        max-height: 220px;
+        overflow: auto;
+        background: rgba(0, 0, 0, 0.18);
+        border-radius: 6px;
+        padding: 7px;
+      }
+      .seat-chat .msg pre {
+        font-family: var(--mono);
+        font-size: 11px;
+        white-space: pre-wrap;
+        margin-top: 4px;
+      }
+      .seat-chat .meta {
+        font-size: 9px;
+        color: var(--dim);
+        margin-top: 3px;
+      }
+      .seat-input-row {
+        display: flex;
+        gap: 4px;
+        padding: 4px 6px;
+        border-top: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+      .seat-input {
+        flex: 1;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 4px 8px;
+        border-radius: 5px;
+        font-size: 11px;
+        font-family: var(--font);
+      }
+      .seat-input:focus {
+        border-color: var(--accent);
+        outline: none;
+      }
+      .seat-send {
+        background: linear-gradient(135deg, var(--accent), #2e98dd);
+        color: #fff;
+        border: none;
+        padding: 4px 10px;
+        border-radius: 5px;
+        font-size: 11px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .seat-send:hover {
+        opacity: 0.9;
+      }
 
-/* Center: shared code */
-.center-pane{display:flex;flex-direction:column;overflow:hidden}
-.center-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
-.center-header h2{font-size:14px;font-weight:600}
-.file-tabs{display:flex;gap:4px}
-.file-tab{font-size:11px;padding:4px 10px;border-radius:6px 6px 0 0;background:var(--card);border:1px solid var(--border);border-bottom:none;cursor:pointer;color:var(--dim)}
-.file-tab.active{background:var(--bg);color:var(--text);border-color:var(--accent)}
-.code-editor{flex:1;overflow:auto;padding:0;margin:0;min-height:0}
-.code-editor textarea{width:100%;height:100%;background:var(--bg);color:var(--text);border:none;padding:12px 16px;font-family:var(--mono);font-size:13px;line-height:1.6;resize:none;outline:none;tab-size:4}
+      /* Center: shared code */
+      .center-pane {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .center-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+      .center-header h2 {
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .file-tabs {
+        display: flex;
+        gap: 4px;
+      }
+      .file-tab {
+        font-size: 11px;
+        padding: 4px 10px;
+        border-radius: 6px 6px 0 0;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-bottom: none;
+        cursor: pointer;
+        color: var(--dim);
+      }
+      .file-tab.active {
+        background: var(--bg);
+        color: var(--text);
+        border-color: var(--accent);
+      }
+      .code-editor {
+        flex: 1;
+        overflow: auto;
+        padding: 0;
+        margin: 0;
+        min-height: 0;
+      }
+      .code-editor textarea {
+        width: 100%;
+        height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        border: none;
+        padding: 12px 16px;
+        font-family: var(--mono);
+        font-size: 13px;
+        line-height: 1.6;
+        resize: none;
+        outline: none;
+        tab-size: 4;
+      }
 
-/* Deal prompt bar */
-.deal-bar{display:flex;gap:8px;padding:8px 16px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}
-.deal-input{flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:14px;font-family:var(--font)}
-.deal-input:focus{border-color:var(--accent);outline:none}
-.deal-input::placeholder{color:var(--dim)}
+      /* Deal prompt bar */
+      .deal-bar {
+        display: flex;
+        gap: 8px;
+        padding: 8px 16px;
+        border-top: 1px solid var(--border);
+        background: var(--surface);
+        flex-shrink: 0;
+      }
+      .deal-input {
+        flex: 1;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-family: var(--font);
+      }
+      .deal-input:focus {
+        border-color: var(--accent);
+        outline: none;
+      }
+      .deal-input::placeholder {
+        color: var(--dim);
+      }
 
-@media(max-width:1100px){
-  body{overflow:auto;height:auto;min-height:100vh}
-  .topbar,.mission-bar{flex-wrap:wrap}
-  .mission-actions{justify-content:flex-start}
-  .table-layout{grid-template-columns:1fr}
-  .seat-column{display:grid;grid-template-columns:1fr 1fr}
-}
+      @media (max-width: 1100px) {
+        body {
+          overflow: auto;
+          height: auto;
+          min-height: 100vh;
+        }
+        .topbar,
+        .mission-bar {
+          flex-wrap: wrap;
+        }
+        .mission-actions {
+          justify-content: flex-start;
+        }
+        .table-layout {
+          grid-template-columns: 1fr;
+        }
+        .seat-column {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+        }
+      }
 
-@media(max-width:720px){
-  .seat-column{grid-template-columns:1fr}
-  .topbar-right{width:100%;justify-content:space-between;flex-wrap:wrap}
-  .deal-bar{flex-wrap:wrap}
-  .deal-input{min-width:100%}
-}
+      @media (max-width: 720px) {
+        .seat-column {
+          grid-template-columns: 1fr;
+        }
+        .topbar-right {
+          width: 100%;
+          justify-content: space-between;
+          flex-wrap: wrap;
+        }
+        .deal-bar {
+          flex-wrap: wrap;
+        }
+        .deal-input {
+          min-width: 100%;
+        }
+      }
 
-::-webkit-scrollbar{width:5px}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-::-webkit-scrollbar-track{background:transparent}
-</style>
-</head>
-<body>
-
-<div class="topbar">
-  <h1><span>AetherCode</span> Arena &mdash; Codex Round Table</h1>
-  <div class="lore-strip" id="loreStrip"></div>
-  <div class="topbar-right">
-    <div class="status-cluster" id="spaceportStatus">
-      <span class="status-chip offline" id="repoStatus">GitHub: connecting</span>
-      <span class="status-chip offline" id="hfStatus">HF: checking</span>
-      <span class="status-chip offline" id="ollamaStatus">Ollama: checking</span>
+      ::-webkit-scrollbar {
+        width: 5px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 3px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="topbar">
+      <h1><span>AetherCode</span> Arena &mdash; Codex Round Table</h1>
+      <div class="lore-strip" id="loreStrip"></div>
+      <div class="topbar-right">
+        <div class="status-cluster" id="spaceportStatus">
+          <span class="status-chip offline" id="repoStatus">GitHub: connecting</span>
+          <span class="status-chip offline" id="hfStatus">HF: checking</span>
+          <span class="status-chip offline" id="ollamaStatus">Ollama: checking</span>
+        </div>
+        <span id="playerCount">0 seated</span>
+        <span id="trainingCount">0 pairs</span>
+        <span id="agentCallsign">Lyra Forge</span>
+        <button class="scout-btn" id="replitScoutBtn" onclick="scoutReplitLegacy()">
+          Scout Replit
+        </button>
+        <button class="xtalk-btn" onclick="emitCrossTalk()">Cross-talk</button>
+        <button class="install-btn" id="arenaInstallBtn" onclick="promptInstall()">Install</button>
+        <button class="train-btn" onclick="flushTraining()">Train</button>
+        <span id="clock"></span>
+      </div>
     </div>
-    <span id="playerCount">0 seated</span>
-    <span id="trainingCount">0 pairs</span>
-    <span id="agentCallsign">Lyra Forge</span>
-    <button class="scout-btn" id="replitScoutBtn" onclick="scoutReplitLegacy()">Scout Replit</button>
-    <button class="xtalk-btn" onclick="emitCrossTalk()">Cross-talk</button>
-    <button class="install-btn" id="arenaInstallBtn" onclick="promptInstall()">Install</button>
-    <button class="train-btn" onclick="flushTraining()">Train</button>
-    <span id="clock"></span>
-  </div>
-</div>
 
-<div class="mission-bar">
-  <div class="mission-copy">
-    <div class="mission-kicker">Live Surface</div>
-    <strong>Operate the repo, website, and model round table from one page.</strong>
-    <span id="missionSummary">Booting arena telemetry and provider lanes.</span>
-  </div>
-  <div class="mission-actions">
-    <span class="mission-pill" id="missionHealth">Arena health unknown</span>
-    <a class="mission-link" href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank" rel="noreferrer">GitHub Repo</a>
-    <a class="mission-link" href="/site" target="_blank" rel="noreferrer">Website Lane</a>
-    <a class="mission-link" href="/api/health" target="_blank" rel="noreferrer">API Health</a>
-  </div>
-</div>
+    <div class="mission-bar">
+      <div class="mission-copy">
+        <div class="mission-kicker">Live Surface</div>
+        <strong>Operate the repo, website, and model round table from one page.</strong>
+        <span id="missionSummary">Booting arena telemetry and provider lanes.</span>
+      </div>
+      <div class="mission-actions">
+        <span class="mission-pill" id="missionHealth">Arena health unknown</span>
+        <a
+          class="mission-link"
+          href="https://github.com/issdandavis/SCBE-AETHERMOORE"
+          target="_blank"
+          rel="noreferrer"
+          >GitHub Repo</a
+        >
+        <a class="mission-link" href="/site" target="_blank" rel="noreferrer">Website Lane</a>
+        <a class="mission-link" href="qi.html" target="_blank" rel="noreferrer">AetherMoore QI</a>
+        <a class="mission-link" href="patent-field.html" target="_blank" rel="noreferrer"
+          >Patent Field</a
+        >
+        <a class="mission-link" href="/api/health" target="_blank" rel="noreferrer">API Health</a>
+      </div>
+    </div>
 
-<div class="table-layout" id="table">
-  <!-- Seats injected by JS -->
-</div>
+    <div class="table-layout" id="table">
+      <!-- Seats injected by JS -->
+    </div>
 
-<div class="deal-bar">
-  <input class="deal-input" id="dealInput" placeholder="Deal to all players or Deliberate for consensus..." autocomplete="off" />
-  <button class="deal-btn" id="dealBtn" onclick="dealToAll()">Deal</button>
-  <button class="deal-btn" id="relayBtn" style="background:#0ea5b7" onclick="relayChain()">Relay</button>
-  <button class="deal-btn" id="debateBtn" style="background:#f97316" onclick="debateDuel()">Debate</button>
-  <button class="deal-btn" id="deliberateBtn" style="background:var(--green)" onclick="deliberate()">Deliberate</button>
-</div>
+    <div class="deal-bar">
+      <input
+        class="deal-input"
+        id="dealInput"
+        placeholder='Deal to all, or use /game smoke narrative-combat, /bus, or /code...'
+        autocomplete="off"
+      />
+      <button class="deal-btn" id="dealBtn" onclick="dealToAll()">Deal</button>
+      <button class="deal-btn" id="relayBtn" style="background: #0ea5b7" onclick="relayChain()">
+        Relay
+      </button>
+      <button class="deal-btn" id="debateBtn" style="background: #f97316" onclick="debateDuel()">
+        Debate
+      </button>
+      <button
+        class="deal-btn"
+        id="deliberateBtn"
+        style="background: var(--green)"
+        onclick="deliberate()"
+      >
+        Deliberate
+      </button>
+    </div>
 
-<script>
-const API = window.location.origin;
+    <script>
+      const API = window.location.origin;
 
-// Players — Sacred Tongue roles from the AI Round Table
-const PLAYERS = [
-  { id: 'groq',          name: 'Groq',         color: '#f97316', model: 'llama-3.3-70b-versatile', tongue: 'KO', role: 'Intent Analyst' },
-  { id: 'cerebras',      name: 'Cerebras',      color: '#06b6d4', model: 'llama-3.3-70b',         tongue: 'RU', role: 'Security Auditor' },
-  { id: 'google_ai',     name: 'Google AI',     color: '#34d399', model: 'gemini-2.5-flash',       tongue: 'DR', role: 'Lead Architect' },
-  { id: 'claude',        name: 'Claude',        color: '#a78bfa', model: 'claude-sonnet',          tongue: 'UM', role: 'Governance Arbiter' },
-  { id: 'xai',           name: 'xAI (Grok)',    color: '#f472b6', model: 'grok-3-mini',            tongue: 'AV', role: 'Creative Advocate' },
-  { id: 'openrouter',    name: 'Kimi',          color: '#60a5fa', model: 'kimi-k2-instruct',       tongue: 'CA', role: 'Compute Optimizer' },
-  { id: 'github_models', name: 'GitHub',        color: '#e2e8f0', model: 'gpt-4o-mini',            tongue: 'RU', role: 'Code Reviewer' },
-  { id: 'huggingface',   name: 'HuggingFace',   color: '#ff6f00', model: 'inference',              tongue: 'AV', role: 'Model Trainer' },
-  { id: 'ollama',        name: 'Ollama',        color: '#fbbf24', model: 'local',                  tongue: 'KO', role: 'Local Runner' },
-];
+      // Players — Sacred Tongue roles from the AI Round Table
+      const PLAYERS = [
+        {
+          id: 'groq',
+          name: 'Groq',
+          color: '#f97316',
+          model: 'llama-3.3-70b-versatile',
+          tongue: 'KO',
+          role: 'Intent Analyst',
+        },
+        {
+          id: 'cerebras',
+          name: 'Cerebras',
+          color: '#06b6d4',
+          model: 'llama-3.3-70b',
+          tongue: 'RU',
+          role: 'Security Auditor',
+        },
+        {
+          id: 'google_ai',
+          name: 'Google AI',
+          color: '#34d399',
+          model: 'gemini-2.5-flash',
+          tongue: 'DR',
+          role: 'Lead Architect',
+        },
+        {
+          id: 'claude',
+          name: 'Claude',
+          color: '#a78bfa',
+          model: 'claude-sonnet',
+          tongue: 'UM',
+          role: 'Governance Arbiter',
+        },
+        {
+          id: 'xai',
+          name: 'xAI (Grok)',
+          color: '#f472b6',
+          model: 'grok-3-mini',
+          tongue: 'AV',
+          role: 'Creative Advocate',
+        },
+        {
+          id: 'openrouter',
+          name: 'Kimi',
+          color: '#60a5fa',
+          model: 'kimi-k2-instruct',
+          tongue: 'CA',
+          role: 'Compute Optimizer',
+        },
+        {
+          id: 'github_models',
+          name: 'GitHub',
+          color: '#e2e8f0',
+          model: 'gpt-4o-mini',
+          tongue: 'RU',
+          role: 'Code Reviewer',
+        },
+        {
+          id: 'huggingface',
+          name: 'HuggingFace',
+          color: '#ff6f00',
+          model: 'inference',
+          tongue: 'AV',
+          role: 'Model Trainer',
+        },
+        {
+          id: 'ollama',
+          name: 'Ollama',
+          color: '#fbbf24',
+          model: 'local',
+          tongue: 'KO',
+          role: 'Local Runner',
+        },
+      ];
 
-const TONGUE_INSTRUCTIONS = {
-  KO: 'Analyze the intent, motivation, and alignment of this query.',
-  AV: 'Explore creative solutions and narrative possibilities.',
-  RU: 'Identify risks, vulnerabilities, and edge cases.',
-  CA: 'Evaluate efficiency, cost, and implementation feasibility.',
-  UM: 'Assess policy compliance, ethics, and governance alignment.',
-  DR: 'Synthesize all perspectives into a coherent, actionable plan.',
-};
+      const TONGUE_INSTRUCTIONS = {
+        KO: 'Analyze the intent, motivation, and alignment of this query.',
+        AV: 'Explore creative solutions and narrative possibilities.',
+        RU: 'Identify risks, vulnerabilities, and edge cases.',
+        CA: 'Evaluate efficiency, cost, and implementation feasibility.',
+        UM: 'Assess policy compliance, ethics, and governance alignment.',
+        DR: 'Synthesize all perspectives into a coherent, actionable plan.',
+      };
 
-// State
-const seats = {};
-const providerStatus = {};
-let deferredInstallPrompt = null;
-let sharedCode = `# Shared workspace — all players see this code\n# Edit here, then Deal or Deliberate\n\ndef hello():\n    print("Hello from the Round Table")\n`;
-const REPLIT_OWNERS = ['issdandavis', 'ISDanDavis2'];
-const LEGACY_REPLIT_REPOS = [
-  'ai-workflow-architect-replit',
-  'ai-workflow-architect-main',
-  'AI-Workflow-Architect-1.2.2',
-  'AI-Workflow-Architect-1',
-  'Replit.gt',
-  'Repelit',
-];
-const LORE_FALLBACK = [
-  { title: 'Codex I', url: '/v1/lore/art/codex-spiralverse' },
-  { title: 'Codex II', url: '/v1/lore/art/everweave-fibonacci' },
-  { title: 'Codex III', url: '/v1/lore/art/polloneth-protocol' },
-  { title: 'Atlas', url: '/v1/lore/art/spiral-risk-zones' },
-];
+      // State
+      const seats = {};
+      const providerStatus = {};
+      let deferredInstallPrompt = null;
+      let sharedCode = `# Shared workspace — all players see this code\n# Edit here, then Deal or Deliberate\n\ndef hello():\n    print("Hello from the Round Table")\n`;
+      const REPLIT_OWNERS = ['issdandavis', 'ISDanDavis2'];
+      const LEGACY_REPLIT_REPOS = [
+        'ai-workflow-architect-replit',
+        'ai-workflow-architect-main',
+        'AI-Workflow-Architect-1.2.2',
+        'AI-Workflow-Architect-1',
+        'Replit.gt',
+        'Repelit',
+      ];
+      const LORE_FALLBACK = [
+        { title: 'Codex I', url: '/v1/lore/art/codex-spiralverse' },
+        { title: 'Codex II', url: '/v1/lore/art/everweave-fibonacci' },
+        { title: 'Codex III', url: '/v1/lore/art/polloneth-protocol' },
+        { title: 'Atlas', url: '/v1/lore/art/spiral-risk-zones' },
+      ];
 
-async function loadLoreStrip() {
-  const strip = document.getElementById('loreStrip');
-  if (!strip) return;
-  const renderItems = (items) => {
-    strip.replaceChildren();
-    items.forEach((item) => {
-      const imgSrc = safeLoreImageUrl(item && item.url);
-      if (!imgSrc) return;
-      const title = String((item && item.title) || 'Lore');
-      const thumb = document.createElement('span');
-      thumb.className = 'lore-thumb';
-      thumb.title = title;
-      const img = document.createElement('img');
-      img.src = imgSrc;
-      img.alt = title;
-      img.loading = 'lazy';
-      thumb.appendChild(img);
-      strip.appendChild(thumb);
-    });
-  };
-  try {
-    const resp = await fetch(API + '/v1/lore/art');
-    const data = resp.ok ? await resp.json() : { items: [] };
-    const items = Array.isArray(data.items) && data.items.length ? data.items.slice(0, 4) : LORE_FALLBACK;
-    renderItems(items);
-    if (!strip.childElementCount) renderItems(LORE_FALLBACK);
-  } catch (_err) {
-    renderItems(LORE_FALLBACK);
-  }
-}
+      async function loadLoreStrip() {
+        const strip = document.getElementById('loreStrip');
+        if (!strip) return;
+        const renderItems = (items) => {
+          strip.replaceChildren();
+          items.forEach((item) => {
+            const imgSrc = safeLoreImageUrl(item && item.url);
+            if (!imgSrc) return;
+            const title = String((item && item.title) || 'Lore');
+            const thumb = document.createElement('span');
+            thumb.className = 'lore-thumb';
+            thumb.title = title;
+            const img = document.createElement('img');
+            img.src = imgSrc;
+            img.alt = title;
+            img.loading = 'lazy';
+            thumb.appendChild(img);
+            strip.appendChild(thumb);
+          });
+        };
+        try {
+          const resp = await fetch(API + '/v1/lore/art');
+          const data = resp.ok ? await resp.json() : { items: [] };
+          const items =
+            Array.isArray(data.items) && data.items.length ? data.items.slice(0, 4) : LORE_FALLBACK;
+          renderItems(items);
+          if (!strip.childElementCount) renderItems(LORE_FALLBACK);
+        } catch (_err) {
+          renderItems(LORE_FALLBACK);
+        }
+      }
 
-function isStandaloneMode() {
-  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-}
+      function isStandaloneMode() {
+        return (
+          window.matchMedia('(display-mode: standalone)').matches ||
+          window.navigator.standalone === true
+        );
+      }
 
-function updateInstallUi() {
-  const btn = document.getElementById('arenaInstallBtn');
-  if (!btn) return;
-  const installed = isStandaloneMode();
-  btn.textContent = installed ? 'Installed' : 'Install';
-  btn.disabled = installed;
-}
+      function updateInstallUi() {
+        const btn = document.getElementById('arenaInstallBtn');
+        if (!btn) return;
+        const installed = isStandaloneMode();
+        btn.textContent = installed ? 'Installed' : 'Install';
+        btn.disabled = installed;
+      }
 
-function registerServiceWorker() {
-  if (!('serviceWorker' in navigator)) return;
-  navigator.serviceWorker.register('/sw.js').then(() => {
-    updateInstallUi();
-  }).catch(() => {});
-}
+      function registerServiceWorker() {
+        if (!('serviceWorker' in navigator)) return;
+        navigator.serviceWorker
+          .register('/sw.js')
+          .then(() => {
+            updateInstallUi();
+          })
+          .catch(() => {});
+      }
 
-function setSpaceportChip(id, label, online, href) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.className = 'status-chip ' + (online ? 'online' : 'offline');
-  if (href) {
-    el.innerHTML = `<a href="${href}" target="_blank" rel="noreferrer"><strong>${label}</strong></a>`;
-  } else {
-    el.innerHTML = `<strong>${label}</strong>`;
-  }
-}
+      function setSpaceportChip(id, label, online, href) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.className = 'status-chip ' + (online ? 'online' : 'offline');
+        if (href) {
+          el.innerHTML = `<a href="${href}" target="_blank" rel="noreferrer"><strong>${label}</strong></a>`;
+        } else {
+          el.innerHTML = `<strong>${label}</strong>`;
+        }
+      }
 
-async function loadSpaceportStatus() {
-  try {
-    const resp = await fetch(API + '/v1/spaceport/status');
-    if (!resp.ok) throw new Error('status unavailable');
-    const data = await resp.json();
-    const repo = data.repo || {};
-    const backends = data.backends || {};
-    const repoLabel = repo.connected
-      ? `GitHub: ${repo.name || 'repo'}@${repo.branch || 'main'}`
-      : 'GitHub: offline';
-    setSpaceportChip('repoStatus', repoLabel, !!repo.connected, repo.url || null);
+      async function loadSpaceportStatus() {
+        try {
+          const resp = await fetch(API + '/v1/spaceport/status');
+          if (!resp.ok) throw new Error('status unavailable');
+          const data = await resp.json();
+          const repo = data.repo || {};
+          const backends = data.backends || {};
+          const repoLabel = repo.connected
+            ? `GitHub: ${repo.name || 'repo'}@${repo.branch || 'main'}`
+            : 'GitHub: offline';
+          setSpaceportChip('repoStatus', repoLabel, !!repo.connected, repo.url || null);
 
-    const hf = backends.huggingface || {};
-    const hfLabel = hf.connected
-      ? `HF: ${hf.model || 'connected'}`
-      : 'HF: offline';
-    setSpaceportChip('hfStatus', hfLabel, !!hf.connected);
+          const hf = backends.huggingface || {};
+          const hfLabel = hf.connected ? `HF: ${hf.model || 'connected'}` : 'HF: offline';
+          setSpaceportChip('hfStatus', hfLabel, !!hf.connected);
 
-    const ollama = backends.ollama || {};
-    const ollamaLabel = ollama.connected
-      ? `Ollama: ${ollama.model || 'ready'}`
-      : 'Ollama: offline';
-    setSpaceportChip('ollamaStatus', ollamaLabel, !!ollama.connected);
-  } catch (_err) {
-    setSpaceportChip('repoStatus', 'GitHub: offline', false);
-    setSpaceportChip('hfStatus', 'HF: offline', false);
-    setSpaceportChip('ollamaStatus', 'Ollama: offline', false);
-  }
-}
+          const ollama = backends.ollama || {};
+          const ollamaLabel = ollama.connected
+            ? `Ollama: ${ollama.model || 'ready'}`
+            : 'Ollama: offline';
+          setSpaceportChip('ollamaStatus', ollamaLabel, !!ollama.connected);
+        } catch (_err) {
+          setSpaceportChip('repoStatus', 'GitHub: offline', false);
+          setSpaceportChip('hfStatus', 'HF: offline', false);
+          setSpaceportChip('ollamaStatus', 'Ollama: offline', false);
+        }
+      }
 
-function setupInstallPrompt() {
-  window.addEventListener('beforeinstallprompt', (event) => {
-    event.preventDefault();
-    deferredInstallPrompt = event;
-    updateInstallUi();
-  });
-  window.addEventListener('appinstalled', () => {
-    deferredInstallPrompt = null;
-    updateInstallUi();
-  });
-}
+      function setupInstallPrompt() {
+        window.addEventListener('beforeinstallprompt', (event) => {
+          event.preventDefault();
+          deferredInstallPrompt = event;
+          updateInstallUi();
+        });
+        window.addEventListener('appinstalled', () => {
+          deferredInstallPrompt = null;
+          updateInstallUi();
+        });
+      }
 
-async function promptInstall() {
-  updateInstallUi();
-  if (isStandaloneMode()) return;
-  if (!deferredInstallPrompt) {
-    alert('Install prompt not ready yet. Use browser menu: Install app / Add to Home Screen.');
-    return;
-  }
-  deferredInstallPrompt.prompt();
-  try {
-    await deferredInstallPrompt.userChoice;
-  } finally {
-    deferredInstallPrompt = null;
-    updateInstallUi();
-  }
-}
+      async function promptInstall() {
+        updateInstallUi();
+        if (isStandaloneMode()) return;
+        if (!deferredInstallPrompt) {
+          alert(
+            'Install prompt not ready yet. Use browser menu: Install app / Add to Home Screen.'
+          );
+          return;
+        }
+        deferredInstallPrompt.prompt();
+        try {
+          await deferredInstallPrompt.userChoice;
+        } finally {
+          deferredInstallPrompt = null;
+          updateInstallUi();
+        }
+      }
 
-async function emitCrossTalk() {
-  try {
-    const resp = await fetch(API + '/v1/crosstalk/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        summary: 'Arena round-table sync from browser surface.',
-        recipient: 'agent.claude',
-        sender: 'agent.codex',
-        intent: 'sync',
-        status: 'in_progress',
-        task_id: 'AETHERCODE-ARENA-CROSSTALK',
-        next_action: 'Continue multi-model deliberation and synthesis.',
-        proof: ['src/aethercode/arena.html'],
-      }),
-    });
-    const data = await resp.json();
-    if (!resp.ok) throw new Error(data.detail || 'cross-talk failed');
-    alert('Cross-talk sent: ' + (data.packet_id || 'ok'));
-  } catch (err) {
-    alert('Cross-talk error: ' + (err.message || 'failed'));
-  }
-}
+      async function emitCrossTalk() {
+        try {
+          const resp = await fetch(API + '/v1/crosstalk/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              summary: 'Arena round-table sync from browser surface.',
+              recipient: 'agent.claude',
+              sender: 'agent.codex',
+              intent: 'sync',
+              status: 'in_progress',
+              task_id: 'AETHERCODE-ARENA-CROSSTALK',
+              next_action: 'Continue multi-model deliberation and synthesis.',
+              proof: ['src/aethercode/arena.html'],
+            }),
+          });
+          const data = await resp.json();
+          if (!resp.ok) throw new Error(data.detail || 'cross-talk failed');
+          alert('Cross-talk sent: ' + (data.packet_id || 'ok'));
+        } catch (err) {
+          alert('Cross-talk error: ' + (err.message || 'failed'));
+        }
+      }
 
-function buildTable() {
-  const table = document.getElementById('table');
-  table.innerHTML = '';
+      function buildTable() {
+        const table = document.getElementById('table');
+        table.innerHTML = '';
 
-  const leftPlayers = PLAYERS.slice(0, 5);
-  const rightPlayers = PLAYERS.slice(5);
+        const leftPlayers = PLAYERS.slice(0, 5);
+        const rightPlayers = PLAYERS.slice(5);
 
-  // Left column
-  const leftCol = document.createElement('div');
-  leftCol.className = 'seat-column';
-  leftPlayers.forEach(p => leftCol.appendChild(createSeat(p)));
-  table.appendChild(leftCol);
+        // Left column
+        const leftCol = document.createElement('div');
+        leftCol.className = 'seat-column';
+        leftPlayers.forEach((p) => leftCol.appendChild(createSeat(p)));
+        table.appendChild(leftCol);
 
-  // Center code pane
-  const center = document.createElement('div');
-  center.className = 'center-pane';
-  center.innerHTML = `
+        // Center code pane
+        const center = document.createElement('div');
+        center.className = 'center-pane';
+        center.innerHTML = `
     <div class="center-header">
       <h2>Shared Code</h2>
       <div class="file-tabs">
@@ -421,26 +952,26 @@ function buildTable() {
       <textarea id="sharedEditor" spellcheck="false">${escHtml(sharedCode)}</textarea>
     </div>
   `;
-  table.appendChild(center);
+        table.appendChild(center);
 
-  // Right column
-  const rightCol = document.createElement('div');
-  rightCol.className = 'seat-column';
-  rightPlayers.forEach(p => rightCol.appendChild(createSeat(p)));
-  table.appendChild(rightCol);
+        // Right column
+        const rightCol = document.createElement('div');
+        rightCol.className = 'seat-column';
+        rightPlayers.forEach((p) => rightCol.appendChild(createSeat(p)));
+        table.appendChild(rightCol);
 
-  document.getElementById('playerCount').textContent = PLAYERS.length + ' seated';
-  updateMissionBar();
-  document.getElementById('sharedEditor').addEventListener('input', e => {
-    sharedCode = e.target.value;
-  });
-}
+        document.getElementById('playerCount').textContent = PLAYERS.length + ' seated';
+        updateMissionBar();
+        document.getElementById('sharedEditor').addEventListener('input', (e) => {
+          sharedCode = e.target.value;
+        });
+      }
 
-function createSeat(player) {
-  const el = document.createElement('div');
-  el.className = 'seat';
-  el.id = 'seat-' + player.id;
-  el.innerHTML = `
+      function createSeat(player) {
+        const el = document.createElement('div');
+        el.className = 'seat';
+        el.id = 'seat-' + player.id;
+        el.innerHTML = `
     <div class="seat-header">
       <div class="seat-dot" style="background:${player.color}"></div>
       <span class="seat-name" style="color:${player.color}">${player.name}</span>
@@ -456,449 +987,669 @@ function createSeat(player) {
     </div>
   `;
 
-  setTimeout(() => {
-    const inp = document.getElementById('input-' + player.id);
-    if (inp) inp.addEventListener('keydown', e => {
-      if (e.key === 'Enter') askPlayer(player.id);
-    });
-  }, 0);
+        setTimeout(() => {
+          const inp = document.getElementById('input-' + player.id);
+          if (inp)
+            inp.addEventListener('keydown', (e) => {
+              if (e.key === 'Enter') askPlayer(player.id);
+            });
+        }, 0);
 
-  seats[player.id] = { player, messages: [] };
-  return el;
-}
-
-function escHtml(s) {
-  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-function safeLoreImageUrl(url) {
-  try {
-    const parsed = new URL(String(url ?? ''), window.location.origin);
-    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return '';
-    return parsed.origin === window.location.origin
-      ? `${parsed.pathname}${parsed.search}${parsed.hash}`
-      : parsed.href;
-  } catch (_err) {
-    return '';
-  }
-}
-
-function trimText(s, maxLen = 1800) {
-  if (!s) return '';
-  return s.length > maxLen ? s.slice(0, maxLen) + '\n...[trimmed]' : s;
-}
-
-function availablePlayerIds() {
-  return PLAYERS
-    .map(p => p.id)
-    .filter(id => !(providerStatus[id] && providerStatus[id].available === false));
-}
-
-function orderedAvailableIds() {
-  const avail = availablePlayerIds();
-  const preferred = ['google_ai', 'claude', 'xai', 'github_models', 'huggingface', 'ollama', 'groq', 'cerebras', 'openrouter'];
-  const inPref = preferred.filter(id => avail.includes(id));
-  const rest = avail.filter(id => !inPref.includes(id));
-  return [...inPref, ...rest];
-}
-
-function resolveTentacleForSeat(playerId) {
-  const row = providerStatus[playerId];
-  if (!row || row.available !== false) return { tentacle: playerId, proxied: false, via: '' };
-  const candidates = orderedAvailableIds().filter(id => id !== playerId);
-  if (!candidates.length) return { tentacle: playerId, proxied: false, via: '' };
-  return { tentacle: candidates[0], proxied: true, via: candidates[0] };
-}
-
-function narratorSeatId() {
-  const ids = orderedAvailableIds();
-  return ids.length ? ids[0] : PLAYERS[0].id;
-}
-
-function addMessage(playerId, role, text, meta) {
-  const chat = document.getElementById('chat-' + playerId);
-  if (!chat) return;
-  const div = document.createElement('div');
-  div.className = 'msg ' + (role === 'error' ? 'err' : role === 'synthesis' ? 'synthesis' : role);
-  let content = escHtml(text);
-  content = content.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre>$2</pre>');
-  content = content.replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.06);padding:1px 4px;border-radius:3px">$1</code>');
-  div.innerHTML = content;
-  if (meta) {
-    const m = document.createElement('div');
-    m.className = 'meta';
-    m.textContent = meta;
-    div.appendChild(m);
-  }
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
-}
-
-function setStatus(playerId, status, label) {
-  const el = document.getElementById('status-' + playerId);
-  if (!el) return;
-  el.className = 'seat-status ' + status;
-  el.textContent = label || status;
-}
-
-function updateMissionBar() {
-  const summary = document.getElementById('missionSummary');
-  const health = document.getElementById('missionHealth');
-  if (!summary || !health) return;
-  const total = PLAYERS.length;
-  const known = PLAYERS.filter((p) => providerStatus[p.id]).length;
-  const online = PLAYERS.filter((p) => !(providerStatus[p.id] && providerStatus[p.id].available === false)).length;
-  const proxySeats = PLAYERS.filter((p) => providerStatus[p.id] && providerStatus[p.id].available === false).length;
-  const pairText = document.getElementById('trainingCount')?.textContent || '0 pairs';
-  summary.textContent = `${online}/${total} seats operable, ${pairText} staged, shared file main.py hot-loaded for multi-model deliberation.`;
-  if (!known) {
-    health.textContent = 'Arena health syncing';
-    return;
-  }
-  health.textContent = proxySeats ? `${online} lanes up, ${proxySeats} proxy seats` : `${online} lanes up, direct routing`;
-}
-
-// Check which providers are actually configured
-async function loadProviderStatus() {
-  try {
-    const resp = await fetch(API + '/v1/providers');
-    if (!resp.ok) return;
-    const data = await resp.json();
-    const rows = Array.isArray(data.tentacles) ? data.tentacles : [];
-    rows.forEach((row) => {
-      const id = row.tentacle;
-      providerStatus[id] = row;
-      if (!row.available) {
-        setStatus(id, 'offline', 'no key');
+        seats[player.id] = { player, messages: [] };
+        return el;
       }
-    });
-    updateMissionBar();
-  } catch (_err) {}
-}
 
-// Ask a single player — returns the response for Deliberate mode
-async function askPlayer(playerId, message) {
-  const input = document.getElementById('input-' + playerId);
-  const text = message || (input ? input.value.trim() : '');
-  if (!text) return null;
+      function escHtml(s) {
+        return String(s ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+      }
 
-  const provider = providerStatus[playerId];
-  const route = resolveTentacleForSeat(playerId);
-  if (provider && !provider.available && route.proxied) {
-    setStatus(playerId, 'proxy', `proxy:${route.via}`);
-  } else if (provider && !provider.available) {
-    addMessage(playerId, 'error', `No API key. Set ${provider.required_env || 'key'} in .env`);
-    return null;
-  }
-
-  if (input) input.value = '';
-  addMessage(playerId, 'user', text);
-  setStatus(playerId, 'thinking', 'thinking...');
-
-  const player = PLAYERS.find(p => p.id === playerId);
-  const tongueInstruction = player ? TONGUE_INSTRUCTIONS[player.tongue] || '' : '';
-  const roleContext = player ? `You are the ${player.role} (${player.tongue} tongue) in the AI Round Table. ${tongueInstruction}` : '';
-
-  try {
-    const body = {
-      message: text,
-      mode: 'chat',
-      tentacle: route.tentacle,
-      context: [
-        ...(route.proxied ? [{ role: 'system', content: `Proxy mode: provider ${route.via} is responding as seat ${playerId}. Keep the seat persona/role exactly.` }] : []),
-        { role: 'system', content: roleContext },
-        ...(sharedCode ? [{ role: 'system', content: 'Shared code:\n```\n' + sharedCode + '\n```' }] : []),
-      ],
-    };
-
-    const resp = await fetch(API + '/v1/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-
-    const data = await resp.json();
-
-    if (resp.ok && data.response) {
-      const routeMeta = route.proxied ? `proxy:${route.via} / ` : '';
-      addMessage(playerId, 'ai', data.response,
-        `${routeMeta}${data.tentacle} / ${data.model} / ${Math.round(data.latency_ms)}ms / ${Math.round(data.governance_score * 100)}%`
-      );
-      setStatus(playerId, 'idle', 'ready');
-      return { id: playerId, name: player.name, tongue: player.tongue, role: player.role, response: data.response };
-    } else {
-      const errMsg = data.detail || data.response || JSON.stringify(data);
-      addMessage(playerId, 'error', errMsg);
-      setStatus(playerId, 'error', 'error');
-      setTimeout(() => setStatus(playerId, 'idle', 'ready'), 5000);
-      return null;
-    }
-  } catch (err) {
-    addMessage(playerId, 'error', err.message);
-    setStatus(playerId, 'offline', 'offline');
-    return null;
-  }
-}
-
-// Deal — broadcast to all players simultaneously
-async function dealToAll() {
-  const input = document.getElementById('dealInput');
-  const text = input.value.trim();
-  if (!text) return;
-  input.value = '';
-
-  document.getElementById('dealBtn').disabled = true;
-  document.getElementById('dealBtn').textContent = 'Dealing...';
-
-  const promises = PLAYERS.map(p => askPlayer(p.id, text));
-  await Promise.allSettled(promises);
-
-  document.getElementById('dealBtn').disabled = false;
-  document.getElementById('dealBtn').textContent = 'Deal';
-  updateTrainingCount();
-}
-
-async function relayChain() {
-  const input = document.getElementById('dealInput');
-  const text = input.value.trim();
-  if (!text) return;
-  input.value = '';
-
-  const btn = document.getElementById('relayBtn');
-  btn.disabled = true;
-  btn.textContent = 'Relaying...';
-
-  const ids = orderedAvailableIds().slice(0, 6);
-  if (!ids.length) {
-    btn.disabled = false;
-    btn.textContent = 'Relay';
-    return;
-  }
-
-  const transcript = [];
-  let baton = text;
-  for (const id of ids) {
-    const relayPrompt = `RELAY MODE\nOriginal ask: "${text}"\nCurrent baton:\n${trimText(baton, 1200)}\n\nAdd one useful step and pass it on.\nFormat:\n1) Insight\n2) Action\n3) Handoff`;
-    const res = await askPlayer(id, relayPrompt);
-    if (res && res.response) {
-      baton = res.response;
-      transcript.push(`[${res.name}] ${trimText(res.response, 900)}`);
-    }
-  }
-
-  if (transcript.length) {
-    const synthId = ids.includes('google_ai') ? 'google_ai' : narratorSeatId();
-    const synthPrompt = `RELAY TRANSCRIPT\n${transcript.join('\n\n---\n\n')}\n\nReturn a single practical execution plan with numbered steps.`;
-    const synth = await askPlayer(synthId, synthPrompt);
-    if (synth && synth.response) {
-      addMessage(synth.id || synthId, 'synthesis', '[RELAY SYNTHESIS] ' + synth.response);
-    }
-  }
-
-  btn.disabled = false;
-  btn.textContent = 'Relay';
-  updateTrainingCount();
-}
-
-async function debateDuel() {
-  const input = document.getElementById('dealInput');
-  const topic = input.value.trim();
-  if (!topic) return;
-  input.value = '';
-
-  const btn = document.getElementById('debateBtn');
-  btn.disabled = true;
-  btn.textContent = 'Debating...';
-
-  const ids = orderedAvailableIds();
-  if (ids.length < 2) {
-    btn.disabled = false;
-    btn.textContent = 'Debate';
-    return;
-  }
-
-  const a = ids[0];
-  const b = ids.find(x => x !== a) || ids[1];
-  const aOpen = await askPlayer(a, `DEBATE OPENING\nTopic: ${topic}\nTake a strong position and include 3 concrete claims.`);
-  const bRebut = await askPlayer(
-    b,
-    `DEBATE REBUTTAL\nTopic: ${topic}\nOpponent said:\n${trimText(aOpen?.response || 'No opening received.', 1000)}\n\nRebut with evidence and tradeoffs.`
-  );
-  const aCounter = await askPlayer(
-    a,
-    `DEBATE COUNTER\nTopic: ${topic}\nOpponent rebuttal:\n${trimText(bRebut?.response || 'No rebuttal received.', 1000)}\n\nCounter with revised, stronger plan.`
-  );
-
-  const synthId = ids.includes('google_ai') ? 'google_ai' : narratorSeatId();
-  const synthPrompt = `DEBATE LOG\nTopic: ${topic}\n\nA opening:\n${trimText(aOpen?.response || '', 1000)}\n\nB rebuttal:\n${trimText(bRebut?.response || '', 1000)}\n\nA counter:\n${trimText(aCounter?.response || '', 1000)}\n\nProduce: winner, why, and merged best plan.`;
-  const synth = await askPlayer(synthId, synthPrompt);
-  if (synth && synth.response) {
-    addMessage(synth.id || synthId, 'synthesis', '[DEBATE SYNTHESIS] ' + synth.response);
-  }
-
-  btn.disabled = false;
-  btn.textContent = 'Debate';
-  updateTrainingCount();
-}
-
-// Deliberate — Deal to all, then synthesize consensus via Lead Architect (DR)
-async function deliberate() {
-  const input = document.getElementById('dealInput');
-  const text = input.value.trim();
-  if (!text) return;
-  input.value = '';
-
-  const btn = document.getElementById('deliberateBtn');
-  btn.disabled = true;
-  btn.textContent = 'Deliberating...';
-
-  // Phase 1: Fan out to all players
-  const promises = PLAYERS.map(p => askPlayer(p.id, text));
-  const results = await Promise.allSettled(promises);
-
-  // Phase 2: Collect responses
-  const responses = results
-    .filter(r => r.status === 'fulfilled' && r.value)
-    .map(r => `[${r.value.name} / ${r.value.tongue} / ${r.value.role}]:\n${r.value.response}`)
-    .join('\n\n---\n\n');
-
-  if (!responses) {
-    btn.disabled = false;
-    btn.textContent = 'Deliberate';
-    return;
-  }
-
-  // Phase 3: Synthesis round — send all responses to Lead Architect (Google AI / DR)
-  const synthesisPrompt = `ROUND TABLE SYNTHESIS\n\nThe AI Round Table was asked: "${text}"\n\n${PLAYERS.length} models responded. Their answers:\n\n${responses}\n\nAs Lead Architect (DR tongue), synthesize:\n1. Points of agreement\n2. Points of disagreement\n3. Your unified recommendation\n4. Action items`;
-
-  const synthesis = await askPlayer('google_ai', synthesisPrompt);
-  if (synthesis) {
-    // Also show synthesis in center or highlight it
-    addMessage('google_ai', 'synthesis', '[ROUND TABLE CONSENSUS] ' + synthesis.response);
-  }
-
-  btn.disabled = false;
-  btn.textContent = 'Deliberate';
-  updateTrainingCount();
-}
-
-async function scoutReplitLegacy() {
-  const btn = document.getElementById('replitScoutBtn');
-  btn.disabled = true;
-  btn.textContent = 'Scouting...';
-
-  try {
-    const merged = [];
-    const seen = new Set();
-
-    for (const owner of REPLIT_OWNERS) {
-      for (const repo of LEGACY_REPLIT_REPOS) {
-        const resp = await fetch(`${API}/v1/research/replit?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}&limit=6`);
-        const data = await resp.json();
-        if (!resp.ok || !data.ok) continue;
-        const rows = Array.isArray(data.items) ? data.items : [];
-        for (const item of rows) {
-          const key = `${item.repository}::${item.path}`;
-          if (seen.has(key)) continue;
-          seen.add(key);
-          merged.push(item);
+      function safeLoreImageUrl(url) {
+        try {
+          const parsed = new URL(String(url ?? ''), window.location.origin);
+          if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return '';
+          return parsed.origin === window.location.origin
+            ? `${parsed.pathname}${parsed.search}${parsed.hash}`
+            : parsed.href;
+        } catch (_err) {
+          return '';
         }
       }
-    }
 
-    if (!merged.length) {
-      for (const owner of REPLIT_OWNERS) {
-        const broad = await fetch(`${API}/v1/research/replit?owner=${encodeURIComponent(owner)}&limit=12`);
-        const data = await broad.json();
-        if (broad.ok && data.ok && Array.isArray(data.items)) {
-          for (const item of data.items) {
-            const key = `${item.repository}::${item.path}`;
-            if (seen.has(key)) continue;
-            seen.add(key);
-            merged.push(item);
+      function trimText(s, maxLen = 1800) {
+        if (!s) return '';
+        return s.length > maxLen ? s.slice(0, maxLen) + '\n...[trimmed]' : s;
+      }
+
+      function compactAnswer(text, maxLines = 5, maxChars = 560) {
+        const raw = String(text || '').trim();
+        if (!raw) return '';
+        const cleaned = raw
+          .replace(/\r/g, '')
+          .replace(/```[\s\S]*?```/g, '[code block hidden in raw output]')
+          .replace(/^#{1,6}\s*/gm, '')
+          .replace(/\*\*/g, '')
+          .trim();
+        const lines = cleaned
+          .split('\n')
+          .map((line) => line.trim())
+          .filter(Boolean)
+          .filter((line) => !/^[-*_]{3,}$/.test(line));
+        const useful = lines.filter((line) => {
+          const lower = line.toLowerCase();
+          return (
+            !lower.includes('you’ve whispered') &&
+            !lower.includes("you've whispered") &&
+            !lower.includes('fertile ground') &&
+            !lower.includes('blooms like')
+          );
+        });
+        const picked = (useful.length ? useful : lines).slice(0, maxLines);
+        let summary = picked.join('\n');
+        if (summary.length > maxChars) summary = summary.slice(0, maxChars).trimEnd() + '...';
+        return summary || raw.slice(0, maxChars);
+      }
+
+      function renderMessageContent(div, role, text) {
+        const raw = String(text || '');
+        const shouldCompact =
+          (role === 'ai' || role === 'synthesis') &&
+          (raw.length > 700 || raw.split('\n').length > 9);
+        if (!shouldCompact) {
+          let content = escHtml(raw);
+          content = content.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre>$2</pre>');
+          content = content.replace(
+            /`([^`]+)`/g,
+            '<code style="background:rgba(255,255,255,0.06);padding:1px 4px;border-radius:3px">$1</code>'
+          );
+          div.innerHTML = content;
+          return;
+        }
+        const summary = document.createElement('div');
+        summary.className = 'answer-summary';
+        summary.textContent = compactAnswer(raw);
+        const details = document.createElement('details');
+        details.className = 'raw-toggle';
+        const label = document.createElement('summary');
+        label.textContent = role === 'synthesis' ? 'Raw operator output' : 'Raw model output';
+        const pre = document.createElement('pre');
+        pre.textContent = raw;
+        details.appendChild(label);
+        details.appendChild(pre);
+        div.appendChild(summary);
+        div.appendChild(details);
+      }
+
+      function formatCliResult(command, data) {
+        const payload =
+          data && typeof data === 'object' && data.result !== undefined ? data.result : data;
+        const body =
+          typeof payload === 'string' ? payload : JSON.stringify(payload ?? data ?? {}, null, 2);
+        const status = data && data.ok === false ? 'FAILED' : 'OK';
+        const stderr = data && data.stderr ? `\n\nSTDERR:\n${data.stderr}` : '';
+        const stdout = data && data.stdout ? `\n\nSTDOUT:\n${data.stdout}` : '';
+        return `[OPERATOR ${status}] ${command}${stdout || `\n\n${body}`}${stderr}`;
+      }
+
+      async function runArenaCliCommand(command, sourceLabel = 'Command') {
+        const seatId = narratorSeatId();
+        addMessage(seatId, 'synthesis', `[${sourceLabel}] Running: ${command}`, 'operator cli');
+        try {
+          const resp = await fetch(API + '/api/cli/run', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ command }),
+          });
+          const data = await resp.json();
+          addMessage(
+            seatId,
+            data.ok === false ? 'error' : 'synthesis',
+            formatCliResult(command, data),
+            'operator cli'
+          );
+        } catch (err) {
+          addMessage(seatId, 'error', `[${sourceLabel}] CLI error: ${err.message || 'failed'}`);
+        }
+      }
+
+      async function handleArenaCommand(text, sourceLabel = 'Command') {
+        const value = String(text || '').trim();
+        if (!value) return false;
+        const seatId = narratorSeatId();
+        if (/^\d+$/.test(value)) {
+          addMessage(
+            seatId,
+            'synthesis',
+            `[${sourceLabel}] Selection "${value}" captured. No active numbered menu is bound here, so no model call was sent.\n\nUse a full instruction like "open Arena", "ask Polly to summarize this", or "deliberate: should I ship this?"`,
+            'local parser'
+          );
+          return true;
+        }
+        if (value === '/help') {
+          addMessage(
+            seatId,
+            'synthesis',
+            '[COMMAND HELP]\n/clear - clear seat transcripts\n/game smoke narrative-combat [--seed N] - run deterministic game smokes\n/bus <agent-bus command> - run safe Agent Bus verbs\n/code <intent> - compile a safe coding harness plan\n/cli <safe command> - run the allowlisted AetherBrowser CLI\nA bare number is treated as a UI selection, not a creative prompt.',
+            'local parser'
+          );
+          return true;
+        }
+        if (value === '/clear') {
+          Object.keys(seats).forEach((id) => {
+            const chat = document.getElementById('chat-' + id);
+            if (chat) chat.replaceChildren();
+          });
+          addMessage(seatId, 'synthesis', '[COMMAND] Cleared visible transcripts.', 'local parser');
+          return true;
+        }
+        if (value.startsWith('/bus ')) {
+          await runArenaCliCommand('bus ' + value.slice(5).trim(), sourceLabel);
+          return true;
+        }
+        if (value.startsWith('/code ')) {
+          await runArenaCliCommand(
+            'harness plan ' + JSON.stringify(value.slice(6).trim()),
+            sourceLabel
+          );
+          return true;
+        }
+        if (value.startsWith('/game ')) {
+          await runArenaCliCommand('game ' + value.slice(6).trim(), sourceLabel);
+          return true;
+        }
+        if (value.startsWith('/cli ')) {
+          await runArenaCliCommand(value.slice(5).trim(), sourceLabel);
+          return true;
+        }
+        return false;
+      }
+
+      function availablePlayerIds() {
+        return PLAYERS.map((p) => p.id).filter(
+          (id) => !(providerStatus[id] && providerStatus[id].available === false)
+        );
+      }
+
+      function orderedAvailableIds() {
+        const avail = availablePlayerIds();
+        const preferred = [
+          'google_ai',
+          'claude',
+          'xai',
+          'github_models',
+          'huggingface',
+          'ollama',
+          'groq',
+          'cerebras',
+          'openrouter',
+        ];
+        const inPref = preferred.filter((id) => avail.includes(id));
+        const rest = avail.filter((id) => !inPref.includes(id));
+        return [...inPref, ...rest];
+      }
+
+      function resolveTentacleForSeat(playerId) {
+        const row = providerStatus[playerId];
+        if (!row || row.available !== false) return { tentacle: playerId, proxied: false, via: '' };
+        const candidates = orderedAvailableIds().filter((id) => id !== playerId);
+        if (!candidates.length) return { tentacle: playerId, proxied: false, via: '' };
+        return { tentacle: candidates[0], proxied: true, via: candidates[0] };
+      }
+
+      function narratorSeatId() {
+        const ids = orderedAvailableIds();
+        return ids.length ? ids[0] : PLAYERS[0].id;
+      }
+
+      function addMessage(playerId, role, text, meta) {
+        const chat = document.getElementById('chat-' + playerId);
+        if (!chat) return;
+        const div = document.createElement('div');
+        div.className =
+          'msg ' + (role === 'error' ? 'err' : role === 'synthesis' ? 'synthesis' : role);
+        renderMessageContent(div, role, text);
+        if (meta) {
+          const m = document.createElement('div');
+          m.className = 'meta';
+          m.textContent = meta;
+          div.appendChild(m);
+        }
+        chat.appendChild(div);
+        chat.scrollTop = chat.scrollHeight;
+      }
+
+      function setStatus(playerId, status, label) {
+        const el = document.getElementById('status-' + playerId);
+        if (!el) return;
+        el.className = 'seat-status ' + status;
+        el.textContent = label || status;
+      }
+
+      function updateMissionBar() {
+        const summary = document.getElementById('missionSummary');
+        const health = document.getElementById('missionHealth');
+        if (!summary || !health) return;
+        const total = PLAYERS.length;
+        const known = PLAYERS.filter((p) => providerStatus[p.id]).length;
+        const online = PLAYERS.filter(
+          (p) => !(providerStatus[p.id] && providerStatus[p.id].available === false)
+        ).length;
+        const proxySeats = PLAYERS.filter(
+          (p) => providerStatus[p.id] && providerStatus[p.id].available === false
+        ).length;
+        const pairText = document.getElementById('trainingCount')?.textContent || '0 pairs';
+        summary.textContent = `${online}/${total} seats operable, ${pairText} staged, shared file main.py hot-loaded for multi-model deliberation.`;
+        if (!known) {
+          health.textContent = 'Arena health syncing';
+          return;
+        }
+        health.textContent = proxySeats
+          ? `${online} lanes up, ${proxySeats} proxy seats`
+          : `${online} lanes up, direct routing`;
+      }
+
+      // Check which providers are actually configured
+      async function loadProviderStatus() {
+        try {
+          const resp = await fetch(API + '/v1/providers');
+          if (!resp.ok) return;
+          const data = await resp.json();
+          const rows = Array.isArray(data.tentacles) ? data.tentacles : [];
+          rows.forEach((row) => {
+            const id = row.tentacle;
+            providerStatus[id] = row;
+            if (!row.available) {
+              setStatus(id, 'offline', 'no key');
+            }
+          });
+          updateMissionBar();
+        } catch (_err) {}
+      }
+
+      // Ask a single player — returns the response for Deliberate mode
+      async function askPlayer(playerId, message) {
+        const input = document.getElementById('input-' + playerId);
+        const text = message || (input ? input.value.trim() : '');
+        if (!text) return null;
+        if (!message && (await handleArenaCommand(text, playerId))) {
+          if (input) input.value = '';
+          return null;
+        }
+
+        const provider = providerStatus[playerId];
+        const route = resolveTentacleForSeat(playerId);
+        if (provider && !provider.available && route.proxied) {
+          setStatus(playerId, 'proxy', `proxy:${route.via}`);
+        } else if (provider && !provider.available) {
+          addMessage(
+            playerId,
+            'error',
+            `No API key. Set ${provider.required_env || 'key'} in .env`
+          );
+          return null;
+        }
+
+        if (input) input.value = '';
+        addMessage(playerId, 'user', text);
+        setStatus(playerId, 'thinking', 'thinking...');
+
+        const player = PLAYERS.find((p) => p.id === playerId);
+        const tongueInstruction = player ? TONGUE_INSTRUCTIONS[player.tongue] || '' : '';
+        const operatorContract =
+          'Operator UI contract: answer in plain language, max 5 short bullets. No poems, no roleplay, no story brainstorming, no decorative metaphors unless the user explicitly asks for fiction. If the user input is only a number, say it needs menu context and do not riff on the number.';
+        const roleContext = player
+          ? `You are the ${player.role} (${player.tongue} tongue) in the AI Round Table. ${tongueInstruction} ${operatorContract}`
+          : operatorContract;
+
+        try {
+          const body = {
+            message: text,
+            mode: 'chat',
+            tentacle: route.tentacle,
+            context: [
+              ...(route.proxied
+                ? [
+                    {
+                      role: 'system',
+                      content: `Proxy mode: provider ${route.via} is responding as seat ${playerId}. Keep the seat persona/role exactly.`,
+                    },
+                  ]
+                : []),
+              { role: 'system', content: roleContext },
+              ...(sharedCode
+                ? [{ role: 'system', content: 'Shared code:\n```\n' + sharedCode + '\n```' }]
+                : []),
+            ],
+          };
+
+          const resp = await fetch(API + '/v1/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+
+          const data = await resp.json();
+
+          if (resp.ok && data.response) {
+            const routeMeta = route.proxied ? `proxy:${route.via} / ` : '';
+            addMessage(
+              playerId,
+              'ai',
+              data.response,
+              `${routeMeta}${data.tentacle} / ${data.model} / ${Math.round(data.latency_ms)}ms / ${Math.round(data.governance_score * 100)}%`
+            );
+            setStatus(playerId, 'idle', 'ready');
+            return {
+              id: playerId,
+              name: player.name,
+              tongue: player.tongue,
+              role: player.role,
+              response: data.response,
+            };
+          } else {
+            const errMsg = data.detail || data.response || JSON.stringify(data);
+            addMessage(playerId, 'error', errMsg);
+            setStatus(playerId, 'error', 'error');
+            setTimeout(() => setStatus(playerId, 'idle', 'ready'), 5000);
+            return null;
+          }
+        } catch (err) {
+          addMessage(playerId, 'error', err.message);
+          setStatus(playerId, 'offline', 'offline');
+          return null;
+        }
+      }
+
+      // Deal — broadcast to all players simultaneously
+      async function dealToAll() {
+        const input = document.getElementById('dealInput');
+        const text = input.value.trim();
+        if (!text) return;
+        input.value = '';
+        if (await handleArenaCommand(text, 'Deal')) return;
+
+        document.getElementById('dealBtn').disabled = true;
+        document.getElementById('dealBtn').textContent = 'Dealing...';
+
+        const promises = PLAYERS.map((p) => askPlayer(p.id, text));
+        await Promise.allSettled(promises);
+
+        document.getElementById('dealBtn').disabled = false;
+        document.getElementById('dealBtn').textContent = 'Deal';
+        updateTrainingCount();
+      }
+
+      async function relayChain() {
+        const input = document.getElementById('dealInput');
+        const text = input.value.trim();
+        if (!text) return;
+        input.value = '';
+        if (await handleArenaCommand(text, 'Relay')) return;
+
+        const btn = document.getElementById('relayBtn');
+        btn.disabled = true;
+        btn.textContent = 'Relaying...';
+
+        const ids = orderedAvailableIds().slice(0, 6);
+        if (!ids.length) {
+          btn.disabled = false;
+          btn.textContent = 'Relay';
+          return;
+        }
+
+        const transcript = [];
+        let baton = text;
+        for (const id of ids) {
+          const relayPrompt = `RELAY MODE\nOriginal ask: "${text}"\nCurrent baton:\n${trimText(baton, 1200)}\n\nAdd one useful step and pass it on.\nFormat:\n1) Insight\n2) Action\n3) Handoff`;
+          const res = await askPlayer(id, relayPrompt);
+          if (res && res.response) {
+            baton = res.response;
+            transcript.push(`[${res.name}] ${trimText(res.response, 900)}`);
           }
         }
+
+        if (transcript.length) {
+          const synthId = ids.includes('google_ai') ? 'google_ai' : narratorSeatId();
+          const synthPrompt = `RELAY TRANSCRIPT\n${transcript.join('\n\n---\n\n')}\n\nReturn a single practical execution plan with numbered steps.`;
+          const synth = await askPlayer(synthId, synthPrompt);
+          if (synth && synth.response) {
+            addMessage(synth.id || synthId, 'synthesis', '[RELAY SYNTHESIS] ' + synth.response);
+          }
+        }
+
+        btn.disabled = false;
+        btn.textContent = 'Relay';
+        updateTrainingCount();
       }
-    }
 
-    const top = merged.slice(0, 12);
-    const summaryLines = top.map((item, i) => `${i + 1}. ${item.repository} :: ${item.path}\n${item.url}`);
-    const summary = summaryLines.length ? summaryLines.join('\n\n') : 'No Replit-related hits found on GitHub.';
+      async function debateDuel() {
+        const input = document.getElementById('dealInput');
+        const topic = input.value.trim();
+        if (!topic) return;
+        input.value = '';
+        if (await handleArenaCommand(topic, 'Debate')) return;
 
-    const seatId = narratorSeatId();
-    addMessage(seatId, 'synthesis', '[REPLIT LEGACY SCOUT]\n' + summary, `${top.length} GitHub hits`);
+        const btn = document.getElementById('debateBtn');
+        btn.disabled = true;
+        btn.textContent = 'Debating...';
 
-    if (top.length) {
-      document.getElementById('dealInput').value =
-        `Using these legacy Replit code hits from GitHub:\n${summary}\n\nPropose how to port the best parts into current Arena + gateway in 5 concrete steps.`;
-    }
-  } catch (err) {
-    addMessage(narratorSeatId(), 'error', 'Replit scout failed: ' + (err.message || 'unknown error'));
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Scout Replit';
-  }
-}
+        const ids = orderedAvailableIds();
+        if (ids.length < 2) {
+          btn.disabled = false;
+          btn.textContent = 'Debate';
+          return;
+        }
 
-// Training flywheel — flush pairs + push to HuggingFace
-async function flushTraining() {
-  const btn = document.querySelector('.train-btn');
-  btn.textContent = 'Pushing...';
-  btn.disabled = true;
-  try {
-    const resp = await fetch(API + '/v1/training/push', { method: 'POST' });
-    const data = await resp.json();
-    if (data.status === 'pushed') {
-      btn.textContent = 'Pushed!';
-    } else if (data.status === 'flushed_only') {
-      btn.textContent = 'Flushed';
-    } else {
-      btn.textContent = 'No data';
-    }
-    setTimeout(() => { btn.textContent = 'Train'; btn.disabled = false; }, 3000);
-  } catch {
-    btn.textContent = 'Train';
-    btn.disabled = false;
-  }
-}
+        const a = ids[0];
+        const b = ids.find((x) => x !== a) || ids[1];
+        const aOpen = await askPlayer(
+          a,
+          `DEBATE OPENING\nTopic: ${topic}\nTake a strong position and include 3 concrete claims.`
+        );
+        const bRebut = await askPlayer(
+          b,
+          `DEBATE REBUTTAL\nTopic: ${topic}\nOpponent said:\n${trimText(aOpen?.response || 'No opening received.', 1000)}\n\nRebut with evidence and tradeoffs.`
+        );
+        const aCounter = await askPlayer(
+          a,
+          `DEBATE COUNTER\nTopic: ${topic}\nOpponent rebuttal:\n${trimText(bRebut?.response || 'No rebuttal received.', 1000)}\n\nCounter with revised, stronger plan.`
+        );
 
-async function updateTrainingCount() {
-  try {
-    const resp = await fetch(API + '/v1/training/stats');
-    const data = await resp.json();
-    document.getElementById('trainingCount').textContent = data.total_pairs + ' pairs';
-    updateMissionBar();
-  } catch {}
-}
+        const synthId = ids.includes('google_ai') ? 'google_ai' : narratorSeatId();
+        const synthPrompt = `DEBATE LOG\nTopic: ${topic}\n\nA opening:\n${trimText(aOpen?.response || '', 1000)}\n\nB rebuttal:\n${trimText(bRebut?.response || '', 1000)}\n\nA counter:\n${trimText(aCounter?.response || '', 1000)}\n\nProduce: winner, why, and merged best plan.`;
+        const synth = await askPlayer(synthId, synthPrompt);
+        if (synth && synth.response) {
+          addMessage(synth.id || synthId, 'synthesis', '[DEBATE SYNTHESIS] ' + synth.response);
+        }
 
-// Clock
-setInterval(() => {
-  document.getElementById('clock').textContent = new Date().toLocaleTimeString();
-}, 1000);
+        btn.disabled = false;
+        btn.textContent = 'Debate';
+        updateTrainingCount();
+      }
 
-// Periodic training count update
-setInterval(updateTrainingCount, 15000);
+      // Deliberate — Deal to all, then synthesize consensus via Lead Architect (DR)
+      async function deliberate() {
+        const input = document.getElementById('dealInput');
+        const text = input.value.trim();
+        if (!text) return;
+        input.value = '';
+        if (await handleArenaCommand(text, 'Deliberate')) return;
 
-// Deal/Deliberate on Enter
-document.getElementById('dealInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter' && e.shiftKey) {
-    e.preventDefault();
-    deliberate();
-  } else if (e.key === 'Enter') {
-    dealToAll();
-  }
-});
+        const btn = document.getElementById('deliberateBtn');
+        btn.disabled = true;
+        btn.textContent = 'Deliberating...';
 
-// Build + init
-buildTable();
-loadLoreStrip();
-loadSpaceportStatus();
-registerServiceWorker();
-setupInstallPrompt();
-updateInstallUi();
-loadProviderStatus();
-updateTrainingCount();
-setInterval(loadSpaceportStatus, 20000);
-</script>
-</body>
+        // Phase 1: Fan out to all players
+        const promises = PLAYERS.map((p) => askPlayer(p.id, text));
+        const results = await Promise.allSettled(promises);
+
+        // Phase 2: Collect responses
+        const responses = results
+          .filter((r) => r.status === 'fulfilled' && r.value)
+          .map(
+            (r) => `[${r.value.name} / ${r.value.tongue} / ${r.value.role}]:\n${r.value.response}`
+          )
+          .join('\n\n---\n\n');
+
+        if (!responses) {
+          btn.disabled = false;
+          btn.textContent = 'Deliberate';
+          return;
+        }
+
+        // Phase 3: Synthesis round — send all responses to Lead Architect (Google AI / DR)
+        const synthesisPrompt = `ROUND TABLE SYNTHESIS\n\nThe AI Round Table was asked: "${text}"\n\n${PLAYERS.length} models responded. Their answers:\n\n${responses}\n\nAs Lead Architect (DR tongue), synthesize:\n1. Points of agreement\n2. Points of disagreement\n3. Your unified recommendation\n4. Action items`;
+
+        const synthesis = await askPlayer('google_ai', synthesisPrompt);
+        if (synthesis) {
+          // Also show synthesis in center or highlight it
+          addMessage('google_ai', 'synthesis', '[ROUND TABLE CONSENSUS] ' + synthesis.response);
+        }
+
+        btn.disabled = false;
+        btn.textContent = 'Deliberate';
+        updateTrainingCount();
+      }
+
+      async function scoutReplitLegacy() {
+        const btn = document.getElementById('replitScoutBtn');
+        btn.disabled = true;
+        btn.textContent = 'Scouting...';
+
+        try {
+          const merged = [];
+          const seen = new Set();
+
+          for (const owner of REPLIT_OWNERS) {
+            for (const repo of LEGACY_REPLIT_REPOS) {
+              const resp = await fetch(
+                `${API}/v1/research/replit?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}&limit=6`
+              );
+              const data = await resp.json();
+              if (!resp.ok || !data.ok) continue;
+              const rows = Array.isArray(data.items) ? data.items : [];
+              for (const item of rows) {
+                const key = `${item.repository}::${item.path}`;
+                if (seen.has(key)) continue;
+                seen.add(key);
+                merged.push(item);
+              }
+            }
+          }
+
+          if (!merged.length) {
+            for (const owner of REPLIT_OWNERS) {
+              const broad = await fetch(
+                `${API}/v1/research/replit?owner=${encodeURIComponent(owner)}&limit=12`
+              );
+              const data = await broad.json();
+              if (broad.ok && data.ok && Array.isArray(data.items)) {
+                for (const item of data.items) {
+                  const key = `${item.repository}::${item.path}`;
+                  if (seen.has(key)) continue;
+                  seen.add(key);
+                  merged.push(item);
+                }
+              }
+            }
+          }
+
+          const top = merged.slice(0, 12);
+          const summaryLines = top.map(
+            (item, i) => `${i + 1}. ${item.repository} :: ${item.path}\n${item.url}`
+          );
+          const summary = summaryLines.length
+            ? summaryLines.join('\n\n')
+            : 'No Replit-related hits found on GitHub.';
+
+          const seatId = narratorSeatId();
+          addMessage(
+            seatId,
+            'synthesis',
+            '[REPLIT LEGACY SCOUT]\n' + summary,
+            `${top.length} GitHub hits`
+          );
+
+          if (top.length) {
+            document.getElementById('dealInput').value =
+              `Using these legacy Replit code hits from GitHub:\n${summary}\n\nPropose how to port the best parts into current Arena + gateway in 5 concrete steps.`;
+          }
+        } catch (err) {
+          addMessage(
+            narratorSeatId(),
+            'error',
+            'Replit scout failed: ' + (err.message || 'unknown error')
+          );
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Scout Replit';
+        }
+      }
+
+      // Training flywheel — flush pairs + push to HuggingFace
+      async function flushTraining() {
+        const btn = document.querySelector('.train-btn');
+        btn.textContent = 'Pushing...';
+        btn.disabled = true;
+        try {
+          const resp = await fetch(API + '/v1/training/push', { method: 'POST' });
+          const data = await resp.json();
+          if (data.status === 'pushed') {
+            btn.textContent = 'Pushed!';
+          } else if (data.status === 'flushed_only') {
+            btn.textContent = 'Flushed';
+          } else {
+            btn.textContent = 'No data';
+          }
+          setTimeout(() => {
+            btn.textContent = 'Train';
+            btn.disabled = false;
+          }, 3000);
+        } catch {
+          btn.textContent = 'Train';
+          btn.disabled = false;
+        }
+      }
+
+      async function updateTrainingCount() {
+        try {
+          const resp = await fetch(API + '/v1/training/stats');
+          const data = await resp.json();
+          document.getElementById('trainingCount').textContent = data.total_pairs + ' pairs';
+          updateMissionBar();
+        } catch {}
+      }
+
+      // Clock
+      setInterval(() => {
+        document.getElementById('clock').textContent = new Date().toLocaleTimeString();
+      }, 1000);
+
+      // Periodic training count update
+      setInterval(updateTrainingCount, 15000);
+
+      // Deal/Deliberate on Enter
+      document.getElementById('dealInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && e.shiftKey) {
+          e.preventDefault();
+          deliberate();
+        } else if (e.key === 'Enter') {
+          dealToAll();
+        }
+      });
+
+      // Build + init
+      buildTable();
+      loadLoreStrip();
+      loadSpaceportStatus();
+      registerServiceWorker();
+      setupInstallPrompt();
+      updateInstallUi();
+      loadProviderStatus();
+      updateTrainingCount();
+      setInterval(loadSpaceportStatus, 20000);
+    </script>
+  </body>
 </html>

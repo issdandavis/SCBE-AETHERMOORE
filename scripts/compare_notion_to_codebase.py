@@ -19,7 +19,6 @@ from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 
-
 STOPWORDS = {
     "the",
     "and",

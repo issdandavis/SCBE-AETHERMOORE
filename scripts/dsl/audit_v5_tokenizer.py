@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Audit parser-critical DSL selector tokens for the v5 contract lane."""
+
 from __future__ import annotations
 
 import json
@@ -7,7 +8,6 @@ import re
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
-
 
 ROOT = Path(__file__).resolve().parents[2]
 HOLDOUT = ROOT / "training-data" / "sft" / "bijective_dsl_v5_holdout.sft.jsonl"
@@ -54,7 +54,10 @@ def main() -> int:
         "weighted_ce_symbols": weighted_tokens,
         "verdict": "PASS" if not failures else "FAIL",
         "failures": failures,
-        "notes": "Lightweight audit: verifies the symbolic contract tokens that kernel_template.py upweights after model tokenizer encoding.",
+        "notes": (
+            "Lightweight audit: verifies the symbolic contract tokens that kernel_template.py "
+            "upweights after model tokenizer encoding."
+        ),
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(payload, indent=2), encoding="utf-8")

@@ -85,4 +85,3 @@ def audit_pqc_keyset(
         "key_fingerprint": hashlib.sha256(f"{kyber_id}|{dilithium_id}".encode("utf-8")).hexdigest()[:20],
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
     }
-

@@ -27,15 +27,23 @@ def test_resolve_chrome_binary_uses_env_override(monkeypatch):
 
 def test_resolve_chrome_binary_linux_checks_common_names(monkeypatch):
     module = importlib.import_module("agents.browsers.cdp_backend")
+    resolver = importlib.import_module("agents.browser.binary_resolver")
 
+    # Hermetic: drop the playwright_bundle face (probes are bound inside
+    # _FACES at import time) so the system_stable face decides.
     monkeypatch.delenv("SCBE_CHROME_PATH", raising=False)
+    monkeypatch.setattr(
+        resolver,
+        "_FACES",
+        tuple((name, probe) for name, probe in resolver._FACES if name != "playwright_bundle"),
+    )
 
     def fake_which(name):
         if name == "google-chrome-stable":
             return "/usr/bin/google-chrome-stable"
         return None
 
-    monkeypatch.setattr(module.shutil, "which", fake_which)
+    monkeypatch.setattr(resolver.shutil, "which", fake_which)
 
     path = module.resolve_chrome_binary(system="Linux")
 
@@ -45,12 +53,13 @@ def test_resolve_chrome_binary_linux_checks_common_names(monkeypatch):
 def test_get_chrome_launch_command_quotes_linux_path(monkeypatch):
     module = importlib.import_module("agents.browsers.cdp_backend")
 
-    monkeypatch.setattr(module, "resolve_chrome_binary", lambda system=None: "/opt/Google Chrome/chrome")
+    # env_override is the highest-priority face, so this pins resolution.
+    monkeypatch.setenv("SCBE_CHROME_PATH", "/opt/Google Chrome/chrome")
 
     cmd = module.get_chrome_launch_command(port=9333, user_data_dir="/tmp/scbe profile")
 
     assert cmd.startswith('"/opt/Google Chrome/chrome" --remote-debugging-port=9333')
-    assert '--user-data-dir="/tmp/scbe profile"' in cmd
+    assert '"--user-data-dir=/tmp/scbe profile"' in cmd
 
 
 def test_playwright_wrapper_prefers_linux_executable(monkeypatch):
@@ -59,9 +68,16 @@ def test_playwright_wrapper_prefers_linux_executable(monkeypatch):
         str(Path("agents/browser/playwright_wrapper.py")),
     )
 
-    monkeypatch.setattr(module.platform, "system", lambda: "Linux")
+    resolver = importlib.import_module("agents.browser.binary_resolver")
+
+    monkeypatch.delenv("SCBE_CHROME_PATH", raising=False)
     monkeypatch.setattr(
-        module.shutil,
+        resolver,
+        "_FACES",
+        tuple((name, probe) for name, probe in resolver._FACES if name != "playwright_bundle"),
+    )
+    monkeypatch.setattr(
+        resolver.shutil,
         "which",
         lambda name: "/usr/bin/chromium" if name == "chromium" else None,
     )
@@ -79,8 +95,10 @@ def test_playwright_wrapper_respects_explicit_channel_over_linux_detection(monke
         str(Path("agents/browser/playwright_wrapper.py")),
     )
 
-    monkeypatch.setattr(module.platform, "system", lambda: "Linux")
-    monkeypatch.setattr(module.shutil, "which", lambda _name: "/usr/bin/google-chrome")
+    resolver = importlib.import_module("agents.browser.binary_resolver")
+
+    # Even with a resolvable system binary, an explicit channel must win.
+    monkeypatch.setattr(resolver.shutil, "which", lambda _name: "/usr/bin/google-chrome")
 
     wrapper = module.PlaywrightWrapper(module.BrowserConfig(headless=False, browser_channel="chrome"))
     options = wrapper._build_launch_options()

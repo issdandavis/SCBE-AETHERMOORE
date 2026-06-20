@@ -94,11 +94,11 @@ def _seller_reply(offer_cents: int, floor_cents: int, list_cents: int, charge_re
         if offer_cents >= floor_cents - 100:  # within $1 of floor
             return (
                 f"I appreciate the offer! Closest I can do is ${floor_cents/100:.2f} — "
-                f"that's my floor with costs factored in. Deal at that?"
+                "that's my floor with costs factored in. Deal at that?"
             )
         return (
             f"I can't go below ${floor_cents/100:.2f} on this one — that's our hard floor. "
-            f"I'd actually lose money otherwise. Let me know if that works."
+            "I'd actually lose money otherwise. Let me know if that works."
         )
 
     # Offer accepted — attempt charge
@@ -184,7 +184,10 @@ def run(count: int, output: str, dry_run: bool, verbose: bool) -> None:
 
         if verbose:
             status = "ACCEPT" if m["accepted"] else "FLOOR"
-            print(f"  [{i+1:3d}] {status:6s}  offer=${m['offer_cents']/100:.2f}  floor=${m['floor_cents']/100:.2f}  {m['product']}")
+            print(
+                f"  [{i+1:3d}] {status:6s}  offer=${m['offer_cents']/100:.2f}  "
+                f"floor=${m['floor_cents']/100:.2f}  {m['product']}"
+            )
 
     Path(output).parent.mkdir(parents=True, exist_ok=True)
     with open(output, "w") as f:
@@ -196,7 +199,7 @@ def run(count: int, output: str, dry_run: bool, verbose: bool) -> None:
     print(f"  Floor holds:         {declined}")
     print(f"  Card errors:         {card_errors}")
     if not dry_run:
-        print(f"\nAll charges were on Stripe TEST API — no real money moved.")
+        print("\nAll charges were on Stripe TEST API — no real money moved.")
 
 
 def main() -> None:

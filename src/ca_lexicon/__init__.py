@@ -961,7 +961,7 @@ _AGGREGATION = [
             "KO": "statistics.mean({xs})",
             "AV": "{xs}.reduce((a, b) => a + b, 0) / {xs}.length",
             "RU": "{xs}.iter().sum::<f64>() / {xs}.len() as f64",
-            "CA": "sum/{n}",
+            "CA": "mean_of({xs})",
             "UM": "mean({xs})",
             "DR": "(sum {xs} / fromIntegral (length {xs}))",
         },
@@ -976,9 +976,11 @@ _AGGREGATION = [
         feat=(51, 4, 3, 1, 0.3, 3, 3, 0),
         code={
             "KO": "statistics.variance({xs})",
-            "AV": "(() => {{ const m = {xs}.reduce((a,b)=>a+b,0)/{xs}.length; return {xs}.reduce((s,x)=>s+(x-m)**2,0)/{xs}.length; }})()",
-            "RU": "{{ let m: f64 = {xs}.iter().sum::<f64>()/{xs}.len() as f64; {xs}.iter().map(|x| (x-m).powi(2)).sum::<f64>()/{xs}.len() as f64 }}",
-            "CA": "variance({xs}, {n})",
+            "AV": "(() => {{ const m = {xs}.reduce((a,b)=>a+b,0)/{xs}.length; "
+            "return {xs}.reduce((s,x)=>s+(x-m)**2,0)/{xs}.length; }})()",
+            "RU": "{{ let m: f64 = {xs}.iter().sum::<f64>()/{xs}.len() as f64; "
+            "{xs}.iter().map(|x| (x-m).powi(2)).sum::<f64>()/{xs}.len() as f64 }}",
+            "CA": "variance_of({xs})",
             "UM": "var({xs})",
             "DR": "(variance {xs})",
         },
@@ -993,9 +995,9 @@ _AGGREGATION = [
         feat=(52, 4, 3, 1, 0.3, 3, 3, 0),
         code={
             "KO": "statistics.stdev({xs})",
-            "AV": "Math.sqrt(variance)",
-            "RU": "variance.sqrt()",
-            "CA": "sqrt(variance({xs}, {n}))",
+            "AV": "Math.sqrt(variance_of({xs}))",
+            "RU": "variance_of({xs}).sqrt()",
+            "CA": "sqrt(variance_of({xs}))",
             "UM": "std({xs})",
             "DR": "(sqrt (variance {xs}))",
         },
@@ -1012,10 +1014,10 @@ _AGGREGATION = [
         code={
             "KO": "functools.reduce({fn}, {xs})",
             "AV": "{xs}.reduce({fn})",
-            "RU": "{xs}.iter().fold({init}, {fn})",
-            "CA": "for(int i=0;i<n;i++) acc={fn}(acc,{xs}[i]);",
-            "UM": "reduce({fn}, {xs}; init={init})",
-            "DR": "(foldl {fn} {init} {xs})",
+            "RU": "{xs}.iter().copied().reduce({fn})",
+            "CA": "reduce_of({xs}, {fn})",
+            "UM": "reduce({fn}, {xs})",
+            "DR": "(foldr1 {fn} {xs})",
         },
     ),
     LexiconEntry(
@@ -1030,7 +1032,7 @@ _AGGREGATION = [
             "KO": "functools.reduce({fn}, {xs}, {init})",
             "AV": "{xs}.reduce({fn}, {init})",
             "RU": "{xs}.iter().fold({init}, {fn})",
-            "CA": "for(int i=0;i<n;i++) acc={fn}(acc,{xs}[i]);",
+            "CA": "fold_of({xs}, {fn}, {init})",
             "UM": "foldl({fn}, {init}, {xs})",
             "DR": "(foldl' {fn} {init} {xs})",
         },
@@ -1045,10 +1047,10 @@ _AGGREGATION = [
         feat=(55, 4, 3, 2, 0.5, 3, 3, 0),
         note="AV=+1: emits intermediates",
         code={
-            "KO": "itertools.accumulate({xs}, {fn})",
-            "AV": "{xs}.reduce((acc, x) => [...acc, {fn}(acc[acc.length-1], x)], [{init}])",
+            "KO": "itertools.accumulate({xs}, {fn}, initial={init})",
+            "AV": "scan_of({xs}, {fn}, {init})",
             "RU": "{xs}.iter().scan({init}, |st, x| {{ *st = {fn}(*st, *x); Some(*st) }})",
-            "CA": "for(int i=0;i<n;i++) {{ acc={fn}(acc,{xs}[i]); out[i]=acc; }}",
+            "CA": "scan_of({xs}, {fn}, {init})",
             "UM": "accumulate({fn}, {xs}; init={init})",
             "DR": "(scanl {fn} {init} {xs})",
         },
@@ -1170,7 +1172,7 @@ _AGGREGATION = [
             "KO": "len({xs})",
             "AV": "{xs}.length",
             "RU": "{xs}.len()",
-            "CA": "n",
+            "CA": "count_of({xs})",
             "UM": "length({xs})",
             "DR": "(length {xs})",
         },
@@ -1256,7 +1258,7 @@ def validate():
         errors.append(f"Expected 64 entries, got {len(LEXICON)}")
     ids = sorted(LEXICON.keys())
     if ids != list(range(64)):
-        errors.append(f"ID range broken")
+        errors.append("ID range broken")
     for _eid, entry in LEXICON.items():
         if entry.trit[3] != 1:
             errors.append(f"{entry.name}: CA channel must be +1")
@@ -1270,7 +1272,7 @@ def validate():
         for e in errors:
             print(f"  ✗ {e}")
         return False
-    print(f"PASSED: 64 ops × 6 languages = 384 code snippets, all present")
+    print("PASSED: 64 ops × 6 languages = 384 code snippets, all present")
     return True
 
 
@@ -1288,11 +1290,11 @@ def demo():
         lang = LANG_MAP[tongue]
         print(f"  {tongue} ({lang:>10}): {code}")
 
-    print(f"\n--- trit vector for 'xor' ---")
+    print("\n--- trit vector for 'xor' ---")
     print(f"  {trit_vector('xor')}")
     print(f"  note: {lookup('xor').note}")
 
-    print(f"\n--- feature vector for 'reduce' ---")
+    print("\n--- feature vector for 'reduce' ---")
     print(f"  {feature_vector('reduce')}")
     print(f"  chi={lookup('reduce').chi}, valence={lookup('reduce').valence}")
 

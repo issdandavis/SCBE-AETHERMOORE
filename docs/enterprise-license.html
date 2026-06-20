@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SCBE Enterprise Licensing | AetherMoore</title>
+    <meta
+      name="description"
+      content="Enterprise licensing for SCBE agent-bus, Longform Bridge provenance, benchmark evidence, and research-to-product integration work."
+    />
+    <link rel="canonical" href="https://aethermoore.com/SCBE-AETHERMOORE/enterprise-license.html" />
+    <meta property="og:title" content="SCBE Enterprise Licensing" />
+    <meta
+      property="og:description"
+      content="A practical licensing path for teams that need governed agent routing, durable audit trails, benchmark evidence, and integration support."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://aethermoore.com/SCBE-AETHERMOORE/enterprise-license.html" />
+    <meta property="og:image" content="https://aethermoore.com/SCBE-AETHERMOORE/hero.svg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "ProfessionalService",
+        "name": "SCBE Enterprise Licensing",
+        "url": "https://aethermoore.com/SCBE-AETHERMOORE/enterprise-license.html",
+        "description": "Enterprise licensing and integration support for SCBE agent-bus, governed CLI workflows, provenance ledgers, and benchmark evidence packets.",
+        "provider": {
+          "@type": "Person",
+          "name": "Issac Daniel Davis"
+        },
+        "areaServed": "US",
+        "serviceType": [
+          "AI agent workflow integration",
+          "Governed CLI implementation",
+          "Audit trail and provenance system integration",
+          "Benchmark evidence packet preparation",
+          "Enterprise source licensing"
+        ],
+        "offers": [
+          {
+            "@type": "Offer",
+            "name": "Evaluation integration review",
+            "priceSpecification": {
+              "@type": "PriceSpecification",
+              "minPrice": "500",
+              "maxPrice": "1500",
+              "priceCurrency": "USD"
+            }
+          },
+          {
+            "@type": "Offer",
+            "name": "Scoped enterprise integration",
+            "priceSpecification": {
+              "@type": "PriceSpecification",
+              "minPrice": "5000",
+              "priceCurrency": "USD"
+            }
+          }
+        ]
+      }
+    </script>
+    <style>
+      :root {
+        --bg: #090b0d;
+        --ink: #f3ead8;
+        --muted: #b8ad99;
+        --line: #393227;
+        --panel: #141312;
+        --panel2: #1b1813;
+        --gold: #d6a756;
+        --green: #2dd3a6;
+        --cyan: #17c6cf;
+        --red: #ff7b69;
+        --mono: "Cascadia Code", "SF Mono", Consolas, monospace;
+        --serif: Georgia, "Times New Roman", serif;
+        --sans: "Segoe UI", Tahoma, sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        background:
+          linear-gradient(135deg, rgba(214, 167, 86, 0.12) 0 1px, transparent 1px) 0 0 / 32px 32px,
+          radial-gradient(circle at 15% 0%, rgba(45, 211, 166, 0.16), transparent 34%),
+          radial-gradient(circle at 85% 12%, rgba(23, 198, 207, 0.12), transparent 36%),
+          linear-gradient(180deg, #090b0d 0%, #12110f 48%, #090b0d 100%);
+        color: var(--ink);
+        font-family: var(--sans);
+        line-height: 1.58;
+      }
+      a {
+        color: inherit;
+      }
+      .wrap {
+        width: min(1160px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+      nav {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 14px;
+        padding: 22px 0;
+        font-size: 14px;
+        color: var(--muted);
+      }
+      nav a {
+        text-decoration: none;
+      }
+      nav a:first-child {
+        color: var(--ink);
+        font-family: var(--serif);
+        font-size: 20px;
+        margin-right: auto;
+      }
+      nav a:hover {
+        color: var(--gold);
+      }
+      .hero {
+        position: relative;
+        min-height: 74vh;
+        display: grid;
+        align-items: center;
+        padding: 54px 0 66px;
+        border-bottom: 1px solid rgba(214, 167, 86, 0.2);
+      }
+      .hero-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
+        gap: 34px;
+        align-items: center;
+      }
+      .eyebrow {
+        color: var(--gold);
+        font: 800 12px/1 var(--mono);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      h1 {
+        margin: 14px 0 18px;
+        max-width: 860px;
+        font-family: var(--serif);
+        font-size: clamp(44px, 8vw, 92px);
+        line-height: 0.94;
+        letter-spacing: 0;
+      }
+      .lead {
+        max-width: 760px;
+        margin: 0;
+        color: #d8cfbf;
+        font-size: clamp(18px, 2.3vw, 23px);
+      }
+      .cta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 28px;
+      }
+      .btn {
+        display: inline-flex;
+        min-height: 44px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        padding: 11px 16px;
+        font-weight: 800;
+        text-decoration: none;
+        border: 1px solid rgba(214, 167, 86, 0.34);
+      }
+      .btn-primary {
+        background: var(--gold);
+        color: #12100a;
+      }
+      .btn-soft {
+        color: var(--ink);
+        background: rgba(255, 255, 255, 0.045);
+      }
+      .signal {
+        border: 1px solid rgba(214, 167, 86, 0.28);
+        background:
+          linear-gradient(180deg, rgba(214, 167, 86, 0.12), rgba(255, 255, 255, 0.03)),
+          rgba(12, 12, 12, 0.88);
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
+      }
+      .signal h2 {
+        margin: 0 0 12px;
+        font-family: var(--serif);
+        font-size: 28px;
+      }
+      .signal-row {
+        display: grid;
+        grid-template-columns: 92px minmax(0, 1fr);
+        gap: 12px;
+        padding: 13px 0;
+        border-top: 1px solid rgba(214, 167, 86, 0.15);
+      }
+      .signal-row strong {
+        color: var(--green);
+        font-family: var(--mono);
+        font-size: 13px;
+      }
+      .signal-row span {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      section {
+        padding: 64px 0;
+      }
+      .section-head {
+        display: flex;
+        gap: 24px;
+        justify-content: space-between;
+        align-items: end;
+        margin-bottom: 22px;
+      }
+      .section-head h2 {
+        margin: 6px 0 0;
+        font-family: var(--serif);
+        font-size: clamp(32px, 5vw, 56px);
+        line-height: 1;
+      }
+      .section-head p {
+        max-width: 580px;
+        margin: 0;
+        color: var(--muted);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+      .card {
+        border: 1px solid rgba(214, 167, 86, 0.18);
+        background: rgba(20, 19, 18, 0.84);
+        border-radius: 8px;
+        padding: 18px;
+      }
+      .card h3 {
+        margin: 0 0 8px;
+        font-size: 20px;
+      }
+      .card p,
+      .card li {
+        color: var(--muted);
+        font-size: 15px;
+      }
+      .card ul {
+        margin: 12px 0 0;
+        padding-left: 18px;
+      }
+      .tag {
+        display: inline-flex;
+        margin-bottom: 12px;
+        border: 1px solid rgba(45, 211, 166, 0.28);
+        border-radius: 999px;
+        padding: 4px 9px;
+        color: var(--green);
+        font: 700 12px/1 var(--mono);
+      }
+      .mono {
+        font-family: var(--mono);
+      }
+      .evidence {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+      }
+      .metric {
+        border: 1px solid rgba(23, 198, 207, 0.2);
+        background: rgba(23, 198, 207, 0.06);
+        border-radius: 8px;
+        padding: 16px;
+      }
+      .metric strong {
+        display: block;
+        color: var(--cyan);
+        font-size: 25px;
+        line-height: 1.05;
+      }
+      .metric span {
+        display: block;
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .tiers {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+      .tier {
+        position: relative;
+        border: 1px solid rgba(214, 167, 86, 0.22);
+        background: linear-gradient(180deg, rgba(214, 167, 86, 0.1), rgba(255, 255, 255, 0.03));
+        border-radius: 8px;
+        padding: 20px;
+      }
+      .tier strong {
+        display: block;
+        font-size: 28px;
+        color: var(--gold);
+        margin: 8px 0;
+      }
+      .note {
+        border-left: 3px solid var(--red);
+        background: rgba(255, 123, 105, 0.08);
+        padding: 16px 18px;
+        color: #ead2cc;
+        border-radius: 6px;
+      }
+      footer {
+        padding: 30px 0 48px;
+        color: var(--muted);
+        border-top: 1px solid rgba(214, 167, 86, 0.18);
+      }
+      footer a {
+        margin-right: 14px;
+        text-decoration: none;
+      }
+      @media (max-width: 860px) {
+        .hero-grid,
+        .grid,
+        .evidence,
+        .tiers {
+          grid-template-columns: 1fr;
+        }
+        .section-head {
+          display: block;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="wrap" aria-label="Primary">
+      <a href="index.html">AetherMoore</a>
+      <a href="start-here.html">Start</a>
+      <a href="products.html">Products</a>
+      <a href="workflow-snapshot.html">Workflow Snapshot</a>
+      <a href="service-credits.html">Service Credits</a>
+      <a href="hire.html">Hire</a>
+      <a href="mailto:ai@aethermoore.com?subject=SCBE%20enterprise%20licensing">Contact</a>
+    </nav>
+
+    <header class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <div class="eyebrow">Enterprise licensing</div>
+          <h1>Governed agent systems you can inspect before you buy.</h1>
+          <p class="lead">
+            SCBE is an open-source-first command and evidence layer for AI work: agent-bus routing,
+            durable provenance, benchmark receipts, and research-to-product adapters. Enterprise
+            licensing is for teams that need integration rights, private proof review, source terms,
+            and support beyond the public MIT package.
+          </p>
+          <div class="cta-row">
+            <a
+              class="btn btn-primary"
+              href="mailto:ai@aethermoore.com?subject=SCBE%20enterprise%20licensing"
+              >Start licensing review</a
+            >
+            <a class="btn btn-soft" href="workflow-snapshot.html">Start with $99 snapshot</a>
+            <a class="btn btn-soft" href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank" rel="noopener"
+              >Inspect GitHub</a
+            >
+          </div>
+        </div>
+        <aside class="signal" aria-label="Enterprise proof summary">
+          <h2>What is ready to discuss</h2>
+          <div class="signal-row">
+            <strong>CLI</strong>
+            <span>Published command surfaces for governed local work, packages, and agent-bus routing.</span>
+          </div>
+          <div class="signal-row">
+            <strong>Proof</strong>
+            <span>Local benchmark receipts, Kaggle chain-integrity notebook, and reproducible harnesses.</span>
+          </div>
+          <div class="signal-row">
+            <strong>Private</strong>
+            <span>Patent/prosecution support files stay out of the public product and can be reviewed under proper terms.</span>
+          </div>
+          <div class="signal-row">
+            <strong>Research</strong>
+            <span>Chemistry/reaction packets and STISTA tokenizer lanes are available as research-preview integrations.</span>
+          </div>
+        </aside>
+      </div>
+    </header>
+
+    <main>
+      <section>
+        <div class="wrap">
+          <div class="section-head">
+            <div>
+              <div class="eyebrow">Product surfaces</div>
+              <h2>License the parts that create leverage.</h2>
+            </div>
+            <p>
+              The public repo is useful by itself. The paid lane exists when a buyer needs source
+              support, protected proof, private adapters, contractual terms, or a governed workflow
+              installed around their own tools.
+            </p>
+          </div>
+          <div class="grid">
+            <article class="card">
+              <span class="tag">Public core</span>
+              <h3>SCBE CLI and Agent Bus</h3>
+              <p>
+                Command-line workflows, governed tool routing, free-first model lanes, task ledgers,
+                and agent-bus packets. This is the practical operator surface.
+              </p>
+              <ul>
+                <li><span class="mono">scbe-aethermoore-cli</span></li>
+                <li><span class="mono">scbe-agent-bus</span></li>
+                <li><span class="mono">scbe-aethermoore</span></li>
+              </ul>
+            </article>
+            <article class="card">
+              <span class="tag">Provenance</span>
+              <h3>Longform Bridge and receipts</h3>
+              <p>
+                Hash-chained ledger events, verified landings, semantic anchors, resume packets, and
+                cold-start audit checks for long-running AI work.
+              </p>
+              <ul>
+                <li>Immutable JSONL event chain</li>
+                <li>Landing verification and tamper checks</li>
+                <li>Private proof and licensing review path</li>
+              </ul>
+            </article>
+            <article class="card">
+              <span class="tag">Research preview</span>
+              <h3>Reaction-state packets</h3>
+              <p>
+                A shared packet for lossy transformation work: code translation, tokenizer routing,
+                chemistry decomposition, and agent workflow state.
+              </p>
+              <ul>
+                <li>Bijective / recoverable / ambiguous / invalid labels</li>
+                <li>Compound decomposition benchmark</li>
+                <li>Computational only, not wet-lab or medical advice</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="wrap">
+          <div class="section-head">
+            <div>
+              <div class="eyebrow">Evidence boundary</div>
+              <h2>Claims stay attached to commands.</h2>
+            </div>
+            <p>
+              SCBE does not need inflated language. The useful claim is that it can preserve,
+              classify, and explain state through transformations better than a single-field
+              baseline in the tests it actually runs.
+            </p>
+          </div>
+          <div class="evidence">
+            <div class="metric">
+              <strong>105/105</strong>
+              <span>Longform chain integrity benchmark: structural and semantic attack cases.</span>
+            </div>
+            <div class="metric">
+              <strong>3/3</strong>
+              <span>Compound decomposition/recomposition local benchmark with RDKit available.</span>
+            </div>
+            <div class="metric">
+              <strong>14/14</strong>
+              <span>Full-system artifact readiness matrix; pass/partial status remains explicit.</span>
+            </div>
+            <div class="metric">
+              <strong>12/12</strong>
+              <span>Vector-field navigation ensemble-beam benchmark in the current proof lane.</span>
+            </div>
+          </div>
+          <p class="note" style="margin-top: 18px">
+            These are local and project-scoped results unless a page explicitly names a third-party
+            leaderboard. Enterprise buyers can request the exact commands, hashes, and artifact
+            bundle used for any claim.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <div class="wrap">
+          <div class="section-head">
+            <div>
+              <div class="eyebrow">Commercial path</div>
+              <h2>Three clean ways to start.</h2>
+            </div>
+            <p>
+              Keep the first step small when possible. If the workflow is sensitive, start with a
+              scoped review and move to source licensing only after the fit is clear.
+            </p>
+          </div>
+          <div class="tiers">
+            <article class="tier">
+              <span class="tag">Low friction</span>
+              <h3>Workflow Snapshot</h3>
+              <strong>$99</strong>
+              <p>
+                One workflow reviewed for drift, unsafe tool paths, missing recovery states, and the
+                next three fixes.
+              </p>
+              <a class="btn btn-soft" href="workflow-snapshot.html">Open snapshot</a>
+            </article>
+            <article class="tier">
+              <span class="tag">Pilot</span>
+              <h3>Evaluation integration review</h3>
+              <strong>$500-$1,500</strong>
+              <p>
+                Review an agent workflow, benchmark surface, or CLI automation lane and return a
+                concrete integration plan with claim boundaries.
+              </p>
+              <a class="btn btn-soft" href="mailto:ai@aethermoore.com?subject=SCBE%20evaluation%20review"
+                >Request review</a
+              >
+            </article>
+            <article class="tier">
+              <span class="tag">Enterprise</span>
+              <h3>Source and support package</h3>
+              <strong>$5K+</strong>
+              <p>
+                Scoped installation, private proof review, custom adapters, source terms, and support
+                for teams building around SCBE.
+              </p>
+              <a class="btn btn-primary" href="mailto:ai@aethermoore.com?subject=SCBE%20source%20license"
+                >Discuss license</a
+              >
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="wrap">
+          <div class="section-head">
+            <div>
+              <div class="eyebrow">Fit check</div>
+              <h2>Best-fit buyers.</h2>
+            </div>
+            <p>
+              This is not a generic chatbot wrapper. It is useful when tool calls, state, audit,
+              model routing, and reproducible results matter.
+            </p>
+          </div>
+          <div class="grid">
+            <article class="card">
+              <h3>AI teams with tool risk</h3>
+              <p>
+                You already use agents or copilots and need a governed execution layer that records
+                what happened, what was allowed, and what should not happen again.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Research groups with fragile context</h3>
+              <p>
+                You need long-running work to survive pauses, resumes, branch changes, and model
+                swaps without losing the reason a decision was made.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Builders with cross-domain transforms</h3>
+              <p>
+                You translate code, data, chemistry-like state, or semantic packets and need loss
+                notes plus recalculation receipts instead of hand-waved conversion.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="wrap">
+          <div class="section-head">
+            <div>
+              <div class="eyebrow">Next action</div>
+              <h2>Bring one real workflow.</h2>
+            </div>
+            <p>
+              The fastest useful conversation starts with an actual workflow, one success condition,
+              one failure mode, and the tools the agent is allowed to touch.
+            </p>
+          </div>
+          <div class="cta-row">
+            <a
+              class="btn btn-primary"
+              href="mailto:ai@aethermoore.com?subject=SCBE%20enterprise%20licensing&body=Workflow%3A%0ASuccess%20condition%3A%0AAllowed%20tools%3A%0AFailure%20mode%20to%20avoid%3A"
+              >Send a workflow</a
+            >
+            <a class="btn btn-soft" href="COMMERCIAL.md">Read commercial terms</a>
+            <a class="btn btn-soft" href="CUSTOMER_LICENSE_AGREEMENT.md">Customer agreement</a>
+            <a class="btn btn-soft" href="service-credits.html">Service credits</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        <a href="index.html">Home</a>
+        <a href="hire.html">Hire</a>
+        <a href="products.html">Products</a>
+        <a href="workflow-snapshot.html">Workflow Snapshot</a>
+        <a href="mailto:ai@aethermoore.com?subject=SCBE%20enterprise%20licensing">Contact</a>
+        <p style="margin-top: 16px">
+          Copyright 2026 Issac Daniel Davis. Public package terms remain MIT OR Apache-2.0 unless
+          a separate written commercial agreement applies.
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>

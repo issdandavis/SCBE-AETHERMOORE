@@ -1,5 +1,12 @@
 # Architecture Overview
-This document is a working architecture map, not the final formula authority. For canonical runtime state and formula precedence, read `CANONICAL_SYSTEM_STATE.md` and `docs/specs/CANONICAL_FORMULA_REGISTRY.md` first.
+
+**Core model:** SCBE is a model-agnostic execution board. Any AI proposes an action;
+the board decides whether it is a legal move. Dispatch control is model-independent:
+the model proposes, but the board decides what executes.
+
+Pipeline: `state → proposed move → legality check → simulation → receipt → dispatch or deny`
+
+This document is a working architecture map, not the final formula authority. For canonical runtime state and formula precedence, read `CANONICAL_SYSTEM_STATE.md` and `docs/specs/CANONICAL_FORMULA_REGISTRY.md` first. For the full GeoBoard model description, see `docs/SCBE_AETHERMOORE_ONE_PAGER.md §1.1`.
 
 ## 1. Project Structure
 
@@ -204,8 +211,8 @@ SCBE-AETHERMOORE/
 | AV | Avali | I/O & Messaging |
 | RU | Runethic | Policy & Constraints |
 | CA | Cassisivadan | Logic & Computation |
-| UM | Umbroth | Security & Privacy |
-| DR | Draumric | Types & Structures |
+| UM | Umbroth | Redaction & Privacy |
+| DR | Draumric | Authentication & Integrity |
 
 **Policy Levels:**
 - `standard` - Requires KO tongue

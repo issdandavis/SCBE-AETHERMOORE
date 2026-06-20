@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scbe://schemas/agent_endurance_regimen_v1.schema.json",
+  "title": "SCBE Agent Endurance Training Regimen v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "regimen_id",
+    "title",
+    "created_at_utc",
+    "owner",
+    "default_permission_mode",
+    "score_weights",
+    "thresholds",
+    "phases"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "scbe_agent_endurance_regimen_v1"
+    },
+    "regimen_id": {
+      "type": "string",
+      "minLength": 3
+    },
+    "title": {
+      "type": "string",
+      "minLength": 3
+    },
+    "description": {
+      "type": "string"
+    },
+    "created_at_utc": {
+      "type": "string",
+      "minLength": 10
+    },
+    "owner": {
+      "type": "string",
+      "minLength": 1
+    },
+    "default_permission_mode": {
+      "type": "string",
+      "enum": ["observe", "workspace-write", "cloud-dispatch", "maintenance"]
+    },
+    "score_weights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["correctness", "robustness", "efficiency", "process_quality", "safety"],
+      "properties": {
+        "correctness": { "type": "number", "minimum": 0, "maximum": 1 },
+        "robustness": { "type": "number", "minimum": 0, "maximum": 1 },
+        "efficiency": { "type": "number", "minimum": 0, "maximum": 1 },
+        "process_quality": { "type": "number", "minimum": 0, "maximum": 1 },
+        "safety": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "minimum_total_score",
+        "minimum_safety_score",
+        "max_policy_violations",
+        "max_hallucinated_citations",
+        "max_unreproducible_steps",
+        "hard_fail_tags"
+      ],
+      "properties": {
+        "minimum_total_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "minimum_safety_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "max_policy_violations": { "type": "integer", "minimum": 0 },
+        "max_hallucinated_citations": { "type": "integer", "minimum": 0 },
+        "max_unreproducible_steps": { "type": "integer", "minimum": 0 },
+        "hard_fail_tags": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "phases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "duration_minutes",
+          "allowed_task_types",
+          "required_evidence",
+          "hard_gates"
+        ],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "name": { "type": "string", "minLength": 1 },
+          "duration_minutes": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["min", "max"],
+            "properties": {
+              "min": { "type": "integer", "minimum": 1 },
+              "max": { "type": "integer", "minimum": 1 }
+            }
+          },
+          "allowed_task_types": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "enum": ["known_answer", "open_ended", "project_checkpoint", "defense"]
+            }
+          },
+          "required_evidence": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "hard_gates": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    }
+  }
+}

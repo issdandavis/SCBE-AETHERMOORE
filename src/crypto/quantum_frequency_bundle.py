@@ -37,7 +37,7 @@ import hashlib
 import math
 from dataclasses import dataclass
 from importlib import import_module
-from typing import Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
 
 from src.crypto.trit_curriculum import (
     TritSignal,
@@ -62,6 +62,17 @@ from src.crypto.tri_bundle import (
     TONGUE_WEIGHTS,
     TONGUE_FREQUENCIES,
 )
+
+if TYPE_CHECKING:
+    # Annotation-only imports. Runtime access goes through import_module()
+    # to avoid the circular dependency with flight_dynamics.
+    from src.crypto.flight_dynamics import (
+        PacejkaTireState,
+        RecoveryPath,
+        RotorState,
+        TailRotorState,
+    )
+    from src.crypto.gallery_chromatics import GalleryColorField
 
 # ---------------------------------------------------------------------------
 # Physical constants (SI)
@@ -670,9 +681,18 @@ def compute_gallery_ambient(
     }
 
     security_implications = {
-        "perfect_fifth": "Invisible dependency chains — one agent gates another at 3:2 power ratio, undetectable by phi-tuned governance",
-        "minor_sixth": "Adversarial sweet spot — input is 0.018 from phi, passes harmonic wall at cost ~1.0002 but is NOT harmonic",
-        "minor_seventh": "Urgency blind spot — state demands immediate transition but signal falls between ESCALATE and DENY thresholds",
+        "perfect_fifth": (
+            "Invisible dependency chains — one agent gates another at 3:2 power ratio, "
+            "undetectable by phi-tuned governance"
+        ),
+        "minor_sixth": (
+            "Adversarial sweet spot — input is 0.018 from phi, "
+            "passes harmonic wall at cost ~1.0002 but is NOT harmonic"
+        ),
+        "minor_seventh": (
+            "Urgency blind spot — state demands immediate transition "
+            "but signal falls between ESCALATE and DENY thresholds"
+        ),
     }
 
     for tone_name, target in dead_tone_configs.items():
@@ -1740,7 +1760,7 @@ def compute_qho_state(
         w = TONGUE_WEIGHTS[tongue]
         base_frequency = TONGUE_FREQUENCIES[tongue]
         # Hash-based deterministic affinity
-        h = int(hashlib.md5((tongue + text[:32]).encode()).hexdigest()[:8], 16)
+        h = int(hashlib.sha256((tongue + text[:32]).encode()).hexdigest()[:8], 16)
         raw = (h % 1000) / 1000.0 * w
         raw *= 1.0 + (base_frequency / (base_frequency + byte_sum))
         return raw
@@ -2148,9 +2168,9 @@ def generate_quantum_sft_records(
             f"**Spectral lines** ({len(lines)} active transitions):\n"
             + (
                 "\n".join(
-                    f"  {l['tongue'].upper()} n={l['n']}: "
-                    f"ν={l['frequency_hz']:.1f} Hz, λ={l['wavelength_nm']:.1f} nm"
-                    for l in lines
+                    f"  {line['tongue'].upper()} n={line['n']}: "
+                    f"ν={line['frequency_hz']:.1f} Hz, λ={line['wavelength_nm']:.1f} nm"
+                    for line in lines
                 )
                 if lines
                 else "  None (ground state — all tongues at n=0)"

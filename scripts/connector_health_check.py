@@ -17,7 +17,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 VALID_CHECKS = ("github", "notion", "drive")
 
 
@@ -53,6 +52,37 @@ def _pick_env(*keys: str) -> tuple[str, str]:
         value = os.getenv(key, "").strip()
         if value:
             return key, value
+    return "", ""
+
+
+def _pick_rclone_gdrive_token() -> tuple[str, str]:
+    """Fallback: read access_token from rclone gdrive config."""
+    try:
+        if os.name == "nt":
+            rclone_conf = (
+                Path(os.environ.get("APPDATA", str(Path.home() / "AppData/Roaming"))) / "rclone" / "rclone.conf"
+            )
+        else:
+            rclone_conf = Path.home() / ".config" / "rclone" / "rclone.conf"
+        if not rclone_conf.exists():
+            return "", ""
+        content = rclone_conf.read_text(encoding="utf-8")
+        in_gdrive = False
+        for line in content.splitlines():
+            stripped = line.strip()
+            if stripped == "[gdrive]":
+                in_gdrive = True
+                continue
+            if stripped.startswith("[") and in_gdrive:
+                break
+            if in_gdrive and stripped.startswith("token ="):
+                token_json = stripped.split("=", 1)[1].strip()
+                token_data = json.loads(token_json)
+                access_token = token_data.get("access_token", "")
+                if access_token:
+                    return "rclone_gdrive_config", access_token
+    except Exception:
+        pass
     return "", ""
 
 
@@ -168,6 +198,8 @@ def check_notion(page_id: str = "") -> CheckResult:
 
 def check_drive() -> CheckResult:
     key_name, token = _pick_env("GOOGLE_DRIVE_ACCESS_TOKEN", "GDRIVE_ACCESS_TOKEN", "GOOGLE_OAUTH_ACCESS_TOKEN")
+    if not token:
+        key_name, token = _pick_rclone_gdrive_token()
     if not token:
         return CheckResult(
             name="drive",

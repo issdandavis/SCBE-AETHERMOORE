@@ -10,9 +10,12 @@ Google references used for this implementation:
 - YouTube Data API videos.update
 
 Usage:
-    python scripts/apollo/youtube_metadata_sync.py preview --input artifacts/apollo/video_reviews/youtube_description_updates_2026-03-26.json
-    python scripts/apollo/youtube_metadata_sync.py apply --input artifacts/apollo/video_reviews/youtube_description_updates_2026-03-26.json
-    python scripts/apollo/youtube_metadata_sync.py preview --input artifacts/apollo/video_reviews/youtube_title_tag_updates_2026-03-26.json
+    python scripts/apollo/youtube_metadata_sync.py preview \\
+        --input artifacts/apollo/video_reviews/youtube_description_updates_2026-03-26.json
+    python scripts/apollo/youtube_metadata_sync.py apply \\
+        --input artifacts/apollo/video_reviews/youtube_description_updates_2026-03-26.json
+    python scripts/apollo/youtube_metadata_sync.py preview \\
+        --input artifacts/apollo/video_reviews/youtube_title_tag_updates_2026-03-26.json
 """
 
 from __future__ import annotations
@@ -24,7 +27,6 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_PLAN = ROOT / "artifacts" / "apollo" / "video_reviews" / "youtube_description_updates_2026-03-26.json"

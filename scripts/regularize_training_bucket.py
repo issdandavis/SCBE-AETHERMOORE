@@ -16,7 +16,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_INVENTORY = REPO_ROOT / "artifacts" / "training_inventory" / "latest" / "inventory.json"
 DEFAULT_OUTPUT_ROOT = REPO_ROOT / "artifacts" / "training_regularized" / "latest"

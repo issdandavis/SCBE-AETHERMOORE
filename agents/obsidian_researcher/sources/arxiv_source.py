@@ -29,10 +29,7 @@ try:
     _ArxivClient = _AC
     _ArxivPaper = _AP
 except ImportError as exc:  # pragma: no cover
-    _IMPORT_ERROR = (
-        f"ArxivClient unavailable — httpx or hydra.arxiv_retrieval could "
-        f"not be imported: {exc}"
-    )
+    _IMPORT_ERROR = "ArxivClient unavailable — httpx or hydra.arxiv_retrieval could " f"not be imported: {exc}"
 
 
 class ArxivSource(SourceAdapter):
@@ -56,10 +53,7 @@ class ArxivSource(SourceAdapter):
         super().__init__(source_type=SourceType.ARXIV, config=config or {})
 
         if _ArxivClient is None:
-            raise ImportError(
-                _IMPORT_ERROR
-                or "ArxivClient is not available (unknown import error)"
-            )
+            raise ImportError(_IMPORT_ERROR or "ArxivClient is not available (unknown import error)")
 
         client_kwargs: Dict[str, Any] = {}
         for key in ("api_url", "timeout_seconds", "min_delay_seconds", "user_agent"):

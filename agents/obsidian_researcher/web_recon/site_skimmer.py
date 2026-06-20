@@ -17,10 +17,10 @@ from urllib.parse import urlparse
 
 from .recon_goggles import SemanticSkeleton
 
-
 # ------------------------------------------------------------------
 # Data structures
 # ------------------------------------------------------------------
+
 
 @dataclass
 class CachedPage:
@@ -46,6 +46,7 @@ class DomainCache:
 # ------------------------------------------------------------------
 # SiteSkimmer
 # ------------------------------------------------------------------
+
 
 class SiteSkimmer:
     """In-memory page cache with TTL expiration and byte-budget eviction.
@@ -138,10 +139,7 @@ class SiteSkimmer:
         evicted = 0
 
         for dc in list(self._domains.values()):
-            expired_urls = [
-                url for url, page in dc.pages.items()
-                if now - page.fetched_at > self._ttl
-            ]
+            expired_urls = [url for url, page in dc.pages.items() if now - page.fetched_at > self._ttl]
             for url in expired_urls:
                 self._remove_page(dc, url)
                 evicted += 1
@@ -185,7 +183,7 @@ class SiteSkimmer:
 
         lines: List[str] = [
             "---",
-            f"title: \"Web Recon -- {domain}\"",
+            f'title: "Web Recon -- {domain}"',
             f"date: {now_iso}",
             "type: web-recon",
             f"domain: {domain}",

@@ -22,7 +22,7 @@ class SkillScore:
 
 
 KEYWORD_MAP = {
-    "arxiv": ["aetherbrowser-arxiv-nav", "hydra-clawbot-synthesis"],
+    "arxiv": ["aetherbrowser-arxiv-nav", "hydra-agent-relay-synthesis"],
     "github": ["aetherbrowser-github-nav", "scbe-github-systems"],
     "huggingface": ["hugging-face-model-trainer", "hugging-face-cli", "hf-publish-workflow"],
     "notion": ["notion", "notion-research-documentation"],
@@ -32,9 +32,9 @@ KEYWORD_MAP = {
     "vercel": ["vercel-deploy"],
     "deploy": ["vercel-deploy", "development-flow-loop"],
     "browser": ["living-codex-browser-builder", "playwright"],
-    "research": ["hydra-clawbot-synthesis", "scbe-research-publishing-autopilot", "video-source-verification"],
-    "multi": ["multi-agent-orchestrator", "hydra-clawbot-synthesis"],
-    "agent": ["multi-agent-orchestrator", "hydra-clawbot-synthesis"],
+    "research": ["hydra-agent-relay-synthesis", "scbe-research-publishing-autopilot", "video-source-verification"],
+    "multi": ["multi-agent-orchestrator", "hydra-agent-relay-synthesis"],
+    "agent": ["multi-agent-orchestrator", "hydra-agent-relay-synthesis"],
     "skill": ["skill-synthesis", "skill-creator"],
     "pipeline": ["development-flow-loop", "scbe-internet-workflow-synthesis"],
     "money": ["scbe-monetization-thought-to-cash", "scbe-shopify-money-flow"],
@@ -83,7 +83,7 @@ def make_packets(selected: list[str]) -> list[dict]:
     packets = []
     packets.append({"packet": "A-discovery", "skills": [s for s in selected if "research" in s or "browser" in s or "video" in s]})
     packets.append({"packet": "B-build", "skills": [s for s in selected if s in {"development-flow-loop", "living-codex-browser-builder", "skill-creator", "skill-synthesis"}]})
-    packets.append({"packet": "C-validate", "skills": [s for s in selected if s in {"playwright", "scbe-connector-health-check", "hydra-clawbot-synthesis"}]})
+    packets.append({"packet": "C-validate", "skills": [s for s in selected if s in {"playwright", "scbe-connector-health-check", "hydra-agent-relay-synthesis"}]})
     packets.append({"packet": "D-publish", "skills": [s for s in selected if s in {"vercel-deploy", "article-posting-ops", "hf-publish-workflow", "scbe-shopify-money-flow"}]})
     packets.append({"packet": "E-log", "skills": [s for s in selected if s in {"obsidian-vault-ops", "notion", "notion-knowledge-capture"}]})
     # Keep only non-empty packets.

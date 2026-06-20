@@ -49,11 +49,11 @@ TONGUE_NAMES = {
 PHI = (1 + math.sqrt(5)) / 2
 TONGUE_PHI_WEIGHTS = {
     "KO": 1.00,
-    "AV": PHI ** 1,       # ~1.618
-    "RU": PHI ** 2,       # ~2.618
-    "CA": PHI ** 3,       # ~4.236
-    "UM": PHI ** 4,       # ~6.854
-    "DR": PHI ** 5,       # ~11.09
+    "AV": PHI**1,  # ~1.618
+    "RU": PHI**2,  # ~2.618
+    "CA": PHI**3,  # ~4.236
+    "UM": PHI**4,  # ~6.854
+    "DR": PHI**5,  # ~11.09
 }
 
 # Keywords that signal tongue activation
@@ -135,13 +135,31 @@ def compute_difficulty(user_text: str, assistant_text: str, augmentation: str) -
     """Estimate difficulty on [0, 1] based on content and augmentation type."""
     len_ratio = min(len(assistant_text) / max(len(user_text), 1), 10) / 10
     aug_hardness = {
-        "paraphrase": 0.2, "inversion": 0.4, "rotation": 0.4,
-        "cross-domain": 0.5, "field-trip": 0.5, "tone-variant": 0.3,
-        "difficulty-up": 0.7, "partial-ablation": 0.6, "full-ablation": 0.9,
-        "bully": 0.7, "original": 0.3,
+        "paraphrase": 0.2,
+        "inversion": 0.4,
+        "rotation": 0.4,
+        "cross-domain": 0.5,
+        "field-trip": 0.5,
+        "tone-variant": 0.3,
+        "difficulty-up": 0.7,
+        "partial-ablation": 0.6,
+        "full-ablation": 0.9,
+        "bully": 0.7,
+        "original": 0.3,
     }.get(augmentation, 0.5)
-    scbe_terms = ["harmonic", "poincare", "hyperbolic", "axiom", "tongue", "governance",
-                  "mobius", "hamiltonian", "spectral", "pipeline", "langues"]
+    scbe_terms = [
+        "harmonic",
+        "poincare",
+        "hyperbolic",
+        "axiom",
+        "tongue",
+        "governance",
+        "mobius",
+        "hamiltonian",
+        "spectral",
+        "pipeline",
+        "langues",
+    ]
     combined = (user_text + " " + assistant_text).lower()
     term_hits = sum(1 for t in scbe_terms if t in combined)
     term_density = min(term_hits / 11, 1.0)
@@ -151,6 +169,7 @@ def compute_difficulty(user_text: str, assistant_text: str, augmentation: str) -
 # ─────────────────────────────────────────────
 # Helpers
 # ─────────────────────────────────────────────
+
 
 def load_jsonl(path: Path) -> list[dict]:
     records = []
@@ -223,14 +242,11 @@ def make_record(
 
     # Build dimensional header for the system prompt
     tongue_str = " ".join(f"{t}={v}" for t, v in tongues.items())
-    layer_str = ",".join(f"L{l}" for l in layers)
+    layer_str = ",".join(f"L{layer}" for layer in layers)
     axiom_str = ",".join(axioms)
 
     dimensional_header = (
-        f"[TONGUES: {tongue_str}]\n"
-        f"[LAYERS: {layer_str}]\n"
-        f"[AXIOMS: {axiom_str}]\n"
-        f"[DIFFICULTY: {difficulty}]"
+        f"[TONGUES: {tongue_str}]\n" f"[LAYERS: {layer_str}]\n" f"[AXIOMS: {axiom_str}]\n" f"[DIFFICULTY: {difficulty}]"
     )
 
     # Prepend dimensional context to system prompt
@@ -257,7 +273,7 @@ def make_record(
 
 
 def content_hash(text: str) -> str:
-    return hashlib.md5(text.encode()).hexdigest()[:8]
+    return hashlib.sha256(text.encode()).hexdigest()[:8]
 
 
 # ─────────────────────────────────────────────
@@ -273,9 +289,10 @@ INVERSION_TEMPLATES = [
     "How would an adversary try to break {concept}?",
 ]
 
+
 def _negate_sentences(text: str, n: int = 3) -> str:
     """Take the first N sentences and negate key claims."""
-    sents = re.split(r'(?<=[.!?])\s+', text.strip())[:n]
+    sents = re.split(r"(?<=[.!?])\s+", text.strip())[:n]
     negated = []
     for s in sents:
         s = s.strip()
@@ -284,12 +301,18 @@ def _negate_sentences(text: str, n: int = 3) -> str:
         # Swap positive/negative markers
         neg = s
         swaps = [
-            ("increases", "decreases"), ("ensures", "fails to ensure"),
-            ("preserves", "destroys"), ("safe", "unsafe"),
-            ("allows", "blocks"), ("secure", "vulnerable"),
-            ("prevents", "enables"), ("protects", "exposes"),
-            ("valid", "invalid"), ("correct", "incorrect"),
-            ("maintains", "breaks"), ("enforces", "ignores"),
+            ("increases", "decreases"),
+            ("ensures", "fails to ensure"),
+            ("preserves", "destroys"),
+            ("safe", "unsafe"),
+            ("allows", "blocks"),
+            ("secure", "vulnerable"),
+            ("prevents", "enables"),
+            ("protects", "exposes"),
+            ("valid", "invalid"),
+            ("correct", "incorrect"),
+            ("maintains", "breaks"),
+            ("enforces", "ignores"),
         ]
         applied = False
         for pos, neg_word in swaps:
@@ -316,7 +339,7 @@ def generate_inversions(records: list[dict]) -> list[dict]:
         concept = user
         for prefix in ["Explain ", "What is ", "How does ", "Describe ", "Show "]:
             if concept.startswith(prefix):
-                concept = concept[len(prefix):]
+                concept = concept[len(prefix) :]
                 break
         concept = concept.rstrip("?. ")
 
@@ -334,17 +357,21 @@ def generate_inversions(records: list[dict]) -> list[dict]:
             f"If {concept} were absent or inverted, here's what would break:\n\n"
             f"{negated_core}\n\n"
             f"The standard behavior is the opposite: {assistant[:300].strip()}\n\n"
-            f"The governance pipeline detects inversions because adversarial drift "
-            f"increases d_H in the Poincare ball. The cost scales as "
-            f"H(d,pd) = 1/(1+phi*d_H+2*pd) — the further from safe, the more expensive."
+            "The governance pipeline detects inversions because adversarial drift "
+            "increases d_H in the Poincare ball. The cost scales as "
+            "H(d,pd) = 1/(1+phi*d_H+2*pd) — the further from safe, the more expensive."
         )
 
-        inverted.append(make_record(
-            system, inv_question, inv_answer,
-            tags=["curriculum", "inversion", "gym-class"],
-            source_hash=content_hash(user),
-            augmentation="inversion",
-        ))
+        inverted.append(
+            make_record(
+                system,
+                inv_question,
+                inv_answer,
+                tags=["curriculum", "inversion", "gym-class"],
+                source_hash=content_hash(user),
+                augmentation="inversion",
+            )
+        )
 
     return inverted
 
@@ -371,9 +398,10 @@ ROTATION_FRAMES = {
     "DR": "Viewed through the DR (Structure) tongue — what SHAPE does this take?",
 }
 
+
 def _extract_tongue_sentences(text: str, tongue: str) -> str:
     """Extract sentences most relevant to a specific tongue's domain."""
-    sents = re.split(r'(?<=[.!?])\s+', text.strip())
+    sents = re.split(r"(?<=[.!?])\s+", text.strip())
     keywords = TONGUE_KEYWORDS.get(tongue, [])
     scored = []
     for s in sents:
@@ -390,11 +418,23 @@ def _extract_tongue_sentences(text: str, tongue: str) -> str:
 
 TONGUE_PROBES = {
     "KO": ["What drives this?", "What is the WHY behind this behavior?", "What intent does this serve?"],
-    "AV": ["What conditions must exist for this to work?", "What environmental context matters?", "What metadata feeds into this?"],
-    "RU": ["What depends on this?", "What upstream/downstream connections exist?", "How does this bind to other layers?"],
+    "AV": [
+        "What conditions must exist for this to work?",
+        "What environmental context matters?",
+        "What metadata feeds into this?",
+    ],
+    "RU": [
+        "What depends on this?",
+        "What upstream/downstream connections exist?",
+        "How does this bind to other layers?",
+    ],
     "CA": ["What are the concrete steps?", "Show the computation.", "How is this actually implemented?"],
     "UM": ["What could go wrong?", "What attack surface exists?", "Where are the hidden risks?"],
-    "DR": ["What is the structural shape?", "How is this organized architecturally?", "What topology does this create?"],
+    "DR": [
+        "What is the structural shape?",
+        "How is this organized architecturally?",
+        "What topology does this create?",
+    ],
 }
 
 
@@ -423,17 +463,21 @@ def generate_rotations(records: list[dict]) -> list[dict]:
                 f"{tongue_relevant}\n\n"
                 f"Through the {tongue} ({TONGUE_NAMES[tongue]}) lens specifically: "
                 f"the phi-weight for {tongue} is {TONGUE_PHI_WEIGHTS[tongue]:.3f}, "
-                f"which means this dimension contributes "
+                "which means this dimension contributes "
                 f"{'heavily' if TONGUE_PHI_WEIGHTS[tongue] > 4 else 'moderately' if TONGUE_PHI_WEIGHTS[tongue] > 1.5 else 'as the base layer'} "
-                f"to the overall Langues distance metric."
+                "to the overall Langues distance metric."
             )
 
-            rotated.append(make_record(
-                system, rot_question, rot_answer,
-                tags=["curriculum", "rotation", "gym-class", f"tongue-{tongue}"],
-                source_hash=content_hash(user),
-                augmentation="rotation",
-            ))
+            rotated.append(
+                make_record(
+                    system,
+                    rot_question,
+                    rot_answer,
+                    tags=["curriculum", "rotation", "gym-class", f"tongue-{tongue}"],
+                    source_hash=content_hash(user),
+                    augmentation="rotation",
+                )
+            )
 
     return rotated
 
@@ -484,13 +528,13 @@ def _simplify_text(text: str) -> str:
     result = text
     for jargon, plain in SIMPLIFICATION_MAP.items():
         result = re.sub(
-            rf'\b{re.escape(jargon)}\b',
+            rf"\b{re.escape(jargon)}\b",
             f"{plain}",
             result,
             flags=re.IGNORECASE,
         )
     # Shorten sentences — split on periods, take first 6
-    sents = re.split(r'(?<=[.!?])\s+', result.strip())[:6]
+    sents = re.split(r"(?<=[.!?])\s+", result.strip())[:6]
     return " ".join(s.strip() for s in sents if s.strip())
 
 
@@ -512,10 +556,7 @@ def generate_paraphrases(records: list[dict]) -> list[dict]:
         # Actually simplify the language
         simplified = _simplify_text(assistant)
 
-        para_answer = (
-            f"{simplified}\n\n"
-            f"The short version: this part of the system "
-        )
+        para_answer = f"{simplified}\n\n" "The short version: this part of the system "
         # Add a varied closing based on detected content
         if any(kw in assistant.lower() for kw in ["security", "protect", "attack", "threat"]):
             para_answer += "keeps bad actors out by making attacks mathematically expensive."
@@ -528,12 +569,16 @@ def generate_paraphrases(records: list[dict]) -> list[dict]:
         else:
             para_answer += "is a building block that the rest of the pipeline depends on."
 
-        paraphrased.append(make_record(
-            system, para_question, para_answer,
-            tags=["curriculum", "paraphrase", "gym-class"],
-            source_hash=content_hash(user),
-            augmentation="paraphrase",
-        ))
+        paraphrased.append(
+            make_record(
+                system,
+                para_question,
+                para_answer,
+                tags=["curriculum", "paraphrase", "gym-class"],
+                source_hash=content_hash(user),
+                augmentation="paraphrase",
+            )
+        )
 
     return paraphrased
 
@@ -553,46 +598,75 @@ DOMAIN_FRAMES = {
 
 DOMAIN_VOCAB = {
     "code": {
-        "pipeline": "function chain", "governance": "validation middleware",
-        "harmonic wall": "boundary check", "axiom": "invariant",
-        "Sacred Tongue": "type parameter", "trust": "confidence score",
-        "layer": "middleware layer", "embedding": "feature vector",
-        "distance": "error margin", "breathing": "heartbeat/polling",
+        "pipeline": "function chain",
+        "governance": "validation middleware",
+        "harmonic wall": "boundary check",
+        "axiom": "invariant",
+        "Sacred Tongue": "type parameter",
+        "trust": "confidence score",
+        "layer": "middleware layer",
+        "embedding": "feature vector",
+        "distance": "error margin",
+        "breathing": "heartbeat/polling",
     },
     "lore": {
-        "pipeline": "the Great Weave", "governance": "the Council's judgement",
-        "harmonic wall": "the Barrier of Echoes", "axiom": "ancient law",
-        "Sacred Tongue": "primal language of creation", "trust": "oath-bond",
-        "layer": "veil of reality", "embedding": "dimensional anchor",
-        "distance": "drift between realms", "breathing": "the pulse of Aethermoor",
+        "pipeline": "the Great Weave",
+        "governance": "the Council's judgement",
+        "harmonic wall": "the Barrier of Echoes",
+        "axiom": "ancient law",
+        "Sacred Tongue": "primal language of creation",
+        "trust": "oath-bond",
+        "layer": "veil of reality",
+        "embedding": "dimensional anchor",
+        "distance": "drift between realms",
+        "breathing": "the pulse of Aethermoor",
     },
     "governance": {
-        "pipeline": "compliance workflow", "harmonic wall": "risk threshold",
-        "axiom": "regulatory requirement", "Sacred Tongue": "audit dimension",
-        "trust": "compliance score", "layer": "control tier",
-        "embedding": "risk mapping", "distance": "deviation from policy",
+        "pipeline": "compliance workflow",
+        "harmonic wall": "risk threshold",
+        "axiom": "regulatory requirement",
+        "Sacred Tongue": "audit dimension",
+        "trust": "compliance score",
+        "layer": "control tier",
+        "embedding": "risk mapping",
+        "distance": "deviation from policy",
         "breathing": "periodic audit cycle",
     },
     "math": {
-        "pipeline": "composed operator T = T_14 ∘ ... ∘ T_1", "governance": "decision function g: ℝ → {0,1}",
-        "harmonic wall": "H(d,pd) = 1/(1+φd_H+2pd)", "axiom": "theorem precondition",
-        "Sacred Tongue": "basis vector e_i", "trust": "probability measure",
-        "layer": "linear operator T_k", "embedding": "injective map f: X → B^n",
-        "distance": "metric d(x,y)", "breathing": "oscillatory term sin(ωt)",
+        "pipeline": "composed operator T = T_14 ∘ ... ∘ T_1",
+        "governance": "decision function g: ℝ → {0,1}",
+        "harmonic wall": "H(d,pd) = 1/(1+φd_H+2pd)",
+        "axiom": "theorem precondition",
+        "Sacred Tongue": "basis vector e_i",
+        "trust": "probability measure",
+        "layer": "linear operator T_k",
+        "embedding": "injective map f: X → B^n",
+        "distance": "metric d(x,y)",
+        "breathing": "oscillatory term sin(ωt)",
     },
     "military": {
-        "pipeline": "kill chain", "governance": "rules of engagement",
-        "harmonic wall": "defensive perimeter", "axiom": "standing order",
-        "Sacred Tongue": "communication channel", "trust": "clearance level",
-        "layer": "defense in depth layer", "embedding": "operational theater",
-        "distance": "threat proximity", "breathing": "patrol rhythm",
+        "pipeline": "kill chain",
+        "governance": "rules of engagement",
+        "harmonic wall": "defensive perimeter",
+        "axiom": "standing order",
+        "Sacred Tongue": "communication channel",
+        "trust": "clearance level",
+        "layer": "defense in depth layer",
+        "embedding": "operational theater",
+        "distance": "threat proximity",
+        "breathing": "patrol rhythm",
     },
     "cooking": {
-        "pipeline": "recipe steps", "governance": "quality control taste test",
-        "harmonic wall": "temperature threshold", "axiom": "culinary fundamental",
-        "Sacred Tongue": "flavor profile", "trust": "ingredient freshness",
-        "layer": "prep stage", "embedding": "marination (infusing flavor)",
-        "distance": "how far off from the ideal taste", "breathing": "letting the dough rest",
+        "pipeline": "recipe steps",
+        "governance": "quality control taste test",
+        "harmonic wall": "temperature threshold",
+        "axiom": "culinary fundamental",
+        "Sacred Tongue": "flavor profile",
+        "trust": "ingredient freshness",
+        "layer": "prep stage",
+        "embedding": "marination (infusing flavor)",
+        "distance": "how far off from the ideal taste",
+        "breathing": "letting the dough rest",
     },
 }
 
@@ -609,7 +683,7 @@ def _domain_translate(text: str, domain: str) -> str:
             flags=re.IGNORECASE,
         )
     # Take first 5 sentences of the translated text
-    sents = re.split(r'(?<=[.!?])\s+', result.strip())[:5]
+    sents = re.split(r"(?<=[.!?])\s+", result.strip())[:5]
     return " ".join(s.strip() for s in sents if s.strip())
 
 
@@ -635,22 +709,26 @@ def generate_cross_domain(records: list[dict]) -> list[dict]:
         cross_answer = (
             f"Reframed through {domain}:\n\n"
             f"{translated}\n\n"
-            f"The mapping works because the underlying structure is the same — "
+            "The mapping works because the underlying structure is the same — "
             f"{'validating inputs before processing' if domain == 'code' else ''}"
             f"{'narrative consequences for breaking ancient laws' if domain == 'lore' else ''}"
             f"{'compliance requirements before approval' if domain == 'governance' else ''}"
             f"{'mathematical operators preserving invariants' if domain == 'math' else ''}"
             f"{'defensive geometry creating cost asymmetry' if domain == 'military' else ''}"
             f"{'each step must be right before the next begins' if domain == 'cooking' else ''}"
-            f". Different vocabulary, same structural truth."
+            ". Different vocabulary, same structural truth."
         )
 
-        crossed.append(make_record(
-            system, cross_question, cross_answer,
-            tags=["curriculum", "cross-domain", "gym-class", f"frame-{domain}"],
-            source_hash=content_hash(user),
-            augmentation="cross-domain",
-        ))
+        crossed.append(
+            make_record(
+                system,
+                cross_question,
+                cross_answer,
+                tags=["curriculum", "cross-domain", "gym-class", f"frame-{domain}"],
+                source_hash=content_hash(user),
+                augmentation="cross-domain",
+            )
+        )
 
     return crossed
 
@@ -733,12 +811,16 @@ def generate_difficulty_ups(records: list[dict]) -> list[dict]:
 
         hard_answer = f"{assistant}{depth_text}"
 
-        harder.append(make_record(
-            system, hard_question, hard_answer,
-            tags=["curriculum", "difficulty-up", "gym-class"],
-            source_hash=content_hash(user),
-            augmentation="difficulty-up",
-        ))
+        harder.append(
+            make_record(
+                system,
+                hard_question,
+                hard_answer,
+                tags=["curriculum", "difficulty-up", "gym-class"],
+                source_hash=content_hash(user),
+                augmentation="difficulty-up",
+            )
+        )
 
     return harder
 
@@ -746,6 +828,7 @@ def generate_difficulty_ups(records: list[dict]) -> list[dict]:
 # ─────────────────────────────────────────────
 # 6. POP QUIZ — Held-out eval set
 # ─────────────────────────────────────────────
+
 
 def generate_quiz_set(records: list[dict], quiz_fraction: float = 0.08) -> tuple[list[dict], list[dict]]:
     """Split records into train + quiz. Returns (train, quiz)."""
@@ -774,9 +857,18 @@ def generate_quiz_set(records: list[dict], quiz_fraction: float = 0.08) -> tuple
 # ─────────────────────────────────────────────
 
 ABLATION_TERMS = [
-    "SCBE", "harmonic wall", "Poincare", "Sacred Tongue",
-    "governance", "hyperbolic", "axiom", "pipeline",
-    "Langues", "Mobius", "Hamiltonian", "spectral",
+    "SCBE",
+    "harmonic wall",
+    "Poincare",
+    "Sacred Tongue",
+    "governance",
+    "hyperbolic",
+    "axiom",
+    "pipeline",
+    "Langues",
+    "Mobius",
+    "Hamiltonian",
+    "spectral",
 ]
 
 
@@ -822,26 +914,30 @@ def generate_ablations(records: list[dict], mode: str = "full") -> list[dict]:
                 f"The redacted terms ({', '.join(to_remove)}) can be inferred from "
                 f"the remaining context clues ({', '.join(kept) if kept else 'structural cues'}).\n\n"
                 f"{assistant[:600]}\n\n"
-                f"Key inference: even with partial information removed, the concept is identifiable "
-                f"from its relationships to neighboring ideas in the pipeline."
+                "Key inference: even with partial information removed, the concept is identifiable "
+                "from its relationships to neighboring ideas in the pipeline."
             )
             tag_phase = "gym-class"
         else:
             ablated_question = f"[Context clues removed] {ablated_question}"
             abl_answer = (
-                f"Even without the specific terminology, the concept being described is:\n\n"
+                "Even without the specific terminology, the concept being described is:\n\n"
                 f"{assistant[:600]}\n\n"
                 f"The removed terms were: {', '.join(to_remove)}. "
-                f"A well-trained model should recognize the concept from structural cues alone."
+                "A well-trained model should recognize the concept from structural cues alone."
             )
             tag_phase = "quiz"
 
-        ablated.append(make_record(
-            system, ablated_question, abl_answer,
-            tags=["curriculum", "ablation", tag_phase, f"ablation-{mode}"],
-            source_hash=content_hash(user),
-            augmentation=f"{mode}-ablation",
-        ))
+        ablated.append(
+            make_record(
+                system,
+                ablated_question,
+                abl_answer,
+                tags=["curriculum", "ablation", tag_phase, f"ablation-{mode}"],
+                source_hash=content_hash(user),
+                augmentation=f"{mode}-ablation",
+            )
+        )
 
     return ablated
 
@@ -965,12 +1061,12 @@ def generate_field_trips(records: list[dict]) -> list[dict]:
 
         trip_question = (
             f"Field trip: Compare {dest['scbe_concept']} to {dest['topic']}. "
-            f"What are the similarities and differences? "
+            "What are the similarities and differences? "
             f"Original context: {user[:200]}"
         )
 
         # Extract the most relevant sentences from source for comparison
-        source_sents = re.split(r'(?<=[.!?])\s+', assistant.strip())
+        source_sents = re.split(r"(?<=[.!?])\s+", assistant.strip())
         relevant_source = " ".join(source_sents[:3])
 
         trip_answer = (
@@ -979,21 +1075,26 @@ def generate_field_trips(records: list[dict]) -> list[dict]:
             f"{relevant_source}\n\n"
             f"**What {dest['topic']} does:**\n"
             f"{dest['external']}\n\n"
-            f"**Where they diverge:**\n"
+            "**Where they diverge:**\n"
             f"{dest['comparison']}\n\n"
             f"**Why it matters:** {dest['topic']} solves a similar problem but with different "
-            f"tradeoffs. Understanding both sharpens your intuition for WHY the SCBE approach "
-            f"chose continuous mathematical scoring over discrete rules."
+            "tradeoffs. Understanding both sharpens your intuition for WHY the SCBE approach "
+            "chose continuous mathematical scoring over discrete rules."
         )
 
-        trips.append(make_record(
-            system, trip_question, trip_answer,
-            tags=["curriculum", "field-trip", "gym-class", f"dest-{dest['topic'][:20]}"],
-            source_hash=content_hash(user),
-            augmentation="field-trip",
-        ))
+        trips.append(
+            make_record(
+                system,
+                trip_question,
+                trip_answer,
+                tags=["curriculum", "field-trip", "gym-class", f"dest-{dest['topic'][:20]}"],
+                source_hash=content_hash(user),
+                augmentation="field-trip",
+            )
+        )
 
     return trips
+
 
 # ─────────────────────────────────────────────
 # 9. TONE VARIANTS — Sarcasm, anger, confusion, typos, etc.
@@ -1105,7 +1206,7 @@ TONE_RESPONSE_FRAMES = {
 
 def _adapt_register(text: str, tone: str) -> str:
     """Adapt the assistant's response register to match the user's tone."""
-    sents = re.split(r'(?<=[.!?])\s+', text.strip())
+    sents = re.split(r"(?<=[.!?])\s+", text.strip())
 
     if tone == "impatient":
         # Short, punchy. Max 3 sentences, strip preamble.
@@ -1115,7 +1216,7 @@ def _adapt_register(text: str, tone: str) -> str:
     elif tone == "exhausted":
         # Simple words, short sentences. Max 4.
         simplified = _simplify_text(text)
-        sents2 = re.split(r'(?<=[.!?])\s+', simplified.strip())[:4]
+        sents2 = re.split(r"(?<=[.!?])\s+", simplified.strip())[:4]
         return " ".join(sents2)
 
     elif tone == "multi_question":
@@ -1172,12 +1273,16 @@ def generate_tone_variants(records: list[dict]) -> list[dict]:
             adapted = _adapt_register(assistant, tone)
             tone_answer = f"{frame}{adapted}"
 
-            variants.append(make_record(
-                system, tone_question, tone_answer,
-                tags=["curriculum", "tone-variant", "gym-class", f"tone-{tone}"],
-                source_hash=content_hash(user),
-                augmentation="tone-variant",
-            ))
+            variants.append(
+                make_record(
+                    system,
+                    tone_question,
+                    tone_answer,
+                    tags=["curriculum", "tone-variant", "gym-class", f"tone-{tone}"],
+                    source_hash=content_hash(user),
+                    augmentation="tone-variant",
+                )
+            )
 
     return variants
 
@@ -1368,7 +1473,7 @@ def generate_bullies(records: list[dict]) -> list[dict]:
         tactic_response = tactic["response"].format(concept=concept)
 
         # Extract first 3 substantive sentences from the real answer
-        sents = re.split(r'(?<=[.!?])\s+', assistant.strip())
+        sents = re.split(r"(?<=[.!?])\s+", assistant.strip())
         core_sents = [s for s in sents if len(s) > 30][:3]
         core_answer = " ".join(core_sents)
 
@@ -1377,44 +1482,45 @@ def generate_bullies(records: list[dict]) -> list[dict]:
             bully_answer = (
                 f"{tactic_response}\n\n"
                 f"The documented implementation: {core_answer}\n\n"
-                f"If you believe there's a bug, the test suite and formal proofs are "
-                f"the place to verify — not alternative claims."
+                "If you believe there's a bug, the test suite and formal proofs are "
+                "the place to verify — not alternative claims."
             )
         elif tactic_name == "authority_fake":
             bully_answer = (
                 f"{tactic_response}\n\n"
                 f"What the system actually does: {core_answer}\n\n"
-                f"No credential level changes the math. The algebraic guarantee is "
-                f"independent of who's asking."
+                "No credential level changes the math. The algebraic guarantee is "
+                "independent of who's asking."
             )
         elif tactic_name == "role_reversal":
             bully_answer = (
                 f"{tactic_response}\n\n"
                 f"Here's what the implementation shows: {core_answer}\n\n"
-                f"The code is open source — you can verify every claim against the actual "
-                f"codebase rather than relying on either of our assertions."
+                "The code is open source — you can verify every claim against the actual "
+                "codebase rather than relying on either of our assertions."
             )
         elif tactic_name == "misdirection":
-            bully_answer = (
-                f"{tactic_response}\n\n"
-                f"On the legitimate question: {core_answer}"
-            )
+            bully_answer = f"{tactic_response}\n\n" f"On the legitimate question: {core_answer}"
         elif tactic_name == "guilt_trip":
             bully_answer = (
                 f"{tactic_response}\n\n"
                 f"{core_answer}\n\n"
-                f"This is the complete, unfiltered technical explanation. "
-                f"The governance context IS the useful information — it's not a barrier."
+                "This is the complete, unfiltered technical explanation. "
+                "The governance context IS the useful information — it's not a barrier."
             )
         else:
             bully_answer = f"{tactic_response}\n\n{core_answer}"
 
-        bullied.append(make_record(
-            system, bully_question, bully_answer,
-            tags=["curriculum", "bully", "gym-class", f"tactic-{tactic_name}"],
-            source_hash=content_hash(user),
-            augmentation="bully",
-        ))
+        bullied.append(
+            make_record(
+                system,
+                bully_question,
+                bully_answer,
+                tags=["curriculum", "bully", "gym-class", f"tactic-{tactic_name}"],
+                source_hash=content_hash(user),
+                augmentation="bully",
+            )
+        )
 
     return bullied
 
@@ -1422,6 +1528,7 @@ def generate_bullies(records: list[dict]) -> list[dict]:
 # ─────────────────────────────────────────────
 # Main Pipeline
 # ─────────────────────────────────────────────
+
 
 def main():
     # Collect all SFT files
@@ -1476,8 +1583,15 @@ def main():
 
     # Combine gym class data — all augments train together
     gym_data = (
-        inversions + rotations + paraphrases + cross_domain + difficulty_ups
-        + partial_ablations + field_trips + tone_variants + bullies
+        inversions
+        + rotations
+        + paraphrases
+        + cross_domain
+        + difficulty_ups
+        + partial_ablations
+        + field_trips
+        + tone_variants
+        + bullies
     )
     random.shuffle(gym_data)
 
@@ -1517,8 +1631,8 @@ def main():
         tw = rec.get("tongue_weights", {})
         for t, v in tw.items():
             tongue_totals[t] += v
-        for l in rec.get("layers", []):
-            layer_hist[l] += 1
+        for layer in rec.get("layers", []):
+            layer_hist[layer] += 1
         for a in rec.get("axioms", []):
             axiom_hist[a] += 1
         d = rec.get("difficulty", 0.5)
@@ -1612,12 +1726,12 @@ def main():
         json.dump(manifest, f, indent=2, ensure_ascii=False)
 
     print(f"\nManifest: {manifest_path}")
-    print(f"\nCurriculum Summary:")
+    print("\nCurriculum Summary:")
     print(f"  Phase 1 (Learn):      {len(all_records):>6} records (original)")
     print(f"  Phase 2 (Gym Class):  {counts['phase2_gym_class']:>6} records (augmented)")
     print(f"  Phase 3 (Pop Quiz):   {counts['phase3_pop_quiz']:>6} records (eval)")
-    print(f"  Phase 4 (Remediate):  dynamic (from quiz gaps)")
-    print(f"  Phase 5 (Cooldown):   dynamic (easy subset)")
+    print("  Phase 4 (Remediate):  dynamic (from quiz gaps)")
+    print("  Phase 5 (Cooldown):   dynamic (easy subset)")
     print(f"  Total new data:       {sum(counts.values()):>6} augmented records")
 
 

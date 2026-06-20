@@ -56,7 +56,8 @@ BEARER_RULE = PatternRule("bearer_header", re.compile(r"(?i)\bAuthorization\s*:\
 ACCOUNT_RULE = PatternRule(
     "account_id",
     re.compile(
-        r"(?i)\b(?:account|acct|customer|user|session|record|identifier|id)\s*(?:id|number|no\.?|#)?\s*[:=]\s*[A-Za-z0-9][A-Za-z0-9_\-./]{5,}"
+        r"(?i)\b(?:account|acct|customer|user|session|record|identifier|id)"
+        r"\s*(?:id|number|no\.?|#)?\s*[:=]\s*[A-Za-z0-9][A-Za-z0-9_\-./]{5,}"
     ),
 )
 API_KEY_RULES = [
@@ -66,7 +67,8 @@ API_KEY_RULES = [
     PatternRule(
         "api_key",
         re.compile(
-            r"(?i)\b(?:api[_-]?key|access[_-]?token|auth[_-]?token|secret|session[_-]?token)\s*[:=]\s*[A-Za-z0-9._\-+/=]{12,}"
+            r"(?i)\b(?:api[_-]?key|access[_-]?token|auth[_-]?token|secret|session[_-]?token)"
+            r"\s*[:=]\s*[A-Za-z0-9._\-+/=]{12,}"
         ),
     ),
 ]
@@ -128,7 +130,8 @@ def _load_vault_adapter(module_name: str, vault_dir: str | None) -> Any:
         module = importlib.import_module(module_name)
     except ImportError as exc:
         raise RuntimeError(
-            f"Vault module '{module_name}' is unavailable. Expected src.security.privacy_token_vault to provide a vault adapter."
+            f"Vault module '{module_name}' is unavailable. "
+            "Expected src.security.privacy_token_vault to provide a vault adapter."
         ) from exc
 
     candidates: list[Callable[..., Any]] = []
@@ -156,7 +159,8 @@ def _load_vault_adapter(module_name: str, vault_dir: str | None) -> Any:
             return _VaultAdapter(vault)
 
     raise RuntimeError(
-        f"Vault module '{module_name}' does not expose a usable adapter. Expected create_vault()/get_vault()/build_vault() "
+        f"Vault module '{module_name}' does not expose a usable adapter. "
+        "Expected create_vault()/get_vault()/build_vault() "
         "or a PrivacyTokenVault/TokenVault class with a protect-like method."
     )
 
@@ -186,7 +190,8 @@ class _VaultAdapter:
             alias = getattr(entry, "alias", None) or str(entry)
             return f"<<{(kind or 'value').upper()}:{'~'.join(alias)}>>"
         raise RuntimeError(
-            "privacy_token_vault adapter must expose protect/tokenize/seal/encode so strings can be replaced deterministically."
+            "privacy_token_vault adapter must expose protect/tokenize/seal/encode "
+            "so strings can be replaced deterministically."
         )
 
 

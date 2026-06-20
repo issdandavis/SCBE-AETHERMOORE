@@ -61,6 +61,8 @@ from symphonic_cipher.scbe_aethermoore.cymatic_storage import (
 # Import from PQC Harmonic module
 from symphonic_cipher.scbe_aethermoore.pqc.pqc_harmonic import (
     fast_harmonic_key,
+    harmonic_key_stretch,
+    HarmonicKeyMaterial,
     create_harmonic_pqc_session,
     verify_harmonic_pqc_session,
     Vector6DKey,
@@ -463,7 +465,14 @@ class TestKDTree:
 
 
 class TestPQCHarmonic:
-    """Test PQC Harmonic enhancement."""
+    """Test PQC Harmonic enhancement.
+
+    Variant note: these tests exercise ``harmonic_scale`` and the PQC key-stretch
+    primitives, which are identical across the root and ``src/`` variants
+    (``H = R**(d**2)``). The variant difference documented in CLAUDE.md applies
+    only to the L12 governance score (``H = 1/(1+d+2*pd)``), which these tests
+    do not touch — so no variant lock is required here.
+    """
 
     def test_fast_harmonic_key(self):
         """Test fast harmonic key derivation."""
@@ -482,6 +491,53 @@ class TestPQCHarmonic:
         key1 = fast_harmonic_key(b"input", dimension=3, salt=b"salt")
         key2 = fast_harmonic_key(b"input", dimension=6, salt=b"salt")
         assert key1 != key2
+
+    def test_harmonic_key_stretch_no_cap(self):
+        """Stretch below the cap performs the full requested iterations."""
+        km = harmonic_key_stretch(b"input key", dimension=3, R=1.5, salt=b"salt", output_length=32)
+        assert isinstance(km, HarmonicKeyMaterial)
+        assert len(km.base_key) == 32
+        # H(3, 1.5) = 1.5^9 = 38.44 -> ceil 39, well under 10M
+        assert km.requested_iterations == 39
+        assert km.iteration_count == 39
+        assert km.cap_engaged is False
+
+    def test_harmonic_key_stretch_deterministic(self):
+        """Same inputs produce the same stretched key."""
+        km1 = harmonic_key_stretch(b"input", dimension=2, R=1.5, salt=b"salt")
+        km2 = harmonic_key_stretch(b"input", dimension=2, R=1.5, salt=b"salt")
+        assert km1.base_key == km2.base_key
+
+    def test_harmonic_key_stretch_cap_engaged_warns(self):
+        """When the requested iterations exceed the cap, warn and clamp.
+
+        Uses a small cap so the test stays fast while still exercising the
+        clamp/warn path that the default 10M cap would trigger at high (d, R).
+        """
+        with pytest.warns(UserWarning, match="cap engaged"):
+            km = harmonic_key_stretch(b"input", dimension=6, R=1.7, salt=b"salt", max_iterations=5000)
+        assert km.cap_engaged is True
+        assert km.requested_iterations > 5000
+        assert km.iteration_count == 5000
+
+    def test_harmonic_key_stretch_custom_cap(self):
+        """A custom max_iterations binds the iteration count and reports it."""
+        with pytest.warns(UserWarning, match="cap engaged"):
+            km = harmonic_key_stretch(b"input", dimension=6, R=1.5, salt=b"salt", max_iterations=1000)
+        # H(6, 1.5) = 2,184,165 requested, clamped to 1000.
+        assert km.requested_iterations == 2184165
+        assert km.iteration_count == 1000
+        assert km.cap_engaged is True
+
+    def test_harmonic_key_stretch_invalid_max_iterations(self):
+        """max_iterations below 1 is rejected."""
+        with pytest.raises(ValueError, match="max_iterations"):
+            harmonic_key_stretch(b"input", dimension=2, R=1.5, salt=b"salt", max_iterations=0)
+
+    def test_harmonic_key_stretch_invalid_dimension(self):
+        """Dimension outside 1-6 is rejected."""
+        with pytest.raises(ValueError, match="Dimension"):
+            harmonic_key_stretch(b"input", dimension=7, R=1.5, salt=b"salt")
 
     def test_vector6d_key_creation(self):
         """Test Vector6DKey creation and serialization."""

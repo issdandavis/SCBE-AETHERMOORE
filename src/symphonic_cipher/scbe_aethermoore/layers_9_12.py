@@ -270,34 +270,34 @@ def compute_47d_phases(
     weights_47: list = []
 
     # --- 6 real tongue dimensions: w_l = φ^(2l) ---
-    for l in range(6):
-        phases_47.append(tongue_phases[l])
-        weights_47.append(PHI ** (2 * l))
+    for ell in range(6):
+        phases_47.append(tongue_phases[ell])
+        weights_47.append(PHI ** (2 * ell))
 
     # --- 15 pair coupling dimensions C(6,2): w_lm = φ^(l+m) ---
-    for l in range(6):
-        for m in range(l + 1, 6):
+    for ell in range(6):
+        for m in range(ell + 1, 6):
             # Coupling coordinate: c_lm = cos(θ_l - θ_m) · exp(-|ψ_l - ψ_m|)
             # Phase for spin coherence: relative tongue phase θ_l - θ_m
             # Amplitude damping: exp(-|ψ_l - ψ_m|) — coherent spins couple stronger
-            damping = np.exp(-abs(psi[l] - psi[m]))
-            phases_47.append(tongue_phases[l] - tongue_phases[m])
-            weights_47.append(PHI ** (l + m) * damping)
+            damping = np.exp(-abs(psi[ell] - psi[m]))
+            phases_47.append(tongue_phases[ell] - tongue_phases[m])
+            weights_47.append(PHI ** (ell + m) * damping)
 
     # --- 20 triple coupling dimensions C(6,3): w_lmn = φ^(l+m+n) ---
-    for l in range(6):
-        for m in range(l + 1, 6):
+    for ell in range(6):
+        for m in range(ell + 1, 6):
             for n in range(m + 1, 6):
                 # Berry phase: θ_l + θ_m - 2θ_n (triangular geometric phase)
                 # Amplitude: tanh(ψ_l + ψ_m + ψ_n) — bounded 3-body spin coupling
-                amplitude = np.tanh(abs(psi[l] + psi[m] + psi[n]))
-                phases_47.append(tongue_phases[l] + tongue_phases[m] - 2 * tongue_phases[n])
-                weights_47.append(PHI ** (l + m + n) * amplitude)
+                amplitude = np.tanh(abs(psi[ell] + psi[m] + psi[n]))
+                phases_47.append(tongue_phases[ell] + tongue_phases[m] - 2 * tongue_phases[n])
+                weights_47.append(PHI ** (ell + m + n) * amplitude)
 
     # --- 6 self-imaginary dimensions: w_ψl = φ^(2l) ---
-    for l in range(6):
-        phases_47.append(psi[l])
-        weights_47.append(PHI ** (2 * l))
+    for ell in range(6):
+        phases_47.append(psi[ell])
+        weights_47.append(PHI ** (2 * ell))
 
     return np.array(phases_47, dtype=np.float64), np.array(weights_47, dtype=np.float64)
 

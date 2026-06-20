@@ -12,7 +12,6 @@ from typing import Any
 from scripts.system import colab_notebook_smoke as smoke
 from scripts.system import colab_workflow_catalog as catalog
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ARTIFACT_ROOT = REPO_ROOT / "artifacts" / "colab_soak"
 

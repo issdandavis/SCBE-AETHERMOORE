@@ -17,6 +17,8 @@ jobs:
     name: "Axiom Compliance (A1-A12)"
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -42,28 +44,33 @@ jobs:
           print('✓ Axiom A4 Verified: ||u|| =', np.linalg.norm(u))
           "
 
-      - name: "Verify Axiom A12 (Vertical Wall)"
+      - name: "Verify Layer 12 (Bounded Harmonic Score)"
         run: |
           python -c "
           import numpy as np
-          from symphonic_cipher.scbe_aethermoore import l12_harmonic_scaling
+          from src.scbe_14layer_reference import layer_12_harmonic_scaling
 
-          # Vertical Wall: H = exp(d*²)
-          h0 = l12_harmonic_scaling(0.0)
-          h1 = l12_harmonic_scaling(1.0)
-          h2 = l12_harmonic_scaling(2.0)
+          # Current reference Layer 12 score: H = 1 / (1 + d* + 2*phase_deviation)
+          h0 = layer_12_harmonic_scaling(0.0, 0.0)
+          h1 = layer_12_harmonic_scaling(1.0, 0.0)
+          h2 = layer_12_harmonic_scaling(2.0, 0.0)
+          hp = layer_12_harmonic_scaling(1.0, 0.5)
 
           assert abs(h0 - 1.0) < 0.01, 'H(0) should be 1'
-          assert abs(h1 - np.e) < 0.01, 'H(1) should be e'
-          assert h2 > 50, 'H(2) should be > 50 (exp(4) ≈ 54.6)'
+          assert abs(h1 - 0.5) < 0.01, 'H(1,0) should be 0.5'
+          assert abs(h2 - (1.0 / 3.0)) < 0.01, 'H(2,0) should be 1/3'
+          assert hp < h1, 'phase deviation should reduce the score'
+          assert all(0.0 < h <= 1.0 for h in (h0, h1, h2, hp)), 'H must be bounded in (0,1]'
 
-          print('✓ Axiom A12 Verified: H(0)={:.2f}, H(1)={:.2f}, H(2)={:.2f}'.format(h0, h1, h2))
+          print('Layer 12 bounded score verified: H(0,0)={:.2f}, H(1,0)={:.2f}, H(2,0)={:.2f}, H(1,.5)={:.2f}'.format(h0, h1, h2, hp))
           "
 
   unit-tests:
     name: "Unit Tests"
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -112,6 +119,8 @@ jobs:
     name: "EARS Requirements (R1-R8)"
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -174,21 +183,22 @@ jobs:
           print('✓ R5 Verified: Risk monotonically increasing in d*')
           "
 
-      - name: "R7: Base Risk Bounded, Final Unbounded"
+      - name: "R7: Base Risk and Harmonic Score Bounded"
         run: |
           python -c "
           import numpy as np
-          from symphonic_cipher.scbe_aethermoore import compute_risk, l12_harmonic_scaling
+          from symphonic_cipher.scbe_aethermoore import compute_risk
+          from src.scbe_14layer_reference import layer_12_harmonic_scaling
 
           # Base risk should be [0,1]
           result = compute_risk(0.5, 0.5, 0.5, 0.5, 0.5, 1.0)
           assert 0 <= result.r_base <= 1, 'R7 Violation: r_base out of bounds'
 
-          # Harmonic scaling (Vertical Wall) should be unbounded
-          h = l12_harmonic_scaling(5.0)  # exp(25) ≈ 7.2e10
-          assert h > 1e10, 'R7 Violation: H should be unbounded'
+          # Current reference harmonic score is bounded in (0,1].
+          h = layer_12_harmonic_scaling(5.0, 0.0)
+          assert 0.0 < h <= 1.0, 'R7 Violation: H should be bounded'
 
-          print(f'✓ R7 Verified: r_base={result.r_base:.3f} ∈ [0,1], H(5)={h:.2e} (unbounded)')
+          print(f'R7 Verified: r_base={result.r_base:.3f} in [0,1], H(5)={h:.3f} bounded')
           "
 
       - name: "R8: Determinism"
@@ -213,6 +223,8 @@ jobs:
     name: "Patent Claims Validation"
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

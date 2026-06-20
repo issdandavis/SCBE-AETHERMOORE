@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>scbe-bookforge | Publishing Package</title>
+    <meta
+      name="description"
+      content="scbe-bookforge turns Markdown into KDP-ready interiors, EPUB files, and calibrated cover-wrap proofs."
+    />
+    <link rel="stylesheet" href="../static/packages/package-products.css" />
+  </head>
+  <body data-package-theme="bookforge">
+    <div class="shell">
+      <header class="topbar">
+        <a class="brand" href="../packages.html">Package Products</a>
+        <nav class="nav" aria-label="Primary">
+          <a href="../index.html">Home</a>
+          <a href="../packages.html">Packages</a>
+          <a href="../books.html">Books</a>
+          <a href="scbe-agent-bus.html">Agent Bus</a>
+        </nav>
+      </header>
+      <main>
+        <section class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">Publishing lane</p>
+            <h1>scbe-bookforge</h1>
+            <p class="lede">
+              A Python publishing package for Markdown manuscripts, KDP-ready paperback and hardcover interiors,
+              Kindle EPUB output, and cover-wrap proof generation.
+            </p>
+            <code class="command">pip install scbe-bookforge</code>
+            <div class="cta-row">
+              <a class="button" href="https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/packages/bookforge">Source Package</a>
+              <a class="button secondary" href="../books.html">Book Shelf</a>
+            </div>
+          </div>
+          <div class="visual">
+            <div class="terminal-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+            <div class="terminal-body">
+              <div><strong>$ bookforge build manuscript.md --profile kdp-paperback</strong></div>
+              <div>interior PDF ready</div>
+              <div><strong>$ bookforge cover-wrap --pages 420</strong></div>
+              <div>spine math and wrap proof generated</div>
+              <br />
+              <div>Status: publish pending</div>
+            </div>
+          </div>
+        </section>
+        <section class="band reveal">
+          <div class="detail-grid">
+            <article class="panel">
+              <h3>Who It Helps</h3>
+              <p>Authors, editors, and small publishers who need repeatable book builds instead of manual formatting.</p>
+            </article>
+            <article class="panel">
+              <h3>What It Gives</h3>
+              <p>ReportLab fallback, XeLaTeX-driven typography, EPUB flow, and cover-wrap calculations.</p>
+            </article>
+            <article class="panel">
+              <h3>Current Status</h3>
+              <p>The package exists locally in this repo. PyPI returned no live project, so this page marks it publish pending.</p>
+            </article>
+          </div>
+        </section>
+      </main>
+      <footer class="footer">scbe-bookforge. Publishing package surface for the book business lane.</footer>
+    </div>
+    <script src="../static/packages/package-products.js"></script>
+  </body>
+</html>

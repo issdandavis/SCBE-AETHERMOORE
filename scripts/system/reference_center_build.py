@@ -27,7 +27,7 @@ def repo_root_from_script() -> Path:
 
 
 def codename_for(agent: str) -> str:
-    digest = hashlib.sha1(agent.encode("utf-8")).hexdigest()[:6].upper()
+    digest = hashlib.sha256(agent.encode("utf-8")).hexdigest()[:6].upper()
     stem = agent.replace(".", "-").replace("_", "-").strip("-")
     return f"{stem}-RC-{digest}"
 
@@ -82,9 +82,11 @@ def build_agent_card(
         lines.append("- none")
     else:
         for row in packets[:8]:
-            lines.append(
-                f"- `{row.get('mtime','')}` | `{row.get('status','')}` | {row.get('task_id','')} | {row.get('path','')}"
-            )
+            mtime = row.get("mtime", "")
+            status = row.get("status", "")
+            task_id = row.get("task_id", "")
+            packet_path = row.get("path", "")
+            lines.append(f"- `{mtime}` | `{status}` | {task_id} | {packet_path}")
     lines.extend(
         [
             "",

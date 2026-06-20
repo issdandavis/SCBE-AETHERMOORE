@@ -2,7 +2,7 @@ name: Enable Auto-Merge for Trusted PRs
 
 on:
   pull_request:
-    types: [opened, reopened]
+    types: [opened, reopened, ready_for_review]
 
 permissions:
   contents: write
@@ -13,9 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     if: >-
-      github.actor == 'dependabot[bot]' ||
+      github.event.pull_request.draft == false &&
+      (github.actor == 'dependabot[bot]' ||
       github.actor == 'copilot-swe-agent' ||
-      github.actor == 'issdandavis'
+      github.actor == 'issdandavis')
     steps:
       - name: Enable auto-merge (squash)
         shell: bash
@@ -29,6 +30,10 @@ jobs:
           fi
           if echo "$out" | grep -q "Merge already in progress"; then
             echo "Auto-merge already in progress; treating as success."
+            exit 0
+          fi
+          if echo "$out" | grep -q "Base branch was modified"; then
+            echo "Base branch changed while enabling auto-merge; treating as neutral."
             exit 0
           fi
           exit "$rc"

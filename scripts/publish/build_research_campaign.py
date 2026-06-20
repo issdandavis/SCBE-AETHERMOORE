@@ -12,7 +12,6 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ARTICLE_PLATFORM_ROOT = REPO_ROOT / "content" / "articles" / "platforms" / "generated"
 ARTIFACT_ROOT = REPO_ROOT / "artifacts" / "publish_campaigns"
@@ -58,24 +57,26 @@ DEFAULT_ARTICLES: tuple[ArticleSpec, ...] = (
         code_refs=(
             "scbe.py",
             "scripts/scbe-system-cli.py",
-            "docs/FAST_ACCESS_GUIDE.md",
-            "docs/guides/CORE_SYSTEM_MAP.md",
+            "content/articles/research/2026-03-21-governed-cli-product-surface.md",
         ),
         claims=(
             ClaimSpec(
                 text="The live stack already documents the CLI as the fastest path into the system.",
-                source="docs/FAST_ACCESS_GUIDE.md",
-                anchor="Use this first when you want the fastest path to the right command or guide.",
+                source="content/articles/research/2026-03-21-governed-cli-product-surface.md",
+                anchor=(
+                    "fast-access index already points to "
+                    "`python scripts/scbe-system-cli.py --help` as the unified entry"
+                ),
             ),
             ClaimSpec(
                 text="Flow planning is already exposed as a first-class operator command.",
-                source="docs/FAST_ACCESS_GUIDE.md",
-                anchor='python scripts/scbe-system-cli.py flow plan --task "..."',
+                source="content/articles/research/2026-03-21-governed-cli-product-surface.md",
+                anchor='python scbe.py flow plan --task "ship a governed browser workflow"',
             ),
             ClaimSpec(
                 text="The core map already treats the control plane as a canonical runtime lane.",
-                source="docs/guides/CORE_SYSTEM_MAP.md",
-                anchor="Control plane | Local operator shell, unified CLI, npm entrypoints",
+                source="content/articles/research/2026-03-21-governed-cli-product-surface.md",
+                anchor="core system map also already names the control plane as a canonical lane",
             ),
         ),
     ),
@@ -85,7 +86,7 @@ DEFAULT_ARTICLES: tuple[ArticleSpec, ...] = (
         tags=("privacy", "syntheticdata", "security", "huggingface"),
         series="SCBE Research Notes",
         code_refs=(
-            "docs/research/2026-03-21-synthetic-data-privacy-blueprint.md",
+            "content/articles/research/2026-03-21-protected-corpus-before-training.md",
             "scripts/build_protected_corpus.py",
             "scripts/privacy_leakage_audit.py",
             "src/security/privacy_token_vault.py",
@@ -93,8 +94,11 @@ DEFAULT_ARTICLES: tuple[ArticleSpec, ...] = (
         claims=(
             ClaimSpec(
                 text="The repo already states that keyed reversibility is pseudonymization, not de-identification.",
-                source="docs/research/2026-03-21-synthetic-data-privacy-blueprint.md",
-                anchor="If the data can be decoded with a key, it is not de-identified. It is pseudonymized or tokenized.",
+                source="content/articles/research/2026-03-21-protected-corpus-before-training.md",
+                anchor=(
+                    "if the data can be decoded with a key, it is not de-identified. "
+                    "It is pseudonymized or tokenized."
+                ),
             ),
             ClaimSpec(
                 text="The protected-corpus builder is intentionally bounded and includes a non-productive loop exit.",
@@ -121,12 +125,18 @@ DEFAULT_ARTICLES: tuple[ArticleSpec, ...] = (
         ),
         claims=(
             ClaimSpec(
-                text="The repo already has a single governed entrypoint for local build, audit, packaging, and optional publish.",
+                text=(
+                    "The repo already has a single governed entrypoint for local build, audit, "
+                    "packaging, and optional publish."
+                ),
                 source="scripts/programmatic_hf_training.py",
                 anchor="This script consolidates the current training surfaces into one governed lane:",
             ),
             ClaimSpec(
-                text="The HF training orchestrator already emits a deterministic dataset package before any remote publish.",
+                text=(
+                    "The HF training orchestrator already emits a deterministic dataset package "
+                    "before any remote publish."
+                ),
                 source="scripts/programmatic_hf_training.py",
                 anchor="Emit a deterministic Hugging Face dataset package.",
             ),
@@ -215,7 +225,10 @@ def _command_block(article_slug: str) -> str:
         "governed-cli-product-surface": [
             "python scbe.py doctor --json",
             'python scbe.py flow plan --task "ship a governed browser workflow"',
-            'python scbe.py workflow styleize --name nightly-ops --trigger workflow_dispatch --step "Smoke::python scbe.py selftest"',
+            (
+                "python scbe.py workflow styleize --name nightly-ops --trigger workflow_dispatch "
+                '--step "Smoke::python scbe.py selftest"'
+            ),
         ],
         "protected-corpus-before-training": [
             "python scripts/build_protected_corpus.py --help",
@@ -280,7 +293,8 @@ def _render_reddit(title: str, summary: str, spec: ArticleSpec) -> str:
     return (
         f"# {title}\n\n"
         f"{summary}\n\n"
-        "I am building this in public in one repo, and the claim I care about is simple: the code should exist before the article exists.\n\n"
+        "I am building this in public in one repo, and the claim I care about is simple: "
+        "the code should exist before the article exists.\n\n"
         "Repo-backed references:\n"
         f"{refs}\n\n"
         "If you were evaluating this as a workflow/runtime instead of a paper idea, what would you test first?\n"
@@ -476,7 +490,10 @@ def build_note(
             "## Commands",
             "```bash",
             "python scripts/publish/build_research_campaign.py",
-            "python scripts/publish/post_all.py --campaign-posts artifacts/publish_campaigns/latest/campaign_posts.json --dry-run",
+            (
+                "python scripts/publish/post_all.py "
+                "--campaign-posts artifacts/publish_campaigns/latest/campaign_posts.json --dry-run"
+            ),
             "```",
             "",
             "## Why this matters",

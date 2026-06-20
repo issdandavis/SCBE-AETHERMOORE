@@ -17,7 +17,6 @@ from typing import Iterable
 
 import yaml
 
-
 DECL_RE = re.compile(
     r"(?m)^(?:export\s+)?(?:async\s+)?(?:function|class|interface|type|const|let|var)\s+([A-Za-z_][A-Za-z0-9_]*)"
 )

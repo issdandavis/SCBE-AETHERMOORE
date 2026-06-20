@@ -177,7 +177,7 @@ FAMILY_TOPOLOGIES: dict[str, FamilyTopology] = {
     ),
     "tile_mirror_2x2": FamilyTopology("tile_mirror_2x2", (0.8, 1.0, 0.0, 0.9, 0.8, 0.3), 0.9, (1, 1, 0, 1, 1, 0)),
     "tile_rotate_2x2": FamilyTopology("tile_rotate_2x2", (0.8, 1.0, 0.0, 0.9, 0.9, 0.3), 0.9, (1, 1, 0, 1, 1, 0)),
-    "color_remap": FamilyTopology("color_remap", (0.0, 0.0, 1.0, 0.1, 0.0, 0.0), 0.2, (0, 0, 1, 0, 0, 0)),
+    "color_remap": FamilyTopology("color_remap", (0.0, 0.0, 1.0, 0.8, 0.2, 0.0), 0.35, (0, 0, 1, 1, 0, 0)),
     "shift": FamilyTopology("shift", (0.0, 1.0, 0.0, 0.1, 0.1, 0.0), 0.3, (0, 1, 0, 0, 0, 0)),
     "dominant_component_shift": FamilyTopology(
         "dominant_component_shift", (0.1, 0.9, 0.0, 0.8, 0.5, 0.0), 0.5, (0, 1, 0, 1, 0, 0)
@@ -186,13 +186,13 @@ FAMILY_TOPOLOGIES: dict[str, FamilyTopology] = {
         "dominant_component_copy", (0.1, 0.6, 0.0, 0.8, 1.0, 0.0), 0.8, (0, 1, 0, 1, 1, 0)
     ),
     "multi_unique_color_shift": FamilyTopology(
-        "multi_unique_color_shift", (0.1, 0.8, 0.5, 0.8, 0.6, 0.3), 0.7, (0, 1, 1, 1, 0, 1)
+        "multi_unique_color_shift", (0.0, 0.7, 0.9, 0.8, 0.2, 0.5), 0.72, (0, 1, 1, 1, 0, 1)
     ),
     "flip_x": FamilyTopology("flip_x", (0.0, 1.0, 0.0, 0.0, 0.2, 0.0), 0.2, (0, 1, 0, 0, 0, 0)),
     "flip_y": FamilyTopology("flip_y", (0.0, 1.0, 0.0, 0.0, 0.2, 0.0), 0.2, (0, 1, 0, 0, 0, 0)),
     "transpose": FamilyTopology("transpose", (0.2, 1.0, 0.0, 0.0, 0.2, 0.0), 0.3, (0, 1, 0, 0, 0, 0)),
     "shift_then_color_remap": FamilyTopology(
-        "shift_then_color_remap", (0.0, 0.9, 1.0, 0.2, 0.1, 1.0), 0.7, (0, 1, 1, 0, 0, 1)
+        "shift_then_color_remap", (0.0, 0.7, 0.9, 0.8, 0.2, 0.5), 1.8, (0, 1, 1, 1, 0, 1)
     ),
     "flip_x_then_color_remap": FamilyTopology(
         "flip_x_then_color_remap", (0.0, 0.9, 1.0, 0.1, 0.1, 1.0), 0.6, (0, 1, 1, 0, 0, 1)
@@ -263,6 +263,57 @@ FAMILY_TOPOLOGIES: dict[str, FamilyTopology] = {
         "select_minority_color+crop", (0.8, 0.0, 0.2, 1.0, 0.2, 0.0), 0.6, (1, 0, 0, 1, 0, 0)
     ),
 }
+
+FAMILY_TOPOLOGIES.update(
+    {
+        # Current solver-order additions. These inherit from nearby families so
+        # lattice ranking stays usable while preserving one topology per family.
+        "select_single_color_crop": FamilyTopology(
+            "select_single_color_crop", (0.8, 0.0, 0.7, 1.0, 0.3, 0.0), 0.68, (1, 0, 1, 1, 0, 0)
+        ),
+        "select_single_color_crop_orient": FamilyTopology(
+            "select_single_color_crop_orient", (0.85, 0.6, 0.7, 1.0, 0.5, 0.2), 0.72, (1, 1, 1, 1, 0, 0)
+        ),
+        "select_smallest_cc_crop": FamilyTopology(
+            "select_smallest_cc_crop", (0.9, 0.0, 0.1, 1.0, 0.4, 0.0), 0.68, (1, 0, 0, 1, 0, 0)
+        ),
+        "select_second_color_crop": FamilyTopology(
+            "select_second_color_crop", (0.8, 0.0, 0.6, 1.0, 0.3, 0.0), 0.66, (1, 0, 1, 1, 0, 0)
+        ),
+        "mask_by_color": FamilyTopology("mask_by_color", (0.1, 0.0, 0.8, 0.5, 0.2, 0.0), 0.45, (0, 0, 1, 1, 0, 0)),
+        "sym_complete_180_frames": FamilyTopology(
+            "sym_complete_180_frames", (0.1, 1.0, 0.3, 0.7, 0.95, 0.5), 0.75, (0, 1, 1, 1, 1, 1)
+        ),
+        "template_stamp": FamilyTopology("template_stamp", (0.6, 0.2, 0.2, 0.8, 0.8, 0.9), 0.72, (1, 0, 0, 1, 1, 1)),
+        "tile_marker_propagate": FamilyTopology(
+            "tile_marker_propagate", (0.9, 0.2, 0.4, 0.9, 0.9, 0.7), 0.82, (1, 0, 1, 1, 1, 1)
+        ),
+        "diagonal_project": FamilyTopology(
+            "diagonal_project", (0.2, 0.8, 0.2, 0.6, 0.8, 0.4), 0.65, (0, 1, 0, 1, 1, 0)
+        ),
+        "diagonal_cross_connect": FamilyTopology(
+            "diagonal_cross_connect", (0.2, 0.8, 0.4, 0.7, 0.9, 0.5), 0.7, (0, 1, 1, 1, 1, 1)
+        ),
+        "marker_erase_outside": FamilyTopology(
+            "marker_erase_outside", (0.4, 0.1, 0.5, 1.0, 0.5, 0.2), 0.62, (0, 0, 1, 1, 1, 0)
+        ),
+        "panel_dihedral_complete": FamilyTopology(
+            "panel_dihedral_complete", (0.4, 1.0, 0.2, 1.0, 0.95, 0.7), 0.82, (0, 1, 0, 1, 1, 1)
+        ),
+        "largest_zero_rect_fill": FamilyTopology(
+            "largest_zero_rect_fill", (0.3, 0.0, 0.5, 0.8, 0.9, 0.1), 0.68, (0, 0, 1, 1, 1, 0)
+        ),
+        "dihedral_template_match": FamilyTopology(
+            "dihedral_template_match", (0.4, 1.0, 0.2, 0.8, 0.95, 0.6), 0.78, (0, 1, 0, 1, 1, 1)
+        ),
+        "panel_complement_fill": FamilyTopology(
+            "panel_complement_fill", (0.3, 0.1, 0.7, 1.0, 0.8, 0.4), 0.72, (0, 0, 1, 1, 1, 0)
+        ),
+        "panel_boolean_op": FamilyTopology(
+            "panel_boolean_op", (0.4, 0.0, 0.8, 1.0, 0.9, 0.7), 0.78, (0, 0, 1, 1, 1, 1)
+        ),
+    }
+)
 
 
 def _mean(items: Iterable[float]) -> float:

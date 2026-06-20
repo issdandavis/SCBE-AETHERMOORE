@@ -1,0 +1,69 @@
+{
+  "schema_version": "scbe_coding_model_merge_profile_v1",
+  "merge_id": "coding-agent-qwen-merged-coding-model-v2",
+  "title": "GeoSeal coding agent merged model v2 candidate",
+  "description": "Candidate re-merge after v1 smoke passed 2/4. Adds the focused CA/GeoSeal smoke repair adapter with higher weight so CA opcode recall and runnable depth-2 JSON code are not drowned out by the broader adapter stack.",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "output_model_repo": "issdandavis/scbe-coding-agent-qwen-merged-coding-model-v2",
+  "merge_mode": "weighted",
+  "adapters": [
+    {
+      "profile_id": "coding-agent-qwen-online-v2",
+      "stage": "cross_tongue_coder",
+      "adapter_repo": "issdandavis/scbe-coding-agent-qwen-online-v2",
+      "weight": 0.12,
+      "required": true
+    },
+    {
+      "profile_id": "coding-agent-qwen-binary-geoseal-v3",
+      "stage": "binary_geoseal_coder",
+      "adapter_repo": "issdandavis/scbe-coding-agent-qwen-binary-geoseal-v3",
+      "weight": 0.16,
+      "required": true
+    },
+    {
+      "profile_id": "coding-agent-qwen-geoseal-command-v4",
+      "stage": "command_recall_geoseal_coder",
+      "adapter_repo": "issdandavis/scbe-coding-agent-qwen-geoseal-command-v4",
+      "weight": 0.17,
+      "required": true
+    },
+    {
+      "profile_id": "coding-agent-qwen-atomic-workflow-stage6",
+      "stage": "atomic_workflow_resource_decay",
+      "adapter_repo": "issdandavis/scbe-coding-agent-qwen-atomic-workflow-stage6",
+      "weight": 0.25,
+      "required": true
+    },
+    {
+      "profile_id": "coding-agent-qwen-ca-geoseal-smoke-repair-v1",
+      "stage": "ca_geoseal_smoke_repair",
+      "adapter_repo": "issdandavis/scbe-coding-agent-qwen-ca-geoseal-smoke-repair-v1",
+      "weight": 0.30,
+      "required": true
+    }
+  ],
+  "blocked_adapters": [
+    {
+      "profile_id": "coding-agent-qwen-command-harmony-v5",
+      "adapter_repo": "issdandavis/scbe-coding-agent-qwen-command-harmony-v5",
+      "reason": "Repo was not found on Hugging Face during 2026-04-25 setup. Train or publish this adapter before adding it to the merge."
+    }
+  ],
+  "pre_merge_gates": {
+    "must_pass_repair_adapter_training": true,
+    "repair_adapter_repo": "issdandavis/scbe-coding-agent-qwen-ca-geoseal-smoke-repair-v1",
+    "source_smoke_job_id": "69f2c4ddd2c8bd8662bd3809",
+    "notes": "Do not promote v2 unless the merged smoke evaluator reaches 4/4 after merge."
+  },
+  "post_merge_gates": {
+    "evaluator": "scripts/eval/smoke_merged_coding_model_hf.py",
+    "required_passed": 4,
+    "required_total": 4
+  },
+  "execution": {
+    "recommended_target": "hf-jobs",
+    "hf_flavor": "t4-small",
+    "timeout": "1h"
+  }
+}

@@ -18,7 +18,6 @@ from typing import List
 from .source_adapter import IngestionResult
 from .cross_reference_engine import WikiLink
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -52,12 +51,10 @@ _QUESTION_TEMPLATES: List[str] = [
 _BRIDGE_TEMPLATES: List[str] = [
     "You know what's interesting? This idea of {concept_a} actually leads "
     "right into the next thing we found about {concept_b}.",
-    "And speaking of {concept_a}, there's a really natural connection to "
-    "{concept_b} that I want to explore.",
+    "And speaking of {concept_a}, there's a really natural connection to " "{concept_b} that I want to explore.",
     "So {concept_a} is one piece of the puzzle. But the next piece, "
     "{concept_b}, is where it all starts to come together.",
-    "That's a perfect segue actually, because {concept_a} opens the door "
-    "to a related topic: {concept_b}.",
+    "That's a perfect segue actually, because {concept_a} opens the door " "to a related topic: {concept_b}.",
 ]
 
 
@@ -243,7 +240,7 @@ class PodcastGenerator:
 
         greeting = (
             f"Welcome to {title}! Today we're diving into some really "
-            f"exciting research findings. We've pulled together "
+            "exciting research findings. We've pulled together "
             f"{len(results)} sources covering {topic_list}{more}."
         )
 
@@ -254,10 +251,10 @@ class PodcastGenerator:
         tag_str = ", ".join(sorted(tag_set)[:5]) if tag_set else "cutting-edge research"
 
         response = (
-            f"Yeah, this is a great batch. We're seeing themes around "
+            "Yeah, this is a great batch. We're seeing themes around "
             f"{tag_str}, and there are some surprising connections between "
-            f"these sources that I think people are really going to find "
-            f"valuable. Let's jump right in."
+            "these sources that I think people are really going to find "
+            "valuable. Let's jump right in."
         )
 
         return [
@@ -288,13 +285,15 @@ class PodcastGenerator:
         # Exposition: Host A explains the finding
         exposition_text = (
             f"So our {'next' if index > 0 else 'first'} source is "
-            f"{source_label}. It's titled \"{result.title}\". {summary}"
+            f'{source_label}. It\'s titled "{result.title}". {summary}'
         )
-        segments.append(PodcastSegment(
-            speaker=self.host_a,
-            text=exposition_text,
-            segment_type="exposition",
-        ))
+        segments.append(
+            PodcastSegment(
+                speaker=self.host_a,
+                text=exposition_text,
+                segment_type="exposition",
+            )
+        )
 
         # Question: Host B asks a clarifying question
         concepts = self._extract_concepts(result)
@@ -306,19 +305,23 @@ class PodcastGenerator:
             concept=primary_concept,
             other_concept=secondary_concept,
         )
-        segments.append(PodcastSegment(
-            speaker=self.host_b,
-            text=question_text,
-            segment_type="question",
-        ))
+        segments.append(
+            PodcastSegment(
+                speaker=self.host_b,
+                text=question_text,
+                segment_type="question",
+            )
+        )
 
         # Deep dive: Host A elaborates
         deep_dive_text = self._generate_deep_dive(result, result_links, primary_concept)
-        segments.append(PodcastSegment(
-            speaker=self.host_a,
-            text=deep_dive_text,
-            segment_type="deep_dive",
-        ))
+        segments.append(
+            PodcastSegment(
+                speaker=self.host_a,
+                text=deep_dive_text,
+                segment_type="deep_dive",
+            )
+        )
 
         # Host B reacts
         transition = self._pick_phrase(_TRANSITION_PHRASES, result.title + str(index))
@@ -326,19 +329,18 @@ class PodcastGenerator:
             link_target = result_links[0].target_page
             reaction = (
                 f"{transition} it also connects to [[{link_target}]] "
-                f"in the vault, which means this isn't just theoretical, "
-                f"it's part of a bigger picture we've been building."
+                "in the vault, which means this isn't just theoretical, "
+                "it's part of a bigger picture we've been building."
             )
         else:
-            reaction = (
-                f"{transition} this is definitely an area we should "
-                f"keep tracking as more research comes out."
+            reaction = f"{transition} this is definitely an area we should " "keep tracking as more research comes out."
+        segments.append(
+            PodcastSegment(
+                speaker=self.host_b,
+                text=reaction,
+                segment_type="deep_dive",
             )
-        segments.append(PodcastSegment(
-            speaker=self.host_b,
-            text=reaction,
-            segment_type="deep_dive",
-        ))
+        )
 
         return segments
 
@@ -394,43 +396,47 @@ class PodcastGenerator:
             themes_str = theme_parts[0]
 
         host_a_takeaway = (
-            f"Alright, so stepping back and looking at the big picture "
+            "Alright, so stepping back and looking at the big picture "
             f"here. We covered {themes_str}. The throughline across all "
-            f"of this research is that these concepts aren't isolated. "
-            f"They reinforce each other and create a much stronger "
-            f"foundation when you consider them together."
+            "of this research is that these concepts aren't isolated. "
+            "They reinforce each other and create a much stronger "
+            "foundation when you consider them together."
         )
-        segments.append(PodcastSegment(
-            speaker=self.host_a,
-            text=host_a_takeaway,
-            segment_type="takeaway",
-        ))
+        segments.append(
+            PodcastSegment(
+                speaker=self.host_a,
+                text=host_a_takeaway,
+                segment_type="takeaway",
+            )
+        )
 
         # Host B highlights the most interesting connection
         link_count = len(links)
         if link_count > 0:
             best_link = max(links, key=lambda lk: lk.confidence)
             host_b_takeaway = (
-                f"Absolutely. And what I keep coming back to is that "
+                "Absolutely. And what I keep coming back to is that "
                 f"connection to [[{best_link.target_page}]], "
                 f"because {best_link.reason}. We found {link_count} "
-                f"cross-references across these sources, which tells me "
-                f"this research area is converging in a really productive "
-                f"way."
+                "cross-references across these sources, which tells me "
+                "this research area is converging in a really productive "
+                "way."
             )
         else:
             host_b_takeaway = (
-                f"Exactly. And I think the practical takeaway for our "
-                f"listeners is that this is a space that's moving fast. "
+                "Exactly. And I think the practical takeaway for our "
+                "listeners is that this is a space that's moving fast. "
                 f"Each of these {len(results)} sources adds another "
-                f"piece to the puzzle, and I'm excited to see where it "
-                f"goes next."
+                "piece to the puzzle, and I'm excited to see where it "
+                "goes next."
             )
-        segments.append(PodcastSegment(
-            speaker=self.host_b,
-            text=host_b_takeaway,
-            segment_type="takeaway",
-        ))
+        segments.append(
+            PodcastSegment(
+                speaker=self.host_b,
+                text=host_b_takeaway,
+                segment_type="takeaway",
+            )
+        )
 
         return segments
 
@@ -441,10 +447,10 @@ class PodcastGenerator:
                 speaker=self.host_a,
                 text=(
                     f"That's a wrap for this edition of {title}. "
-                    f"If you found this useful, all the sources and "
-                    f"cross-references we discussed are linked in the "
-                    f"vault notes below. Until next time, keep "
-                    f"researching and keep building."
+                    "If you found this useful, all the sources and "
+                    "cross-references we discussed are linked in the "
+                    "vault notes below. Until next time, keep "
+                    "researching and keep building."
                 ),
                 segment_type="outro",
             ),
@@ -482,11 +488,7 @@ class PodcastGenerator:
 
         # Add author attribution if available
         if result.authors:
-            author_str = (
-                result.authors[0]
-                if len(result.authors) == 1
-                else f"{result.authors[0]} and colleagues"
-            )
+            author_str = result.authors[0] if len(result.authors) == 1 else f"{result.authors[0]} and colleagues"
             summary = f"The research by {author_str} shows that {summary[0].lower()}{summary[1:]}"
 
         # Add relevance context if SCBE relevance scores exist
@@ -494,8 +496,7 @@ class PodcastGenerator:
             top_concept = max(result.scbe_relevance, key=result.scbe_relevance.get)
             score = result.scbe_relevance[top_concept]
             summary += (
-                f" This is particularly relevant to {top_concept}, "
-                f"where it scored a {score:.0%} relevance match."
+                f" This is particularly relevant to {top_concept}, " f"where it scored a {score:.0%} relevance match."
             )
 
         return summary
@@ -511,24 +512,20 @@ class PodcastGenerator:
 
         parts.append(
             f"Great question. So {primary_concept} is important because "
-            f"it addresses a real gap in how we think about these systems."
+            "it addresses a real gap in how we think about these systems."
         )
 
         # Add detail from tags
         if result.tags:
             tag_context = ", ".join(result.tags[:4])
-            parts.append(
-                f"The research touches on {tag_context}, which gives you "
-                f"a sense of the scope here."
-            )
+            parts.append(f"The research touches on {tag_context}, which gives you " "a sense of the scope here.")
 
         # Add detail from cross-references
         if result_links:
             link_reasons = [lk.reason for lk in result_links[:2]]
             for reason in link_reasons:
                 parts.append(
-                    f"One thing worth noting is the {reason}, which tells "
-                    f"us this isn't happening in isolation."
+                    f"One thing worth noting is the {reason}, which tells " "us this isn't happening in isolation."
                 )
 
         # Add metadata context
@@ -536,22 +533,21 @@ class PodcastGenerator:
             if "subreddit" in result.metadata:
                 parts.append(
                     f"This was actually a hot topic in r/{result.metadata['subreddit']}, "
-                    f"so the community is clearly paying attention."
+                    "so the community is clearly paying attention."
                 )
             if "score" in result.metadata and isinstance(result.metadata["score"], (int, float)):
                 score = result.metadata["score"]
                 if score > 100:
                     parts.append(
-                        f"It got a score of {score} on the platform, "
-                        f"which shows significant community engagement."
+                        f"It got a score of {score} on the platform, " "which shows significant community engagement."
                     )
 
         # Fallback for short deep dives
         if len(parts) < 3:
             parts.append(
                 f"The bottom line is that {result.title} gives us a "
-                f"concrete framework for thinking about these challenges, "
-                f"and that's what makes it so useful."
+                "concrete framework for thinking about these challenges, "
+                "and that's what makes it so useful."
             )
 
         return " ".join(parts)
@@ -580,7 +576,7 @@ class PodcastGenerator:
             target = sorted(shared)[0]
             return (
                 f"Both of these sources connect to [[{target}]], which is "
-                f"a strong signal that there's a deeper relationship here."
+                "a strong signal that there's a deeper relationship here."
             )
 
         # Strategy 2: Check for shared tags
@@ -591,7 +587,7 @@ class PodcastGenerator:
             tag = sorted(shared_tags)[0]
             return (
                 f"They both share the '{tag}' theme, which suggests "
-                f"they're approaching the same problem from different angles."
+                "they're approaching the same problem from different angles."
             )
 
         # Strategy 3: Check for overlapping SCBE relevance
@@ -601,7 +597,7 @@ class PodcastGenerator:
                 concept = sorted(shared_concepts)[0]
                 return (
                     f"Both sources have strong relevance to {concept}, "
-                    f"so they're clearly part of the same conversation."
+                    "so they're clearly part of the same conversation."
                 )
 
         return ""
@@ -688,11 +684,7 @@ class PodcastGenerator:
             "brainstorm": "one of our brainstorm notes",
             "vault": "an existing vault page",
         }
-        source_str = (
-            result.source_type.value
-            if hasattr(result.source_type, "value")
-            else str(result.source_type)
-        )
+        source_str = result.source_type.value if hasattr(result.source_type, "value") else str(result.source_type)
         return labels.get(source_str, "a research source")
 
     @staticmethod
@@ -702,5 +694,5 @@ class PodcastGenerator:
         Uses a hash so the same input always produces the same phrase,
         giving reproducible scripts.
         """
-        h = int(hashlib.md5(seed.encode("utf-8")).hexdigest(), 16)
+        h = int(hashlib.sha256(seed.encode("utf-8")).hexdigest(), 16)
         return phrases[h % len(phrases)]

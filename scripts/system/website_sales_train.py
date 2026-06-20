@@ -13,7 +13,6 @@ from io import StringIO
 from pathlib import Path
 from typing import Iterable
 
-
 ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -130,23 +129,27 @@ def page_flags(html: str) -> dict[str, bool]:
     includes_match = re.search(r"<section[^>]*\bid=\"includes\"[^>]*>([\s\S]*?)</section>", lower)
     includes_text = includes_match.group(1) if includes_match else ""
 
-    offer_match = re.search(r"<section[^>]*\bid=\"offer\"[^>]*>([\s\S]*?)</section>", lower)
+    offer_match = re.search(
+        r"<(?:section|header)[^>]*\bid=\"offer\"[^>]*>([\s\S]*?)</(?:section|header)>",
+        lower,
+    )
     offer_text = offer_match.group(1) if offer_match else ""
 
     has_concrete_includes = all(term in includes_text for term in REQUIRED_INCLUDES_TERMS)
 
     return {
         "has_h1": "<h1" in lower,
-        "has_price": ("$29" in html) or ('"price": "29"' in html) or ('"price":"29"' in html),
+        "has_price": bool(re.search(r"\$\s?\d+(?:[\d,]*)(?:\.\d{2})?", html))
+        or bool(re.search(r'"price"\s*:\s*"\d+(?:\.\d{2})?"', html)),
         "has_one_time": ("one-time" in lower) or ("one time" in lower),
         "has_no_subscription": "no subscription" in lower,
         "has_manual": "manual" in lower,
         "has_delivery": "delivery" in lower,
         "has_support": "support" in lower or "mailto:" in lower,
-        "has_faq": "<section id=\"faq\"" in lower,
+        "has_faq": '<section id="faq"' in lower,
         "has_buyer_fit": ("good fit" in lower) and ("not for" in lower),
         "has_success_check": ("success check" in lower) or ("first win" in lower),
-        "has_hero_image": ("<img" in lower) and ('src="hero.png"' in lower),
+        "has_hero_image": ("<img" in lower) and bool(re.search(r'src="[^"]*hero\.(png|jpg|jpeg|webp|svg)"', lower)),
         "has_concrete_includes": has_concrete_includes,
         "has_primary_cta_in_hero": "btn btn-primary" in offer_text,
         "has_final_cta": "final cta" in lower,
@@ -190,9 +193,11 @@ def score_page(html: str) -> tuple[dict[str, float], list[str], list[str]]:
     offer_strength = clamp_0_10(offer_strength)
 
     proof = 0.0
-    proof += 2.0 if (flags["has_manual"] and flags["has_delivery"] and flags["has_support"]) else 1.0 if (
-        flags["has_manual"] and flags["has_support"]
-    ) else 0.0
+    proof += (
+        2.0
+        if (flags["has_manual"] and flags["has_delivery"] and flags["has_support"])
+        else 1.0 if (flags["has_manual"] and flags["has_support"]) else 0.0
+    )
     proof += 1.5 if flags["has_hero_image"] else 0.0
     proof += 1.0 if flags["has_use_cases_link"] else 0.0
     proof += 1.0 if flags["has_comparison_link"] else 0.0
@@ -260,7 +265,10 @@ def score_page(html: str) -> tuple[dict[str, float], list[str], list[str]]:
         "buyer_fit": round(buyer_fit, 2),
         "cta_discipline": round(cta_discipline, 2),
         "friction_control": round(friction, 2),
-        "overall": round((clarity + offer_strength + proof + buyer_fit + cta_discipline + friction) / 6, 2),
+        "overall": round(
+            (clarity + offer_strength + proof + buyer_fit + cta_discipline + friction) / 6,
+            2,
+        ),
     }
     return metrics, risks, strengths
 
@@ -341,13 +349,16 @@ def build_model_packets(audit: PageAudit, backlog: Iterable[dict[str, str]]) -> 
             f"Risks: {', '.join(audit.risks) if audit.risks else 'none'}"
         ),
         "operator_pass": (
-            "Review this page as an operator. Focus on delivery, manual, buyer path, support, and post-checkout trust.\n"
+            "Review this page as an operator. "
+            "Focus on delivery, manual, buyer path, support, and post-checkout trust.\n"
             f"Strengths: {', '.join(audit.strengths) if audit.strengths else 'none'}"
         ),
-        "proof_pass": "Review this page for defensible claims. Flag any language that overstates implementation, proof, or scope.",
+        "proof_pass": (
+            "Review this page for defensible claims. "
+            "Flag any language that overstates implementation, proof, or scope."
+        ),
         "expansion_pass": (
-            "Propose the next three supporting sales pages that should exist.\n"
-            f"Current backlog:\n{backlog_lines}"
+            "Propose the next three supporting sales pages that should exist.\n" f"Current backlog:\n{backlog_lines}"
         ),
     }
 
@@ -405,7 +416,8 @@ def build_includes_section(packet: dict[str, object]) -> str:
 
     if not paragraph:
         paragraph = (
-            "The toolkit is built for fast starts: concrete templates, a pilot-first worksheet path, and a short manual that tells you what to do first."
+            "The toolkit is built for fast starts: concrete templates, a pilot-first worksheet path, "
+            "and a short manual that tells you what to do first."
         )
 
     return f"""<section id="includes">
@@ -425,7 +437,9 @@ def build_includes_section(packet: dict[str, object]) -> str:
           <article class="slab">
             <h3>{first_win_title}</h3>
 {build_ul(first_win, klass="checklist")}
-            <p style="margin-top:12px; color: var(--muted); font-size: 16px;">If you can do those steps, the toolkit is working.</p>
+            <p style="margin-top:12px; color: var(--muted); font-size: 16px;">
+              If you can do those steps, the toolkit is working.
+            </p>
           </article>
           <article class="slab">
             <h3>What this helps you do</h3>
@@ -449,7 +463,7 @@ def validate_includes_packet(packet: dict[str, object]) -> list[str]:
 
     # Cheap length checks so the UI doesn't become a novel.
     for k in ["inside_package_bullets", "first_win_bullets", "helps_you_do_bullets"]:
-        for item in (packet.get(k) or []):
+        for item in packet.get(k) or []:
             if len(str(item)) > 120:
                 issues.append(f"{k} bullet too long")
                 break
@@ -459,21 +473,24 @@ def validate_includes_packet(packet: dict[str, object]) -> list[str]:
 
 def build_includes_prompt(*, current_section_text: str) -> str:
     return (
-        "You are improving one section of a landing page: the \"What you get\" section for a $29 one-time purchase called the "
+        'You are improving one section of a landing page: the "What you get" section '
+        "for a $29 one-time purchase called the "
         "SCBE AI Governance Toolkit.\n\n"
-        "Write buyer-first, concrete copy. No enterprise promises, no hype, no guarantees. Avoid deep internal jargon.\n\n"
+        "Write buyer-first, concrete copy. No enterprise promises, no hype, no guarantees. "
+        "Avoid deep internal jargon.\n\n"
         "Return ONLY valid JSON. No markdown.\n\n"
         "JSON schema:\n"
         "{\n"
-        "  \"headline\": \"...\",\n"
-        "  \"paragraph\": \"...\",\n"
-        "  \"inside_package_bullets\": [\"...\"],\n"
-        "  \"first_win_title\": \"...\",\n"
-        "  \"first_win_bullets\": [\"...\"],\n"
-        "  \"helps_you_do_bullets\": [\"...\"]\n"
+        '  "headline": "...",\n'
+        '  "paragraph": "...",\n'
+        '  "inside_package_bullets": ["..."],\n'
+        '  "first_win_title": "...",\n'
+        '  "first_win_bullets": ["..."],\n'
+        '  "helps_you_do_bullets": ["..."]\n'
         "}\n\n"
         "Hard constraints:\n"
-        "- inside_package_bullets MUST mention: decision record template, threshold worksheet, pilot checklist, review notes format, manual, delivery + recovery.\n"
+        "- inside_package_bullets MUST mention: decision record template, threshold worksheet, "
+        "pilot checklist, review notes format, manual, delivery + recovery.\n"
         "- Bullet length <= 16 words each.\n"
         "- first_win_bullets should be 3-6 short steps.\n\n"
         "Current section text (for context):\n"
@@ -502,7 +519,11 @@ def pick_best_includes_rewrite(
             packet["_raw"] = raw[:1500]
             packet["_issues"] = validate_includes_packet(packet)
         except Exception as e:
-            packet = {"_model": model, "_raw": raw[:1500], "_issues": [f"parse_error: {e}"]}
+            packet = {
+                "_model": model,
+                "_raw": raw[:1500],
+                "_issues": [f"parse_error: {e}"],
+            }
         candidates.append(packet)
 
     best: dict[str, object] | None = None
@@ -540,15 +561,26 @@ def pick_best_includes_rewrite(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Run a repeatable sales-improvement audit and packet builder for the website.")
+    parser = argparse.ArgumentParser(
+        description="Run a repeatable sales-improvement audit and packet builder for the website."
+    )
     parser.add_argument("--page", default="docs/index.html", help="Target page relative to repo root.")
     parser.add_argument(
         "--output-dir",
         default="artifacts/marketing/website_sales_train",
         help="Output directory relative to repo root.",
     )
-    parser.add_argument("--iterations", type=int, default=0, help="If set, run iterative include-section rewrite passes.")
-    parser.add_argument("--ollama-url", default="http://127.0.0.1:11434", help="Base URL for local Ollama.")
+    parser.add_argument(
+        "--iterations",
+        type=int,
+        default=0,
+        help="If set, run iterative include-section rewrite passes.",
+    )
+    parser.add_argument(
+        "--ollama-url",
+        default="http://127.0.0.1:11434",
+        help="Base URL for local Ollama.",
+    )
     parser.add_argument(
         "--models",
         default="llama3.2,AetherBot",

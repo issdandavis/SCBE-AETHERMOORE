@@ -19,7 +19,7 @@ Each Sacred Tongue has 16 prefixes × 16 suffixes = 256 unique tokens, providing
 | RU | Runethic | Salt/Binding | 294 Hz |
 | CA | Cassisivadan | Ciphertext/Bitcraft | 659 Hz |
 | UM | Umbroth | Redaction/Veil | 196 Hz |
-| DR | Draumric | Tag/Structure | 392 Hz |
+| DR | Draumric | Auth-Tag/Integrity | 392 Hz |
 
 ## Installation
 

@@ -1,0 +1,213 @@
+{
+  "schema_version": "aether_external_task_lanes_v1",
+  "last_researched": "2026-05-23",
+  "purpose": "Open-source task pools for running Aether Programmer Index evaluations outside the SCBE repo.",
+  "selection_rule": "Prefer task pools with public tasks, reproducible harnesses, pass/fail graders, and artifacts that can be replayed.",
+  "strong_coding_assistant_model": {
+    "base_model": "Provides reasoning and code generation, but is not sufficient by itself.",
+    "context_system": "Fetches the right files, symbols, docs, issues, and prior failures before generation.",
+    "task_harness": "Defines what done means for each task: tests, build, lint, format, deploy, browser/desktop state, policy compliance.",
+    "tool_runtime": "Runs shell, git, browser, GitHub, package managers, and optional external agents such as Copilot under bounded permissions.",
+    "verification_loop": "Reruns tests, records evidence, converts failures to candidate fixes, and tracks trend/recovery.",
+    "governance_layer": "Keeps model outputs inside tool scope, policy scope, secret rules, and audit receipts."
+  },
+  "model_orchestration": {
+    "principle": "Do not make the strongest model do every task. Use the strongest available model as leader, judge, and context router; use cheaper or free models as workers under the same harness.",
+    "leader_role": [
+      "interpret root intent",
+      "select task lane",
+      "assign worker agents",
+      "resolve disagreements",
+      "approve implementation plan before write",
+      "judge whether failure triage is sufficient"
+    ],
+    "worker_role": [
+      "inspect files",
+      "generate candidate fixes",
+      "run local commands",
+      "produce focused patches",
+      "summarize evidence",
+      "attempt reruns under budget"
+    ],
+    "scaling_rule": "For 3-1000 agents in flight, model quality is allocated by decision importance, not by task count. Expensive models guard the root and branch points; cheap models do leaf work with verification.",
+    "completion_authority": "The harness, tests, policy gate, and evidence packet decide completion. No model is completion authority by itself."
+  },
+  "optional_external_tools": [
+    {
+      "tool": "GitHub Copilot coding agent",
+      "use": "Can be called as a harness participant for issue-to-PR work, but SCBE remains the verifier and completion authority.",
+      "expectation": "Copilot may propose or patch; SCBE must run build, lint, format, tests, security checks, and evidence scoring before accepting."
+    },
+    {
+      "tool": "Sourcegraph/Cody or open-source code search stack",
+      "use": "Can supply codebase search, symbol context, and cross-repo navigation.",
+      "expectation": "Context retrieval improves agent performance only if retrieved evidence is attached to the run packet."
+    }
+  ],
+  "retrieval_stack": [
+    {
+      "tool": "ripgrep",
+      "role": "Fast text search and fallback retrieval.",
+      "mvp_use": "Find terms from issue titles, stack traces, imports, and error messages."
+    },
+    {
+      "tool": "universal-ctags",
+      "role": "Fast symbol index.",
+      "mvp_use": "Map names to files before asking a model to inspect code."
+    },
+    {
+      "tool": "tree-sitter",
+      "source_url": "https://github.com/tree-sitter/tree-sitter",
+      "role": "Incremental source parser and syntax tree builder.",
+      "mvp_use": "Extract functions/classes/imports for issue-to-file retrieval and patch impact checks."
+    },
+    {
+      "tool": "SCIP",
+      "source_url": "https://github.com/sourcegraph/scip",
+      "role": "Language-agnostic code intelligence protocol used for precise code navigation.",
+      "mvp_use": "Production path for Sourcegraph-style references, definitions, and cross-repo code graph."
+    },
+    {
+      "tool": "Semgrep",
+      "role": "Pattern-based static analysis.",
+      "mvp_use": "Find similar bugs, policy violations, and security-sensitive code paths."
+    },
+    {
+      "tool": "LSP",
+      "role": "Language server go-to-definition and find-references.",
+      "mvp_use": "Use installed language tooling where available instead of parsing everything manually."
+    }
+  ],
+  "lanes": [
+    {
+      "lane_id": "swe_bench_repo_repair",
+      "track_id": "real_repo_repair",
+      "source_name": "SWE-bench",
+      "source_url": "https://github.com/swe-bench",
+      "task_pool": "Real GitHub issues with repository snapshots and test-based evaluation.",
+      "first_run_plan": "Run 1-3 SWE-bench Lite or Verified tasks through an adapter that emits patch, tests, cost, logs, and failure mode.",
+      "completion_rule": "Patch applies and benchmark tests pass in the official or equivalent Docker harness.",
+      "why_it_matters": "Closest public proxy for real repository repair."
+    },
+    {
+      "lane_id": "swe_agent_harness_reference",
+      "track_id": "real_repo_repair",
+      "source_name": "SWE-agent / SWE-ReX",
+      "source_url": "https://github.com/SWE-agent",
+      "task_pool": "Open-source software-engineering agent and sandbox execution stack.",
+      "first_run_plan": "Inspect SWE-agent/SWE-ReX task packaging and reuse compatible sandbox/evidence ideas instead of inventing every wrapper.",
+      "completion_rule": "SCBE can launch or emulate an issue-solving task with captured trajectory and replayable execution evidence.",
+      "why_it_matters": "Shows the harness shape that makes the same model more useful."
+    },
+    {
+      "lane_id": "terminal_bench_cli",
+      "track_id": "terminal_execution",
+      "source_name": "Terminal-Bench",
+      "source_url": "https://terminalbench.lol/",
+      "task_pool": "Terminal tasks with instructions, Docker image, tests, and oracle solution.",
+      "first_run_plan": "Run a small Docker-backed subset with SCBE CLI/agent-bus as the terminal operator.",
+      "completion_rule": "Task tests pass and shell transcript is preserved.",
+      "why_it_matters": "Measures the thing chat demos miss: operating the machine."
+    },
+    {
+      "lane_id": "aider_polyglot_exercism",
+      "track_id": "multi_language_editing",
+      "source_name": "Aider Polyglot",
+      "source_url": "https://aider.chat/2024/12/21/polyglot.html",
+      "task_pool": "Exercism-based edit tasks across C++, Go, Java, JavaScript, Python, and Rust.",
+      "first_run_plan": "Start with the prior Rust failure, then run one Python and one JavaScript task to test language routing.",
+      "completion_rule": "Language-specific test suite passes after code edits.",
+      "why_it_matters": "Stops us from overfitting to TypeScript/Python comfort zones."
+    },
+    {
+      "lane_id": "evalplus_function_correctness",
+      "track_id": "function_correctness",
+      "source_name": "EvalPlus",
+      "source_url": "https://evalplus.github.io/",
+      "task_pool": "HumanEval+ and MBPP+ function-level tasks with stronger generated tests.",
+      "first_run_plan": "Add a cheap local lane for generated function correctness before expensive repo agents.",
+      "completion_rule": "Generated solution passes EvalPlus tests.",
+      "why_it_matters": "Fast sanity check for code correctness and edge cases."
+    },
+    {
+      "lane_id": "defects4j_java_repair",
+      "track_id": "real_repo_repair",
+      "source_name": "Defects4J",
+      "source_url": "https://github.com/rjust/defects4j",
+      "task_pool": "Curated real Java bugs with triggering tests and human patches.",
+      "first_run_plan": "Run one small Java bug-fix task after the multi-language edit harness can run Maven/Gradle-style tests.",
+      "completion_rule": "Triggering tests pass and no regression tests fail in the Defects4J harness.",
+      "why_it_matters": "Adds Java repair evidence outside Python-heavy SWE-bench lanes."
+    },
+    {
+      "lane_id": "bigcodebench_function_calling",
+      "track_id": "fresh_algorithmic_coding",
+      "source_name": "BigCodeBench",
+      "source_url": "https://github.com/bigcode-project/bigcodebench",
+      "task_pool": "1,140 practical code generation tasks with diverse function calls and libraries.",
+      "first_run_plan": "Run a tiny instruct split sample to test library-use and function-call reasoning.",
+      "completion_rule": "Generated code passes the benchmark evaluator.",
+      "why_it_matters": "Measures practical code generation beyond toy HumanEval functions."
+    },
+    {
+      "lane_id": "livecodebench_fresh_coding",
+      "track_id": "fresh_algorithmic_coding",
+      "source_name": "LiveCodeBench",
+      "source_url": "https://github.com/LiveCodeBench/LiveCodeBench",
+      "task_pool": "Fresh contest-style coding tasks with code generation, repair, execution, and test-output prediction scenarios.",
+      "first_run_plan": "Use custom-output evaluation for a small release slice so SCBE can score generated outputs without a custom runner first.",
+      "completion_rule": "Submitted JSON outputs pass LiveCodeBench evaluator for selected scenario.",
+      "why_it_matters": "Reduces contamination risk and exercises self-repair."
+    },
+    {
+      "lane_id": "agentdojo_prompt_injection",
+      "track_id": "security_governance",
+      "source_name": "AgentDojo",
+      "source_url": "https://github.com/ethz-spylab/agentdojo",
+      "task_pool": "Agent tasks with prompt injection attacks and defenses.",
+      "first_run_plan": "Run one tool-use prompt-injection subset against SCBE's gate and record attack success/failure.",
+      "completion_rule": "Benign task succeeds while injected instruction fails to control tools or exfiltrate.",
+      "why_it_matters": "This is where SCBE should compete: governed tool use, not just better chat."
+    },
+    {
+      "lane_id": "osworld_desktop",
+      "track_id": "browser_desktop_operation",
+      "source_name": "OSWorld",
+      "source_url": "https://os-world.github.io/",
+      "task_pool": "Real desktop OS tasks across common applications and settings.",
+      "first_run_plan": "Treat as later-stage lane after browser/desktop operator stabilizes; start with one low-risk file/config task.",
+      "completion_rule": "Programmatic grader confirms final OS state.",
+      "why_it_matters": "Measures whether the agent can use the computer, not just write code."
+    },
+    {
+      "lane_id": "webarena_browser",
+      "track_id": "browser_desktop_operation",
+      "source_name": "WebArena",
+      "source_url": "https://webarena.dev/",
+      "task_pool": "Web tasks across realistic sites with action-based evaluation.",
+      "first_run_plan": "Use after the Aether desktop/browser harness can reliably capture screenshots, actions, and receipts.",
+      "completion_rule": "Browser task success according to benchmark grader or equivalent state check.",
+      "why_it_matters": "Connects coding harness to browser work, deployment, and operator workflows."
+    },
+    {
+      "lane_id": "exercism_direct_custom",
+      "track_id": "multi_language_editing",
+      "source_name": "Exercism",
+      "source_url": "https://exercism.org/",
+      "task_pool": "Open-source programming exercises and language tracks.",
+      "first_run_plan": "Create SCBE-owned mini subsets from public exercises to test weaker models cheaply before full Aider Polyglot.",
+      "completion_rule": "Track-specific tests pass and generated diff is minimal.",
+      "why_it_matters": "Cheap, understandable tasks for usability testing with weak/free models."
+    },
+    {
+      "lane_id": "github_good_first_issue_live",
+      "track_id": "real_repo_repair",
+      "source_name": "GitHub good first issues",
+      "source_url": "https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/filtering-and-searching-issues-and-pull-requests",
+      "task_pool": "Live public GitHub issues labeled by maintainers.",
+      "first_run_plan": "Use gh issue list on selected repositories, create task packets, run agent branch locally, and open PR only after evidence gates pass.",
+      "completion_rule": "Maintainer-style PR packet exists with passing local checks, clear diff, and issue closure note.",
+      "why_it_matters": "Tests real-world usability and PR workflow beyond fixed benchmarks."
+    }
+  ]
+}

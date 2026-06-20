@@ -383,18 +383,26 @@ class SCBESystem:
     # TRIADIC AGGREGATION (A11)
     # =========================================================================
     def compute_triadic_distance(self, d_star_history: List[float]) -> float:
-        """A11: Triadic temporal aggregation."""
+        """A11: Triadic temporal aggregation — phi-power mean (canonical).
+
+        Matches src/polly_pads_runtime.py:triadic_temporal_distance:
+            d_tri = (l1*d1^phi + l2*d2^phi + l3*d3^phi)^(1/phi)
+        """
         if len(d_star_history) < 3:
             return d_star_history[-1] if d_star_history else 0.0
 
-        # Simple windowed averages (W_1, W_2, W_G)
         d1 = np.mean(d_star_history[-3:])  # Recent
         d2 = np.mean(d_star_history[-6:-3]) if len(d_star_history) >= 6 else d1
         d3 = np.mean(d_star_history)  # Global
 
-        d_tri = np.sqrt(self.cfg.lambda1 * d1**2 + self.cfg.lambda2 * d2**2 + self.cfg.lambda3 * d3**2)
-
-        # Normalize to [0,1]
+        phi = (1.0 + 5.0**0.5) / 2.0
+        eps = 1e-10
+        s = (
+            self.cfg.lambda1 * max(d1, eps) ** phi
+            + self.cfg.lambda2 * max(d2, eps) ** phi
+            + self.cfg.lambda3 * max(d3, eps) ** phi
+        )
+        d_tri = s ** (1.0 / phi)
         return min(1.0, d_tri / self.cfg.d_scale)
 
     # =========================================================================

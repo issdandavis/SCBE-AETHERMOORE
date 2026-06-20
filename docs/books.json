@@ -1,0 +1,128 @@
+{
+  "schema": "aethermoore-bookshelf-v1",
+  "updated": "2026-05-16",
+  "owner": "Issac Daniel Davis",
+  "direct_process_pack": {
+    "id": "behind-the-scenes-pack",
+    "name": "AetherMoore Behind-the-Scenes Writing Process Pack",
+    "status": "live",
+    "price_usd": "7.00",
+    "checkout_url": "https://buy.stripe.com/14AbJ20hQ79ZboYfWSdby0n",
+    "formats": ["PDF", "TXT"],
+    "note": "Separate making-of/process material. It does not include the KDP book manuscript, so the books can remain in KDP Select."
+  },
+  "books": [
+    {
+      "id": "miracle-memory",
+      "title": "The Miracle Was The Memory",
+      "subtitle": "A Human Reading of Jesus, Empire, and the Stories That Would Not Die",
+      "author": "Issac Daniel Davis",
+      "status": "KDP review",
+      "theme": "witness-history",
+      "page": "books/miracle-memory.html",
+      "cover": "static/books/miracle-memory-cover.png",
+      "direct_ebook": {
+        "status": "not offered while KDP Select",
+        "target_price_usd": "3.99",
+        "formats": ["EPUB", "PDF"],
+        "page_anchor": "direct-ebook",
+        "rights_note": "The book manuscript stays on KDP/KDP Select. A separate behind-the-scenes process pack is sold directly on AetherMoore."
+      },
+      "formats": [
+        {
+          "name": "Kindle eBook",
+          "status": "In review",
+          "price_usd": "5.99",
+          "kdp_select": true,
+          "last_modified": "2026-05-13"
+        },
+        {
+          "name": "Paperback",
+          "status": "In review",
+          "price_usd": "16.99",
+          "last_modified": "2026-05-13"
+        },
+        {
+          "name": "Hardcover",
+          "status": "Not created",
+          "available": false
+        }
+      ],
+      "links": [],
+      "reader_fit": [
+        "Readers who want Jesus read through memory, empire, grief, and survival.",
+        "Church groups, history readers, and people who want a human-language bridge into the story.",
+        "People who care how stories survive when institutions try to own them."
+      ],
+      "process": [
+        "Long-form manuscript development",
+        "Human reading pass and revision",
+        "KDP eBook and paperback formatting",
+        "Cover and proof review before public listing"
+      ]
+    },
+    {
+      "id": "six-tongues-protocol",
+      "title": "The Six Tongues Protocol",
+      "subtitle": "Book One",
+      "author": "Issac Daniel Davis",
+      "status": "Live",
+      "theme": "protocol-fantasy",
+      "page": "books/six-tongues-protocol.html",
+      "cover": "static/books/six-tongues-cover.jpg",
+      "direct_ebook": {
+        "status": "not offered while KDP Select",
+        "target_price_usd": "2.99",
+        "formats": ["EPUB", "PDF"],
+        "page_anchor": "direct-ebook",
+        "rights_note": "The book manuscript stays on KDP/KDP Select. A separate behind-the-scenes process pack is sold directly on AetherMoore."
+      },
+      "formats": [
+        {
+          "name": "Kindle eBook",
+          "status": "Live",
+          "price_usd": "4.99",
+          "asin": "B0GSSFQD9G",
+          "url": "https://www.amazon.com/dp/B0GSSFQD9G",
+          "submitted": "2026-03-16",
+          "kdp_select": true
+        },
+        {
+          "name": "Paperback",
+          "status": "Live",
+          "price_usd": "22.99",
+          "asin": "B0GSW8CLC6",
+          "url": "https://www.amazon.com/dp/B0GSW8CLC6",
+          "submitted": "2026-03-17"
+        },
+        {
+          "name": "Hardcover",
+          "status": "Draft",
+          "last_modified": "2026-03-18",
+          "available": false
+        }
+      ],
+      "links": [
+        {
+          "label": "Kindle eBook",
+          "url": "https://www.amazon.com/dp/B0GSSFQD9G"
+        },
+        {
+          "label": "Paperback",
+          "url": "https://www.amazon.com/dp/B0GSW8CLC6"
+        }
+      ],
+      "reader_fit": [
+        "Readers who want language, systems, and code folded into fantasy.",
+        "People following the Sacred Tongues and SCBE worldbuilding layer.",
+        "Builders who want story as a training surface, not just lore."
+      ],
+      "process": [
+        "Story-first protocol worldbuilding",
+        "Conlang and code-language alignment",
+        "KDP eBook and paperback publication",
+        "Public listing used as a durable reference artifact"
+      ]
+    }
+  ]
+}

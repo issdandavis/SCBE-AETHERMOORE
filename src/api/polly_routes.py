@@ -14,6 +14,7 @@ import re
 import smtplib
 import ssl
 import time
+import functools
 from email.message import EmailMessage
 from typing import Any, Dict, List, Optional
 from urllib import request as urlrequest
@@ -23,6 +24,19 @@ from urllib.parse import quote_plus
 
 from fastapi import APIRouter
 from pydantic import BaseModel, Field, field_validator
+
+from src.api.polly_commerce import (
+    PRODUCT_CATALOG,
+    append_training_record,
+    classify_intent,
+    render_buy_reply,
+    render_custom_reply,
+    render_membership_reply,
+)
+from src.api.polly_workers import (
+    all_statuses as workers_all_statuses,
+    voice_response_twiml,
+)
 
 logger = logging.getLogger("scbe.api.polly")
 
@@ -53,28 +67,28 @@ from pathlib import Path
 
 _DEFAULT_ENV_FILE = Path(__file__).parent.parent.parent / "config" / "connector_oauth" / ".env.connector.oauth"
 ENV_FILE = os.environ.get("POLLY_ENV_FILE") or str(_DEFAULT_ENV_FILE)
-_env_loaded = False
 import threading
 
 _env_lock = threading.Lock()
 
 
+@functools.lru_cache(maxsize=1)
+def _load_env_file(env_file: str) -> None:
+    if os.path.isfile(env_file):
+        with open(env_file) as fh:
+            for line in fh:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    k, _, v = line.partition("=")
+                    k = k.strip()
+                    v = v.strip().strip("\"'")
+                    if k and v:
+                        os.environ.setdefault(k, v)
+
+
 def _load_env() -> None:
-    global _env_loaded
     with _env_lock:
-        if _env_loaded:
-            return
-        if os.path.isfile(ENV_FILE):
-            with open(ENV_FILE) as fh:
-                for line in fh:
-                    line = line.strip()
-                    if line and not line.startswith("#") and "=" in line:
-                        k, _, v = line.partition("=")
-                        k = k.strip()
-                        v = v.strip().strip("\"'")
-                        if k and v:
-                            os.environ.setdefault(k, v)
-        _env_loaded = True
+        _load_env_file(ENV_FILE)
 
 
 def _gemini_key() -> Optional[str]:
@@ -127,6 +141,16 @@ class ChatRequest(BaseModel):
     thinking: bool = Field(default=False, description="Enable step-by-step reasoning mode (Gemini)")
     history: List[ChatMessage] = Field(default_factory=list, max_length=20)
     page_context: Optional[str] = Field(default=None, max_length=512)
+    consent_to_train: bool = Field(
+        default=False,
+        description="If True, the turn is appended to the live training corpus.",
+    )
+    session_id: Optional[str] = Field(default=None, max_length=128)
+
+
+class ActionLink(BaseModel):
+    label: str
+    url: str
 
 
 class ChatResponse(BaseModel):
@@ -135,6 +159,8 @@ class ChatResponse(BaseModel):
     thinking: bool
     model: str
     ts: int
+    actions: List[ActionLink] = Field(default_factory=list)
+    intent: Optional[str] = None
 
 
 class SearchRequest(BaseModel):
@@ -215,7 +241,8 @@ _ROUTE_PATTERNS: List[tuple[str, str, str]] = [
         "https://github.com/issdandavis/SCBE-AETHERMOORE/issues.",
     ),
     (
-        r"\b(hyperbolic|poincar[eé]|geodesic|manifold|curvature|geometry|pipeline|layer|axiom|harmonic|scbe|governance)\b",
+        r"\b(hyperbolic|poincar[eé]|geodesic|manifold|curvature|geometry"
+        r"|pipeline|layer|axiom|harmonic|scbe|governance)\b",
         "science",
         "SCBE uses a 14-layer harmonic pipeline built on Poincaré ball geometry. "
         "Adversarial intent scales exponentially in hyperbolic space, making attacks computationally "
@@ -265,10 +292,10 @@ def _deterministic_route(message: str) -> tuple[str, str]:
             return route, response
     return (
         "general",
-        f"I'm Polly, the SCBE-AETHERMOORE assistant. I can answer questions about the "
-        f"14-layer governance pipeline, Sacred Tongues tokenizer, training data, lore, "
-        f"pricing, and setup. What would you like to know?\n\n"
-        f"(Tip: add a GEMINI_API_KEY on the server to unlock deep reasoning mode.)",
+        "I'm Polly, the SCBE-AETHERMOORE assistant. I can answer questions about the "
+        "14-layer governance pipeline, Sacred Tongues tokenizer, training data, lore, "
+        "pricing, and setup. What would you like to know?\n\n"
+        "(Tip: add a GEMINI_API_KEY on the server to unlock deep reasoning mode.)",
     )
 
 
@@ -295,7 +322,7 @@ async def _free_llm_chat(message: str, page_context: Optional[str]) -> Optional[
         if text.strip():
             return {"text": text, "provider": "ollama", "model": ollama_model}
     except Exception:
-        pass
+        logger.debug("Ollama fallback unavailable", exc_info=True)
 
     # Try HuggingFace Inference API (free tier, chat completions)
     hf_token = os.environ.get("HF_TOKEN")
@@ -313,7 +340,7 @@ async def _free_llm_chat(message: str, page_context: Optional[str]) -> Optional[
             if text and text.strip():
                 return {"text": text.strip(), "provider": "huggingface", "model": hf_model}
         except Exception:
-            pass
+            logger.debug("HuggingFace fallback unavailable", exc_info=True)
 
     return None
 
@@ -375,6 +402,121 @@ async def polly_context() -> ContextResponse:
     )
 
 
+class CatalogProduct(BaseModel):
+    sku: str
+    name: str
+    price_label: str
+    short: str
+    checkout_url: str
+    delivery_url: str = ""
+
+
+class CatalogResponse(BaseModel):
+    products: List[CatalogProduct]
+
+
+@polly_router.get("/catalog", response_model=CatalogResponse, summary="Product catalog")
+async def polly_catalog() -> CatalogResponse:
+    """Return the list of products Polly can sell."""
+    return CatalogResponse(
+        products=[
+            CatalogProduct(
+                sku=p.sku,
+                name=p.name,
+                price_label=p.price_label,
+                short=p.short,
+                checkout_url=p.checkout_url,
+                delivery_url=p.delivery_url,
+            )
+            for p in PRODUCT_CATALOG
+        ]
+    )
+
+
+class FeedbackRequest(BaseModel):
+    rating: str = Field(..., pattern="^(up|down)$")
+    user_message: str = Field(..., min_length=1, max_length=4096)
+    assistant_reply: str = Field(..., min_length=1, max_length=8192)
+    intent: Optional[str] = Field(default=None, max_length=64)
+    session_id: Optional[str] = Field(default=None, max_length=128)
+    consent_to_train: bool = Field(default=True)
+
+
+class FeedbackResponse(BaseModel):
+    ok: bool
+    captured: bool
+
+
+class WorkerStatusItem(BaseModel):
+    name: str
+    configured: bool
+    detail: str = ""
+
+
+class WorkersResponse(BaseModel):
+    workers: List[WorkerStatusItem]
+
+
+@polly_router.get(
+    "/workers",
+    response_model=WorkersResponse,
+    summary="External integration status (Ollama, HF, Kaggle, Twilio)",
+)
+async def polly_workers_status() -> WorkersResponse:
+    """Report which external integrations are configured.
+
+    Used by the chat widget to decide which features to surface (e.g. show
+    the AI-call CTA only if Twilio is configured) and by ops dashboards.
+    """
+    return WorkersResponse(
+        workers=[
+            WorkerStatusItem(name=s.name, configured=s.configured, detail=s.detail) for s in workers_all_statuses()
+        ]
+    )
+
+
+from fastapi import Response
+
+
+@polly_router.api_route(
+    "/voice/inbound",
+    methods=["GET", "POST"],
+    summary="Twilio inbound voice webhook",
+)
+async def polly_voice_inbound() -> Response:
+    """TwiML response for an inbound Twilio call.
+
+    Twilio webhooks default to POST; we accept GET as well to make
+    smoke-testing from a browser easy.
+    """
+    xml = voice_response_twiml()
+    return Response(content=xml, media_type="text/xml")
+
+
+@polly_router.post(
+    "/feedback",
+    response_model=FeedbackResponse,
+    summary="Record thumbs-up / thumbs-down on an assistant reply",
+)
+async def polly_feedback(req: FeedbackRequest) -> FeedbackResponse:
+    """Append a feedback-bearing turn to the live training corpus.
+
+    Treated as the supervised-finetune signal: thumbs-up stays as a positive
+    example, thumbs-down feeds the rejection sampler. Storage is the same
+    JSONL shard used by ``polly_chat``; downstream tooling reads the
+    ``feedback`` field to split positive vs. negative.
+    """
+    written = append_training_record(
+        consent=req.consent_to_train,
+        user_message=req.user_message,
+        assistant_reply=req.assistant_reply,
+        intent=req.intent or "feedback",
+        feedback=req.rating,
+        session_id=req.session_id,
+    )
+    return FeedbackResponse(ok=True, captured=written is not None)
+
+
 @polly_router.post("/chat", response_model=ChatResponse, summary="Chat with Polly")
 async def polly_chat(req: ChatRequest) -> ChatResponse:
     """
@@ -385,38 +527,90 @@ async def polly_chat(req: ChatRequest) -> ChatResponse:
     - Otherwise a deterministic router handles common query types (pricing,
       support, science, lore, training, setup, contact).
     """
+    # 1. Commerce + custom-build + membership intents take precedence over LLMs.
+    #    Direct buying signals deserve a direct answer with a real Stripe link,
+    #    not a freeform LLM riff that may hallucinate the price or skip the URL.
+    intent = classify_intent(req.message)
+    if intent.confidence >= 0.6 and intent.name in {"buy", "custom", "membership"}:
+        if intent.name == "buy":
+            text, action_dicts = render_buy_reply(intent.product)
+        elif intent.name == "custom":
+            text, action_dicts = render_custom_reply(req.message)
+        else:
+            text, action_dicts = render_membership_reply()
+
+        actions = [ActionLink(**a) for a in action_dicts]
+        response_obj = ChatResponse(
+            response=text,
+            route=f"commerce-{intent.name}",
+            thinking=False,
+            model="polly-commerce",
+            ts=int(time.time()),
+            actions=actions,
+            intent=intent.name,
+        )
+        _capture_training_turn(req, response_obj)
+        return response_obj
+
     if req.thinking and _gemini_key():
         try:
             text = await _gemini_chat(req.message, req.history, req.page_context)
-            return ChatResponse(
+            response_obj = ChatResponse(
                 response=text,
                 route="gemini-thinking",
                 thinking=True,
                 model=os.environ.get("GEMINI_MODEL", DEFAULT_GEMINI_MODEL),
                 ts=int(time.time()),
+                intent=intent.name,
             )
+            _capture_training_turn(req, response_obj)
+            return response_obj
         except RuntimeError as exc:
             logger.warning("Gemini fallback: %s", exc)
 
     # Try free LLM (HuggingFace / Ollama) before deterministic fallback
     free_result = await _free_llm_chat(req.message, req.page_context)
     if free_result:
-        return ChatResponse(
+        response_obj = ChatResponse(
             response=free_result["text"],
             route=f"free-llm-{free_result['provider']}",
             thinking=req.thinking,
             model=free_result["model"],
             ts=int(time.time()),
+            intent=intent.name,
         )
+        _capture_training_turn(req, response_obj)
+        return response_obj
 
     route, response = _deterministic_route(req.message)
-    return ChatResponse(
+    response_obj = ChatResponse(
         response=response,
         route=route,
         thinking=False,
         model="polly-deterministic",
         ts=int(time.time()),
+        intent=intent.name,
     )
+    _capture_training_turn(req, response_obj)
+    return response_obj
+
+
+def _capture_training_turn(req: "ChatRequest", resp: "ChatResponse") -> None:
+    """Append the turn to the live training corpus when consent is granted.
+
+    Never raises — training capture must not break the chat path.
+    """
+    try:
+        append_training_record(
+            consent=req.consent_to_train,
+            user_message=req.message,
+            assistant_reply=resp.response,
+            intent=resp.intent or resp.route,
+            page_context=req.page_context,
+            session_id=req.session_id,
+        )
+    except Exception as exc:  # pragma: no cover — defensive
+        logger.debug("training capture skipped: %s", exc)
 
 
 @polly_router.post("/search", response_model=SearchResponse, summary="Web search")
@@ -454,43 +648,8 @@ async def polly_search(req: SearchRequest) -> SearchResponse:
         except (HTTPError, URLError, Exception) as exc:
             logger.warning("Tavily search error: %s", exc)
 
-    # Free fallback: DuckDuckGo Instant Answer API (no key needed)
-    try:
-        ddg_url = f"https://api.duckduckgo.com/?q={quote_plus(query)}&format=json&no_html=1&skip_disambig=1"
-        ddg_req = urlrequest.Request(ddg_url, headers={"User-Agent": "SCBE-Polly/1.0"})
-        with urlrequest.urlopen(ddg_req, timeout=8) as resp:
-            ddg_data: Dict[str, Any] = json.loads(resp.read().decode())
-
-        ddg_results: list[SearchResult] = []
-        if ddg_data.get("AbstractURL"):
-            ddg_results.append(
-                SearchResult(
-                    title=ddg_data.get("Heading", query),
-                    url=ddg_data["AbstractURL"],
-                    excerpt=ddg_data.get("Abstract", "")[:300],
-                )
-            )
-        for topic in ddg_data.get("RelatedTopics", []):
-            if (
-                isinstance(topic, dict)
-                and topic.get("FirstURL")
-                and not topic["FirstURL"].startswith("https://duckduckgo.com/c/")
-            ):
-                ddg_results.append(
-                    SearchResult(
-                        title=topic.get("Text", "")[:100],
-                        url=topic["FirstURL"],
-                        excerpt=topic.get("Text", "")[:300],
-                    )
-                )
-            if len(ddg_results) >= MAX_SEARCH_RESULTS:
-                break
-        if ddg_results:
-            return SearchResponse(results=ddg_results, source="duckduckgo", query=query, ts=int(time.time()))
-    except Exception as exc:
-        logger.debug("DuckDuckGo fallback failed: %s", exc)
-
-    # Last resort: link to DDG
+    # Last resort: provide a user-clickable link instead of making unauthenticated
+    # server-side search calls from a public endpoint.
     return SearchResponse(
         results=[
             SearchResult(

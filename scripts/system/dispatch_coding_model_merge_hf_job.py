@@ -12,7 +12,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_PROFILE = REPO_ROOT / "config" / "model_training" / "coding-agent-qwen-merged-coding-model.json"
 DEFAULT_ARTIFACT_ROOT = REPO_ROOT / "artifacts" / "hf_coding_model_merges"
@@ -53,7 +52,9 @@ def normalize_profile(profile: dict[str, Any]) -> dict[str, Any]:
     return profile
 
 
-def build_packet(profile_path: Path, artifact_root: Path, flavor: str | None = None, timeout: str | None = None) -> dict[str, Any]:
+def build_packet(
+    profile_path: Path, artifact_root: Path, flavor: str | None = None, timeout: str | None = None
+) -> dict[str, Any]:
     profile_path = profile_path.resolve()
     profile = normalize_profile(_load_json(profile_path))
     run_dir = artifact_root / str(profile["merge_id"]) / _utc_stamp()
@@ -97,7 +98,8 @@ def build_packet(profile_path: Path, artifact_root: Path, flavor: str | None = N
                 "",
                 "## Boundary",
                 "",
-                "This performs a full-model merge on Hugging Face Jobs. Do not dispatch until the frozen Stage 6 smoke eval is scored.",
+                "This performs a full-model merge on Hugging Face Jobs. "
+                "Do not dispatch until the frozen Stage 6 smoke eval is scored.",
             ]
         ),
         encoding="utf-8",
@@ -193,7 +195,7 @@ def main() -> None:
 
     output_repo = str(PACKET["output_model_repo"])
     api.create_repo(output_repo, repo_type="model", exist_ok=True, private=False)
-    merged.push_to_hub(output_repo, token=token, safe_serialization=True)
+    merged.push_to_hub(output_repo, token=token)
     tokenizer.push_to_hub(output_repo, token=token)
     summary = {{
         "schema_version": "scbe_coding_model_merge_result_v1",
@@ -271,7 +273,9 @@ def main() -> int:
         item.add_argument("--flavor", default="")
         item.add_argument("--timeout", default="")
     args = parser.parse_args()
-    packet = build_packet(Path(args.profile), Path(args.artifact_root), flavor=args.flavor or None, timeout=args.timeout or None)
+    packet = build_packet(
+        Path(args.profile), Path(args.artifact_root), flavor=args.flavor or None, timeout=args.timeout or None
+    )
     if args.command == "dispatch":
         packet = dispatch_packet(packet)
     print(json.dumps(packet, indent=2, ensure_ascii=True))

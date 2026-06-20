@@ -1,0 +1,79 @@
+# Changelog
+
+## 0.3.10
+
+- **Lineage walker recognizes `trap_dispatch` receipts**: `LineageEntry.kind` adds `'trap_dispatch'`, mapped from new schema `aethermoor.bus.workspace_trap_dispatch.v1`. Receipts written by `scbe trap-dispatch --workspace-root <path>` now show up in chronological lineage alongside formation/ingest/export entries.
+- **New lineage counters**: `AgentWorkspaceLineageReceipt.trap_dispatch_count` (total dispatches recorded in the workspace) and `trap_redirect_count` (subset where SCONE redirect actually fired). Surfaced through `reportAgentWorkspace()` as `lineage_summary.trap_dispatch_count` + `lineage_summary.trap_redirect_count`.
+- **`LineageEntry` adds `gate_decision` + `redirect_emitted` fields** populated only for trap_dispatch entries — reviewers can see which inputs hit DENY without re-reading the underlying envelope.
+
+## 0.3.9
+
+- **Workspace import command**: adds `scbe-agent-bus workspace import --export-path <path> [--target-root <dir>] [--hint <name>] [--json]`. Cold-restores a workspace from a previously-exported manifest into a fresh location. Always runs the standard verifier FIRST and refuses (exit 1) to import any export that fails any tamper class — the imported workspace is provably untampered or it doesn't exist.
+- **New public API**: `importAgentWorkspace(options)` (TypeScript), schema `aethermoor.bus.workspace_import.v1`. Records `source_export_path`, `source_export_id`, `source_manifest_sha256`, `source_workspace_id`, `imported_files`, `imported_bytes` — the source manifest sha256 anchors the new workspace's provenance back to the original export.
+- **Source `20_receipts/` is NOT replayed**: the imported workspace has its own audit chain anchored by the import receipt. Replaying the source's formation receipt would overwrite the new workspace's identity and pollute its lineage. Lineage walker's `kind: 'import'` carries `import_count` so reviewers can spot cold-restored workspaces in a chain.
+
+## 0.3.8
+
+- **Workspace report command**: adds `scbe-agent-bus workspace report --workspace-root <path> [--json]`. Operator dashboard combining lineage summary, per-folder file/byte counts (`00_inbox` through `90_tmp`), workspace metadata (id, created_at, last_activity), and an `audit_health` color (`green` = all exports verified clean, `amber` = unverified exports present, `red` = any failed verify). Pure read-only.
+- **New public API**: `reportAgentWorkspace(options)` (TypeScript), schema `aethermoor.bus.workspace_report.v1`. Composes existing surfaces — no new storage, just a single-call view operators can use to answer "what does this workspace look like right now."
+
+## 0.3.7
+
+- **Workspace ingest command**: adds `scbe-agent-bus workspace ingest --workspace-root <path> --source-path <file> [--rename <name>] [--json]`. Copies the source file into `<workspace>/00_inbox/`, computes sha256 of both source and destination (must match — mismatch throws), and writes an `SCBE_WORKSPACE_INGEST=1` receipt under `20_receipts/ingest-<utc-ts>-<basename>.json`. Closes the audit chain at the entry point: before this, files appeared in `00_inbox/` with no provenance.
+- **New public API**: `ingestIntoAgentWorkspace(options)` (TypeScript), schema `aethermoor.bus.workspace_ingest.v1`. Records `source_path`, `destination_path`, `destination_rel`, `source_sha256`, `destination_sha256`, `bytes`, `ingested_at`.
+- **Lineage walker recognizes ingest receipts**: `LineageEntry.kind` now includes `'ingest'`; `AgentWorkspaceLineageReceipt.ingest_count` reports how many files have a provenance receipt. The chronological chain interleaves ingest entries between formation and export.
+
+## 0.3.6
+
+- **Batch verify command**: adds `scbe-agent-bus workspace verify --all --workspace-root <path> [--no-persist] [--json]`. Walks every subdirectory of `<workspaceRoot>/30_exports/` that contains a `manifest.json` and runs the single-export verifier on each, aggregating pass/fail counts. Emits `SCBE_WORKSPACE_VERIFY_ALL_PASS=1` only when every export passes. Individual verify receipts are still persisted under `20_receipts/` so `lineageAgentWorkspace()` reflects the new state. Exit code 1 on any failure so CI can gate on it.
+- **New public API**: `verifyAllAgentWorkspaceExports(options)` (TypeScript), schema `aethermoor.bus.workspace_verify_all.v1` with per-export `results[]`.
+
+## 0.3.5
+
+- **Verify now persists a receipt by default**: `verifyAgentWorkspaceExport()` writes `<workspaceRoot>/20_receipts/verify-<export-id>-<utc-ts>.json` so that `lineageAgentWorkspace()` can pick it up without a manual stdout redirect. The on-disk JSON is bit-identical to the in-memory return value. Best-effort: if the receipts directory is missing or the write fails, the verify result is still returned and `receipt_path` is empty.
+- **Opt-out flag**: `scbe-agent-bus workspace verify --no-persist` skips the write — useful for ad-hoc local audits or read-only CI checks that shouldn't mutate the workspace.
+- **New field**: `AgentWorkspaceVerifyReceipt.receipt_path` (absolute path of the written receipt, or empty string when persistence was skipped). Schema version unchanged (`aethermoor.bus.workspace_verify.v1`).
+
+## 0.3.4
+
+- **Workspace lineage command**: adds `scbe-agent-bus workspace lineage --workspace-root <path> [--json]`. Walks `<workspace>/20_receipts/`, classifies each receipt by `schema_version` (formation / export / verify), and returns the chronological audit chain plus a summary: `formation_count`, `export_count`, `verify_count`, `failed_verifies`, and `unverified_exports[]` (exports without a matching verify receipt). Read-only — never writes to the workspace.
+- **New public API**: `lineageAgentWorkspace(options)` (TypeScript), schema `aethermoor.bus.workspace_lineage.v1`. Receipt flag: `SCBE_WORKSPACE_LINEAGE=1`.
+- **Use case**: compliance reviewer asks "has every export been audited?" — `unverified_exports` answers in one call.
+
+## 0.3.3
+
+- **Workspace verify command**: adds `scbe-agent-bus workspace verify --export-path <path> [--json]`. Walks the export folder, re-hashes every file, compares against `manifest.json`, and re-hashes `manifest.json` itself against the export receipt's `manifest_sha256` anchor. Detects four classes of tampering: `sha256_mismatch`, `bytes_mismatch`, `missing_file`, `extra_file`. Emits `SCBE_WORKSPACE_VERIFY_PASS=1` only when all per-file sha256s match AND the manifest sha256 chain anchor matches.
+- **New public API**: `verifyAgentWorkspaceExport(options)` (TypeScript), with schema `aethermoor.bus.workspace_verify.v1`. Returns a structured receipt with `manifest_intact`, `mismatches[]`, claimed vs actual counts.
+- **Exit code 1 on verify failure** so the command is usable in CI pipelines as a tamper gate.
+
+## 0.3.2
+
+- **Workspace export command**: adds `scbe-agent-bus workspace export --workspace-root <path> [--out <name>] [--include <comma-separated>] [--json]`. Copies the included folders (default `00_inbox`, `10_work`, `20_receipts`, `40_refs`) into `<workspace>/30_exports/<export-id>/`, writes a `manifest.json` with per-file sha256, and emits an `SCBE_WORKSPACE_EXPORT=1` receipt at `<workspace>/20_receipts/export-<export-id>.json` including the manifest's sha256 as a chain-of-custody anchor. `30_exports` (self) and `90_tmp` (scratch) are never exported.
+- **New public API**: `exportAgentWorkspace(options)` (TypeScript), with schemas `aethermoor.bus.workspace_export.v1` and `aethermoor.bus.workspace_export_manifest.v1`.
+
+## 0.3.1
+
+- **Workspace formation command**: adds `scbe-agent-bus workspace new [--root <path>] [--hint <name>] [--json]`, creating the canonical `.aethermoor-bus/workspaces/<workspace-id>/` folder shape and writing a `SCBE_WORKSPACE_READY=1` receipt into `20_receipts/workspace.json`.
+
+## 0.3.0
+
+- **Hosted-credential gate on `send`**: requests with `--dispatch-provider` set to a non-local provider (anything other than `offline`, `local`, `ollama`, `local_only`, empty) now require `SCBE_API_KEY` in the environment. Without a key, `send` prints a hosted-intake notice (intake URL, service-credits URL, Ko-fi top-up URL, fee policy: provider/model cost passed through with 2-5% SCBE coordination fee) and exits with code 2.
+- **New `upgrade` command**: prints the hosted-run path — service-credit policy, intake URL, credit top-up — and detects whether `SCBE_API_KEY` is set so the user knows whether hosted dispatch is currently unlocked.
+- **Help text updated** to call out the local-first default and link the `upgrade` flow.
+- **Documented constants**: `HOSTED_INTAKE_URL` (`https://aethermoore.com/SCBE-AETHERMOORE/hosted-run.html`), `SERVICE_CREDITS_URL` (`https://aethermoore.com/SCBE-AETHERMOORE/service-credits.html`), `CREDIT_TOPUP_URL` (`https://ko-fi.com/izdandavis`).
+
+## 0.2.2
+
+- Restore the Node package source, TypeScript config, and generated `dist/`
+  build path so fresh npm installs expose working API and CLI entrypoints.
+- Keep the local-first server, terminal UI, send, and health commands
+  self-contained for downloader smoke tests.
+
+## 0.1.1
+
+- Restore package source files on the release branch.
+- Update TypeScript build settings for the current TypeScript 6 toolchain.
+
+## 0.1.0
+
+- Initial typed Node wrapper for the SCBE agent-bus pipe runner.

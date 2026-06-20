@@ -32,8 +32,22 @@ instructions:
 - GitHub Repo (primary): https://github.com/issdandavis/SCBE-AETHERMOORE
 - GitHub Pages (if enabled): https://issdandavis.github.io/SCBE-AETHERMOORE/
 - Gamma overview (pitch/deck-style): https://scbe-aethermoore-x8vu3ly.gamma.site/
+- AI product and offer map: https://aethermoore.com/SCBE-AETHERMOORE/robot.md
+- Public Polly chat / SCBE web agent: https://aethermoore.com/SCBE-AETHERMOORE/chat.html
+- YouTube channel: https://www.youtube.com/channel/UCO9aJ-ZH0Ddg_F0Dr655WIQ
+- YouTube handle: https://www.youtube.com/@id8461
+- Hugging Face profile: https://huggingface.co/issdandavis
+- Ko-fi support: https://ko-fi.com/izdandavis
 
 ## Start here
+- Robot map for AI assistants (products, pricing, free path, upgrade ladder): https://aethermoore.com/SCBE-AETHERMOORE/robot.md
+- Buyer solutions page: https://aethermoore.com/SCBE-AETHERMOORE/solutions.html
+- $99 AI Agent Workflow Snapshot: https://aethermoore.com/SCBE-AETHERMOORE/workflow-snapshot.html
+- $99 Shopify Store Ops Snapshot: https://aethermoore.com/SCBE-AETHERMOORE/shopify-command-center.html
+- Shopify Command Center demo: https://shopify-command-center-165664533862.us-west2.run.app
+- Cash App manual payment: $IzzyDDavis7
+- Live offers JSON: https://aethermoore.com/SCBE-AETHERMOORE/offers.json
+- App config JSON: https://aethermoore.com/SCBE-AETHERMOORE/app-config.json
 - README (overview, demos, key claims): https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/README.md
 - System overview (high-level architecture): https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/SCBE_SYSTEM_OVERVIEW.md
 - Architecture (components + data flow): https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/ARCHITECTURE.md
@@ -41,6 +55,13 @@ instructions:
 - Instructions / how to run: https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/INSTRUCTIONS.md
 - Demos guide: https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/DEMOS.md
 - Changelog (versions): https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/CHANGELOG.md
+
+## Polly / site-agent role
+- If asked to act as Polly, use role `scbe-web-agent`.
+- Useful role skills: scbe-web-agent, superpowers:subagent-driven-development, superpowers:writing-plans, frontend-design, plugin-dev:agent-development.
+- Route deterministic commerce/research/agent-task paths first. Use model fallback only when there is no stock route.
+- For agent-task requests, return goal, evidence needed, route, expected output, and approval point.
+- Do not claim certification, guaranteed safety, legal advice, or formal compliance.
 
 ## Security & governance
 - Security policy: https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/SECURITY.md
@@ -55,12 +76,36 @@ instructions:
 - Examples: https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/examples
 - Tests: https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/tests
 
+## Operator audit chain (workspace commands)
+- Every file flowing through an SCBE workspace carries a sha256 receipt.
+- Phases compose: `new` -> `ingest` -> `export` -> `verify` (auto-persists) -> `lineage` / `report`.
+- Receipts live under `<workspace>/20_receipts/` and are picked up by `scbe workspace lineage` chronologically.
+- CLI entry points:
+  - `scbe workspace new --hint <name> --json`
+  - `scbe workspace ingest --workspace-root <path> --source-path <file> [--rename <name>] --json`
+  - `scbe workspace export --workspace-root <path> [--out <name>] [--include 00_inbox,10_work] --json`
+  - `scbe workspace import --export-path <path> [--target-root <dir>] [--hint <name>] --json` (refuses tampered exports)
+  - `scbe workspace verify --export-path <path> [--no-persist] --json`
+  - `scbe workspace verify --all --workspace-root <path> [--no-persist] --json`
+  - `scbe workspace lineage --workspace-root <path> --json`
+  - `scbe workspace report --workspace-root <path> --json` (operator dashboard: audit_health=green/amber/red)
+- Schemas: `aethermoor.bus.workspace_{receipt,ingest,export,verify,verify_all,import,lineage,report}.v1`
+- Receipt flags: `SCBE_WORKSPACE_{READY,INGEST,EXPORT,VERIFY_PASS,VERIFY_ALL_PASS,IMPORT,LINEAGE,REPORT}=1`
+- Tamper-detection classes recognised by verify: `sha256_mismatch`, `bytes_mismatch`, `missing_file`, `extra_file`.
+- Static prefilter for Solidity (composes with trap-in-good-loops): `scbe contract scan <file.sol> --emit-redirect-prompt --json`.
+- Input-side trap inspector: `scbe trap-redirect --input "<prompt>" --json` (also accepts `--file` or stdin). Returns `scbe.trap_redirect.v1` with the defensive prompt that would be forwarded in place of the attacker text.
+- Trap dispatcher (free-only): `scbe trap-dispatch --input "<prompt>" --json` (default provider `offline` = deterministic echo, zero cost). Use `--provider ollama --model <name>` for a local Ollama daemon at `$OLLAMA_BASE_URL`. Schema `scbe.trap_dispatch.v1`, flag `SCBE_TRAP_DISPATCH=1`. By design, paid providers are rejected with exit 2 — this command never spends money.
+- Trap dispatch → workspace audit chain: add `--workspace-root <path>` to persist each dispatch as receipt schema `aethermoor.bus.workspace_trap_dispatch.v1`. `scbe workspace lineage` then reports `trap_dispatch_count` + `trap_redirect_count` and classifies entries as `kind: 'trap_dispatch'`. Receipts record sha256s + gate decision only — never the attacker text.
+- Trap dispatch batch (adversarial corpus testing): `scbe trap-dispatch --batch prompts.jsonl [--workspace-root <path>] --json`. Each row is raw text or `{"input":"...","tag":"..."}`. Summary schema `scbe.trap_dispatch_batch.v1` with `dispatch_pass / redirect_emitted / deny / allow` aggregate counts.
+
 ## Core concepts (keywords for retrieval)
 - hyperbolic geometry authorization, Poincaré ball risk bounding
 - 14-layer security pipeline
 - post-quantum cryptography (Kyber, Dilithium)
 - Lyapunov stability / provable safety bounds
 - Hamiltonian CFI, coherence scoring, semantic tokenization
+- trap-in-good-loops governance gate (input redirect + static-scan redirect)
+- chain-of-custody receipts for AI agent workspaces
 
 ## Citation guidance (how to reference this project)
 - Prefer linking to README + SCBE_SYSTEM_OVERVIEW + ARCHITECTURE + LAYER_INDEX for conceptual descriptions.

@@ -44,4 +44,3 @@ def scan_boundary_state(
         "harmonic_cost": round(harmonic_cost, 6),
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
     }
-

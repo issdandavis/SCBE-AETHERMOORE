@@ -4035,10 +4035,6 @@ def synthesize_program(task: ARCTask) -> SynthesizedSolution:
     if bespoke is not None:
         return bespoke
 
-    bespoke = _solve_bespoke_odd_one_out_crop(task)
-    if bespoke is not None:
-        return bespoke
-
     bespoke = _solve_bespoke_downscale_majority(task)
     if bespoke is not None:
         return bespoke
@@ -4071,10 +4067,6 @@ def synthesize_program(task: ARCTask) -> SynthesizedSolution:
     if bespoke is not None:
         return bespoke
 
-    bespoke = _solve_bespoke_color_bbox_crop(task)
-    if bespoke is not None:
-        return bespoke
-
     bespoke = _solve_bespoke_quadrant_extract(task)
     if bespoke is not None:
         return bespoke
@@ -4095,19 +4087,7 @@ def synthesize_program(task: ARCTask) -> SynthesizedSolution:
     if bespoke is not None:
         return bespoke
 
-    bespoke = _solve_bespoke_bg_cluster_fill(task)
-    if bespoke is not None:
-        return bespoke
-
     bespoke = _solve_bespoke_diagonal_fill(task)
-    if bespoke is not None:
-        return bespoke
-
-    bespoke = _solve_bespoke_local_rule_3x3(task)
-    if bespoke is not None:
-        return bespoke
-
-    bespoke = _solve_bespoke_local_rule_crossdist(task)
     if bespoke is not None:
         return bespoke
 
@@ -4134,5 +4114,27 @@ def synthesize_program(task: ARCTask) -> SynthesizedSolution:
         solution = _solve_family(task, family, cache)
         if solution is not None:
             return solution
+
+    bespoke = _solve_bespoke_color_bbox_crop(task)
+    if bespoke is not None:
+        return bespoke
+
+    bespoke = _solve_bespoke_odd_one_out_crop(task)
+    if bespoke is not None:
+        return bespoke
+
+    bespoke = _solve_bespoke_bg_cluster_fill(task)
+    if bespoke is not None:
+        return bespoke
+
+    # Local learned rules are powerful enough to mimic simple global transforms,
+    # so keep them as fallbacks after exact named-family inference.
+    bespoke = _solve_bespoke_local_rule_3x3(task)
+    if bespoke is not None:
+        return bespoke
+
+    bespoke = _solve_bespoke_local_rule_crossdist(task)
+    if bespoke is not None:
+        return bespoke
 
     raise ValueError(f"Could not synthesize a restricted straight-line program for task '{task.task_id}'")

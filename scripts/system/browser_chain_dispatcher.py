@@ -16,7 +16,6 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List
 from urllib.parse import urlparse
 
-
 _AUTO_TASKS = {"", "auto", "default"}
 _GENERIC_NAVIGATION_TASKS = {"browse", "navigate", "open", "view"}
 _SEARCH_HINT_KEYS = (
@@ -105,7 +104,7 @@ def _is_local_preview_host(host: str) -> bool:
 
 def _make_assignment_id(domain: str, task: str, tentacle_id: str) -> str:
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
-    digest = hashlib.sha1(f"{domain}|{task}|{tentacle_id}".encode("utf-8")).hexdigest()[:6]
+    digest = hashlib.sha256(f"{domain}|{task}|{tentacle_id}".encode("utf-8")).hexdigest()[:6]
     return f"bc-{stamp}-{digest}"
 
 

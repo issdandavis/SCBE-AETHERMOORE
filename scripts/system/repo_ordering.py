@@ -8,7 +8,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ARTIFACT_DIR = REPO_ROOT / "artifacts" / "repo-ordering"
 MANIFEST_CANDIDATES = (
@@ -96,10 +95,9 @@ ROOT_RULES: dict[str, tuple[str, str]] = {
 
 ROOT_FILE_RULES: dict[str, tuple[str, str]] = {
     "AGENTS.md": ("canonical", "Repository operating instructions."),
-    "ARCHITECTURE.md": ("canonical", "Root architecture surface."),
     "CLAUDE.md": ("canonical", "Assistant/repo operating surface."),
-    "INSTRUCTIONS.md": ("canonical", "Root implementation guidance."),
     "README.md": ("canonical", "Primary repo overview."),
+    "README_INDEX.md": ("canonical", "Doc layout index after 2026-04 reorg."),
     "package.json": ("canonical", "Root Node manifest."),
     "pyproject.toml": ("canonical", "Root Python manifest."),
     "pytest.ini": ("canonical", "Root pytest authority."),

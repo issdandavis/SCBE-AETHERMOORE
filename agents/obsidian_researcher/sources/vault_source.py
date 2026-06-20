@@ -64,14 +64,10 @@ class VaultSource(SourceAdapter):
 
         self._vault_root = Path(vault_root).resolve()
         if not self._vault_root.is_dir():
-            raise FileNotFoundError(
-                f"vault_root does not exist or is not a directory: {self._vault_root}"
-            )
+            raise FileNotFoundError(f"vault_root does not exist or is not a directory: {self._vault_root}")
 
         self._encoding: str = self.config.get("encoding", "utf-8")
-        self._exclude_dirs: set[str] = set(
-            self.config.get("exclude_dirs", [".obsidian", ".trash", ".git"])
-        )
+        self._exclude_dirs: set[str] = set(self.config.get("exclude_dirs", [".obsidian", ".trash", ".git"]))
 
     # ------------------------------------------------------------------
     # SourceAdapter interface
@@ -120,9 +116,7 @@ class VaultSource(SourceAdapter):
         for md_path in self._iter_md_files():
             if md_path.stem.lower() == target_lower:
                 try:
-                    text = md_path.read_text(
-                        encoding=self._encoding, errors="replace"
-                    )
+                    text = md_path.read_text(encoding=self._encoding, errors="replace")
                 except OSError:
                     logger.debug("Could not read %s", md_path, exc_info=True)
                     return None
@@ -173,9 +167,7 @@ class VaultSource(SourceAdapter):
                 continue
             yield md_path
 
-    def _file_to_result(
-        self, md_path: Path, title: str, text: str
-    ) -> IngestionResult:
+    def _file_to_result(self, md_path: Path, title: str, text: str) -> IngestionResult:
         """Convert a vault Markdown file to an ``IngestionResult``."""
         frontmatter = self._extract_frontmatter(text)
         wikilinks = self._extract_wikilinks(text)
@@ -261,11 +253,7 @@ class VaultSource(SourceAdapter):
 
                 # Inline list: [a, b, c]
                 if raw_value.startswith("[") and raw_value.endswith("]"):
-                    items = [
-                        v.strip().strip("\"'")
-                        for v in raw_value[1:-1].split(",")
-                        if v.strip()
-                    ]
+                    items = [v.strip().strip("\"'") for v in raw_value[1:-1].split(",") if v.strip()]
                     result[key] = items
                     current_list = None
                 else:
@@ -309,6 +297,7 @@ class VaultSource(SourceAdapter):
 # ---------------------------------------------------------------------------
 # Module-private utilities
 # ---------------------------------------------------------------------------
+
 
 def _listify(value: Any) -> List[str]:
     """Coerce a front-matter author value to ``List[str]``."""

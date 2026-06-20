@@ -1,0 +1,39 @@
+name: 'nightly-ops'
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+
+jobs:
+  orchestrate:
+    runs-on: ubuntu-latest
+    env:
+      SCBE_MODE: 'ci'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: 'Smoke'
+        id: step_01_smoke
+        shell: bash
+        run: |
+          python scbe.py selftest
+      - name: 'Plan'
+        id: step_02_plan
+        shell: bash
+        run: |
+          python scbe.py flow plan --task "nightly ops packetize smoke" --workflow-template implementation-loop --output artifacts/flow_plans/demo.json --no-action-map
+      - name: 'Packetize'
+        id: step_03_packetize
+        shell: bash
+        run: |
+          python scbe.py flow packetize --plan artifacts/flow_plans/demo.json

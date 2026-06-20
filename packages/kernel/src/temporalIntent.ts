@@ -112,11 +112,7 @@ export interface IntentSample extends IntentSampleInput {
 /**
  * Compute triadic temporal distance (L11) — geometric mean of 3 time scales.
  */
-export function computeDTri(
-  immediate: number,
-  medium: number,
-  long: number
-): number {
+export function computeDTri(immediate: number, medium: number, long: number): number {
   return Math.cbrt(Math.abs(immediate) * Math.abs(medium) * Math.abs(long));
 }
 
@@ -166,11 +162,7 @@ export function buildSample(input: IntentSampleInput): IntentSample {
     dTriImmediate: input.dTriImmediate ?? 0,
     dTriMedium: input.dTriMedium ?? 0,
     dTriLong: input.dTriLong ?? 0,
-    dTri: computeDTri(
-      input.dTriImmediate ?? 0,
-      input.dTriMedium ?? 0,
-      input.dTriLong ?? 0
-    ),
+    dTri: computeDTri(input.dTriImmediate ?? 0, input.dTriMedium ?? 0, input.dTriLong ?? 0),
     rawIntent: computeRawIntent(input),
   };
 }
@@ -345,7 +337,7 @@ export function compareScaling(
 
 /** Decision thresholds from AC-2.3.4 */
 export const ALLOW_THRESHOLD = 0.85;
-export const QUARANTINE_THRESHOLD = 0.40;
+export const QUARANTINE_THRESHOLD = 0.4;
 
 /** Possible gate decisions */
 export type GateDecision = 'ALLOW' | 'QUARANTINE' | 'DENY' | 'EXILE';
@@ -390,10 +382,7 @@ export function computeOmega(
   }
 
   // Get latest distance
-  const d =
-    history.samples.length > 0
-      ? history.samples[history.samples.length - 1].distance
-      : 0;
+  const d = history.samples.length > 0 ? history.samples[history.samples.length - 1].distance : 0;
 
   const x = computeXFactor(history);
   const hTemporal = harmonicWallTemporal(d, x);

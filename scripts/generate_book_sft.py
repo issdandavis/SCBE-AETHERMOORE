@@ -53,69 +53,144 @@ TONGUES = {
         "color": "blue-silver",
         "domain": "Context/Transport",
         "essence": "how to get there",
-        "weight": round(PHI ** 1, 3),
+        "weight": round(PHI**1, 3),
     },
     "RU": {
         "full": "Runethic",
         "color": "deep purple",
         "domain": "Binding/Permissions",
         "essence": "who is allowed",
-        "weight": round(PHI ** 2, 3),
+        "weight": round(PHI**2, 3),
     },
     "CA": {
         "full": "Cassisivadan",
         "color": "white-gold",
         "domain": "Implementation/Compute",
         "essence": "how to make it true",
-        "weight": round(PHI ** 3, 3),
+        "weight": round(PHI**3, 3),
     },
     "UM": {
         "full": "Umbroth",
         "color": "shadow-black",
         "domain": "Security/Privacy",
         "essence": "what must stay hidden",
-        "weight": round(PHI ** 4, 3),
+        "weight": round(PHI**4, 3),
     },
     "DR": {
         "full": "Draumric",
         "color": "earth-brown",
         "domain": "Structure/Authentication",
         "essence": "proof that it is true",
-        "weight": round(PHI ** 5, 3),
+        "weight": round(PHI**5, 3),
     },
 }
 
 # Keywords that signal tongue presence in narrative text
 TONGUE_SIGNALS = {
     "KO": [
-        "intent", "purpose", "goal", "want", "what should be true", "kor'aelin",
-        "red-gold", "authority", "foundation", "motivation", "desire", "aim",
-        "what do you intend", "tuning fork", "reference point",
+        "intent",
+        "purpose",
+        "goal",
+        "want",
+        "what should be true",
+        "kor'aelin",
+        "red-gold",
+        "authority",
+        "foundation",
+        "motivation",
+        "desire",
+        "aim",
+        "what do you intend",
+        "tuning fork",
+        "reference point",
     ],
     "AV": [
-        "context", "route", "path", "transport", "avali", "blue-silver",
-        "messenger", "channel", "tcp", "handshake", "connection", "metadata",
-        "how to get there", "routing", "packet", "stream",
+        "context",
+        "route",
+        "path",
+        "transport",
+        "avali",
+        "blue-silver",
+        "messenger",
+        "channel",
+        "tcp",
+        "handshake",
+        "connection",
+        "metadata",
+        "how to get there",
+        "routing",
+        "packet",
+        "stream",
     ],
     "RU": [
-        "permission", "allowed", "policy", "binding", "runethic", "deep purple",
-        "gavel", "access control", "who is allowed", "inscript", "rule",
-        "authorize", "grant", "deny", "permission", "contract",
+        "permission",
+        "allowed",
+        "policy",
+        "binding",
+        "runethic",
+        "deep purple",
+        "gavel",
+        "access control",
+        "who is allowed",
+        "inscript",
+        "rule",
+        "authorize",
+        "grant",
+        "deny",
+        "permission",
+        "contract",
     ],
     "CA": [
-        "compute", "algorithm", "encrypt", "math", "cassisivadan", "white-gold",
-        "interference", "transform", "calculate", "implement", "execute",
-        "how to make it true", "computation", "engineering", "code",
+        "compute",
+        "algorithm",
+        "encrypt",
+        "math",
+        "cassisivadan",
+        "white-gold",
+        "interference",
+        "transform",
+        "calculate",
+        "implement",
+        "execute",
+        "how to make it true",
+        "computation",
+        "engineering",
+        "code",
     ],
     "UM": [
-        "security", "hidden", "shadow", "steganograph", "umbroth", "shadow-black",
-        "spy", "veil", "secret", "privacy", "anti-light", "invisible",
-        "what must stay hidden", "threat", "attack", "guard",
+        "security",
+        "hidden",
+        "shadow",
+        "steganograph",
+        "umbroth",
+        "shadow-black",
+        "spy",
+        "veil",
+        "secret",
+        "privacy",
+        "anti-light",
+        "invisible",
+        "what must stay hidden",
+        "threat",
+        "attack",
+        "guard",
     ],
     "DR": [
-        "structure", "schema", "authentication", "foundation", "draumric",
-        "earth-brown", "signature", "receipt", "proof", "document", "identity",
-        "proof that it is true", "data integrity", "architect", "layer",
+        "structure",
+        "schema",
+        "authentication",
+        "foundation",
+        "draumric",
+        "earth-brown",
+        "signature",
+        "receipt",
+        "proof",
+        "document",
+        "identity",
+        "proof that it is true",
+        "data integrity",
+        "architect",
+        "layer",
     ],
 }
 
@@ -231,19 +306,25 @@ def detect_axioms(text: str) -> list[str]:
     return axioms if axioms else ["general"]
 
 
-def make_record(system: str, user: str, assistant: str, tongues: dict, layers: list,
-                axioms: list, difficulty: float, augmentation: str, tags: list) -> dict:
+def make_record(
+    system: str,
+    user: str,
+    assistant: str,
+    tongues: dict,
+    layers: list,
+    axioms: list,
+    difficulty: float,
+    augmentation: str,
+    tags: list,
+) -> dict:
     """Build a dimensionally-tagged SFT record."""
     dominant = max(tongues, key=tongues.get)
     tongue_str = " ".join(f"{t}={v}" for t, v in tongues.items())
-    layer_str = ",".join(f"L{l}" for l in layers)
+    layer_str = ",".join(f"L{layer}" for layer in layers)
     axiom_str = ",".join(axioms)
 
     dim_header = (
-        f"[TONGUES: {tongue_str}]\n"
-        f"[LAYERS: {layer_str}]\n"
-        f"[AXIOMS: {axiom_str}]\n"
-        f"[DIFFICULTY: {difficulty}]"
+        f"[TONGUES: {tongue_str}]\n" f"[LAYERS: {layer_str}]\n" f"[AXIOMS: {axiom_str}]\n" f"[DIFFICULTY: {difficulty}]"
     )
     enriched_system = f"{dim_header}\n{system}"
 
@@ -260,7 +341,7 @@ def make_record(system: str, user: str, assistant: str, tongues: dict, layers: l
         "difficulty": difficulty,
         "augmentation": augmentation,
         "tags": tags,
-        "source_hash": hashlib.md5(user.encode()).hexdigest()[:8],
+        "source_hash": hashlib.sha256(user.encode()).hexdigest()[:8],
     }
 
 
@@ -322,9 +403,7 @@ def extract_tongue_teaching(passage: str, tongues: dict) -> str | None:
     )
 
 
-def generate_records_for_passage(
-    passage: str, chapter_title: str, chapter_num: int, passage_idx: int
-) -> list[dict]:
+def generate_records_for_passage(passage: str, chapter_title: str, chapter_num: int, passage_idx: int) -> list[dict]:
     """Generate multiple SFT records from a single passage."""
     records = []
     tongues = detect_tongues(passage)
@@ -338,72 +417,89 @@ def generate_records_for_passage(
 
     # Record type 1: Narrative comprehension
     summary = summarize_passage(passage, max_words=120)
-    records.append(make_record(
-        SYS_BASE,
-        f"What happens in {chapter_title} in the passage about "
-        f"{dom_tongue['full']} ({dom_tongue['domain'].lower()})?",
-        summary,
-        tongues, layers, axioms,
-        difficulty=base_difficulty,
-        augmentation="book-narrative",
-        tags=["book", "narrative", f"chapter-{chapter_num}", f"tongue-{dominant}"],
-    ))
+    records.append(
+        make_record(
+            SYS_BASE,
+            f"What happens in {chapter_title} in the passage about "
+            f"{dom_tongue['full']} ({dom_tongue['domain'].lower()})?",
+            summary,
+            tongues,
+            layers,
+            axioms,
+            difficulty=base_difficulty,
+            augmentation="book-narrative",
+            tags=["book", "narrative", f"chapter-{chapter_num}", f"tongue-{dominant}"],
+        )
+    )
 
     # Record type 2: Tongue extraction (only if a tongue is clearly present)
     teaching = extract_tongue_teaching(passage, tongues)
     if teaching:
-        records.append(make_record(
-            SYS_LORE,
-            f"What Sacred Tongue concept is being demonstrated in this scene from {chapter_title}?",
-            teaching,
-            tongues, layers, axioms,
-            difficulty=round(base_difficulty + 0.1, 2),
-            augmentation="book-tongue-extraction",
-            tags=["book", "tongue-extraction", f"chapter-{chapter_num}", f"tongue-{dominant}"],
-        ))
+        records.append(
+            make_record(
+                SYS_LORE,
+                f"What Sacred Tongue concept is being demonstrated in this scene from {chapter_title}?",
+                teaching,
+                tongues,
+                layers,
+                axioms,
+                difficulty=round(base_difficulty + 0.1, 2),
+                augmentation="book-tongue-extraction",
+                tags=["book", "tongue-extraction", f"chapter-{chapter_num}", f"tongue-{dominant}"],
+            )
+        )
 
     # Record type 3: Technical bridge (every 2nd passage to avoid over-generation)
     if passage_idx % 2 == 0 and layers != [0]:
-        layer_list = ", ".join(f"Layer {l}" for l in layers)
-        records.append(make_record(
-            SYS_TECHNICAL,
-            f"How does this scene from {chapter_title} relate to the SCBE pipeline?",
-            f"This scene touches {layer_list} in the 14-layer pipeline.\n\n"
-            f"The dominant tongue is {dom_tongue['full']} ({dominant} -- {dom_tongue['domain']}), "
-            f"which maps to the '{dom_tongue['essence']}' dimension of governance.\n\n"
-            f"In the codebase, this corresponds to the tongue weight phi^"
-            f"{list(TONGUES.keys()).index(dominant)} = {dom_tongue['weight']}, applied during "
-            f"Layer 3 (Weighted Transform) before Poincare embedding in Layer 4.\n\n"
-            f"The axioms in play are: {', '.join(axioms)}. "
-            f"{'These axioms constrain how the pipeline processes this type of input.' if axioms != ['general'] else 'No specific axiom is directly demonstrated -- this is general pipeline flow.'}",
-            tongues, layers, axioms,
-            difficulty=round(base_difficulty + 0.15, 2),
-            augmentation="book-technical-bridge",
-            tags=["book", "technical-bridge", f"chapter-{chapter_num}", f"tongue-{dominant}"] + [f"layer-{l}" for l in layers],
-        ))
+        layer_list = ", ".join(f"Layer {layer}" for layer in layers)
+        records.append(
+            make_record(
+                SYS_TECHNICAL,
+                f"How does this scene from {chapter_title} relate to the SCBE pipeline?",
+                f"This scene touches {layer_list} in the 14-layer pipeline.\n\n"
+                f"The dominant tongue is {dom_tongue['full']} ({dominant} -- {dom_tongue['domain']}), "
+                f"which maps to the '{dom_tongue['essence']}' dimension of governance.\n\n"
+                "In the codebase, this corresponds to the tongue weight phi^"
+                f"{list(TONGUES.keys()).index(dominant)} = {dom_tongue['weight']}, applied during "
+                "Layer 3 (Weighted Transform) before Poincare embedding in Layer 4.\n\n"
+                f"The axioms in play are: {', '.join(axioms)}. "
+                f"{'These axioms constrain how the pipeline processes this type of input.' if axioms != ['general'] else 'No specific axiom is directly demonstrated -- this is general pipeline flow.'}",
+                tongues,
+                layers,
+                axioms,
+                difficulty=round(base_difficulty + 0.15, 2),
+                augmentation="book-technical-bridge",
+                tags=["book", "technical-bridge", f"chapter-{chapter_num}", f"tongue-{dominant}"]
+                + [f"layer-{layer}" for layer in layers],
+            )
+        )
 
     # Record type 4: Character perspective (Polly's view, every 3rd passage)
     if passage_idx % 3 == 0:
-        records.append(make_record(
-            SYS_LORE,
-            f"Polly, tell me about what Marcus is learning in {chapter_title}.",
-            f"In this part of the story, Marcus is encountering {dom_tongue['full']} -- "
-            f"the {dom_tongue['color']} tongue. "
-            f"That's the '{dom_tongue['essence']}' dimension.\n\n"
-            f"Most newcomers to Aethermoor struggle with {dom_tongue['full']} because it requires "
-            f"understanding not just WHAT something is, but {dom_tongue['essence']}. "
-            f"Marcus the engineer approaches it through pattern recognition -- he sees the "
-            f"architecture before he sees the magic, which is exactly how {dom_tongue['full']} "
-            f"is meant to be learned.\n\n"
-            f"The phi-weight of {dom_tongue['full']} is {dom_tongue['weight']}. "
-            f"In the governance system, that means this tongue carries "
-            f"{'foundational' if dominant == 'KO' else 'significant' if dominant in ('AV', 'RU') else 'substantial' if dominant == 'CA' else 'critical' if dominant == 'UM' else 'supreme'} "
-            f"weight in any decision.",
-            tongues, layers, axioms,
-            difficulty=round(base_difficulty + 0.05, 2),
-            augmentation="book-character-perspective",
-            tags=["book", "character", "polly", f"chapter-{chapter_num}", f"tongue-{dominant}"],
-        ))
+        records.append(
+            make_record(
+                SYS_LORE,
+                f"Polly, tell me about what Marcus is learning in {chapter_title}.",
+                f"In this part of the story, Marcus is encountering {dom_tongue['full']} -- "
+                f"the {dom_tongue['color']} tongue. "
+                f"That's the '{dom_tongue['essence']}' dimension.\n\n"
+                f"Most newcomers to Aethermoor struggle with {dom_tongue['full']} because it requires "
+                f"understanding not just WHAT something is, but {dom_tongue['essence']}. "
+                "Marcus the engineer approaches it through pattern recognition -- he sees the "
+                f"architecture before he sees the magic, which is exactly how {dom_tongue['full']} "
+                "is meant to be learned.\n\n"
+                f"The phi-weight of {dom_tongue['full']} is {dom_tongue['weight']}. "
+                "In the governance system, that means this tongue carries "
+                f"{'foundational' if dominant == 'KO' else 'significant' if dominant in ('AV', 'RU') else 'substantial' if dominant == 'CA' else 'critical' if dominant == 'UM' else 'supreme'} "
+                "weight in any decision.",
+                tongues,
+                layers,
+                axioms,
+                difficulty=round(base_difficulty + 0.05, 2),
+                augmentation="book-character-perspective",
+                tags=["book", "character", "polly", f"chapter-{chapter_num}", f"tongue-{dominant}"],
+            )
+        )
 
     return records
 
@@ -421,9 +517,7 @@ def main():
         print(f"  {chapter['title']}: {len(passages)} passages")
 
         for idx, passage in enumerate(passages):
-            records = generate_records_for_passage(
-                passage, chapter["title"], chapter["number"], idx
-            )
+            records = generate_records_for_passage(passage, chapter["title"], chapter["number"], idx)
             all_records.extend(records)
 
     # Write output
@@ -436,6 +530,7 @@ def main():
 
     # Stats breakdown
     from collections import Counter
+
     aug_counts = Counter(r["augmentation"] for r in all_records)
     tongue_counts = Counter(r["dominant_tongue"] for r in all_records)
     chapter_counts = Counter()
@@ -444,16 +539,16 @@ def main():
             if tag.startswith("chapter-"):
                 chapter_counts[tag] += 1
 
-    print(f"\nRecord types:")
+    print("\nRecord types:")
     for aug, count in aug_counts.most_common():
         print(f"  {aug:35s} {count}")
 
-    print(f"\nDominant tongue distribution:")
+    print("\nDominant tongue distribution:")
     for tongue, count in tongue_counts.most_common():
         t = TONGUES[tongue]
         print(f"  {t['full']:20s} ({tongue}) {count}")
 
-    print(f"\nChapter coverage:")
+    print("\nChapter coverage:")
     for ch in sorted(chapter_counts.keys(), key=lambda x: int(x.split("-")[1])):
         print(f"  {ch:15s} {chapter_counts[ch]}")
 

@@ -1,0 +1,74 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "coding-agent-qwen-ca-opcode-exact-repair-v2",
+  "title": "SCBE coding agent Qwen CA opcode exact repair v2",
+  "description": "Narrow follow-up adapter after direct smoke of ca-geoseal-smoke-repair-v1 reached 3/4 but confused the final add opcode. This profile drills only exact CA arithmetic bytes: abs=0x09, add=0x00, sequence 0x09,0x09,0x00.",
+  "backend": "hf-jobs-peft-lora",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "system_prompt": "You are an SCBE-AETHERMOORE GeoSeal coding agent. Preserve exact CA hex bytes. In CA arithmetic, abs is opcode 0x09 and add is opcode 0x00. Never use 0x09 for add.",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "ca_opcode_exact_repair_v2_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "ca_opcode_exact_repair_v2_holdout.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 384,
+    "lora_rank": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.03,
+    "learning_rate": 0.0002,
+    "num_train_epochs": 4,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 8,
+    "warmup_ratio": 0.05,
+    "max_steps": 80,
+    "max_train_records": 80,
+    "max_eval_records": 2,
+    "logging_steps": 10,
+    "save_steps": 80,
+    "save_total_limit": 2,
+    "gradient_checkpointing": true,
+    "seed": 79,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "output_dir": "training/runs/coding-agent-qwen-ca-opcode-exact-repair-v2"
+  },
+  "hub": {
+    "token_env": "HF_TOKEN",
+    "dataset_repo": "issdandavis/scbe-coding-agent-sft-ca-opcode-exact-repair-v2",
+    "push_adapter": true,
+    "adapter_repo": "issdandavis/scbe-coding-agent-qwen-ca-opcode-exact-repair-v2",
+    "push_merged": false,
+    "gate_required": true
+  },
+  "execution": {
+    "recommended_target": "hf-jobs",
+    "hf_flavor": "t4-small",
+    "timeout": "1h",
+    "default_emit_path": "artifacts/model_training/coding-agent-qwen-ca-opcode-exact-repair-v2-train.py"
+  },
+  "evaluation": {
+    "smoke_job_id": "69f2cc41d2c8bd8662bd3863",
+    "post_training_gate": "Run direct adapter smoke with scripts/eval/smoke_merged_coding_model_hf.py and require 4/4 before adding this adapter to a promoted merge.",
+    "must_recall": {
+      "abs": "0x09",
+      "add": "0x00",
+      "abs_add_sequence": [
+        "0x09",
+        "0x09",
+        "0x00"
+      ]
+    }
+  }
+}

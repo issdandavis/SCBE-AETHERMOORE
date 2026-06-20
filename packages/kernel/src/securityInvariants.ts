@@ -226,10 +226,7 @@ export function verifyNodalStability(
  * @param targetPosition - Position being accessed
  * @returns Combined security cost (higher = harder to access)
  */
-export function combinedSecurityCost(
-  state: CHSFNState,
-  targetPosition: Vector6D
-): number {
+export function combinedSecurityCost(state: CHSFNState, targetPosition: Vector6D): number {
   // Distance cost: π^(φ·d*)
   const dist = hyperbolicDistance6D(state.position, targetPosition);
   const distanceCost = accessCost(dist);
@@ -258,10 +255,7 @@ export function combinedSecurityCost(
  * @param targetPosition - Target position
  * @returns Equivalent security bits
  */
-export function securityBitsEquivalent(
-  state: CHSFNState,
-  targetPosition: Vector6D
-): number {
+export function securityBitsEquivalent(state: CHSFNState, targetPosition: Vector6D): number {
   const cost = combinedSecurityCost(state, targetPosition);
   return Math.log2(Math.max(cost, 1));
 }
@@ -292,11 +286,10 @@ export function verifyTongueBijectionUnderDrift(
   stepSize: number = 0.001
 ): { holds: boolean; initialOrder: number[]; finalOrder: number[] } {
   // Compute initial impedance ordering
-  const initialImpedances = Array.from({ length: 6 }, (_, i) =>
-    tongueImpedanceAt(state, i)
+  const initialImpedances = Array.from({ length: 6 }, (_, i) => tongueImpedanceAt(state, i));
+  const initialOrder = Array.from({ length: 6 }, (_, i) => i).sort(
+    (a, b) => initialImpedances[a] - initialImpedances[b]
   );
-  const initialOrder = Array.from({ length: 6 }, (_, i) => i)
-    .sort((a, b) => initialImpedances[a] - initialImpedances[b]);
 
   // Drift the state
   let current = state;
@@ -305,11 +298,10 @@ export function verifyTongueBijectionUnderDrift(
   }
 
   // Compute final impedance ordering
-  const finalImpedances = Array.from({ length: 6 }, (_, i) =>
-    tongueImpedanceAt(current, i)
+  const finalImpedances = Array.from({ length: 6 }, (_, i) => tongueImpedanceAt(current, i));
+  const finalOrder = Array.from({ length: 6 }, (_, i) => i).sort(
+    (a, b) => finalImpedances[a] - finalImpedances[b]
   );
-  const finalOrder = Array.from({ length: 6 }, (_, i) => i)
-    .sort((a, b) => finalImpedances[a] - finalImpedances[b]);
 
   // Check if ordering is preserved
   const holds = initialOrder.every((v, i) => v === finalOrder[i]);

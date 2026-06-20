@@ -33,12 +33,12 @@ const PHI = (1 + Math.sqrt(5)) / 2; // Golden ratio
 
 /** Sacred Tongue realm centers in 6D Poincaré ball */
 export const REALM_CENTERS: Record<string, number[]> = {
-  KO: [0.3, 0.0, 0.0, 0.0, 0.0, 0.0],   // Knowledge - axis 0
-  AV: [0.0, 0.3, 0.0, 0.0, 0.0, 0.0],   // Avatara - axis 1
-  RU: [0.0, 0.0, 0.3, 0.0, 0.0, 0.0],   // Runes - axis 2
-  CA: [0.0, 0.0, 0.0, 0.3, 0.0, 0.0],   // Cascade - axis 3
-  UM: [0.0, 0.0, 0.0, 0.0, 0.3, 0.0],   // Umbra - axis 4
-  DR: [0.0, 0.0, 0.0, 0.0, 0.0, 0.3],   // Draconic - axis 5
+  KO: [0.3, 0.0, 0.0, 0.0, 0.0, 0.0], // Knowledge - axis 0
+  AV: [0.0, 0.3, 0.0, 0.0, 0.0, 0.0], // Avatara - axis 1
+  RU: [0.0, 0.0, 0.3, 0.0, 0.0, 0.0], // Runes - axis 2
+  CA: [0.0, 0.0, 0.0, 0.3, 0.0, 0.0], // Cascade - axis 3
+  UM: [0.0, 0.0, 0.0, 0.0, 0.3, 0.0], // Umbra - axis 4
+  DR: [0.0, 0.0, 0.0, 0.0, 0.0, 0.3], // Draconic - axis 5
 };
 
 /** Tongue weights (golden ratio based) */
@@ -166,9 +166,7 @@ export class AdaptiveHyperbolicNavigator {
 
   constructor(config: Partial<AdaptiveNavigatorConfig> = {}, initialPosition?: number[]) {
     this.config = { ...DEFAULT_CONFIG, ...config };
-    this.position = initialPosition
-      ? [...initialPosition]
-      : zeros(this.config.dimension);
+    this.position = initialPosition ? [...initialPosition] : zeros(this.config.dimension);
     this.velocity = zeros(this.config.dimension);
     this.history = [this.position.slice()];
     this.coherenceHistory = [1.0];
@@ -437,9 +435,7 @@ export class AdaptiveHyperbolicNavigator {
     const center = REALM_CENTERS[tongue];
     if (!center) return Infinity;
 
-    const kappa = coherence !== undefined
-      ? this.getCurrentKappa(coherence)
-      : -1;
+    const kappa = coherence !== undefined ? this.getCurrentKappa(coherence) : -1;
 
     return this.hyperbolicDistanceKappa(this.position, center, kappa);
   }
@@ -452,9 +448,7 @@ export class AdaptiveHyperbolicNavigator {
     let closest = 'KO';
 
     for (const [tongue, center] of Object.entries(REALM_CENTERS)) {
-      const kappa = coherence !== undefined
-        ? this.getCurrentKappa(coherence)
-        : -1;
+      const kappa = coherence !== undefined ? this.getCurrentKappa(coherence) : -1;
       const dist = this.hyperbolicDistanceKappa(this.position, center, kappa);
 
       if (dist < minDist) {
@@ -578,9 +572,7 @@ export class AdaptiveHyperbolicNavigator {
    * Reset navigator to initial state
    */
   reset(initialPosition?: number[]): void {
-    this.position = initialPosition
-      ? [...initialPosition]
-      : zeros(this.config.dimension);
+    this.position = initialPosition ? [...initialPosition] : zeros(this.config.dimension);
     this.velocity = zeros(this.config.dimension);
     this.history = [this.position.slice()];
     this.coherenceHistory = [1.0];
@@ -637,10 +629,7 @@ export function createAdaptiveNavigator(
  * @param spinCoherence - Spin coherence from consensus
  * @returns Combined coherence score
  */
-export function computeCoherence(
-  spectralCoherence: number,
-  spinCoherence: number = 1.0
-): number {
+export function computeCoherence(spectralCoherence: number, spinCoherence: number = 1.0): number {
   // Geometric mean for balanced weighting
   return Math.sqrt(spectralCoherence * spinCoherence);
 }

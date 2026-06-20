@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scbe-bookforge"
+version = "0.1.0"
+description = "Markdown to KDP-ready paperback, hardcover, and Kindle EPUB. XeLaTeX-driven interior typography with a ReportLab fallback, plus a calibrated cover-wrap PDF that gets the spine math right."
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+license-files = ["LICENSE", "LICENSE-APACHE"]
+requires-python = ">=3.11"
+authors = [
+    {name = "Issac Daniel Davis", email = "aethermoregames@pm.me"},
+]
+keywords = [
+    "scbe",
+    "bookforge",
+    "kdp",
+    "kindle",
+    "epub",
+    "paperback",
+    "hardcover",
+    "pandoc",
+    "xelatex",
+    "self-publishing",
+    "markdown-to-pdf",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Text Processing :: Markup",
+    "Topic :: Printing",
+]
+dependencies = [
+    "reportlab>=4.0",
+]
+
+[project.optional-dependencies]
+preview = ["PyMuPDF>=1.24"]
+
+[project.urls]
+Homepage = "https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/packages/bookforge"
+Repository = "https://github.com/issdandavis/SCBE-AETHERMOORE"
+Issues = "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"
+
+[project.scripts]
+scbe-bookforge = "scbe_bookforge.__main__:main"
+bookforge = "scbe_bookforge.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["scbe_bookforge*"]
+
+[tool.setuptools.package-data]
+scbe_bookforge = ["py.typed", "templates/*.tex", "templates/*.lua", "profiles/*.json"]

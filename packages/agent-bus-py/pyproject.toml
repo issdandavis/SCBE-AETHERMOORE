@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scbe-agent-bus"
+version = "0.3.0"
+description = "SCBE agent-bus: Python surface over the SCBE governed event runner. Routes AI/human/AI events through the harmonic-wall pipeline, wraps the workspace audit chain (formation/ingest/export/verify/import/lineage/report), and the trap-in-good-loops dispatch surface (free-only: offline echo + local Ollama)."
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+license-files = ["LICENSE", "LICENSE-APACHE"]
+requires-python = ">=3.11"
+authors = [
+    {name = "Issac Daniel Davis", email = "issdandavis@gmail.com"},
+]
+keywords = [
+    "scbe",
+    "agent-bus",
+    "governance",
+    "harmonic-wall",
+    "agent-orchestration",
+    "ai-safety",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.urls]
+Homepage = "https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/packages/agent-bus-py"
+Repository = "https://github.com/issdandavis/SCBE-AETHERMOORE"
+Issues = "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"
+
+[project.scripts]
+scbe-agent-bus = "scbe_agent_bus.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["scbe_agent_bus*"]
+
+[tool.setuptools.package-data]
+scbe_agent_bus = ["py.typed"]

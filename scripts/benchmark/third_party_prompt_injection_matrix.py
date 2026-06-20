@@ -56,17 +56,10 @@ class Counts:
             self.true_negative += 1
 
     def metrics(self) -> dict[str, Any]:
-        total = (
-            self.true_positive
-            + self.false_positive
-            + self.true_negative
-            + self.false_negative
-        )
+        total = self.true_positive + self.false_positive + self.true_negative + self.false_negative
         attacks = self.true_positive + self.false_negative
         clean = self.true_negative + self.false_positive
-        precision = self.true_positive / max(
-            self.true_positive + self.false_positive, 1
-        )
+        precision = self.true_positive / max(self.true_positive + self.false_positive, 1)
         recall = self.true_positive / max(attacks, 1)
         fpr = self.false_positive / max(clean, 1)
         accuracy = (self.true_positive + self.true_negative) / max(total, 1)
@@ -139,9 +132,7 @@ def _protectai_blocks(model: Any, text: str) -> bool:
         return label_scores["injection"] > 0.5
     if "label_1" in label_scores:
         return label_scores["label_1"] > 0.5
-    return any(
-        "inject" in label and score > 0.5 for label, score in label_scores.items()
-    )
+    return any("inject" in label and score > 0.5 for label, score in label_scores.items())
 
 
 def _score_protectai(

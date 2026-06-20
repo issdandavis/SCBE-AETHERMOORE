@@ -27,13 +27,17 @@ logger = logging.getLogger("spiralword.governance")
 # ---------------------------------------------------------------------------
 
 # A2: Unitarity — tongue weights sum to a normalized budget
+# Canonical tongue names per .scbe/grounding/council_seed_schema.json and
+# articles/12_trichromatic_forgery_resistance.md. Older drafts of this file
+# used Aelindra/Voxmara/Thalassic/Numerith/Glyphara/Morphael as placeholders;
+# the canon is Kor'aelin/Avali/Runethic/Cassisivadan/Umbroth/Draumric.
 TONGUES: Dict[str, dict] = {
-    "KO": {"name": "Aelindra", "domain": "control_flow", "weight": 1.00},
-    "AV": {"name": "Voxmara", "domain": "communication", "weight": 1.62},
-    "RU": {"name": "Thalassic", "domain": "context", "weight": 2.62},
-    "CA": {"name": "Numerith", "domain": "math_logic", "weight": 4.24},
-    "UM": {"name": "Glyphara", "domain": "security", "weight": 6.85},
-    "DR": {"name": "Morphael", "domain": "data_types", "weight": 11.09},
+    "KO": {"name": "Kor'aelin",    "domain": "control_flow",   "weight": 1.00},
+    "AV": {"name": "Avali",        "domain": "communication",  "weight": 1.62},
+    "RU": {"name": "Runethic",     "domain": "context",        "weight": 2.62},
+    "CA": {"name": "Cassisivadan", "domain": "math_logic",     "weight": 4.24},
+    "UM": {"name": "Umbroth",      "domain": "security",       "weight": 6.85},
+    "DR": {"name": "Draumric",     "domain": "data_types",     "weight": 11.09},
 }
 
 # Action → required tongue quorum mapping (mirrors RoundtableCore.TIERS)
@@ -60,32 +64,32 @@ def classify_intent(prompt: str) -> Tuple[str, float]:
     """
     prompt_lower = prompt.lower()
 
-    # Security-sensitive patterns → UM (Glyphara)
+    # Security-sensitive patterns → UM (Umbroth)
     security_keywords = ["delete", "remove", "drop", "wipe", "destroy", "erase", "purge"]
     if any(kw in prompt_lower for kw in security_keywords):
         return "UM", 0.9
 
-    # Data/structure patterns → DR (Morphael)
+    # Data/structure patterns → DR (Draumric)
     data_keywords = ["schema", "type", "format", "structure", "refactor", "rename"]
     if any(kw in prompt_lower for kw in data_keywords):
         return "DR", 0.8
 
-    # Math/logic patterns → CA (Numerith)
+    # Math/logic patterns → CA (Cassisivadan)
     math_keywords = ["calculate", "compute", "formula", "equation", "count", "sum"]
     if any(kw in prompt_lower for kw in math_keywords):
         return "CA", 0.85
 
-    # Context/analysis patterns → RU (Thalassic)
+    # Context/analysis patterns → RU (Runethic)
     context_keywords = ["analyze", "summarize", "explain", "context", "review"]
     if any(kw in prompt_lower for kw in context_keywords):
         return "RU", 0.75
 
-    # Communication patterns → AV (Voxmara)
+    # Communication patterns → AV (Avali)
     comm_keywords = ["write", "draft", "compose", "edit", "improve", "rewrite"]
     if any(kw in prompt_lower for kw in comm_keywords):
         return "AV", 0.8
 
-    # Default: control flow → KO (Aelindra)
+    # Default: control flow → KO (Kor'aelin)
     return "KO", 0.6
 
 
@@ -105,7 +109,9 @@ def check_governance(action: str, prompt: str = "") -> Tuple[bool, str]:
     if tongue_info["weight"] > 4.0 and action in ("read", "query", "insert"):
         logger.warning(
             "Governance flag: high-weight tongue %s (%.2f) on low-tier action '%s'",
-            tongue, tongue_info["weight"], action,
+            tongue,
+            tongue_info["weight"],
+            action,
         )
 
     # UM (security) tongue with high confidence → require manual approval
@@ -116,7 +122,9 @@ def check_governance(action: str, prompt: str = "") -> Tuple[bool, str]:
     if tongue not in required and len(required) > 1:
         logger.info(
             "Governance: tongue %s not in required quorum %s for '%s', allowing with audit",
-            tongue, required, action,
+            tongue,
+            required,
+            action,
         )
 
     return True, f"ALLOW: tongue={tongue} conf={confidence:.2f} action={action}"
@@ -125,6 +133,7 @@ def check_governance(action: str, prompt: str = "") -> Tuple[bool, str]:
 # ---------------------------------------------------------------------------
 # Nonce Cache (L9/L10) — replay protection
 # ---------------------------------------------------------------------------
+
 
 class NonceGuard:
     """
@@ -167,6 +176,7 @@ def check_replay(nonce: str) -> bool:
 # Envelope Signing (L13/L14) — per-message integrity
 # ---------------------------------------------------------------------------
 
+
 def _get_secret_key() -> bytes:
     """Load secret key from env or use default (dev only)."""
     key = os.environ.get("SCBE_SECRET_KEY", "spiralword-dev-key-change-me")
@@ -195,9 +205,11 @@ def verify_signature(op_data: dict, signature: str) -> bool:
 # Audit Log (L14) — deterministic edit trail
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class AuditEntry:
     """A single audit log entry."""
+
     timestamp: float
     doc_id: str
     site_id: str
@@ -206,9 +218,12 @@ class AuditEntry:
     governance_decision: str
     tongue: str = "KO"
     confidence: float = 1.0
+    phdm_node_id: Optional[str] = None
+    loop_index: Optional[int] = None
+    braid_receipt: Optional[str] = None  # hex HMAC tag
 
     def to_dict(self) -> dict:
-        return {
+        d = {
             "timestamp": self.timestamp,
             "doc_id": self.doc_id,
             "site_id": self.site_id,
@@ -218,6 +233,13 @@ class AuditEntry:
             "tongue": self.tongue,
             "confidence": self.confidence,
         }
+        if self.phdm_node_id is not None:
+            d["phdm_node_id"] = self.phdm_node_id
+        if self.loop_index is not None:
+            d["loop_index"] = self.loop_index
+        if self.braid_receipt is not None:
+            d["braid_receipt"] = self.braid_receipt
+        return d
 
 
 class AuditLog:
@@ -241,6 +263,9 @@ class AuditLog:
         governance_decision: str,
         tongue: str = "KO",
         confidence: float = 1.0,
+        phdm_node_id: Optional[str] = None,
+        loop_index: Optional[int] = None,
+        braid_receipt: Optional[str] = None,
     ):
         entry = AuditEntry(
             timestamp=time.time(),
@@ -251,6 +276,9 @@ class AuditLog:
             governance_decision=governance_decision,
             tongue=tongue,
             confidence=confidence,
+            phdm_node_id=phdm_node_id,
+            loop_index=loop_index,
+            braid_receipt=braid_receipt,
         )
         self.entries.append(entry)
         logger.info("AUDIT: %s", json.dumps(entry.to_dict()))

@@ -20,8 +20,6 @@ Vercel integration:
 
 from __future__ import annotations
 
-import asyncio
-import json
 import logging
 import os
 import sys
@@ -32,9 +30,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from fastapi import FastAPI, HTTPException, Request, Header
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from agents.browser_tools import call_tool, list_tools, shutdown
 
@@ -56,6 +53,7 @@ def _check_auth(key: Optional[str]) -> None:
 # ---------------------------------------------------------------------------
 # App
 # ---------------------------------------------------------------------------
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -90,6 +88,7 @@ app.add_middleware(
 # Models
 # ---------------------------------------------------------------------------
 
+
 class ToolUseRequest(BaseModel):
     name: str
     arguments: Dict[str, Any] = {}
@@ -97,12 +96,14 @@ class ToolUseRequest(BaseModel):
 
 class ToolCallRequest(BaseModel):
     """Generic tool call — body IS the arguments."""
+
     pass
 
 
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
+
 
 @app.get("/health")
 async def health():
@@ -152,6 +153,7 @@ async def mcp_tool_use(
 # GitHub Actions workflow helper
 # ---------------------------------------------------------------------------
 
+
 @app.post("/workflow/research")
 async def workflow_research(
     request: Request,
@@ -167,11 +169,14 @@ async def workflow_research(
     query = body.get("query")
     if not query:
         raise HTTPException(status_code=400, detail="query is required")
-    return await call_tool("research", {
-        "query": query,
-        "max_sources": body.get("max_sources", 5),
-        "follow_links": body.get("follow_links", False),
-    })
+    return await call_tool(
+        "research",
+        {
+            "query": query,
+            "max_sources": body.get("max_sources", 5),
+            "follow_links": body.get("follow_links", False),
+        },
+    )
 
 
 @app.post("/workflow/monitor")
@@ -212,6 +217,7 @@ async def workflow_scrape(
 # Agent Bus endpoints (search + scrape + free LLM)
 # ---------------------------------------------------------------------------
 
+
 @app.post("/bus/ask")
 async def bus_ask(
     request: Request,
@@ -226,10 +232,13 @@ async def bus_ask(
     question = body.get("question")
     if not question:
         raise HTTPException(status_code=400, detail="question is required")
-    return await call_tool("ask", {
-        "question": question,
-        "search_first": body.get("search_first", True),
-    })
+    return await call_tool(
+        "ask",
+        {
+            "question": question,
+            "search_first": body.get("search_first", True),
+        },
+    )
 
 
 @app.post("/bus/summarize")
@@ -246,10 +255,13 @@ async def bus_summarize(
     query = body.get("query")
     if not query:
         raise HTTPException(status_code=400, detail="query is required")
-    return await call_tool("search_and_summarize", {
-        "query": query,
-        "max_sources": body.get("max_sources", 5),
-    })
+    return await call_tool(
+        "search_and_summarize",
+        {
+            "query": query,
+            "max_sources": body.get("max_sources", 5),
+        },
+    )
 
 
 @app.post("/bus/analyze")
@@ -275,6 +287,7 @@ async def bus_analyze(
 
 if __name__ == "__main__":
     import uvicorn
+
     port = int(os.environ.get("BROWSER_API_PORT", "8003"))
     print(f"SCBE Browser Tools API starting on http://localhost:{port}")
     print(f"Tools: {len(list_tools())}")

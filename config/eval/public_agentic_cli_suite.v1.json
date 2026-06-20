@@ -1,0 +1,141 @@
+{
+  "schema_version": "scbe_public_agentic_cli_suite_config_v1",
+  "suite_id": "scbe-public-agentic-cli-suite-v1",
+  "claim_policy": {
+    "headline": "No all-around public superiority claim is allowed until at least Terminal-Bench, SWE-bench, and Aider Polyglot official adapters have executed.",
+    "allowed_now": [
+      "GeoSeal CLI governance/control-plane coverage",
+      "local harness readiness",
+      "public adapter readiness"
+    ],
+    "forbidden_now": [
+      "public Terminal-Bench leaderboard parity",
+      "public SWE-bench leaderboard parity",
+      "public Aider Polyglot leaderboard parity",
+      "all-around best coding agent"
+    ]
+  },
+  "tracks": [
+    {
+      "track_id": "geoseal_cli_competitive",
+      "family": "local_cli_surface",
+      "official_url": "repo-native",
+      "description": "Local CLI feature and governance coverage benchmark for GeoSeal against common agentic CLI expectations.",
+      "claim_level": "local_public_evidence",
+      "adapter_status": "wired",
+      "required_for_public_all_around_claim": true,
+      "run_command": [
+        "python",
+        "scripts/benchmark/cli_competitive_benchmark.py",
+        "--json"
+      ],
+      "expected_artifacts": [
+        "artifacts/benchmarks/cli_competitive/cli_competitive_benchmark_latest.json",
+        "artifacts/benchmarks/cli_competitive/cli_competitive_benchmark_latest.md"
+      ],
+      "primary_metric": "scbe.score.passed/scbe.score.total",
+      "pass_threshold": 1.0,
+      "cost_tier": "local-low"
+    },
+    {
+      "track_id": "terminal_bench",
+      "family": "terminal_agent",
+      "official_url": "https://terminalbench.lol/",
+      "description": "Public terminal-task benchmark. This is the closest external proof lane for an agentic command-line interface.",
+      "claim_level": "adapter_readiness_only",
+      "adapter_status": "planned",
+      "required_for_public_all_around_claim": true,
+      "run_command": [
+        "python",
+        "scripts/benchmark/external_agentic_eval_driver.py",
+        "--manifest",
+        "config/eval/external_agentic_eval_tasks.sample.json",
+        "--validate-only"
+      ],
+      "expected_artifacts": [
+        "artifacts/external_agentic_eval/latest_report.json"
+      ],
+      "primary_metric": "official_task_pass_rate",
+      "pass_threshold": null,
+      "cost_tier": "external-medium"
+    },
+    {
+      "track_id": "swe_bench_verified_or_lite",
+      "family": "repo_issue_repair",
+      "official_url": "https://www.swebench.com/original.html",
+      "description": "Public GitHub issue-to-patch benchmark for repository-level repair.",
+      "claim_level": "adapter_readiness_only",
+      "adapter_status": "planned",
+      "required_for_public_all_around_claim": true,
+      "run_command": [
+        "python",
+        "scripts/benchmark/external_agentic_eval_driver.py",
+        "--manifest",
+        "config/eval/external_agentic_eval_tasks.sample.json",
+        "--validate-only"
+      ],
+      "expected_artifacts": [
+        "artifacts/external_agentic_eval/latest_report.json"
+      ],
+      "primary_metric": "official_resolved_rate",
+      "pass_threshold": null,
+      "cost_tier": "external-high"
+    },
+    {
+      "track_id": "aider_polyglot",
+      "family": "polyglot_code_editing",
+      "official_url": "https://aider.chat/docs/leaderboards/",
+      "description": "Public multi-language code editing benchmark across C++, Go, Java, JavaScript, Python, and Rust.",
+      "claim_level": "adapter_readiness_only",
+      "adapter_status": "planned",
+      "required_for_public_all_around_claim": true,
+      "run_command": [
+        "python",
+        "scripts/benchmark/external_agentic_eval_driver.py",
+        "--manifest",
+        "config/eval/external_agentic_eval_tasks.sample.json",
+        "--validate-only"
+      ],
+      "expected_artifacts": [
+        "artifacts/public_agentic_cli_suite/aider_polyglot_adapter_notes.md"
+      ],
+      "primary_metric": "official_percent_correct",
+      "pass_threshold": null,
+      "cost_tier": "external-high"
+    },
+    {
+      "track_id": "vexp_swe_bench",
+      "family": "repo_issue_repair_cost_efficiency",
+      "official_url": "https://github.com/Vexp-ai/vexp-swe-bench",
+      "description": "Public SWE-bench Verified subset harness for comparing coding agents by pass rate, cost per task, duration, and token use.",
+      "claim_level": "adapter_readiness_only",
+      "adapter_status": "planned",
+      "required_for_public_all_around_claim": false,
+      "run_command": [
+        "python",
+        "scripts/benchmark/setup_public_agentic_benchmarks.py",
+        "--dry-run"
+      ],
+      "expected_artifacts": [
+        "artifacts/public_agentic_benchmark_setup/latest_setup.json"
+      ],
+      "primary_metric": "pass_at_1_cost_duration_tokens",
+      "pass_threshold": null,
+      "cost_tier": "external-medium"
+    }
+  ],
+  "required_public_packet_fields": [
+    "git_commit",
+    "dirty_worktree",
+    "track_id",
+    "adapter_status",
+    "claim_level",
+    "run_command",
+    "returncode",
+    "artifacts",
+    "primary_metric",
+    "score",
+    "cost_tier",
+    "limits"
+  ]
+}

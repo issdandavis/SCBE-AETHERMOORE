@@ -1,0 +1,165 @@
+name: Polly Heartbeat Started Notify
+
+# Receives polly_heartbeat_started repository_dispatch events from the
+# Vercel-hosted Stripe webhook. Files an operator issue for the new recurring
+# Governance Heartbeat customer. Live-mode events also email the buyer with
+# the monthly-monitoring intake checklist.
+
+on:
+  repository_dispatch:
+    types: [polly_heartbeat_started]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: polly-heartbeat-started-${{ github.event.client_payload.record.session_id }}
+  cancel-in-progress: false
+
+jobs:
+  notify-buyer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: File a heartbeat-started GitHub issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SESSION_ID: ${{ github.event.client_payload.record.session_id }}
+          SUBSCRIPTION_ID: ${{ github.event.client_payload.record.subscription_id }}
+          AMOUNT_CENTS: ${{ github.event.client_payload.record.amount_total }}
+          CURRENCY: ${{ github.event.client_payload.record.currency }}
+          CONTACT_EMAIL: ${{ github.event.client_payload.record.contact_email }}
+          CONTACT_NAME: ${{ github.event.client_payload.record.contact_name }}
+          LIVEMODE: ${{ github.event.client_payload.record.livemode }}
+        run: |
+          set -euo pipefail
+          existing=$(gh issue list --state all --search "heartbeat started: ${SESSION_ID} in:title" --json number --jq '.[0].number' --repo "${{ github.repository }}")
+          if [[ -n "$existing" && "$existing" != "null" ]]; then
+            echo "issue already exists for session ${SESSION_ID} (#${existing}); skipping"
+            echo "ALREADY_FILED=1" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          if [[ "${CURRENCY,,}" == "usd" && -n "${AMOUNT_CENTS:-}" ]]; then
+            price="\$$(awk "BEGIN { printf \"%.2f\", ${AMOUNT_CENTS}/100 }")/mo"
+          else
+            price="${AMOUNT_CENTS:-?} ${CURRENCY:-?}/mo"
+          fi
+
+          mode_tag="LIVE"
+          if [[ "${LIVEMODE,,}" != "true" ]]; then
+            mode_tag="TEST-MODE"
+          fi
+
+          if ! gh label view heartbeat-started --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            gh label create heartbeat-started --description "Governance Heartbeat subscription started" --color "17C6CF" --repo "${{ github.repository }}"
+          fi
+
+          title="heartbeat started: ${SESSION_ID} (${price}, ${mode_tag})"
+          body=$(cat <<EOF
+          A buyer just started the \$99/month Governance Heartbeat.
+
+          - session id: \`${SESSION_ID}\`
+          - subscription id: \`${SUBSCRIPTION_ID}\`
+          - amount: ${price}
+          - mode: ${mode_tag}
+          - buyer name: ${CONTACT_NAME:-(not provided)}
+          - buyer email: ${CONTACT_EMAIL:-(not provided)}
+
+          **Operator action — within 1 business day:**
+
+          1. Confirm the monitoring intake email landed.
+          2. Ask for the one workflow to monitor monthly.
+          3. Set the first monthly report day and create the recurring operator reminder.
+          EOF
+          )
+          gh issue create \
+            --title "$title" \
+            --body "$body" \
+            --label "heartbeat-started" \
+            --repo "${{ github.repository }}"
+
+      - name: Email the buyer the heartbeat intake checklist
+        if: ${{ env.ALREADY_FILED != '1' && github.event.client_payload.record.livemode == true }}
+        env:
+          SMTP_HOST: ${{ secrets.POLLY_LEAD_SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.POLLY_LEAD_SMTP_PORT }}
+          SMTP_USER: ${{ secrets.POLLY_LEAD_SMTP_USER }}
+          SMTP_PASS: ${{ secrets.POLLY_LEAD_SMTP_PASS }}
+          SMTP_FROM: ${{ secrets.POLLY_LEAD_SMTP_FROM }}
+          SMTP_OPERATOR: ${{ secrets.POLLY_LEAD_SMTP_TO }}
+          PAYLOAD: ${{ toJSON(github.event.client_payload.record) }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${SMTP_HOST:-}" || -z "${SMTP_USER:-}" || -z "${SMTP_PASS:-}" ]]; then
+            echo "SMTP credentials missing; heartbeat email will need manual send (issue is filed)" >&2
+            exit 0
+          fi
+          python3 - <<'PY'
+          import os, ssl, json, smtplib, sys
+          from email.message import EmailMessage
+
+          record = json.loads(os.environ["PAYLOAD"])
+          host = os.environ["SMTP_HOST"]
+          port = int(os.environ.get("SMTP_PORT") or "587")
+          user = os.environ["SMTP_USER"]
+          password = os.environ["SMTP_PASS"]
+          sender = os.environ.get("SMTP_FROM") or user
+          operator_bcc = os.environ.get("SMTP_OPERATOR") or user
+          buyer = record.get("contact_email") or operator_bcc
+          name = record.get("contact_name") or "there"
+
+          subject = f"Your Governance Heartbeat is active (session {record.get('session_id','?')})"
+          body_lines = [
+              f"Hi {name},",
+              "",
+              "Thanks for starting the $99/month Governance Heartbeat.",
+              "I'll reply within one business day to lock the first monitored workflow and monthly report day.",
+              "",
+              "INTAKE CHECKLIST",
+              "  1. The one AI workflow you want watched monthly.",
+              "  2. The current docs, prompts, repo link, or policy notes for that workflow.",
+              "  3. What changed recently or what you expect to change next.",
+              "  4. The preferred day of month for your short report.",
+              "  5. Any prior Snapshot, issue, or report link I should treat as baseline.",
+              "",
+              "MONTHLY DELIVERABLE",
+              "  - One short report: what changed, what risk moved, what to do next.",
+              "  - One evidence row suitable for a buyer, grant reviewer, or internal log.",
+              "  - Optional dataset/training capture for your own records.",
+              "",
+              f"Order ref: session {record.get('session_id','?')}, subscription {record.get('subscription_id','?')}",
+              "",
+              "- Issac Davis",
+              "  https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html#heartbeat",
+          ]
+          msg = EmailMessage()
+          msg["Subject"] = subject
+          msg["From"] = sender
+          msg["To"] = buyer
+          msg["Reply-To"] = sender
+          if operator_bcc and operator_bcc != buyer:
+              msg["Bcc"] = operator_bcc
+          msg.set_content("\n".join(body_lines))
+
+          context = ssl.create_default_context()
+          try:
+              if port == 465:
+                  with smtplib.SMTP_SSL(host, port, context=context, timeout=20) as s:
+                      s.login(user, password)
+                      s.send_message(msg)
+              else:
+                  with smtplib.SMTP(host, port, timeout=20) as s:
+                      s.starttls(context=context)
+                      s.login(user, password)
+                      s.send_message(msg)
+              print(f"heartbeat intake emailed to {buyer}")
+          except Exception as exc:
+              print(
+                  f"SMTP send failed but heartbeat-started issue is already filed: "
+                  f"{type(exc).__name__}: {exc}",
+                  file=sys.stderr,
+              )
+              sys.exit(0)
+          PY

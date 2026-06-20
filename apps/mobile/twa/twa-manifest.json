@@ -1,0 +1,45 @@
+{
+  "_comment": "Bubblewrap input. Pass to: npx -y @bubblewrap/cli init --manifest=https://<your-pwa-host>/manifest.webmanifest. After Bubblewrap initializes, it overwrites this file with full TWA config (signing key path, asset links, etc.). Keep an unsigned copy in version control; keep the generated keystore + passwords OUT of version control.",
+  "packageId": "io.aethermoor.bus",
+  "host": "<your-pwa-host>",
+  "name": "Aethermoor Bus",
+  "launcherName": "Aethermoor",
+  "display": "standalone",
+  "themeColor": "#08101a",
+  "navigationColor": "#08101a",
+  "navigationColorDark": "#08101a",
+  "navigationDividerColor": "#1c2546",
+  "navigationDividerColorDark": "#1c2546",
+  "backgroundColor": "#08101a",
+  "enableNotifications": false,
+  "startUrl": "/",
+  "iconUrl": "<your-pwa-host>/icon-512.png",
+  "maskableIconUrl": "<your-pwa-host>/icon-512.png",
+  "appVersionName": "0.1.0",
+  "appVersionCode": 1,
+  "shortcuts": [],
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "android"
+  },
+  "splashScreenFadeOutDuration": 300,
+  "shareTarget": null,
+  "orientation": "portrait",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "fullScopeUrl": "<your-pwa-host>/",
+  "minSdkVersion": 21,
+  "fallbackType": "customtabs",
+  "alphaDependencies": { "enabled": false },
+  "features": {
+    "locationDelegation": { "enabled": false },
+    "playBilling": { "enabled": false }
+  },
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "_sessionNotes": [
+    "Replace <your-pwa-host> in three places after deploying the PWA.",
+    "First Bubblewrap build prompts to create android.keystore. BACK IT UP — losing it locks you out of shipping updates under this packageId.",
+    "Add android.keystore + android.keystore.passwords to .gitignore, then commit only this twa-manifest.json."
+  ]
+}

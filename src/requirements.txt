@@ -1,7 +1,7 @@
 # SCBE Python Dependencies
 # Mathematical Core (14-layer hyperbolic geometry pipeline)
 
-numpy>=2.0.0
+numpy>=2.4.6
 scipy>=1.14.0
 
 # Testing
@@ -9,6 +9,6 @@ pytest>=8.0.0
 pytest-cov>=5.0.0
 
 # Security - pinned to secure versions
-cryptography>=43.0.0
-urllib3>=2.2.0
-certifi>=2024.7.0
+cryptography>=48.0.1
+urllib3>=2.7.0
+certifi>=2026.5.20

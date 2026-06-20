@@ -23,7 +23,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_TRAIN = REPO_ROOT / "training-data" / "sft" / "coding_system_full_v1_train.sft.jsonl"
 DEFAULT_HOLDOUT = REPO_ROOT / "training-data" / "sft" / "coding_system_full_v1_holdout.sft.jsonl"
@@ -262,7 +261,10 @@ def build_report(train: Path, holdout: Path) -> dict[str, Any]:
         "standard_mapping": {
             "HumanEval_MBPP_style": "Executable function tasks with deterministic assertions.",
             "EvalPlus_style": "Edge-case assertions for empty inputs, zero division, retries, and hash determinism.",
-            "SWE_bench_Terminal_Bench_style": "Reproducible evidence lanes, hashes, task contracts, and holdout split. This is readiness, not a public SWE-bench score.",
+            "SWE_bench_Terminal_Bench_style": (
+                "Reproducible evidence lanes, hashes, task contracts, and holdout split. "
+                "This is readiness, not a public SWE-bench score."
+            ),
         },
         "summary": {
             "records_total": len(rows),
@@ -271,7 +273,8 @@ def build_report(train: Path, holdout: Path) -> dict[str, Any]:
             "python_executable_pass_rate": round(executable_pass / executable_total, 3) if executable_total else 0.0,
             "python_executable_passed": executable_pass,
             "python_executable_total": executable_total,
-            "full_lane_pass": next(item for item in scores if item.toolkit == "scbe_full_coding_system_v1").score == 1.0,
+            "full_lane_pass": next(item for item in scores if item.toolkit == "scbe_full_coding_system_v1").score
+            == 1.0,
         },
         "python_task_results": [asdict(item) for item in python_results],
         "lane_integrity": integrity,
@@ -282,7 +285,10 @@ def build_report(train: Path, holdout: Path) -> dict[str, Any]:
             and next(item for item in scores if item.toolkit == "scbe_full_coding_system_v1").score == 1.0
             else "REVIEW"
         ),
-        "boundary": "This validates the dataset/system lane. It does not claim public HumanEval, MBPP, or SWE-bench leaderboard performance for the trained adapter.",
+        "boundary": (
+            "This validates the dataset/system lane. It does not claim public HumanEval, MBPP, "
+            "or SWE-bench leaderboard performance for the trained adapter."
+        ),
     }
 
 
@@ -301,7 +307,10 @@ def _write_markdown(report: dict[str, Any], path: Path) -> None:
         "|---|---:|---:|---|",
     ]
     for row in report["toolkit_comparison"]:
-        lines.append(f"| `{row['toolkit']}` | `{row['score']}` | `{row['passed_checks']}/{row['total_checks']}` | {row['notes']} |")
+        lines.append(
+            f"| `{row['toolkit']}` | `{row['score']}` "
+            f"| `{row['passed_checks']}/{row['total_checks']}` | {row['notes']} |"
+        )
     lines.extend(
         [
             "",
@@ -328,7 +337,17 @@ def main() -> int:
     md_path = out_dir / f"coding-system-industry-benchmark-{stamp}.md"
     json_path.write_text(json.dumps(report, indent=2, ensure_ascii=True, sort_keys=True), encoding="utf-8")
     _write_markdown(report, md_path)
-    print(json.dumps({"decision": report["decision"], "summary": report["summary"], "json": str(json_path), "markdown": str(md_path)}, indent=2))
+    print(
+        json.dumps(
+            {
+                "decision": report["decision"],
+                "summary": report["summary"],
+                "json": str(json_path),
+                "markdown": str(md_path),
+            },
+            indent=2,
+        )
+    )
     return 0 if report["decision"] == "PASS" else 1
 
 

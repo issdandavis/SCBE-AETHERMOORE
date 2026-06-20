@@ -49,87 +49,235 @@ from src.crypto.multipath_generator import compute_multipath
 COMPLEXITY_MARKERS = {
     # 100-level: basic concepts, definitions, "what is"
     100: [
-        "what is", "how to", "introduction", "basics", "getting started",
-        "hello world", "first steps", "beginner", "tutorial", "overview",
-        "simple", "easy", "fundamental", "basic concept",
+        "what is",
+        "how to",
+        "introduction",
+        "basics",
+        "getting started",
+        "hello world",
+        "first steps",
+        "beginner",
+        "tutorial",
+        "overview",
+        "simple",
+        "easy",
+        "fundamental",
+        "basic concept",
     ],
     # 200-level: applied knowledge, comparisons, tradeoffs
     200: [
-        "compare", "tradeoff", "implement", "design pattern", "architecture",
-        "workflow", "pipeline", "integration", "configuration", "deploy",
-        "optimize", "debug", "refactor", "api", "database", "middleware",
-        "authentication", "authorization", "caching", "scaling",
+        "compare",
+        "tradeoff",
+        "implement",
+        "design pattern",
+        "architecture",
+        "workflow",
+        "pipeline",
+        "integration",
+        "configuration",
+        "deploy",
+        "optimize",
+        "debug",
+        "refactor",
+        "api",
+        "database",
+        "middleware",
+        "authentication",
+        "authorization",
+        "caching",
+        "scaling",
     ],
     # 300-level: theory + practice, proofs, formal methods
     300: [
-        "theorem", "proof", "formal", "invariant", "convergence",
-        "complexity", "asymptotic", "polynomial", "exponential",
-        "bijective", "injective", "surjective", "isomorphism",
-        "eigenvalue", "eigenvector", "manifold", "topology",
-        "lattice", "group theory", "ring", "field theory",
-        "homomorphism", "functor", "category theory", "monad",
-        "cryptographic", "post-quantum", "zero-knowledge",
+        "theorem",
+        "proof",
+        "formal",
+        "invariant",
+        "convergence",
+        "complexity",
+        "asymptotic",
+        "polynomial",
+        "exponential",
+        "bijective",
+        "injective",
+        "surjective",
+        "isomorphism",
+        "eigenvalue",
+        "eigenvector",
+        "manifold",
+        "topology",
+        "lattice",
+        "group theory",
+        "ring",
+        "field theory",
+        "homomorphism",
+        "functor",
+        "category theory",
+        "monad",
+        "cryptographic",
+        "post-quantum",
+        "zero-knowledge",
     ],
     # 400-level: research synthesis, cross-domain, novel frameworks
     400: [
-        "hypothesis", "conjecture", "open problem", "novel",
-        "cross-domain", "interdisciplinary", "emergent", "meta-",
-        "non-trivial", "higher-order", "compositional",
-        "adversarial", "generalization", "transfer learning",
-        "governance", "axiom", "unitarity", "causality",
-        "hyperbolic", "poincare", "harmonic wall",
+        "hypothesis",
+        "conjecture",
+        "open problem",
+        "novel",
+        "cross-domain",
+        "interdisciplinary",
+        "emergent",
+        "meta-",
+        "non-trivial",
+        "higher-order",
+        "compositional",
+        "adversarial",
+        "generalization",
+        "transfer learning",
+        "governance",
+        "axiom",
+        "unitarity",
+        "causality",
+        "hyperbolic",
+        "poincare",
+        "harmonic wall",
     ],
     # 500-level: frontier, unsolved, paradigm-shifting
     500: [
-        "riemann", "zeta function", "p vs np", "quantum gravity",
-        "consciousness", "toroidal", "polyhedral confinement",
-        "phi-scaled", "sacred tongue", "triadic temporal",
-        "multi-path", "polymorphic boundary", "monty hall",
-        "spectral coherence", "spin coherence", "sacred egg",
-        "21-dimensional", "47-dimensional", "world tree",
+        "riemann",
+        "zeta function",
+        "p vs np",
+        "quantum gravity",
+        "consciousness",
+        "toroidal",
+        "polyhedral confinement",
+        "phi-scaled",
+        "sacred tongue",
+        "triadic temporal",
+        "multi-path",
+        "polymorphic boundary",
+        "monty hall",
+        "spectral coherence",
+        "spin coherence",
+        "sacred egg",
+        "21-dimensional",
+        "47-dimensional",
+        "world tree",
     ],
 }
 
 # Topic domains that map to academic departments
 TOPIC_DOMAINS = {
     "computer_science": [
-        "algorithm", "data structure", "compiler", "operating system",
-        "network", "distributed", "database", "concurrency",
-        "machine learning", "neural network", "transformer",
+        "algorithm",
+        "data structure",
+        "compiler",
+        "operating system",
+        "network",
+        "distributed",
+        "database",
+        "concurrency",
+        "machine learning",
+        "neural network",
+        "transformer",
     ],
     "mathematics": [
-        "theorem", "proof", "algebra", "topology", "geometry",
-        "analysis", "number theory", "combinatorics", "statistics",
-        "calculus", "differential", "integral", "manifold",
+        "theorem",
+        "proof",
+        "algebra",
+        "topology",
+        "geometry",
+        "analysis",
+        "number theory",
+        "combinatorics",
+        "statistics",
+        "calculus",
+        "differential",
+        "integral",
+        "manifold",
     ],
     "physics": [
-        "quantum", "relativity", "thermodynamic", "entropy",
-        "hamiltonian", "lagrangian", "wave function", "spin",
-        "coherence", "interference", "diffraction",
+        "quantum",
+        "relativity",
+        "thermodynamic",
+        "entropy",
+        "hamiltonian",
+        "lagrangian",
+        "wave function",
+        "spin",
+        "coherence",
+        "interference",
+        "diffraction",
     ],
     "philosophy": [
-        "epistemology", "ontology", "ethics", "consciousness",
-        "truth", "beauty", "good", "existence", "meaning",
-        "free will", "determinism", "emergence",
+        "epistemology",
+        "ontology",
+        "ethics",
+        "consciousness",
+        "truth",
+        "beauty",
+        "good",
+        "existence",
+        "meaning",
+        "free will",
+        "determinism",
+        "emergence",
     ],
     "security": [
-        "cryptograph", "cipher", "hash", "signature", "key exchange",
-        "zero-knowledge", "post-quantum", "adversarial", "threat",
-        "governance", "compliance", "audit",
+        "cryptograph",
+        "cipher",
+        "hash",
+        "signature",
+        "key exchange",
+        "zero-knowledge",
+        "post-quantum",
+        "adversarial",
+        "threat",
+        "governance",
+        "compliance",
+        "audit",
     ],
     "creative_writing": [
-        "story", "narrative", "character", "world-building", "lore",
-        "magic system", "quest", "guild", "realm", "prophecy",
-        "rune", "tongue", "sacred", "ritual", "myth",
+        "story",
+        "narrative",
+        "character",
+        "world-building",
+        "lore",
+        "magic system",
+        "quest",
+        "guild",
+        "realm",
+        "prophecy",
+        "rune",
+        "tongue",
+        "sacred",
+        "ritual",
+        "myth",
     ],
     "engineering": [
-        "architecture", "pipeline", "deploy", "docker", "kubernetes",
-        "api", "microservice", "monitoring", "ci/cd", "testing",
-        "infrastructure", "scalability",
+        "architecture",
+        "pipeline",
+        "deploy",
+        "docker",
+        "kubernetes",
+        "api",
+        "microservice",
+        "monitoring",
+        "ci/cd",
+        "testing",
+        "infrastructure",
+        "scalability",
     ],
     "interdisciplinary": [
-        "cross-domain", "hybrid", "convergence", "intersection",
-        "analogy", "metaphor", "bridge", "translation", "mapping",
+        "cross-domain",
+        "hybrid",
+        "convergence",
+        "intersection",
+        "analogy",
+        "metaphor",
+        "bridge",
+        "translation",
+        "mapping",
     ],
 }
 
@@ -189,15 +337,23 @@ CONVERGENT_ANGLES = {
 }
 
 OPPOSED_ANGLES = [
-    ("The standard view holds {thesis}. But inverting the assumption reveals {antithesis}. "
-     "The productive tension between these views is where {synthesis} emerges."),
-    ("If {thesis}, then we expect {prediction}. But observed behavior shows {counter_evidence}. "
-     "This forces us to reconsider whether {assumption} actually holds."),
-    ("Most treatments of {topic} assume {assumption}. The convex opposite — {negation} — "
-     "produces a dual framework where {dual_consequence}. Both views are needed."),
-    ("{topic} succeeds because it exploits {mechanism}. But the same mechanism, "
-     "pushed past its convergence radius, produces {failure_mode}. Understanding "
-     "BOTH the success and the failure teaches the boundary."),
+    (
+        "The standard view holds {thesis}. But inverting the assumption reveals {antithesis}. "
+        "The productive tension between these views is where {synthesis} emerges."
+    ),
+    (
+        "If {thesis}, then we expect {prediction}. But observed behavior shows {counter_evidence}. "
+        "This forces us to reconsider whether {assumption} actually holds."
+    ),
+    (
+        "Most treatments of {topic} assume {assumption}. The convex opposite — {negation} — "
+        "produces a dual framework where {dual_consequence}. Both views are needed."
+    ),
+    (
+        "{topic} succeeds because it exploits {mechanism}. But the same mechanism, "
+        "pushed past its convergence radius, produces {failure_mode}. Understanding "
+        "BOTH the success and the failure teaches the boundary."
+    ),
 ]
 
 
@@ -205,16 +361,18 @@ OPPOSED_ANGLES = [
 # Grade classifier
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class GradeAssignment:
     """A record's academic grade-level classification."""
-    grade: int                    # 100, 200, 300, 400, 500
-    stage: str                    # FOUNDATION, EXPLORATION, etc.
-    confidence: float             # 0.0 to 1.0
-    domains: List[str]            # detected topic domains
+
+    grade: int  # 100, 200, 300, 400, 500
+    stage: str  # FOUNDATION, EXPLORATION, etc.
+    confidence: float  # 0.0 to 1.0
+    domains: List[str]  # detected topic domains
     complexity_hits: Dict[int, int]  # grade -> number of marker hits
-    learning_intent: str          # what the learner should gain
-    expansion_eligible: bool      # True if grade >= 300 (expand with angles)
+    learning_intent: str  # what the learner should gain
+    expansion_eligible: bool  # True if grade >= 300 (expand with angles)
 
 
 def classify_grade(text: str) -> GradeAssignment:
@@ -302,6 +460,7 @@ def classify_grade(text: str) -> GradeAssignment:
 # Multi-angle expansion
 # ---------------------------------------------------------------------------
 
+
 def generate_convergent_view(
     text: str,
     grade: GradeAssignment,
@@ -313,7 +472,7 @@ def generate_convergent_view(
 
     primary_domain = grade.domains[0]
     # Pick a convergent domain deterministically
-    h = int(hashlib.md5((record_hash + "convergent").encode()).hexdigest(), 16)
+    h = int(hashlib.sha256((record_hash + "convergent").encode()).hexdigest(), 16)
 
     # Find a domain that ISN'T the primary
     all_domains = list(TOPIC_DOMAINS.keys())
@@ -330,7 +489,7 @@ def generate_convergent_view(
         f"[{grade.grade}-level | {grade.stage} | Convergent cross-domain]\n\n"
         f"The following concept from {primary_domain.replace('_', ' ')} also appears "
         f"in {conv_domain.replace('_', ' ')}. Explain the convergence.\n\n"
-        f"Original framing: \"{topic_excerpt}...\"\n\n"
+        f'Original framing: "{topic_excerpt}..."\n\n'
         f"Learning objective: {stage_verbs.split(', ')[0]} the structural parallel "
         f"between the {primary_domain.replace('_', ' ')} and "
         f"{conv_domain.replace('_', ' ')} perspectives."
@@ -340,25 +499,25 @@ def generate_convergent_view(
     if grade.grade >= 500:
         depth = "frontier"
         style = (
-            f"At the research frontier, the convergence between "
+            "At the research frontier, the convergence between "
             f"{primary_domain.replace('_', ' ')} and {conv_domain.replace('_', ' ')} "
-            f"is not metaphorical — it is structural. Both disciplines arrive at "
-            f"the same formal object through different construction paths.\n\n"
+            "is not metaphorical — it is structural. Both disciplines arrive at "
+            "the same formal object through different construction paths.\n\n"
         )
     elif grade.grade >= 400:
         depth = "graduate"
         style = (
             f"A graduate-level analysis reveals that {primary_domain.replace('_', ' ')} "
             f"and {conv_domain.replace('_', ' ')} share an underlying categorical structure. "
-            f"The morphisms between them preserve the essential properties.\n\n"
+            "The morphisms between them preserve the essential properties.\n\n"
         )
     elif grade.grade >= 300:
         depth = "advanced_undergrad"
         style = (
-            f"At the advanced undergraduate level, we can see that "
+            "At the advanced undergraduate level, we can see that "
             f"{primary_domain.replace('_', ' ')} and {conv_domain.replace('_', ' ')} "
-            f"approach the same problem from different starting axioms, yet arrive "
-            f"at compatible conclusions.\n\n"
+            "approach the same problem from different starting axioms, yet arrive "
+            "at compatible conclusions.\n\n"
         )
     else:
         return None  # Only expand 300+
@@ -375,11 +534,11 @@ def generate_convergent_view(
         f"In {primary_domain.replace('_', ' ')}, these represent operational primitives. "
         f"In {conv_domain.replace('_', ' ')}, the same structure manifests as "
         f"{'constraint surfaces' if conv_domain == 'mathematics' else 'behavioral invariants' if conv_domain == 'physics' else 'design patterns' if conv_domain == 'engineering' else 'narrative arcs' if conv_domain == 'creative_writing' else 'epistemological commitments' if conv_domain == 'philosophy' else 'threat boundaries' if conv_domain == 'security' else 'applied frameworks'}. "
-        f"The convergence is productive because it means insights from either domain "
-        f"transfer directly — a proof in one becomes an implementation guide in the other.\n\n"
-        f"This cross-domain alignment is not coincidence. It reflects the fact that "
-        f"both disciplines are modeling the same underlying structure: the relationship "
-        f"between constraint, freedom, and optimal paths through high-dimensional spaces."
+        "The convergence is productive because it means insights from either domain "
+        "transfer directly — a proof in one becomes an implementation guide in the other.\n\n"
+        "This cross-domain alignment is not coincidence. It reflects the fact that "
+        "both disciplines are modeling the same underlying structure: the relationship "
+        "between constraint, freedom, and optimal paths through high-dimensional spaces."
     )
 
     trit = compute_trit_signal(user_content[:256])
@@ -415,7 +574,7 @@ def generate_opposed_view(
         return None
 
     primary_domain = grade.domains[0]
-    h = int(hashlib.md5((record_hash + "opposed").encode()).hexdigest(), 16)
+    h = int(hashlib.sha256((record_hash + "opposed").encode()).hexdigest(), 16)
     OPPOSED_ANGLES[h % len(OPPOSED_ANGLES)]
 
     topic_excerpt = text[:120].strip()
@@ -423,11 +582,11 @@ def generate_opposed_view(
 
     user_content = (
         f"[{grade.grade}-level | {grade.stage} | Convexly opposed]\n\n"
-        f"Present the inverse thesis of the following claim, then show how "
-        f"the tension between thesis and antithesis produces a deeper understanding.\n\n"
-        f"Claim: \"{topic_excerpt}...\"\n\n"
+        "Present the inverse thesis of the following claim, then show how "
+        "the tension between thesis and antithesis produces a deeper understanding.\n\n"
+        f'Claim: "{topic_excerpt}..."\n\n'
         f"Learning objective: {stage_verbs.split(', ')[-1]} the productive tension "
-        f"between the claim and its negation."
+        "between the claim and its negation."
     )
 
     # Build the opposed analysis
@@ -440,52 +599,52 @@ def generate_opposed_view(
             f"The claim asserts that {key_claim} provides the correct frame. "
             f"The convex opposite — that {opposing} is the fundamental object, "
             f"and {key_claim} is merely a projection — deserves equal formal treatment.\n\n"
-            f"Thesis: The original framing succeeds because it privileges "
-            f"the structure that is locally observable. Within its convergence radius, "
-            f"every prediction checks out.\n\n"
-            f"Antithesis: But the same structure, examined from the dual perspective, "
-            f"reveals that what appeared fundamental is actually derived. "
-            f"The opposing view has its own convergence radius, and where the two "
-            f"radii overlap is precisely where the deepest insights live.\n\n"
-            f"Synthesis: The productive move is not to pick a side but to "
-            f"characterize the BOUNDARY between the two convergence regions. "
-            f"This boundary is a polymorphic zone — the exact territory where "
-            f"the multipath generator finds its highest Monty Hall advantage. "
-            f"Both thesis and antithesis are correct within their domains; "
-            f"the curriculum value is in learning to navigate the transition.\n\n"
-            f"At the research frontier, the ability to hold two convexly opposed "
-            f"views simultaneously — and to identify which one applies given "
-            f"specific boundary conditions — is the definition of expertise."
+            "Thesis: The original framing succeeds because it privileges "
+            "the structure that is locally observable. Within its convergence radius, "
+            "every prediction checks out.\n\n"
+            "Antithesis: But the same structure, examined from the dual perspective, "
+            "reveals that what appeared fundamental is actually derived. "
+            "The opposing view has its own convergence radius, and where the two "
+            "radii overlap is precisely where the deepest insights live.\n\n"
+            "Synthesis: The productive move is not to pick a side but to "
+            "characterize the BOUNDARY between the two convergence regions. "
+            "This boundary is a polymorphic zone — the exact territory where "
+            "the multipath generator finds its highest Monty Hall advantage. "
+            "Both thesis and antithesis are correct within their domains; "
+            "the curriculum value is in learning to navigate the transition.\n\n"
+            "At the research frontier, the ability to hold two convexly opposed "
+            "views simultaneously — and to identify which one applies given "
+            "specific boundary conditions — is the definition of expertise."
         )
     elif grade.grade >= 400:
         assistant_content = (
             f"The standard treatment presents {key_claim} as settled. "
-            f"A graduate seminar should challenge this.\n\n"
-            f"The thesis succeeds under specific assumptions that are rarely stated: "
-            f"continuity, finite dimensionality, and the existence of a unique optimum. "
-            f"Relaxing any of these assumptions produces a different optimal strategy.\n\n"
+            "A graduate seminar should challenge this.\n\n"
+            "The thesis succeeds under specific assumptions that are rarely stated: "
+            "continuity, finite dimensionality, and the existence of a unique optimum. "
+            "Relaxing any of these assumptions produces a different optimal strategy.\n\n"
             f"The antithesis — that {opposing} provides a more robust foundation — "
-            f"is not merely contrarian. It emerges naturally when we consider edge cases "
-            f"where the original assumptions break down.\n\n"
-            f"The critique-level insight: the value of the antithesis is not that it "
-            f"is correct, but that it MAPS the failure modes of the thesis. "
-            f"Together, thesis and antithesis form a covering of the problem space "
-            f"that neither achieves alone."
+            "is not merely contrarian. It emerges naturally when we consider edge cases "
+            "where the original assumptions break down.\n\n"
+            "The critique-level insight: the value of the antithesis is not that it "
+            "is correct, but that it MAPS the failure modes of the thesis. "
+            "Together, thesis and antithesis form a covering of the problem space "
+            "that neither achieves alone."
         )
     else:  # 300
         assistant_content = (
             f"The claim centers on {key_claim}. To understand it deeply, we need "
-            f"to construct its strongest counter-argument.\n\n"
-            f"The opposing view would argue that the priorities are reversed — "
-            f"what the original claim treats as foundational is actually derivative, "
-            f"and what it treats as secondary is the load-bearing structure.\n\n"
-            f"This tension is productive. In advanced coursework, you learn more "
-            f"from the boundaries between valid frameworks than from either framework "
-            f"alone. The synthesis emerges when you can articulate WHEN each view "
-            f"applies and WHY the boundary falls where it does.\n\n"
-            f"Exercise: Identify two concrete scenarios — one where the original "
-            f"claim is clearly correct, and one where the opposing view wins. "
-            f"The conditions that distinguish them ARE the learning target."
+            "to construct its strongest counter-argument.\n\n"
+            "The opposing view would argue that the priorities are reversed — "
+            "what the original claim treats as foundational is actually derivative, "
+            "and what it treats as secondary is the load-bearing structure.\n\n"
+            "This tension is productive. In advanced coursework, you learn more "
+            "from the boundaries between valid frameworks than from either framework "
+            "alone. The synthesis emerges when you can articulate WHEN each view "
+            "applies and WHY the boundary falls where it does.\n\n"
+            "Exercise: Identify two concrete scenarios — one where the original "
+            "claim is clearly correct, and one where the opposing view wins. "
+            "The conditions that distinguish them ARE the learning target."
         )
 
     trit = compute_trit_signal(user_content[:256])
@@ -519,7 +678,7 @@ def generate_orthogonal_view(
         return None  # Only for graduate+ level
 
     primary_domain = grade.domains[0]
-    h = int(hashlib.md5((record_hash + "orthogonal").encode()).hexdigest(), 16)
+    h = int(hashlib.sha256((record_hash + "orthogonal").encode()).hexdigest(), 16)
 
     # Pick the most DISTANT domain
     distance_map = {
@@ -539,11 +698,11 @@ def generate_orthogonal_view(
 
     user_content = (
         f"[{grade.grade}-level | {grade.stage} | Orthogonal mapping]\n\n"
-        f"Find the structural isomorphism between the following "
+        "Find the structural isomorphism between the following "
         f"{primary_domain.replace('_', ' ')} concept and an analogous structure "
         f"in {ortho_domain.replace('_', ' ')}.\n\n"
-        f"Source concept: \"{topic_excerpt}...\"\n\n"
-        f"This is not metaphor — identify the formal correspondence."
+        f'Source concept: "{topic_excerpt}..."\n\n'
+        "This is not metaphor — identify the formal correspondence."
     )
 
     words = [w for w in text.split() if len(w) > 5 and w.isalpha()][:4]
@@ -555,36 +714,36 @@ def generate_orthogonal_view(
             f"and {ortho_domain.replace('_', ' ')} runs deeper than analogy.\n\n"
             f"The source concepts — {concepts} — have direct correspondences:\n\n"
             f"In {primary_domain.replace('_', ' ')}, the operative structure is a "
-            f"constrained optimization over a high-dimensional space. "
+            "constrained optimization over a high-dimensional space. "
             f"In {ortho_domain.replace('_', ' ')}, the SAME structure appears as "
             f"{'narrative tension resolving through character choices' if ortho_domain == 'creative_writing' else 'ethical dilemmas navigated through principled reasoning' if ortho_domain == 'philosophy' else 'system reliability achieved through redundancy and fault isolation' if ortho_domain == 'engineering' else 'proof construction through axiom selection' if ortho_domain == 'mathematics' else 'threat surfaces defended through layered boundaries' if ortho_domain == 'security' else 'the intersection of multiple disciplinary lenses'}.\n\n"
-            f"The isomorphism preserves:\n"
-            f"- The dimensionality of the choice space\n"
-            f"- The existence of local optima (false resolutions)\n"
-            f"- The role of constraints in making the problem tractable\n"
-            f"- The phase transition between solvable and intractable regimes\n\n"
-            f"This is not a teaching trick. The two domains are modeling the same "
-            f"abstract object. When you solve a hard problem in one, you get the "
-            f"solution in the other for free — if you can identify the morphism.\n\n"
-            f"The research frontier here: systematically cataloging these cross-domain "
-            f"isomorphisms creates a transfer learning substrate that no single-domain "
-            f"training can match. The SCBE trit curriculum naturally detects these "
-            f"structural correspondences as polymorphic boundary crossings."
+            "The isomorphism preserves:\n"
+            "- The dimensionality of the choice space\n"
+            "- The existence of local optima (false resolutions)\n"
+            "- The role of constraints in making the problem tractable\n"
+            "- The phase transition between solvable and intractable regimes\n\n"
+            "This is not a teaching trick. The two domains are modeling the same "
+            "abstract object. When you solve a hard problem in one, you get the "
+            "solution in the other for free — if you can identify the morphism.\n\n"
+            "The research frontier here: systematically cataloging these cross-domain "
+            "isomorphisms creates a transfer learning substrate that no single-domain "
+            "training can match. The SCBE trit curriculum naturally detects these "
+            "structural correspondences as polymorphic boundary crossings."
         )
     else:  # 400
         assistant_content = (
-            f"At graduate level, we move beyond surface analogies to formal mappings.\n\n"
+            "At graduate level, we move beyond surface analogies to formal mappings.\n\n"
             f"The concepts {concepts} in {primary_domain.replace('_', ' ')} correspond to "
             f"specific structures in {ortho_domain.replace('_', ' ')}:\n\n"
-            f"The key insight is that both domains face the same fundamental challenge: "
-            f"navigating a space where multiple valid states exist, and the choice between "
-            f"them depends on context that isn't fully determined by the local information.\n\n"
+            "The key insight is that both domains face the same fundamental challenge: "
+            "navigating a space where multiple valid states exist, and the choice between "
+            "them depends on context that isn't fully determined by the local information.\n\n"
             f"In {primary_domain.replace('_', ' ')}, this manifests as "
             f"{'algorithmic complexity' if primary_domain == 'computer_science' else 'mathematical underdetermination' if primary_domain == 'mathematics' else 'quantum superposition' if primary_domain == 'physics' else 'narrative ambiguity' if primary_domain == 'creative_writing' else 'ethical dilemmas' if primary_domain == 'philosophy' else 'attack surface analysis' if primary_domain == 'security' else 'design tradeoffs'}.\n\n"
             f"In {ortho_domain.replace('_', ' ')}, the same structure appears as "
             f"{'the reader holding multiple interpretations simultaneously' if ortho_domain == 'creative_writing' else 'the limits of formal provability' if ortho_domain == 'mathematics' else 'engineering judgment under uncertainty' if ortho_domain == 'engineering' else 'epistemological humility' if ortho_domain == 'philosophy' else 'defense in depth' if ortho_domain == 'security' else 'cross-cutting concerns'}.\n\n"
-            f"The graduate exercise: construct an explicit dictionary between the two "
-            f"domains. Every term in one should have a precise counterpart in the other."
+            "The graduate exercise: construct an explicit dictionary between the two "
+            "domains. Every term in one should have a precise counterpart in the other."
         )
 
     trit = compute_trit_signal(user_content[:256])
@@ -612,6 +771,7 @@ def generate_orthogonal_view(
 # ---------------------------------------------------------------------------
 # Main pipeline
 # ---------------------------------------------------------------------------
+
 
 def main():
     input_path = ROOT / "training-data" / "sft" / "claude_conversations_sft.jsonl"
@@ -657,7 +817,7 @@ def main():
 
         # Classify
         grade = classify_grade(combined)
-        record_hash = hashlib.md5(combined[:256].encode()).hexdigest()
+        record_hash = hashlib.sha256(combined[:256].encode()).hexdigest()
 
         # Add grade metadata to record
         record["metadata"]["collegiate"] = {
@@ -681,7 +841,7 @@ def main():
         if (i + 1) % 500 == 0:
             print(f"  [{i + 1}/{len(records)}] classified...")
 
-    print(f"  Grade distribution:")
+    print("  Grade distribution:")
     for g in sorted(grade_dist.keys()):
         pct = grade_dist[g] / len(records) * 100
         bar = "#" * int(pct / 2)

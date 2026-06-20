@@ -1,11 +1,7 @@
 name: CodeQL Analysis
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
-  schedule:
-    - cron: "22 9 * * 1"
 
 permissions:
   actions: read

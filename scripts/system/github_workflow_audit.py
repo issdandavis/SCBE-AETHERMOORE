@@ -9,6 +9,7 @@ Usage:
     python scripts/system/github_workflow_audit.py
     python scripts/system/github_workflow_audit.py --fix   # attempt auto-fixes
     python scripts/system/github_workflow_audit.py --json   # machine-readable output
+    python scripts/system/github_workflow_audit.py --emit-sft  # also emit SFT pairs
 """
 
 from __future__ import annotations
@@ -36,7 +37,7 @@ class WorkflowHealth:
     name: str
     category: str
     state: str  # active/disabled
-    last_conclusion: str  # success/failure/skipped/None
+    last_conclusion: str  # success/failure/skipped/not_seen_recently/None
     last_branch: str
     last_run_id: int | None
     failure_reason: str | None
@@ -95,7 +96,8 @@ def audit_local_workflows(repo_root: Path, reason: str | None = None) -> list[Wo
                 last_run_id=None,
                 failure_reason=reason,
                 triage="yellow",
-                fix_suggestion="Live GitHub workflow status unavailable from this shell; local workflow inventory generated instead.",
+                fix_suggestion="Live GitHub workflow status unavailable from this shell; "
+                "local workflow inventory generated instead.",
             )
         )
     return results
@@ -110,12 +112,19 @@ def get_workflows() -> list[dict]:
 def get_recent_runs(limit: int = 30) -> list[WorkflowRun]:
     """Get recent workflow runs."""
     raw = run_gh(
-        ["run", "list", "--limit", str(limit), "--json", "databaseId,status,conclusion,name,headBranch,createdAt"]
+        [
+            "run",
+            "list",
+            "--limit",
+            str(limit),
+            "--json",
+            "databaseId,status,conclusion,name,workflowName,headBranch,createdAt",
+        ]
     )
     runs = json.loads(raw) if raw else []
     return [
         WorkflowRun(
-            name=r["name"],
+            name=r.get("workflowName") or r["name"],
             branch=r.get("headBranch", ""),
             status=r.get("status", ""),
             conclusion=r.get("conclusion", ""),
@@ -129,7 +138,7 @@ def get_recent_runs(limit: int = 30) -> list[WorkflowRun]:
 def get_failure_log(run_id: int) -> str:
     """Get the failed log for a run."""
     try:
-        return run_gh(["run", "view", str(run_id), "--log-failed"])[:2000]
+        return run_gh(["run", "view", str(run_id), "--log-failed"])[:50000]
     except Exception:
         return ""
 
@@ -151,6 +160,24 @@ def triage_failure(name: str, log: str) -> tuple[str, str]:
         return "red", "Permission denied — check workflow permissions and secrets"
     if "rate limit" in log_lower:
         return "yellow", "Rate limited — add retry logic or reduce API calls"
+    if "dependabot" in log_lower and ("doesn't have access" in log_lower or "does not have access" in log_lower):
+        return (
+            "yellow",
+            "Dependabot cannot access one dependency source — "
+            "remove the private/unreachable source or grant Dependabot access",
+        )
+    if "failed to request additional scope" in log_lower:
+        return (
+            "yellow",
+            "Dependabot failed while requesting repository scope — "
+            "fix dependency source visibility or Dependabot permissions",
+        )
+    if "either the repo doesn't exist" in log_lower or "repository not found" in log_lower:
+        return (
+            "yellow",
+            "Dependency source repository is missing or inaccessible — "
+            "fix the dependency URL/source or repository permissions",
+        )
     if "assertionerror" in log_lower or "assert" in log_lower:
         return "red", "Test assertion failure — real bug, needs code fix"
     if "out of memory" in log_lower or "oom" in log_lower:
@@ -188,12 +215,13 @@ def audit() -> list[WorkflowHealth]:
                     name=name,
                     category=categorize_workflow_name(name),
                     state=state,
-                    last_conclusion="never_run",
+                    last_conclusion="not_seen_recently",
                     last_branch="",
                     last_run_id=None,
                     failure_reason=None,
                     triage="yellow",
-                    fix_suggestion="Workflow has never run — trigger manually or check triggers",
+                    fix_suggestion="No run found in the recent audit window — "
+                    "trigger manually if this workflow should still be active",
                 )
             )
             continue
@@ -295,6 +323,7 @@ def print_dashboard(results: list[WorkflowHealth]):
 def main():
     args = sys.argv[1:]
     as_json = "--json" in args
+    emit_sft = "--emit-sft" in args or "--push" in args
 
     print("Auditing GitHub workflows...")
     results = audit()
@@ -340,42 +369,47 @@ def main():
         )
     print(f"\nSaved to {out_dir / 'workflow_audit.json'}")
 
-    # Generate SFT training pairs from audit results
-    sft_dir = Path(__file__).resolve().parent.parent.parent / "training" / "sft_records"
-    sft_dir.mkdir(parents=True, exist_ok=True)
-    sft_file = sft_dir / "sft_workflow_audit.jsonl"
-    sft_pairs = []
-    for r in results:
-        pair = {
-            "instruction": f"What is the status of the '{r.name}' GitHub workflow?",
-            "output": json.dumps(
-                {
-                    "name": r.name,
-                    "category": r.category,
-                    "conclusion": r.last_conclusion,
-                    "triage": r.triage,
-                    "fix": r.fix_suggestion,
-                }
-            ),
-            "label": f"workflow_audit_{r.triage}",
-            "timestamp": time.time(),
-        }
-        sft_pairs.append(pair)
-
-        # Generate fix-oriented SFT for failures
-        if r.triage in ("red", "yellow") and r.fix_suggestion:
-            fix_pair = {
-                "instruction": f"The '{r.name}' workflow failed with conclusion '{r.last_conclusion}'. How do I fix it?",
-                "output": r.fix_suggestion,
-                "label": f"workflow_fix_{r.triage}",
+    # Generate SFT training pairs only when requested. CI/premerge triage should
+    # be read-only with respect to training-data surfaces unless explicitly asked.
+    sft_file = Path(__file__).resolve().parent.parent.parent / "training" / "sft_records" / "sft_workflow_audit.jsonl"
+    if emit_sft:
+        sft_file.parent.mkdir(parents=True, exist_ok=True)
+        sft_pairs = []
+        for r in results:
+            pair = {
+                "instruction": f"What is the status of the '{r.name}' GitHub workflow?",
+                "output": json.dumps(
+                    {
+                        "name": r.name,
+                        "category": r.category,
+                        "conclusion": r.last_conclusion,
+                        "triage": r.triage,
+                        "fix": r.fix_suggestion,
+                    }
+                ),
+                "label": f"workflow_audit_{r.triage}",
                 "timestamp": time.time(),
             }
-            sft_pairs.append(fix_pair)
+            sft_pairs.append(pair)
 
-    with open(sft_file, "w") as f:
-        for pair in sft_pairs:
-            f.write(json.dumps(pair) + "\n")
-    print(f"Generated {len(sft_pairs)} SFT training pairs at {sft_file}")
+            # Generate fix-oriented SFT for failures
+            if r.triage in ("red", "yellow") and r.fix_suggestion:
+                fix_pair = {
+                    "instruction": (
+                        f"The '{r.name}' workflow failed with conclusion '{r.last_conclusion}'. How do I fix it?"
+                    ),
+                    "output": r.fix_suggestion,
+                    "label": f"workflow_fix_{r.triage}",
+                    "timestamp": time.time(),
+                }
+                sft_pairs.append(fix_pair)
+
+        with open(sft_file, "w") as f:
+            for pair in sft_pairs:
+                f.write(json.dumps(pair) + "\n")
+        print(f"Generated {len(sft_pairs)} SFT training pairs at {sft_file}")
+    else:
+        print("Skipped SFT generation; pass --emit-sft or --push to write training pairs.")
 
     # Push to HuggingFace if --push flag
     if "--push" in args:

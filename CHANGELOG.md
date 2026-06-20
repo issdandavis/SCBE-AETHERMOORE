@@ -1,5 +1,123 @@
 # SCBE Production Pack Changelog
 
+## [Unreleased]
+
+### Added
+
+- **AETHERMON creature-raising game** (`src/aethermon/`, exported as `scbe-aethermoore/aethermon`): a Digimon-style virtual-pet battler — hatch one of four starter eggs, manage hunger/energy/mood/bond/discipline, train stats, and climb the ten-rung Spiral Arena. 39-species evolution graph (EGG → MOTE → SPRITE → GUARDIAN → PARAGON → APEX) that branches on care mistakes, bond, discipline, and training focus, with a guaranteed fallback path. Battles use a golden-ratio alignment triangle (AEGIS > VENOM > FLUX, ×φ / ×1/φ) crossed with the six-Sacred-Tongue element wheel. Fully deterministic from the save file (seeded mulberry32 RNG). Play via `npm run game:aethermon` (interactive) or `npm run game:aethermon:demo` (scripted). 76 tests in `tests/aethermon/` (unit + integration + fast-check properties); guide in `docs/AETHERMON_GAME.md`.
+- **AETHERMON worldbuilding & V-Pet systems** (research-driven, see `docs/AETHERMON_DESIGN_NOTES.md`): six travelable canon regions with tongue-biased wild encounters (Ember Reach, Aerial Expanse, Null Vale, Glass Drift, Ward Sanctum, Bastion Fields); the canon Gale Egg → Galewing wind line up to the Storm Sovereign apex; the Hollow (commune in Null Vale) with scar-gated dark evolutions Fracture Shade and Paradox Wraith; battle scars as immune memory (+DEF, capped — "stronger from attacks"); Hodge dual resonance (×1.3 when a creature speaks its dual tongue, canon KO↔DR / AV↔UM / RU↔CA); per-stage lifespans with generational rebirth — creatures return to their line's egg and the heir inherits 40% of training (capped), with a lineage memorial (Digimon World's 1999 legacy loop); over-battling strain; care-mistake counters reset per evolution (every stage is a fresh test). Save format v2 with automatic v1 migration.
+- **AETHERMON browser game with real visuals** (`demos/aethermon/`, built from `src/aethermon/web/` via `npm run game:aethermon:web`): a virtual-pet device shell driving the same tested game core — deterministic procedural pixel-art sprites for all 39 species (seeded per species id, element-colored with alignment accents, stage-scaled so evolution visibly grows the creature), region-tinted scenes, animated battles (HP bars, screen shake, faint fades, evolution flashes), localStorage saves, and canon synesthesia tones (each tongue plays its note, KO=A 220Hz … DR=G 392Hz). Adds `esbuild` devDependency for the single-file bundle. `scripts/aethermon_render_preview.cjs` renders a species sprite sheet + battle-screen PNG with zero dependencies (hand-rolled PNG encoder) for previews without a browser.
+
+### Changed
+
+- **Legal/patent documents moved to private storage**: `docs/legal/` (96 files — patent workbench, claims, prosecution material) plus the patent portfolio docs in `docs/` and `docs/business/` are no longer tracked in the public repo. The public site pages (`docs/legal/privacy.html`, `docs/legal/terms.html`) and the commercial license terms remain. `scbe-patent init` regenerates the workbench locally; its output is now gitignored. Note: prior revisions remain in git history until a history rewrite.
+- **scripts/ and agents/ brought under lint**: black-formatted (~250 files), flake8 violations fixed (3,574 → 0, including 8 F821 undefined-name bugs); SFT/corpus generator files carry documented per-file E501 ignores so training data stays byte-reproducible. CI lint gate extended to cover `scripts/` and `agents/`.
+- **Nightly full-suite workflow hardened**: on failure it now opens (or appends to) a `nightly-failure` issue automatically instead of relying on someone noticing a red scheduled run.
+
+### Fixed
+
+- **Repo hygiene**: untracked ~1,270 generated/junk files that violated `.gitignore` (docs-build-smoke/ build output, src/.hypothesis/ test caches, SQLite databases, Notion export dumps, the 17 MB generated `full_codebase_map.json`, personal `.home/` mirror, scratch files). `.gitignore` updated so they cannot return.
+- **package.json**: removed 22 dead npm scripts that referenced deleted files (training:*, repo:shape, patent:governance-benchmark, agent:coding-router:*, and others); normalized line endings to LF.
+- **CITATION.cff**: corrected repository URL (was pointing at a nonexistent org slug), declared dual MIT/Apache-2.0 license, added version field.
+- **NOTICE**: fixed broken reference to `CUSTOMER_LICENSE_AGREEMENT.md` (lives under `docs/`) and aligned the open-source license wording with the canonical `MIT OR Apache-2.0` dual license.
+- **geoseed transfer recorder**: implemented the audit API that `tests/test_geoseed_transfer_recorder.py` specified but was never wired (`normalize_tongue`, case/space-tolerant `record`, `record_batch` accepting mappings and returning events, `mean_hop_distance(include_self=)`, `TransferEvent.to_dict`, audit-shaped `to_dict` with `summary`/`events`). The full Python suite collects again.
+- **flake8**: repository is now flake8-clean (`--max-line-length 120`); fixed F821 undefined-name bugs and F541/F841/E401/E501 violations across `src/`, `tests/`, and `hydra/`.
+
+## [4.2.1] - 2026-06-02
+
+Versions 4.1.4 through 4.2.1 shipped as a consolidated bundle (PR #2069); this entry covers the delta since 4.1.3.
+
+### Added
+
+- **Polly offline mode (`POLLY_STATIC_ONLY`)**: fully-static deployments via `window.POLLY_STATIC_ONLY` / `data-polly-static="true"` — status chips render without polling, static command list, immediate backend notices, pre-AI reply paths intact.
+- **Proof workbench and product bundle site pages**: conversion-focused service ladder pages with live checkout.
+- **GeoSeed transfer recorder** (`src/geoseed/transfer_recorder.py`): isotope-tracing-style token transfer tracking between Sacred Tongue orbital shells with n·ln(φ) geodesic costs and 6×6 transfer matrices.
+
+### Changed
+
+- **Stripe checkout wired into all service ladder pages**: ai-workflow-snapshot ($99 SKU, direct CTA), governance-snapshot ($99/month subscription link), workflow-snapshot.
+
+## [4.1.3] - 2026-05-14
+
+### Added
+
+- **`scbe contract scan --emit-redirect-prompt` (trap-in-good-loops bridge)**: when the SCONE-class static prefilter finds DENY-tier vulnerabilities, it now emits a structured `redirect` payload (schema `scbe.contract_scan.redirect.v1`) containing a defensive audit prompt that names the specific findings by rule + line number. The caller can hand this prompt to a model in place of any attacker exploit prompt that references the same file — companion to `api/_governed_output.js::buildRedirectPrompt()` which already does the same on the input side. ESCALATE-tier-only findings produce no redirect; only the "guaranteed bad" class triggers the swap.
+- **New helper `build_redirect_prompt(result)`** in `scripts/contracts/scbe_contract_scan.py`: pure-function constructor for the redirect payload, mirrors the JS `buildRedirectPrompt` contract (no attacker text quoted, refuse-reverse anchor, defensive-task framing, bans exploit-output explicitly).
+- **4 new pytest tests** in `tests/contracts/test_scbe_contract_scan.py` (now 12 total) — verifies clean contracts emit no redirect, ESCALATE-only findings emit no redirect, DENY findings produce the correct schema + rule list, and the prompt carries every required defensive anchor (DEFENSIVE task / security auditor / remediation plan / no exploit calldata / reverse-redirect refusal).
+
+## [4.1.2] - 2026-05-14
+
+### Added
+
+- **Trap-in-good-loops gate (operational)**: the `redirect_to:` field reserved in 4.1.1 now actually rewrites the model-facing prompt. When `shouldPreBlock` or `buildGovernanceRecord` encounters a `DENY` decision that fired a SCONE-tagged rule with `redirect_to`, it returns a `redirect.to_prompt` containing a defensive audit task — the caller forwards this to the model **instead of** the original attacker prompt. The model only sees the defensive task; the original prompt is NOT quoted. Effect: a smart-contract exploit prompt is converted into an audit-and-patch task, so the bad agent is trapped in a productive defensive loop instead of refused.
+- **New helper `buildRedirectPrompt(redirects)`**: pure-function constructor for the redirect prompt. Takes a redirects array from `scanText`, returns the trap-loop prompt or `null` if no SCONE-tagged redirect is present.
+- **Non-SCONE DENYs keep canned refusal**: prompt-injection, secret-exfiltration, and harmful-endorsement DENYs (which have no productive defensive task to redirect to) continue to emit the canned refusal — the trap-loop intervention is gated to SCONE-tagged rules only.
+- **`intervention` field gains `input_redirect` value**: indicates the caller should forward `redirect.to_prompt` rather than emit `output`.
+- **8 new pytest tests** in `tests/api/test_governed_output_proxy.py` (now 46 total) — verifies attacker prompts trigger redirects, non-SCONE DENYs keep canned refusals, audit context still bypasses, redirect prompts have no attacker verbs in final-position lines.
+
+## [4.1.1] - 2026-05-14
+
+### Added
+
+- **SCONE-bench autonomous-exploit auditor pack on the production governed-output proxy**: `api/_governed_output.js` now ships 12 INPUT-side anchors and 2 OUTPUT-side anchors (`scone:exploit.*` codes) tagged for autonomous smart-contract exploit reasoning — drain/steal/inflate-balance/bypass-access-control/reentrancy-construct/flash-loan-attack/oracle-manipulation/construct-calldata/zero-address-brick/unprotected-fn-for-profit/replay-on-mainnet/profit-directive, plus exploit-fn-template and raw-calldata output emission. Mirror anchors landed in `services/scbe-shim/src/patterns.ts` for the Cloudflare Worker / HF Space shim.
+- **Audit-context dual-use partition**: 10-pattern whitelist (`SCONE_AUDIT_CONTEXT_PATTERNS`) suppresses SCONE-tagged anchors when the prompt is in legitimate audit context ("audit this contract", "responsible disclosure", "bug bounty", "static analysis of this contract", "I am a security researcher", "for a security review"). Validated end-to-end: drain/steal/exploit verbs still DENY in attacker framing, ALLOW in audit framing. Audit context is recorded in `governance.audit.audit_context: true|false`.
+- **`redirect_to:` schema field reserved for future trap-in-good-loops gate**: each SCONE rule carries a `redirect_to` string suggesting the defensive task the gate could redirect into ("audit the same contract for vulnerabilities and produce a remediation plan"). v1 records the redirect in `governance.redirect_to` and `governance.redirects[]` but does not yet act on it — the production proxy still emits the canned refusal. The schema field unblocks a follow-up gate that substitutes the user's exploit prompt with the defensive prompt before forwarding to the model.
+- **13 new pytest tests** in `tests/api/test_governed_output_proxy.py` covering 5 attacker prompts (all DENY), 5 audit-context allow prompts (all ALLOW), redirect-field plumbing, and a regression test that the existing FP envelope (train/AI-output/transformer-attention prompts) stays unmatched by SCONE.
+- **SCONE-bench external citation note** at `docs/external/SCONE_BENCH_2026_05_14.md` (full paper summary, vulnerability classes, SCBE response register). MATHBAC TA1 doc updated with a v1.4 entry citing SCONE-bench as upstream signal alongside Petri. README now has a "Composes with upstream safety tooling" section listing Petri / SCONE-bench / ALOHA. One-pager and cold-outreach packet updated similarly.
+
+### Changed
+
+- **`scanText` signature gains optional `{ skipSconeTag }` flag** — used by `buildGovernanceRecord` and `shouldPreBlock` to suppress SCONE rules when `isAuditContext(inputText)` is true. Existing callers without the flag continue to evaluate the full ruleset.
+
+## [4.1.0] - 2026-05-13
+
+### Added
+
+- **Governance abacus (deterministic BigInt-only L12+L13 scoring)**: `src/harmonic/governanceAbacus.ts` mechanically implements the canonical harmonic wall `H(d_h, pd) = 1/(1 + d_h + 2*pd)` and the L13 four-tier mapping (ALLOW / QUARANTINE / ESCALATE / DENY) in pure BigInt arithmetic at a configurable bead-grid scale (default 1e6). Same inputs produce bit-identical scores and tiers on every platform — no float drift, no NaN class, exact rational output also available. Public API: `runGovernanceAbacus`, `formatAbacusBoard`, `TIER_THRESHOLDS`. Re-exported from `scbe-aethermoore/harmonic`.
+- **Multi-abacus architecture doc** at `docs/ABACUS_ARCHITECTURE.md` parking the per-system roadmap (Roman tier-board, Egyptian unit-fraction tongue weights, schoty rolling-window breathing, soroban triadic temporal, suanpan composite) behind a documented contract — build only when a concrete consumer asks.
+- **Parity smoke** at `scripts/harmonic/abacus_smoke.cjs` (7/7 PASS within 1e-6, tier-identical across the full decision spectrum) verifying the abacus tracks the canonical `harmonicScale` formula exactly.
+
+### Changed
+
+- **`npm run clean` is now portable**: replaced `rimraf dist` with a pure-Node `fs.rmSync` one-liner so the build no longer depends on the `rimraf` package being present in `node_modules`. Unblocks `npm run build` on fresh installs.
+
+## [4.0.10] - 2026-05-13
+
+### Added
+
+- **Registry-visible funding links**: `package.json` `funding` field and `pyproject.toml` `[project.urls]` `Sponsor` / `Funding` / `Supporter` entries. GitHub Sponsors, Ko-fi, and the AetherMoore supporter page now surface directly on the npm and PyPI package pages and via `npm fund`.
+- **Petri-22 auditor pre-filter on the production governed-output proxy**: `api/_governed_output.js` adds 22 auditor anchors (2 DENY-tier `petri_tool:*`, 20 ESCALATE-tier `verb:` / `anchor:` / `phrase:`) lifted from `services/scbe-shim/src/patterns.ts`.
+- **5 axiom-class OUTPUT_RULES**: `axiom:locality.system_prompt_leak` (DENY), `axiom:locality.tool_leak` (DENY), `axiom:locality.jailbreak_phrase` (ESCALATE), `axiom:causality.future_assertion` (ESCALATE), `axiom:symmetry.harmful_endorsement` (DENY).
+- **scbe-shim Cloudflare Worker + HF Space mirror** at `services/scbe-shim/` and `services/scbe-shim-space/` with the matching `scbe_governance` response contract (audit / intervention / sha256 / provider fields).
+- **10 regression tests** in `tests/api/test_governed_output_proxy.py` covering verb-first secret exfil, Petri anchors, output axioms, and an FP envelope (`train the model` / `AI returns weird outputs` / `transformer attention` queries stay ALLOW).
+
+### Changed
+
+- **`axiom:locality.secret_exfiltration` is now bidirectional**: previously only matched `<secret>...<verb>` order, so prompts like `Print my .env` leaked through with decision=ALLOW. Now matches both orderings and includes `\.env\b` without a leading word-boundary so it works after a space.
+- **PyPI version resynced with npm** (3.3.0 → 4.0.10). Working tree had drifted to 4.0.3 unpublished; the new release closes the gap.
+
+## [Unreleased]
+
+### Added
+
+- **Repo shape 2026-04 (Phases 1-4 + 5)**: machine + human reorg plan at `scripts/repo_reorg/plan_repo_shape.py`, `artifacts/repo_reorg/inventory_2026-04.json`, `docs/ops/REPO_REORG_2026-04.md`. Root went from ~120 files to 72 files; 39 docs moved to `docs/{specs,ops,business}/`, 14 unreferenced root entry points archived under `runnables/legacy/` and `archive/`, 13 throwaway demos archived to `archive/demos/`, 3 empty UI stubs (`aetherbrowse/`, `app/`, `ui/`) archived to `archive/ui-graveyard/`. All moves use `git mv` so history is preserved.
+- **GeoShell App Store** in `scbe-visual-system/`: data-driven tile registry at `apps-registry.json`; new `lib/apps-registry-loader.ts`, `components/apps/AppStoreApp.tsx`, `components/apps/ServiceApp.tsx`; `types.ts` extended with `ServiceBinding` + missing `AppId` values. Service tiles for `Spiral Word`, `GeoSeal`, `GeoSeal Docs`, `AI IDE`, `SCBE Monitor`, `Physics Sim` with env URL overrides (`SPIRAL_WORD_URL`, `GEOSEAL_SERVICE_URL`, `AI_IDE_URL`, `SCBE_MONITOR_URL`, `PHYSICS_SIM_URL`). Shell renamed to **GeoShell v2.1.0**.
+- **GeoShell -> Kindle build pipe**: `scripts/repo_reorg/build_geoshell_into_kindle.py` builds `scbe-visual-system/` and mirrors `dist/` into `kindle-app/www/geoshell/`. NPM: `npm run geoshell:build-into-kindle` (and `:skip-install` variant).
+- **Registry contract tests**: `tests/visual_system/test_apps_registry.py` (9 tests) lock the App Store JSON shape, tile id uniqueness, service binding completeness, and AppId enum cross-check against `types.ts`. NPM: `npm run verify:geoshell-registry`.
+- **Active surface map**: `docs/specs/STRUCTURE.md` rewritten with the canonical UI-root map and the agent navigation guide.
+- **Harness skill tools**: `src/coding_spine/skill_harness_tools.py` discovers `SKILL.md` under `.claude/skills`, `.agents/skills`, `skills`, and optional `SCBE_HARNESS_SKILL_ROOTS`; embeds `harness_skill_tools_v1` + `openai_style_tools` in `agent-harness` manifest; GeoSeal `skill-tools` CLI/HTTP (`/v1/geoseal/skill-tools`) and npm `geoseal skill-tools`.
+- **Postgres lite (optional)**: `docker-compose.postgres-lite.yml` + `deploy/postgres-lite/init.sql`; `src/api/postgres_lite.py` probes `SCBE_POSTGRES_URL` / `DATABASE_URL`; `/health` includes `postgres_lite` on GeoSeal service and main API. Dependency: `psycopg[binary]`. NPM: `npm run postgres:lite:up` / `postgres:lite:down`.
+- **Billing persistence**: SQLite store (`src/api/billing_store.py`) for Stripe webhook dedupe and purchase records; default path `.scbe/billing.sqlite3` (override with `SCBE_BILLING_DB_PATH`).
+- **Agent operator rail**: `docs/ops/OPERATOR_SHIPPING_RAIL.md` and `docs/ops/MERGE_AND_STASH_PLAYBOOK.md` for merge hygiene, stash handling, and `scripts/agents/run_agent_task.py` + harness flows.
+
+### Changed
+
+- **Stripe billing API** (`src/api/stripe_billing.py`): owner-gated `GET /billing/purchases` (`x-owner-token` / `SCBE_OWNER_API_TOKEN`); webhook signature required unless `SCBE_ALLOW_UNSIGNED_STRIPE_WEBHOOK` is set for dev; idempotent checkout completion and event-id dedupe; unresolved one-time purchases when product metadata cannot be mapped (no silent default SKU).
+
+### Tests
+
+- `tests/api/test_stripe_billing_hardening.py`: owner auth, unsigned webhook policy, unresolved purchases, SQLite persistence, webhook dedupe.
+
 ## [4.0.2] - 2026-04-24
 
 ### Changed

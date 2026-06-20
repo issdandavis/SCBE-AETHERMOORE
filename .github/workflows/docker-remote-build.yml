@@ -84,7 +84,12 @@ jobs:
         run: |
           set -euo pipefail
           docker run --rm -d --name scbe-api-smoke -p 8080:8080 "${IMAGE_SHA}"
-          trap 'docker logs scbe-api-smoke || true; docker stop scbe-api-smoke || true' EXIT
+          cleanup() {
+            docker logs scbe-api-smoke 2>/dev/null
+            docker stop scbe-api-smoke 2>/dev/null
+            return 0
+          }
+          trap cleanup EXIT
 
           for attempt in $(seq 1 30); do
             if curl -fsS "${SMOKE_URL}"; then

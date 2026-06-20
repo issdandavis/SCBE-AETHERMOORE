@@ -142,7 +142,7 @@ def main():
                 print(f"    OK: image id={result['image']['id']}")
                 uploaded += 1
             else:
-                print(f"    FAILED")
+                print("    FAILED")
                 failed += 1
         else:
             uploaded += 1

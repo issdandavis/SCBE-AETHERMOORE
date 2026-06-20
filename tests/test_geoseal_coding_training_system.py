@@ -26,6 +26,9 @@ def test_manifest_lists_dedicated_geoseal_coding_profiles() -> None:
     assert "coding-agent-qwen-smoke" in ids
     assert "coding-agent-qwen-online-v2" in ids
     assert "coding-agent-qwen-atomic-workflow-stage6" in ids
+    assert "coding-agent-qwen-ca-geoseal-smoke-repair-v1" in ids
+    assert "coding-agent-qwen-ca-opcode-exact-repair-v2" in ids
+    assert "coding-agent-qwen-ca-geoseal-combined-repair-v3" in ids
     assert profiles["schema_version"] == "geoseal_coding_training_profiles_v1"
 
     stage6 = next(
@@ -33,6 +36,24 @@ def test_manifest_lists_dedicated_geoseal_coding_profiles() -> None:
     )
     assert stage6["stage"] == "atomic_workflow_resource_decay"
     assert stage6["exists"] is True
+
+    repair = next(
+        item for item in profiles["profiles"] if item["profile_id"] == "coding-agent-qwen-ca-geoseal-smoke-repair-v1"
+    )
+    assert repair["stage"] == "ca_geoseal_smoke_repair"
+    assert repair["exists"] is True
+
+    exact_repair = next(
+        item for item in profiles["profiles"] if item["profile_id"] == "coding-agent-qwen-ca-opcode-exact-repair-v2"
+    )
+    assert exact_repair["stage"] == "ca_opcode_exact_repair"
+    assert exact_repair["exists"] is True
+
+    combined_repair = next(
+        item for item in profiles["profiles"] if item["profile_id"] == "coding-agent-qwen-ca-geoseal-combined-repair-v3"
+    )
+    assert combined_repair["stage"] == "ca_geoseal_combined_repair"
+    assert combined_repair["exists"] is True
 
 
 def test_stage6_profile_is_t4_safe_after_oom_hardening() -> None:
@@ -45,6 +66,23 @@ def test_stage6_profile_is_t4_safe_after_oom_hardening() -> None:
     assert training["batch_size"] == 1
     assert training["gradient_accumulation_steps"] >= 16
     assert training["gradient_checkpointing"] is True
+
+
+def test_repair_profile_does_not_inherit_stage6_contract_by_default() -> None:
+    dispatcher_path = ROOT / "scripts" / "system" / "dispatch_coding_agent_hf_job.py"
+    spec = importlib.util.spec_from_file_location("dispatch_coding_agent_hf_job", dispatcher_path)
+    assert spec and spec.loader
+    dispatcher = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(dispatcher)
+    profile = json.loads(
+        (ROOT / "config" / "model_training" / "coding-agent-qwen-ca-geoseal-smoke-repair-v1.json").read_text()
+    )
+
+    script = dispatcher.render_uv_training_script(profile)
+
+    assert '"contract_id": ""' in script
+    assert '"prompts": []' in script
+    assert "pass_rate = (n_pass / n_total) if n_total else 1.0" in script
 
 
 def test_smoke_eval_plan_carries_geoseal_cli_gates(tmp_path: Path, monkeypatch) -> None:
@@ -184,6 +222,35 @@ def test_reward_smoke_report_exports_rule_based_rlvr_signal(tmp_path: Path) -> N
     assert reward["promotion_ready"] is True
     assert reward["items"][0]["required_score"] == 1.0
     assert reward["items"][0]["forbidden_penalty"] == 0.0
+
+
+def test_extract_gate_report_and_boss_retry_plan_target_failed_mechanics(tmp_path: Path) -> None:
+    module = _load_module()
+    log_text = """
+noise
+{"event": "gate_report", "report": {"contract_id": "stage6_atomic_workflow_unseen_eval_v1", "n_total": 5, "n_pass": 2, "pass_rate": 0.4, "minimum_pass_rate": 0.8, "must_pass_results": {"stage6_unseen_hex_trace": false}, "results": [{"id": "stage6_unseen_hex_trace", "ok": false, "missing_required": ["compute"]}, {"id": "stage6_unseen_cost_propagation", "ok": false, "missing_required": ["sample_soil", "send_digest"]}, {"id": "stage6_unseen_lane_separation", "ok": true}]}}
+"""
+
+    report = module.extract_gate_report(log_text)
+    assert report is not None
+    plan = module.build_boss_retry_plan(report, profile_id="coding-agent-qwen-stage6-repair-v12")
+
+    assert plan["schema_version"] == "geoseal_stage6_boss_retry_plan_v1"
+    assert plan["score"]["promotion_ready"] is False
+    assert plan["strategy"] == "constrained_decoding_plus_targeted_dpo"
+    targets = {item["id"]: item for item in plan["repair_targets"]}
+    assert targets["stage6_unseen_hex_trace"]["kind"] == "byte_hex_compute_trace"
+    assert targets["stage6_unseen_hex_trace"]["must_pass"] is True
+    assert targets["stage6_unseen_cost_propagation"]["recommended_rows"] == 48
+    assert "aggregate micro-skill evidence" in plan["experience_model"]["definition"]
+    assert "Do not copy held-out prompt text into training data." in plan["next_actions"]
+
+    out = tmp_path / "boss_retry.json"
+    wrapped = tmp_path / "gate_report.json"
+    wrapped.write_text(json.dumps({"event": "gate_report", "report": report}), encoding="utf-8")
+    written = module.boss_retry_plan_from_report(wrapped, profile_id="coding-agent-qwen-stage6-repair-v12", output=out)
+    assert out.exists()
+    assert written["output_path"] == str(out)
 
 
 def test_summarize_training_log_parses_pretty_completion_json() -> None:

@@ -407,7 +407,7 @@ def generate_contrastive_pairs(
             f"**Mirror state:** {list(mirror_vec)} = {mirror_label}\n\n"
             f"Polymorphic axes:\n"
             + "\n".join(fork_descriptions)
-            + f"\n\n**All reachable states:**\n"
+            + "\n\n**All reachable states:**\n"
             + "\n".join(f"- {list(s)} = {l}" for s, l in zip(record.reachable_states, record.reachable_labels))
             + f"\n\nThe boundary crossings represent points where the model's "
             f"interpretation can flip — these are the most informative "

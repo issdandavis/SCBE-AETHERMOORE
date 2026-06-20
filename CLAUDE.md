@@ -17,7 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | **Property Testing** | fast-check (TS), Hypothesis (Python) |
 | **API** | FastAPI + Uvicorn (Python), Express 5 (TypeScript) |
 | **TypeScript** | ^6.0.2, target ES2022, CommonJS (`ignoreDeprecations: "6.0"`) |
-| **Package Version** | 4.0.3 (npm + PyPI synced) |
+| **Package Version** | 4.2.1 (npm + PyPI synced) |
 | **Package Entry** | `./dist/src/index.js` |
 
 ## Common Commands
@@ -87,8 +87,8 @@ npm run build && npm run lint && npm test
 PYTHONPATH=. python -m pytest tests/ -v --ignore=tests/node_modules -x
 
 # 3. Python formatting (must pass in CI)
-black --check --target-version py311 --line-length 120 src/ tests/ hydra/
-flake8 --max-line-length 120 src/ tests/ hydra/
+black --check --target-version py311 --line-length 120 src/ tests/ hydra/ scripts/ agents/
+flake8 --max-line-length 120 src/ tests/ hydra/ scripts/ agents/
 
 # Quick smoke test (just the fast Python tests, ~5s)
 PYTHONPATH=. python -m pytest tests/ -x -q \
@@ -103,7 +103,7 @@ PYTHONPATH=. python -m pytest tests/ -x -q \
 - **`SCBE_FORCE_SKIP_LIBOQS`**: No longer needed — `liboqs-python` (0.14.1) and `liboqs` C lib (0.15.0) are installed. The env var still exists as a fallback in source code for environments without C bindings, but should not be set by default.
 - **`PYTHONPATH=.`**: CI sets this so `import src.foo` and `import symphonic_cipher` resolve correctly.
 - **Hanging tests**: `test_integration.py` and `test_red_zone_integration.py` in `tests/aetherbrowser/` require Playwright browsers installed. They hang if browsers aren't present. Safe to `--ignore` locally.
-- **Optional provider SDKs**: Tests in `tests/aetherbrowser/test_provider_executor.py` require `openai` and `huggingface_hub` packages (listed in `requirements.txt`). Install with `pip install -r requirements.txt`.
+- **Optional provider SDKs**: Tests in `tests/aetherbrowser/test_provider_executor.py` require the `openai` and `huggingface_hub` packages, which are NOT in `requirements.txt`. Install separately (`pip install openai huggingface_hub`) or let those tests skip.
 - **Black formatting**: Always run `black --target-version py311 --line-length 120` on new Python files. CI rejects unformatted code.
 - **Prettier formatting**: Always run `npm run format` on new TypeScript files. CI rejects unformatted code.
 - **Unused imports/variables**: TypeScript compilation catches these. Run `npm run build` before pushing.
@@ -128,6 +128,17 @@ if symphonic_cipher._VARIANT == "root": # "root" or "src"
 ```
 
 When writing new tests, be explicit about which module you need. The `tests/conftest.py` adds the project root to `sys.path` and patches `ai_brain` submodule aliases for legacy import paths.
+
+## Critical Gotcha: Canonical Money Path (two billing stacks)
+
+There are **two** billing stacks behind **two** FastAPI apps. Only one takes real money.
+
+| Stack | App | State |
+|-------|-----|-------|
+| `src/api/stripe_billing.py` + `docs/offers.json` | `src/api/main.py` (canonical) | **LIVE** — real Stripe price/product IDs + Payment Links (`plink_*`), raw urllib, no SDK |
+| `api/billing/` (SDK + SQLAlchemy) | `api/main.py` (separate) | **Not live** — placeholder price IDs, `import stripe` not in `requirements.txt`; retained only because `api/auth.py` + `api/keys/` import its DB models + rate-limit tiers |
+
+The live Vercel webhook is `api/billing/stripe_webhook.js` (independent JS, pinned `plink_` IDs). **Add new checkout/subscription money logic to `src/api/stripe_billing.py` or as a Payment Link in `docs/offers.json` — never to `api/billing/routes.py`.** Keep `api/billing/tiers.py` prices from drifting against `docs/offers.json`.
 
 ## liboqs PQC Migration
 
@@ -181,9 +192,9 @@ Three coordination systems operate across the fleet:
 
 | System | Location | Purpose |
 |--------|----------|---------|
-| **HYDRA** | `hydra/` (Python, 40+ files) | Central orchestrator: Spine, Heads, Limbs, Ledger, BFT consensus |
+| **HYDRA** | `hydra/` here = storage-geometry subset only; full runtime in the **`scbe-agents`** repo | Concept/design lives in **Notion**. The orchestrator (Spine, Heads, Limbs, BFT consensus) **moved to `scbe-agents`**; this repo retains the storage-geometry subset: octree_sphere_grid, quadtree25d, voxel_storage, color_dimension, lattice25d_ops + ledger/turnstile. So `from hydra.spine/head/switchboard/limbs/research import …` resolve only in `scbe-agents` — in this repo those endpoints return 503. |
 | **Fleet** | `src/fleet/` (TypeScript, 50+ files) | Agent registry, task dispatch, governance, Polly Pads, swarm coordination |
-| **Juggling Scheduler** | `src/fleet/juggling-scheduler.ts` + `hydra/juggling_scheduler.py` | Physics-based task-flight coordination |
+| **Juggling Scheduler** | `src/fleet/juggling-scheduler.ts` (the Python `hydra/juggling_scheduler.py` moved to `scbe-agents`) | Physics-based task-flight coordination |
 | **Red/Blue Arena** | `src/security-engine/redblue-arena.ts` | Adversarial model-vs-model security simulation |
 
 **Juggling Scheduler** models task coordination as a physics juggling system: balls=TaskCapsules, hands=AgentSlots, throws=handoffs, arcs=deadline windows, drops=failures. Seven rules: (1) never throw to unready hand, (2) predicted catch windows, (3) fewer handoffs for high-inertia tasks, (4) higher arcs for risky tasks, (5) detect phase drift, (6) interception paths, (7) ledger catches not throws.
@@ -372,6 +383,11 @@ Add axiom compliance comments where applicable: `// A4: Clamping` or `# A2: Unit
 - **TypeScript is canonical** (production). Update TS first, then Python.
 - Cross-language parity tests in `tests/cross-language/` and `tests/interop/`.
 
+### Code Locality
+- A command's logic lives **inside its package** (e.g. `packages/cli/`, `packages/agent-bus/`), not scattered into root-level scripts or a parallel sibling file. Fold new behavior into the existing module that owns that surface.
+- The repo root is for **standard project files only** (README, LICENSE, CHANGELOG, CONTRIBUTING, SECURITY, agent-instruction files, build/config manifests). Do not add new top-level scripts or docs there — put scripts under `scripts/`, docs under `docs/`.
+- Before declaring a path a submodule, confirm there is a tracked gitlink for it; a `.gitmodules` stanza with no gitlink is dead and should not be added.
+
 ### When Adding Features
 1. Tag files with `@layer` comments
 2. Document which axiom your code satisfies
@@ -408,7 +424,7 @@ chore(deps): bump dependency version
 
 ### Dev (npm)
 - `vitest` ^4.0.17, `fast-check` ^4.5.3 — Testing
-- `typescript` ^5.8.3 — Compiler
+- `typescript` ^6.0.2 — Compiler
 - `@playwright/test` ^1.58.2 — E2E testing
 - `prettier` ^3.2.0 — Formatting
 - `madge` ^8.0.0 — Circular dependency detection
@@ -465,12 +481,12 @@ Docker Compose files: `docker-compose.yml`, `docker-compose.api.yml`, `docker-co
 
 | File | Purpose |
 |------|---------|
-| `LAYER_INDEX.md` | Complete 14-layer architecture reference |
-| `SPEC.md` | SCBE Kernel Specification (canonical) |
-| `SYSTEM_ARCHITECTURE.md` | Detailed architecture |
+| `docs/LAYER_INDEX.md` | Complete 14-layer architecture reference |
+| `docs/SPEC.md` | SCBE Kernel Specification (canonical) |
+| `docs/SYSTEM_ARCHITECTURE.md` | Detailed architecture |
 | `ARCHITECTURE.md` | High-level architecture overview |
 | `docs/LANGUES_WEIGHTING_SYSTEM.md` | Langues metric deep dive |
-| `docs/hydra/ARCHITECTURE.md` | HYDRA orchestration |
+| HYDRA orchestration | Concept/design in **Notion**; full runtime in the **`scbe-agents`** repo (the old `docs/hydra/ARCHITECTURE.md` is not present in this repo) |
 | `docs/PUBLISHING.md` | Safe release flow |
 | `docs/AETHERBROWSE_BLUEPRINT.md` | AetherBrowse browser agent design |
 | `docs/API.md` | API reference |

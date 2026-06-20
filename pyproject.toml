@@ -4,14 +4,18 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "scbe-aethermoore"
-version = "4.0.3"
+version = "4.2.1"
 description = "Hyperbolic Geometry AI Safety Framework with 14-Layer Architecture"
 readme = "README.md"
-license = "MIT"
-license-files = ["LICENSE"]
+license = "MIT OR Apache-2.0"
+license-files = ["LICENSE", "LICENSE-APACHE"]
 requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.24",
+    "jsonschema>=4.0",
+]
 authors = [
-    {name = "Issac Daniel Davis", email = "issdandavis@gmail.com"},
+    {name = "Issac Daniel Davis", email = "issdandavis@users.noreply.github.com"},
 ]
 keywords = [
     "cryptography",
@@ -37,10 +41,28 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Mathematics",
 ]
 
+[project.optional-dependencies]
+# Model-grade second-tier injection detector (python/scbe/intent_model.py).
+# Opt-in -- the default gate stays pure-python; enable with SCBE_INJECTION_MODEL=1
+# after installing this extra.
+ml = [
+    "transformers>=4.40",
+    "torch>=2.2",
+    "sentencepiece>=0.2",
+]
+# No-torch CPU path via a pre-exported ONNX model:
+ml-onnx = [
+    "optimum[onnxruntime]>=1.20",
+    "transformers>=4.40",
+]
+
 [project.urls]
 Homepage = "https://github.com/issdandavis/SCBE-AETHERMOORE"
 Repository = "https://github.com/issdandavis/SCBE-AETHERMOORE"
 Issues = "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"
+Sponsor = "https://github.com/sponsors/issdandavis"
+Funding = "https://ko-fi.com/izdandavis"
+Supporter = "https://aethermoore.com/SCBE-AETHERMOORE/supporter.html"
 
 [project.scripts]
 scbe = "scbe:main"
@@ -49,39 +71,7 @@ scbe-system = "scripts.scbe_system_cli:main"
 scbe-convert-to-sft = "symphonic_cipher.scbe_aethermoore.convert_to_sft:main"
 scbe-code-prism = "code_prism.cli:main"
 
-[tool.setuptools]
-py-modules = ["scbe"]
-
-[tool.setuptools.packages.find]
-where = ["src"]
-include = [
-    "neurogolf*",
-    "scbe_aethermoore*",
-    "code_prism*",
-    "flow_router*",
-    "symphonic_cipher*",
-    "api*",
-    "crypto*",
-    "harmonic*",
-    "spiralverse*",
-    "minimal*",
-    "storage*",
-]
-exclude = [
-    "tests*",
-    "agents*",
-    "training*",
-    "scripts*",
-    # Test subpackages
-    "*.tests",
-    "*.tests.*",
-    # Excluded submodules
-    "api.github_app*",
-    "api.billing*",
-    "api.keys*",
-    "symphonic_cipher.geoseal*",
-]
-
-[tool.setuptools.package-dir]
-# Root-level package not under src/
-api = "api"
+# Package discovery is in setup.py — the mixed layout (src/ packages PLUS the
+# python/scbe engine imported as python.scbe) needs two find_packages calls, which a
+# single static packages.find can't express without name-colliding on the duplicate
+# root packages (symphonic_cipher/, api/).

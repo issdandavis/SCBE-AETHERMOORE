@@ -7,15 +7,21 @@ Usage:
     python scripts/security/code_governance_gate.py check-pr 752
     python scripts/security/code_governance_gate.py check-push
     python scripts/security/code_governance_gate.py check-diff HEAD~1
+    python scripts/security/code_governance_gate.py artifact ./download.bin
+    python scripts/security/code_governance_gate.py av-signals ./alerts.jsonl
+    python scripts/security/code_governance_gate.py security-events ./events.jsonl
     python scripts/security/code_governance_gate.py audit
 """
 
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import re
+import shlex
 import subprocess
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List
@@ -28,8 +34,12 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 
 OWNER = {
     "github": "issdandavis",
-    "email": ["issdandavis@proton.me", "issdandavis7795@gmail.com",
-              "aethermoregames@pm.me", "issdandavis@users.noreply.github.com"],
+    "email": [
+        "issdandavis@proton.me",
+        "issdandavis7795@gmail.com",
+        "aethermoregames@pm.me",
+        "issdandavis@users.noreply.github.com",
+    ],
     "name": "Issac Daniel Davis",
 }
 
@@ -39,50 +49,97 @@ OWNER = {
 
 INJECTION_PATTERNS = [
     # Credential theft
-    (re.compile(r"eval\s*\(\s*['\"].*(?:fetch|http|xhr|ajax)", re.I), "CODE_INJECTION", "CRITICAL",
-     "Dynamic eval with network call — potential exfiltration"),
-    (re.compile(r"subprocess\.(?:call|run|Popen)\s*\([^)]*shell\s*=\s*True", re.I), "SHELL_INJECTION", "HIGH",
-     "Shell=True subprocess — command injection risk"),
-    (re.compile(r"os\.system\s*\(", re.I), "SHELL_INJECTION", "HIGH",
-     "os.system call — command injection risk"),
-
+    (
+        re.compile(r"eval\s*\(\s*['\"].*(?:fetch|http|xhr|ajax)", re.I),
+        "CODE_INJECTION",
+        "CRITICAL",
+        "Dynamic eval with network call — potential exfiltration",
+    ),
+    (
+        re.compile(r"subprocess\.(?:call|run|Popen)\s*\([^)]*shell\s*=\s*True", re.I),
+        "SHELL_INJECTION",
+        "HIGH",
+        "Shell=True subprocess — command injection risk",
+    ),
+    (re.compile(r"os\.system\s*\(", re.I), "SHELL_INJECTION", "HIGH", "os.system call — command injection risk"),
     # Backdoor patterns
-    (re.compile(r"socket\.connect\s*\(\s*\(['\"](?!127\.0\.0\.1|localhost)", re.I), "BACKDOOR", "CRITICAL",
-     "Outbound socket to external host — potential C2"),
-    (re.compile(r"exec\s*\(\s*(?:base64|codecs)\.(?:b64decode|decode)", re.I), "OBFUSCATED_EXEC", "CRITICAL",
-     "Executing base64-decoded content — obfuscated payload"),
-    (re.compile(r"__import__\s*\(\s*['\"](?:ctypes|subprocess|socket|http)", re.I), "DYNAMIC_IMPORT", "HIGH",
-     "Dynamic import of dangerous module"),
-
+    (
+        re.compile(r"socket\.connect\s*\(\s*\(['\"](?!127\.0\.0\.1|localhost)", re.I),
+        "BACKDOOR",
+        "CRITICAL",
+        "Outbound socket to external host — potential C2",
+    ),
+    (
+        re.compile(r"exec\s*\(\s*(?:base64|codecs)\.(?:b64decode|decode)", re.I),
+        "OBFUSCATED_EXEC",
+        "CRITICAL",
+        "Executing base64-decoded content — obfuscated payload",
+    ),
+    (
+        re.compile(r"__import__\s*\(\s*['\"](?:ctypes|subprocess|socket|http)", re.I),
+        "DYNAMIC_IMPORT",
+        "HIGH",
+        "Dynamic import of dangerous module",
+    ),
     # Exfiltration
-    (re.compile(r"requests\.(?:post|put)\s*\(\s*['\"]https?://(?!(?:127\.0\.0\.1|localhost|api\.github\.com|huggingface\.co|api\.stripe\.com))", re.I),
-     "EXFILTRATION", "MEDIUM", "HTTP POST to unknown external host"),
-    (re.compile(r"webhook\s*=\s*['\"]https?://(?!(?:hooks\.slack\.com|discord\.com))", re.I), "EXFILTRATION", "MEDIUM",
-     "Webhook to unknown host"),
-
+    (
+        re.compile(
+            r"requests\.(?:post|put)\s*\(\s*['\"]https?://"
+            r"(?!(?:127\.0\.0\.1|localhost|api\.github\.com|huggingface\.co|api\.stripe\.com))",
+            re.I,
+        ),
+        "EXFILTRATION",
+        "MEDIUM",
+        "HTTP POST to unknown external host",
+    ),
+    (
+        re.compile(r"webhook\s*=\s*['\"]https?://(?!(?:hooks\.slack\.com|discord\.com))", re.I),
+        "EXFILTRATION",
+        "MEDIUM",
+        "Webhook to unknown host",
+    ),
     # Token/secret injection
-    (re.compile(r"(?:password|secret|token|api_key)\s*=\s*['\"][^'\"]{8,}['\"]", re.I), "HARDCODED_SECRET", "HIGH",
-     "Hardcoded secret in source code"),
-    (re.compile(r"-----BEGIN (?:RSA |EC )?PRIVATE KEY-----"), "PRIVATE_KEY", "CRITICAL",
-     "Private key in source code"),
-
+    (
+        re.compile(r"(?:password|secret|token|api_key)\s*=\s*['\"][^'\"]{8,}['\"]", re.I),
+        "HARDCODED_SECRET",
+        "HIGH",
+        "Hardcoded secret in source code",
+    ),
+    (re.compile(r"-----BEGIN (?:RSA |EC )?PRIVATE KEY-----"), "PRIVATE_KEY", "CRITICAL", "Private key in source code"),
     # Workflow poisoning
-    (re.compile(r"actions/checkout@(?!v[34])", re.I), "UNSAFE_ACTION", "MEDIUM",
-     "GitHub Action checkout not pinned to v3/v4"),
-    (re.compile(r"\$\{\{\s*github\.event\.(?:issue|pull_request)\.(?:title|body)", re.I), "WORKFLOW_INJECTION", "HIGH",
-     "Untrusted input in GitHub Actions expression"),
-
+    (
+        re.compile(r"actions/checkout@(?!v[34])", re.I),
+        "UNSAFE_ACTION",
+        "MEDIUM",
+        "GitHub Action checkout not pinned to v3/v4",
+    ),
+    (
+        re.compile(r"\$\{\{\s*github\.event\.(?:issue|pull_request)\.(?:title|body)", re.I),
+        "WORKFLOW_INJECTION",
+        "HIGH",
+        "Untrusted input in GitHub Actions expression",
+    ),
     # Dependency attacks
-    (re.compile(r"pip install\s+(?!-r\s|-e\s).*--index-url\s+https?://(?!pypi\.org)", re.I), "SUPPLY_CHAIN", "HIGH",
-     "pip install from non-PyPI index"),
-    (re.compile(r"npm install\s+.*--registry\s+https?://(?!registry\.npmjs\.org)", re.I), "SUPPLY_CHAIN", "HIGH",
-     "npm install from non-npmjs registry"),
-
+    (
+        re.compile(r"pip install\s+(?!-r\s|-e\s).*--index-url\s+https?://(?!pypi\.org)", re.I),
+        "SUPPLY_CHAIN",
+        "HIGH",
+        "pip install from non-PyPI index",
+    ),
+    (
+        re.compile(r"npm install\s+.*--registry\s+https?://(?!registry\.npmjs\.org)", re.I),
+        "SUPPLY_CHAIN",
+        "HIGH",
+        "npm install from non-npmjs registry",
+    ),
     # File system attacks
-    (re.compile(r"(?:chmod|chown)\s+(?:777|666|a\+rwx)", re.I), "PERM_ESCALATION", "HIGH",
-     "World-writable permissions"),
-    (re.compile(r"rm\s+-rf\s+/(?!\w)", re.I), "DESTRUCTIVE", "CRITICAL",
-     "Recursive delete from root"),
+    (
+        re.compile(r"(?:chmod|chown)\s+(?:777|666|a\+rwx)", re.I),
+        "PERM_ESCALATION",
+        "HIGH",
+        "World-writable permissions",
+    ),
+    (re.compile(r"rm\s+-rf\s+/(?!\w)", re.I), "DESTRUCTIVE", "CRITICAL", "Recursive delete from root"),
 ]
 
 # Files that should NEVER be modified by non-owner
@@ -108,6 +165,7 @@ FORBIDDEN_FILE_PATTERNS = [
 @dataclass
 class Finding:
     """A single security finding."""
+
     severity: str  # CRITICAL, HIGH, MEDIUM, LOW, INFO
     category: str
     message: str
@@ -119,6 +177,7 @@ class Finding:
 @dataclass
 class GateResult:
     """Result of running the code governance gate."""
+
     decision: str  # PASS, WARN, BLOCK
     author_is_owner: bool
     findings: List[Finding] = field(default_factory=list)
@@ -139,7 +198,7 @@ class GateResult:
 
 def run_cmd(cmd: str) -> str:
     """Run a shell command and return output."""
-    result = subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd=str(ROOT))
+    result = subprocess.run(shlex.split(cmd), capture_output=True, text=True, encoding="utf-8", cwd=str(ROOT))
     return result.stdout.strip()
 
 
@@ -185,14 +244,16 @@ def check_diff(diff_text: str, result: GateResult):
 
         for pattern, category, severity, message in INJECTION_PATTERNS:
             if pattern.search(added_content):
-                result.add(Finding(
-                    severity=severity,
-                    category=category,
-                    message=message,
-                    file=current_file,
-                    line=line_num,
-                    evidence=added_content[:100].strip(),
-                ))
+                result.add(
+                    Finding(
+                        severity=severity,
+                        category=category,
+                        message=message,
+                        file=current_file,
+                        line=line_num,
+                        evidence=added_content[:100].strip(),
+                    )
+                )
 
         line_num += 1
 
@@ -202,21 +263,25 @@ def check_diff(diff_text: str, result: GateResult):
         result.files_checked += 1
         for forbidden in FORBIDDEN_FILE_PATTERNS:
             if forbidden.search(f):
-                result.add(Finding(
-                    severity="CRITICAL",
-                    category="FORBIDDEN_FILE",
-                    message=f"Sensitive file type in diff: {f}",
-                    file=f,
-                ))
+                result.add(
+                    Finding(
+                        severity="CRITICAL",
+                        category="FORBIDDEN_FILE",
+                        message=f"Sensitive file type in diff: {f}",
+                        file=f,
+                    )
+                )
 
         # Protected files check (non-owner only)
         if not result.author_is_owner and f in PROTECTED_FILES:
-            result.add(Finding(
-                severity="HIGH",
-                category="PROTECTED_FILE",
-                message=f"Non-owner modifying protected file: {f}",
-                file=f,
-            ))
+            result.add(
+                Finding(
+                    severity="HIGH",
+                    category="PROTECTED_FILE",
+                    message=f"Non-owner modifying protected file: {f}",
+                    file=f,
+                )
+            )
 
 
 def decide(result: GateResult) -> str:
@@ -246,11 +311,13 @@ def check_pr(pr_number: int) -> GateResult:
 
     # Check author trust
     if not result.author_is_owner:
-        result.add(Finding(
-            severity="INFO",
-            category="EXTERNAL_AUTHOR",
-            message=f"PR by external contributor: {author}",
-        ))
+        result.add(
+            Finding(
+                severity="INFO",
+                category="EXTERNAL_AUTHOR",
+                message=f"PR by external contributor: {author}",
+            )
+        )
 
     result.decision = decide(result)
     return result, pr_data
@@ -272,6 +339,123 @@ def check_push_diff(ref: str = "HEAD~1") -> GateResult:
     return result
 
 
+def check_artifact(path: Path) -> GateResult:
+    """Run defensive artifact triage through the governance gate surface."""
+    artifact_script = ROOT / "scripts" / "security" / "artifact_triage.py"
+    spec = importlib.util.spec_from_file_location("_scbe_artifact_triage", artifact_script)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Could not load artifact triage script: {artifact_script}")
+    artifact_module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = artifact_module
+    spec.loader.exec_module(artifact_module)
+    report_to_dict = artifact_module.report_to_dict
+    triage_artifact = artifact_module.triage_artifact
+
+    author = run_cmd("git config user.email")
+    result = GateResult(decision="PASS", author_is_owner=is_owner(author))
+    report = triage_artifact(path)
+    payload = report_to_dict(report)
+    result.files_checked = 1
+    severity = "CRITICAL" if report.decision == "DENY" else "HIGH" if report.decision == "QUARANTINE" else "INFO"
+    result.add(
+        Finding(
+            severity=severity,
+            category="ARTIFACT_TRIAGE",
+            message=(
+                f"{report.decision} artifact triage score={report.risk_score} "
+                f"kind={report.file_kind} indicators={len(report.indicators)} sha256={report.artifact_sha256[:16]}"
+            ),
+            file=payload["artifact_path"],
+            evidence=", ".join(hit["rule_id"] for hit in payload["indicators"][:6]),
+        )
+    )
+    result.decision = "BLOCK" if report.decision == "DENY" and not result.author_is_owner else report.decision
+    if result.decision == "QUARANTINE":
+        result.decision = "WARN"
+    if result.author_is_owner and result.decision == "BLOCK":
+        result.decision = "WARN"
+    return result
+
+
+def check_av_signals(input_path: Path, artifact_path: Path | None = None, provider: str = "generic") -> GateResult:
+    """Run AV/EDR/SIEM signal fusion through the governance gate surface."""
+    fusion_script = ROOT / "scripts" / "security" / "av_signal_fusion.py"
+    spec = importlib.util.spec_from_file_location("_scbe_av_signal_fusion", fusion_script)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Could not load AV signal fusion script: {fusion_script}")
+    fusion_module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = fusion_module
+    spec.loader.exec_module(fusion_module)
+
+    author = run_cmd("git config user.email")
+    result = GateResult(decision="PASS", author_is_owner=is_owner(author))
+    raw_items = fusion_module.read_signal_input(input_path)
+    report = fusion_module.fuse_signals(raw_items, artifact=artifact_path, provider_hint=provider)
+    payload = fusion_module.report_to_dict(report)
+    result.files_checked = 1 + (1 if artifact_path else 0)
+    result.lines_checked = report.alert_count
+    severity = "CRITICAL" if report.decision == "DENY" else "HIGH" if report.decision == "QUARANTINE" else "INFO"
+    result.add(
+        Finding(
+            severity=severity,
+            category="AV_SIGNAL_FUSION",
+            message=(
+                f"{report.decision} av signal fusion alerts={report.alert_count} "
+                f"providers={','.join(report.providers) or 'none'} omega={report.metrics.omega} "
+                f"coherence={report.metrics.coherence}"
+            ),
+            file=str(input_path),
+            evidence=", ".join(f"{a['provider']}:{a['severity']}" for a in payload["alerts"][:6]),
+        )
+    )
+    if report.decision == "DENY":
+        result.decision = "BLOCK"
+    elif report.decision == "QUARANTINE":
+        result.decision = "WARN"
+    else:
+        result.decision = "PASS"
+    if result.author_is_owner and result.decision == "BLOCK":
+        result.decision = "WARN"
+    return result
+
+
+def check_security_events(input_path: Path) -> GateResult:
+    """Run non-artifact security event controls through the governance gate."""
+    event_script = ROOT / "scripts" / "security" / "security_event_layers.py"
+    spec = importlib.util.spec_from_file_location("_scbe_security_event_layers", event_script)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Could not load security event layers script: {event_script}")
+    event_module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = event_module
+    spec.loader.exec_module(event_module)
+
+    author = run_cmd("git config user.email")
+    result = GateResult(decision="PASS", author_is_owner=is_owner(author))
+    report = event_module.classify_events(event_module.read_events(input_path))
+    payload = event_module.report_to_dict(report)
+    result.files_checked = 1
+    result.lines_checked = report.event_count
+    severity = "CRITICAL" if report.decision == "DENY" else "HIGH" if report.decision == "QUARANTINE" else "INFO"
+    result.add(
+        Finding(
+            severity=severity,
+            category="SECURITY_EVENT_LAYERS",
+            message=f"{report.decision} security events score={report.risk_score} controls={len(report.controls)}",
+            file=str(input_path),
+            evidence=", ".join(hit["control"] for hit in payload["controls"][:6]),
+        )
+    )
+    if report.decision == "DENY":
+        result.decision = "BLOCK"
+    elif report.decision == "QUARANTINE":
+        result.decision = "WARN"
+    else:
+        result.decision = "PASS"
+    if result.author_is_owner and result.decision == "BLOCK":
+        result.decision = "WARN"
+    return result
+
+
 def print_result(result: GateResult, context: str = ""):
     """Print gate result."""
     symbols = {"PASS": "[PASS]", "WARN": "[WARN]", "BLOCK": "[BLOCK]"}
@@ -285,8 +469,10 @@ def print_result(result: GateResult, context: str = ""):
     print(f"  Findings: {len(result.findings)} ({result.critical_count} critical, {result.high_count} high)")
 
     if result.findings:
-        print(f"\n  Findings:")
-        for f in sorted(result.findings, key=lambda x: {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3, "INFO": 4}[x.severity]):
+        print("\n  Findings:")
+        for f in sorted(
+            result.findings, key=lambda x: {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3, "INFO": 4}[x.severity]
+        ):
             marker = {"CRITICAL": "!!!", "HIGH": "!!", "MEDIUM": "!", "LOW": ".", "INFO": "i"}[f.severity]
             print(f"    {marker} [{f.severity:8s}] {f.category}: {f.message}")
             if f.file:
@@ -294,12 +480,21 @@ def print_result(result: GateResult, context: str = ""):
             if f.evidence:
                 print(f"              > {f.evidence[:80]}")
     else:
-        print(f"\n  No security findings. Clean.")
+        print("\n  No security findings. Clean.")
 
     print()
 
 
-def main():
+def exit_code(result: GateResult) -> int:
+    """Return process status for automation."""
+    if result.decision == "BLOCK":
+        return 2
+    if result.decision == "WARN":
+        return 1
+    return 0
+
+
+def main() -> int:
     parser = argparse.ArgumentParser(description="Code Governance Gate")
     sub = parser.add_subparsers(dest="command")
 
@@ -311,6 +506,17 @@ def main():
     p3 = sub.add_parser("check-diff", help="Check diff against a ref")
     p3.add_argument("ref", default="HEAD~1", nargs="?")
 
+    p4 = sub.add_parser("artifact", help="Triage an unknown file without executing it")
+    p4.add_argument("path", type=Path)
+
+    p5 = sub.add_parser("av-signals", help="Fuse AV/EDR/SIEM/runtime alerts into one governance decision")
+    p5.add_argument("input", type=Path)
+    p5.add_argument("--artifact", type=Path, default=None)
+    p5.add_argument("--provider", default="generic")
+
+    p6 = sub.add_parser("security-events", help="Check command/network/model/runtime events")
+    p6.add_argument("input", type=Path)
+
     sub.add_parser("audit", help="Show recent gate decisions")
 
     args = parser.parse_args()
@@ -320,18 +526,37 @@ def main():
         title = pr_data.get("title", "?")
         author = pr_data.get("author", {}).get("login", "?")
         print_result(result, f"PR #{args.number}: {title} (by {author})")
+        return exit_code(result)
 
     elif args.command == "check-push":
         result = check_push_diff()
         print_result(result, "Pre-push check")
+        return exit_code(result)
 
     elif args.command == "check-diff":
         result = check_push_diff(args.ref)
         print_result(result, f"Diff against {args.ref}")
+        return exit_code(result)
+
+    elif args.command == "artifact":
+        result = check_artifact(args.path)
+        print_result(result, f"Artifact triage: {args.path}")
+        return exit_code(result)
+
+    elif args.command == "av-signals":
+        result = check_av_signals(args.input, artifact_path=args.artifact, provider=args.provider)
+        print_result(result, f"AV signals: {args.input}")
+        return exit_code(result)
+
+    elif args.command == "security-events":
+        result = check_security_events(args.input)
+        print_result(result, f"Security events: {args.input}")
+        return exit_code(result)
 
     else:
         parser.print_help()
+        return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

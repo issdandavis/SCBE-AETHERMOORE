@@ -18,7 +18,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONSOLIDATION_DIR = REPO_ROOT / "artifacts" / "ai_training_consolidation" / "latest"
 DEFAULT_OUTPUT_JSON = DEFAULT_CONSOLIDATION_DIR / "run_review.json"
@@ -37,6 +36,15 @@ RUN_SCAN_ROOTS = (
     "artifacts/web_tool",
     "training/runs",
 )
+
+NON_EVAL_FILENAMES = {
+    "tokenizer.json",
+    "tokenizer_config.json",
+    "special_tokens_map.json",
+    "generation_config.json",
+    "adapter_config.json",
+    "config.json",
+}
 
 METRIC_PATTERNS: tuple[tuple[str, str], ...] = (
     (r"(?:^|_)(?:eval_)?loss$", "loss"),
@@ -158,7 +166,11 @@ def iter_json_artifacts(roots: tuple[str, ...]) -> list[Path]:
             continue
         for pattern in ("*.json", "*.ipynb"):
             try:
-                files.extend(path for path in root.rglob(pattern) if path.is_file())
+                files.extend(
+                    path
+                    for path in root.rglob(pattern)
+                    if path.is_file() and path.name.lower() not in NON_EVAL_FILENAMES
+                )
             except OSError:
                 continue
     return sorted(set(files), key=lambda p: str(p).lower())
@@ -169,13 +181,21 @@ def score_run(signals: list[MetricSignal]) -> dict[str, Any]:
     loss_values = [s.value for s in signals if s.kind == "loss"]
     cost_values = [s.value for s in signals if s.kind == "cost"]
     efficiency_values = [s.value for s in signals if s.kind == "efficiency"]
-    best_quality = max(quality_values) if quality_values else None
+    raw_best_quality = max(quality_values) if quality_values else None
+    if raw_best_quality is None:
+        best_quality = None
+    elif 0.0 <= raw_best_quality <= 1.0:
+        best_quality = raw_best_quality
+    elif 1.0 < raw_best_quality <= 100.0:
+        best_quality = raw_best_quality / 100.0
+    else:
+        best_quality = None
     best_loss = min(loss_values) if loss_values else None
     best_efficiency = max(efficiency_values) if efficiency_values else None
     best_cost = min(cost_values) if cost_values else None
     score = 0.0
     if best_quality is not None:
-        score += min(max(best_quality, 0.0), 1.0) * 100.0 if best_quality <= 1.0 else best_quality
+        score += min(max(best_quality, 0.0), 1.0) * 100.0
     if best_loss is not None:
         score += max(0.0, 20.0 - min(best_loss, 20.0))
     if best_efficiency is not None:
@@ -184,10 +204,71 @@ def score_run(signals: list[MetricSignal]) -> dict[str, Any]:
         score += min(10.0, 10.0 / best_cost)
     return {
         "quality_signal": best_quality,
+        "raw_quality_signal": raw_best_quality,
         "loss_signal": best_loss,
         "efficiency_signal": best_efficiency,
         "cost_signal": best_cost,
         "promotion_score": round(score, 6),
+    }
+
+
+def diamond_state_for_run(run: dict[str, Any]) -> dict[str, Any]:
+    """Classify a run as rough/cut/polished/diamond using gate evidence.
+
+    The numeric score is useful for sorting within a bucket, but it is not
+    enough to promote a model. Explicit HOLD/FAIL decisions and missing quality
+    evidence must dominate raw score.
+    """
+
+    decision = str(run.get("decision") or "").strip().upper()
+    quality = run.get("quality_signal")
+    loss = run.get("loss_signal")
+    metric_count = int(run.get("metric_count") or 0)
+    score = float(run.get("promotion_score") or 0.0)
+    reasons: list[str] = []
+
+    if decision in {"HOLD", "FAIL", "BLOCK", "DENY", "QUARANTINE"}:
+        return {
+            "state": "rough_hold",
+            "promotion_ready": False,
+            "reasons": [f"explicit decision={decision} blocks promotion"],
+        }
+
+    if quality is None and loss is None:
+        return {
+            "state": "rough_unscored",
+            "promotion_ready": False,
+            "reasons": ["no quality or loss metric found"],
+        }
+
+    if quality is None:
+        return {
+            "state": "cut_loss_only",
+            "promotion_ready": False,
+            "reasons": ["loss-only signal needs task/eval quality gate"],
+        }
+
+    quality_value = float(quality)
+    if metric_count < 1:
+        reasons.append("metric_count is zero")
+    if quality_value < 0.8:
+        reasons.append(f"quality below promotion floor: {quality_value}")
+    if score <= 0:
+        reasons.append("promotion score is zero")
+    if reasons:
+        return {"state": "cut_needs_eval", "promotion_ready": False, "reasons": reasons}
+
+    if decision in {"PASS", "PROMOTE", "READY"} and quality_value >= 0.95:
+        return {
+            "state": "diamond_promotion_ready",
+            "promotion_ready": True,
+            "reasons": [f"explicit decision={decision} and quality={quality_value}"],
+        }
+
+    return {
+        "state": "polished_candidate",
+        "promotion_ready": False,
+        "reasons": ["has quality signal but still needs explicit frozen gate PASS"],
     }
 
 
@@ -214,6 +295,7 @@ def collect_run_reviews(roots: tuple[str, ...] = RUN_SCAN_ROOTS) -> list[dict[st
             ],
             **score_run(signals),
         }
+        review["diamond_state"] = diamond_state_for_run(review)
         reviews.append(review)
     return sorted(reviews, key=lambda item: item.get("promotion_score", 0.0), reverse=True)
 
@@ -234,7 +316,13 @@ def build_gain_board(reviews: list[dict[str, Any]], plan: dict[str, Any]) -> dic
     board: dict[str, Any] = {}
     all_purposes = sorted(set(by_purpose) | set(specialists))
     for purpose in all_purposes:
-        runs = sorted(by_purpose.get(purpose, []), key=lambda item: item.get("promotion_score", 0.0), reverse=True)
+        runs = []
+        for run in by_purpose.get(purpose, []):
+            row = dict(run)
+            if not isinstance(row.get("diamond_state"), dict):
+                row["diamond_state"] = diamond_state_for_run(row)
+            runs.append(row)
+        runs = sorted(runs, key=lambda item: item.get("promotion_score", 0.0), reverse=True)
         specialist = specialists.get(purpose, {})
         train_records = int(specialist.get("train_records") or 0)
         eval_records = int(specialist.get("eval_records") or 0)
@@ -249,10 +337,17 @@ def build_gain_board(reviews: list[dict[str, Any]], plan: dict[str, Any]) -> dic
         if not runs:
             missing_metrics = True
             blockers.append("no measurable run artifacts")
-        hold_runs = [run for run in runs if str(run.get("decision", "")).upper() == "HOLD"]
+        hold_runs = [
+            run
+            for run in runs
+            if str(run.get("decision", "")).upper() == "HOLD"
+            or (run.get("diamond_state") or {}).get("state") == "rough_hold"
+        ]
         if hold_runs and in_merge_plan:
             blockers.append(f"explicit HOLD eval artifact: {hold_runs[0]['path']}")
-        status = "promote_candidate" if not blockers and top_score > 0 else "blocked"
+        promotion_ready_runs = [run for run in runs if (run.get("diamond_state") or {}).get("promotion_ready") is True]
+        polished_runs = [run for run in runs if (run.get("diamond_state") or {}).get("state") == "polished_candidate"]
+        status = "promote_candidate" if not blockers and promotion_ready_runs else "blocked"
         if not in_merge_plan and top_score > 0:
             status = "sidecar_signal_not_in_merge"
             blockers.append("not part of active specialist merge plan")
@@ -260,12 +355,16 @@ def build_gain_board(reviews: list[dict[str, Any]], plan: dict[str, Any]) -> dic
             status = "ready_needs_benchmark"
         if blockers and top_score > 0 and train_records > 0:
             status = "needs_eval_gate"
+        if not blockers and not promotion_ready_runs and polished_runs:
+            status = "polished_needs_frozen_gate"
+            blockers.append("quality signal exists but no explicit frozen gate PASS")
         board[purpose] = {
             "status": status,
             "blockers": blockers,
             "train_records": train_records,
             "eval_records": eval_records,
             "top_promotion_score": round(top_score, 6),
+            "diamond_counts": dict(Counter((run.get("diamond_state") or {}).get("state", "unknown") for run in runs)),
             "recommended_action": recommend_action(purpose, status, blockers),
             "top_runs": [
                 {
@@ -275,6 +374,7 @@ def build_gain_board(reviews: list[dict[str, Any]], plan: dict[str, Any]) -> dic
                     "loss_signal": run["loss_signal"],
                     "metric_count": run["metric_count"],
                     "decision": run.get("decision"),
+                    "diamond_state": (run.get("diamond_state") or {}).get("state"),
                 }
                 for run in runs[:8]
             ],
@@ -285,13 +385,21 @@ def build_gain_board(reviews: list[dict[str, Any]], plan: dict[str, Any]) -> dic
 def recommend_action(purpose: str, status: str, blockers: list[str]) -> str:
     if status == "promote_candidate":
         return "train or keep specialist adapter, then run its frozen eval before weighted adapter merge"
+    if status == "polished_needs_frozen_gate":
+        return "run the frozen eval gate; do not merge on metric score alone"
     if any(blocker.startswith("explicit HOLD eval artifact") for blocker in blockers):
         if purpose == "governance_security":
-            return "repair false-positive pressure in governance eval data, rerun governance_security_eval, and promote only after PASS"
+            return (
+                "repair false-positive pressure in governance eval data, "
+                "rerun governance_security_eval, and promote only after PASS"
+            )
         return "resolve the explicit HOLD eval artifact before adapter promotion"
     if "no regularized train records" in blockers:
         if purpose == "operator_agent_bus":
-            return "extract runnable command traces from agent bus, helpdesk loop, Apollo, and browser logs into messages records"
+            return (
+                "extract runnable command traces from agent bus, helpdesk loop, Apollo, "
+                "and browser logs into messages records"
+            )
         if purpose == "research_bridge":
             return "convert source-grounded research notes/transcripts into citation-backed instruction records"
         return "regularize train candidates before dispatch"
@@ -308,9 +416,12 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "",
         "## External Lessons Applied",
         "",
-        "- DeepSeek-V3 pattern: staged high-quality data, SFT plus RL, stable training instrumentation, no rollback-driven chaos.",
-        "- DeepSeek-R1 pattern: use verifiable reward tasks for math/code/STEM instead of trusting demonstrations alone.",
-        "- Kimi K2/K2.5 pattern: agentic workflow data matters; tool-use, environment interaction, and parallel specialist agents are model capability data, not just orchestration code.",
+        "- DeepSeek-V3 pattern: staged high-quality data, SFT plus RL, stable training instrumentation, "
+        "no rollback-driven chaos.",
+        "- DeepSeek-R1 pattern: use verifiable reward tasks for math/code/STEM "
+        "instead of trusting demonstrations alone.",
+        "- Kimi K2/K2.5 pattern: agentic workflow data matters; tool-use, environment interaction, "
+        "and parallel specialist agents are model capability data, not just orchestration code.",
         "",
         "## Surface Counts",
         "",
@@ -331,11 +442,13 @@ def render_markdown(payload: dict[str, Any]) -> str:
             f"- {purpose}: {item['status']}; train {item['train_records']}; eval {item['eval_records']}; "
             f"top score {item['top_promotion_score']}; blockers {blockers}"
         )
+        if item.get("diamond_counts"):
+            lines.append(f"  Diamond states: {item['diamond_counts']}")
         lines.append(f"  Action: {item['recommended_action']}")
         for run in item["top_runs"][:3]:
             lines.append(
                 f"  Run: {run['path']} | score {run['promotion_score']} | "
-                f"quality {run['quality_signal']} | loss {run['loss_signal']}"
+                f"quality {run['quality_signal']} | loss {run['loss_signal']} | state {run.get('diamond_state')}"
             )
     lines.extend(
         [
@@ -343,14 +456,19 @@ def render_markdown(payload: dict[str, Any]) -> str:
             "## Merge Rule",
             "",
             "Merge gains by adapter and purpose bucket, not by dumping every record into one dataset.",
-            "A run can influence the final model only after its bucket has train data, frozen eval data, and a measurable promotion score.",
+            "A run can influence the final model only after its bucket has train data, frozen eval data, "
+            "and a measurable promotion score.",
             "",
             "## Next Extraction Targets",
             "",
-            "- Operator agent bus: convert helpdesk requests, agentbus pipe runs, mirror-room state, Apollo command logs, and browser route traces into runnable command SFT records.",
-            "- Research bridge: convert EML/Kimi/DeepSeek/source notes into claim/citation/verification records, then freeze a citation eval set.",
-            "- Governance security: add eval records before any adapter merge; current train signal is usable but under-gated.",
-            "- Coding model: keep as primary lane; train/evaluate coding and aligned-foundation adapters before final weighted merge.",
+            "- Operator agent bus: convert helpdesk requests, agentbus pipe runs, mirror-room state, "
+            "Apollo command logs, and browser route traces into runnable command SFT records.",
+            "- Research bridge: convert EML/Kimi/DeepSeek/source notes into claim/citation/verification records, "
+            "then freeze a citation eval set.",
+            "- Governance security: add eval records before any adapter merge; "
+            "current train signal is usable but under-gated.",
+            "- Coding model: keep as primary lane; train/evaluate coding and aligned-foundation adapters "
+            "before final weighted merge.",
             "",
         ]
     )

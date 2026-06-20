@@ -4,6 +4,12 @@
 This script scans workflow YAML files for recurring reliability issues that
 commonly hide failures in CI (masked errors, deprecated action pins, etc.).
 It generates a JSON report and a short markdown summary.
+
+Non-blocking workflow steps are allowed only when explicitly marked with an
+audit advisory comment near the risky line, for example:
+
+    # audit: advisory - external upload should not block core CI
+    continue-on-error: true
 """
 
 from __future__ import annotations
@@ -71,6 +77,18 @@ RULES = [
 ]
 
 
+ADVISORY_MARKER = "audit: advisory"
+
+
+def has_advisory_marker(lines: List[str], index: int) -> bool:
+    """Return True when a risky line is explicitly marked advisory nearby."""
+
+    start = max(0, index - 3)
+    end = min(len(lines), index + 2)
+    nearby = "\n".join(lines[start:end]).lower()
+    return ADVISORY_MARKER in nearby
+
+
 def resolve_workspace(value: str) -> Path:
     root = Path(value).expanduser().resolve()
     if not root.exists():
@@ -94,6 +112,8 @@ def scan_workflows(workspace: Path) -> List[WorkflowResult]:
             needle = rule["pattern"]
             for idx, line in enumerate(lines, start=1):
                 if needle in line:
+                    if has_advisory_marker(lines, idx - 1):
+                        continue
                     issues.append(
                         Issue(
                             workflow=workflow.name,
@@ -161,7 +181,7 @@ def emit_github_outputs(totals: Dict[str, int]) -> None:
         f"high_count={totals.get('high', 0)}",
         f"medium_count={totals.get('medium', 0)}",
         f"low_count={totals.get('low', 0)}",
-        f"status={ 'fail' if totals.get('high', 0) > 0 else 'pass' }",
+        f"status={'fail' if totals.get('high', 0) > 0 else 'pass'}",
     ]
     github_output.write_text("\n".join(payload) + "\n", encoding="utf-8")
 

@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Red-Team Summary | AetherMoore</title>
+    <meta
+      name="description"
+      content="Plain-language summary of how SCBE reviews AI workflow risk before recommending fixes."
+    />
+    <link
+      rel="canonical"
+      href="https://aethermoore.com/SCBE-AETHERMOORE/proof/red-team-summary.html"
+    />
+    <style>
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, sans-serif;
+        background: #0b0d12;
+        color: #f2f0ea;
+        line-height: 1.6;
+      }
+      main {
+        width: min(860px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 48px 0;
+      }
+      a {
+        color: #d6a756;
+      }
+      h1 {
+        font-size: clamp(34px, 7vw, 64px);
+        line-height: 1;
+        margin: 0 0 18px;
+      }
+      li {
+        margin: 10px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p><a href="../offers/">Back to offers</a></p>
+      <h1>Red-team summary</h1>
+      <p>
+        SCBE review looks for practical failure modes in an AI workflow, then turns them into fixes
+        a team can actually apply.
+      </p>
+      <ul>
+        <li>
+          <strong>Input risk:</strong> where unsafe, private, or low-quality data enters the
+          workflow.
+        </li>
+        <li>
+          <strong>Tool risk:</strong> which commands, files, network calls, or payments the AI can
+          touch.
+        </li>
+        <li>
+          <strong>Decision risk:</strong> where a human needs to approve, deny, or preserve
+          evidence.
+        </li>
+        <li>
+          <strong>Recovery risk:</strong> what happens when the system is wrong, overloaded, or
+          interrupted.
+        </li>
+      </ul>
+    </main>
+  </body>
+</html>

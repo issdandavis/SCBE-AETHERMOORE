@@ -1,0 +1,824 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>$99 AI Workflow Snapshot | AetherMoore</title>
+    <meta
+      name="description"
+      content="A $99 AI workflow risk receipt: three failure risks, unsafe tool paths, missing receipt points, and next fixes. Static intake form, no backend required."
+    />
+    <meta name="robots" content="index, follow" />
+    <link
+      rel="canonical"
+      href="https://aethermoore.com/SCBE-AETHERMOORE/ai-workflow-snapshot.html"
+    />
+    <link rel="stylesheet" href="static/polly-sidebar-agent.css" />
+    <style>
+      :root {
+        --bg: #0a0b0d;
+        --paper: #f3ead9;
+        --ink: #15120d;
+        --muted: #6e665c;
+        --panel: #14171d;
+        --panel-2: #1b2028;
+        --text: #f8f1e4;
+        --soft: #c8bda8;
+        --line: rgba(243, 234, 217, 0.16);
+        --gold: #d6a756;
+        --blue: #8cb4ff;
+        --green: #2dd3a6;
+        --red: #f06d64;
+        --max: 1120px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background:
+          linear-gradient(90deg, rgba(243, 234, 217, 0.045) 1px, transparent 1px),
+          linear-gradient(180deg, rgba(243, 234, 217, 0.035) 1px, transparent 1px),
+          radial-gradient(circle at 82% 14%, rgba(140, 180, 255, 0.2), transparent 34%),
+          radial-gradient(circle at 12% 2%, rgba(214, 167, 86, 0.18), transparent 30%),
+          linear-gradient(180deg, #0a0b0d 0%, #111720 52%, #090a0c 100%);
+        background-size:
+          44px 44px,
+          44px 44px,
+          auto,
+          auto,
+          auto;
+        color: var(--text);
+        font-family: 'Aptos', 'Segoe UI', system-ui, sans-serif;
+        line-height: 1.55;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .wrap {
+        width: min(var(--max), calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        border-bottom: 1px solid var(--line);
+        background: rgba(10, 11, 13, 0.86);
+        backdrop-filter: blur(14px);
+      }
+
+      .topbar .wrap {
+        min-height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+      }
+
+      .brand {
+        color: var(--gold);
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.18em;
+        text-decoration: none;
+        text-transform: uppercase;
+      }
+
+      .nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 15px;
+        color: var(--soft);
+        font-size: 14px;
+      }
+
+      .nav a {
+        text-decoration: none;
+      }
+
+      .nav a:hover,
+      .nav a:focus {
+        color: var(--text);
+      }
+
+      .hero {
+        padding: 68px 0 34px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(320px, 0.78fr);
+        gap: 28px;
+        align-items: stretch;
+      }
+
+      .eyebrow {
+        margin: 0 0 12px;
+        color: var(--gold);
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        max-width: 11ch;
+        margin-bottom: 18px;
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: clamp(46px, 8vw, 86px);
+        line-height: 0.94;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        margin-bottom: 14px;
+        font-size: clamp(26px, 4vw, 42px);
+        line-height: 1.08;
+      }
+
+      h3 {
+        margin-bottom: 8px;
+        font-size: 18px;
+      }
+
+      .lead {
+        max-width: 62ch;
+        color: var(--soft);
+        font-size: clamp(17px, 2vw, 21px);
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 24px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 46px;
+        border: 1px solid rgba(214, 167, 86, 0.75);
+        border-radius: 7px;
+        padding: 11px 16px;
+        background: var(--gold);
+        color: #12100b;
+        font-weight: 900;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .btn.secondary {
+        background: transparent;
+        color: var(--text);
+      }
+
+      .price-card {
+        display: grid;
+        min-height: 100%;
+        border: 1px solid rgba(214, 167, 86, 0.34);
+        border-radius: 8px;
+        background:
+          linear-gradient(180deg, rgba(214, 167, 86, 0.11), rgba(255, 255, 255, 0.035)),
+          rgba(20, 23, 29, 0.94);
+        box-shadow: 0 24px 90px rgba(0, 0, 0, 0.34);
+      }
+
+      .price-card > div {
+        padding: 22px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .price-card > div:last-child {
+        border-bottom: 0;
+      }
+
+      .price {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 72px;
+        line-height: 0.95;
+      }
+
+      .price small {
+        color: var(--soft);
+        font-family: 'Aptos', 'Segoe UI', system-ui, sans-serif;
+        font-size: 15px;
+        font-weight: 700;
+      }
+
+      .status-list,
+      .clean-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .status-list li,
+      .clean-list li {
+        display: flex;
+        gap: 10px;
+        padding: 9px 0;
+        border-bottom: 1px solid rgba(243, 234, 217, 0.08);
+        color: var(--soft);
+      }
+
+      .status-list li:last-child,
+      .clean-list li:last-child {
+        border-bottom: 0;
+      }
+
+      .dot {
+        width: 9px;
+        height: 9px;
+        flex: 0 0 9px;
+        margin-top: 8px;
+        border-radius: 999px;
+        background: var(--green);
+      }
+
+      section {
+        padding: 42px 0;
+      }
+
+      .band {
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.035);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(20, 23, 29, 0.88);
+        padding: 20px;
+      }
+
+      .card p,
+      .card li {
+        color: var(--soft);
+      }
+
+      .receipt {
+        border: 1px solid rgba(243, 234, 217, 0.22);
+        border-radius: 8px;
+        background: var(--paper);
+        color: var(--ink);
+        overflow: hidden;
+      }
+
+      .receipt header {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 18px;
+        border-bottom: 1px dashed rgba(21, 18, 13, 0.34);
+      }
+
+      .receipt code,
+      .mono {
+        font-family: 'Cascadia Code', 'SF Mono', Consolas, monospace;
+      }
+
+      .receipt .body {
+        padding: 18px;
+      }
+
+      .pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .pill {
+        border: 1px solid rgba(21, 18, 13, 0.18);
+        border-radius: 999px;
+        padding: 5px 9px;
+        background: rgba(21, 18, 13, 0.055);
+        color: #3d352b;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .intake {
+        display: grid;
+        grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1.1fr);
+        gap: 18px;
+        align-items: start;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--text);
+        font-size: 13px;
+        font-weight: 900;
+      }
+
+      input,
+      textarea,
+      select {
+        width: 100%;
+        margin-bottom: 12px;
+        border: 1px solid rgba(243, 234, 217, 0.18);
+        border-radius: 7px;
+        padding: 12px;
+        background: rgba(8, 10, 14, 0.7);
+        color: var(--text);
+        font: inherit;
+      }
+
+      textarea {
+        min-height: 92px;
+        resize: vertical;
+      }
+
+      .output {
+        min-height: 360px;
+        white-space: pre-wrap;
+        overflow: auto;
+        border: 1px solid rgba(45, 211, 166, 0.24);
+        border-radius: 8px;
+        padding: 16px;
+        background: #080a0e;
+        color: #d7ffe9;
+        font-size: 13px;
+      }
+
+      .note {
+        margin-top: 14px;
+        border: 1px solid rgba(140, 180, 255, 0.28);
+        border-radius: 8px;
+        padding: 14px;
+        background: rgba(140, 180, 255, 0.08);
+        color: var(--soft);
+      }
+
+      .copy-box {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        margin-top: 10px;
+        border: 1px solid rgba(243, 234, 217, 0.16);
+        border-radius: 7px;
+        padding: 10px;
+        background: rgba(8, 10, 14, 0.72);
+      }
+
+      .copy-box code {
+        color: var(--text);
+        font-family: 'Cascadia Code', 'SF Mono', Consolas, monospace;
+        font-size: 13px;
+      }
+
+      .mini-btn {
+        border: 1px solid rgba(214, 167, 86, 0.58);
+        border-radius: 6px;
+        padding: 7px 9px;
+        background: transparent;
+        color: var(--gold);
+        font: inherit;
+        font-size: 12px;
+        font-weight: 900;
+        cursor: pointer;
+      }
+
+      footer {
+        padding: 34px 0;
+        border-top: 1px solid var(--line);
+        color: var(--soft);
+      }
+
+      @media (max-width: 860px) {
+        .topbar .wrap,
+        .hero,
+        .grid,
+        .intake {
+          grid-template-columns: 1fr;
+        }
+
+        .topbar .wrap {
+          align-items: flex-start;
+          padding: 16px 0;
+        }
+
+        h1 {
+          max-width: none;
+        }
+      }
+    </style>
+  </head>
+  <body data-polly-context="ai-workflow-snapshot" data-polly-root=".">
+    <div class="topbar">
+      <div class="wrap">
+        <a class="brand" href="index.html">AetherMoore</a>
+        <nav class="nav" aria-label="Snapshot navigation">
+          <a href="proof-workbench.html">Proof</a>
+          <a href="products.html">Products</a>
+          <a href="workflow-snapshot.html">Full snapshot</a>
+          <a href="hire.html">Hire</a>
+        </nav>
+      </div>
+    </div>
+
+    <main>
+      <section class="hero">
+        <div>
+          <p class="eyebrow">Static intake starter offer</p>
+          <h1>AI Workflow Snapshot</h1>
+          <p class="lead">
+            A first paid read for one AI workflow. Build the intake packet locally, pay with the
+            live $99 checkout, and get a receipt-style failure map: what can go wrong, what evidence
+            is missing, and the next three fixes.
+          </p>
+          <div class="actions">
+            <a class="btn" href="#intake">Build intake packet</a>
+            <a class="btn secondary" href="#receipt">See sample receipt</a>
+            <a class="btn secondary" href="#pay">How to pay</a>
+          </div>
+        </div>
+
+        <aside class="price-card" aria-label="$99 AI Workflow Snapshot offer">
+          <div>
+            <p class="eyebrow">Entry offer</p>
+            <div class="price">$99 <small>one workflow</small></div>
+            <p>
+              Best for solo builders, small automations, MCP experiments, prompt chains, local
+              Ollama flows, n8n automations, and early agent prototypes.
+            </p>
+          </div>
+          <div>
+            <ul class="status-list">
+              <li><span class="dot"></span><span>One receipt-style failure memo.</span></li>
+              <li><span class="dot"></span><span>Three practical fixes.</span></li>
+              <li><span class="dot"></span><span>Upgrade credit toward the $500 review.</span></li>
+              <li>
+                <span class="dot"></span
+                ><span>Delivered manually after payment and intake arrive.</span>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <a
+              class="btn"
+              href="https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l"
+              target="_blank"
+              rel="noopener"
+              data-funnel-event="cta_click_buy"
+              data-funnel-label="ai-workflow-price-card-stripe"
+              style="width: 100%; justify-content: center"
+              >Start for $99 with Stripe →</a
+            >
+          </div>
+        </aside>
+      </section>
+
+      <section class="band">
+        <div class="wrap grid">
+          <article class="card">
+            <h3>Good fit</h3>
+            <p>
+              One workflow that already exists or can be described clearly: prompts, tools, model
+              calls, files, APIs, browser actions, or handoff steps.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Not a fit</h3>
+            <p>
+              Legal certification, emergency incident response, compliance attestation, secret
+              handling, or unlimited consulting. This is a first read.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Why this is fast</h3>
+            <p>
+              The intake is structured, the deliverable is bounded, and the first pass is manual.
+              That keeps the offer clear enough to buy without a meeting.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="receipt">
+        <div class="wrap">
+          <p class="eyebrow">Receipt as product</p>
+          <h2>What the buyer receives.</h2>
+          <div class="receipt">
+            <header>
+              <strong>AI Workflow Snapshot Receipt</strong>
+              <code>example-only / no certification</code>
+            </header>
+            <div class="body">
+              <p>
+                <strong>Workflow:</strong> local research assistant that reads notes, drafts a
+                summary, and can write files.
+              </p>
+              <p>
+                <strong>Primary risk:</strong> retrieved content can influence a write action
+                without a human checkpoint.
+              </p>
+              <p>
+                <strong>Missing evidence:</strong> no joined log connecting prompt, retrieved
+                source, tool call, file path, and final output.
+              </p>
+              <p><strong>Next three fixes:</strong></p>
+              <ol>
+                <li>Add an explicit review gate before file writes.</li>
+                <li>Log prompt, source id, tool call, and destination path in one receipt.</li>
+                <li>
+                  Block tool calls when retrieved text requests secrets, credentials, or policy
+                  bypass.
+                </li>
+              </ol>
+              <div class="pill-row" aria-label="Example receipt labels">
+                <span class="pill">ALLOW with review</span>
+                <span class="pill">tool-boundary gap</span>
+                <span class="pill">receipt missing</span>
+                <span class="pill">human checkpoint</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="intake" class="band">
+        <div class="wrap intake">
+          <div>
+            <p class="eyebrow">No backend intake</p>
+            <h2>Build the JSON packet locally.</h2>
+            <p class="lead">
+              Fill this out in the browser, download the JSON, then send that file after payment.
+              Nothing is submitted from this page.
+            </p>
+            <div class="note">
+              Keep secrets out. Redact keys, tokens, private customer data, and anything you would
+              not put in an email.
+            </div>
+          </div>
+
+          <form id="snapshotForm" class="card">
+            <label for="contact">Contact handle or email</label>
+            <input id="contact" name="contact" placeholder="name@example.com or preferred handle" />
+
+            <label for="workflow">Workflow name</label>
+            <input id="workflow" name="workflow" placeholder="Example: local research agent" />
+
+            <label for="stage">Stage</label>
+            <select id="stage" name="stage">
+              <option>idea</option>
+              <option>prototype</option>
+              <option>running locally</option>
+              <option>used with real users</option>
+              <option>production</option>
+            </select>
+
+            <label for="description">What it does</label>
+            <textarea
+              id="description"
+              name="description"
+              placeholder="Describe the workflow in plain language."
+            ></textarea>
+
+            <label for="tools">Tools it can call</label>
+            <textarea
+              id="tools"
+              name="tools"
+              placeholder="Files, browser, email, Slack, APIs, database, shell, MCP tools, etc."
+            ></textarea>
+
+            <label for="worry">What you are worried could go wrong</label>
+            <textarea
+              id="worry"
+              name="worry"
+              placeholder="Prompt injection, bad tool calls, data leak, wrong file write, cost runaway, etc."
+            ></textarea>
+
+            <label for="links">Safe links or references</label>
+            <textarea
+              id="links"
+              name="links"
+              placeholder="Public repo, docs, diagram link, screenshots list, or 'none'."
+            ></textarea>
+
+            <div class="actions">
+              <button
+                class="btn"
+                type="button"
+                id="downloadPacket"
+                data-funnel-event="snapshot_intake_ok"
+                data-funnel-label="download-intake-json"
+              >
+                Download intake JSON
+              </button>
+              <button
+                class="btn secondary"
+                type="button"
+                id="copyPacket"
+                data-funnel-event="snapshot_intake_ok"
+                data-funnel-label="copy-intake-json"
+              >
+                Copy packet
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section>
+        <div class="wrap intake">
+          <div>
+            <p class="eyebrow">Generated packet</p>
+            <h2>Preview before you send.</h2>
+            <p>
+              This is the exact structured intake. The clearer this is, the faster the receipt can
+              be written.
+            </p>
+          </div>
+          <pre id="packetOutput" class="output" aria-live="polite"></pre>
+        </div>
+      </section>
+
+      <section id="pay" class="band">
+        <div class="wrap grid">
+          <article class="card">
+            <h3>Pay — $99 Stripe or manual alternate</h3>
+            <p>
+              Use Stripe for the formal $99 receipt-backed review with upgrade credit toward the
+              $500 Governance Snapshot. Cash App <strong>$IzzyDDavis7</strong> remains available as
+              a manual alternate; put <strong>AI Workflow Snapshot</strong> in the note.
+            </p>
+            <div class="actions">
+              <a
+                class="btn"
+                href="https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l"
+                target="_blank"
+                rel="noopener"
+                data-funnel-event="cta_click_buy"
+                data-funnel-label="ai-workflow-pay-section-stripe"
+                >$99 with Stripe →</a
+              >
+              <a class="btn secondary" href="workflow-snapshot.html">Full $99 offer</a>
+            </div>
+          </article>
+          <article class="card">
+            <h3>Send after payment</h3>
+            <p>
+              Download the JSON intake packet above, then email it after checkout. That pairs your
+              payment to a specific workflow so the review starts immediately.
+            </p>
+            <div class="copy-box">
+              <code id="snapshotEmail">issdandavis7795@gmail.com</code>
+              <button class="mini-btn" type="button" data-copy="snapshotEmail">Copy inbox</button>
+            </div>
+          </article>
+          <article class="card">
+            <h3>Upgrade path</h3>
+            <p>
+              If the first read surfaces a deeper issue, the $99 can be credited toward the
+              <a href="governance-snapshot.html">$500 Governance Snapshot</a>. Cash App
+              <strong>$IzzyDDavis7</strong> is available as the manual alternate if Stripe is not
+              convenient.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <div class="wrap grid">
+          <article class="card">
+            <h3>Newsletter without a platform</h3>
+            <p>
+              Ask for "updates" in the intake packet or email subject. Updates can go out from
+              Proton/Gmail manually: new receipt examples, new checklists, and small governance
+              lessons from real workflows.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Good first mailing</h3>
+            <p>
+              "3 ways AI workflows fail before the model is the problem." It points to the free
+              self-check, this $99 intake, and one public proof receipt.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Simple rule</h3>
+            <p>
+              No scraped list, no spam blast. Only people who asked for updates, bought a snapshot,
+              or directly requested follow-up.
+            </p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        AetherMoore / SCBE-AETHERMOORE. Static page, local intake packet, no backend form
+        submission.
+      </div>
+    </footer>
+
+    <script>
+      (function () {
+        var form = document.getElementById('snapshotForm');
+        var output = document.getElementById('packetOutput');
+
+        function value(id) {
+          return (document.getElementById(id).value || '').trim();
+        }
+
+        function packet() {
+          return {
+            packet_type: 'aethermoore_ai_workflow_snapshot_intake_v1',
+            offer: 'AI Workflow Snapshot',
+            price_usd: 99,
+            created_at: new Date().toISOString(),
+            contact: value('contact'),
+            workflow_name: value('workflow'),
+            stage: value('stage'),
+            description: value('description'),
+            tools: value('tools'),
+            primary_worry: value('worry'),
+            safe_links_or_references: value('links'),
+            redaction_ack:
+              'Do not include secrets, credentials, private customer data, or API keys.',
+          };
+        }
+
+        function render() {
+          output.textContent = JSON.stringify(packet(), null, 2);
+        }
+
+        function filename() {
+          var name = value('workflow')
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-|-$/g, '');
+          return 'ai-workflow-snapshot-intake-' + (name || Date.now()) + '.json';
+        }
+
+        document.getElementById('downloadPacket').addEventListener('click', function () {
+          render();
+          var blob = new Blob([output.textContent + '\n'], { type: 'application/json' });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = filename();
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(function () {
+            URL.revokeObjectURL(url);
+            a.remove();
+          }, 800);
+        });
+
+        document.getElementById('copyPacket').addEventListener('click', function () {
+          render();
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(output.textContent);
+          }
+        });
+
+        document.querySelectorAll('[data-copy]').forEach(function (button) {
+          button.addEventListener('click', function () {
+            var target = document.getElementById(button.getAttribute('data-copy'));
+            if (target && navigator.clipboard) {
+              navigator.clipboard.writeText(target.textContent.trim());
+            }
+          });
+        });
+
+        form.addEventListener('input', render);
+        render();
+      })();
+    </script>
+    <script>
+      window.POLLY_STATIC_ONLY = true;
+    </script>
+    <script src="static/polly-funnel.js" data-page="ai-workflow-snapshot"></script>
+    <script
+      src="static/polly-sidebar-agent.js"
+      data-polly-api="."
+      data-polly-static="true"
+    ></script>
+  </body>
+</html>

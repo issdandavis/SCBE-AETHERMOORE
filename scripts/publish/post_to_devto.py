@@ -181,7 +181,7 @@ def post_article(
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
             resp_data = json.loads(resp.read().decode("utf-8"))
-            print(f"[devto] SUCCESS — published!")
+            print("[devto] SUCCESS — published!")
             print(f"  URL: {resp_data.get('url', 'unknown')}")
             print(f"  ID: {resp_data.get('id', 'unknown')}")
             return resp_data

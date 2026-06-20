@@ -303,10 +303,7 @@ export function simulateDrift2D(
  * @param driftPath - Optional drift path to overlay (shown as '*')
  * @returns Multi-line string of ASCII art
  */
-export function renderSliceASCII(
-  slice: SliceData,
-  driftPath?: [number, number][]
-): string {
+export function renderSliceASCII(slice: SliceData, driftPath?: [number, number][]): string {
   const chars = [' ', '·', '░', '▒', '▓', '█'];
   const step = (slice.range[1] - slice.range[0]) / (slice.resolution - 1);
 

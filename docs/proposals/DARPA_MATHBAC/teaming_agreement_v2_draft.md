@@ -348,7 +348,7 @@ Twelve-month period of performance; five deliverables; joint research program un
 
 **C.2.3 (Task 4 / Deliverable #4).** Extend the PSU(1,1) Möbius equivariance result from 2D (Test B 5-seed bit-identical) to PSU(1,2) 3D pre-embed; document group-action correctness proofs.
 
-**C.2.4 (Task 5 / Deliverable #5).** Prepare joint paper draft for peer review (venue TBD; target: NeurIPS 2026 workshop or equivalent).
+**C.2.4 (Task 5 / Deliverable #5).** Prepare joint paper draft for peer review (venue selection pending; target: NeurIPS 2026 workshop or equivalent).
 
 ## C.3 Sub (Hoags Inc.) tasks
 

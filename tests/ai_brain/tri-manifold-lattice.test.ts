@@ -8,7 +8,7 @@
  *
  * Test groups:
  *   A. Harmonic Scaling Law properties
- *   B. Triadic Distance (weighted Euclidean norm)
+ *   B. Triadic Distance (canonical φ-power mean)
  *   C. TemporalWindow sliding average
  *   D. TriManifoldLattice integration
  *   E. Temporal Resonance & Anomaly Detection
@@ -188,8 +188,13 @@ describe('Test A: Harmonic Scaling Law H(d, R) = R^(d²)', () => {
 describe('Test B: Triadic Distance', () => {
   const w: TriadicWeights = { immediate: 0.5, memory: 0.3, governance: 0.2 };
 
-  it('zero when all distances are zero', () => {
-    expect(triadicDistance(0, 0, 0, w)).toBe(0);
+  it('near-zero (eps-clamped) when all distances are zero', () => {
+    // Canonical φ-power mean uses an eps clamp (max(d, 1e-10)) to keep the
+    // formula well-defined and avoid zero-collapse, so a triple-zero input
+    // returns a value just above zero rather than exactly 0.
+    const v = triadicDistance(0, 0, 0, w);
+    expect(v).toBeGreaterThan(0);
+    expect(v).toBeLessThan(1e-9);
   });
 
   it('positive-definite: d_tri > 0 when any dᵢ > 0', () => {
@@ -208,11 +213,35 @@ describe('Test B: Triadic Distance', () => {
     expect(dMem).toBeGreaterThan(dGov);
   });
 
-  it('equals standard Euclidean norm when weights are uniform', () => {
+  it('equals canonical φ-power mean when weights are uniform', () => {
     const uniform: TriadicWeights = { immediate: 1 / 3, memory: 1 / 3, governance: 1 / 3 };
     const d = triadicDistance(3, 4, 0, uniform);
-    // √((1/3)*9 + (1/3)*16 + 0) = √(25/3)
-    expect(d).toBeCloseTo(Math.sqrt(25 / 3), 8);
+    // Canonical L11 aggregation: d_tri = (Σ λᵢ·dᵢ^φ)^(1/φ).
+    // The third component (0) is eps-clamped, so its contribution is negligible.
+    const eps = 1e-10;
+    const expected = Math.pow(
+      (1 / 3) * Math.pow(3, PHI) + (1 / 3) * Math.pow(4, PHI) + (1 / 3) * Math.pow(eps, PHI),
+      1.0 / PHI
+    );
+    expect(d).toBeCloseTo(expected, 8);
+  });
+
+  it('matches power-mean inequality M_1 ≤ M_φ ≤ M_2 on the uniform diagonal', () => {
+    // For inputs in [0, ∞) with 1 < φ < 2, the φ-power mean lies between the
+    // arithmetic mean (M_1) and the quadratic mean (M_2). This is the algebraic
+    // contract that distinguishes L11 from a plain Euclidean norm.
+    const uniform: TriadicWeights = { immediate: 1 / 3, memory: 1 / 3, governance: 1 / 3 };
+    for (const [d1, d2, d3] of [
+      [0.1, 0.2, 0.3],
+      [0.4, 0.6, 0.8],
+      [0.05, 0.5, 0.95],
+    ]) {
+      const arithmetic = (d1 + d2 + d3) / 3;
+      const quadratic = Math.sqrt((d1 * d1 + d2 * d2 + d3 * d3) / 3);
+      const phiMean = triadicDistance(d1, d2, d3, uniform);
+      expect(phiMean).toBeGreaterThanOrEqual(arithmetic - 1e-9);
+      expect(phiMean).toBeLessThanOrEqual(quadratic + 1e-9);
+    }
   });
 
   it('monotonic in each component', () => {

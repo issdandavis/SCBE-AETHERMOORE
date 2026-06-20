@@ -1,0 +1,797 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <title>The Unified Math Spine — SCBE · PHDM · GeoSeal · HYDRA · VECRO</title>
+    <meta
+      name="description"
+      content="A scroll-driven guide down the mathematical spine of SCBE-AETHERMOORE: cost physics, polyhedral dynamics, geometric crypto binding, quorum risk, the Six Tongues bijection, and the vector-spin coupling — one vertebra at a time."
+    />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta property="og:title" content="The Unified Math Spine" />
+    <meta
+      property="og:description"
+      content="Travel down the math spine of the governed-AI stack. Each part zooms into focus as you scroll."
+    />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="https://aethermoore.com/math-spine.html" />
+    <link rel="canonical" href="https://aethermoore.com/math-spine.html" />
+
+    <!-- Math typesetting. Degrades to raw TeX if the CDN is unreachable. -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"
+      crossorigin="anonymous"
+    />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+      crossorigin="anonymous"
+    ></script>
+
+    <style>
+      :root {
+        --bg: #0b0d12;
+        --bg-soft: #11161f;
+        --panel: rgba(18, 23, 32, 0.92);
+        --line: rgba(214, 167, 86, 0.18);
+        --text: #f2f0ea;
+        --muted: #a3acb9;
+        --accent: #d6a756;
+        --accent-strong: #f0bf67;
+        --cool: #8cb4ff;
+        --max: 1180px;
+        --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+        --rail-x: 46px;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        font-family: Georgia, 'Times New Roman', serif;
+        background:
+          radial-gradient(circle at top, rgba(214, 167, 86, 0.12), transparent 34%),
+          linear-gradient(180deg, #0b0d12 0%, #0e131b 40%, #0b0d12 100%);
+        color: var(--text);
+        line-height: 1.6;
+        overflow-x: hidden;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      /* ---- topbar ---- */
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 40;
+        backdrop-filter: blur(14px);
+        background: rgba(11, 13, 18, 0.82);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+      .topbar-inner {
+        width: min(var(--max), calc(100% - 32px));
+        margin: 0 auto;
+        min-height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+      }
+      .brand {
+        font-size: 14px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--accent);
+        font-weight: 700;
+      }
+      .nav {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .nav a:hover {
+        color: var(--text);
+      }
+
+      /* ---- top scroll progress bar ---- */
+      .scrollbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 3px;
+        width: 100%;
+        z-index: 50;
+        background: transparent;
+        pointer-events: none;
+      }
+      .scrollbar > i {
+        display: block;
+        height: 100%;
+        width: var(--progress, 0%);
+        background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+        box-shadow: 0 0 14px rgba(240, 191, 103, 0.6);
+        transition: width 80ms linear;
+      }
+
+      /* ---- hero ---- */
+      .hero {
+        width: min(var(--max), calc(100% - 32px));
+        margin: 0 auto;
+        padding: 86px 0 40px;
+        display: grid;
+        grid-template-columns: 1.25fr 0.75fr;
+        gap: 40px;
+        align-items: center;
+      }
+      .eyebrow {
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 16px;
+      }
+      h1 {
+        font-size: clamp(38px, 6.4vw, 76px);
+        line-height: 0.96;
+        letter-spacing: -0.035em;
+        margin-bottom: 20px;
+      }
+      .hero p {
+        max-width: 54ch;
+        font-size: clamp(16px, 1.9vw, 20px);
+        color: var(--muted);
+        margin-bottom: 22px;
+      }
+      .hint {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .hint .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent);
+        animation: bob 1.6s ease-in-out infinite;
+      }
+      @keyframes bob {
+        0%, 100% { transform: translateY(0); opacity: 0.6; }
+        50% { transform: translateY(5px); opacity: 1; }
+      }
+      /* hero spine illustration */
+      .hero-spine {
+        display: flex;
+        justify-content: center;
+      }
+      .hero-spine svg {
+        width: 150px;
+        height: auto;
+        filter: drop-shadow(0 0 24px rgba(214, 167, 86, 0.25));
+      }
+
+      /* ---- spine rail (the thing you travel down) ---- */
+      .rail {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100vh;
+        width: 96px;
+        z-index: 30;
+        pointer-events: none;
+      }
+      .rail .track {
+        position: absolute;
+        left: var(--rail-x);
+        top: 12vh;
+        bottom: 12vh;
+        width: 2px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+      .rail .fill {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: var(--progress, 0%);
+        background: linear-gradient(180deg, var(--accent-strong), var(--accent));
+        box-shadow: 0 0 12px rgba(240, 191, 103, 0.7);
+      }
+      .rail .node {
+        position: absolute;
+        left: var(--rail-x);
+        transform: translate(-50%, -50%);
+        width: 13px;
+        height: 13px;
+        border-radius: 50%;
+        background: var(--bg-soft);
+        border: 2px solid rgba(255, 255, 255, 0.25);
+        pointer-events: auto;
+        cursor: pointer;
+        transition: 260ms ease;
+      }
+      .rail .node::after {
+        content: attr(data-label);
+        position: absolute;
+        left: 22px;
+        top: 50%;
+        transform: translateY(-50%);
+        white-space: nowrap;
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+        opacity: 0;
+        transition: opacity 220ms ease;
+      }
+      .rail .node:hover::after {
+        opacity: 1;
+      }
+      .rail .node.on {
+        background: var(--accent);
+        border-color: var(--accent-strong);
+        width: 18px;
+        height: 18px;
+        box-shadow: 0 0 0 5px rgba(214, 167, 86, 0.16), 0 0 18px rgba(240, 191, 103, 0.7);
+      }
+      .rail .node.on::after {
+        opacity: 1;
+        color: var(--accent-strong);
+      }
+
+      /* ---- vertebrae ---- */
+      .spine {
+        width: min(var(--max), calc(100% - 32px));
+        margin: 0 auto;
+        padding-left: 70px;
+      }
+      .vertebra {
+        min-height: 96vh;
+        display: flex;
+        align-items: center;
+        padding: 4vh 0;
+      }
+      .card {
+        position: relative;
+        width: 100%;
+        max-width: 760px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        padding: 34px 38px 38px;
+        box-shadow: var(--shadow);
+        transform: scale(0.85);
+        opacity: 0.26;
+        filter: blur(2px);
+        transform-origin: left center;
+        transition:
+          transform 0.62s cubic-bezier(0.2, 0.72, 0.2, 1),
+          opacity 0.62s ease,
+          filter 0.62s ease,
+          border-color 0.62s ease;
+        will-change: transform, opacity;
+      }
+      .vertebra.active .card {
+        transform: scale(1);
+        opacity: 1;
+        filter: none;
+        border-color: rgba(214, 167, 86, 0.4);
+      }
+      .badge {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+      .badge .num {
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        color: var(--accent);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 4px 12px;
+      }
+      .badge .sys {
+        font-size: 12px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--cool);
+      }
+      .card h2 {
+        font-size: clamp(26px, 3.4vw, 40px);
+        line-height: 1.05;
+        letter-spacing: -0.02em;
+        margin-bottom: 8px;
+      }
+      .card .lede {
+        color: var(--muted);
+        font-size: 17px;
+        margin-bottom: 22px;
+      }
+      .sub {
+        border-top: 1px solid rgba(255, 255, 255, 0.07);
+        padding-top: 16px;
+        margin-top: 16px;
+      }
+      .sub h3 {
+        font-size: 14px;
+        letter-spacing: 0.06em;
+        color: var(--accent-strong);
+        margin-bottom: 8px;
+        font-weight: 700;
+      }
+      .sub p {
+        color: var(--text);
+        font-size: 16px;
+        margin-bottom: 8px;
+      }
+      .sub ul {
+        list-style: none;
+        margin: 6px 0 4px;
+      }
+      .sub li {
+        position: relative;
+        padding-left: 18px;
+        color: var(--muted);
+        font-size: 15.5px;
+        margin-bottom: 6px;
+      }
+      .sub li::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.7em;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+      .eq {
+        margin: 12px 0;
+        padding: 14px 18px;
+        background: rgba(140, 180, 255, 0.06);
+        border: 1px solid rgba(140, 180, 255, 0.16);
+        border-radius: 12px;
+        overflow-x: auto;
+        font-size: 18px;
+      }
+      .katex { color: #eaf1ff; }
+      .aside {
+        margin-top: 12px;
+        font-size: 13.5px;
+        color: var(--muted);
+        border-left: 2px solid var(--line);
+        padding-left: 12px;
+      }
+      .flag {
+        display: inline-block;
+        margin-bottom: 14px;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #14110c;
+        background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+        border-radius: 999px;
+        padding: 4px 12px;
+        font-weight: 700;
+      }
+
+      /* one-picture flow */
+      .flow {
+        counter-reset: step;
+        list-style: none;
+        display: grid;
+        gap: 10px;
+      }
+      .flow li {
+        counter-increment: step;
+        position: relative;
+        padding: 12px 14px 12px 52px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 12px;
+        color: var(--text);
+        font-size: 15.5px;
+      }
+      .flow li::before {
+        content: counter(step);
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 28px;
+        height: 28px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: rgba(214, 167, 86, 0.16);
+        color: var(--accent-strong);
+        font-weight: 700;
+        font-size: 13px;
+      }
+
+      /* footer */
+      .foot {
+        width: min(var(--max), calc(100% - 32px));
+        margin: 40px auto 80px;
+        padding-left: 70px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .foot .prov {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 22px 24px;
+        background: rgba(18, 23, 32, 0.6);
+      }
+      .foot a.back {
+        color: var(--accent);
+      }
+
+      @media (max-width: 860px) {
+        .hero {
+          grid-template-columns: 1fr;
+          padding-top: 64px;
+        }
+        .hero-spine { display: none; }
+        .rail { display: none; }
+        .spine,
+        .foot { padding-left: 0; }
+        .card { transform: scale(0.92); }
+        .vertebra.active .card { transform: scale(1); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .card { transform: none; opacity: 1; filter: none; }
+        .hint .dot { animation: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="scrollbar"><i></i></div>
+
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="index.html">◄ AetherMoore</a>
+        <nav class="nav">
+          <a href="index.html">Home</a>
+          <a href="guides.html">Guides</a>
+          <a href="benchmarks.html">Benchmarks</a>
+          <a href="products.html">Products</a>
+        </nav>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div>
+        <div class="eyebrow">Reference · One Mathematical Spine</div>
+        <h1>The Unified<br />Math Spine</h1>
+        <p>
+          One place to see the mathematical spine of the whole system — SCBE cost
+          physics, PHDM polyhedral dynamics, the GeoSeal envelope, HYDRA quorum,
+          the Six&nbsp;Tongues bijection, and the vector-spin coupling. Scroll, and
+          each vertebra zooms into focus as you travel down.
+        </p>
+        <span class="hint"><span class="dot"></span> Scroll to descend the spine</span>
+      </div>
+      <div class="hero-spine" aria-hidden="true">
+        <!-- stylized spinal column -->
+        <svg viewBox="0 0 120 460" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="60" y1="14" x2="60" y2="446" stroke="rgba(214,167,86,0.35)" stroke-width="2" />
+          <g fill="rgba(214,167,86,0.12)" stroke="rgba(240,191,103,0.55)" stroke-width="1.5">
+            <ellipse cx="60" cy="40" rx="34" ry="14" />
+            <ellipse cx="60" cy="92" rx="38" ry="15" />
+            <ellipse cx="60" cy="146" rx="42" ry="16" />
+            <ellipse cx="60" cy="202" rx="44" ry="17" />
+            <ellipse cx="60" cy="258" rx="42" ry="16" />
+            <ellipse cx="60" cy="312" rx="38" ry="15" />
+            <ellipse cx="60" cy="364" rx="34" ry="14" />
+            <ellipse cx="60" cy="414" rx="30" ry="13" />
+          </g>
+          <g fill="var(--accent-strong)">
+            <circle cx="60" cy="40" r="3.5" /><circle cx="60" cy="92" r="3.5" />
+            <circle cx="60" cy="146" r="3.5" /><circle cx="60" cy="202" r="3.5" />
+            <circle cx="60" cy="258" r="3.5" /><circle cx="60" cy="312" r="3.5" />
+            <circle cx="60" cy="364" r="3.5" /><circle cx="60" cy="414" r="3.5" />
+          </g>
+        </svg>
+      </div>
+    </section>
+
+    <!-- the travel rail -->
+    <div class="rail" aria-hidden="true">
+      <div class="track"><div class="fill"></div></div>
+      <!-- nodes injected by script, evenly spaced -->
+    </div>
+
+    <main class="spine" id="spine">
+      <!-- 0 — NOTATION -->
+      <section class="vertebra" id="v0" data-label="Notation">
+        <article class="card">
+          <div class="badge"><span class="num">0</span><span class="sys">Shared notation</span></div>
+          <h2>The symbols, once</h2>
+          <p class="lede">Every vertebra below reuses this small alphabet. Fix it here and the rest reads cleanly.</p>
+          <div class="sub">
+            <ul>
+              <li>Context / message: \(m\)</li>
+              <li>Embedding / state vector: \(x \in \mathbb{R}^d\)</li>
+              <li>Reference / policy manifold (or centroid): \(\mu\) — or set \(\mathcal{M}\)</li>
+              <li>Distance / deviation: \(\Delta = d(x, \mathcal{M})\) or \(\lVert x-\mu \rVert\)</li>
+              <li>Risk score: \(R\) (scalar)</li>
+              <li>Defense cost: \(C_D\) &nbsp;·&nbsp; Attacker cost: \(C_A\)</li>
+            </ul>
+          </div>
+        </article>
+      </section>
+
+      <!-- 1 — SCBE -->
+      <section class="vertebra" id="v1" data-label="SCBE">
+        <article class="card">
+          <div class="badge"><span class="num">1</span><span class="sys">SCBE</span></div>
+          <h2>Context-bound cost physics</h2>
+          <p class="lede">Encode context as geometry, measure how far a state has drifted, and make that drift cost explode.</p>
+          <div class="sub">
+            <h3>1.1 · Encode context into a geometric space</h3>
+            <p>Map inputs (prompt, tool state, metadata, time) into a structured vector \(x\), and maintain an allowed region / reference structure \(\mathcal{M}\).</p>
+          </div>
+          <div class="sub">
+            <h3>1.2 · Measure deviation</h3>
+            <div class="eq">\[ \Delta = d(x, \mathcal{M}) \qquad\text{or, centroid baseline:}\qquad \Delta = \lVert x-\mu \rVert_2 \]</div>
+          </div>
+          <div class="sub">
+            <h3>1.3 · Amplify cost super-exponentially — the “wall”</h3>
+            <div class="eq">\[ H(d, R) = R^{\,d^2} \]</div>
+            <p>For fixed \(R>1\), cost explodes as the deviation dimension \(d\) grows.</p>
+            <p class="aside">Note: this is the unbounded <em>cost-multiplier</em> form (root package). The shipped pipeline gate consumes a separate <em>bounded</em> score \(1/(1+d_H+2\,pd)\in(0,1]\); the two live in different packages and should not be substituted.</p>
+          </div>
+          <div class="sub">
+            <h3>1.4 · Asymmetry objective</h3>
+            <p>Design goal: \(C_A(\Delta, d)\) grows much faster than \(C_D(\Delta, d)\) — defenders pay roughly constant overhead while attackers pay exploding overhead.</p>
+          </div>
+        </article>
+      </section>
+
+      <!-- 2 — PHDM -->
+      <section class="vertebra" id="v2" data-label="PHDM">
+        <article class="card">
+          <div class="badge"><span class="num">2</span><span class="sys">PHDM</span></div>
+          <h2>Constrained dynamics on a polyhedral graph</h2>
+          <p class="lede">Treat the cognitive/security state as nodes with allowed transitions, and choose actions by minimizing energy.</p>
+          <div class="sub">
+            <h3>2.1 · State space as nodes + allowed transitions</h3>
+            <p>A graph \(G=(V,E)\) with polyhedral semantics; a path \(\pi\) is a sequence \(v_1 \to v_2 \to \dots \to v_k\) subject to constraints.</p>
+          </div>
+          <div class="sub">
+            <h3>2.2 · Hamiltonian-style traversal constraint</h3>
+            <ul>
+              <li>Visit constraint: each node at most once (or within a cooldown window).</li>
+              <li>Penalty for repeats: add a term \(\lambda \cdot \#\text{revisits}\).</li>
+            </ul>
+          </div>
+          <div class="sub">
+            <h3>2.3 · Energy view (the unifying lens)</h3>
+            <div class="eq">\[ E(\pi) = E_{\text{task}}(\pi) + \alpha\, E_{\text{risk}}(\pi) + \beta\, E_{\text{drift}}(\pi) \]</div>
+            <p>where \(E_{\text{risk}}\) is driven by SCBE deviation / cost.</p>
+          </div>
+        </article>
+      </section>
+
+      <!-- 3 — GeoSeal -->
+      <section class="vertebra" id="v3" data-label="GeoSeal">
+        <article class="card">
+          <div class="badge"><span class="num">3</span><span class="sys">GeoSeal</span></div>
+          <h2>Geometric binding + crypto envelope</h2>
+          <p class="lede">Bind payload to its context, and accept only when the context still matches within a risk-tightened threshold.</p>
+          <div class="sub">
+            <h3>3.1 · Envelope = (data, context, proofs)</h3>
+            <p>An envelope \(\mathcal{E}\) carries payload \(m\), context features \(c\) (space/time/device/agent/toolchain), and an integrity proof (HMAC) + signatures.</p>
+          </div>
+          <div class="sub">
+            <h3>3.2 · Binding rule</h3>
+            <div class="eq">\[ \text{accept} \iff \Delta(c, c_{\text{expected}}) \le \tau \]</div>
+            <p>where \(\tau\) is a threshold that may tighten as risk increases.</p>
+          </div>
+          <div class="sub">
+            <h3>3.3 · Verification output</h3>
+            <p>A boolean accept/reject plus a risk score \(R\) and an audit-log record.</p>
+          </div>
+        </article>
+      </section>
+
+      <!-- 4 — HYDRA -->
+      <section class="vertebra" id="v4" data-label="HYDRA">
+        <article class="card">
+          <div class="badge"><span class="num">4</span><span class="sys">HYDRA</span></div>
+          <h2>Multi-agent quorum as a risk function</h2>
+          <p class="lede">Independent heads vote; the bar to pass rises with risk, and the votes must come from distinct lineages.</p>
+          <div class="sub">
+            <h3>4.1 · Agents as independent evaluators</h3>
+            <p>Each head \(i\) outputs a vote \(v_i \in \{0,1\}\) and/or a score \(s_i \in [0,1]\).</p>
+          </div>
+          <div class="sub">
+            <h3>4.2 · Quorum rule</h3>
+            <div class="eq">\[ \sum_i v_i \ge q(R), \qquad q(R)=\big\lceil a + bR \big\rceil \]</div>
+            <p>with caps at the total number of agents.</p>
+          </div>
+          <div class="sub">
+            <h3>4.3 · Diversity constraint (anti-collusion)</h3>
+            <div class="eq">\[ \lvert \text{lineages}(S) \rvert \ge L(R) \]</div>
+            <p>votes in the selected set \(S\) must span enough distinct channels / lineages.</p>
+          </div>
+        </article>
+      </section>
+
+      <!-- 5 — Six Tongues -->
+      <section class="vertebra" id="v5" data-label="Six Tongues">
+        <article class="card">
+          <div class="badge"><span class="num">5</span><span class="sys">Six Tongues · SS1</span></div>
+          <h2>The tokenizer as a bijection</h2>
+          <p class="lede">Bytes split into nibbles, map to prefix+suffix tokens per tongue, and cross-translate without losing payload.</p>
+          <div class="sub">
+            <h3>5.1 · Byte-to-token bijection</h3>
+            <p>A byte \(b \in \{0,\dots,255\}\) splits into nibbles \(h = b \gg 4\) and \(\ell = b \,\&\, 15\):</p>
+            <div class="eq">\[ t = p_h \;\Vert\; s_\ell \quad(\text{prefix} \Vert \text{suffix, per tongue}) \]</div>
+          </div>
+          <div class="sub">
+            <h3>5.2 · Cross-translation preserves payload</h3>
+            <div class="eq">\[ \text{enc}_B\big(\text{dec}_A(T)\big), \qquad \text{attest: } \text{HMAC}_k(\text{src}\to\text{dst},\, T') \]</div>
+          </div>
+        </article>
+      </section>
+
+      <!-- 6 — VECRO / spin (placeholder in source) -->
+      <section class="vertebra" id="v6" data-label="VECRO · Spin">
+        <article class="card">
+          <div class="badge"><span class="num">6</span><span class="sys">VECRO · Vector-Spin</span></div>
+          <span class="flag">Draft · placeholder in source</span>
+          <h2>The vector-spin coupling</h2>
+          <p class="lede">The source note marks this section as a structured placeholder — the canonical VECRO/spin equations are not yet pinned. Shown honestly as scaffolding, not settled math.</p>
+          <div class="sub">
+            <h3>6.1 · Vector-spin object</h3>
+            <div class="eq">\[ \psi = (x, \omega) \quad x=\text{state vector},\ \ \omega=\text{spin/phase/rotation descriptor} \]</div>
+          </div>
+          <div class="sub">
+            <h3>6.2 · Update rule (canonical form pending)</h3>
+            <div class="eq">\[ x_{t+1} = f(x_t, u_t, \omega_t) \]</div>
+          </div>
+          <div class="sub">
+            <h3>6.3 · Coupling into SCBE / PHDM</h3>
+            <p>Spin is intended to enter the distance metric \(d(\cdot,\cdot)\), the drift score, and the quorum/risk tier — exact coupling to be specified.</p>
+            <p class="aside">Related in-repo work: the spin-voxel research adapter uses an <em>intensive</em> angular-disorder (wall-density) signal; an earlier extensive magnetic-energy term was removed after a same-inventory null test showed it decorative.</p>
+          </div>
+        </article>
+      </section>
+
+      <!-- 7 — One picture -->
+      <section class="vertebra" id="v7" data-label="One Picture">
+        <article class="card">
+          <div class="badge"><span class="num">7</span><span class="sys">The whole flow</span></div>
+          <h2>One picture, end to end</h2>
+          <p class="lede">All seven vertebrae as a single pass from raw input to a signed, audited outcome.</p>
+          <div class="sub">
+            <ol class="flow">
+              <li><strong>Encode</strong> — \((m,c) \mapsto x\)</li>
+              <li><strong>Score deviation</strong> — \(\Delta = d(x,\mathcal{M})\)</li>
+              <li><strong>Map to risk</strong> — \(R = g(\Delta)\)</li>
+              <li><strong>Gate</strong> — GeoSeal threshold + crypto verification</li>
+              <li><strong>Govern</strong> — HYDRA quorum \(q(R)\) + diversity \(L(R)\)</li>
+              <li><strong>Plan</strong> — PHDM picks constrained path \(\pi\) minimizing \(E(\pi)\)</li>
+              <li><strong>Audit</strong> — log proofs + signed outcomes</li>
+            </ol>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <div class="prov">
+        <p style="color: var(--text); margin-bottom: 8px;"><strong>Provenance.</strong></p>
+        <p>
+          Transcribed from the working note “Unified Math Spine — SCBE · PHDM · GeoSeal ·
+          HYDRA · VECRO · Spin” (last revised 2026-04-26). Section&nbsp;6 (VECRO/spin) is a
+          marked placeholder in the source; its equations are scaffolding, not settled claims.
+          The Layer-12 form in 1.3 is the unbounded cost-multiplier; the shipped gate consumes a
+          separate bounded score. Formulas are the author’s working forms — integrity of
+          transcription, not a correctness guarantee.
+        </p>
+        <p style="margin-top: 14px;">
+          <a class="back" href="index.html">◄ Back to AetherMoore</a>
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      (function () {
+        var sections = Array.prototype.slice.call(document.querySelectorAll('.vertebra'));
+        var rail = document.querySelector('.rail');
+        var fillEls = document.querySelectorAll('.fill, .scrollbar > i').length;
+
+        // build evenly spaced rail nodes
+        var nodes = [];
+        sections.forEach(function (sec, i) {
+          var n = document.createElement('button');
+          n.className = 'node';
+          n.style.top = (12 + (i * (76 / (sections.length - 1)))) + 'vh';
+          n.setAttribute('data-label', sec.getAttribute('data-label'));
+          n.setAttribute('aria-label', 'Jump to ' + sec.getAttribute('data-label'));
+          n.addEventListener('click', function () {
+            sec.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          });
+          rail.appendChild(n);
+          nodes.push(n);
+        });
+
+        function setActive(idx) {
+          sections.forEach(function (s, i) {
+            s.classList.toggle('active', i === idx);
+          });
+          nodes.forEach(function (n, i) {
+            n.classList.toggle('on', i === idx);
+          });
+        }
+
+        // activate the section nearest viewport center
+        var io = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (e) {
+              if (e.isIntersecting) {
+                setActive(sections.indexOf(e.target));
+              }
+            });
+          },
+          { rootMargin: '-44% 0px -44% 0px', threshold: 0 }
+        );
+        sections.forEach(function (s) { io.observe(s); });
+
+        // scroll progress -> rail fill + top bar
+        var root = document.documentElement;
+        function onScroll() {
+          var h = root.scrollHeight - root.clientHeight;
+          var p = h > 0 ? (root.scrollTop || document.body.scrollTop) / h : 0;
+          root.style.setProperty('--progress', (p * 100).toFixed(2) + '%');
+        }
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+        setActive(0);
+
+        // typeset math; if KaTeX failed to load, raw \( \) text remains legible
+        function typeset() {
+          if (window.renderMathInElement) {
+            window.renderMathInElement(document.body, {
+              delimiters: [
+                { left: '\\[', right: '\\]', display: true },
+                { left: '\\(', right: '\\)', display: false }
+              ],
+              throwOnError: false
+            });
+          }
+        }
+        if (document.readyState === 'complete') typeset();
+        else window.addEventListener('load', typeset);
+      })();
+    </script>
+  </body>
+</html>

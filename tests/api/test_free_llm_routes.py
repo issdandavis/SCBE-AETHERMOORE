@@ -33,9 +33,23 @@ def test_free_llm_provider_registry_lists_default_open_lanes(
     assert {"offline", "ollama", "huggingface"}.issubset(registry["providers"])
     assert registry["providers"]["offline"]["available"] is True
     assert registry["providers"]["ollama"]["privacy"] == "local"
+    assert registry["providers"]["ollama"]["default_model"] == "openclaw:latest"
     assert registry["providers"]["huggingface"]["token_present"] is False
-    assert "openclaw" in registry["agent_launchers"]["integrations"]
-    assert registry["agent_launchers"]["aliases"]["clawdbot"] == "openclaw"
+    assert "codex" in registry["agent_launchers"]["integrations"]
+    assert registry["agent_launchers"]["aliases"]["copilot-cli"] == "copilot"
+
+
+def test_free_llm_provider_registry_uses_agent_ollama_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("AGENT_OLLAMA_URL", "http://127.0.0.1:9999/")
+    monkeypatch.setenv("AGENT_OLLAMA_MODEL", "qwen2.5-coder:1.5b")
+    client = _client(monkeypatch)
+
+    response = client.get("/hydra/free-llm/providers", headers={"x-api-key": "test-key"})
+
+    assert response.status_code == 200
+    ollama = response.json()["data"]["providers"]["ollama"]
+    assert ollama["base_url"] == "http://127.0.0.1:9999"
+    assert ollama["default_model"] == "qwen2.5-coder:1.5b"
 
 
 def test_free_llm_dispatch_offline_returns_deterministic_local_result(
@@ -162,7 +176,11 @@ def test_free_llm_auto_dispatch_falls_back_to_offline_when_ollama_unreachable(
     data = response.json()["data"]
     assert data["route"]["provider"] == "offline"
     assert data["result"]["fallback_from"] == "ollama"
-    assert data["bus_event"]["error"] == "provider_unreachable"
+    assert "error" not in data["bus_event"]
+
+    bus_path = tmp_path / ".scbe" / "packets" / "free_llm_dispatch.jsonl"
+    saved = json.loads(bus_path.read_text(encoding="utf-8").splitlines()[-1])
+    assert saved["error"] == "provider_unreachable"
 
 
 def test_free_llm_custom_local_provider_from_env(
@@ -195,7 +213,7 @@ def test_free_llm_custom_local_provider_from_env(
 def test_ollama_launch_plan_normalizes_alias_and_extra_args() -> None:
     plan = free_llm_routes.build_ollama_launch_plan(
         free_llm_routes.OllamaLaunchPlanRequest(
-            integration="clawdbot",
+            integration="copilot-cli",
             model="qwen2.5-coder:0.5b",
             extra_args=["--sandbox", "workspace-write"],
         ),
@@ -203,11 +221,11 @@ def test_ollama_launch_plan_normalizes_alias_and_extra_args() -> None:
     )
 
     assert plan["version"] == "hydra-ollama-launch-plan-v1"
-    assert plan["integration"] == "openclaw"
+    assert plan["integration"] == "copilot"
     assert plan["command"] == [
         "ollama",
         "launch",
-        "openclaw",
+        "copilot",
         "--yes",
         "--model",
         "qwen2.5-coder:0.5b",

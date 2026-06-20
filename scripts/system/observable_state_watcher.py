@@ -19,12 +19,8 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MIRROR_ROOT = REPO_ROOT / "artifacts" / "agent_bus" / "mirror_room"
 DEFAULT_DISPATCH_LOG = REPO_ROOT / ".scbe" / "packets" / "free_llm_dispatch.jsonl"
-DEFAULT_FILE_SNAPSHOT = (
-    REPO_ROOT / "artifacts" / "file_tracking" / "latest" / "file_tracking_snapshot.json"
-)
-DEFAULT_OUTPUT = (
-    REPO_ROOT / "artifacts" / "agent_bus" / "observable_state" / "latest_watcher.json"
-)
+DEFAULT_FILE_SNAPSHOT = REPO_ROOT / "artifacts" / "file_tracking" / "latest" / "file_tracking_snapshot.json"
+DEFAULT_OUTPUT = REPO_ROOT / "artifacts" / "agent_bus" / "observable_state" / "latest_watcher.json"
 
 
 @dataclass(frozen=True)
@@ -72,9 +68,7 @@ def _load_jsonl_tail(path: Path, limit: int) -> list[dict[str, Any]]:
     return rows
 
 
-def _latest_mirror_round(
-    series_id: str, mirror_root: Path = DEFAULT_MIRROR_ROOT
-) -> dict[str, Any]:
+def _latest_mirror_round(series_id: str, mirror_root: Path = DEFAULT_MIRROR_ROOT) -> dict[str, Any]:
     return _load_json(mirror_root / series_id / "latest_round.json", {})
 
 
@@ -95,19 +89,34 @@ def _binary_prefix_from_hex(value: str | None, bits: int = 64) -> str | None:
 
 
 def _action_lane(round_packet: dict[str, Any]) -> dict[str, Any]:
-    primary = (
-        round_packet.get("primary_bus", []) if isinstance(round_packet, dict) else []
-    )
-    secondary = (
-        round_packet.get("secondary_bus", []) if isinstance(round_packet, dict) else []
-    )
-    tertiary = (
-        round_packet.get("tertiary_bus", []) if isinstance(round_packet, dict) else []
+    primary = round_packet.get("primary_bus", []) if isinstance(round_packet, dict) else []
+    secondary = round_packet.get("secondary_bus", []) if isinstance(round_packet, dict) else []
+    tertiary = round_packet.get("tertiary_bus", []) if isinstance(round_packet, dict) else []
+    hydra_bridge = (
+        round_packet.get("hydra_tokenizer_bridge", {})
+        if isinstance(round_packet.get("hydra_tokenizer_bridge"), dict)
+        else {}
     )
     return {
         "selected_provider": round_packet.get("selected_provider"),
         "task": round_packet.get("task", {}),
         "operation_shape": round_packet.get("operation_shape"),
+        "hydra_tokenizer_bridge": {
+            "enabled": hydra_bridge.get("enabled", False),
+            "schema_version": hydra_bridge.get("schema_version"),
+            "head_count": hydra_bridge.get("head_count", 0),
+            "selected_tongue": (
+                hydra_bridge.get("tokenizer_packet", {}).get("selected_tongue")
+                if isinstance(hydra_bridge.get("tokenizer_packet"), dict)
+                else None
+            ),
+            "payload_sha256_prefix": _hex_prefix(
+                hydra_bridge.get("tokenizer_packet", {}).get("payload_sha256")
+                if isinstance(hydra_bridge.get("tokenizer_packet"), dict)
+                else None
+            ),
+            "artifact": hydra_bridge.get("artifact"),
+        },
         "primary": [
             {
                 "provider": item.get("provider"),
@@ -141,9 +150,7 @@ def _action_lane(round_packet: dict[str, Any]) -> dict[str, Any]:
 def _live_text_lane(dispatch_events: list[dict[str, Any]]) -> dict[str, Any]:
     summaries = []
     for event in dispatch_events:
-        result = (
-            event.get("result", {}) if isinstance(event.get("result"), dict) else {}
-        )
+        result = event.get("result", {}) if isinstance(event.get("result"), dict) else {}
         route = event.get("route", {}) if isinstance(event.get("route"), dict) else {}
         summaries.append(
             {
@@ -161,14 +168,8 @@ def _live_text_lane(dispatch_events: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def _packet_state_lane(
-    file_snapshot: dict[str, Any], dispatch_events: list[dict[str, Any]]
-) -> dict[str, Any]:
-    files = (
-        file_snapshot.get("files", [])
-        if isinstance(file_snapshot.get("files"), list)
-        else []
-    )
+def _packet_state_lane(file_snapshot: dict[str, Any], dispatch_events: list[dict[str, Any]]) -> dict[str, Any]:
+    files = file_snapshot.get("files", []) if isinstance(file_snapshot.get("files"), list) else []
     file_packets = []
     for item in files:
         if not isinstance(item, dict):
@@ -185,9 +186,7 @@ def _packet_state_lane(
 
     dispatch_packets = []
     for event in dispatch_events:
-        prompt = (
-            event.get("prompt", {}) if isinstance(event.get("prompt"), dict) else {}
-        )
+        prompt = event.get("prompt", {}) if isinstance(event.get("prompt"), dict) else {}
         dispatch_packets.append(
             {
                 "event_id": event.get("event_id"),
@@ -246,20 +245,14 @@ def build_watcher_state(
     }
 
 
-def write_watcher_state(
-    state: dict[str, Any], output_path: Path = DEFAULT_OUTPUT
-) -> Path:
+def write_watcher_state(state: dict[str, Any], output_path: Path = DEFAULT_OUTPUT) -> Path:
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(
-        json.dumps(state, indent=2, ensure_ascii=True), encoding="utf-8"
-    )
+    output_path.write_text(json.dumps(state, indent=2, ensure_ascii=True), encoding="utf-8")
     return output_path
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Build an observable SCBE bus watcher state"
-    )
+    parser = argparse.ArgumentParser(description="Build an observable SCBE bus watcher state")
     parser.add_argument("--series-id", default="file-tracking-bus-weave")
     parser.add_argument("--mirror-root", default=str(DEFAULT_MIRROR_ROOT))
     parser.add_argument("--dispatch-log", default=str(DEFAULT_DISPATCH_LOG))
@@ -291,9 +284,7 @@ def main() -> int:
                 {
                     "series_id": state["series_id"],
                     "lane_weights": state["lane_weights"],
-                    "selected_provider": state["lanes"]["action"].get(
-                        "selected_provider"
-                    ),
+                    "selected_provider": state["lanes"]["action"].get("selected_provider"),
                     "dispatch_events": len(state["lanes"]["live_text"]["events"]),
                     "file_packets": len(state["lanes"]["packet_state"]["file_packets"]),
                     "written": str(output_path),

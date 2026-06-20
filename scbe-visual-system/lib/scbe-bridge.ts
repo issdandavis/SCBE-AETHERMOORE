@@ -85,6 +85,31 @@ export interface SecurityResult {
   timestamp: Date;
 }
 
+export type OverseerAlertLevel = 'critical' | 'high' | 'medium';
+export type OverseerTaskState = 'queued' | 'executing' | 'review' | 'blocked' | 'done';
+
+export interface OverseerAlert {
+  id: string;
+  level: OverseerAlertLevel;
+  lane: string;
+  message: string;
+  time: string;
+}
+
+export interface OverseerMissionTask {
+  id: string;
+  title: string;
+  lane: string;
+  owner: string;
+  state: OverseerTaskState;
+}
+
+export interface OverseerTelemetry {
+  alerts: OverseerAlert[];
+  tasks: OverseerMissionTask[];
+  agentsOnline: number;
+}
+
 // ========== DIMENSIONAL THRESHOLDS ==========
 
 export const DIMENSIONAL_THRESHOLDS = {
@@ -471,4 +496,100 @@ export function usePollyPad(agentId: string) {
     addTool,
     refresh
   };
+}
+
+function relativeTime(input?: string): string {
+  if (!input) return 'now';
+  const ms = Date.now() - new Date(input).getTime();
+  if (Number.isNaN(ms) || ms < 0) return 'now';
+  const sec = Math.floor(ms / 1000);
+  if (sec < 60) return 'now';
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min}m ago`;
+  const hr = Math.floor(min / 60);
+  return `${hr}h ago`;
+}
+
+function mapEventToTaskState(event: any): OverseerTaskState {
+  if (!event) return 'queued';
+  if (event.success === false) return 'blocked';
+  if (event.task_type === 'monitor') return 'review';
+  if (event.duration_seconds && event.duration_seconds > 0) return 'executing';
+  return 'done';
+}
+
+function mapEventLevel(event: any): OverseerAlertLevel {
+  if (!event) return 'medium';
+  const hasError = event.success === false || Boolean(event.error);
+  const breaker = event.breaker_state || {};
+  const hasOpenBreaker = Object.values(breaker).some((state) => state === 'open');
+  if (hasError && hasOpenBreaker) return 'critical';
+  if (hasError || hasOpenBreaker) return 'high';
+  return 'medium';
+}
+
+function getInjectedAgentBusEvents(): any[] {
+  const globalAny = globalThis as any;
+  const raw = globalAny.__SCBE_AGENT_BUS_EVENTS__;
+  return Array.isArray(raw) ? raw : [];
+}
+
+/** Hook for live-ish overseer telemetry, with deterministic fallback. */
+export function useOverseerTelemetry() {
+  const bridge = getSCBEBridge();
+  const [telemetry, setTelemetry] = useState<OverseerTelemetry>({
+    alerts: [],
+    tasks: [],
+    agentsOnline: 0,
+  });
+
+  const refresh = useCallback(() => {
+    const agents = bridge.getAllAgents();
+    const online = agents.filter((a) => a.status === 'online').length;
+    const events = getInjectedAgentBusEvents().slice(-12).reverse();
+
+    let tasks: OverseerMissionTask[] = [];
+    let alerts: OverseerAlert[] = [];
+
+    if (events.length > 0) {
+      tasks = events.slice(0, 8).map((event: any, idx: number) => ({
+        id: String(event._sig || event.id || `evt-${idx}`),
+        title: event.query || `Bus ${event.task_type || 'task'}`,
+        lane: event.task_type || 'execution',
+        owner: event._agent_id || 'agent-bus',
+        state: mapEventToTaskState(event),
+      }));
+
+      alerts = events
+        .filter((event: any) => event.success === false || event.error || Object.values(event.breaker_state || {}).includes('open'))
+        .slice(0, 6)
+        .map((event: any, idx: number) => ({
+          id: `alert-${event._sig || idx}`,
+          level: mapEventLevel(event),
+          lane: event.task_type || 'ops',
+          message: event.error || `Breaker pressure on ${event.task_type || 'agent_bus'}`,
+          time: relativeTime(event.timestamp),
+        }));
+    } else {
+      // Fallback is stable and keeps panel usable without external data.
+      tasks = [
+        { id: 'fallback-1', title: 'Route compile-ca repair packet', lane: 'execution', owner: 'executor-av', state: 'executing' },
+        { id: 'fallback-2', title: 'Verify Stage6 boundary proofs', lane: 'review', owner: 'validator-ru', state: 'review' },
+        { id: 'fallback-3', title: 'Re-anchor delayed benchmark job', lane: 'temporal', owner: 'orchestrator-dr', state: 'queued' },
+      ];
+      alerts = [
+        { id: 'fallback-a1', level: 'high', lane: 'review', message: 'Pending human checkpoint on high-risk patch', time: 'now' },
+      ];
+    }
+
+    setTelemetry({ alerts, tasks, agentsOnline: online });
+  }, [bridge]);
+
+  useEffect(() => {
+    refresh();
+    const interval = setInterval(refresh, 3000);
+    return () => clearInterval(interval);
+  }, [refresh]);
+
+  return { telemetry, refresh };
 }

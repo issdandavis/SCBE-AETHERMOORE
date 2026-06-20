@@ -18,16 +18,14 @@ import {
   type PQCStrategy,
   // TriStitch
   triStitch,
-  type TriStitchResult,
   // Geometric binding
   geometricFingerprint,
   bindKeyToGeometry,
   verifyGeometricBinding,
-  type GeoBoundKey,
   // Strategy executor
   executeStrategy,
   signWithStrategy,
-  type StrategyExecutionResult,
+  starFortressDefenseReport,
 } from '../../src/crypto/pqc-strategies.js';
 import { clearRegistry } from '../../src/crypto/quantum-safe.js';
 
@@ -47,8 +45,8 @@ function mock21D(seed: number = 42): number[] {
 // ═══════════════════════════════════════════════════════════════
 
 describe('A. Strategy Catalog', () => {
-  it('should have 4 built-in strategies', () => {
-    expect(Object.keys(STRATEGY_CATALOG)).toHaveLength(4);
+  it('should have 5 built-in strategies', () => {
+    expect(Object.keys(STRATEGY_CATALOG)).toHaveLength(5);
   });
 
   it('balanced-v1 should use single lattice KEM + lattice sig', () => {
@@ -85,12 +83,53 @@ describe('A. Strategy Catalog', () => {
     expect(s.minNistLevel).toBe(1);
   });
 
+  it('star-fortress-v1 should use CNSA-class lattice plus fallback families', () => {
+    const s = STRATEGY_CATALOG['star-fortress-v1'];
+    expect(s.kemAlgorithms).toContain('ML-KEM-1024');
+    expect(s.sigAlgorithm).toBe('ML-DSA-87');
+    expect(s.families).toContain('lattice');
+    expect(s.families).toContain('code-based');
+    expect(s.families).toContain('hash-based');
+    expect(s.minNistLevel).toBe(5);
+  });
+
   it('all strategies should have name, description, and useCase', () => {
     for (const [name, s] of Object.entries(STRATEGY_CATALOG)) {
       expect(s.name).toBe(name);
       expect(s.description.length).toBeGreaterThan(10);
       expect(s.useCase.length).toBeGreaterThan(10);
     }
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// A2. Star Fortress Defense Report
+// ═══════════════════════════════════════════════════════════════
+
+describe('A2. Star Fortress Defense Report', () => {
+  it('should describe the triadic fallback rings', () => {
+    const report = starFortressDefenseReport();
+
+    expect(report.strategyName).toBe('star-fortress-v1');
+    expect(report.triadicFallbackOrder).toEqual([
+      'outer-lattice',
+      'middle-hash',
+      'inner-dev-fallback',
+    ]);
+    expect(report.rings.map((ring) => ring.ring)).toEqual([
+      'outer-lattice',
+      'middle-hash',
+      'inner-dev-fallback',
+    ]);
+    expect(report.productionReady).toBe(true);
+  });
+
+  it('should warn when a non-fortress profile is requested', () => {
+    const report = starFortressDefenseReport('balanced-v1');
+
+    expect(report.productionReady).toBe(false);
+    expect(report.warning).toContain('partial defense ring');
+    expect(report.rings[2].status).toBe('dev-only');
   });
 });
 

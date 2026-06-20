@@ -1,0 +1,253 @@
+{
+  "schema": "aethermoore-offers-v1",
+  "updated_at": "2026-05-16",
+  "site_base": "https://aethermoore.com/SCBE-AETHERMOORE",
+  "usage_policy": {
+    "name": "SCBE Service Credits",
+    "model": "mostly-free local tools with pay-as-you-go credits only for hosted routing, reports, delivery, storage, and provider/model usage",
+    "service_fee_percent_range": [2, 5],
+    "fee_note": "Provider/model costs are passed through with a small 2-5% SCBE coordination fee where usage is billable.",
+    "preferred_routing": "local/Ollama and deterministic harness first; paid providers only when needed"
+  },
+  "payment_methods": {
+    "card_checkout": {
+      "provider": "Stripe hosted checkout",
+      "note": "Structured card checkout for fixed offers, subscriptions, receipts, and product/service records."
+    },
+    "kofi": {
+      "url": "https://ko-fi.com/izdandavis",
+      "note": "Primary low-friction support and service-credit path. Use when a buyer wants to help fund the work without a formal checkout flow."
+    },
+    "cash_app": {
+      "cashtag": "$IzzyDDavis7",
+      "qr_url": "https://aethermoore.com/SCBE-AETHERMOORE/static/cash-app-payment.png",
+      "note": "For manual service purchases, include the offer name in the payment note."
+    },
+    "manual_invoice": {
+      "email": "aethermoregames@pm.me",
+      "note": "Use for Square/manual invoice, procurement, or buyer paperwork requests. Include the offer name, buyer email, and requested payment method."
+    }
+  },
+  "offers": [
+    {
+      "id": "workcell_cli_lifetime",
+      "name": "SCBE Workcell CLI",
+      "price_label": "$1 lifetime",
+      "type": "digital_access",
+      "checkout_url": "https://buy.stripe.com/fZu4gA5Ca1PFct211Ydby0o",
+      "alternate_checkout": {
+        "cash_app": "$IzzyDDavis7",
+        "cash_app_qr_url": "https://aethermoore.com/SCBE-AETHERMOORE/static/cash-app-payment.png"
+      },
+      "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/cli.html",
+      "status": "live",
+      "scope": [
+        "lifetime self-serve access path for the public SCBE command-line workcell tooling and docs",
+        "run the CLI, inspect workflows, and use the public workcell materials yourself",
+        "support, custom review, managed runs, private repo work, and regulated deployments sold separately"
+      ],
+      "checkout_note": "Stripe checkout is live. This is self-serve lifetime access, not unlimited support.",
+      "stripe_payment_link_id": "plink_1Tj3CyJTF2SuUODIq1uPTEqY"
+    },
+    {
+      "id": "black_box_self_serve",
+      "name": "SCBE Black Box",
+      "price_label": "$19 self-serve",
+      "type": "digital_download",
+      "checkout_url": "https://ko-fi.com/izdandavis",
+      "alternate_checkout": {
+        "cash_app": "$IzzyDDavis7",
+        "cash_app_qr_url": "https://aethermoore.com/SCBE-AETHERMOORE/static/cash-app-payment.png",
+        "manual_invoice": "mailto:aethermoregames@pm.me?subject=SCBE%20Black%20Box%20purchase"
+      },
+      "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/black-box.html",
+      "quickstart_url": "https://aethermoore.com/SCBE-AETHERMOORE/downloads/scbe-black-box-quickstart.md",
+      "status": "live",
+      "scope": [
+        "self-serve local workstation failure report",
+        "Windows shutdown, BSOD, disk, memory, storage, WHEA, service-crash, and top-process signals",
+        "plain-English text report plus JSON report",
+        "no installation service, no remote upload, no API key"
+      ],
+      "checkout_note": "Ko-fi and Cash App are active low-friction purchase paths. Use payment note: SCBE Black Box."
+    },
+    {
+      "id": "service_credits",
+      "name": "SCBE Service Credits",
+      "price_label": "$5+ pay-as-you-go",
+      "type": "usage_credit",
+      "checkout_url": "https://ko-fi.com/izdandavis",
+      "alternate_checkout": {
+        "cash_app": "$IzzyDDavis7",
+        "cash_app_qr_url": "https://aethermoore.com/SCBE-AETHERMOORE/static/cash-app-payment.png"
+      },
+      "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/service-credits.html",
+      "intake_url": "https://aethermoore.com/SCBE-AETHERMOORE/hosted-run.html",
+      "status": "live"
+    },
+    {
+      "id": "tip_jar",
+      "name": "Tip Jar",
+      "price_label": "$5 one time",
+      "type": "one_time",
+      "checkout_url": "https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k",
+      "kofi_url": "https://ko-fi.com/izdandavis",
+      "alternate_checkout": {
+        "cash_app": "$IzzyDDavis7",
+        "cash_app_qr_url": "https://aethermoore.com/SCBE-AETHERMOORE/static/cash-app-payment.png"
+      },
+      "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/supporter.html",
+      "status": "live"
+    },
+    {
+      "id": "supporter_monthly",
+      "name": "AetherMoore Supporter",
+      "price_label": "$20/month",
+      "type": "subscription",
+      "checkout_url": "https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i",
+      "kofi_url": "https://ko-fi.com/izdandavis",
+      "alternate_checkout": {
+        "cash_app": "$IzzyDDavis7",
+        "cash_app_qr_url": "https://aethermoore.com/SCBE-AETHERMOORE/static/cash-app-payment.png"
+      },
+      "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/supporter.html",
+      "status": "live"
+    },
+    {
+      "id": "workflow_snapshot_starter",
+      "name": "AI Agent Workflow Snapshot",
+      "price_label": "$99 starter",
+      "type": "service",
+      "checkout_url": "https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l",
+      "alternate_checkout": {
+        "cash_app": "$IzzyDDavis7",
+        "cash_app_qr_url": "https://aethermoore.com/SCBE-AETHERMOORE/static/cash-app-payment.png"
+      },
+      "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/workflow-snapshot.html",
+      "intake_url": "https://aethermoore.com/SCBE-AETHERMOORE/workflow-snapshot.html#free-check",
+      "status": "live",
+      "scope": [
+        "one concise findings memo",
+        "one AI workflow, repo link, prompt chain, MCP stack, automation flow, or diagram",
+        "drift risks, unsafe tool paths, missing recovery states, observability gaps, and prompt-injection surfaces",
+        "three prioritized fixes",
+        "upgrade credit toward the $500 Governance Snapshot if deeper review is needed"
+      ],
+      "checkout_note": "Stripe checkout is live. Cash App remains available as an alternate manual payment path.",
+      "stripe_payment_link_id": "plink_1TW71yJTF2SuUODIqYFRU9JY"
+    },
+    {
+      "id": "shopify_command_center_snapshot",
+      "name": "Shopify Store Ops Snapshot",
+      "price_label": "$99 starter",
+      "type": "service",
+      "checkout_url": "https://ko-fi.com/izdandavis",
+      "alternate_checkout": {
+        "cash_app": "$IzzyDDavis7",
+        "cash_app_qr_url": "https://aethermoore.com/SCBE-AETHERMOORE/static/cash-app-payment.png",
+        "payment_center": "https://aethermoore.com/SCBE-AETHERMOORE/payments.html"
+      },
+      "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/shopify-command-center.html",
+      "intake_url": "mailto:aethermoregames@pm.me?subject=Shopify%20Store%20Ops%20Snapshot",
+      "status": "live",
+      "scope": [
+        "one concise store-ops memo",
+        "one Shopify store, product line, launch plan, or ecommerce checklist",
+        "payment, shipping, subscription, bundle, wholesale, pricing, marketing, and analytics notes",
+        "three prioritized next actions",
+        "public demo and source links included for buyer confidence"
+      ],
+      "checkout_note": "Ko-fi and Cash App are the low-friction payment paths while card checkout is reserved for the existing fixed SCBE offers."
+    },
+    {
+      "id": "governance_snapshot",
+      "name": "Governance Snapshot",
+      "price_label": "$500 fixed scope",
+      "type": "service",
+      "checkout_url": "https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j",
+      "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html",
+      "intake_url": "https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html#intake",
+      "status": "live"
+    },
+    {
+      "id": "governance_heartbeat",
+      "name": "Governance Heartbeat",
+      "price_label": "$99/month",
+      "type": "subscription",
+      "checkout_url": "https://buy.stripe.com/5kQ6oI0hQgKz9gQ6midby0m",
+      "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html#heartbeat",
+      "status": "live",
+      "scope": [
+        "monthly AI governance scan of one workflow",
+        "one short report (delta vs. last month)",
+        "one risk / change summary",
+        "one recommended action list",
+        "optional dataset / training capture",
+        "cancel anytime"
+      ],
+      "stripe_payment_link_id": "plink_1TW71zJTF2SuUODICZLQCCS3",
+      "delivery": {
+        "mode": "stripe_webhook_subscription_onboarding",
+        "requires_env": ["STRIPE_HEARTBEAT_PAYMENT_LINK_ID", "SCBE_PAYMENT_LINK_HEARTBEAT"]
+      }
+    },
+    {
+      "id": "toolkit",
+      "name": "SCBE AI Governance Toolkit",
+      "price_label": "$29",
+      "type": "digital_download",
+      "checkout_url": "https://buy.stripe.com/cNibJ25Ca2TJ9gQ3a6dby06",
+      "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/product-manual/ai-governance-toolkit.html",
+      "delivery": {
+        "mode": "stripe_webhook_product_delivery",
+        "package_name": "SCBE_AI_Governance_Toolkit_v1.zip",
+        "requires_env": [
+          "STRIPE_TOOLKIT_PAYMENT_LINK_ID",
+          "SCBE_DELIVERY_TOKEN",
+          "SCBE_TOOLKIT_BLOB_URL"
+        ]
+      },
+      "value_position": "priced below a normal consulting call while delivering reusable governance templates on day one",
+      "status": "live"
+    },
+    {
+      "id": "training_vault",
+      "name": "SCBE AI Security Training Vault",
+      "price_label": "$29",
+      "type": "digital_download",
+      "checkout_url": "https://buy.stripe.com/28E8wQ5Cacuj64EaCydby0g",
+      "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/product-manual/training-vault.html",
+      "delivery": {
+        "mode": "stripe_webhook_product_delivery",
+        "package_name": "SCBE_AI_Security_Training_Vault_v1.zip",
+        "requires_env": [
+          "STRIPE_VAULT_PAYMENT_LINK_ID",
+          "SCBE_DELIVERY_TOKEN",
+          "SCBE_TRAINING_VAULT_DOWNLOAD_URL or SCBE_VAULT_BLOB_URL"
+        ]
+      },
+      "value_position": "priced as a low-friction dataset and benchmark starter rather than a paid compute commitment",
+      "status": "live"
+    },
+    {
+      "id": "behind_the_scenes_pack",
+      "name": "AetherMoore Behind-the-Scenes Writing Process Pack",
+      "price_label": "$7",
+      "type": "digital_download",
+      "checkout_url": "https://buy.stripe.com/14AbJ20hQ79ZboYfWSdby0n",
+      "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/guides.html#behind-the-scenes-pack",
+      "delivery": {
+        "mode": "stripe_webhook_product_delivery",
+        "package_name": "AetherMoore_Behind_The_Scenes_Writing_Process_Pack_v1.zip",
+        "requires_env": [
+          "STRIPE_MAKING_OF_PAYMENT_LINK_ID or SCBE_PAYMENT_LINK_MAKING_OF",
+          "SCBE_DELIVERY_TOKEN",
+          "SCBE_MAKING_OF_BLOB_URL"
+        ]
+      },
+      "value_position": "priced as a small reader/writer process packet while the books themselves stay on KDP/KDP Select",
+      "status": "live",
+      "stripe_payment_link_id": "plink_1TXo24JTF2SuUODIoRc6T3DD"
+    }
+  ]
+}

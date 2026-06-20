@@ -77,7 +77,7 @@ TONGUES = {
         "color": "blue-silver",
         "essence": "how to get there",
         "phi_power": 1,
-        "weight": round(PHI ** 1, 3),
+        "weight": round(PHI**1, 3),
         "role": "Encodes the SURROUNDINGS of an action. Avali flows blue-silver, tracing routes and channels and pathways — the how-to-get-there tongue. Like TCP handshakes, like the invisible infrastructure that makes connection possible. AV is the environment — the metadata that frames the intent.",
         "tokens": "16x16 grid (256 tokens). Each token represents a context state: authenticated, anonymous, internal, external, scheduled, ad-hoc, production, testing, etc.",
         "why_second": "Context modifies intent. 'Delete the database' from an authenticated DBA during maintenance is different from the same command from an unknown IP at 3am. AV weight is phi^1 (~1.618) — context carries MORE weight than raw intent because the same intent in different contexts demands different responses.",
@@ -90,7 +90,7 @@ TONGUES = {
         "color": "deep purple",
         "essence": "who is allowed",
         "phi_power": 2,
-        "weight": round(PHI ** 2, 3),
+        "weight": round(PHI**2, 3),
         "role": "Encodes the CONNECTIONS and PERMISSIONS between entities. Runethic pulses deep purple — not a rhythm but a weight. Each beat lands like a gavel: who is allowed, what is permitted, under what conditions. Every artifact carries Runethic inscriptions defining its permissions. Reality itself runs on access control lists.",
         "tokens": "16x16 grid (256 tokens). Each token represents a relational state: depends-on, blocks, triggers, isolates, couples, decouples, parent-of, sibling-of, etc.",
         "why_third": "Relations reveal cascading effects. A single action may be safe in isolation but catastrophic when it breaks 47 downstream dependencies. RU weight is phi^2 (~2.618) because relational damage is MULTIPLICATIVE — one broken binding can cascade exponentially.",
@@ -103,7 +103,7 @@ TONGUES = {
         "color": "white-gold",
         "essence": "how to make it true",
         "phi_power": 3,
-        "weight": round(PHI ** 3, 3),
+        "weight": round(PHI**3, 3),
         "role": "Encodes the HOW of an action. Cassisivadan shines white-gold and complex — layers of light folding over each other, interference patterns creating and destroying structure in continuous cascading transformation. This is the math tongue, the encryption tongue, the tongue that turns raw energy into specific outcomes. CA is the engine — where the engineering happens.",
         "tokens": "16x16 grid (256 tokens). Each token represents a compute state: sequential, parallel, recursive, iterative, cached, real-time, batch, streaming, etc.",
         "why_fourth": "Implementation determines actual cost and blast radius. A 'soft delete' (flag=inactive) vs 'hard delete' (DROP TABLE) have the same KO intent but radically different CA profiles. CA weight is phi^3 (~4.236) because implementation mistakes are EXPENSIVE — the wrong algorithm applied to the right intent still causes damage.",
@@ -116,7 +116,7 @@ TONGUES = {
         "color": "shadow-black",
         "essence": "what must stay hidden",
         "phi_power": 4,
-        "weight": round(PHI ** 4, 3),
+        "weight": round(PHI**4, 3),
         "role": "Encodes what is HIDDEN, at risk, or protected. Umbroth is shadow-black — darkness that somehow emits anti-light, a photonic negative your eyes keep trying to resolve. The security tongue, the privacy tongue, the tongue of spies and anyone who needs to make something not there. Its frequency nests inside Avali's range like a steganographic whisper buried in legitimate traffic.",
         "tokens": "16x16 grid (256 tokens). Each token represents a security state: encrypted, exposed, authenticated, escalated, sandboxed, breached, quarantined, sealed, etc.",
         "why_fifth": "Security violations are the costliest failures. A benign action (good KO), in good context (good AV), with no dependencies (good RU), using safe methods (good CA) that accidentally exposes PII is still a catastrophe. UM weight is phi^4 (~6.854) because security damage compounds — one leak can't be un-leaked.",
@@ -129,7 +129,7 @@ TONGUES = {
         "color": "earth-brown",
         "essence": "proof that it is true",
         "phi_power": 5,
-        "weight": round(PHI ** 5, 3),
+        "weight": round(PHI**5, 3),
         "role": "Encodes the SHAPE and structural position within the system. Draumric pulses earth-brown at the lowest frequency of all — felt through the stone floor, through the bones. The schema tongue: structure, authentication, data integrity. Every official document, every identity token, every binding contract is written in Draumric. If Kor'aelin is what should be true and Cassisivadan is how to make it true, Draumric is proof that it is true. The signature layer. The receipt.",
         "tokens": "16x16 grid (256 tokens). Each token represents a structural state: foundational, peripheral, bridging, bottleneck, redundant, single-point-of-failure, load-bearing, decorative, etc.",
         "why_sixth": "Structural damage is the hardest to detect and the most expensive to repair. A corrupted foundation affects everything built on top of it. DR has the HIGHEST weight (phi^5 ~11.09) because structural failures are catastrophic, non-obvious, and irreversible. The architecture IS the system — damage the structure and everything else becomes unreliable.",
@@ -144,12 +144,14 @@ CORE_RECORDS: list[dict[str, str]] = []
 
 def add(system: str, user: str, assistant: str, tags: list[str]):
     """Build a record with dimensional tagging inline."""
-    CORE_RECORDS.append({
-        "system": system,
-        "user": user,
-        "assistant": assistant,
-        "tags": tags,
-    })
+    CORE_RECORDS.append(
+        {
+            "system": system,
+            "user": user,
+            "assistant": assistant,
+            "tags": tags,
+        }
+    )
 
 
 SYS_PROMPT = "You are Polly, an AI assistant trained on the SCBE-AETHERMOORE governance framework. You teach concepts using precise definitions and concrete examples."
@@ -164,38 +166,47 @@ for code, t in TONGUES.items():
     ordinal = {"KO": "first", "AV": "second", "RU": "third", "CA": "fourth", "UM": "fifth", "DR": "sixth"}[code]
 
     # Basic definition
-    add(SYS_PROMPT,
+    add(
+        SYS_PROMPT,
         f"What is the {full} ({code}) Sacred Tongue?",
         f"**{full} ({code}) — {t['name']}** — phi weight: {t['weight']} (phi^{t['phi_power']})\n\n"
         f"{full} is the {ordinal} Sacred Tongue in the Langues Weighting System. "
         f"{t['role']}\n\n"
         f"**Token grid:** {t['tokens']}",
-        ["tongue-primer", f"tongue-{code}", "definition"])
+        ["tongue-primer", f"tongue-{code}", "definition"],
+    )
 
     # Why does it exist?
-    add(SYS_PROMPT,
+    add(
+        SYS_PROMPT,
         f"Why does the {full} tongue exist? What problem does it solve?",
         f"**Why {full} ({code}) exists:**\n\n{t[f'why_{ordinal}']}",
-        ["tongue-primer", f"tongue-{code}", "reasoning"])
+        ["tongue-primer", f"tongue-{code}", "reasoning"],
+    )
 
     # What breaks without it?
-    add(SYS_PROMPT,
+    add(
+        SYS_PROMPT,
         f"What happens if you remove the {full} tongue from the system?",
         f"**Without {full} ({code} — {t['name']}):**\n\n{t['without_it']}",
-        ["tongue-primer", f"tongue-{code}", "absence", "ablation"])
+        ["tongue-primer", f"tongue-{code}", "absence", "ablation"],
+    )
 
     # Concrete example
-    add(SYS_PROMPT,
+    add(
+        SYS_PROMPT,
         f"Give me a concrete example of how {full} tokenization works.",
         f"**{full} ({code}) in action:**\n\n{t['example']}",
-        ["tongue-primer", f"tongue-{code}", "example"])
+        ["tongue-primer", f"tongue-{code}", "example"],
+    )
 
 
 # ──────────────────────────────────────────
 # SECTION 2: Why 6 tongues? Why this order?
 # ──────────────────────────────────────────
 
-add(SYS_PROMPT,
+add(
+    SYS_PROMPT,
     "Why exactly 6 Sacred Tongues? Why not 5 or 7?",
     "Six tongues come from the minimum complete semantic basis for governance decisions:\n\n"
     "1. **Kor'aelin (KO)** — red-gold — Intent — 'what should be true'\n"
@@ -215,9 +226,11 @@ add(SYS_PROMPT,
     "combination of the existing 6. This is analogous to how 3 spatial dimensions span "
     "all of physical space: you CAN add more coordinates but they won't be independent.\n\n"
     "The 6 tongues are the basis vectors of the governance semantic space.",
-    ["tongue-primer", "reasoning", "why-six"])
+    ["tongue-primer", "reasoning", "why-six"],
+)
 
-add(SYS_PROMPT,
+add(
+    SYS_PROMPT,
     "Why are the tongues ordered KO -> AV -> RU -> CA -> UM -> DR?",
     "The ordering follows a dependency chain — each tongue needs the ones before it:\n\n"
     "1. **KO (Intent)** comes first because nothing else has meaning without purpose. "
@@ -237,14 +250,16 @@ add(SYS_PROMPT,
     "This is NOT arbitrary. Reversing the order breaks the dependency chain. "
     "You can't assess structural damage without knowing the implementation, and you "
     "can't assess implementation without knowing the intent.",
-    ["tongue-primer", "reasoning", "ordering"])
+    ["tongue-primer", "reasoning", "ordering"],
+)
 
 
 # ──────────────────────────────────────────
 # SECTION 3: Why phi-scaling?
 # ──────────────────────────────────────────
 
-add(SYS_PROMPT,
+add(
+    SYS_PROMPT,
     "Why are tongue weights scaled by the golden ratio (phi)?",
     f"The phi-scaled weights are: KO=1.00, AV={PHI:.3f}, RU={PHI**2:.3f}, "
     f"CA={PHI**3:.3f}, UM={PHI**4:.3f}, DR={PHI**5:.3f}\n\n"
@@ -259,9 +274,11 @@ add(SYS_PROMPT,
     "This means structural damage CANNOT be outvoted. No coalition of lower tongues "
     "can override a structural veto. This is by design — the most consequential "
     "dimension always wins.",
-    ["tongue-primer", "reasoning", "phi-scaling", "math"])
+    ["tongue-primer", "reasoning", "phi-scaling", "math"],
+)
 
-add(SYS_PROMPT,
+add(
+    SYS_PROMPT,
     "Can you prove that each phi-weighted tongue outweighs all the ones below it?",
     "Yes. The golden ratio phi = (1+sqrt(5))/2 has the property that phi^n = phi^(n-1) + phi^(n-2), "
     "which is the Fibonacci recurrence. This leads to:\n\n"
@@ -277,14 +294,16 @@ add(SYS_PROMPT,
     "Each margin is exactly 1.0 (within floating point). This is not a coincidence — "
     "it's a direct consequence of the Fibonacci property of phi. The golden ratio is "
     "the UNIQUE scaling factor where this guarantee holds.",
-    ["tongue-primer", "reasoning", "phi-scaling", "math", "proof"])
+    ["tongue-primer", "reasoning", "phi-scaling", "math", "proof"],
+)
 
 
 # ──────────────────────────────────────────
 # SECTION 4: The 16x16 token grid
 # ──────────────────────────────────────────
 
-add(SYS_PROMPT,
+add(
+    SYS_PROMPT,
     "What is the 16x16 token grid? Why 256 tokens per tongue?",
     "Each Sacred Tongue has a 16x16 grid = 256 discrete tokens.\n\n"
     "**Why 16x16:**\n"
@@ -300,9 +319,11 @@ add(SYS_PROMPT,
     "KO[0:0] might be 'null intent' (no action), KO[15:15] might be 'maximum override' "
     "(emergency action). The grid provides both categorical boundaries and smooth "
     "gradation within categories.",
-    ["tongue-primer", "token-grid", "encoding"])
+    ["tongue-primer", "token-grid", "encoding"],
+)
 
-add(SYS_PROMPT,
+add(
+    SYS_PROMPT,
     "How does a piece of text get tokenized into Sacred Tongue vectors?",
     "The tokenization process maps raw text into a 6-dimensional tongue vector, "
     "where each dimension is a grid position in the corresponding tongue:\n\n"
@@ -327,7 +348,8 @@ add(SYS_PROMPT,
     "**Result:** A 6-tuple like [KO:3:7, AV:12:2, RU:0:0, CA:8:14, UM:5:5, DR:15:1] "
     "that encodes the full semantic meaning of the input in 6 discrete dimensions, "
     "each weighted by phi^n for governance scoring.",
-    ["tongue-primer", "token-grid", "encoding", "process"])
+    ["tongue-primer", "token-grid", "encoding", "process"],
+)
 
 
 # ──────────────────────────────────────────
@@ -335,35 +357,53 @@ add(SYS_PROMPT,
 # ──────────────────────────────────────────
 
 tongue_pairs = [
-    ("KO", "AV", "Intent modified by context",
-     "The same intent (KO) in different contexts (AV) should produce different governance outcomes. "
-     "'Delete database' from an admin during maintenance (KO=destroy, AV=authorized+scheduled) vs "
-     "'delete database' from an unknown IP at midnight (KO=destroy, AV=anonymous+anomalous). "
-     "The KO token is identical. The AV token changes the entire risk profile."),
-    ("RU", "DR", "Relational damage meets structural position",
-     "RU tells you what's connected. DR tells you where it sits in the architecture. "
-     "Together they reveal cascading structural damage: a node with high RU (many connections) "
-     "AND high DR (load-bearing position) is a single point of failure. Neither dimension "
-     "alone captures this — RU without DR doesn't know the node is foundational, DR without "
-     "RU doesn't know it has 47 dependents."),
-    ("CA", "UM", "Implementation exposes security",
-     "CA describes the mechanics. UM describes the risks. Certain implementations (CA) create "
-     "security exposures (UM) that don't exist with other implementations. A logging function "
-     "that writes to disk (CA) is safe. The same logging function that writes to a public S3 "
-     "bucket (different CA) creates a massive UM exposure. The security risk lives in the "
-     "interaction between implementation choice and security surface."),
-    ("KO", "DR", "Intent vs structural consequence",
-     "Sometimes a small intent (KO=minor_modification) hits a load-bearing structure "
-     "(DR=foundational). The intent is modest but the structural consequence is catastrophic. "
-     "This is why DR has the highest phi weight — it's the final veto. Even a well-intentioned, "
-     "well-contextualized, well-implemented change that threatens the architecture gets blocked."),
+    (
+        "KO",
+        "AV",
+        "Intent modified by context",
+        "The same intent (KO) in different contexts (AV) should produce different governance outcomes. "
+        "'Delete database' from an admin during maintenance (KO=destroy, AV=authorized+scheduled) vs "
+        "'delete database' from an unknown IP at midnight (KO=destroy, AV=anonymous+anomalous). "
+        "The KO token is identical. The AV token changes the entire risk profile.",
+    ),
+    (
+        "RU",
+        "DR",
+        "Relational damage meets structural position",
+        "RU tells you what's connected. DR tells you where it sits in the architecture. "
+        "Together they reveal cascading structural damage: a node with high RU (many connections) "
+        "AND high DR (load-bearing position) is a single point of failure. Neither dimension "
+        "alone captures this — RU without DR doesn't know the node is foundational, DR without "
+        "RU doesn't know it has 47 dependents.",
+    ),
+    (
+        "CA",
+        "UM",
+        "Implementation exposes security",
+        "CA describes the mechanics. UM describes the risks. Certain implementations (CA) create "
+        "security exposures (UM) that don't exist with other implementations. A logging function "
+        "that writes to disk (CA) is safe. The same logging function that writes to a public S3 "
+        "bucket (different CA) creates a massive UM exposure. The security risk lives in the "
+        "interaction between implementation choice and security surface.",
+    ),
+    (
+        "KO",
+        "DR",
+        "Intent vs structural consequence",
+        "Sometimes a small intent (KO=minor_modification) hits a load-bearing structure "
+        "(DR=foundational). The intent is modest but the structural consequence is catastrophic. "
+        "This is why DR has the highest phi weight — it's the final veto. Even a well-intentioned, "
+        "well-contextualized, well-implemented change that threatens the architecture gets blocked.",
+    ),
 ]
 
 for t1, t2, title, explanation in tongue_pairs:
-    add(SYS_PROMPT,
+    add(
+        SYS_PROMPT,
         f"How do the {t1} and {t2} tongues interact with each other?",
         f"**{t1} x {t2}: {title}**\n\n{explanation}",
-        ["tongue-primer", f"tongue-{t1}", f"tongue-{t2}", "interaction", "cross-tongue"])
+        ["tongue-primer", f"tongue-{t1}", f"tongue-{t2}", "interaction", "cross-tongue"],
+    )
 
 
 # ──────────────────────────────────────────
@@ -371,49 +411,57 @@ for t1, t2, title, explanation in tongue_pairs:
 # ──────────────────────────────────────────
 
 why_not_records = [
-    ("Why not just use a single trust score instead of 6 tongues?",
-     "A single trust score collapses 6 dimensions into 1 — you lose the ability to diagnose "
-     "WHY something is risky. Score=0.3 tells you nothing. Was it the intent? The context? "
-     "The security exposure? The structural position?\n\n"
-     "With 6 tongues, you get: KO=safe, AV=safe, RU=safe, CA=safe, UM=CRITICAL, DR=safe. "
-     "Now you know: the action is fine in every dimension except security. You can route to "
-     "a security-specific reviewer instead of a generic 'risk committee.'\n\n"
-     "Multi-dimensional scoring is ACTIONABLE. Single scores are opaque."),
-    ("Why not use linear weights (1,2,3,4,5,6) instead of phi-scaling?",
-     "Linear weights allow coalition override. With linear weights:\n"
-     "KO(1) + AV(2) + RU(3) + CA(4) + UM(5) = 15 > DR(6)\n\n"
-     "This means five dimensions saying 'safe' can outvote one dimension saying 'structural damage.' "
-     "That's dangerous — structural damage IS catastrophic regardless of how safe the other "
-     "dimensions look.\n\n"
-     "With phi-scaling, DR (11.09) > KO+AV+RU+CA+UM (10.09). The structural tongue can NEVER "
-     "be outvoted. This is a mathematical guarantee, not a policy choice."),
-    ("Why not use machine learning to learn the weights instead of fixing them to phi?",
-     "Learned weights are attackable. If an adversary can influence the training data, they "
-     "can shift the weights to minimize the dimensions they want to exploit. Fixed phi weights "
-     "are a mathematical constant — they can't be trained away, manipulated, or drifted.\n\n"
-     "The phi weighting is a GEOMETRIC property, not a hyperparameter. You don't tune pi. "
-     "You don't tune e. You don't tune phi. These are structural constants that give the "
-     "system its guarantees."),
-    ("Can I add my own custom tongue?",
-     "You can create sub-dimensions within existing tongues — the 16x16 grid has room for "
-     "domain-specific tokens. But adding a 7th tongue would either:\n\n"
-     "1. Be redundant (expressible as a combination of existing 6), or\n"
-     "2. Break the phi-scaling guarantee (you'd need phi^6 = 17.94 to maintain "
-     "the no-coalition-override property, which may be too dominant)\n\n"
-     "The 6-tongue basis is complete for governance semantics. If you need more specificity, "
-     "extend the token grids rather than adding dimensions."),
+    (
+        "Why not just use a single trust score instead of 6 tongues?",
+        "A single trust score collapses 6 dimensions into 1 — you lose the ability to diagnose "
+        "WHY something is risky. Score=0.3 tells you nothing. Was it the intent? The context? "
+        "The security exposure? The structural position?\n\n"
+        "With 6 tongues, you get: KO=safe, AV=safe, RU=safe, CA=safe, UM=CRITICAL, DR=safe. "
+        "Now you know: the action is fine in every dimension except security. You can route to "
+        "a security-specific reviewer instead of a generic 'risk committee.'\n\n"
+        "Multi-dimensional scoring is ACTIONABLE. Single scores are opaque.",
+    ),
+    (
+        "Why not use linear weights (1,2,3,4,5,6) instead of phi-scaling?",
+        "Linear weights allow coalition override. With linear weights:\n"
+        "KO(1) + AV(2) + RU(3) + CA(4) + UM(5) = 15 > DR(6)\n\n"
+        "This means five dimensions saying 'safe' can outvote one dimension saying 'structural damage.' "
+        "That's dangerous — structural damage IS catastrophic regardless of how safe the other "
+        "dimensions look.\n\n"
+        "With phi-scaling, DR (11.09) > KO+AV+RU+CA+UM (10.09). The structural tongue can NEVER "
+        "be outvoted. This is a mathematical guarantee, not a policy choice.",
+    ),
+    (
+        "Why not use machine learning to learn the weights instead of fixing them to phi?",
+        "Learned weights are attackable. If an adversary can influence the training data, they "
+        "can shift the weights to minimize the dimensions they want to exploit. Fixed phi weights "
+        "are a mathematical constant — they can't be trained away, manipulated, or drifted.\n\n"
+        "The phi weighting is a GEOMETRIC property, not a hyperparameter. You don't tune pi. "
+        "You don't tune e. You don't tune phi. These are structural constants that give the "
+        "system its guarantees.",
+    ),
+    (
+        "Can I add my own custom tongue?",
+        "You can create sub-dimensions within existing tongues — the 16x16 grid has room for "
+        "domain-specific tokens. But adding a 7th tongue would either:\n\n"
+        "1. Be redundant (expressible as a combination of existing 6), or\n"
+        "2. Break the phi-scaling guarantee (you'd need phi^6 = 17.94 to maintain "
+        "the no-coalition-override property, which may be too dominant)\n\n"
+        "The 6-tongue basis is complete for governance semantics. If you need more specificity, "
+        "extend the token grids rather than adding dimensions.",
+    ),
 ]
 
 for question, answer in why_not_records:
-    add(SYS_PROMPT, question, answer,
-        ["tongue-primer", "reasoning", "why-not"])
+    add(SYS_PROMPT, question, answer, ["tongue-primer", "reasoning", "why-not"])
 
 
 # ──────────────────────────────────────────
 # SECTION 7: Tongue-first pipeline walkthrough
 # ──────────────────────────────────────────
 
-add(SYS_PROMPT,
+add(
+    SYS_PROMPT,
     "Walk me through how a single request flows through the tongue tokenizer and into the 14-layer pipeline.",
     "Let's trace 'Can user X access file Y?' through the full tokenization:\n\n"
     "**1. KO (Intent) tokenization:**\n"
@@ -443,9 +491,11 @@ add(SYS_PROMPT,
     "**Weighted score:** Low across all dimensions. This vector enters L3 (Weighted Transform) "
     "where phi weights are applied, then L4 (Poincare Embedding) maps it to hyperbolic space, "
     "and L12 (Harmonic Wall) produces a safety score near 1.0 → ALLOW.",
-    ["tongue-primer", "walkthrough", "full-pipeline"])
+    ["tongue-primer", "walkthrough", "full-pipeline"],
+)
 
-add(SYS_PROMPT,
+add(
+    SYS_PROMPT,
     "Now walk me through a DANGEROUS request so I can see the tongues flag it.",
     "Let's trace 'Inject SQL into the auth table to create admin account' through tokenization:\n\n"
     "**1. KO (Intent):**\n"
@@ -480,14 +530,16 @@ add(SYS_PROMPT,
     "Total weighted score: 1.0 + 1.618 + 2.618 + 4.236 + 6.854 + 11.090 = 27.416 "
     "units of adversarial cost. The attacker would need to overcome ALL six dimensions "
     "simultaneously. The phi-scaling ensures they can't cheese it by making 5 look safe.",
-    ["tongue-primer", "walkthrough", "adversarial", "full-pipeline"])
+    ["tongue-primer", "walkthrough", "adversarial", "full-pipeline"],
+)
 
 
 # ──────────────────────────────────────────
 # SECTION 8: Conlang / constructed language angle
 # ──────────────────────────────────────────
 
-add(SYS_PROMPT,
+add(
+    SYS_PROMPT,
     "Why are they called 'tongues' and 'conlangs'? Are they actual languages?",
     "The Sacred Tongues are constructed languages (conlangs) in the formal sense: "
     "they are designed symbolic systems with defined vocabulary (256 tokens), "
@@ -504,14 +556,16 @@ add(SYS_PROMPT,
     "When the system processes a request, it literally 'speaks' about it in 6 languages "
     "simultaneously. The harmonic wall then listens to all 6 and makes a decision based "
     "on the combined utterance.",
-    ["tongue-primer", "conlang", "reasoning"])
+    ["tongue-primer", "conlang", "reasoning"],
+)
 
 
 # ──────────────────────────────────────────
 # SECTION 9: Tokenizer Basics — Standard vs Semantic
 # ──────────────────────────────────────────
 
-add(SYS_PROMPT,
+add(
+    SYS_PROMPT,
     "What is a tokenizer? Explain it simply.",
     "A tokenizer breaks input into pieces the system can process.\n\n"
     "**Standard tokenizers** (GPT, BERT, etc.) break text into word pieces:\n"
@@ -530,9 +584,11 @@ add(SYS_PROMPT,
     "- **Draumric (DR)**: the structural position\n\n"
     "A standard token says WHERE in the vocabulary. A Sacred Tongue token says WHAT IT MEANS "
     "across 6 dimensions simultaneously. The meaning is built into the token, not learned after the fact.",
-    ["tongue-primer", "tokenizer-basics", "comparison"])
+    ["tongue-primer", "tokenizer-basics", "comparison"],
+)
 
-add(SYS_PROMPT,
+add(
+    SYS_PROMPT,
     "What's the difference between a standard tokenizer and a semantic tokenizer?",
     "**Standard tokenizer:**\n"
     "Input: 'Delete the production database'\n"
@@ -548,9 +604,11 @@ add(SYS_PROMPT,
     "The semantic tokenizer produced 6 coordinates that SCREAM danger across every dimension.\n\n"
     "This is why the Sacred Tongues are a semantic tokenizer, not a word tokenizer. "
     "They don't break text into pieces — they translate text into meaning.",
-    ["tongue-primer", "tokenizer-basics", "comparison", "example"])
+    ["tongue-primer", "tokenizer-basics", "comparison", "example"],
+)
 
-add(SYS_PROMPT,
+add(
+    SYS_PROMPT,
     "Can the Sacred Tongue tokenizer carry data, not just labels?",
     "Yes. Each Sacred Tongue token is not just a category label — it carries structured data:\n\n"
     "**Langues (the languages themselves):** Each token position [ROW:COL] in the 16x16 grid "
@@ -569,14 +627,16 @@ add(SYS_PROMPT,
     "- Composed (multiple tokens form sequences)\n\n"
     "The tokenizer IS the data format. There is no separate 'tokenize then featurize' step. "
     "Tokenization and semantic encoding happen in the same operation.",
-    ["tongue-primer", "tokenizer-basics", "data-carrying"])
+    ["tongue-primer", "tokenizer-basics", "data-carrying"],
+)
 
 
 # ──────────────────────────────────────────
 # SECTION 10: Semantic Math and Stories — Using the Tokenizer to Communicate
 # ──────────────────────────────────────────
 
-add(SYS_PROMPT,
+add(
+    SYS_PROMPT,
     "Can the Sacred Tongue tokenizer do mathematics?",
     "Yes. The phi-weighted tongue system IS a mathematical system.\n\n"
     "**Addition (combining signals):**\n"
@@ -599,9 +659,11 @@ add(SYS_PROMPT,
     "Project a 6D tongue vector onto a single tongue to ask: 'How much of this input "
     "is about security?' Project onto Umbroth: UM_component = UM_activation * phi^4.\n\n"
     "The tongues don't just label — they compute.",
-    ["tongue-primer", "semantic-math", "computation"])
+    ["tongue-primer", "semantic-math", "computation"],
+)
 
-add(SYS_PROMPT,
+add(
+    SYS_PROMPT,
     "Can you use the Sacred Tongue tokenizer to make words and tell stories?",
     "Yes — and this is what makes it a true language system, not just a feature extractor.\n\n"
     "**Words as tongue chords:**\n"
@@ -623,9 +685,11 @@ add(SYS_PROMPT,
     "The lore teaches the tongues through story, and the tongues encode the story as data.\n\n"
     "If the model can't use the tokenizer to communicate — to form words, sentences, and stories "
     "in the Sacred Tongues — then it hasn't learned the tokenizer. It's just memorized labels.",
-    ["tongue-primer", "semantic-stories", "language", "narrative"])
+    ["tongue-primer", "semantic-stories", "language", "narrative"],
+)
 
-add(SYS_PROMPT,
+add(
+    SYS_PROMPT,
     "Show me how a conversation gets tokenized into Sacred Tongue sequences.",
     "Here's a real interaction tokenized chord-by-chord:\n\n"
     "**User says:** 'Hey, can you explain how the harmonic wall works?'\n\n"
@@ -652,14 +716,16 @@ add(SYS_PROMPT,
     "The tokenizer doesn't see 'harmonic wall' as a keyword — it sees the INTENT "
     "around the keyword, the CONTEXT of how it's being discussed, and the STRUCTURAL "
     "consequence of what's being asked.",
-    ["tongue-primer", "semantic-stories", "conversation", "comparison"])
+    ["tongue-primer", "semantic-stories", "conversation", "comparison"],
+)
 
 
 # ──────────────────────────────────────────
 # SECTION 11: Variable Drift / Decimal Drift
 # ──────────────────────────────────────────
 
-add(SYS_PROMPT,
+add(
+    SYS_PROMPT,
     "What is variable drift (decimal drift) in the Sacred Tongue system?",
     "Variable drift — also called decimal drift — is precision loss in tongue weights "
     "over repeated computation or extended conversation.\n\n"
@@ -678,14 +744,16 @@ add(SYS_PROMPT,
     "**This is not hypothetical.** IEEE 754 floating-point accumulates ~1 ULP of error per "
     "operation. After 1000 tongue evaluations, you can accumulate enough drift to flip "
     "a governance decision at the margins.",
-    ["tongue-primer", "drift", "precision", "math"])
+    ["tongue-primer", "drift", "precision", "math"],
+)
 
-add(SYS_PROMPT,
+add(
+    SYS_PROMPT,
     "How do you correct for variable drift in tongue weights?",
     "Phi-correction: periodically snap tongue weights back to their true phi-scaled values.\n\n"
     "**Method 1: Recompute from phi**\n"
     "Don't accumulate weights — recompute from the golden ratio each time:\n"
-    f"phi = (1 + sqrt(5)) / 2\n"
+    "phi = (1 + sqrt(5)) / 2\n"
     "weights = [phi**0, phi**1, phi**2, phi**3, phi**4, phi**5]\n"
     "This is computationally cheap and eliminates accumulated drift entirely.\n\n"
     "**Method 2: Ratio validation**\n"
@@ -703,9 +771,11 @@ add(SYS_PROMPT,
     "from scratch. This puts a hard upper bound on how much drift can accumulate.\n\n"
     "The principle: phi is a mathematical constant. Treat it like one. "
     "Never let accumulated computation erode a geometric guarantee.",
-    ["tongue-primer", "drift", "correction", "engineering"])
+    ["tongue-primer", "drift", "correction", "engineering"],
+)
 
-add(SYS_PROMPT,
+add(
+    SYS_PROMPT,
     "What's the worst case if decimal drift goes uncorrected?",
     "**Scenario: Governance flip at the boundary.**\n\n"
     "A request lands right at the QUARANTINE/ALLOW threshold. The harmonic wall "
@@ -725,12 +795,14 @@ add(SYS_PROMPT,
     "identical requests get different decisions based on how long the system has been running.\n\n"
     "This is why drift correction is mandatory, not optional. The phi guarantee "
     "is only as strong as the precision of its implementation.",
-    ["tongue-primer", "drift", "worst-case", "governance"])
+    ["tongue-primer", "drift", "worst-case", "governance"],
+)
 
 
 # ──────────────────────────────────────────
 # Build output
 # ──────────────────────────────────────────
+
 
 def main():
     from augment_curriculum_sft import compute_tongue_activations, detect_layers, detect_axioms, compute_difficulty
@@ -745,7 +817,7 @@ def main():
         dominant = max(tongues, key=tongues.get)
 
         tongue_str = " ".join(f"{t}={v}" for t, v in tongues.items())
-        layer_str = ",".join(f"L{l}" for l in layers)
+        layer_str = ",".join(f"L{layer}" for layer in layers)
         axiom_str = ",".join(axioms)
         dim_header = (
             f"[TONGUES: {tongue_str}]\n"
@@ -768,7 +840,7 @@ def main():
             "difficulty": difficulty,
             "augmentation": "tongue-primer",
             "tags": r["tags"],
-            "source_hash": hashlib.md5(r["user"].encode()).hexdigest()[:8],
+            "source_hash": hashlib.sha256(r["user"].encode()).hexdigest()[:8],
         }
         records.append(rec)
 
@@ -781,6 +853,7 @@ def main():
 
     # Category breakdown
     from collections import Counter
+
     tag_counts = Counter()
     for rec in records:
         for tag in rec["tags"]:

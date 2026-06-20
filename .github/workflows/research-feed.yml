@@ -1,14 +1,16 @@
 name: Research Feed
 
 on:
-  schedule:
-    - cron: "10 * * * *" # every hour at :10 past
   push:
     branches: [main]
     paths:
       - ".github/workflows/research-feed.yml"
       - "scripts/system/generate_research_feed.py"
   workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   generate:

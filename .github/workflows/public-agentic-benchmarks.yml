@@ -1,0 +1,307 @@
+name: Public Agentic Benchmarks
+
+on:
+  workflow_dispatch:
+    inputs:
+      track:
+        description: "Benchmark lane to run"
+        required: true
+        default: "setup-only"
+        type: choice
+        options:
+          - setup-only
+          - aider-polyglot-smoke
+          - aider-polyglot-scored-small
+          - terminal-bench-setup
+          - swe-bench-setup
+      num_tests:
+        description: "Tiny smoke count for lanes that support it"
+        required: false
+        default: "1"
+      model:
+        description: "Aider model name for scored runs"
+        required: false
+        default: "openai/Qwen/Qwen2.5-Coder-32B-Instruct"
+      edit_format:
+        description: "Aider edit format for scored runs"
+        required: false
+        default: "whole"
+      api_provider:
+        description: "API provider for scored Aider runs"
+        required: false
+        default: "huggingface"
+        type: choice
+        options:
+          - openai
+          - huggingface
+          - nvidia
+      cost_mode:
+        description: "Cost guard for scored runs"
+        required: false
+        default: "free_remote"
+        type: choice
+        options:
+          - local_artifact_only
+          - free_remote
+          - paid_allowed
+
+permissions:
+  contents: read
+
+jobs:
+  public-agentic-benchmark:
+    name: ${{ inputs.track }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      AIDER_MODEL: ${{ inputs.model }}
+      AIDER_EDIT_FORMAT: ${{ inputs.edit_format }}
+      AIDER_NUM_TESTS: ${{ inputs.num_tests }}
+      AIDER_API_PROVIDER: ${{ inputs.api_provider }}
+      BENCHMARK_COST_MODE: ${{ inputs.cost_mode }}
+      OPENAI_API_KEY_SECRET: ${{ secrets.OPENAI_API_KEY }}
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        run: python -m pip install --upgrade uv
+
+      - name: Install SCBE benchmark preflight deps
+        run: python -m pip install numpy
+
+      - name: Probe remote Docker lane
+        run: |
+          mkdir -p artifacts/public_agentic_benchmark_setup
+          docker --version | tee artifacts/public_agentic_benchmark_setup/docker-version.txt
+          docker system df | tee artifacts/public_agentic_benchmark_setup/docker-system-df.txt
+
+      - name: Validate public benchmark plan
+        run: python scripts/benchmark/public_agentic_cli_suite.py --validate-only
+
+      - name: Enforce benchmark cost guard
+        if: ${{ inputs.track == 'aider-polyglot-scored-small' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "${BENCHMARK_COST_MODE}" in
+            local_artifact_only)
+              echo "local_artifact_only forbids live scored model calls. Use setup-only, aider-polyglot-smoke, or paid_allowed intentionally." >&2
+              exit 1
+              ;;
+            free_remote)
+              if [ "${AIDER_API_PROVIDER}" != "huggingface" ]; then
+                echo "free_remote scored runs only allow api_provider=huggingface. Got ${AIDER_API_PROVIDER}." >&2
+                exit 1
+              fi
+              case "${AIDER_MODEL}" in
+                openai/Qwen/Qwen2.5-Coder-7B-Instruct|openai/Qwen/Qwen2.5-Coder-32B-Instruct)
+                  ;;
+                *)
+                  echo "free_remote scored runs only allow known low/no-cost HF router models. Got ${AIDER_MODEL}." >&2
+                  exit 1
+                  ;;
+              esac
+              if ! [[ "${AIDER_NUM_TESTS}" =~ ^[0-9]+$ ]]; then
+                echo "num_tests must be a positive integer under free_remote. Got ${AIDER_NUM_TESTS}." >&2
+                exit 1
+              fi
+              if [ "${AIDER_NUM_TESTS}" -gt 1 ]; then
+                echo "free_remote scored runs are capped at num_tests=1. Use paid_allowed for larger sweeps." >&2
+                exit 1
+              fi
+              ;;
+            paid_allowed)
+              echo "paid_allowed set explicitly; cost guard permits provider ${AIDER_API_PROVIDER} and ${AIDER_NUM_TESTS} tests."
+              ;;
+            *)
+              echo "Unsupported BENCHMARK_COST_MODE=${BENCHMARK_COST_MODE}" >&2
+              exit 1
+              ;;
+          esac
+
+      - name: Setup public benchmark harnesses
+        run: python scripts/benchmark/setup_public_agentic_benchmarks.py --download --dry-run
+
+      - name: Run Aider Polyglot non-scoring smoke
+        if: ${{ inputs.track == 'aider-polyglot-smoke' }}
+        run: python scripts/benchmark/aider_polyglot_smoke.py --download-polyglot --execute --num-tests "${{ inputs.num_tests }}"
+
+      - name: GeoSeal Aider adapter preflight
+        if: ${{ inputs.track == 'aider-polyglot-scored-small' }}
+        run: |
+          python scripts/benchmark/aider_polyglot_smoke.py \
+            --download-polyglot \
+            --num-tests "${{ inputs.num_tests }}" \
+            --output-root artifacts/public_agentic_benchmark_setup/aider_polyglot_preflight
+
+      - name: Run Aider Polyglot scored small slice
+        if: ${{ inputs.track == 'aider-polyglot-scored-small' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          SELECTED_API_BASE=""
+          case "${AIDER_API_PROVIDER}" in
+            openai)
+              SELECTED_API_KEY="${OPENAI_API_KEY_SECRET:-}"
+              REQUIRED_SECRET="OPENAI_API_KEY"
+              ;;
+            huggingface)
+              SELECTED_API_KEY="${HF_TOKEN:-}"
+              SELECTED_API_BASE="https://router.huggingface.co/v1"
+              REQUIRED_SECRET="HF_TOKEN"
+              ;;
+            nvidia)
+              SELECTED_API_KEY="${NVIDIA_API_KEY:-}"
+              SELECTED_API_BASE="https://integrate.api.nvidia.com/v1"
+              REQUIRED_SECRET="NVIDIA_API_KEY"
+              ;;
+            *)
+              echo "Unsupported Aider API provider: ${AIDER_API_PROVIDER}" >&2
+              exit 1
+              ;;
+          esac
+          if [ -z "${SELECTED_API_KEY:-}" ]; then
+            echo "${REQUIRED_SECRET} repository secret is required for ${AIDER_API_PROVIDER} scored Aider runs" >&2
+            exit 1
+          fi
+          api_env_args=(-e OPENAI_API_KEY="${SELECTED_API_KEY}")
+          if [ -n "${SELECTED_API_BASE}" ]; then
+            api_env_args+=(-e OPENAI_API_BASE="${SELECTED_API_BASE}" -e AIDER_OPENAI_API_BASE="${SELECTED_API_BASE}")
+          fi
+
+          rm -rf external/benchmarks/aider
+          git clone --depth 1 https://github.com/Aider-AI/aider.git external/benchmarks/aider
+          cd external/benchmarks/aider
+          python3 - <<'PY'
+          from pathlib import Path
+
+          dockerfile = Path("benchmark/Dockerfile")
+          text = dockerfile.read_text(encoding="utf-8")
+          text = text.replace("FROM buildpack-deps:jammy", "FROM buildpack-deps:noble")
+          old = """# Install Python 3.11
+          RUN apt-get update && apt-get install -y \\
+              software-properties-common \\
+              cmake \\
+              libboost-all-dev \\
+              && add-apt-repository ppa:deadsnakes/ppa \\
+              && apt-get update \\
+              && apt-get install -y \\
+              python3.11 \\
+              python3.11-venv \\
+              python3.11-dev \\
+              python3-pip \\
+              ca-certificates-java \\
+              openjdk-21-jdk \\
+              libtbb-dev \\
+              && rm -rf /var/lib/apt/lists/*
+
+          # Make python3.11 the default python3
+          RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
+          """
+          new = """# Use Ubuntu noble's native Python to avoid flaky Launchpad/deadsnakes PPA resolution.
+          RUN apt-get update && apt-get install -y \\
+              cmake \\
+              libboost-all-dev \\
+              python3 \\
+              python3-venv \\
+              python3-dev \\
+              python3-pip \\
+              ca-certificates-java \\
+              openjdk-21-jdk \\
+              libtbb-dev \\
+              && rm -rf /var/lib/apt/lists/*
+          """
+          if old not in text:
+              raise SystemExit("Aider benchmark Dockerfile changed; refusing silent patch")
+          text = text.replace(old, new)
+          old_pip = """COPY . /aider
+          RUN pip3 install --no-cache-dir --upgrade pip uv
+          RUN uv pip install --system --no-cache-dir -e /aider[dev]
+          """
+          new_pip = """RUN python3 -m venv /opt/aider-venv
+          ENV PATH="/opt/aider-venv/bin:$PATH"
+
+          COPY . /aider
+          RUN pip install --no-cache-dir --upgrade pip uv
+          RUN uv pip install --no-cache-dir -e /aider[dev]
+          """
+          if old_pip not in text:
+              raise SystemExit("Aider benchmark Dockerfile pip install block changed; refusing silent patch")
+          dockerfile.write_text(text.replace(old_pip, new_pip), encoding="utf-8")
+          PY
+          mkdir -p tmp.benchmarks
+          git clone --depth 1 https://github.com/Aider-AI/polyglot-benchmark.git tmp.benchmarks/polyglot-benchmark
+          for attempt in 1 2 3; do
+            if ./benchmark/docker_build.sh; then
+              break
+            fi
+            if [ "${attempt}" = "3" ]; then
+              echo "Aider benchmark Docker build failed after ${attempt} attempts" >&2
+              exit 1
+            fi
+            echo "Aider benchmark Docker build failed on attempt ${attempt}; retrying after transient registry/apt backoff"
+            sleep $((attempt * 20))
+          done
+          docker run --rm \
+            --memory=12g \
+            --memory-swap=12g \
+            -v "$PWD":/aider \
+            -v "$PWD/tmp.benchmarks":/benchmarks \
+            "${api_env_args[@]}" \
+            -e AIDER_DOCKER=1 \
+            -e AIDER_BENCHMARK_DIR=/benchmarks \
+            aider-benchmark \
+            bash -lc "cd /aider && pip install -e '.[dev]' && python3 benchmark/benchmark.py scbe-remote-scored --model '${AIDER_MODEL}' --edit-format '${AIDER_EDIT_FORMAT}' --threads 1 --num-tests '${AIDER_NUM_TESTS}' --exercises-dir /benchmarks/polyglot-benchmark"
+
+          sudo chown -R "$(id -u):$(id -g)" "$PWD" tmp.benchmarks
+          latest_dir="$(ls -td tmp.benchmarks/*--scbe-remote-scored | head -1)"
+          mkdir -p ../../../artifacts/public_agentic_benchmark_setup/aider_polyglot_scored
+          python -m pip install -e '.[dev]'
+          python benchmark/benchmark.py --stats "${latest_dir}" \
+            | tee ../../../artifacts/public_agentic_benchmark_setup/aider_polyglot_scored/latest_stats.yml
+          cp -R "${latest_dir}" ../../../artifacts/public_agentic_benchmark_setup/aider_polyglot_scored/run
+          diagnostics_dir="../../../artifacts/public_agentic_benchmark_setup/aider_polyglot_scored/diagnostics"
+          mkdir -p "${diagnostics_dir}"
+          find "${latest_dir}" -name ".aider.results.json" -print0 | while IFS= read -r -d '' result_file; do
+            rel_dir="$(dirname "${result_file#${latest_dir}/}")"
+            safe_name="$(echo "${rel_dir}" | tr '/\\' '__')"
+            cp "${result_file}" "${diagnostics_dir}/${safe_name}.results.json"
+            chat_file="$(dirname "${result_file}")/.aider.chat.history.md"
+            if [ -f "${chat_file}" ]; then
+              cp "${chat_file}" "${diagnostics_dir}/${safe_name}.chat.history.md"
+            fi
+          done
+          python ../../../scripts/benchmark/workflow_completion_checklist.py \
+            --artifact-root ../../../artifacts/public_agentic_benchmark_setup/aider_polyglot_scored \
+            --output-root ../../../artifacts/public_agentic_benchmark_setup/aider_polyglot_scored
+          python ../../../scripts/benchmark/known_fail_retry_prompts.py \
+            --checklist ../../../artifacts/public_agentic_benchmark_setup/aider_polyglot_scored/latest_completion_checklist.json \
+            --output-root ../../../artifacts/public_agentic_benchmark_setup/aider_polyglot_scored
+
+      - name: Terminal-Bench remote setup note
+        if: ${{ inputs.track == 'terminal-bench-setup' }}
+        run: |
+          echo "Terminal-Bench checkout and Docker probe completed. Full scoring still needs a GeoSeal agent adapter and selected task subset." \
+            > artifacts/public_agentic_benchmark_setup/terminal-bench-remote-setup.txt
+
+      - name: SWE-bench remote setup note
+        if: ${{ inputs.track == 'swe-bench-setup' }}
+        run: |
+          echo "SWE-bench checkout and Docker probe completed. Full scoring still needs patch emission, instance selection, and containerized evaluation wiring." \
+            > artifacts/public_agentic_benchmark_setup/swe-bench-remote-setup.txt
+
+      - name: Upload benchmark artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: public-agentic-benchmarks-${{ inputs.track }}
+          path: artifacts/public_agentic_benchmark_setup/

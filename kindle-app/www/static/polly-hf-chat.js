@@ -15,7 +15,14 @@
       "When asked about buying/products/pricing, answer with real products. When asked who made you, say Issac Davis. " +
       "Be direct, structured, and useful. Help with the current page, workflow, or product without drifting into vague theory or making up lore.",
     suggestions: [],
-    initialAssistantText: "Add a token or proxy and start talking."
+    initialAssistantText: "Add a token or proxy and start talking.",
+    // SCBE-Polly mode: when set, route through /v1/polly/chat instead of HF.
+    // Enables auto-train capture, commerce intents (Stripe links), and the
+    // server-side action[] rendering. Set mode: "scbe-polly" + scbeApiBase.
+    mode: "hf",
+    scbeApiBase: "",
+    consentToTrain: false,
+    sessionId: ""
   };
 
   function escapeHtml(value) {
@@ -92,6 +99,66 @@
     link.click();
     link.remove();
     window.setTimeout(() => URL.revokeObjectURL(url), 500);
+  }
+
+  async function requestScbePolly(config, lastUserMessage, history) {
+    // Route through /v1/polly/chat — picks up auto-train capture and the
+    // server-side commerce intent classifier (returns Stripe-link actions).
+    const base = (config.scbeApiBase || "").trim().replace(/\/$/, "");
+    if (!base) {
+      throw new Error("scbeApiBase not configured for SCBE-Polly mode.");
+    }
+    const url = `${base}/v1/polly/chat`;
+    const body = {
+      message: String(lastUserMessage || "").slice(0, 4096),
+      history: (history || []).slice(-6).map((m) => ({ role: m.role, content: m.content })),
+      consent_to_train: Boolean(config.consentToTrain),
+      session_id: config.sessionId || ""
+    };
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    const rawText = await response.text();
+    let data = {};
+    try {
+      data = rawText ? JSON.parse(rawText) : {};
+    } catch {
+      data = { rawText };
+    }
+    if (!response.ok) {
+      const message = data.detail || data.error || data.rawText || `Polly request failed (${response.status})`;
+      throw new Error(String(message).slice(0, 400));
+    }
+    // /v1/polly/chat returns the assistant text under `text` (Vercel JS) or
+    // `response` (older Python /v1/polly/chat path). Accept both so the
+    // widget keeps working through any backend swap.
+    const text = (data.text || data.response || "").trim();
+    if (!text) {
+      throw new Error("Polly returned no assistant text.");
+    }
+    return {
+      text,
+      actions: Array.isArray(data.actions) ? data.actions : [],
+      intent: data.intent || null,
+      route: data.route || ""
+    };
+  }
+
+  async function postFeedbackToScbe(config, payload) {
+    const base = (config.scbeApiBase || "").trim().replace(/\/$/, "");
+    if (!base) return false;
+    try {
+      const response = await fetch(`${base}/v1/polly/feedback`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      return response.ok;
+    } catch {
+      return false;
+    }
   }
 
   async function requestCompletion(config, messages) {
@@ -464,15 +531,33 @@
     function pushFeedback(index, rating) {
       const message = state.messages[index];
       if (!message || message.role !== "assistant") return;
+      const userMessage = getUserMessageBefore(index);
       const records = readFeedback(config.storagePrefix);
       records.push({
         timestamp: new Date().toISOString(),
         model: state.settings.model,
         rating,
-        prompt: getUserMessageBefore(index),
+        prompt: userMessage,
         response: message.content
       });
       writeFeedback(config.storagePrefix, records);
+
+      // In SCBE mode, also POST to /v1/polly/feedback so the server-side
+      // training corpus picks up the rating. Fire-and-forget.
+      if (config.mode === "scbe-polly" && (config.scbeApiBase || "").trim() && userMessage) {
+        postFeedbackToScbe(
+          { scbeApiBase: config.scbeApiBase },
+          {
+            rating,
+            user_message: userMessage,
+            assistant_reply: message.content,
+            intent: message.intent || "feedback",
+            session_id: config.sessionId || "",
+            consent_to_train: Boolean(config.consentToTrain)
+          }
+        ).catch(() => {});
+      }
+
       state.status = `Saved feedback: ${rating}.`;
       render();
     }
@@ -483,39 +568,68 @@
 
       state.messages.push({ role: "user", content: prompt });
       state.busy = true;
-      state.status = "Waiting for Hugging Face...";
+      const usingScbe = config.mode === "scbe-polly" && (config.scbeApiBase || "").trim();
+      state.status = usingScbe ? "Waiting for Polly..." : "Waiting for Hugging Face...";
       render();
 
       try {
         saveSettings();
-        const requestMessages = [
-          { role: "system", content: state.settings.systemPrompt.trim() },
-          ...state.messages
+
+        if (usingScbe) {
+          // SCBE-Polly route: server handles intent classification, commerce
+          // links, and auto-train capture. Returns assistant text + actions[].
+          const conversation = state.messages
             .filter((entry) => !entry.initial)
-            .map((entry) => ({ role: entry.role, content: entry.content }))
-        ];
+            .map((entry) => ({ role: entry.role, content: entry.content }));
+          const reply = await requestScbePolly(
+            {
+              scbeApiBase: config.scbeApiBase,
+              consentToTrain: config.consentToTrain,
+              sessionId: config.sessionId
+            },
+            prompt,
+            conversation.slice(0, -1) // history excludes the just-pushed prompt
+          );
+          state.messages.push({
+            role: "assistant",
+            content: reply.text,
+            actions: reply.actions,
+            intent: reply.intent
+          });
+          state.status = reply.intent ? `Reply ready (${reply.intent}).` : "Reply ready.";
+        } else {
+          const requestMessages = [
+            { role: "system", content: state.settings.systemPrompt.trim() },
+            ...state.messages
+              .filter((entry) => !entry.initial)
+              .map((entry) => ({ role: entry.role, content: entry.content }))
+          ];
 
-        const reply = await requestCompletion(
-          {
-            token: state.settings.token,
-            model: state.settings.model,
-            endpoint: config.endpoint,
-            proxyEndpoint: state.settings.proxyEndpoint,
-            maxTokens: config.maxTokens,
-            temperature: config.temperature
-          },
-          requestMessages
-        );
+          const reply = await requestCompletion(
+            {
+              token: state.settings.token,
+              model: state.settings.model,
+              endpoint: config.endpoint,
+              proxyEndpoint: state.settings.proxyEndpoint,
+              maxTokens: config.maxTokens,
+              temperature: config.temperature
+            },
+            requestMessages
+          );
 
-        state.messages.push({ role: "assistant", content: reply });
-        state.status = "Reply ready.";
+          state.messages.push({ role: "assistant", content: reply });
+          state.status = "Reply ready.";
+        }
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Unknown HF error.";
+        const message = error instanceof Error ? error.message : "Unknown chat error.";
+        const hint = usingScbe
+          ? "Check that scbeApiBase points at a reachable Polly endpoint."
+          : "If this is a public page, use a proxy endpoint instead of a raw token.";
         state.messages.push({
           role: "assistant",
-          content: `Request failed.\n\n${message}\n\nIf this is a public page, use a proxy endpoint instead of a raw token.`
+          content: `Request failed.\n\n${message}\n\n${hint}`
         });
-        state.status = "HF request failed.";
+        state.status = "Request failed.";
       } finally {
         state.busy = false;
         render();
@@ -567,12 +681,22 @@
 
               <div class="polly-thread" id="pollyThread">
                 ${state.messages
-                  .map((message, index) => `
+                  .map((message, index) => {
+                    const actions = Array.isArray(message.actions) ? message.actions : [];
+                    const actionsHtml = actions.length ? `
+                        <div class="polly-actions" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;">
+                          ${actions
+                            .map((a) => `<a class="polly-button primary" href="${escapeHtml(a.url || "")}" target="_blank" rel="noopener">${escapeHtml(a.label || "Open")}</a>`)
+                            .join("")}
+                        </div>
+                      ` : "";
+                    return `
                     <article class="polly-message ${message.role}">
                       <div class="polly-message-header">
                         <span>${message.role === "assistant" ? "Polly" : "You"}</span>
                       </div>
                       <div>${escapeHtml(message.content)}</div>
+                      ${actionsHtml}
                       ${message.role === "assistant" && !message.initial ? `
                         <div class="polly-feedback">
                           <button type="button" data-action="feedback-up" data-index="${index}">Useful</button>
@@ -580,7 +704,8 @@
                         </div>
                       ` : ""}
                     </article>
-                  `)
+                  `;
+                  })
                   .join("")}
               </div>
 

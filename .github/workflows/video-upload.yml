@@ -1,0 +1,163 @@
+name: YouTube Video Upload
+
+on:
+  workflow_dispatch:
+    inputs:
+      video_path:
+        description: 'Path to video file in repo/artifact (relative)'
+        required: true
+        type: string
+      title:
+        description: 'YouTube video title'
+        required: false
+        type: string
+      description:
+        description: 'YouTube video description'
+        required: false
+        default: ''
+        type: string
+      srt_path:
+        description: 'Optional SRT caption path'
+        required: false
+        default: ''
+        type: string
+      thumbnail_path:
+        description: 'Optional thumbnail path'
+        required: false
+        default: ''
+        type: string
+      source_text_path:
+        description: 'Optional manuscript/source text path for story-ending verification'
+        required: false
+        default: ''
+        type: string
+      story_mode:
+        description: 'Require story-video package readiness checks'
+        required: false
+        default: true
+        type: boolean
+      privacy:
+        description: 'Privacy status'
+        required: false
+        default: 'private'
+        type: choice
+        options: [private, unlisted, public]
+      chunk_size_mb:
+        description: 'Upload chunk size in MiB'
+        required: false
+        default: '8'
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  verify-and-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ffmpeg/ffprobe
+        run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Verify video (ffprobe + sha256)
+        id: verify
+        env:
+          VIDEO_PATH: ${{ github.event.inputs.video_path }}
+        run: |
+          if [[ "$VIDEO_PATH" == /* || "$VIDEO_PATH" == *".."* || ! "$VIDEO_PATH" =~ ^[A-Za-z0-9._/-]+$ ]]; then
+            echo "Invalid video_path input"
+            exit 1
+          fi
+          node scripts/video/verify.js \
+            --file "$VIDEO_PATH" \
+            --out verify-receipt.json
+          echo "sha256=$(jq -r .sha256 verify-receipt.json)" >> "$GITHUB_OUTPUT"
+          cat verify-receipt.json
+
+      - name: Build YouTube metadata package
+        run: |
+          node scripts/youtube/package.js \
+            --out youtube-metadata.json \
+            --title "${{ github.event.inputs.title || github.event.inputs.video_path }}" \
+            --description "${{ github.event.inputs.description }}" \
+            --privacy "${{ github.event.inputs.privacy }}"
+
+      - name: Quality gate
+        run: |
+          args=(--file "${{ github.event.inputs.video_path }}" --metadata youtube-metadata.json --out quality-gate.json)
+          if [ -n "${{ github.event.inputs.srt_path }}" ]; then
+            args+=(--srt "${{ github.event.inputs.srt_path }}")
+          fi
+          if [ -n "${{ github.event.inputs.thumbnail_path }}" ]; then
+            args+=(--thumbnail "${{ github.event.inputs.thumbnail_path }}")
+          fi
+          if [ -n "${{ github.event.inputs.source_text_path }}" ]; then
+            args+=(--source-text "${{ github.event.inputs.source_text_path }}")
+          fi
+          if [ "${{ github.event.inputs.story_mode }}" = "true" ]; then
+            args+=(--story)
+          fi
+          node scripts/video/quality_gate.js "${args[@]}"
+          cat quality-gate.json
+
+      - name: Build video package manifest
+        run: |
+          args=(--video "${{ github.event.inputs.video_path }}" --metadata youtube-metadata.json --quality-report quality-gate.json --out video-package.json)
+          if [ -n "${{ github.event.inputs.srt_path }}" ]; then
+            args+=(--srt "${{ github.event.inputs.srt_path }}")
+          fi
+          if [ -n "${{ github.event.inputs.thumbnail_path }}" ]; then
+            args+=(--thumbnail "${{ github.event.inputs.thumbnail_path }}")
+          fi
+          node scripts/video/package_manifest.js "${args[@]}"
+          cat video-package.json
+
+      - name: Safety check — no DENY from GeoSeal verify (dry-run)
+        env:
+          VIDEO_PATH: ${{ github.event.inputs.video_path }}
+          VIDEO_SHA256: ${{ steps.verify.outputs.sha256 }}
+        run: |
+          pip install pytest --quiet
+          GEOSEAL_INPUT="$(python - <<'PY'
+          import json, os
+          print(json.dumps({"op":"upload","file":os.environ["VIDEO_PATH"],"sha256":os.environ["VIDEO_SHA256"]}))
+          PY
+          )"
+          python -m scripts.system.geoseal_llm_verify \
+            --json "$GEOSEAL_INPUT" \
+            --dry-run --quiet || true
+        continue-on-error: true
+
+      - name: Upload to YouTube (resumable)
+        env:
+          VIDEO_PATH: ${{ github.event.inputs.video_path }}
+          VIDEO_TITLE: ${{ github.event.inputs.title || github.event.inputs.video_path }}
+          VIDEO_DESCRIPTION: ${{ github.event.inputs.description }}
+          VIDEO_PRIVACY: ${{ github.event.inputs.privacy }}
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+          CHUNK_SIZE_MB: ${{ github.event.inputs.chunk_size_mb }}
+        run: |
+          node scripts/youtube/upload.js \
+            --manifest video-package.json \
+            --chunk-size-mb "$CHUNK_SIZE_MB" \
+            --receipt-out upload-receipt.json
+
+      - name: Upload receipts as artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: upload-receipts-${{ github.run_id }}
+          path: |
+            verify-receipt.json
+            youtube-metadata.json
+            quality-gate.json
+            video-package.json
+            upload-receipt.json
+          retention-days: 30

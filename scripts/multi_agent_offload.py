@@ -19,7 +19,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_CONFIG = "scripts/multi_agent_offload.json"
 DEFAULT_STATE_PATH = "training/ingest/multi_agent_offload_state.json"
@@ -149,7 +148,7 @@ def sha256_file(path: Path) -> str:
 
 
 def md5_file(path: Path) -> str:
-    hasher = hashlib.md5()
+    hasher = hashlib.sha256()
     with path.open("rb") as handle:
         while True:
             block = handle.read(1024 * 1024)
@@ -164,7 +163,7 @@ def safe_slug(text: str, limit: int = 80) -> str:
     cleaned = re.sub(r"-{2,}", "-", cleaned)
     if len(cleaned) <= limit:
         return cleaned or "item"
-    digest = hashlib.sha1(cleaned.encode("utf-8")).hexdigest()[:8]
+    digest = hashlib.sha256(cleaned.encode("utf-8")).hexdigest()[:8]
     return f"{cleaned[: limit - 9]}-{digest}"
 
 

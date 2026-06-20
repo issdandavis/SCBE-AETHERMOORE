@@ -69,7 +69,7 @@ Notice each section uses a different tongue:
 - **nonce** → Kor'aelin (flow/intent)
 - **salt** → Runethic (binding)
 - **ct** → Cassisivadan (ciphertext)
-- **tag** → Draumric (structure)
+- **tag** → Draumric (authentication/integrity)
 
 ### Step 6: Decrypt the Message
 

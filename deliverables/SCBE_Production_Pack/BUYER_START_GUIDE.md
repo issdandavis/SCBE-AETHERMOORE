@@ -62,5 +62,5 @@ First working result:
 
 ## If something is missing
 
-- Delivery issue: `aethermoregames@pm.me` with subject `SCBE Delivery Issue`
-- Package support: `aethermoregames@pm.me` with subject `SCBE Package Support`
+- Delivery issue: `ai@aethermoore.com` with subject `SCBE Delivery Issue`
+- Package support: `ai@aethermoore.com` with subject `SCBE Package Support`

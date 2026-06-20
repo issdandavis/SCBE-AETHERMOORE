@@ -392,7 +392,9 @@ SACRED_TONGUE_HYBRIDS = {
         "dominant_axis": "creativity",
         "hybrid_phrase": "Nar'shul sil'kor grondrak",
         "sensory": "echoing half-tones laced with mint chill grounding and heavy resonant stone/steam",
-        "description": "Creativity-axis dominant: loss of yaw control → reduce collective + forward cyclic + running landing",
+        "description": (
+            "Creativity-axis dominant: loss of yaw control → " "reduce collective + forward cyclic + running landing"
+        ),
     },
 }
 

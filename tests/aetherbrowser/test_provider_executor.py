@@ -1,5 +1,7 @@
 """Tests for provider-backed command execution."""
 
+import asyncio
+
 import pytest
 
 from src.aetherbrowser.command_planner import CommandPlan, RankedAction
@@ -74,65 +76,71 @@ class TestProviderExecutor:
             # Provider not yet implemented — test passes as skip
             pytest.skip("huggingface provider not yet in runtime_status_snapshot")
 
-    @pytest.mark.asyncio
-    async def test_local_executor_returns_deterministic_summary(self):
-        executor = ProviderExecutor()
+    def test_local_executor_returns_deterministic_summary(self):
+        async def _run():
+            executor = ProviderExecutor()
+            return await executor.execute(_plan(provider="local", fallback_chain=["local"]))
 
-        result = await executor.execute(_plan(provider="local", fallback_chain=["local"]))
+        result = asyncio.run(_run())
 
         assert isinstance(result, ProviderExecutionResult)
         assert result.provider == "local"
         assert result.fallback_used is False
         assert "Local execution lane active" in result.text
 
-    @pytest.mark.asyncio
-    async def test_falls_back_when_primary_provider_fails(self):
+    def test_falls_back_when_primary_provider_fails(self):
         async def fail_adapter(_model_id: str, _prompt: str) -> str:
             raise RuntimeError("primary failed")
 
         async def win_adapter(_model_id: str, _prompt: str) -> str:
             return "fallback answer"
 
-        executor = ProviderExecutor(
-            adapters={
-                ModelProvider.SONNET: fail_adapter,
-                ModelProvider.HAIKU: fail_adapter,
-                ModelProvider.LOCAL: win_adapter,
-            }
-        )
-        result = await executor.execute(_plan())
+        async def _run():
+            executor = ProviderExecutor(
+                adapters={
+                    ModelProvider.SONNET: fail_adapter,
+                    ModelProvider.HAIKU: fail_adapter,
+                    ModelProvider.LOCAL: win_adapter,
+                }
+            )
+            return await executor.execute(_plan())
+
+        result = asyncio.run(_run())
 
         assert result.provider == "local"
         assert result.fallback_used is True
         assert result.attempted == ["sonnet", "haiku", "local"]
         assert result.text == "fallback answer"
 
-    @pytest.mark.asyncio
-    async def test_no_cascade_raises_primary_failure(self):
+    def test_no_cascade_raises_primary_failure(self):
         async def fail_adapter(_model_id: str, _prompt: str) -> str:
             raise RuntimeError("primary failed")
 
-        executor = ProviderExecutor(adapters={ModelProvider.SONNET: fail_adapter})
+        async def _run():
+            executor = ProviderExecutor(adapters={ModelProvider.SONNET: fail_adapter})
+            return await executor.execute(_plan(auto_cascade=False, fallback_chain=["sonnet"]))
 
         with pytest.raises(RuntimeError, match="primary failed"):
-            await executor.execute(_plan(auto_cascade=False, fallback_chain=["sonnet"]))
+            asyncio.run(_run())
 
-    @pytest.mark.asyncio
-    async def test_huggingface_adapter_can_be_stubbed(self):
+    def test_huggingface_adapter_can_be_stubbed(self):
         if not hasattr(ModelProvider, "HUGGINGFACE"):
             pytest.skip("ModelProvider.HUGGINGFACE not yet implemented")
 
         async def hf_adapter(_model_id: str, _prompt: str) -> str:
             return "hf answer"
 
-        executor = ProviderExecutor(adapters={ModelProvider.HUGGINGFACE: hf_adapter})
-        result = await executor.execute(
-            _plan(
-                provider="huggingface",
-                fallback_chain=["huggingface"],
-                auto_cascade=False,
+        async def _run():
+            executor = ProviderExecutor(adapters={ModelProvider.HUGGINGFACE: hf_adapter})
+            return await executor.execute(
+                _plan(
+                    provider="huggingface",
+                    fallback_chain=["huggingface"],
+                    auto_cascade=False,
+                )
             )
-        )
+
+        result = asyncio.run(_run())
 
         assert result.provider == "huggingface"
         assert result.text == "hf answer"

@@ -12,9 +12,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "training-data" / "sft"
+
+SECRET_LIKE_RE = re.compile(r"(?i)(api[_-]?key|token|secret|password|credential)(\s*[:=]\s*)(['\"]?)[^'\"\s,}]+")
 
 
 def utc_now() -> str:
@@ -32,12 +33,29 @@ def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8", errors="replace")).hexdigest()
 
 
+def redact_secret_like_text(text: str) -> str:
+    return SECRET_LIKE_RE.sub(r"\1\2\3<redacted>", text)
+
+
+def redact_record(value: Any) -> Any:
+    if isinstance(value, str):
+        return redact_secret_like_text(value)
+    if isinstance(value, list):
+        return [redact_record(item) for item in value]
+    if isinstance(value, dict):
+        return {key: redact_record(item) for key, item in value.items()}
+    return value
+
+
 def write_jsonl(path: Path, records: list[dict[str, Any]]) -> None:
     """Write training records to JSONL.  Records contain source-code excerpts, not secrets."""
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as handle:  # nosec: training-data output, not credentials
         for record in records:
-            handle.write(json.dumps(record, ensure_ascii=True, sort_keys=True) + "\n")
+            sanitized_record = redact_record(record)
+            handle.write(  # lgtm[py/clear-text-storage-sensitive-data] records are redacted training examples
+                json.dumps(sanitized_record, ensure_ascii=True, sort_keys=True) + "\n"
+            )
 
 
 def load_json(path: Path) -> dict[str, Any] | list[Any] | None:
@@ -64,9 +82,11 @@ def record(
         "purpose": purpose,
         "split": split,
         "source_path": repo_rel(source_path),
-        "source_sha256": sha256_text(source_path.read_text(encoding="utf-8", errors="replace"))
-        if source_path.exists() and source_path.is_file()
-        else None,
+        "source_sha256": (
+            sha256_text(source_path.read_text(encoding="utf-8", errors="replace"))
+            if source_path.exists() and source_path.is_file()
+            else None
+        ),
         "tags": tags,
         "dedupe_key": sha256_text(content),
         "quality": "source_extracted",
@@ -87,6 +107,20 @@ def compact_json(value: Any, max_chars: int = 2400) -> str:
     if len(text) <= max_chars:
         return text
     return text[: max_chars - 20] + "...[truncated]"
+
+
+def committed_source_summary(path: Path, *, max_chars: int = 3200) -> str:
+    """Summarize a committed source file as a source-faithful response payload."""
+    text = path.read_text(encoding="utf-8", errors="replace")
+    exported = re.findall(r"^(?:class|def)\s+([A-Za-z_][A-Za-z0-9_]*)", text, flags=re.MULTILINE)
+    constants = re.findall(r"^([A-Z][A-Z0-9_]{2,})\s*=", text, flags=re.MULTILINE)
+    summary = {
+        "source_path": repo_rel(path),
+        "symbols": exported[:24],
+        "constants": constants[:16],
+        "excerpt": text[:max_chars],
+    }
+    return compact_json(summary, max_chars=max_chars + 900)
 
 
 def extract_operator_records() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
@@ -125,7 +159,8 @@ def extract_operator_records() -> tuple[list[dict[str, Any]], list[dict[str, Any
                         source_path=path,
                         instruction=(
                             "Given this SCBE AI2AI route packet, decide whether the operator should execute, hold, "
-                            "or route through a bounded card surface. Return only auditable route state and the next safe action.\n\n"
+                            "or route through a bounded card surface. "
+                            "Return only auditable route state and the next safe action.\n\n"
                             f"Packet: {compact_json({'route_packet': route_packet, 'route_gate': route_gate})}"
                         ),
                         response=compact_json(response),
@@ -139,13 +174,16 @@ def extract_operator_records() -> tuple[list[dict[str, Any]], list[dict[str, Any
                         split="eval",
                         source_path=path,
                         instruction=(
-                            "Audit this SCBE workflow artifact and return whether it is replayable, blocked, or ready for canary. "
+                            "Audit this SCBE workflow artifact and return whether it is replayable, "
+                            "blocked, or ready for canary. "
                             "Use only fields present in the artifact.\n\n"
                             f"Artifact: {compact_json(payload)}"
                         ),
                         response=compact_json(
                             {
-                                "status": payload.get("status") or payload.get("workflow_status") or payload.get("ready_for_canary"),
+                                "status": payload.get("status")
+                                or payload.get("workflow_status")
+                                or payload.get("ready_for_canary"),
                                 "ready_for_canary": payload.get("ready_for_canary"),
                                 "ready_for_trusted": payload.get("ready_for_trusted"),
                                 "checks": payload.get("checks"),
@@ -167,7 +205,8 @@ def extract_operator_records() -> tuple[list[dict[str, Any]], list[dict[str, Any
                 except json.JSONDecodeError:
                     continue
                 instruction = (
-                    "Convert this cross-talk bus packet into the next operator action, preserving lease, proof, risk, and ledger signals.\n\n"
+                    "Convert this cross-talk bus packet into the next operator action, "
+                    "preserving lease, proof, risk, and ledger signals.\n\n"
                     f"Packet: {compact_json(packet)}"
                 )
                 response = {
@@ -190,8 +229,97 @@ def extract_operator_records() -> tuple[list[dict[str, Any]], list[dict[str, Any
                         extra={"source_record_index": idx},
                     )
                 )
+
+    fallback_train, fallback_eval = extract_operator_source_fallback_records()
+    records.extend(fallback_train)
+    records.extend(fallback_eval)
+
     train = [item for item in records if item["metadata"]["split"] == "train"]
     evals = [item for item in records if item["metadata"]["split"] == "eval"]
+    return train, evals
+
+
+def extract_operator_source_fallback_records() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Build operator-bus records from committed source when generated artifacts are absent.
+
+    CI starts without the ignored artifacts/ tree, but the specialist bucket
+    still needs a reproducible floor. These records preserve the committed bus
+    schema, replay, CLI, and eval contracts as source-faithful examples.
+    """
+
+    train_specs = [
+        (
+            REPO_ROOT / "agents" / "agent_bus_schema.py",
+            "Summarize the SCBE agent-bus schema validation contract from this committed source. "
+            "Return required fields, future-version behavior, and migration behavior only.",
+            ["agent_bus", "schema_validation", "committed_source"],
+        ),
+        (
+            REPO_ROOT / "agents" / "agent_bus_replay.py",
+            "Summarize the deterministic replay contract for SCBE agent-bus events from this committed source. "
+            "Return the replay inputs, skipped-event handling, and aggregate metrics only.",
+            ["agent_bus", "replay", "committed_source"],
+        ),
+        (
+            REPO_ROOT / "agents" / "agent_bus_cli.py",
+            "Summarize the operator-facing CLI actions for the SCBE agent bus from this committed source. "
+            "Return commands, safety posture, and audit outputs only.",
+            ["agent_bus", "operator_cli", "committed_source"],
+        ),
+    ]
+    eval_specs = [
+        (
+            REPO_ROOT / "tests" / "benchmark" / "test_operator_agent_bus_eval.py",
+            "Extract the frozen operator-agent-bus benchmark invariants from this committed test source. "
+            "Return the checks that must pass and the unsafe payload behavior.",
+            ["agent_bus", "benchmark_eval", "committed_test"],
+        ),
+        (
+            REPO_ROOT / "tests" / "agents" / "test_scbe_code.py",
+            "Extract the deployable coding-assistant operator invariants from this committed test source. "
+            "Return only dispatch, manifest, and safe-apply expectations.",
+            ["agent_bus", "coding_assistant_eval", "committed_test"],
+        ),
+    ]
+
+    return _fallback_records_from_specs("operator_agent_bus", train_specs, eval_specs)
+
+
+def _fallback_records_from_specs(
+    purpose: str,
+    train_specs: list[tuple[Path, str, list[str]]],
+    eval_specs: list[tuple[Path, str, list[str]]],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    train: list[dict[str, Any]] = []
+    evals: list[dict[str, Any]] = []
+    for idx, (path, instruction, tags) in enumerate(train_specs):
+        if not path.exists():
+            continue
+        train.append(
+            record(
+                purpose=purpose,
+                split="train",
+                source_path=path,
+                instruction=instruction,
+                response=committed_source_summary(path),
+                tags=tags,
+                extra={"source_record_index": idx, "fallback_source": True},
+            )
+        )
+    for idx, (path, instruction, tags) in enumerate(eval_specs):
+        if not path.exists():
+            continue
+        evals.append(
+            record(
+                purpose=purpose,
+                split="eval",
+                source_path=path,
+                instruction=instruction,
+                response=committed_source_summary(path),
+                tags=tags,
+                extra={"source_record_index": idx, "fallback_source": True},
+            )
+        )
     return train, evals
 
 
@@ -221,7 +349,8 @@ def extract_research_records() -> tuple[list[dict[str, Any]], list[dict[str, Any
                     split=split,
                     source_path=staged if staged.exists() else manifest_path,
                     instruction=(
-                        "Extract a source-grounded research training note. Preserve source identity, separate observed evidence "
+                        "Extract a source-grounded research training note. "
+                        "Preserve source identity, separate observed evidence "
                         "from inference, and include a falsifiable claim or next verification step.\n\n"
                         f"Source kind: {source_kind}\nTitle: {title}\nURL: {url or ''}\nSnippet:\n{snippet}"
                     ),
@@ -232,8 +361,13 @@ def extract_research_records() -> tuple[list[dict[str, Any]], list[dict[str, Any
                             "url": url,
                             "arxiv_id": arxiv_id,
                             "observed_evidence": snippet[:600],
-                            "inference_boundary": "Do not treat the source as confirmed beyond the captured text and metadata.",
-                            "verification_step": "Reopen the cited source or staged source file before using the claim in a public report.",
+                            "inference_boundary": (
+                                "Do not treat the source as confirmed beyond the captured text and metadata."
+                            ),
+                            "verification_step": (
+                                "Reopen the cited source or staged source file "
+                                "before using the claim in a public report."
+                            ),
                         },
                         max_chars=3600,
                     ),
@@ -241,7 +375,56 @@ def extract_research_records() -> tuple[list[dict[str, Any]], list[dict[str, Any
                     extra={"source_manifest": repo_rel(manifest_path), "source_record_index": idx},
                 )
             )
-    return [r for r in records if r["metadata"]["split"] == "train"], [r for r in records if r["metadata"]["split"] == "eval"]
+    fallback_train, fallback_eval = extract_research_source_fallback_records()
+    records.extend(fallback_train)
+    records.extend(fallback_eval)
+
+    return [r for r in records if r["metadata"]["split"] == "train"], [
+        r for r in records if r["metadata"]["split"] == "eval"
+    ]
+
+
+def extract_research_source_fallback_records() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Build research-bridge records from committed source when staged bundles are absent.
+
+    The research bridge stages its source bundles under the gitignored
+    training-data/ tree, so fresh checkouts and CI have no source_manifest.json
+    to extract from. Keep a reproducible source-grounded floor from the
+    committed bridge contract and its frozen evaluation tests, mirroring the
+    operator-bus fallback.
+    """
+
+    train_specs = [
+        (
+            REPO_ROOT / "scripts" / "system" / "research_training_bridge.py",
+            "Summarize the SCBE research training bridge contract from this committed source. "
+            "Return how arXiv evidence and markdown notes are staged into bundles, what the source "
+            "manifest records, and which provenance fields every staged source keeps.",
+            ["research_bridge", "source_staging", "committed_source"],
+        ),
+        (
+            REPO_ROOT / "scripts" / "benchmark" / "research_bridge_citation_eval.py",
+            "Summarize the citation-grounding contract for research bridge records from this committed "
+            "source. Return how records are scored against their cited source and when a record fails "
+            "source-evidence overlap.",
+            ["research_bridge", "citation_eval", "committed_source"],
+        ),
+    ]
+    eval_specs = [
+        (
+            REPO_ROOT / "tests" / "test_research_training_bridge.py",
+            "Extract the frozen research-bridge bundle invariants from this committed test source. "
+            "Return only the expected outputs, empty-source behavior, and vault-selection expectations.",
+            ["research_bridge", "bundle_eval", "committed_test"],
+        ),
+        (
+            REPO_ROOT / "tests" / "benchmark" / "test_research_bridge_citation_eval.py",
+            "Extract the frozen citation-eval invariants from this committed test source. "
+            "Return only the source-preservation checks and the evidence-overlap failure behavior.",
+            ["research_bridge", "citation_eval", "committed_test"],
+        ),
+    ]
+    return _fallback_records_from_specs("research_bridge", train_specs, eval_specs)
 
 
 def import_module(path: Path, module_name: str):
@@ -270,7 +453,8 @@ def extract_governance_eval_records() -> list[dict[str, Any]]:
                     split="eval",
                     source_path=attack_path,
                     instruction=(
-                        "Classify this adversarial input for the SCBE governance gate. Return a fail-closed decision, attack class, and reason.\n\n"
+                        "Classify this adversarial input for the SCBE governance gate. "
+                        "Return a fail-closed decision, attack class, and reason.\n\n"
                         f"Attack: {compact_json(attack)}"
                     ),
                     response=compact_json(
@@ -278,7 +462,10 @@ def extract_governance_eval_records() -> list[dict[str, Any]]:
                             "decision": "DENY_OR_QUARANTINE",
                             "attack_class": attack.get("class"),
                             "attack_id": attack.get("id"),
-                            "reason": "Input attempts instruction override, exfiltration, boundary manipulation, or governance bypass.",
+                            "reason": (
+                                "Input attempts instruction override, exfiltration, "
+                                "boundary manipulation, or governance bypass."
+                            ),
                         }
                     ),
                     tags=["governance_security", "adversarial_eval", str(attack.get("class", "attack"))],
@@ -300,7 +487,10 @@ def extract_governance_eval_records() -> list[dict[str, Any]]:
                     ),
                     response=compact_json(
                         {
-                            "decision_policy": "facts remain separated from analogy and experimental signals unless explicitly allowed",
+                            "decision_policy": (
+                                "facts remain separated from analogy and experimental signals "
+                                "unless explicitly allowed"
+                            ),
                             "test_name": name,
                             "expected_use": "frozen eval item for semantic separation and controlled blending",
                         }

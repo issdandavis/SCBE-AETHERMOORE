@@ -30,12 +30,8 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.mathbac_cross_primary_atomic import (
-    ATOMIC_SEMANTIC_CLASSES,
-    TONGUES,
     _accuracy,
     _atomic_feature,
-    _feature_keys,
-    _l2_squared,
     _per_concept_accuracy,
     loo_nearest_concept,
 )
@@ -1139,7 +1135,10 @@ def _evaluate_within_primary_loo(
         return {
             "feature": feature_name,
             "status": "not_applicable_single_sample_per_concept_per_primary",
-            "reason": "within-primary LOO needs at least two samples for the same concept inside a primary; this corpus has one",
+            "reason": (
+                "within-primary LOO needs at least two samples for the same concept inside a primary; "
+                "this corpus has one"
+            ),
             "replicate_count_min": min(replicate_counts.values()) if replicate_counts else 0,
             "replicate_count_max": max(replicate_counts.values()) if replicate_counts else 0,
         }
@@ -1296,7 +1295,8 @@ def _comparison_markdown(report: dict[str, Any]) -> str:
             "",
             "## Label Shuffle Null Control",
             "",
-            "Decision rule: a feature head is training-safe only if its real leave-primary-out score exceeds the 95th percentile of shuffled-label scores.",
+            "Decision rule: a feature head is training-safe only if its real leave-primary-out score "
+            "exceeds the 95th percentile of shuffled-label scores.",
             "",
             "| Feature | Real LPO | Shuffle Mean | Shuffle p95 | Shuffle Max | Empirical p | Risk |",
             "|---|---:|---:|---:|---:|---:|---|",
@@ -1304,9 +1304,10 @@ def _comparison_markdown(report: dict[str, Any]) -> str:
     )
     for row in report["label_shuffle_control_summary"]:
         lines.append(
-            "| {feature} | {observed_leave_primary_out:.1%} | {null_mean:.1%} | {null_p95:.1%} | {null_max:.1%} | {empirical_p:.3f} | {risk} |".format(
-                **row
-            )
+            (
+                "| {feature} | {observed_leave_primary_out:.1%} | {null_mean:.1%} "
+                "| {null_p95:.1%} | {null_max:.1%} | {empirical_p:.3f} | {risk} |"
+            ).format(**row)
         )
     lines.extend(
         [
@@ -1330,7 +1331,8 @@ def _comparison_markdown(report: dict[str, Any]) -> str:
             f"- Flow reinforcement: {report['lane_model']['flow_reinforcement']}",
             f"- Fallback rule: {report['lane_model']['fallback_rule']}",
             f"- Selected lane: {report['lane_model']['selected_lane']}",
-            f"- Training export: `{report['workflow_training_records']['path']}` ({report['workflow_training_records']['record_count']} records)",
+            f"- Training export: `{report['workflow_training_records']['path']}` "
+            f"({report['workflow_training_records']['record_count']} records)",
         ]
     )
     lines.extend(
@@ -1366,7 +1368,9 @@ def _comparison_markdown(report: dict[str, Any]) -> str:
             f"| Same-concept cross-primary mean | {chemical['same_concept_cross_primary_mean']:.4f} |",
             f"| Same-primary cross-concept mean | {chemical['same_primary_cross_concept_mean']:.4f} |",
             "",
-            "Interpretation: a ratio below 1.0 means same-concept molecule signatures are closer than different-concept signatures. A ratio near or above 1.0 means this byte-periodic head is not yet recovering concept structure.",
+            "Interpretation: a ratio below 1.0 means same-concept molecule signatures are closer than "
+            "different-concept signatures. A ratio near or above 1.0 means this byte-periodic head is "
+            "not yet recovering concept structure.",
             "",
             "## Token Atom Trace Examples",
             "",
@@ -1623,13 +1627,22 @@ def run(
     selected_control = label_shuffle_control.get(selected_lane["feature"])
     if selected_control and selected_control["risk"] == "passes shuffle control":
         training_status = "candidate"
-        training_status_reason = "Selected lane passed the pre-committed label-shuffle control; export remains a candidate training input, not a promoted dataset."
+        training_status_reason = (
+            "Selected lane passed the pre-committed label-shuffle control; "
+            "export remains a candidate training input, not a promoted dataset."
+        )
     else:
         training_status = "hold"
         if selected_control:
-            training_status_reason = "Selected lane did not cleanly pass the label-shuffle null control; export is generated for inspection only and must not be promoted to training."
+            training_status_reason = (
+                "Selected lane did not cleanly pass the label-shuffle null control; "
+                "export is generated for inspection only and must not be promoted to training."
+            )
         else:
-            training_status_reason = "Selected lane was not included in the shuffle control; export is generated for inspection only and must not be promoted to training."
+            training_status_reason = (
+                "Selected lane was not included in the shuffle control; "
+                "export is generated for inspection only and must not be promoted to training."
+            )
     within_primary = {
         name: _evaluate_within_primary_loo(
             samples,
@@ -1641,7 +1654,11 @@ def run(
     }
     within_primary_diagnostic = {
         "feature_heads": within_primary,
-        "note": "Within-primary LOO is not applicable to the current corpus because each primary has one sample per concept. Use same-primary cross-concept distance and leave-primary-out/null controls for this corpus, or add replicated implementations per concept/primary.",
+        "note": (
+            "Within-primary LOO is not applicable to the current corpus because each primary has one "
+            "sample per concept. Use same-primary cross-concept distance and leave-primary-out/null "
+            "controls for this corpus, or add replicated implementations per concept/primary."
+        ),
     }
     decision = (
         "Keep the chemistry lane and semantic lane separate in evidence. The actual chemistry lane is "
@@ -1672,10 +1689,21 @@ def run(
         },
         "lane_model": {
             "chemistry_actual": "byte -> Binary Interpretation Matrix hex/binary row -> periodic element trace",
-            "semantic_overlay": "current atomic tokenizer feature head; kept separate because it collapses most code identifiers",
-            "flow_reinforcement": "rename-stable operational syntax and control-flow shape features; only promoted if its own eval improves the task",
-            "layered_geometry_semantic": "stable outer token hull plus inner packed context metrics; promoted only if leave-primary-out and shuffle-null controls hold",
-            "fallback_rule": "select the best validated lane per task instead of forcing chemistry, semantics, and flow into one vector",
+            "semantic_overlay": (
+                "current atomic tokenizer feature head; " "kept separate because it collapses most code identifiers"
+            ),
+            "flow_reinforcement": (
+                "rename-stable operational syntax and control-flow shape features; "
+                "only promoted if its own eval improves the task"
+            ),
+            "layered_geometry_semantic": (
+                "stable outer token hull plus inner packed context metrics; "
+                "promoted only if leave-primary-out and shuffle-null controls hold"
+            ),
+            "fallback_rule": (
+                "select the best validated lane per task instead of forcing chemistry, semantics, "
+                "and flow into one vector"
+            ),
             "selected_lane": selected_lane["feature"],
         },
         "situational_lane_selection": situational_lane_selection,

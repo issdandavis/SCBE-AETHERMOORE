@@ -279,58 +279,14 @@ class TestNonceUniqueness:
 class TestSacredTongueBijectivity:
     """Property: Sacred Tongue encoding is bijective for all bytes."""
 
+    @pytest.mark.parametrize("tongue", ["ko", "av", "ru", "ca", "um", "dr"])
     @given(data=st.binary(min_size=1, max_size=512))
     @settings(max_examples=100, deadline=None)
-    def test_all_bytes_roundtrip_ko(self, data: bytes):
-        """Kor'aelin encoding should be bijective."""
+    def test_all_bytes_roundtrip(self, tongue: str, data: bytes):
+        """Each Sacred Tongue (KO, AV, RU, CA, UM, DR) encoding should be bijective."""
         tokenizer = SACRED_TONGUE_TOKENIZER
-        tokens = tokenizer.encode_bytes("ko", data)
-        decoded = tokenizer.decode_tokens("ko", tokens)
-        assert decoded == data
-
-    @given(data=st.binary(min_size=1, max_size=512))
-    @settings(max_examples=100, deadline=None)
-    def test_all_bytes_roundtrip_av(self, data: bytes):
-        """Avali encoding should be bijective."""
-        tokenizer = SACRED_TONGUE_TOKENIZER
-        tokens = tokenizer.encode_bytes("av", data)
-        decoded = tokenizer.decode_tokens("av", tokens)
-        assert decoded == data
-
-    @given(data=st.binary(min_size=1, max_size=512))
-    @settings(max_examples=100, deadline=None)
-    def test_all_bytes_roundtrip_ru(self, data: bytes):
-        """Runethic encoding should be bijective."""
-        tokenizer = SACRED_TONGUE_TOKENIZER
-        tokens = tokenizer.encode_bytes("ru", data)
-        decoded = tokenizer.decode_tokens("ru", tokens)
-        assert decoded == data
-
-    @given(data=st.binary(min_size=1, max_size=512))
-    @settings(max_examples=100, deadline=None)
-    def test_all_bytes_roundtrip_ca(self, data: bytes):
-        """Cassisivadan encoding should be bijective."""
-        tokenizer = SACRED_TONGUE_TOKENIZER
-        tokens = tokenizer.encode_bytes("ca", data)
-        decoded = tokenizer.decode_tokens("ca", tokens)
-        assert decoded == data
-
-    @given(data=st.binary(min_size=1, max_size=512))
-    @settings(max_examples=100, deadline=None)
-    def test_all_bytes_roundtrip_um(self, data: bytes):
-        """Umbroth encoding should be bijective."""
-        tokenizer = SACRED_TONGUE_TOKENIZER
-        tokens = tokenizer.encode_bytes("um", data)
-        decoded = tokenizer.decode_tokens("um", tokens)
-        assert decoded == data
-
-    @given(data=st.binary(min_size=1, max_size=512))
-    @settings(max_examples=100, deadline=None)
-    def test_all_bytes_roundtrip_dr(self, data: bytes):
-        """Draumric encoding should be bijective."""
-        tokenizer = SACRED_TONGUE_TOKENIZER
-        tokens = tokenizer.encode_bytes("dr", data)
-        decoded = tokenizer.decode_tokens("dr", tokens)
+        tokens = tokenizer.encode_bytes(tongue, data)
+        decoded = tokenizer.decode_tokens(tongue, tokens)
         assert decoded == data
 
 

@@ -10,13 +10,13 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shlex
 import shutil
 import subprocess
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
-
 
 DEFAULT_PLAN_PATH = Path("training/long_run_multicloud_training_plan.json")
 DEFAULT_RUN_ROOT = Path("training/runs")
@@ -179,9 +179,8 @@ def run_provider(
     proc_env = os.environ.copy()
 
     proc = subprocess.Popen(
-        rendered_command,
+        shlex.split(rendered_command),
         cwd=str(working_directory),
-        shell=True,
         stdout=log_path.open("w", encoding="utf-8"),
         stderr=subprocess.STDOUT,
         env=proc_env,

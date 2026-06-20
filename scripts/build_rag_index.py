@@ -23,7 +23,6 @@ from typing import Any, Iterable
 
 import numpy as np
 
-
 DEFAULT_INPUT_TAGGED = Path("data/perplexity/normalized/perplexity_tagged.jsonl")
 DEFAULT_INPUT_NORMALIZED = Path("data/perplexity/normalized/perplexity_normalized.jsonl")
 DEFAULT_OUTPUT_DIR = Path("data/perplexity/rag_index")
@@ -172,7 +171,7 @@ def pick_id(payload: dict[str, Any], *, line_no: int, id_fields: tuple[str, ...]
                 return value_s
 
     blob = json.dumps(payload, sort_keys=True, ensure_ascii=False)
-    digest = hashlib.sha1(blob.encode("utf-8")).hexdigest()[:16]  # noqa: S324
+    digest = hashlib.sha256(blob.encode("utf-8")).hexdigest()[:16]  # noqa: S324
     return f"line-{line_no}-{digest}"
 
 
@@ -219,7 +218,7 @@ def load_index_records(
 
             doc_id = pick_id(payload, line_no=line_no, id_fields=id_fields)
             if doc_id in seen_ids:
-                suffix = hashlib.sha1(f"{line_no}|{doc_id}".encode("utf-8")).hexdigest()[:8]  # noqa: S324
+                suffix = hashlib.sha256(f"{line_no}|{doc_id}".encode("utf-8")).hexdigest()[:8]  # noqa: S324
                 doc_id = f"{doc_id}#{suffix}"
             seen_ids.add(doc_id)
 

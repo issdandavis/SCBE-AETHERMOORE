@@ -49,8 +49,8 @@
 - [x] AV (Avali) - I/O & Messaging
 - [x] RU (Runethic) - Policy & Constraints
 - [x] CA (Cassisivadan) - Logic & Computation
-- [x] UM (Umbroth) - Security & Privacy
-- [x] DR (Draumric) - Types & Structures
+- [x] UM (Umbroth) - Redaction & Privacy
+- [x] DR (Draumric) - Authentication & Integrity
 
 ### Fleet Management System
 - [x] Agent registration with spectral identity

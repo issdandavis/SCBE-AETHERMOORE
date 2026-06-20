@@ -26,7 +26,8 @@ Codex and Claude.
 
 Usage:
   C:/Users/issda/Python312/python.exe scripts/thermal_mirror_probe.py
-  C:/Users/issda/Python312/python.exe scripts/thermal_mirror_probe.py --model distilbert-base-uncased --alpha 0.5 1.0 2.0 5.0
+  C:/Users/issda/Python312/python.exe scripts/thermal_mirror_probe.py \
+      --model distilbert-base-uncased --alpha 0.5 1.0 2.0 5.0
   C:/Users/issda/Python312/python.exe scripts/thermal_mirror_probe.py --model issdandavis/scbe-pivot-qwen-0.5b --json
 """
 

@@ -64,10 +64,19 @@ def search_channel_videos(channel_name: str, max_results: int = 5, handle: str |
         search_term = handle if handle else channel_name
         # Fallback: use yt-dlp if available
         import subprocess
+
         result = subprocess.run(
-            ["yt-dlp", "--flat-playlist", "--print", "%(id)s %(title)s",
-             f"ytsearch{max_results}:{search_term}", "--no-warnings"],
-            capture_output=True, text=True, timeout=30
+            [
+                "yt-dlp",
+                "--flat-playlist",
+                "--print",
+                "%(id)s %(title)s",
+                f"ytsearch{max_results}:{search_term}",
+                "--no-warnings",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
         )
         if result.returncode == 0:
             videos = []
@@ -98,6 +107,7 @@ def get_transcript(video_id: str, delay: bool = True) -> Optional[str]:
 
     try:
         from youtube_transcript_api import YouTubeTranscriptApi
+
         api = YouTubeTranscriptApi()
         transcript = api.fetch(video_id)
         full_text = " ".join(snippet.text for snippet in transcript)
@@ -117,7 +127,7 @@ def get_transcript(video_id: str, delay: bool = True) -> Optional[str]:
                 transcript = api.fetch(video_id)
                 return " ".join(snippet.text for snippet in transcript)
             except Exception:
-                print(f"  Still blocked. Skip and try later.")
+                print("  Still blocked. Skip and try later.")
                 return None
         print(f"  Transcript unavailable for {video_id}: {e}")
         return None
@@ -126,6 +136,7 @@ def get_transcript(video_id: str, delay: bool = True) -> Optional[str]:
 def scrub_transcript(text: str) -> tuple[str, int]:
     """Light scrub — remove URLs, emails, phone numbers from transcript."""
     from scripts.apollo.apollo_core import scrub_text
+
     clean, items = scrub_text(text)
     # Also remove URLs
     clean = re.sub(r"https?://\S+", "[URL]", clean)
@@ -140,27 +151,33 @@ def generate_sft_from_transcript(channel: dict, video_title: str, transcript: st
 
     # Pair 1: Summarize
     if len(transcript) > 200:
-        pairs.append({
-            "instruction": f"Summarize the key ideas from this {domain} content by {channel['name']}: '{video_title}'",
-            "response": f"This content from {channel['name']} covers {domain}. " + transcript[:500].strip() + "...",
-            "source": f"youtube_{channel['name'].lower().replace(' ', '_')}",
-            "category": f"youtube_{tongue.lower()}",
-            "tongue": tongue,
-        })
+        pairs.append(
+            {
+                "instruction": (
+                    f"Summarize the key ideas from this {domain} content " f"by {channel['name']}: '{video_title}'"
+                ),
+                "response": f"This content from {channel['name']} covers {domain}. " + transcript[:500].strip() + "...",
+                "source": f"youtube_{channel['name'].lower().replace(' ', '_')}",
+                "category": f"youtube_{tongue.lower()}",
+                "tongue": tongue,
+            }
+        )
 
     # Pair 2: Extract concepts
     if len(transcript) > 500:
         # Find sentences with key terms
-        sentences = [s.strip() for s in re.split(r'[.!?]', transcript) if len(s.strip()) > 30]
+        sentences = [s.strip() for s in re.split(r"[.!?]", transcript) if len(s.strip()) > 30]
         if len(sentences) >= 3:
             sample = ". ".join(sentences[:3])
-            pairs.append({
-                "instruction": f"What concepts does {channel['name']} explain in '{video_title}'?",
-                "response": f"Key concepts covered: {sample}.",
-                "source": f"youtube_{channel['name'].lower().replace(' ', '_')}",
-                "category": f"youtube_{tongue.lower()}",
-                "tongue": tongue,
-            })
+            pairs.append(
+                {
+                    "instruction": f"What concepts does {channel['name']} explain in '{video_title}'?",
+                    "response": f"Key concepts covered: {sample}.",
+                    "source": f"youtube_{channel['name'].lower().replace(' ', '_')}",
+                    "category": f"youtube_{tongue.lower()}",
+                    "tongue": tongue,
+                }
+            )
 
     return pairs
 
@@ -182,7 +199,7 @@ def collect_channel(channel_name: str, max_videos: int = 5) -> dict:
     videos = search_channel_videos(channel["name"], max_videos, handle=channel.get("handle"))
 
     if not videos:
-        print(f"  No videos found via search. Skipping.")
+        print("  No videos found via search. Skipping.")
         return {"collected": 0}
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -297,7 +314,7 @@ def show_stats():
         by_tongue[t] = by_tongue.get(t, 0) + 1
 
     if by_tongue:
-        print(f"\n  Per tongue:")
+        print("\n  Per tongue:")
         for t, count in sorted(by_tongue.items()):
             print(f"    {t}: {count}")
 

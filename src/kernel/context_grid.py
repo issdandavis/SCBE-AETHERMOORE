@@ -662,7 +662,7 @@ def load_obsidian_vault(vault_path: str | Path) -> list[dict]:
                 title = line[2:].strip()
                 break
 
-        doc_id = hashlib.md5(rel_path.encode()).hexdigest()[:12]
+        doc_id = hashlib.sha256(rel_path.encode()).hexdigest()[:12]
 
         docs.append(
             {

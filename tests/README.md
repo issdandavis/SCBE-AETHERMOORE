@@ -20,6 +20,7 @@ tests/
 ## Tier Descriptions
 
 ### L1-BASIC (High School Project Level)
+
 **Purpose**: Smoke tests and basic functionality verification
 **Complexity**: Simple assertions, happy path only
 **Who writes these**: Anyone, including newcomers
@@ -33,6 +34,7 @@ it('should create an envelope', () => {
 ```
 
 **What belongs here**:
+
 - "Does it run?" tests
 - Basic input/output verification
 - Simple happy path scenarios
@@ -41,6 +43,7 @@ it('should create an envelope', () => {
 ---
 
 ### L2-UNIT (Junior Developer Level)
+
 **Purpose**: Test individual functions and modules in isolation
 **Complexity**: Mock dependencies, test edge cases
 **Who writes these**: All developers
@@ -58,6 +61,7 @@ describe('computeSpectralCoherence', () => {
 ```
 
 **What belongs here**:
+
 - Single function tests
 - Boundary value testing
 - Error handling verification
@@ -66,6 +70,7 @@ describe('computeSpectralCoherence', () => {
 ---
 
 ### L3-INTEGRATION (Senior Developer Level)
+
 **Purpose**: Test component interactions and system flows
 **Complexity**: Multiple components working together
 **Who writes these**: Senior developers, architects
@@ -83,6 +88,7 @@ describe('14-Layer Pipeline Integration', () => {
 ```
 
 **What belongs here**:
+
 - End-to-end workflow tests
 - Multi-module interaction tests
 - Database + API integration
@@ -91,6 +97,7 @@ describe('14-Layer Pipeline Integration', () => {
 ---
 
 ### L4-PROPERTY (Staff Engineer Level)
+
 **Purpose**: Property-based testing with random inputs
 **Complexity**: Mathematical invariants, fuzzing
 **Who writes these**: Staff engineers, mathematicians
@@ -115,6 +122,7 @@ it('S_spec is phase-invariant (property-based)', () => {
 ```
 
 **What belongs here**:
+
 - fast-check property tests
 - Mathematical invariant verification
 - Fuzzing with random inputs
@@ -124,6 +132,7 @@ it('S_spec is phase-invariant (property-based)', () => {
 ---
 
 ### L5-SECURITY (Security Engineer Level)
+
 **Purpose**: Security boundaries, compliance, cryptographic correctness
 **Complexity**: Attack simulation, compliance verification
 **Who writes these**: Security engineers, compliance officers
@@ -138,13 +147,14 @@ describe('Cryptographic Boundary Enforcement', () => {
 
   it('F03: Tampered ciphertext must fail', () => {
     const ciphertext = encrypt(plaintext, key);
-    ciphertext[10] ^= 0xFF; // Flip bits
+    ciphertext[10] ^= 0xff; // Flip bits
     expect(() => decrypt(ciphertext, key)).toThrow('TAMPER_DETECTED');
   });
 });
 ```
 
 **What belongs here**:
+
 - OWASP Top 10 verification
 - Cryptographic boundary tests
 - Access control tests
@@ -155,6 +165,7 @@ describe('Cryptographic Boundary Enforcement', () => {
 ---
 
 ### L6-ADVERSARIAL (NSA Level)
+
 **Purpose**: Failable-by-design tests, adversarial scenarios, formal verification
 **Complexity**: Sophisticated attack vectors, cryptanalysis
 **Who writes these**: Cryptographers, security researchers
@@ -189,6 +200,7 @@ describe('Failable-by-Design: Adversarial Crypto', () => {
 ```
 
 **What belongs here**:
+
 - Timing attack resistance
 - Side-channel analysis
 - Cryptanalysis tests
@@ -207,6 +219,7 @@ tests/L{1-6}-{category}/{module}.{type}.test.ts
 ```
 
 Examples:
+
 - `tests/L1-basic/envelope.smoke.test.ts`
 - `tests/L2-unit/spectral-coherence.unit.test.ts`
 - `tests/L3-integration/14-layer-pipeline.integration.test.ts`
@@ -241,25 +254,25 @@ npm test -- --testPathPattern="L[4-6]"
 
 ## CI/CD Pipeline Integration
 
-| Stage | Tiers | Trigger | Timeout |
-|-------|-------|---------|---------|
-| Pre-commit | L1 | Every commit | 30s |
-| PR Check | L1-L3 | Pull request | 5m |
-| Nightly | L1-L5 | Scheduled | 30m |
-| Release | L1-L6 | Tag/Release | 2h |
+| Stage      | Tiers | Trigger      | Timeout |
+| ---------- | ----- | ------------ | ------- |
+| Pre-commit | L1    | Every commit | 30s     |
+| PR Check   | L1-L3 | Pull request | 5m      |
+| Nightly    | L1-L5 | Scheduled    | 30m     |
+| Release    | L1-L6 | Tag/Release  | 2h      |
 
 ---
 
 ## Test Coverage by Tier
 
-| Tier | Tests | Pass Rate | Coverage |
-|------|-------|-----------|----------|
-| L1-basic | ~50 | 100% | Smoke |
-| L2-unit | ~200 | 99%+ | Functions |
-| L3-integration | ~100 | 98%+ | Workflows |
-| L4-property | ~50 | 99%+ | Invariants |
-| L5-security | ~100 | 100% | Boundaries |
-| L6-adversarial | ~30 | 100% | Attacks |
+| Tier           | Tests | Pass Rate | Coverage   |
+| -------------- | ----- | --------- | ---------- |
+| L1-basic       | ~50   | 100%      | Smoke      |
+| L2-unit        | ~200  | 99%+      | Functions  |
+| L3-integration | ~100  | 98%+      | Workflows  |
+| L4-property    | ~50   | 99%+      | Invariants |
+| L5-security    | ~100  | 100%      | Boundaries |
+| L6-adversarial | ~30   | 100%      | Attacks    |
 
 ---
 
@@ -286,36 +299,39 @@ describe('Spectral Coherence Property Tests', () => {
 
 ## Axiom Coverage Matrix
 
-| Axiom | L1 | L2 | L3 | L4 | L5 | L6 |
-|-------|:--:|:--:|:--:|:--:|:--:|:--:|
-| 1. Positivity of Cost | - | ✓ | ✓ | ✓ | - | - |
-| 2. Monotonicity | - | ✓ | ✓ | ✓ | - | - |
-| 3. Convexity | - | - | ✓ | ✓ | - | - |
-| 4. Temporal Breathing | - | ✓ | ✓ | ✓ | - | - |
-| 5. C-infinity Smoothness | - | - | - | ✓ | - | - |
-| 6. Lyapunov Stability | - | - | ✓ | ✓ | - | - |
-| 7. Harmonic Resonance | - | ✓ | ✓ | - | - | - |
-| 8. Quantum Resistance | - | - | - | - | ✓ | ✓ |
-| 9. Hyperbolic Geometry | - | ✓ | ✓ | ✓ | - | - |
-| 10. Golden Ratio | - | ✓ | - | ✓ | - | - |
-| 11. Fractional Flux | - | - | - | ✓ | - | - |
-| 12. Topological Attack | - | - | - | - | ✓ | ✓ |
-| 13. Atomic Rekeying | - | - | ✓ | - | ✓ | ✓ |
+| Axiom                    | L1  | L2  | L3  | L4  | L5  | L6  |
+| ------------------------ | :-: | :-: | :-: | :-: | :-: | :-: |
+| 1. Positivity of Cost    |  -  |  ✓  |  ✓  |  ✓  |  -  |  -  |
+| 2. Monotonicity          |  -  |  ✓  |  ✓  |  ✓  |  -  |  -  |
+| 3. Convexity             |  -  |  -  |  ✓  |  ✓  |  -  |  -  |
+| 4. Temporal Breathing    |  -  |  ✓  |  ✓  |  ✓  |  -  |  -  |
+| 5. C-infinity Smoothness |  -  |  -  |  -  |  ✓  |  -  |  -  |
+| 6. Lyapunov Stability    |  -  |  -  |  ✓  |  ✓  |  -  |  -  |
+| 7. Harmonic Resonance    |  -  |  ✓  |  ✓  |  -  |  -  |  -  |
+| 8. Quantum Resistance    |  -  |  -  |  -  |  -  |  ✓  |  ✓  |
+| 9. Hyperbolic Geometry   |  -  |  ✓  |  ✓  |  ✓  |  -  |  -  |
+| 10. Golden Ratio         |  -  |  ✓  |  -  |  ✓  |  -  |  -  |
+| 11. Fractional Flux      |  -  |  -  |  -  |  ✓  |  -  |  -  |
+| 12. Topological Attack   |  -  |  -  |  -  |  -  |  ✓  |  ✓  |
+| 13. Atomic Rekeying      |  -  |  -  |  ✓  |  -  |  ✓  |  ✓  |
 
 ---
 
 ## Quality Gates
 
 ### L1-L3 (Must pass for merge)
+
 - All tests green
 - No regressions
 - Coverage maintained
 
 ### L4 (Must pass for release)
+
 - All property tests pass with 1000 iterations
 - No invariant violations
 
 ### L5-L6 (Must pass for production)
+
 - All security boundaries enforced
 - Zero cryptographic failures
 - Adversarial tests validated
@@ -325,6 +341,6 @@ describe('Spectral Coherence Property Tests', () => {
 ## References
 
 - [SCBE 14-Layer Architecture](../docs/ARCHITECTURE.md)
-- [13 Axioms Documentation](../docs/AXIOMS.md)
-- [Patent Claims](../docs/ENABLEMENT.md)
+- [Canonical spec](../docs/SPEC.md)
+- [Patent claim tests](./test_aethermoore_patents.py)
 - [NIST PQC Standards](https://csrc.nist.gov/projects/post-quantum-cryptography)

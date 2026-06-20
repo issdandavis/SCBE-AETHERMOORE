@@ -54,7 +54,7 @@
       "arxiv_categories": ["cs.CR", "math.DG", "cs.AI"],
       "search_terms": ["hyperbolic geometry security", "Poincare ball adversarial", "geometric deep learning safety"],
       "skills": [
-        "hydra-clawbot-synthesis", "polyhedral-workflow-mesh", "scbe-langues-semantic-tokenizer",
+        "hydra-agent-relay-synthesis", "polyhedral-workflow-mesh", "scbe-langues-semantic-tokenizer",
         "scbe-meridian-flush"
       ]
     },

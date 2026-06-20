@@ -123,7 +123,7 @@ def generate_spin_conversations(n_sessions: int = 5) -> list[dict]:
                 f"{npc_tongue} domain. As a keeper of {ring.lower()} knowledge, "
                 f"I see how {topic} interweaves with Sacred Tongue {topic_tongue}. "
                 f"The {['fundamental', 'intermediate', 'advanced', 'masterful'][min(step, 3)]} "
-                f"understanding requires traversing the sphere grid."
+                "understanding requires traversing the sphere grid."
             )
             move = rng.choice(MOVES)
             if move == "OUTWARD" and ring_idx < 2:
@@ -300,7 +300,7 @@ def export_tetris_sft(records: list[dict], tetris: TetrisEmbedder, output_path: 
                 "tier": emb.tier,
                 "tongue_coords": emb.tongue_coords.tolist(),
                 "spatial_coords": emb.spatial_coords.tolist(),
-                "embedding_hash": hashlib.md5(emb.rotated_embedding.tobytes()).hexdigest()[:16],
+                "embedding_hash": hashlib.sha256(emb.rotated_embedding.tobytes()).hexdigest()[:16],
             }
             f.write(json.dumps(enriched, ensure_ascii=False, default=str) + "\n")
             written += 1
@@ -385,7 +385,7 @@ def main():
     seen = set()
     deduped = []
     for rec in all_records:
-        key = hashlib.md5(
+        key = hashlib.sha256(
             (rec.get("instruction", rec.get("prompt", "")) + rec.get("response", "")).encode()
         ).hexdigest()
         if key not in seen:
@@ -412,7 +412,7 @@ def main():
     print(f"  Avg separation: {metrics['avg_separation']:.4f}")
     print(f"  Coord spread:  {metrics['coord_spread']:.4f}")
     print(f"  Octree buckets: {metrics['n_buckets']}")
-    print(f"  Tongue separation:")
+    print("  Tongue separation:")
     for t, sep in sorted(metrics["tongue_separation"].items()):
         grade = "GOOD" if sep > 0.3 else "OK" if sep > 0.1 else "WEAK"
         print(f"    {t}: {sep:+.4f} [{grade}]")

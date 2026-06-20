@@ -22,7 +22,6 @@ from .site_recon import SiteProfile, SiteProfileBuilder
 from .site_skimmer import SiteSkimmer
 from .site_adapter import AdaptiveToolBuilder
 
-
 # ------------------------------------------------------------------
 # Sensitivity map
 # ------------------------------------------------------------------
@@ -43,6 +42,7 @@ _USER_AGENT = "SCBE-ObsidianResearcher/1.0 (+https://github.com/issdandavis/SCBE
 # Governance function
 # ------------------------------------------------------------------
 
+
 def _safety_score(depth: float, prior_danger: float) -> float:
     """Bounded safety score: H(d, pd) = 1 / (1 + d + 2*pd).
 
@@ -54,6 +54,7 @@ def _safety_score(depth: float, prior_danger: float) -> float:
 # ------------------------------------------------------------------
 # GovernedRecon
 # ------------------------------------------------------------------
+
 
 class GovernedRecon:
     """Orchestrate web reconnaissance under SCBE governance.
@@ -127,9 +128,7 @@ class GovernedRecon:
         for disallowed in profile.robots_disallowed_paths:
             if path.startswith(disallowed):
                 # Check if explicitly allowed (Allow overrides Disallow)
-                explicitly_allowed = any(
-                    path.startswith(ap) for ap in profile.robots_allowed_paths
-                )
+                explicitly_allowed = any(path.startswith(ap) for ap in profile.robots_allowed_paths)
                 if not explicitly_allowed:
                     return False, f"DENY: robots.txt disallows {disallowed}"
 
@@ -214,14 +213,16 @@ class GovernedRecon:
         # Step 8: extract
         extracted = self._adapter_builder.extract(html, adapter)
 
-        result.update({
-            "skeleton": skeleton,
-            "minimap": minimap,
-            "profile": profile,
-            "adapter": adapter,
-            "extracted": extracted,
-            "from_cache": False,
-        })
+        result.update(
+            {
+                "skeleton": skeleton,
+                "minimap": minimap,
+                "profile": profile,
+                "adapter": adapter,
+                "extracted": extracted,
+                "from_cache": False,
+            }
+        )
         return result
 
     # ------------------------------------------------------------------

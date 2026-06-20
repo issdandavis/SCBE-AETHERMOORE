@@ -13,6 +13,8 @@
 
 import crypto from 'crypto';
 import { ContactGraph, computeContactGraph, type ContactPath } from '../network/contact-graph.js';
+import { fft, computeSpectralCoherence as spectralCoherence } from '../spectral/index.js';
+import { ml_kem768 } from '@noble/post-quantum/ml-kem.js';
 
 // Type definitions for the unified gateway
 export interface AuthorizationRequest {
@@ -127,6 +129,8 @@ export class UnifiedSCBEGateway {
   private contactGraph: ContactGraph;
   private agentRegistry: Map<string, AgentState> = new Map();
   private swarmRegistry: Map<string, Set<string>> = new Map();
+  // Per-session ML-KEM-768 secret keys for in-flight quantum key exchanges.
+  private kexSecrets: Map<string, Uint8Array> = new Map();
 
   constructor(config: GatewayConfig = {}) {
     this.config = {
@@ -179,8 +183,10 @@ export class UnifiedSCBEGateway {
     // Layer 12: Harmonic magnification
     const harmonicMagnification = this.computeHarmonicScaling(realmDistance);
 
-    // Layer 13: Composite risk
+    // Layer 14: Audio telemetry feature (parallel channel)
     const audioStability = this.computeAudioStability(request);
+
+    // Layer 13: Composite risk and access decision
     const compositeRisk = this.computeCompositeRisk({
       hyperbolicDistance,
       spectralCoherence,
@@ -190,7 +196,6 @@ export class UnifiedSCBEGateway {
       harmonicMagnification,
     });
 
-    // Layer 14: Decision
     const decision = this.makeDecision(compositeRisk);
 
     const decisionId = `dec_${Date.now().toString(36)}_${crypto.randomBytes(4).toString('hex')}`;
@@ -271,12 +276,20 @@ export class UnifiedSCBEGateway {
   ): Promise<{ valid: boolean; payload?: unknown; error?: string }> {
     // Verify all signatures
     for (const [tongue, signature] of Object.entries(envelope.signatures)) {
-      const valid = await this.verifyTongueSignature(
-        envelope.payload,
-        tongue as TongueID,
-        signature,
-        envelope.nonce
-      );
+      let valid = false;
+      try {
+        valid = await this.verifyTongueSignature(
+          envelope.payload,
+          tongue as TongueID,
+          signature,
+          envelope.nonce
+        );
+      } catch (error) {
+        return {
+          valid: false,
+          error: error instanceof Error ? error.message : `Invalid ${tongue} signature`,
+        };
+      }
       if (!valid) {
         return { valid: false, error: `Invalid ${tongue} signature` };
       }
@@ -404,17 +417,21 @@ export class UnifiedSCBEGateway {
     peerId: string,
     algorithm: 'ML-KEM-768' | 'ML-KEM-1024' = 'ML-KEM-768'
   ): Promise<QuantumKeyExchange> {
-    // In a real implementation, this would call scbe-quantum-prototype
-    const sessionId = `qkex_${Date.now().toString(36)}_${crypto.randomBytes(4).toString('hex')}`;
+    if (algorithm !== 'ML-KEM-768') {
+      throw new Error(
+        `Unsupported KEM algorithm '${algorithm}': only ML-KEM-768 is wired (@noble/post-quantum).`
+      );
+    }
+    const sessionId = `qkex_${peerId}_${crypto.randomBytes(8).toString('hex')}`;
 
-    // Placeholder for actual Kyber keygen
-    const publicKey = Buffer.from(
-      crypto.getRandomValues(new Uint8Array(algorithm === 'ML-KEM-768' ? 1184 : 1568))
-    ).toString('base64');
+    // Real ML-KEM-768 keypair (NIST FIPS 203, @noble/post-quantum). The peer
+    // encapsulates to publicKey; we retain the secret to decapsulate later.
+    const { publicKey, secretKey } = ml_kem768.keygen();
+    this.kexSecrets.set(sessionId, secretKey);
 
     return {
       sessionId,
-      publicKey,
+      publicKey: Buffer.from(publicKey).toString('base64'),
       algorithm,
       timestamp: Date.now(),
     };
@@ -470,8 +487,13 @@ export class UnifiedSCBEGateway {
   }
 
   private applyPhaseTransform(point: number[]): number[] {
-    // Simple rotation (in production, would use epoch-based Q matrix)
-    const theta = (Date.now() / 86400000) * Math.PI * 2; // Daily rotation
+    // Deterministic phase rotation derived from the point itself. The angle was
+    // previously wall-clock based (Date.now()), which made the SAME request score
+    // differently over time and broke reproducibility of the decision. An
+    // epoch-keyed Q matrix may layer on top, but it must use a deterministic epoch
+    // supplied by the caller — never the local clock.
+    const seed = point.reduce((s, v, i) => s + v * (i + 1), 0);
+    const theta = seed % (Math.PI * 2);
     const cos = Math.cos(theta);
     const sin = Math.sin(theta);
 
@@ -497,24 +519,58 @@ export class UnifiedSCBEGateway {
     return minDist;
   }
 
-  private computeSpectralCoherence(_request: AuthorizationRequest): number {
-    // Placeholder: would analyze telemetry FFT
-    return 0.85 + Math.random() * 0.1;
+  private requestSignal(request: AuthorizationRequest): number[] {
+    // Deterministic, zero-mean signal derived from the request, so the spectral
+    // measures below are reproducible AND change whenever any field of the request
+    // changes (a tampered request changes the decision). Telemetry-fed real-time
+    // coherence is a future enhancement for when the API carries a signal channel.
+    const text = `${request.agentId}${request.action}${request.target}${(
+      request.tongues ?? []
+    ).join(',')}`;
+    const n = 64;
+    const sig = new Array<number>(n).fill(0);
+    for (let i = 0; i < text.length; i++) {
+      sig[i % n] += text.charCodeAt(i);
+    }
+    const mean = sig.reduce((a, b) => a + b, 0) / n;
+    return sig.map((v) => v - mean);
   }
 
-  private computeSpinCoherence(_request: AuthorizationRequest): number {
-    // Placeholder: would compute phase-sensitive interference
-    return 0.8 + Math.random() * 0.15;
+  private computeSpectralCoherence(request: AuthorizationRequest): number {
+    // Layer 9: real FFT spectral coherence (low-frequency energy fraction) of the request signal.
+    return spectralCoherence(this.requestSignal(request), 1.0, 0.25).S_spec;
   }
 
-  private computeTriadicDistance(_request: AuthorizationRequest): number {
-    // Placeholder: would compute across 3 timescales
-    return 0.2 + Math.random() * 0.3;
+  private computeSpinCoherence(request: AuthorizationRequest): number {
+    // Layer 10: phase coherence — mean resultant length of the FFT bin phases.
+    const X = fft(this.requestSignal(request));
+    let sumCos = 0;
+    let sumSin = 0;
+    let count = 0;
+    for (let i = 1; i < Math.floor(X.length / 2); i++) {
+      const phase = Math.atan2(X[i].im, X[i].re);
+      sumCos += Math.cos(phase);
+      sumSin += Math.sin(phase);
+      count++;
+    }
+    return count > 0 ? Math.hypot(sumCos, sumSin) / count : 1;
   }
 
-  private computeAudioStability(_request: AuthorizationRequest): number {
-    // Placeholder: Layer 14 audio telemetry
-    return 0.9 + Math.random() * 0.08;
+  private computeTriadicDistance(request: AuthorizationRequest): number {
+    // Layer 11: dispersion of spectral coherence across three frequency cutoffs (timescales).
+    const sig = this.requestSignal(request);
+    const cuts = [0.1, 0.25, 0.4].map((c) => spectralCoherence(sig, 1.0, c).S_spec);
+    const mean = cuts.reduce((a, b) => a + b, 0) / cuts.length;
+    const variance = cuts.reduce((a, b) => a + (b - mean) ** 2, 0) / cuts.length;
+    return Math.sqrt(variance) * 2;
+  }
+
+  private computeAudioStability(request: AuthorizationRequest): number {
+    // Layer 14: energy stability of the request signal — 1 / (1 + normalized stddev).
+    const sig = this.requestSignal(request).map((v) => Math.abs(v));
+    const mean = sig.reduce((a, b) => a + b, 0) / sig.length || 1;
+    const variance = sig.reduce((a, b) => a + (b - mean) ** 2, 0) / sig.length;
+    return 1 / (1 + Math.sqrt(variance) / mean);
   }
 
   private computeHarmonicScaling(distance: number): number {
@@ -561,11 +617,23 @@ export class UnifiedSCBEGateway {
     return Buffer.from(bytes).toString('base64url');
   }
 
+  private tongueKey(tongue: TongueID): Buffer {
+    // Per-tongue HMAC key derived from a server secret. Fail closed instead of
+    // falling back to a public default that would let attackers forge envelopes.
+    const secret = process.env.SCBE_GATEWAY_HMAC_SECRET;
+    if (!secret) {
+      throw new Error('SCBE_GATEWAY_HMAC_SECRET must be configured for RWP envelope signatures');
+    }
+    return crypto.createHmac('sha256', secret).update(`tongue-key:${tongue}`).digest();
+  }
+
   private async signWithTongue(payload: string, tongue: TongueID, nonce: string): Promise<string> {
-    // Placeholder: would use actual HMAC with tongue-specific key
-    const data = `${tongue}:${payload}:${nonce}`;
-    const hash = this.hashString(data);
-    return `sig_${tongue}_${hash.toString(16)}`;
+    // Real keyed HMAC-SHA256 over (tongue, payload, nonce) — unforgeable without the key.
+    const mac = crypto
+      .createHmac('sha256', this.tongueKey(tongue))
+      .update(`${tongue}:${payload}:${nonce}`)
+      .digest('base64url');
+    return `sig_${tongue}_${mac}`;
   }
 
   private async verifyTongueSignature(
@@ -575,10 +643,15 @@ export class UnifiedSCBEGateway {
     nonce: string
   ): Promise<boolean> {
     const expected = await this.signWithTongue(payload, tongue, nonce);
-    return signature === expected;
+    const a = Buffer.from(signature);
+    const b = Buffer.from(expected);
+    // constant-time comparison to avoid timing oracles
+    return a.length === b.length && crypto.timingSafeEqual(a, b);
   }
 
   private hashString(str: string): number {
+    // Non-cryptographic feature hash — used ONLY for context-vector encoding
+    // (encodeContext), never for signatures. Signatures use signWithTongue (HMAC).
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);

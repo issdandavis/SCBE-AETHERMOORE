@@ -22,7 +22,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "artifacts" / "training_inventory" / "latest"
 DATA_EXTENSIONS = {".jsonl", ".json", ".csv", ".parquet", ".arrow", ".txt"}
@@ -269,6 +268,7 @@ def _jsonl_stats(path: Path) -> dict[str, Any]:
                     "lfs_pointer": True,
                 }
     except OSError:
+        # File disappeared or became unreadable during inventory; treat as empty.
         pass
     records = 0
     malformed = 0
@@ -464,7 +464,8 @@ def collect_hf_datasets(author: str = "issdandavis") -> dict[str, Any]:
         "import json\n"
         "from huggingface_hub import HfApi\n"
         f"items=[]\nfor ds in HfApi().list_datasets(author={author!r}, limit=200):\n"
-        "    items.append({'id': ds.id, 'last_modified': str(getattr(ds, 'last_modified', '') or ''), 'tags': list(getattr(ds, 'tags', []) or [])[:20]})\n"
+        "    items.append({'id': ds.id, 'last_modified': str(getattr(ds, 'last_modified', '') or ''), "
+        "'tags': list(getattr(ds, 'tags', []) or [])[:20]})\n"
         "print(json.dumps(items))\n"
     )
     result = _run_command([sys.executable, "-c", code], timeout=60)
@@ -503,7 +504,10 @@ def collect_cloud_surfaces(limit: int) -> dict[str, Any]:
                 if suffix not in DATA_EXTENSIONS and suffix != NOTEBOOK_EXTENSION:
                     continue
                 text = str(path)
-                if not any(token in text.lower() for token in ("scbe", "aether", "colab", "kaggle", "qwen", "polly", "training")):
+                if not any(
+                    token in text.lower()
+                    for token in ("scbe", "aether", "colab", "kaggle", "qwen", "polly", "training")
+                ):
                     continue
                 items.append(
                     {
@@ -530,8 +534,7 @@ def build_merge_plan(local_rows: list[dict[str, Any]], remotes: dict[str, Any]) 
         ready_rows = [
             row
             for row in rows
-            if str(row.get("regularization_status", "")).startswith("ready")
-            and row.get("split_hint") != "eval"
+            if str(row.get("regularization_status", "")).startswith("ready") and row.get("split_hint") != "eval"
         ]
         eval_rows = [row for row in rows if row.get("split_hint") == "eval"]
         model_sets[purpose] = {
@@ -546,11 +549,15 @@ def build_merge_plan(local_rows: list[dict[str, Any]], remotes: dict[str, Any]) 
     return {
         "schema_version": "scbe_dataset_merge_plan_v1",
         "generated_at_utc": _utc_now(),
-        "rule": "Do not flat-merge all corpora. Keep purpose buckets separate, dedupe inside each bucket, and promote only through that bucket's eval gate.",
+        "rule": "Do not flat-merge all corpora. Keep purpose buckets separate, "
+        "dedupe inside each bucket, and promote only through that bucket's eval gate.",
         "external_pattern": {
-            "deepseek_v3": "large diverse high-quality pretraining followed by SFT/RL; architecture matters but data quality and stable staged training are explicit",
-            "deepseek_r1": "verifiable reward tasks allow reasoning improvement without relying only on human demonstrations",
-            "kimi_k2": "agentic data synthesis plus joint RL against real/synthetic environments is the relevant coding-agent pattern",
+            "deepseek_v3": "large diverse high-quality pretraining followed by SFT/RL; "
+            "architecture matters but data quality and stable staged training are explicit",
+            "deepseek_r1": "verifiable reward tasks allow reasoning improvement "
+            "without relying only on human demonstrations",
+            "kimi_k2": "agentic data synthesis plus joint RL against real/synthetic environments "
+            "is the relevant coding-agent pattern",
         },
         "remote_surfaces": {
             key: {"status": value.get("status"), "count": value.get("count", len(value.get("items", [])))}
@@ -561,15 +568,19 @@ def build_merge_plan(local_rows: list[dict[str, Any]], remotes: dict[str, Any]) 
             "Validate JSONL parse and schema shape before merge.",
             "Normalize to instruction/response/metadata or messages/metadata, preserving source_path and sha256.",
             "Dedupe exact prompt-response hashes inside each purpose bucket.",
-            "Near-dedupe after exact dedupe using source_path plus normalized prompt text; do not cross-dedupe train and eval blindly.",
+            "Near-dedupe after exact dedupe using source_path plus normalized prompt text; "
+            "do not cross-dedupe train and eval blindly.",
             "Keep holdout/eval files frozen by concept/source, not random line split.",
             "Run secret/anomaly audit before any upload or public dataset push.",
-            "Emit weighted mixture configs; never train story/lore into coder unless records are explicit lore-code pairs.",
+            "Emit weighted mixture configs; never train story/lore into coder "
+            "unless records are explicit lore-code pairs.",
         ],
     }
 
 
-def write_outputs(local_rows: list[dict[str, Any]], remotes: dict[str, Any], plan: dict[str, Any], output_dir: Path) -> dict[str, Path]:
+def write_outputs(
+    local_rows: list[dict[str, Any]], remotes: dict[str, Any], plan: dict[str, Any], output_dir: Path
+) -> dict[str, Path]:
     output_dir.mkdir(parents=True, exist_ok=True)
     summary = summarize(local_rows, remotes)
     inventory = {
@@ -608,9 +619,7 @@ def summarize(local_rows: list[dict[str, Any]], remotes: dict[str, Any]) -> dict
         "by_source": dict(sorted(by_source.items())),
         "by_purpose": dict(sorted(by_purpose.items())),
         "by_regularization_status": dict(sorted(by_status.items())),
-        "remote_counts": {
-            key: value.get("count", len(value.get("items", []))) for key, value in remotes.items()
-        },
+        "remote_counts": {key: value.get("count", len(value.get("items", []))) for key, value in remotes.items()},
     }
 
 
@@ -650,7 +659,8 @@ def render_report(summary: dict[str, Any], plan: dict[str, Any]) -> str:
     )
     for purpose, model_set in plan["model_sets"].items():
         lines.append(
-            f"- {purpose}: train candidates {model_set['ready_train_file_count']}, eval candidates {model_set['eval_file_count']}, strategy {model_set['merge_strategy']}"
+            f"- {purpose}: train candidates {model_set['ready_train_file_count']}, "
+            f"eval candidates {model_set['eval_file_count']}, strategy {model_set['merge_strategy']}"
         )
     lines.extend(["", "## Regularization Steps", ""])
     for step in plan["regularization_steps"]:

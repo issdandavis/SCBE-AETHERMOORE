@@ -1,0 +1,24 @@
+{
+  "id": "cross_language_lookup_consistency",
+  "level": 1,
+  "title": "Cross-language lookup coverage + GeoSeal bridge checks",
+  "verify": {
+    "command": [
+      "python",
+      "-m",
+      "pytest",
+      "tests/test_cross_language_lookup.py",
+      "tests/test_geoseal_cross_language_lookup_bridge.py",
+      "tests/test_geoseal_cli_tokenizer_atomic.py",
+      "-k",
+      "code_packet_emits_source_packet or explain_route_surfaces_ir_and_backend_chain or backend_registry_lists_core_lanes or history_and_replay_from_swarm_record",
+      "-q"
+    ],
+    "timeout_sec": 300
+  },
+  "metrics_hint": {
+    "evidence_quality": "artifact",
+    "notes": "Verifies 6x256 bijection tables, 64-op lexicon coverage, and GeoSeal CLI interoperability with lookup templates."
+  }
+}
+

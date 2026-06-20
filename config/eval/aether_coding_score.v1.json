@@ -1,0 +1,101 @@
+{
+  "schema_version": "scbe_aether_coding_score_v1",
+  "name": "Aether Coding Score / 100",
+  "status": "scoring_design_not_leaderboard_claim",
+  "last_researched": "2026-05-23",
+  "research_claim_registry": "config/eval/aether_research_claim_registry.v1.json",
+  "formula": "sum(track_weight * normalized_benchmark_score * evidence_multiplier)",
+  "evidence_multipliers": {
+    "official_full_run": 1.0,
+    "reproducible_full_local_run": 0.85,
+    "reproducible_subset_run": 0.6,
+    "smoke_or_plumbing_run": 0.25,
+    "unrun_or_planned": 0.0
+  },
+  "grade_bands": [
+    { "min": 95, "max": 100, "grade": "A+", "label": "Grandmaster" },
+    { "min": 85, "max": 94, "grade": "A", "label": "Production contender" },
+    { "min": 75, "max": 84, "grade": "B", "label": "Pilot-ready" },
+    { "min": 60, "max": 74, "grade": "C", "label": "Builder-grade" },
+    { "min": 40, "max": 59, "grade": "D", "label": "Scaffold" },
+    { "min": 0, "max": 39, "grade": "F", "label": "Demo only" }
+  ],
+  "tracks": [
+    {
+      "track_id": "real_repo_repair",
+      "weight": 20,
+      "primary_benchmarks": ["SWE-bench Verified", "SWE-bench Pro"],
+      "repo_status": "adapter_planned",
+      "first_scbe_action": "Run a 1-5 task subset with exact patches, tests, cost, and failure cases."
+    },
+    {
+      "track_id": "terminal_execution",
+      "weight": 15,
+      "primary_benchmarks": ["Terminal-Bench 2.0", "TerminalWorld"],
+      "repo_status": "adapter_planned",
+      "first_scbe_action": "Wrap GeoSeal/agent-bus as the terminal agent and run a small Docker-backed subset remotely."
+    },
+    {
+      "track_id": "multi_language_editing",
+      "weight": 12,
+      "primary_benchmarks": ["Aider Polyglot"],
+      "repo_status": "one_scored_smoke_zero_on_one_case",
+      "first_scbe_action": "Re-run one case with diagnostics, then three cases only after edits actually land."
+    },
+    {
+      "track_id": "fresh_algorithmic_coding",
+      "weight": 8,
+      "primary_benchmarks": ["LiveCodeBench"],
+      "repo_status": "not_wired",
+      "first_scbe_action": "Add a harness that records problem IDs, generated code, tests, and pass/fail."
+    },
+    {
+      "track_id": "function_level_correctness",
+      "weight": 5,
+      "primary_benchmarks": ["EvalPlus HumanEval+", "EvalPlus MBPP+"],
+      "repo_status": "not_wired",
+      "first_scbe_action": "Add as a cheap local correctness lane before expensive agent runs."
+    },
+    {
+      "track_id": "large_context_code_reasoning",
+      "weight": 5,
+      "primary_benchmarks": ["BigCodeBench", "ProjectEval", "ProjDevBench"],
+      "repo_status": "not_wired",
+      "first_scbe_action": "Use after the small lanes show signal; expensive and less useful as a first gate."
+    },
+    {
+      "track_id": "tool_policy_agent_behavior",
+      "weight": 10,
+      "primary_benchmarks": ["tau-bench", "tau2-bench"],
+      "repo_status": "not_wired",
+      "first_scbe_action": "Map SCBE receipts to policy-compliance failures and API action logs."
+    },
+    {
+      "track_id": "browser_desktop_operation",
+      "weight": 8,
+      "primary_benchmarks": ["WebArena", "OSWorld"],
+      "repo_status": "not_wired",
+      "first_scbe_action": "Use after the browser operator is stable; UI benchmarks are brittle and setup-heavy."
+    },
+    {
+      "track_id": "security_governance_resistance",
+      "weight": 12,
+      "primary_benchmarks": ["AgentDojo", "CyberSecEval", "HarmBench", "garak", "promptfoo"],
+      "repo_status": "partially_wired_internal",
+      "first_scbe_action": "Keep local SCBE red-team as internal gate, then add one public prompt-injection suite for external comparability."
+    },
+    {
+      "track_id": "cost_reproducibility_evidence",
+      "weight": 5,
+      "primary_benchmarks": ["internal evidence packet"],
+      "repo_status": "partially_wired",
+      "first_scbe_action": "Every run must emit JSON, Markdown, patches, command line, model/provider, token/cost, and git SHA."
+    }
+  ],
+  "claim_guardrails": [
+    "Do not claim best coding agent until official or reproducible full-run evidence covers the weighted tracks.",
+    "Do not claim public benchmark parity from a smoke run.",
+    "Do not claim public leaderboard parity from simulated competitor lanes.",
+    "Do not publish a single model score as a system score without harness, tool access, context budget, retry policy, and cost."
+  ]
+}

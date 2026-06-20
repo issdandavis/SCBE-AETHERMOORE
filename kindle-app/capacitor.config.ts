@@ -5,8 +5,14 @@ const target = (process.env.AETHERCODE_TARGET || '').toLowerCase();
 const variant = (process.env.AETHERCODE_APP_VARIANT || '').toLowerCase();
 const isKindle = target === 'kindle';
 const isAetherBrowse = variant === 'aetherbrowse';
-const appId = isAetherBrowse ? 'com.issdandavis.aetherbrowse' : 'com.issdandavis.aethercode';
-const appName = isAetherBrowse ? 'AetherBrowse' : 'AetherCode';
+const isAethermoorBus =
+  variant === 'aethermoor-bus' || variant === 'aethermoorbus' || variant === 'bus';
+const appId = isAetherBrowse
+  ? 'com.issdandavis.aetherbrowse'
+  : isAethermoorBus
+    ? 'io.aethermoor.bus'
+    : 'com.issdandavis.aethercode';
+const appName = isAetherBrowse ? 'AetherBrowse' : isAethermoorBus ? 'Aethermoor Bus' : 'AetherCode';
 
 const config: CapacitorConfig = {
   appId,
@@ -14,9 +20,7 @@ const config: CapacitorConfig = {
   webDir: 'www',
   server: {
     androidScheme: 'https',
-    allowNavigation: [
-      '*',
-    ],
+    allowNavigation: ['*'],
   },
   android: {
     // Kindle Fire 7th gen = API 22, but Capacitor 7 needs 23+

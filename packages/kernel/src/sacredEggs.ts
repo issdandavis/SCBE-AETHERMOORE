@@ -311,7 +311,8 @@ export function predicateGeo(egg: SacredEgg, state: VerifierState): boolean {
     const minDistance = Math.min(
       ...policy.attractors.map((attractor) => {
         const attractorNorm = Math.sqrt(attractor.reduce((sum, x) => sum + x * x, 0));
-        const projectedAttractor = attractorNorm >= 1.0 ? projectEmbeddingToBall(attractor) : attractor;
+        const projectedAttractor =
+          attractorNorm >= 1.0 ? projectEmbeddingToBall(attractor) : attractor;
         return hyperbolicDistance(pos, projectedAttractor);
       })
     );
@@ -457,9 +458,13 @@ export async function predicateCrypto(
     const key = await deriveKey(state.sharedSecret, egg, state);
 
     // Import key for AES-GCM
-    const aesKey = await crypto.subtle.importKey('raw', new Uint8Array(key).buffer, { name: 'AES-GCM' }, false, [
-      'decrypt',
-    ]);
+    const aesKey = await crypto.subtle.importKey(
+      'raw',
+      new Uint8Array(key).buffer,
+      { name: 'AES-GCM' },
+      false,
+      ['decrypt']
+    );
 
     // Decrypt
     const plaintext = await crypto.subtle.decrypt(
@@ -581,9 +586,13 @@ export async function createEgg(
   const key = await deriveKey(sharedSecret, partialEgg, expectedState);
 
   // Import key for AES-GCM
-  const aesKey = await crypto.subtle.importKey('raw', new Uint8Array(key).buffer, { name: 'AES-GCM' }, false, [
-    'encrypt',
-  ]);
+  const aesKey = await crypto.subtle.importKey(
+    'raw',
+    new Uint8Array(key).buffer,
+    { name: 'AES-GCM' },
+    false,
+    ['encrypt']
+  );
 
   // Encrypt
   const ciphertext = await crypto.subtle.encrypt(

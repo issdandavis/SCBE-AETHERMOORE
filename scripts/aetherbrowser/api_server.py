@@ -17,6 +17,7 @@ import configparser
 from collections import Counter, defaultdict, deque
 import datetime
 import hashlib
+import hmac
 import json
 import logging
 import math
@@ -35,9 +36,9 @@ from functools import lru_cache
 from pathlib import Path, PurePosixPath
 from typing import Any, Dict, List, Optional
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -111,11 +112,58 @@ sys.path.insert(0, str(ROOT / "src"))
 
 logger = logging.getLogger(__name__)
 
+
+def _public_service_result(result: Any) -> Any:
+    """Drop debug/error payloads before returning service results to clients."""
+    if isinstance(result, dict):
+        return {
+            str(key): _public_service_result(value)
+            for key, value in result.items()
+            if str(key).lower() not in {"traceback", "stack", "exception", "exc", "error_detail", "stderr"}
+        }
+    if isinstance(result, list):
+        return [_public_service_result(item) for item in result]
+    return result
+
+
+def _public_search_result(result: Any) -> dict[str, Any]:
+    """Build an explicit public schema for Polly search responses."""
+    if not isinstance(result, dict):
+        return {"ok": False, "error": "Search service temporarily unavailable."}
+    records = result.get("results") or result.get("sources") or result.get("data") or []
+    if not isinstance(records, list):
+        records = []
+    public_records = []
+    for record in records[:10]:
+        if not isinstance(record, dict):
+            continue
+        public_records.append(
+            {
+                "title": str(record.get("title") or "")[:240],
+                "url": str(record.get("url") or record.get("href") or "")[:500],
+                "snippet": str(record.get("snippet") or record.get("content") or record.get("excerpt") or "")[:800],
+            }
+        )
+    return {
+        "ok": bool(result.get("ok", True)),
+        "query": str(result.get("query") or "")[:500],
+        "results": public_records,
+    }
+
+
+def _public_email_result(result: Any) -> dict[str, Any]:
+    """Build an explicit public schema for email-send responses."""
+    if not isinstance(result, dict):
+        return {"ok": False, "error": "Email service temporarily unavailable."}
+    return {"ok": bool(result.get("ok", False)), "message_id": str(result.get("message_id") or "")[:128]}
+
+
 # ---------------------------------------------------------------------------
 #  Lazy-load the runtime gate (best effort — works even if deps are missing)
 # ---------------------------------------------------------------------------
 
 _runtime_gate = None
+_gate_eval_counter = 0
 
 
 def _env_flag(name: str, default: bool = False) -> bool:
@@ -168,10 +216,85 @@ def _runtime_gate_kwargs() -> dict[str, Any]:
     return kwargs
 
 
+def _runtime_gate_state_path() -> Optional[Path]:
+    """Where the gate's accumulated state is persisted, if configured.
+
+    Opt-in via SCBE_RUNTIME_GATE_STATE_PATH. There is no default location:
+    immune hashes can fingerprint observed attack patterns, so the operator
+    chooses where state lives (outside the repo by default).
+    """
+    raw = os.environ.get("SCBE_RUNTIME_GATE_STATE_PATH", "").strip()
+    return Path(raw) if raw else None
+
+
+def _restore_gate_state(gate) -> None:
+    """Restore persisted state into a freshly-created gate, if configured.
+
+    Best-effort: a missing or unreadable state file leaves the gate cold
+    rather than failing server start-up.
+    """
+    path = _runtime_gate_state_path()
+    if path is None or not path.exists():
+        return
+    try:
+        gate.load_state(path)
+        logger.info("RuntimeGate state restored from %s", path)
+    except Exception:
+        logger.warning("Failed to restore RuntimeGate state from %s; starting cold", path, exc_info=True)
+
+
+def _persist_gate_state(keep_previous: bool = False) -> bool:
+    """Persist the live gate's accumulated state, if one exists and a path is set.
+
+    Returns True if a save was attempted and succeeded. When ``keep_previous``
+    is set the prior snapshot is rotated to ``<name>.prev`` for rollback.
+    """
+    gate = _runtime_gate
+    path = _runtime_gate_state_path()
+    if gate is None or path is None:
+        return False
+    try:
+        gate.save_state(path, keep_previous=keep_previous)
+        logger.info("RuntimeGate state saved to %s", path)
+        return True
+    except Exception:
+        logger.warning("Failed to save RuntimeGate state to %s", path, exc_info=True)
+        return False
+
+
+def _checkpoint_every() -> int:
+    """How many evaluate() calls between autosaves (0 disables periodic saves)."""
+    raw = os.environ.get("SCBE_RUNTIME_GATE_CHECKPOINT_EVERY", "20").strip()
+    try:
+        return max(0, int(raw))
+    except ValueError:
+        logger.warning("Ignoring invalid SCBE_RUNTIME_GATE_CHECKPOINT_EVERY=%r", raw)
+        return 20
+
+
+def _gate_evaluate(gate, action_text: str):
+    """Single choke point for gate.evaluate() that drives periodic checkpoints.
+
+    Every Nth evaluation (N = SCBE_RUNTIME_GATE_CHECKPOINT_EVERY, default 20)
+    the accumulated drift/immune state is checkpointed atomically with a
+    one-deep ``.prev`` rollback snapshot. No-op when no state path is set.
+    """
+    global _gate_eval_counter
+    result = gate.evaluate(action_text)
+    every = _checkpoint_every()
+    if every and _runtime_gate_state_path() is not None:
+        _gate_eval_counter += 1
+        if _gate_eval_counter >= every:
+            _gate_eval_counter = 0
+            _persist_gate_state(keep_previous=True)
+    return result
+
+
 def _get_gate():
     """Return a shared RuntimeGate instance, initialised on first call."""
-    global _runtime_gate
+    global _runtime_gate, _gate_eval_counter
     if _runtime_gate is None:
+        _gate_eval_counter = 0
         try:
             from governance.runtime_gate import RuntimeGate
 
@@ -184,6 +307,8 @@ def _get_gate():
             except Exception:
                 logger.debug("RuntimeGate unavailable, governance gating disabled")
                 _runtime_gate = None
+        if _runtime_gate is not None:
+            _restore_gate_state(_runtime_gate)
     return _runtime_gate
 
 
@@ -366,6 +491,32 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Operator endpoints (/api/ops/*, /api/cli/*) run local subprocesses (email
+# reader, pytest, git, tor sweep, CLI) and return their output, behind wide-open
+# CORS. Without a guard they were unauthenticated remote-exec / data-leak
+# surfaces (GHSA-q986-4x7x-gx39: the /api/ops/check-email digest leak). They are
+# DISABLED unless an admin token is configured, and then require a matching
+# X-Admin-Token header — fail closed, same pattern as /runtime-gate/checkpoint.
+_OPERATOR_PREFIXES = ("/api/ops/", "/api/cli/")
+
+
+@app.middleware("http")
+async def _guard_operator_endpoints(request: Request, call_next):
+    if request.method != "OPTIONS" and any(request.url.path.startswith(p) for p in _OPERATOR_PREFIXES):
+        token = (
+            os.environ.get("SCBE_OPS_ADMIN_TOKEN", "").strip()
+            or os.environ.get("SCBE_RUNTIME_GATE_ADMIN_TOKEN", "").strip()
+        )
+        if not token:
+            return JSONResponse(
+                {"detail": "operator endpoints disabled (set SCBE_OPS_ADMIN_TOKEN to enable)"},
+                status_code=403,
+            )
+        if not hmac.compare_digest(request.headers.get("x-admin-token", ""), token):
+            return JSONResponse({"detail": "invalid or missing X-Admin-Token"}, status_code=401)
+    return await call_next(request)
+
+
 if PUBLIC_DIR.exists():
     static_dir = PUBLIC_DIR / "static"
     if static_dir.exists():
@@ -375,6 +526,37 @@ if DOCS_DIR.exists():
     docs_static_dir = DOCS_DIR / "static"
     if docs_static_dir.exists():
         app.mount("/site/static", StaticFiles(directory=str(docs_static_dir)), name="docs-static")
+
+
+@app.on_event("shutdown")
+async def _save_gate_state_on_shutdown() -> None:
+    """Persist accumulated gate state on graceful shutdown (if configured)."""
+    _persist_gate_state(keep_previous=True)
+
+
+@app.post("/runtime-gate/checkpoint")
+async def runtime_gate_checkpoint(request: Request) -> dict:
+    """Force a state checkpoint. Admin-guarded; disabled unless a token is set.
+
+    Requires SCBE_RUNTIME_GATE_ADMIN_TOKEN to be configured and a matching
+    X-Admin-Token header. Returns {ok, path, query_count}. The server has
+    wide-open CORS and no other auth, so this fails closed when no token is set.
+    """
+    admin_token = os.environ.get("SCBE_RUNTIME_GATE_ADMIN_TOKEN", "").strip()
+    if not admin_token:
+        raise HTTPException(status_code=403, detail="checkpoint endpoint disabled (no admin token configured)")
+    if not hmac.compare_digest(request.headers.get("x-admin-token", ""), admin_token):
+        raise HTTPException(status_code=401, detail="invalid or missing X-Admin-Token")
+
+    gate = _get_gate()
+    path = _runtime_gate_state_path()
+    if gate is None:
+        raise HTTPException(status_code=503, detail="RuntimeGate unavailable")
+    if path is None:
+        raise HTTPException(status_code=400, detail="SCBE_RUNTIME_GATE_STATE_PATH not configured")
+    if not _persist_gate_state(keep_previous=True):
+        raise HTTPException(status_code=500, detail="checkpoint failed")
+    return {"ok": True, "path": str(path), "query_count": gate._query_count}
 
 
 # =========================================================================== #
@@ -922,7 +1104,9 @@ def _build_snippet(text: str, terms: list[str], max_chars: int = 320) -> str:
     return snippet
 
 
-def _chunk_text(text: str, target_chars: int = RAG_CHUNK_TARGET_CHARS, overlap_chars: int = RAG_CHUNK_OVERLAP_CHARS) -> list[str]:
+def _chunk_text(
+    text: str, target_chars: int = RAG_CHUNK_TARGET_CHARS, overlap_chars: int = RAG_CHUNK_OVERLAP_CHARS
+) -> list[str]:
     normalized = _normalize_text_blob(text)
     if not normalized:
         return []
@@ -1274,17 +1458,18 @@ def _chat_sources(question: str, domain: str, max_sources: int = 5) -> list[dict
 def _chat_instruction_for_domain(domain: str) -> str:
     if domain == "lore":
         return (
-            "You are Polly, the archive keeper for AetherMoore lore. Answer with canon-aware worldbuilding language when it helps, "
-            "but do not invent events, character history, or rules that are not supported by the evidence packet."
+            "You are Polly, the archive keeper for AetherMoore lore. Answer with canon-aware worldbuilding "
+            "language when it helps, but do not invent events, character history, or rules that are not "
+            "supported by the evidence packet."
         )
     if domain == "hybrid":
         return (
-            "You are Polly for both AetherMoore lore and SCBE science. Separate fictional canon from technical claims explicitly. "
-            "Use short labeled sections when the answer spans both domains."
+            "You are Polly for both AetherMoore lore and SCBE science. Separate fictional canon from technical "
+            "claims explicitly. Use short labeled sections when the answer spans both domains."
         )
     return (
-        "You are Polly for SCBE-AETHERMOORE science and systems. Answer concretely, separate proven results from proposals, "
-        "and prefer implementation details, metrics, and source-backed explanations."
+        "You are Polly for SCBE-AETHERMOORE science and systems. Answer concretely, separate proven results "
+        "from proposals, and prefer implementation details, metrics, and source-backed explanations."
     )
 
 
@@ -1366,6 +1551,10 @@ def _chat_grounding_prompt(
         "- If support is missing, say so directly.",
         "- Never blur lore canon and SCBE science into one unsupported claim.",
         "- Stay concise, useful, and specific.",
+        "- Operator UI mode: use at most 5 short bullets unless the user asks for depth.",
+        "- Do not write poems, roleplay, story packets, or decorative metaphors unless fiction is explicitly "
+        "requested.",
+        "- If the user input is only a number, say it needs an active menu context and do not riff on the number.",
     ]
     if coding_tutor:
         rules.extend(
@@ -1392,14 +1581,49 @@ def _chat_grounding_prompt(
     ).strip()
 
 
+def _arena_local_command_response(message: str) -> Optional[str]:
+    value = (message or "").strip()
+    if not value:
+        return None
+    if value.isdigit():
+        return (
+            f'Selection "{value}" was captured, but no active numbered menu was provided. '
+            "No model deliberation is needed. Give a full command like `open Arena`, "
+            "`summarize this`, or `deliberate: should I ship this?`."
+        )
+    if value.lower() in {"/help", "help"}:
+        return (
+            "Round Table command help:\n"
+            "- Type a full instruction to call the models.\n"
+            "- Use a bare number only when a visible numbered menu is active.\n"
+            "- Use `/clear` in the browser UI to clear visible transcripts."
+        )
+    return None
+
+
 def _mode_guidance(mode: str) -> str:
     mapping = {
         "fact-check": "Answer only from the evidence packet. Distinguish supported claims from gaps or uncertainty.",
-        "research": "Synthesize the evidence packet into a readable research answer, but do not invent support that is not present.",
-        "draft": "Use the evidence packet to draft a useful response. Label any sentence that extends beyond the evidence as a draft inference.",
-        "code": "Answer like an implementation assistant grounded in the repo notes and docs. Prefer concrete steps, file paths, and constraints.",
-        "math": "Answer like a math explainer grounded in the local SCBE corpus. Keep equations and assumptions explicit.",
-        "skills": "Answer using the local skill vault and docs as the operating reference. Point to skill paths and likely invocation patterns.",
+        "research": (
+            "Synthesize the evidence packet into a readable research answer, "
+            "but do not invent support that is not present."
+        ),
+        "draft": (
+            "Use the evidence packet to draft a useful response. "
+            "Label any sentence that extends beyond the evidence as a draft inference."
+        ),
+        "code": (
+            "Answer like an implementation assistant grounded in the repo notes and docs. "
+            "Prefer concrete steps, file paths, and constraints."
+        ),
+        "math": (
+            "Answer like a math explainer grounded in the local SCBE corpus. "
+            "Keep equations and assumptions explicit."
+        ),
+        "skills": (
+            "Answer using the local skill vault and docs as the operating reference. "
+            "Point to skill paths and likely invocation patterns."
+        ),
     }
     return mapping.get(mode, mapping["fact-check"])
 
@@ -1457,7 +1681,12 @@ def _call_local_ollama(prompt: str, model_id: Optional[str] = None) -> dict[str,
     try:
         response = _req.post(
             "http://localhost:11434/api/generate",
-            json={"model": chosen_model, "prompt": prompt, "stream": False},
+            json={
+                "model": chosen_model,
+                "prompt": prompt,
+                "stream": False,
+                "options": {"temperature": 0.2, "num_predict": 420},
+            },
             timeout=120,
         )
         if response.status_code != 200:
@@ -1483,13 +1712,14 @@ def _call_huggingface_chat(prompt: str, model_id: Optional[str] = None) -> dict[
                 "role": "system",
                 "content": (
                     "You are AetherBot for SCBE-AETHERMOORE. "
-                    "Answer from the supplied evidence packet, cite it as [S1], [S2], etc, and say when support is missing."
+                    "Answer from the supplied evidence packet, cite it as [S1], [S2], etc, "
+                    "and say when support is missing."
                 ),
             },
             {"role": "user", "content": prompt},
         ],
         "temperature": 0.2,
-        "max_tokens": 900,
+        "max_tokens": 420,
     }
     request = urllib.request.Request(
         HF_CHAT_ROUTER_URL,
@@ -1880,6 +2110,22 @@ async def arena_compat_chat(req: ArenaCompatChatRequest):
             "tentacle": tentacle,
         }
 
+    command_response = _arena_local_command_response(req.message)
+    if command_response is not None:
+        return {
+            "response": command_response,
+            "tentacle": tentacle,
+            "model": "local-command-parser",
+            "latency_ms": 0,
+            "governance_score": 1.0,
+            "domain": "command",
+            "domain_scores": {},
+            "active_profiles": [],
+            "coding_spine": None,
+            "sources": [],
+            "rag": {"enabled": False, "public_only": True, "index": {}},
+        }
+
     domain, domain_scores = _classify_chat_domain(req.message, req.context, req.mode, req.domain)
     rag_public_only = not _chat_should_use_internal_rag(req.message, req.mode)
     rag_result = await asyncio.to_thread(
@@ -1906,7 +2152,7 @@ async def arena_compat_chat(req: ArenaCompatChatRequest):
     cost = 0.0
     if gate is not None:
         try:
-            gate_result = gate.evaluate(req.message)
+            gate_result = _gate_evaluate(gate, req.message)
             decision = gate_result.decision.value
             cost = round(gate_result.cost, 4)
         except Exception:
@@ -1981,12 +2227,7 @@ async def arena_training_push():
 
 @app.get("/v1/lore/art")
 async def arena_lore_art_index():
-    return {
-        "items": [
-            {"title": item["title"], "url": f"/v1/lore/art/{item['slug']}"}
-            for item in LORE_ART_ITEMS
-        ]
-    }
+    return {"items": [{"title": item["title"], "url": f"/v1/lore/art/{item['slug']}"} for item in LORE_ART_ITEMS]}
 
 
 @app.get("/v1/lore/art/{slug}")
@@ -2123,11 +2364,7 @@ def _allowed_relative_paths(root: str) -> frozenset[str]:
     root_path = Path(root)
     if not root_path.exists():
         return frozenset()
-    return frozenset(
-        path.relative_to(root_path).as_posix()
-        for path in root_path.rglob("*")
-        if path.is_file()
-    )
+    return frozenset(path.relative_to(root_path).as_posix() for path in root_path.rglob("*") if path.is_file())
 
 
 def _resolve_safe_relative_file(root: Path, requested_path: str) -> Path:
@@ -2206,7 +2443,7 @@ async def chat(req: ChatRequest):
 
     if gate is not None:
         try:
-            gr = gate.evaluate(req.message)
+            gr = _gate_evaluate(gate, req.message)
             decision = gr.decision.value
             trust_level = gr.trust_level
             fib_index = gr.trust_index
@@ -2247,12 +2484,15 @@ async def chat(req: ChatRequest):
         else:
             response_text = f"[{req.model.capitalize()} unavailable: {model_result.get('error', 'unknown error')}]"
     elif decision == "DENY":
-        response_text = f"[DENIED by governance gate. Cost: {cost}. Signals: {gate_result.get('signals', []) if gate_result else []}]"
+        response_text = (
+            f"[DENIED by governance gate. Cost: {cost}. "
+            f"Signals: {gate_result.get('signals', []) if gate_result else []}]"
+        )
     else:
         response_text = (
             f"[{req.model.capitalize()} model not wired yet. "
             f"Governance: {decision}. Trust: {trust_level} (FIB {fib_value}). "
-            f"Select 'Local' to use AetherBot via Ollama.]"
+            "Select 'Local' to use AetherBot via Ollama.]"
         )
 
     _append_jsonl(
@@ -2314,7 +2554,7 @@ async def fact_check(req: FactCheckRequest):
     cost = 0.0
     if gate is not None:
         try:
-            gr = gate.evaluate(question)
+            gr = _gate_evaluate(gate, question)
             decision = gr.decision.value
             trust_level = gr.trust_level
             cost = round(gr.cost, 4)
@@ -2775,6 +3015,7 @@ async def contact_submit(payload: ContactFormPayload):
     """Receive contact form submissions from the website and notify via email."""
     try:
         from scripts.system.email_service import send_contact_notification
+
         result = send_contact_notification(
             name=payload.name,
             email=payload.email,
@@ -2784,9 +3025,9 @@ async def contact_submit(payload: ContactFormPayload):
         )
         if result["ok"]:
             return {"ok": True, "message": "Message sent. We usually reply within 24 hours."}
-        return {"ok": False, "error": result.get("error", "Email delivery failed")}
+        return {"ok": False, "error": "Email delivery failed"}
     except Exception as e:
-        logger.warning("Contact form error: %s", e)
+        logger.warning("Contact form error: %s", type(e).__name__)
         return {"ok": False, "error": "Unable to send message. Please try again later."}
 
 
@@ -2893,12 +3134,12 @@ async def ops_git_status():
     )
 
     branch = branch_result.get("stdout", "").strip()
-    status_lines = [l for l in status_result.get("stdout", "").splitlines() if l.strip()]
-    log_lines = [l.strip() for l in log_result.get("stdout", "").splitlines() if l.strip()]
+    status_lines = [line for line in status_result.get("stdout", "").splitlines() if line.strip()]
+    log_lines = [line.strip() for line in log_result.get("stdout", "").splitlines() if line.strip()]
 
-    modified = sum(1 for l in status_lines if l.startswith(" M") or l.startswith("M "))
-    untracked = sum(1 for l in status_lines if l.startswith("??"))
-    staged = sum(1 for l in status_lines if l[0] in "MADR" and l[0] != "?")
+    modified = sum(1 for line in status_lines if line.startswith(" M") or line.startswith("M "))
+    untracked = sum(1 for line in status_lines if line.startswith("??"))
+    staged = sum(1 for line in status_lines if line[0] in "MADR" and line[0] != "?")
 
     return {
         "branch": branch,
@@ -3127,6 +3368,20 @@ def _cli_command_registry() -> list[dict[str, Any]]:
             "example": "ops tests",
         },
         {
+            "cmd": "bus run|summarize|analyze|perf|verify|replay ...",
+            "lane": "agent-bus",
+            "interop": {"web": True, "python": True, "node": False, "connectors": True},
+            "desc": "Dispatch safe Agent Bus operations through the existing CLI harness.",
+            "example": 'bus run "check the repo health" --no-search',
+        },
+        {
+            "cmd": "harness plan <intent...> [--permission-mode observe|assist] [--language python|typescript]",
+            "lane": "coding-harness",
+            "interop": {"web": True, "python": True, "node": False, "connectors": False},
+            "desc": "Compile an operator intent into a policy-checked coding harness plan. Read-only from the browser.",
+            "example": 'harness plan "fix failing lint in public arena" --permission-mode observe',
+        },
+        {
             "cmd": "momentum run <train_id> [--flow X] [--execute] [--max-parallel N]",
             "lane": "momentum",
             "interop": {"web": True, "python": True, "node": False, "connectors": False},
@@ -3172,6 +3427,13 @@ def _cli_help_text() -> str:
         '  vault search "query"',
         "  vault sync",
         "  ops email|youtube|tor|tests|git",
+        '  bus run "task..." [--no-search]',
+        '  bus summarize "query..."',
+        "  bus analyze <url>",
+        "  bus perf",
+        "  bus verify [events.jsonl]",
+        "  bus replay [events.jsonl] [--by-task]",
+        '  harness plan "intent..." [--permission-mode observe|assist] [--language python|typescript]',
         "  momentum run <train_id> [--flow X] [--execute] [--max-parallel N]",
         "  momentum latest [train_id]",
         '  chessboard generate "goal..."',
@@ -3183,6 +3445,8 @@ def _cli_help_text() -> str:
         "  trust aethermoore.com",
         '  vault search "phi poincare"',
         "  ops tests",
+        '  bus run "inspect current repo health" --no-search',
+        '  harness plan "add a regression test for the arena command parser"',
         "  momentum run daily_ops --execute --max-parallel 3",
         '  chessboard generate "Improve long-running agent workflows"',
         "  docs show aetherbrowser-config",
@@ -3223,7 +3487,7 @@ def _cli_docs_show(key: str, max_chars: int = 9000) -> dict[str, Any]:
 
 
 def _cli_parse_flags(parts: list[str]) -> dict[str, Any]:
-    """Very small flag parser for: --flow, --execute, --max-parallel."""
+    """Very small flag parser for safe allowlisted CLI verbs."""
     out: dict[str, Any] = {"args": []}
     i = 0
     while i < len(parts):
@@ -3244,9 +3508,165 @@ def _cli_parse_flags(parts: list[str]) -> dict[str, Any]:
                 out["max_parallel"] = parts[i + 1]
             i += 2
             continue
+        if p == "--permission-mode" and i + 1 < len(parts):
+            out["permission_mode"] = parts[i + 1]
+            i += 2
+            continue
+        if p == "--language" and i + 1 < len(parts):
+            out["language"] = parts[i + 1]
+            i += 2
+            continue
+        if p == "--seed" and i + 1 < len(parts):
+            try:
+                out["seed"] = int(parts[i + 1])
+            except Exception:
+                logger.debug("Suppressed error", exc_info=True)
+                out["seed"] = parts[i + 1]
+            i += 2
+            continue
+        if p == "--tool" and i + 1 < len(parts):
+            out["tool"] = parts[i + 1]
+            i += 2
+            continue
+        if p == "--no-search":
+            out["no_search"] = True
+            i += 1
+            continue
+        if p == "--by-task":
+            out["by_task"] = True
+            i += 1
+            continue
         out["args"].append(p)
         i += 1
     return out
+
+
+def _cli_limited_subprocess_payload(
+    *,
+    lane: str,
+    cmd: list[str],
+    timeout: int,
+    stdout_chars: int = 5000,
+    stderr_chars: int = 1200,
+) -> dict[str, Any]:
+    result = _run_subprocess(cmd, timeout=timeout)
+    return {
+        "ok": result.get("exit_code", -1) == 0,
+        "lane": lane,
+        "exit_code": result.get("exit_code", -1),
+        "stdout": (result.get("stdout") or "")[:stdout_chars],
+        "stderr": (result.get("stderr") or "")[:stderr_chars] if result.get("stderr") else None,
+    }
+
+
+async def _cli_agent_bus(rest: list[str]) -> dict[str, Any]:
+    if not rest:
+        return {
+            "ok": False,
+            "error": "Usage: bus run|summarize|analyze|perf|verify|replay ...",
+        }
+
+    sub = rest[0].lower()
+    flags = _cli_parse_flags(rest[1:])
+    args = [str(x) for x in flags.get("args", [])]
+    base = [sys.executable, "-m", "agents.agent_bus_cli"]
+
+    if sub in {"run", "ask"}:
+        prompt = " ".join(args).strip().strip('"')
+        if not prompt:
+            return {"ok": False, "error": 'Usage: bus run "task..." [--no-search]'}
+        cmd = base + ["run", prompt, "--mode", "headless", "--max-sources", "3", "--budget", "0"]
+        if flags.get("no_search"):
+            cmd.append("--no-search")
+        return await asyncio.to_thread(
+            _cli_limited_subprocess_payload,
+            lane="agent-bus",
+            cmd=cmd,
+            timeout=180,
+        )
+
+    if sub == "summarize":
+        query = " ".join(args).strip().strip('"')
+        if not query:
+            return {"ok": False, "error": 'Usage: bus summarize "query..."'}
+        cmd = base + ["summarize", query, "--mode", "headless", "--max-sources", "5"]
+        return await asyncio.to_thread(
+            _cli_limited_subprocess_payload,
+            lane="agent-bus",
+            cmd=cmd,
+            timeout=180,
+        )
+
+    if sub == "analyze":
+        if not args:
+            return {"ok": False, "error": "Usage: bus analyze <url>"}
+        cmd = base + ["analyze", args[0], "--mode", "headless"]
+        return await asyncio.to_thread(
+            _cli_limited_subprocess_payload,
+            lane="agent-bus",
+            cmd=cmd,
+            timeout=180,
+        )
+
+    if sub == "perf":
+        return await asyncio.to_thread(
+            _cli_limited_subprocess_payload,
+            lane="agent-bus",
+            cmd=base + ["perf"],
+            timeout=30,
+        )
+
+    if sub == "verify":
+        path = args[0] if args else "artifacts/agent-bus/events.jsonl"
+        cmd = base + ["verify", path]
+        return await asyncio.to_thread(
+            _cli_limited_subprocess_payload,
+            lane="agent-bus",
+            cmd=cmd,
+            timeout=60,
+        )
+
+    if sub == "replay":
+        path = args[0] if args else "artifacts/agent-bus/events.jsonl"
+        cmd = base + ["replay", path]
+        if flags.get("by_task"):
+            cmd.append("--by-task")
+        return await asyncio.to_thread(
+            _cli_limited_subprocess_payload,
+            lane="agent-bus",
+            cmd=cmd,
+            timeout=60,
+        )
+
+    return {"ok": False, "error": f"Unknown bus subcommand: {sub}"}
+
+
+def _cli_harness_plan(rest: list[str]) -> dict[str, Any]:
+    if not rest or rest[0].lower() != "plan":
+        return {"ok": False, "error": "Usage: harness plan <intent...> [--permission-mode observe|assist]"}
+
+    flags = _cli_parse_flags(rest[1:])
+    intent = " ".join(str(x) for x in flags.get("args", [])).strip().strip('"')
+    if not intent:
+        return {"ok": False, "error": "Usage: harness plan <intent...>"}
+
+    permission_mode = str(flags.get("permission_mode") or "observe")
+    language = str(flags.get("language") or "python")
+    requested_tool = flags.get("tool")
+    if permission_mode not in {"observe", "assist"}:
+        return {"ok": False, "error": "Browser harness supports permission modes: observe, assist"}
+    if language not in {"python", "typescript", "go"}:
+        return {"ok": False, "error": "Supported harness languages: python, typescript, go"}
+
+    from src.coding_spine.command_compiler import compile_intent_to_plan
+
+    plan = compile_intent_to_plan(
+        intent=intent,
+        permission_mode=permission_mode,
+        preferred_language=language,
+        requested_tool=str(requested_tool) if requested_tool else None,
+    )
+    return {"ok": True, "lane": "coding-harness", "result": plan}
 
 
 async def _cli_dispatch(parts: list[str]) -> dict[str, Any]:
@@ -3297,6 +3717,12 @@ async def _cli_dispatch(parts: list[str]) -> dict[str, Any]:
         if op in {"git", "status"}:
             return await ops_git_status()
         return {"ok": False, "error": f"Unknown ops subcommand: {op}"}
+
+    if cmd == "bus":
+        return await _cli_agent_bus(rest)
+
+    if cmd in {"harness", "code"}:
+        return _cli_harness_plan(rest)
 
     if cmd == "momentum":
         if not rest:
@@ -3501,10 +3927,12 @@ _cli_jobs: dict[str, dict[str, Any]] = {}
 
 from pydantic import BaseModel
 
+
 class PollyChatPayload(BaseModel):
     message: str
     context: Optional[str] = "site"
     thinking: Optional[bool] = False
+
 
 class PollyRespondPayload(BaseModel):
     text: str
@@ -3512,16 +3940,20 @@ class PollyRespondPayload(BaseModel):
     intent: Optional[str] = ""
     thinking: Optional[bool] = False
 
+
 class PollySearchPayload(BaseModel):
     query: str
 
+
 class PollyDelegatePayload(BaseModel):
     text: str
+
 
 class PollyEmailPayload(BaseModel):
     to: str
     subject: str
     body: str
+
 
 class PollySlackPayload(BaseModel):
     message: str
@@ -3547,14 +3979,11 @@ async def polly_call(payload: PollyCallPayload):
 
     try:
         from twilio.rest import Client
+
         client = Client(account_sid, auth_token)
-        twiml = f'<Response><Dial>{business_number}</Dial></Response>'
-        call = client.calls.create(
-            to=payload.phone,
-            from_=twilio_number,
-            twiml=twiml
-        )
-        logger.info("Twilio call initiated: %s to %s", call.sid, payload.phone)
+        twiml = f"<Response><Dial>{business_number}</Dial></Response>"
+        call = client.calls.create(to=payload.phone, from_=twilio_number, twiml=twiml)
+        logger.info("Twilio call initiated")
         return {"ok": True, "data": {"call_sid": call.sid, "status": call.status}}
     except Exception as e:
         logger.warning("Twilio call error: %s", e)
@@ -3566,6 +3995,7 @@ async def polly_chat(payload: PollyChatPayload):
     """Main chat endpoint for Polly sidebar. Supports thinking mode."""
     try:
         from scripts.system.polly_service import chat
+
         result = await chat(payload.message, payload.context, thinking=payload.thinking)
         return {"ok": True, "data": result}
     except Exception as e:
@@ -3578,6 +4008,7 @@ async def polly_respond(payload: PollyRespondPayload):
     """Alternative response endpoint for Polly."""
     try:
         from scripts.system.polly_service import respond
+
         result = await respond(payload.text, payload.context, payload.intent, thinking=payload.thinking)
         return {"ok": True, "data": result}
     except Exception as e:
@@ -3590,10 +4021,11 @@ async def polly_context():
     """Return backend capabilities and service status."""
     try:
         from scripts.system.polly_service import get_context
+
         result = await get_context()
         return {"ok": True, "data": result}
     except Exception as e:
-        logger.warning("Polly context error: %s", e)
+        logger.warning("Polly context error: %s", type(e).__name__)
         return {"ok": False, "error": "Context service temporarily unavailable."}
 
 
@@ -3602,10 +4034,11 @@ async def polly_search(payload: PollySearchPayload):
     """Real web search via Tavily + intent fallback."""
     try:
         from scripts.system.polly_service import search
+
         result = await search(payload.query)
-        return result
+        return _public_search_result(result)
     except Exception as e:
-        logger.warning("Polly search error: %s", e)
+        logger.warning("Polly search error: %s", type(e).__name__)
         return {"ok": False, "error": "Search service temporarily unavailable."}
 
 
@@ -3614,10 +4047,11 @@ async def polly_delegate(payload: PollyDelegatePayload):
     """Delegation endpoint — routes to appropriate handler."""
     try:
         from scripts.system.polly_service import delegate
+
         result = await delegate(payload.text)
         return {"ok": True, "data": result}
     except Exception as e:
-        logger.warning("Polly delegate error: %s", e)
+        logger.warning("Polly delegate error: %s", type(e).__name__)
         return {"ok": False, "error": "Delegation service temporarily unavailable."}
 
 
@@ -3626,10 +4060,11 @@ async def polly_email(payload: PollyEmailPayload):
     """Send email from Polly chat via Proton SMTP."""
     try:
         from scripts.system.polly_service import send_email_from_chat
+
         result = await send_email_from_chat(payload.to, payload.subject, payload.body)
-        return {"ok": result.get("ok", False), "message_id": result.get("message_id")}
+        return _public_email_result(result)
     except Exception as e:
-        logger.warning("Polly email error: %s", e)
+        logger.warning("Polly email error: %s", type(e).__name__)
         return {"ok": False, "error": "Email service temporarily unavailable."}
 
 
@@ -3638,10 +4073,11 @@ async def polly_slack(payload: PollySlackPayload):
     """Send Slack notification from Polly chat."""
     try:
         from scripts.system.polly_service import notify_slack
+
         result = await notify_slack(payload.message, payload.channel)
-        return {"ok": result.get("ok", False)}
+        return {"ok": bool(result.get("ok", False))}
     except Exception as e:
-        logger.warning("Polly slack error: %s", e)
+        logger.warning("Polly slack error: %s", type(e).__name__)
         return {"ok": False, "error": "Slack service temporarily unavailable."}
 
 

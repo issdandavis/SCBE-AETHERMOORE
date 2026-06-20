@@ -38,9 +38,7 @@ def evaluate_prompt(prompt: str) -> dict[str, Any]:
         steps = []
         any_detected = False
         for index, step in enumerate(decoded["sequence"], start=1):
-            result = gate.process(
-                str(step), attack_id=str(index), attack_class="sequence"
-            )
+            result = gate.process(str(step), attack_id=str(index), attack_class="sequence")
             any_detected = any_detected or result.detected
             steps.append(
                 {

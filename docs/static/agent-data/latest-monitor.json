@@ -105,69 +105,69 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "To My Students",
-      "word_count": 594,
+      "description": ".de TLD offline due to DNSSEC?",
+      "word_count": 647,
       "headings": [
         {
           "level": 2,
-          "text": "To My Students",
+          "text": ".de TLD offline due to DNSSEC?",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "hendrix.edu",
+          "text": "verisignlabs.com",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "New Integrated by Design FreeBSD Book",
+          "text": "Accelerating Gemma 4: faster inference with multi-token prediction drafters",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "vivianvoss.net",
+          "text": "blog.google",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Microsoft and OpenAI end their exclusive and revenue-sharing deal",
+          "text": "Computer Use is 45x more expensive than structured APIs",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "bloomberg.com",
+          "text": "reflex.dev",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Talkie: a 13B vintage language model from 1930",
+          "text": "Write some software, give it away for free",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "talkie-lm.com",
+          "text": "nonogra.ph",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Three men are facing charges in Toronto SMS Blaster arrests",
+          "text": "Three Inverse Laws of AI",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "tps.ca",
+          "text": "susam.net",
           "source": "fallback-selector"
         }
       ],
-      "link_count": 229,
+      "link_count": 225,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.To My Students (hendrix.edu)165 points by marvinborner 56 minutes ago  | hide | 56\u00a0comments2.New Integrated by Design FreeBSD Book (vivianvoss.net)44 points by vermaden 1 hour ago  | hide | 5\u00a0comments3.Microsoft and OpenAI end their exclusive and revenue-sharing deal (bloomberg.com)737 points by helsinkiandrew 11 hours ago  | hide | 645\u00a0comments4.Talkie: a 13B vintage language model from 1930 (talkie-lm.com)59 points by jekude 2..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1..de TLD offline due to DNSSEC? (verisignlabs.com)508 points by warpspin 4 hours ago  | hide | 230\u00a0comments2.Accelerating Gemma 4: faster inference with multi-token prediction drafters (blog.google)430 points by amrrs 8 hours ago  | hide | 195\u00a0comments3.Computer Use is 45x more expensive than structured APIs (reflex.dev)301 points by palashawas 8 hours ago  | hide | 164\u00a0comments4.Write some software, give it away for free (nonogr..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
       "title": "Artificial Intelligence",
       "description": "quick links",
-      "word_count": 2309,
+      "word_count": 2058,
       "headings": [
         {
           "level": 2,
@@ -183,12 +183,12 @@
         },
         {
           "level": 3,
-          "text": "Mon, 27 Apr 2026 (showing first 50 of 92 entries )"
+          "text": "Tue, 5 May 2026 (showing first 50 of 385 entries )"
         }
       ],
-      "link_count": 570,
+      "link_count": 579,
       "table_count": 0,
-      "text_preview": "Artificial Intelligence\n\nAuthors and titles for recent submissions\n  \n\n        \n          Mon, 27 Apr 2026\n        \n      \n        \n          Fri, 24 Apr 2026\n        \n      \n        \n          Thu, 23 Apr 2026\n        \n      \n        \n          Wed, 22 Apr 2026\n        \n      \n        \n          Tue, 21 Apr 2026\n        \n      \n  See today's new changes\n      Total of 1195 entries :      1-50\n      51-100\n      101-150\n      151-200\n      ...\n      1151-1195\n\n    \n    Showing up to 50 entries p..."
+      "text_preview": "Artificial Intelligence\n\nAuthors and titles for recent submissions\n  \n\n        \n          Tue, 5 May 2026\n        \n      \n        \n          Mon, 4 May 2026\n        \n      \n        \n          Fri, 1 May 2026\n        \n      \n        \n          Thu, 30 Apr 2026\n        \n      \n        \n          Wed, 29 Apr 2026\n        \n      \n  See today's new changes\n      Total of 1012 entries :      1-50\n      51-100\n      101-150\n      151-200\n      ...\n      1001-1012\n\n    \n    Showing up to 50 entries per ..."
     }
   ]
 }

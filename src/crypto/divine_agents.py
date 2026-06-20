@@ -789,7 +789,8 @@ def format_study_report(studies: Dict[str, NaturalLearningStudy]) -> str:
     )
 
     lines.append(
-        f"{'Agent':<20} {'Reliability':>11} {'Resilience':>10} {'Drift':>8} {'Corrections':>11} {'Temptations':>11} {'Framework'}"
+        f"{'Agent':<20} {'Reliability':>11} {'Resilience':>10} {'Drift':>8} "
+        f"{'Corrections':>11} {'Temptations':>11} {'Framework'}"
     )
     lines.append("-" * 110)
 
@@ -829,10 +830,12 @@ def format_study_report(studies: Dict[str, NaturalLearningStudy]) -> str:
 
     if angel_only and demon_only and balanced:
         lines.append(
-            f"  Angel-only reliability:   {angel_only.agent.reliability:.4f}  resilience: {angel_only.agent.resilience:.4f}"
+            f"  Angel-only reliability:   {angel_only.agent.reliability:.4f}  "
+            f"resilience: {angel_only.agent.resilience:.4f}"
         )
         lines.append(
-            f"  Demon-only reliability:   {demon_only.agent.reliability:.4f}  resilience: {demon_only.agent.resilience:.4f}"
+            f"  Demon-only reliability:   {demon_only.agent.reliability:.4f}  "
+            f"resilience: {demon_only.agent.resilience:.4f}"
         )
         lines.append(
             f"  Balanced reliability:     {balanced.agent.reliability:.4f}  resilience: {balanced.agent.resilience:.4f}"

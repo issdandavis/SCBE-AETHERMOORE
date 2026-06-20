@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>scbe-agent-bus | Governed Agent Routing</title>
+    <meta
+      name="description"
+      content="scbe-agent-bus routes human and AI events through governed typed envelopes for Node and Python workflows."
+    />
+    <link rel="stylesheet" href="../static/packages/package-products.css" />
+  </head>
+  <body data-package-theme="bus">
+    <div class="shell">
+      <header class="topbar">
+        <a class="brand" href="../packages.html">Package Products</a>
+        <nav class="nav" aria-label="Primary">
+          <a href="../index.html">Home</a>
+          <a href="../packages.html">Packages</a>
+          <a href="scbe-aethermoore.html">Core</a>
+          <a href="scbe-aethermoore-cli.html">CLI</a>
+        </nav>
+      </header>
+      <main>
+        <section class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">Agent routing</p>
+            <h1>scbe-agent-bus</h1>
+            <p class="lede">
+              A typed event bus for agent work: send task packets, receive envelopes, and keep human, AI, and tool
+              actions inside a governed routing surface. The current lane adds hosted-credential gating and upgrade
+              routing for safer operator handoff.
+            </p>
+            <code class="command">npm install scbe-agent-bus</code>
+            <div class="cta-row">
+              <a class="button" href="https://www.npmjs.com/package/scbe-agent-bus">npm Package</a>
+              <a class="button secondary" href="https://pypi.org/project/scbe-agent-bus/">PyPI Package</a>
+            </div>
+          </div>
+          <div class="visual">
+            <div class="terminal-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+            <div class="terminal-body">
+              <div><strong>$ scbe-agent-bus send --task "review changed files" --json</strong></div>
+              <div>{ "ok": true, "verdict": "route" }</div>
+              <br />
+              <div>npm: 0.3.1</div>
+              <div>PyPI: 0.3.0</div>
+            </div>
+          </div>
+        </section>
+        <section class="band reveal">
+          <div class="detail-grid">
+            <article class="panel">
+              <h3>Who It Helps</h3>
+              <p>Agent harnesses, local operators, and teams coordinating multiple model or tool workers.</p>
+            </article>
+            <article class="panel">
+              <h3>What It Gives</h3>
+              <p>Typed envelopes, CLI routing, health checks, and a clean bridge to governed event runners.</p>
+            </article>
+            <article class="panel">
+              <h3>Use It With</h3>
+              <p>The CLI for terminal control and the core package for scoring and governance decisions.</p>
+            </article>
+          </div>
+        </section>
+      </main>
+      <footer class="footer">scbe-agent-bus. The routing product surface for agent work.</footer>
+    </div>
+    <script src="../static/packages/package-products.js"></script>
+  </body>
+</html>

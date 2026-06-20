@@ -96,7 +96,7 @@ pytest tests/test_scbe_14layers.py -v
 
 - [SPECIFICATION.md](axiom_grouped/SPECIFICATION.md) - Full v3.0 spec
 - [PATENT_SPECIFICATION.md](PATENT_SPECIFICATION.md) - Patent documentation
-- [docs/COMPREHENSIVE_MATH_SCBE.md](../../docs/COMPREHENSIVE_MATH_SCBE.md) - Mathematical proofs
+- [docs/specs/LAYER_MATH_COMPRESSED.md](../../../docs/specs/LAYER_MATH_COMPRESSED.md) - compressed layer math
 
 ---
 
