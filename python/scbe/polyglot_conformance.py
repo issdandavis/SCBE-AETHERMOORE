@@ -59,6 +59,9 @@ def _close(x: Optional[float], r: Optional[float]) -> bool:
         return x is r
     if math.isnan(x) or math.isnan(r):
         return math.isnan(x) and math.isnan(r)
+    if math.isinf(x) or math.isinf(r):
+        return x == r  # require SAME signed infinity; the tolerance form below mis-handles inf
+        # (abs(inf-inf)==nan -> false DISAGREE on equal infinities; abs(inf-(-inf))==inf<=inf -> false AGREE)
     return abs(x - r) <= TOL + TOL * abs(r)
 
 

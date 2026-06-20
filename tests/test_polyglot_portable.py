@@ -89,6 +89,35 @@ def test_bitwise_domain_boundary_is_caught_not_hidden():
     assert "javascript" in rep["summary"]["disagree"]
 
 
+def test_close_handles_infinities_correctly():
+    # the comparator must require the SAME signed infinity: equal infinities AGREE, opposite ones DISAGREE.
+    # (the naive tolerance form mis-handled both: abs(inf-inf)=nan -> false DISAGREE; inf<=inf -> false AGREE)
+    from python.scbe.polyglot_conformance import _close
+
+    inf = float("inf")
+    assert _close(inf, inf) is True
+    assert _close(-inf, -inf) is True
+    assert _close(inf, -inf) is False  # a maximally-wrong opposite-sign backend must NOT be excused
+    assert _close(inf, 1.0) is False
+    assert _close(float("nan"), float("nan")) is True  # nan handling still intact
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="needs a second backend to compare against")
+def test_infinite_results_are_verified_not_falsely_flagged():
+    # neg of +inf is -inf on every face; with the _close fix the harness must AGREE, not falsely DISAGREE
+    rep = conformance(P.program_bytes("neg"), [(0, 0, float("inf"))])
+    assert rep["summary"]["disagree"] == []
+    assert rep["reference"][0] == float("-inf")
+
+
+def test_log_safe_mode_roundabout_matches_sqrt():
+    # in safe mode, log of a non-positive routes to 0.0 (the same chosen handler as sqrt), no exception
+    src = P.emit(P.program_bytes("log"), "python", safe=True)
+    ns = {}
+    exec(compile(src, "<t>", "exec"), ns)  # noqa: S102 - our own emitter output
+    assert ns["tongue_fn"](0.0, 0.0, -5.0) == 0.0  # log(-5) -> roundabout 0.0, did not raise
+
+
 def test_a_face_without_an_extension_op_raises_cleanly():
     # the per-dialect guard: a bundled track that hasn't implemented 'xor' yields a clear error, not KeyError
     unsupported = [lang for lang in P.languages() if not P._dialect_supports(P.REGISTRY[lang], "xor")]

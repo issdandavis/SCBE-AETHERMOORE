@@ -30,10 +30,12 @@ The simplest commands are the bit/byte primitives, and they map across languages
 so the bitwise ops are the load-bearing extension:
   bitwise      and or xor not shl shr                           (INTEGER: operands truncated to int;
                  portable on the 32-bit SIGNED domain |x| < 2^31 -- BEYOND it JS uses int32 and the
-                 harness reports DISAGREE. That boundary is the honest limit, surfaced not hidden.)
+                 harness reports DISAGREE. That boundary is the honest limit, surfaced not hidden.
+                 shl/shr shift counts must be >= 0; the C face casts to `long long` to match Rust i64.)
   arithmetic   add sub mul div mod neg inc dec
-  math fns     pow abs sqrt floor ceil round min max  log exp   (log domain x>0; exp non-overflowing,
-                                                                  like sqrt's existing x>=0 domain)
+  math fns     pow abs sqrt floor ceil round min max  log exp   (log: x>0 -- safe-mode roundabout maps
+                 x<=0 -> 0.0, exactly like sqrt; exp: verified on non-overflowing x (no roundabout,
+                 raises in unsafe mode on overflow, as any face would). Verified on the valid domain.)
   sign/cmp     sign cmp                                          (-> -1.0 / 0.0 / 1.0)
   comparison   eq neq lt lte gt gte                              (-> 1.0 / 0.0, keeps the number stack)
   predicates   isnan isinf isfinite                             (-> 1.0 / 0.0; verified on nan/inf too)
@@ -72,7 +74,7 @@ FUNC1 = _CORE_FUNC1 | _EXT_FUNC1
 
 # SCALAR_OPS = the UNIVERSAL cube/DNA core (22): every face implements it, the bijection covers it.
 SCALAR_OPS = set(BINOPS) | set(CMPS) | _CORE_FUNC2 | _CORE_FUNC1
-# PORTABLE_OPS = the conformance-VERIFIED polyglot-emitter subset (32): emittable for any face that
+# PORTABLE_OPS = the conformance-VERIFIED polyglot-emitter subset (35): emittable for any face that
 # implements the op (the inline python/js/c/rust faces do). This is the "more than 20" portable core.
 PORTABLE_OPS = set(BINOPS) | set(CMPS) | FUNC2 | FUNC1
 
@@ -161,6 +163,8 @@ def _render(name: str, d: Dialect, safe: bool = False) -> Tuple[str, bool]:
         expr = _sub(d.func1[name], a=va)
         if safe and name == "sqrt":
             expr = _sub(_ternary(d), cond=f"{va} < 0.0", t="0.0", f=expr)
+        elif safe and name == "log":  # log of a non-positive -> 0.0, the same chosen handler as sqrt
+            expr = _sub(_ternary(d), cond=f"{va} <= 0.0", t="0.0", f=expr)
         return expr, False
     raise KeyError(f"op {name!r} not in v1 scalar core")
 
@@ -354,7 +358,7 @@ register(
             "isnan": "(isnan({a}) ? 1.0 : 0.0)",
             "isinf": "(isinf({a}) ? 1.0 : 0.0)",
             "isfinite": "(isfinite({a}) ? 1.0 : 0.0)",
-            "not": "(double)(~((long)({a})))",
+            "not": "(double)(~((long long)({a})))",
         },
         func2={
             "pow": "pow({a}, {b})",
@@ -362,11 +366,12 @@ register(
             "max": "cmax({a}, {b})",
             "mod": "fmod({a}, {b})",
             "cmp": "(({a}) > ({b}) ? 1.0 : (({a}) < ({b}) ? -1.0 : 0.0))",
-            "and": "(double)(((long)({a})) & ((long)({b})))",
-            "or": "(double)(((long)({a})) | ((long)({b})))",
-            "xor": "(double)(((long)({a})) ^ ((long)({b})))",
-            "shl": "(double)(((long)({a})) << ((long)({b})))",
-            "shr": "(double)(((long)({a})) >> ((long)({b})))",
+            # 'long long' (>=64-bit on every platform, matching Rust i64) -- C 'long' is 32-bit on Windows
+            "and": "(double)(((long long)({a})) & ((long long)({b})))",
+            "or": "(double)(((long long)({a})) | ((long long)({b})))",
+            "xor": "(double)(((long long)({a})) ^ ((long long)({b})))",
+            "shl": "(double)(((long long)({a})) << ((long long)({b})))",
+            "shr": "(double)(((long long)({a})) >> ((long long)({b})))",
         },
         cmp_tmpl="(({cond}) ? 1.0 : 0.0)",
         main_tmpl=("int main(void) {", '    printf("%.17g\\n", {fn}(2.0, 3.0, 4.0));', "    return 0;", "}"),
