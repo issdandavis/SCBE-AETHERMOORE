@@ -40,6 +40,14 @@ SYSTEM = (
     "Prefer to run_code at least once before answering."
 )
 
+REPAIR_BIASED_SYSTEM = (
+    SYSTEM + "\n\nRepair-biased harvest mode:\n"
+    "  1. Make a small first candidate quickly, even if uncertain.\n"
+    "  2. CALL run_code on that candidate before giving ANSWER.\n"
+    "  3. If the tool returns FAIL, use the got-vs-expected feedback to repair and CALL run_code again.\n"
+    "  4. Only give ANSWER after using the tool feedback."
+)
+
 
 # --------------------------------------------------------------------------------------------------
 # tools (deterministic; the model calls them, the harness runs them)
@@ -174,6 +182,7 @@ def solve_with_tools(
     max_steps: int = 5,
     public_k: int = 1,
     system: str = SYSTEM,
+    prompt_mode: str = "confirm",
 ) -> Dict[str, Any]:
     """Run the model through a tool dialogue and record EVERY turn. Verify the final answer on HELD-BACK
     tests (test_list[public_k:]) the model never saw. Returns the transcript + whether it verified and
@@ -184,9 +193,24 @@ def solve_with_tools(
     public, held = tl[:public_k], tl[public_k:]
     imports = list(problem.get("test_imports", []))
 
+    if prompt_mode == "repair-biased" and system == SYSTEM:
+        system = REPAIR_BIASED_SYSTEM
+
+    mode_note = ""
+    if prompt_mode == "repair-biased":
+        mode_note = (
+            "\n\nRepair harvest instruction: first test a quick minimal candidate with run_code. "
+            "If it fails, revise from the TOOL feedback and test again before ANSWER."
+        )
+    elif prompt_mode != "confirm":
+        raise ValueError("unsupported prompt_mode: %s" % prompt_mode)
+
     msgs: List[Dict[str, str]] = [
         {"role": "system", "content": system},
-        {"role": "user", "content": head + "\n\nExample test (you may run_code against it):\n" + "\n".join(public)},
+        {
+            "role": "user",
+            "content": head + mode_note + "\n\nExample test (you may run_code against it):\n" + "\n".join(public),
+        },
     ]
     final_code = ""
     tool_calls = 0
@@ -228,6 +252,7 @@ def harvest_tool_traces(
     max_steps: int = 5,
     public_k: int = 1,
     require_tool_use: bool = True,
+    prompt_mode: str = "confirm",
 ) -> Dict[str, Any]:
     """Keep ONLY verified trajectories (held-back tests passed). With require_tool_use, also require the
     model actually called a tool -- so the corpus teaches ORCHESTRATION, not just lucky one-shot answers."""
@@ -235,7 +260,7 @@ def harvest_tool_traces(
     attempted = with_tool_use = 0
     for p in problems:
         attempted += 1
-        tr = solve_with_tools(p, ask, tools, max_steps, public_k)
+        tr = solve_with_tools(p, ask, tools, max_steps, public_k, prompt_mode=prompt_mode)
         if tr["used_tool"]:
             with_tool_use += 1
         if tr["verified"] and (tr["used_tool"] or not require_tool_use):
@@ -247,6 +272,7 @@ def harvest_tool_traces(
                         "task_id": p.get("task_id"),
                         "tool_calls": tr["tool_calls"],
                         "tools_used": tr["tools_used"],
+                        "prompt_mode": prompt_mode,
                         "source": "tool_trajectory",
                     },
                 }

@@ -11,6 +11,16 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from python.scbe.governed_tools import GovernedToolbox, demo, governed_callables  # noqa: E402
+from python.helm.governed_tools import build_governed_tools  # noqa: E402
+from python.helm.tool_trajectory import solve_with_tools  # noqa: E402
+
+PROBLEM = {
+    "task_id": 1,
+    "text": "Write add(a, b) returning a + b.",
+    "code": "def add(a, b):\n    return a + b\n",
+    "test_list": ["assert add(1, 2) == 3", "assert add(0, 0) == 0", "assert add(-1, 1) == 0"],
+    "test_imports": [],
+}
 
 
 def test_destructive_run_code_is_refused_before_running():
@@ -73,3 +83,19 @@ def test_demo_refuses_destructive_and_seals():
     assert out["destructive_refused"] is True
     assert out["benign_passed"] is True
     assert out["sealed"] is True
+
+
+def test_helm_adapter_feeds_governed_tools_to_tool_trajectory():
+    tools, box = build_governed_tools(PROBLEM)
+
+    def ask(msgs):
+        if not any(m["role"] == "user" and m["content"].startswith("TOOL run_code:") for m in msgs):
+            return "```python\ndef add(a, b):\n    return a + b\n```\nCALL run_code"
+        return "ANSWER:\n```python\ndef add(a, b):\n    return a + b\n```"
+
+    tr = solve_with_tools(PROBLEM, ask, tools=tools, max_steps=4)
+
+    assert tr["verified"] is True
+    assert tr["used_tool"] is True
+    assert box.verify() is True
+    assert box.receipts[0]["tool"] == "run_code"
