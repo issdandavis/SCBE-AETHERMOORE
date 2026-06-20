@@ -37,12 +37,18 @@ jobs:
         run: npm run build
 
       - name: Verify version
+        env:
+          DISPATCH_VERSION: ${{ inputs.version }}
         run: |
           PKG_VER=$(node -p "require('./package.json').version")
           if [ "${{ github.event_name }}" = "push" ]; then
             TAG="${GITHUB_REF#refs/tags/agent-bus/v}"
           else
-            TAG="${{ inputs.version }}"
+            TAG="${DISPATCH_VERSION}"
+          fi
+          if ! [[ "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Invalid version format: $TAG"
+            exit 1
           fi
           if [ "$PKG_VER" != "$TAG" ]; then
             echo "::error::package.json version ($PKG_VER) does not match expected ($TAG)"
