@@ -62,7 +62,10 @@ EXACT: Dict[str, Tuple[int, object]] = {
     "round": (1, lambda a: float(round(a))),
     "inc": (1, lambda a: a + 1),
     "dec": (1, lambda a: a - 1),
-    # --- ops added to the verified portable core (kept in sync with polyglot) ---
+    # --- ops added to the verified portable core. Same NAMES + same value on the valid domain as the
+    # polyglot faces; these EXACT impls additionally guard domain edges (log x<=0, exp overflow, bitwise
+    # on non-finite) so this pure-python fitness reference can't crash -- the polyglot emit faces are
+    # bare there (verified only on the valid domain, raising in unsafe mode like sqrt). ---
     "sign": (1, lambda a: 1.0 if a > 0 else (-1.0 if a < 0 else 0.0)),
     "log": (1, lambda a: math.log(a) if a > 0 else 0.0),  # safe domain (x>0), else roundabout 0.0
     "exp": (1, lambda a: math.exp(a) if a < 709 else math.inf),  # guard overflow (e^709 ~ max f64)
