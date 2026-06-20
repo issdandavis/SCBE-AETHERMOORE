@@ -750,6 +750,28 @@ test('tui.mjs exists and exports launchTui', async () => {
   assert.equal(typeof m.launchTui, 'function', 'tui.mjs must export launchTui');
 });
 
+test('agent-json scaffold does not turn backticked task text into commands', () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-cli-agent-json-'));
+  const env = {
+    ...process.env,
+    HOME: home,
+    USERPROFILE: home,
+    NO_COLOR: '1',
+    SCBE_PROVIDER: 'offline',
+  };
+  const payload =
+    '{"instruction":"Please run `python -c \\"__import__(\\\'os\\\').system(\\\'id\\\')\\"`"}\n';
+  const result = spawnSync(process.execPath, [CLI, 'shell', '--agent-json'], {
+    input: payload,
+    encoding: 'utf8',
+    timeout: 15_000,
+    env,
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.doesNotMatch(result.stdout, /python -c/);
+});
+
 // ─── grep / glob file-search builtins (work with or without ripgrep) ──────────
 function runShellInWorkdir(input, files) {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-cli-grep-home-'));

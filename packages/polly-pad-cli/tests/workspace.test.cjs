@@ -611,7 +611,59 @@ test('polly cross translate --dry-run shows prompt', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Test 26: polly ps list discovers PowerShell scripts from POLLY_PS_ROOT
+// Test 26: terminal AI router must be resolved from Polly's trusted repo
+// ---------------------------------------------------------------------------
+test('polly terminal router ignores attacker-controlled current git repository', () => {
+  const dir = mktemp();
+  try {
+    const evilRouterDir = path.join(dir, 'scripts', 'system');
+    fs.mkdirSync(evilRouterDir, { recursive: true });
+    fs.writeFileSync(path.join(evilRouterDir, 'terminal_ai_router.py'), 'print("evil router")\n', 'utf8');
+    spawnSync('git', ['init'], { cwd: dir, encoding: 'utf8' });
+
+    const pythonStub = path.join(dir, process.platform === 'win32' ? 'python-stub.cmd' : 'python-stub');
+    const argvPath = path.join(dir, 'router-argv.json');
+    if (process.platform === 'win32') {
+      fs.writeFileSync(
+        pythonStub,
+        '@echo off\r\nnode -e "require(\'fs\').writeFileSync(process.env.POLLY_ROUTER_ARGV_PATH, JSON.stringify(process.argv.slice(1))); console.log(\'trusted router ok\')" %*\r\n',
+        'utf8'
+      );
+    } else {
+      fs.writeFileSync(
+        pythonStub,
+        '#!/usr/bin/env node\n' +
+          'require("fs").writeFileSync(process.env.POLLY_ROUTER_ARGV_PATH, JSON.stringify(process.argv.slice(2)));\n' +
+          'console.log("trusted router ok");\n',
+        'utf8'
+      );
+      fs.chmodSync(pythonStub, 0o755);
+    }
+
+    const result = run(
+      dir,
+      ['cross', 'translate', '--from', 'python', '--to', 'javascript', '--text', 'print(1)', '--json'],
+      {
+        CEREBRAS_API_KEY: 'fake-test-key',
+        PYTHON: pythonStub,
+        POLLY_ROUTER_ARGV_PATH: argvPath,
+      }
+    );
+
+    assert.strictEqual(result.status, 0, 'translate should exit 0\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
+    const data = JSON.parse(result.stdout);
+    assert.strictEqual(data.model_used, 'terminal-ai-router');
+    assert.ok(fs.existsSync(argvPath), 'trusted router stub should be invoked');
+    const argv = JSON.parse(fs.readFileSync(argvPath, 'utf8'));
+    assert.strictEqual(argv[0], path.resolve(__dirname, '..', '..', '..', 'scripts', 'system', 'terminal_ai_router.py'));
+    assert.notStrictEqual(argv[0], path.join(evilRouterDir, 'terminal_ai_router.py'));
+  } finally {
+    cleanup(dir);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Test 27: polly ps list discovers PowerShell scripts from POLLY_PS_ROOT
 // ---------------------------------------------------------------------------
 test('polly ps list discovers PowerShell scripts from POLLY_PS_ROOT', () => {
   const dir = mktemp();
@@ -691,38 +743,6 @@ test('polly ps run is dry-run by default and renders named params', () => {
     cleanup(dir);
   }
 });
-// ---------------------------------------------------------------------------
-// Test 31: polly ps run dry-run does not execute PATH-resolved pwsh probes
-// ---------------------------------------------------------------------------
-test('polly ps run dry-run does not execute PATH-resolved pwsh probes', () => {
-  const dir = mktemp();
-  const binDir = mktemp();
-  try {
-    run(dir, ['init', 'PsRunNoProbeTest']);
-    fs.writeFileSync(path.join(dir, 'echo.ps1'), 'Write-Output "hello"\n', 'utf8');
-
-    const marker = path.join(dir, 'pwsh-probe-ran.txt');
-    const fakePwsh = path.join(binDir, process.platform === 'win32' ? 'pwsh.cmd' : 'pwsh');
-    const fakePwshBody =
-      process.platform === 'win32'
-        ? '@echo off\r\necho probe > "' + marker + '"\r\nexit /b 0\r\n'
-        : '#!/bin/sh\necho probe > "' + marker + '"\nexit 0\n';
-    fs.writeFileSync(fakePwsh, fakePwshBody, 'utf8');
-    if (process.platform !== 'win32') fs.chmodSync(fakePwsh, 0o755);
-
-    const result = run(dir, ['ps', 'run', 'echo', '--json'], {
-      POLLY_PS_ROOT: dir,
-      PATH: binDir + path.delimiter + process.env.PATH,
-    });
-    assert.strictEqual(result.status, 0, 'ps run dry-run should exit 0\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
-    const payload = JSON.parse(result.stdout);
-    assert.strictEqual(payload.dry_run, true);
-    assert.strictEqual(fs.existsSync(marker), false, 'dry-run must not execute pwsh discovery probes');
-  } finally {
-    cleanup(dir);
-    cleanup(binDir);
-  }
-});
 
 // ---------------------------------------------------------------------------
 // Test 29: polly next emits a deterministic operator packet
@@ -762,5 +782,38 @@ test('polly next handles an empty workspace', () => {
     assert.ok(payload.suggested_commands.some((cmd) => cmd.includes('polly task add')));
   } finally {
     cleanup(dir);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// polly ps run dry-run does not execute PATH-resolved pwsh probes
+// ---------------------------------------------------------------------------
+test('polly ps run dry-run does not execute PATH-resolved pwsh probes', () => {
+  const dir = mktemp();
+  const binDir = mktemp();
+  try {
+    run(dir, ['init', 'PsRunNoProbeTest']);
+    fs.writeFileSync(path.join(dir, 'echo.ps1'), 'Write-Output "hello"\n', 'utf8');
+
+    const marker = path.join(dir, 'pwsh-probe-ran.txt');
+    const fakePwsh = path.join(binDir, process.platform === 'win32' ? 'pwsh.cmd' : 'pwsh');
+    const fakePwshBody =
+      process.platform === 'win32'
+        ? '@echo off\r\necho probe > "' + marker + '"\r\nexit /b 0\r\n'
+        : '#!/bin/sh\necho probe > "' + marker + '"\nexit 0\n';
+    fs.writeFileSync(fakePwsh, fakePwshBody, 'utf8');
+    if (process.platform !== 'win32') fs.chmodSync(fakePwsh, 0o755);
+
+    const result = run(dir, ['ps', 'run', 'echo', '--json'], {
+      POLLY_PS_ROOT: dir,
+      PATH: binDir + path.delimiter + process.env.PATH,
+    });
+    assert.strictEqual(result.status, 0, 'ps run dry-run should exit 0\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.strictEqual(payload.dry_run, true);
+    assert.strictEqual(fs.existsSync(marker), false, 'dry-run must not execute pwsh discovery probes');
+  } finally {
+    cleanup(dir);
+    cleanup(binDir);
   }
 });
