@@ -66,3 +66,28 @@ def test_repair_generator_only_sees_public_not_hidden(monkeypatch):
     gen = fg.make_repair_generator(model="mock", rounds=2, public_k=1)
     gen({"prompt": "p", "test_list": ["assert f()==1", "assert f()==2  # HIDDEN"], "test_imports": []})
     assert not any("HIDDEN" in s for s in seen)  # the hidden assert never reached the model
+
+
+def test_stuck_prior_detector_escalates_to_restructure(monkeypatch):
+    # model returns the SAME failing code on retry -> detector fires -> next prompt says STUCK and
+    # demands a different approach; when the model finally complies, the fix lands.
+    calls = []
+
+    def fake_chat(messages, **kw):
+        content = messages[0]["content"]
+        calls.append(content)
+        if "STUCK" in content:
+            return "def add(a, b):\n    return a + b"  # the restructured (correct) attempt
+        return "def add(a, b):\n    return a - b"  # the stuck prior: same wrong code, repeated
+
+    monkeypatch.setattr(fg, "_chat", fake_chat)
+    gen = fg.make_repair_generator(model="mock", rounds=4)
+    out = gen({"prompt": "add a and b", "test_list": ["assert add(1,2)==3", "assert add(2,2)==4"], "test_imports": []})
+    assert any("STUCK" in c for c in calls)  # the detector escalated after the repeated failure
+    assert "a + b" in out  # and the restructure broke the loop
+
+
+def test_norm_code_ignores_cosmetic_differences():
+    a = "def f(x):\n    return x + 1\n"
+    b = "def f(x):\n\n    # a comment\n    return x + 1\n"
+    assert fg._norm_code(a) == fg._norm_code(b)

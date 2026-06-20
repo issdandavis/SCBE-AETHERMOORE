@@ -119,6 +119,18 @@ def _diagnose(code: str, asserts: Sequence[str], imports: Sequence[str], timeout
     return list(asserts)
 
 
+def _norm_code(code: str) -> str:
+    """Normalize code for stuck-detection: drop blank/comment-only lines and collapse whitespace, so
+    cosmetic edits don't hide that the model is regenerating the SAME approach (its stuck prior)."""
+    out = []
+    for line in (code or "").splitlines():
+        s = line.strip()
+        if not s or s.startswith("#"):
+            continue
+        out.append(" ".join(s.split()))
+    return "\n".join(out)
+
+
 def make_repair_generator(
     base: Optional[str] = None,
     key: Optional[str] = None,
@@ -129,9 +141,13 @@ def make_repair_generator(
     """Execution-feedback repair -- the CODE-ladder analog of routing reasoning through execution.
 
     The model writes code; we RUN it against the PUBLIC example(s) only and, on failure, feed the code
-    plus the failing assert back and let it fix, up to `rounds` times. Hidden tests stay held out (the
-    model never sees them), so any gain is honest lift, not leakage. Same model -- only the routing
-    changed: the executor checks the model's choice and the error corrects it."""
+    plus a got-vs-expected diagnosis back and let it fix, up to `rounds` times. Hidden tests stay held
+    out (the model never sees them), so any gain is honest lift, not leakage.
+
+    STUCK-PRIOR DETECTOR: plain "fix it" retries hit the same reflex (e.g. the memorized fizzbuzz keeps
+    coming back). When the model REGENERATES an approach it already tried, that is its stuck prior --
+    so the next round escalates from "fix this" to "you are stuck, solve it a STRUCTURALLY DIFFERENT
+    way", which attacks the prior-override wall instead of bouncing off it."""
     base = base or os.environ.get("SCBE_LLM_BASE", DEFAULT_BASE)
     key = key or os.environ.get("SCBE_LLM_KEY", "ollama")
     model = model or os.environ.get("SCBE_LLM_MODEL", DEFAULT_MODEL)
@@ -140,27 +156,44 @@ def make_repair_generator(
     def generator(problem: Dict[str, Any]) -> str:
         from . import public_bench as pb  # lazy import avoids any cycle
 
+        head = (problem.get("prompt") or problem.get("text") or "").strip()
         public = list(problem.get("test_list", []))[:public_k]
         imports = list(problem.get("test_imports", []))
         code = first(problem)
+        seen = {_norm_code(code)}  # approaches already tried
+        stuck = False
         for _ in range(rounds):
             res = pb._verify(code, public, [], imports)  # PUBLIC only; hidden never shown
             if res.get("public_passed"):
                 break
-            diag = _diagnose(code, public, imports)
-            feedback = "\n".join(str(d) for d in diag)[:700]
-            prompt = (
-                (problem.get("prompt") or problem.get("text") or "").strip()
-                + "\n\nYour previous code:\n"
-                + code
-                + "\n\nIt FAILED these checks (showing got vs expected):\n"
-                + feedback
-                + "\nFix the function so every check passes. Return ONLY corrected Python code."
-            )
+            feedback = "\n".join(str(d) for d in _diagnose(code, public, imports))[:700]
+            if stuck:
+                # the model keeps regenerating the same failing approach -> force a different one
+                prompt = (
+                    head
+                    + "\n\nYou are STUCK: you keep producing essentially the same solution and it keeps failing the"
+                    + " SAME check. Do NOT reuse your previous approach or structure. Solve it a DIFFERENT way --"
+                    + " handle every condition explicitly and in the right order (including combined/overlapping"
+                    + " cases), and make sure the failing input below is handled.\n\nFailing check (got vs expected):\n"
+                    + feedback
+                    + "\nReturn ONLY new Python code, structured differently."
+                )
+            else:
+                prompt = (
+                    head
+                    + "\n\nYour previous code:\n"
+                    + code
+                    + "\n\nIt FAILED these checks (showing got vs expected):\n"
+                    + feedback
+                    + "\nFix the function so every check passes. Return ONLY corrected Python code."
+                )
             try:
                 code = strip_to_code(_chat([{"role": "user", "content": prompt}], base=base, key=key, model=model))
             except Exception:
                 break
+            n = _norm_code(code)
+            stuck = n in seen  # regenerated an approach already tried -> escalate next round
+            seen.add(n)
         return code
 
     generator.__name__ = "repair_llm(%s,r=%d)" % (model, rounds)
