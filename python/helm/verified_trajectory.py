@@ -178,6 +178,57 @@ def harvest_traces(
     }
 
 
+def refine(records: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
+    """Refine a harvested corpus: drop degenerate records, dedup by task (prefer a REPAIR trace --
+    it teaches recovery -- over a clean first-try), and tag each station (1 attempt) vs manager
+    (>1, has a repair loop). Returns the refined records + the distribution."""
+    by_task: Dict[Any, Dict[str, Any]] = {}
+    for r in records:
+        final = next((m["content"] for m in reversed(r["messages"]) if m["role"] == "assistant"), "")
+        if len(final.strip()) < 10:  # degenerate / empty solution
+            continue
+        r["meta"]["grade"] = "manager" if r["meta"].get("repaired") else "station"
+        key = r["meta"].get("task_id")
+        key = key if key is not None else id(r)
+        cur = by_task.get(key)
+        if cur is None or (r["meta"].get("repaired") and not cur["meta"].get("repaired")):
+            by_task[key] = r  # prefer the repair trace when a task has both
+    refined = list(by_task.values())
+    station = sum(1 for r in refined if r["meta"]["grade"] == "station")
+    return {
+        "records": refined,
+        "total": len(refined),
+        "station": station,
+        "manager": len(refined) - station,
+        "deduped_from": len(records),
+    }
+
+
+def harvest_multi(
+    problems: Sequence[Dict[str, Any]],
+    asks: Dict[str, Callable[[str], str]],
+    public_k: int = 1,
+    rounds: int = 3,
+) -> Dict[str, Any]:
+    """Run several models (asks = {name: ask}) over the same problems, UNION the verified traces, then
+    refine. More models = more coverage: a problem one model can't solve, another might. Each record
+    is tagged with the model that produced it."""
+    pooled: List[Dict[str, Any]] = []
+    per_model: Dict[str, int] = {}
+    for name, ask in asks.items():
+        r = harvest_traces(problems, ask, public_k, rounds)
+        per_model[name] = r["verified"]
+        for rec in r["records"]:
+            rec["meta"]["model"] = name
+        pooled.extend(r["records"])
+    out = refine(pooled)
+    out["per_model"] = per_model
+    out["attempted"] = len(problems)
+    out["verified"] = out["total"]
+    out["verified_rate"] = round(out["total"] / (len(problems) or 1), 3)
+    return out
+
+
 def write_dataset(result: Dict[str, Any], out_path: str) -> Dict[str, Any]:
     """Write the verified SFT records + a manifest next to them. Returns the manifest."""
     out = Path(out_path)
@@ -193,6 +244,9 @@ def write_dataset(result: Dict[str, Any], out_path: str) -> Dict[str, Any]:
         "verified_rate": result["verified_rate"],
         "note": "Every record passed held-out hidden tests by execution (rejection-sampled). No unverified data.",
     }
+    for k in ("station", "manager", "deduped_from", "per_model"):  # refinement stats, when present
+        if k in result:
+            manifest[k] = result[k]
     out.with_suffix(".manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     return manifest
 
