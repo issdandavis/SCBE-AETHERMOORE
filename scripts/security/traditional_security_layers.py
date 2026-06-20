@@ -12,7 +12,6 @@ import argparse
 import hashlib
 import json
 import math
-import sys
 import tempfile
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone

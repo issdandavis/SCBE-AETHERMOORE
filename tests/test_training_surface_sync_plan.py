@@ -148,7 +148,9 @@ def test_render_markdown_includes_dispatch_and_kaggle_commands() -> None:
                 "missing_files": [],
                 "dataset_files": [
                     {
-                        "upload_command": "hf upload owner/dataset training-data/sft/train.jsonl train.jsonl --repo-type dataset",
+                        "upload_command": (
+                            "hf upload owner/dataset training-data/sft/train.jsonl train.jsonl --repo-type dataset"
+                        ),
                         "split": "train",
                         "exists": True,
                     }

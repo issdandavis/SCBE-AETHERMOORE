@@ -10,7 +10,6 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
-
 ROOT = Path(__file__).resolve().parent.parent
 OUTPUT_PATH = ROOT / "artifacts" / "webtoon" / "panel_prompts" / "ch01_prompts_v4.json"
 PREVIEW_DIR = ROOT / "artifacts" / "webtoon" / "ch01" / "v4_preview"

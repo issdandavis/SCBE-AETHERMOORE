@@ -976,8 +976,10 @@ _AGGREGATION = [
         feat=(51, 4, 3, 1, 0.3, 3, 3, 0),
         code={
             "KO": "statistics.variance({xs})",
-            "AV": "(() => {{ const m = {xs}.reduce((a,b)=>a+b,0)/{xs}.length; return {xs}.reduce((s,x)=>s+(x-m)**2,0)/{xs}.length; }})()",
-            "RU": "{{ let m: f64 = {xs}.iter().sum::<f64>()/{xs}.len() as f64; {xs}.iter().map(|x| (x-m).powi(2)).sum::<f64>()/{xs}.len() as f64 }}",
+            "AV": "(() => {{ const m = {xs}.reduce((a,b)=>a+b,0)/{xs}.length; "
+            "return {xs}.reduce((s,x)=>s+(x-m)**2,0)/{xs}.length; }})()",
+            "RU": "{{ let m: f64 = {xs}.iter().sum::<f64>()/{xs}.len() as f64; "
+            "{xs}.iter().map(|x| (x-m).powi(2)).sum::<f64>()/{xs}.len() as f64 }}",
             "CA": "variance_of({xs})",
             "UM": "var({xs})",
             "DR": "(variance {xs})",
@@ -1256,7 +1258,7 @@ def validate():
         errors.append(f"Expected 64 entries, got {len(LEXICON)}")
     ids = sorted(LEXICON.keys())
     if ids != list(range(64)):
-        errors.append(f"ID range broken")
+        errors.append("ID range broken")
     for _eid, entry in LEXICON.items():
         if entry.trit[3] != 1:
             errors.append(f"{entry.name}: CA channel must be +1")
@@ -1270,7 +1272,7 @@ def validate():
         for e in errors:
             print(f"  ✗ {e}")
         return False
-    print(f"PASSED: 64 ops × 6 languages = 384 code snippets, all present")
+    print("PASSED: 64 ops × 6 languages = 384 code snippets, all present")
     return True
 
 
@@ -1288,11 +1290,11 @@ def demo():
         lang = LANG_MAP[tongue]
         print(f"  {tongue} ({lang:>10}): {code}")
 
-    print(f"\n--- trit vector for 'xor' ---")
+    print("\n--- trit vector for 'xor' ---")
     print(f"  {trit_vector('xor')}")
     print(f"  note: {lookup('xor').note}")
 
-    print(f"\n--- feature vector for 'reduce' ---")
+    print("\n--- feature vector for 'reduce' ---")
     print(f"  {feature_vector('reduce')}")
     print(f"  chi={lookup('reduce').chi}, valence={lookup('reduce').valence}")
 

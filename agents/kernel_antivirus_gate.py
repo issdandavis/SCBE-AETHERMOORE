@@ -18,13 +18,14 @@ Expected integration:
 
 from __future__ import annotations
 
+import dataclasses
 from dataclasses import asdict, dataclass
 from typing import Any, Iterable, Literal
 import re
 
 from agents.antivirus_membrane import ThreatScan, scan_text_for_threats
+from agents.hyperbolic_scanner import scan_boundary_state
 from hydra.turnstile import TurnstileOutcome, resolve_turnstile
-
 
 KernelAction = Literal["ALLOW", "THROTTLE", "QUARANTINE", "KILL", "HONEYPOT"]
 
@@ -286,4 +287,55 @@ def evaluate_kernel_event(
         isolate_process=isolate_process,
         quarantine_target=quarantine_target,
         notes=tuple(notes),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Hyperbolic-scanner adapter — auto-computes geometry_norm from a numeric
+# state vector so callers do not have to supply it manually.
+# ---------------------------------------------------------------------------
+
+
+def geometry_norm_from_state(state_vector: Iterable[float]) -> float:
+    """Return the Poincaré-ball norm for *state_vector* via hyperbolic_scanner."""
+    return scan_boundary_state(state_vector)["norm"]
+
+
+def evaluate_kernel_event_with_state(
+    event: KernelEvent | dict[str, Any],
+    state_vector: Iterable[float] | None = None,
+    *,
+    previous_antibody_load: float = 0.0,
+    extra_prompt_patterns: Iterable[str] = (),
+    extra_malware_patterns: Iterable[str] = (),
+) -> KernelGateResult:
+    """
+    Evaluate a kernel event with optional automatic geometry_norm computation.
+
+    If *state_vector* is supplied, the Poincaré-ball norm is computed via
+    hyperbolic_scanner and *replaces* any geometry_norm already on the event.
+    This is the preferred call path for inter-system handoffs where a numeric
+    payload is available.
+
+    If *state_vector* is None, the event's geometry_norm field is used
+    unchanged — callers that compute geometry_norm themselves and set it on
+    the KernelEvent directly are still fully supported.
+
+    Policy: scanner-computed norm always wins over event-embedded norm when
+    state_vector is provided.  If you need the reverse, compute the norm
+    yourself via geometry_norm_from_state() and pass it on the event instead
+    of using this wrapper.
+    """
+    if not isinstance(event, KernelEvent):
+        event = KernelEvent.from_dict(event)
+
+    if state_vector is not None:
+        scanner_norm = geometry_norm_from_state(state_vector)
+        event = dataclasses.replace(event, geometry_norm=scanner_norm)
+
+    return evaluate_kernel_event(
+        event,
+        previous_antibody_load=previous_antibody_load,
+        extra_prompt_patterns=extra_prompt_patterns,
+        extra_malware_patterns=extra_malware_patterns,
     )

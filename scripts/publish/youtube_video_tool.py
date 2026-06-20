@@ -26,6 +26,9 @@ DEFAULT_WORDS_PER_SECOND = 2.6
 DEFAULT_TAIL_SECONDS = 8.0
 DEFAULT_MIN_SCORE = 80
 CTA_PATTERN = re.compile(r"\b(subscribe|notification|bell|like|comment|share)\b", re.IGNORECASE)
+RECAP_PATTERN = re.compile(r"\b(previously|last time|last chapter|recap|what happened before)\b", re.IGNORECASE)
+CHAPTER_SETUP_PATTERN = re.compile(r"\b(this chapter|in this episode|today we|we begin|chapter \d+)\b", re.IGNORECASE)
+NEXT_LEAD_PATTERN = re.compile(r"\b(next chapter|next time|next episode|coming up|sets up|stay tuned)\b", re.IGNORECASE)
 
 
 @dataclass(frozen=True)
@@ -58,6 +61,40 @@ class ScriptPlan:
     word_count: int = 0
     expected_seconds: float | None = None
     final_words: str = ""
+
+
+@dataclass(frozen=True)
+class ChapterPackage:
+    """Viewer-facing chapter framing detected in the upload package text."""
+
+    recap_present: bool
+    chapter_setup_present: bool
+    outro_present: bool
+    next_lead_present: bool
+    required: bool = False
+
+
+def build_chapter_package(
+    *,
+    package_text: str,
+    script: ScriptPlan,
+    require_chapter_package: bool = False,
+) -> ChapterPackage:
+    """Detect recap / chapter-setup / outro / next-lead framing in the viewer package.
+
+    ``package_text`` is the upload-facing text (description plus transcript
+    tail). The script's final words also count toward detection, since closing
+    CTA and lead-in language often live in the narration rather than the
+    description.
+    """
+    haystack = " ".join(part for part in (package_text, script.final_words) if part)
+    return ChapterPackage(
+        recap_present=bool(RECAP_PATTERN.search(haystack)),
+        chapter_setup_present=bool(CHAPTER_SETUP_PATTERN.search(haystack)),
+        outro_present=bool(CTA_PATTERN.search(haystack)),
+        next_lead_present=bool(NEXT_LEAD_PATTERN.search(haystack)),
+        required=require_chapter_package,
+    )
 
 
 @dataclass(frozen=True)

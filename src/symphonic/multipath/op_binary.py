@@ -203,7 +203,7 @@ if __name__ == "__main__":
 
     print(f"\ninteractions: {ledger.interactions}")
     print(f"remaps fired: {ledger.remap_count}")
-    print(f"widest KO paths:")
+    print("widest KO paths:")
     ko_paths = sorted(
         ((o, ledger.path_width(o, "KO")) for o in Op),
         key=lambda kv: -kv[1],

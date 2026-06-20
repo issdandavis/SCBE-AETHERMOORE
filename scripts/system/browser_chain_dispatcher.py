@@ -16,7 +16,6 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List
 from urllib.parse import urlparse
 
-
 _AUTO_TASKS = {"", "auto", "default"}
 _GENERIC_NAVIGATION_TASKS = {"browse", "navigate", "open", "view"}
 _SEARCH_HINT_KEYS = (

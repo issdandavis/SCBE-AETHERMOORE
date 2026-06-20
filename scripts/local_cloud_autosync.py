@@ -20,7 +20,6 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Tuple
 from urllib.parse import urlparse
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_CONFIG = "training/local_cloud_sync.json"
 DEFAULT_RUN_ROOT = "training/runs/local_cloud_sync"

@@ -23,9 +23,7 @@ import sys
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="HF Jobs launch template (DSL / TRL lanes)"
-    )
+    parser = argparse.ArgumentParser(description="HF Jobs launch template (DSL / TRL lanes)")
     parser.add_argument(
         "--flavor",
         default="l4x1",
@@ -48,10 +46,7 @@ def main() -> int:
 
     detach = " --detach" if args.detach else ""
     print("[hf_jobs] Hugging Face CLI found. Example job invocation:\n")
-    print(
-        f"  hf jobs uv run --flavor {args.flavor}{detach} "
-        "scripts/path/to/your_pep723_train_script.py\n"
-    )
+    print(f"  hf jobs uv run --flavor {args.flavor}{detach} " "scripts/path/to/your_pep723_train_script.py\n")
     print("[hf_jobs] For SCBE coding-agent UV scripts, see:")
     print("  npm run training:dispatch-coding-agent")
     print("[hf_jobs] For surface overview (Colab + Kaggle + HF):")

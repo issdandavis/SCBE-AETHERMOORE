@@ -30,6 +30,30 @@ def test_cli_exposes_ca_plan_compiler() -> None:
     assert payload["hex_sequence"] == ["0x09", "0x09", "0x00"]
 
 
+def test_cli_version_reports_cli_and_core_versions() -> None:
+    proc = run_cli("version", "--json")
+
+    assert proc.returncode == 0, proc.stderr
+    payload = json.loads(proc.stdout)
+    assert payload["schema_version"] == "scbe_aethermoore_cli_version_v1"
+    assert payload["cli_package"] == "scbe-aethermoore-cli"
+    assert payload["cli_version"]
+    assert payload["core_package"] == "scbe-aethermoore"
+    assert payload["core_version"]
+
+
+def test_cli_doctor_wraps_geoseal_with_cli_version_context() -> None:
+    proc = run_cli("doctor", "--json")
+
+    assert proc.returncode == 0, proc.stderr
+    payload = json.loads(proc.stdout)
+    assert payload["schema_version"] == "scbe_aethermoore_cli_doctor_v1"
+    assert payload["cli_version"]
+    assert payload["core_version"]
+    assert payload["cli_package_bin"]["scbe"] == "bin/scbe.js"
+    assert payload["geoseal_doctor"]["ok"] is True
+
+
 def test_cli_demo_outputs_governed_magic_moment() -> None:
     proc = run_cli("demo", "--json")
 
@@ -84,6 +108,10 @@ def test_cli_run_wraps_normal_terminal_command_with_metadata() -> None:
 
 
 def test_cli_status_reports_terminal_capabilities() -> None:
+    # The flow workspace dirs are runtime-created (artifacts/ is gitignored);
+    # this test checks that status REPORTS them, so provision them first.
+    (REPO_ROOT / "artifacts" / "flow_status").mkdir(parents=True, exist_ok=True)
+
     proc = run_cli("status")
 
     assert proc.returncode == 0, proc.stderr
@@ -120,11 +148,17 @@ def test_cli_liboqs_reports_native_proof_receipt() -> None:
 
 
 def test_cli_liboqs_reports_source_checkout_required_outside_repo(tmp_path: Path) -> None:
+    # Simulate an installed npm package: copy the whole CLI package (bin + lib +
+    # package.json) into node_modules, not just bin/scbe.js. scbe.js eagerly
+    # requires ../lib/*, so a bin-only copy can never load — and from this
+    # location repoRoot() resolves to tmp_path (no src/ tree), which is exactly
+    # the "source checkout required" condition under test.
+    package_src = CLI.parent.parent
     package_root = tmp_path / "node_modules" / "scbe-aethermoore-cli"
-    bin_dir = package_root / "bin"
-    bin_dir.mkdir(parents=True)
-    copied_cli = bin_dir / "scbe.js"
-    shutil.copy2(CLI, copied_cli)
+    shutil.copytree(package_src / "bin", package_root / "bin")
+    shutil.copytree(package_src / "lib", package_root / "lib")
+    shutil.copy2(package_src / "package.json", package_root / "package.json")
+    copied_cli = package_root / "bin" / "scbe.js"
 
     proc = subprocess.run(
         ["node", str(copied_cli), "liboqs", "--json"],

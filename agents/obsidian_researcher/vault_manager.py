@@ -131,7 +131,4 @@ class VaultManager:
 
     def list_all_pages(self) -> List[str]:
         """Return every ``.md`` filename (without extension) under the vault."""
-        return sorted(
-            md_file.stem
-            for md_file in self.vault_root.rglob("*.md")
-        )
+        return sorted(md_file.stem for md_file in self.vault_root.rglob("*.md"))

@@ -318,7 +318,17 @@ class RWPv3Protocol:
         # Derive encryption key
         key = self._derive_key(password, salt)
 
-        # AEAD encryption: ChaCha20-Poly1305
+        # Hybrid PQC key exchange: encapsulate a shared secret to the recipient's
+        # ML-KEM-768 public key and mix it into the AEAD key BEFORE encrypting, so
+        # only a holder of the matching secret key (plus the password) can open the
+        # envelope. decrypt() reverses this by decapsulating and XOR-ing the same
+        # shared secret back out — the two paths must stay symmetric.
+        ml_kem_ct_bytes = None
+        if self.enable_pqc and ml_kem_public_key:
+            ml_kem_ct_bytes, ml_kem_shared_secret = self.kem.encap_secret(ml_kem_public_key)
+            key = bytes(a ^ b for a, b in zip(key, ml_kem_shared_secret[:32]))
+
+        # AEAD encryption: ChaCha20-Poly1305 (over the KEM-augmented key)
         if CHACHA_AVAILABLE:
             aead_nonce = _derive_chacha20poly1305_nonce(nonce)
             cipher = ChaCha20Poly1305(key)
@@ -329,8 +339,15 @@ class RWPv3Protocol:
             ct = plaintext
             tag = secrets.token_bytes(16)
 
-        ml_kem_ct_bytes = None
+        # Optional ML-DSA-65 signature over the envelope material. (Receipt-level
+        # signing is also available via agents/agent_bus_signing.EventSigner; this
+        # is the in-envelope variant that decrypt() verifies when a public key is
+        # supplied.)
         ml_dsa_sig_bytes = None
+        if self.enable_pqc and ml_dsa_private_key:
+            message = aad + salt + nonce + ct + tag
+            with oqs.Signature(_SIG_ALG, secret_key=ml_dsa_private_key) as signer:
+                ml_dsa_sig_bytes = signer.sign(message)
 
         # Encode all sections as Sacred Tongue tokens
         envelope = RWPEnvelope(
@@ -380,11 +397,14 @@ class RWPv3Protocol:
         except Exception:
             key = b"\x00" * 32
 
-        # Optional: Hybrid PQC key exchange
+        # Optional: Hybrid PQC key exchange — decapsulate with the recipient's
+        # secret key and XOR the shared secret back out (mirror of encrypt()).
+        # liboqs decap_secret(ciphertext) uses the secret key bound to the object,
+        # so construct a KeyEncapsulation around the supplied secret key.
         if self.enable_pqc and envelope.ml_kem_ct and ml_kem_secret_key:
             ml_kem_ct_bytes = self.tokenizer.decode_section("redact", envelope.ml_kem_ct)
-            ml_kem_shared_secret = self.kem.decap_secret(ml_kem_ct_bytes, ml_kem_secret_key)
-            # XOR shared secret into key
+            with oqs.KeyEncapsulation(_KEM_ALG, secret_key=ml_kem_secret_key) as kem_opener:
+                ml_kem_shared_secret = kem_opener.decap_secret(ml_kem_ct_bytes)
             key = bytes(a ^ b for a, b in zip(key, ml_kem_shared_secret[:32]))
 
         # Optional: Verify signature

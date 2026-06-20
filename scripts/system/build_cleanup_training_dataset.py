@@ -301,7 +301,7 @@ def build_record(row: InventoryRow, created_at: str) -> dict[str, Any]:
     )
     assistant = (
         f"Decision: {row.decision}. Risk: {row.risk}. Convert the cleanup lesson into metadata-only "
-        f"training data for Hugging Face and Kaggle, but do not upload raw files, caches, model weights, "
+        "training data for Hugging Face and Kaggle, but do not upload raw files, caches, model weights, "
         f"logs, local database contents, or secrets. Rationale: {row.reason}"
     )
     if row.harness_role:

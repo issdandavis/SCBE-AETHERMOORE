@@ -143,9 +143,7 @@ def _git_status_for(paths: list[Path], repo_root: Path = REPO_ROOT) -> dict[str,
     return statuses
 
 
-def build_file_record(
-    path: Path, git_status: str | None = None, *, repo_root: Path = REPO_ROOT
-) -> dict[str, Any]:
+def build_file_record(path: Path, git_status: str | None = None, *, repo_root: Path = REPO_ROOT) -> dict[str, Any]:
     rel_path = _safe_repo_relative(path, repo_root)
     if not path.exists():
         return {
@@ -205,39 +203,24 @@ def build_snapshot(
     }
 
 
-def write_snapshot(
-    snapshot: dict[str, Any], output_dir: Path = DEFAULT_OUTPUT_DIR
-) -> dict[str, Path]:
+def write_snapshot(snapshot: dict[str, Any], output_dir: Path = DEFAULT_OUTPUT_DIR) -> dict[str, Path]:
     output_dir.mkdir(parents=True, exist_ok=True)
     snapshot_path = output_dir / "file_tracking_snapshot.json"
     history_path = output_dir / "file_tracking_history.jsonl"
     changed_path = output_dir / "changed_files.json"
 
-    snapshot_path.write_text(
-        json.dumps(snapshot, indent=2, ensure_ascii=True), encoding="utf-8"
-    )
+    snapshot_path.write_text(json.dumps(snapshot, indent=2, ensure_ascii=True), encoding="utf-8")
     with history_path.open("a", encoding="utf-8") as handle:
-        handle.write(
-            json.dumps(
-                snapshot, sort_keys=True, separators=(",", ":"), ensure_ascii=True
-            )
-            + "\n"
-        )
+        handle.write(json.dumps(snapshot, sort_keys=True, separators=(",", ":"), ensure_ascii=True) + "\n")
 
     changed = {
         "schema_version": "scbe-file-tracking-changed-files-v1",
         "created_at_utc": snapshot["created_at_utc"],
         "label": snapshot["label"],
         "route": snapshot["route"],
-        "files": [
-            item
-            for item in snapshot["files"]
-            if item.get("git_status") or not item.get("exists")
-        ],
+        "files": [item for item in snapshot["files"] if item.get("git_status") or not item.get("exists")],
     }
-    changed_path.write_text(
-        json.dumps(changed, indent=2, ensure_ascii=True), encoding="utf-8"
-    )
+    changed_path.write_text(json.dumps(changed, indent=2, ensure_ascii=True), encoding="utf-8")
     return {
         "snapshot": snapshot_path,
         "history": history_path,
@@ -260,9 +243,7 @@ def _route_from_args(args: argparse.Namespace) -> FormationRoute:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Create an SCBE hash-only file tracking snapshot"
-    )
+    parser = argparse.ArgumentParser(description="Create an SCBE hash-only file tracking snapshot")
     parser.add_argument("--label", default="manual")
     parser.add_argument("--paths", nargs="*", default=list(DEFAULT_TRACKED_PATHS))
     parser.add_argument("--glob", action="append", default=[])
@@ -273,9 +254,7 @@ def main() -> int:
     parser.add_argument("--trust-class", default="governed")
     parser.add_argument("--mission-class", default="interactive")
     parser.add_argument("--locality", default="local")
-    parser.add_argument(
-        "--delivery-class", default="archive_only", choices=sorted(DELIVERY_CLASSES)
-    )
+    parser.add_argument("--delivery-class", default="archive_only", choices=sorted(DELIVERY_CLASSES))
     parser.add_argument(
         "--json",
         action="store_true",
@@ -283,9 +262,7 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    snapshot = build_snapshot(
-        args.paths, label=args.label, globs=args.glob, route=_route_from_args(args)
-    )
+    snapshot = build_snapshot(args.paths, label=args.label, globs=args.glob, route=_route_from_args(args))
     written = write_snapshot(snapshot, Path(args.output_dir))
     if args.json:
         print(

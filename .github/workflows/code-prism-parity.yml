@@ -13,6 +13,9 @@ on:
       - ".github/workflows/code-prism-parity.yml"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   parity:
     runs-on: ubuntu-latest

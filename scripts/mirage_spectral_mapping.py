@@ -18,7 +18,8 @@ implemented on Google Colab against DistilBERT, ported to repo by Claude.
 
 Usage:
   C:/Users/issda/Python312/python.exe scripts/mirage_spectral_mapping.py
-  C:/Users/issda/Python312/python.exe scripts/mirage_spectral_mapping.py --model distilbert-base-uncased --alpha 1.0 --sigma 5.0
+  C:/Users/issda/Python312/python.exe scripts/mirage_spectral_mapping.py \
+      --model distilbert-base-uncased --alpha 1.0 --sigma 5.0
 """
 
 from __future__ import annotations
@@ -252,7 +253,8 @@ def main() -> int:
     print(f"\nMirage Spectral Mapping complete: {output_path}")
     for wtype, stats in result["summary"].items():
         print(
-            f"  {wtype}: orig={stats['mean_original']:.2f} mirage={stats['mean_mirage']:.2f} survival={stats['mean_survival']:.1f}%"
+            f"  {wtype}: orig={stats['mean_original']:.2f} "
+            f"mirage={stats['mean_mirage']:.2f} survival={stats['mean_survival']:.1f}%"
         )
 
     if args.json:

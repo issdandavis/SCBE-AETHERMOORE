@@ -35,6 +35,8 @@ def test_user_cli_agentbus_run_shapes_dispatch_tracks_and_watches() -> None:
             "--budget-cents",
             "0",
             "--dispatch",
+            "--dispatch-provider",
+            "offline",
             "--json",
         ],
         cwd=ROOT,

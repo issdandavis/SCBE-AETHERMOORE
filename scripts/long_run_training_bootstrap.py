@@ -18,7 +18,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 DEFAULT_PLAN_PATH = Path("training/long_run_multicloud_training_plan.json")
 DEFAULT_RUN_ROOT = Path("training/runs")
 TIMESTAMP_FORMAT = "%Y%m%d-%H%M%SZ"

@@ -16,7 +16,6 @@ import uuid
 from pathlib import Path
 from typing import Any, Dict, Iterable, List
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DIR = REPO_ROOT / "training-data" / "sidekick"
 DEFAULT_MEMORY = DEFAULT_DIR / "sidekick_memory.jsonl"
@@ -100,12 +99,12 @@ def memory_to_sft_rows(events: Iterable[Dict[str, Any]]) -> List[Dict[str, Any]]
         tags = e.get("tags", [])
         artifacts = e.get("artifacts", [])
         prompt = (
-            f"[SIDEKICK_TASK]\n"
+            "[SIDEKICK_TASK]\n"
             f"Task: {task}\n"
             f"Context: {context or '(none)'}\n"
             f"Tags: {', '.join(tags) if tags else '(none)'}\n"
             f"Artifacts: {', '.join(artifacts) if artifacts else '(none)'}\n"
-            f"What should the sidekick do?"
+            "What should the sidekick do?"
         )
         response = f"Action plan: {action}\n" f"Expected outcome: {outcome or '(not specified)'}"
         rows.append(

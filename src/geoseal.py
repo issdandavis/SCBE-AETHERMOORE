@@ -32,11 +32,41 @@ TONGUE_PHASES: Dict[str, float] = {
     "DR": 5 * math.pi / 3,
 }
 
-# Suspicion / quarantine parameters
+# Suspicion / quarantine parameters (defaults; tune per deployment via GeoSealConfig)
 SUSPICION_DECAY = 0.5
 SUSPICION_THRESHOLD = 3
 QUARANTINE_CONSENSUS = 3
 TRUST_DENOMINATOR = 20.0
+
+
+@dataclass(frozen=True)
+class GeoSealConfig:
+    """Tunable GeoSeal parameters. Defaults preserve historical behavior exactly.
+
+    Lets deployments (and hyperparameter sweeps) tune suspicion dynamics
+    without editing module constants.
+    """
+
+    suspicion_decay: float = SUSPICION_DECAY
+    suspicion_threshold: float = SUSPICION_THRESHOLD
+    quarantine_consensus: int = QUARANTINE_CONSENSUS
+    trust_denominator: float = TRUST_DENOMINATOR
+    ball_radius: float = 0.99
+
+    def __post_init__(self) -> None:
+        if self.suspicion_decay < 0:
+            raise ValueError(f"suspicion_decay must be >= 0, got {self.suspicion_decay}")
+        if self.suspicion_threshold <= 0:
+            raise ValueError(f"suspicion_threshold must be > 0, got {self.suspicion_threshold}")
+        if self.quarantine_consensus < 1:
+            raise ValueError(f"quarantine_consensus must be >= 1, got {self.quarantine_consensus}")
+        if self.trust_denominator <= 0:
+            raise ValueError(f"trust_denominator must be > 0, got {self.trust_denominator}")
+        if not 0.0 < self.ball_radius < 1.0:
+            raise ValueError(f"ball_radius must be in (0, 1), got {self.ball_radius}")
+
+
+DEFAULT_CONFIG = GeoSealConfig()
 
 
 # ---------------------------------------------------------------------------
@@ -74,7 +104,12 @@ def hyperbolic_distance(u: List[float], v: List[float]) -> float:
     """Compute hyperbolic distance in Poincaré ball model.
 
     d_H(u, v) = arcosh(1 + 2 * ||u - v||² / ((1 - ||u||²)(1 - ||v||²)))
+
+    Raises ValueError on dimension mismatch (zip would silently truncate;
+    the TypeScript port throws RangeError — behavior is now consistent).
     """
+    if len(u) != len(v):
+        raise ValueError(f"dimension mismatch: len(u)={len(u)} != len(v)={len(v)}")
     diff = [a - b for a, b in zip(u, v)]
     diff_norm_sq = _norm_sq(diff)
     u_norm_sq = _norm_sq(u)
@@ -155,18 +190,24 @@ def compute_repel_force(
 # ---------------------------------------------------------------------------
 
 
-def update_suspicion(agent: Agent, neighbor_id: str, is_anomaly: bool) -> None:
+def update_suspicion(
+    agent: Agent,
+    neighbor_id: str,
+    is_anomaly: bool,
+    config: Optional[GeoSealConfig] = None,
+) -> None:
     """Update suspicion counters and quarantine status."""
+    cfg = config or DEFAULT_CONFIG
     if is_anomaly:
         agent.suspicion_count[neighbor_id] = agent.suspicion_count.get(neighbor_id, 0) + 1
     else:
-        agent.suspicion_count[neighbor_id] = max(0, agent.suspicion_count.get(neighbor_id, 0) - SUSPICION_DECAY)
+        agent.suspicion_count[neighbor_id] = max(0, agent.suspicion_count.get(neighbor_id, 0) - cfg.suspicion_decay)
 
-    suspicious_neighbors = sum(1 for c in agent.suspicion_count.values() if c >= SUSPICION_THRESHOLD)
-    agent.is_quarantined = suspicious_neighbors >= QUARANTINE_CONSENSUS
+    suspicious_neighbors = sum(1 for c in agent.suspicion_count.values() if c >= cfg.suspicion_threshold)
+    agent.is_quarantined = suspicious_neighbors >= cfg.quarantine_consensus
 
     total_suspicion = sum(agent.suspicion_count.values())
-    agent.trust_score = max(0, 1.0 - total_suspicion / TRUST_DENOMINATOR)
+    agent.trust_score = max(0, 1.0 - total_suspicion / cfg.trust_denominator)
 
 
 # ---------------------------------------------------------------------------
@@ -174,13 +215,25 @@ def update_suspicion(agent: Agent, neighbor_id: str, is_anomaly: bool) -> None:
 # ---------------------------------------------------------------------------
 
 
-def swarm_step(agents: List[Agent], drift_rate: float = 0.01) -> List[Agent]:
-    """Run one swarm update step for all agents."""
+def swarm_step(
+    agents: List[Agent],
+    drift_rate: float = 0.01,
+    config: Optional[GeoSealConfig] = None,
+) -> List[Agent]:
+    """Run one swarm update step for all agents.
+
+    Raises ValueError if agents carry positions of different dimensions —
+    catching embedding mismatches here instead of deep in the force loop.
+    """
+    cfg = config or DEFAULT_CONFIG
     n = len(agents)
     if n == 0:
         return agents
 
     dim = len(agents[0].position)
+    for a in agents:
+        if len(a.position) != dim:
+            raise ValueError(f"agent {a.id!r} has dimension {len(a.position)}, expected {dim} (from {agents[0].id!r})")
 
     for i in range(n):
         net_force = [0.0] * dim
@@ -195,14 +248,14 @@ def swarm_step(agents: List[Agent], drift_rate: float = 0.01) -> List[Agent]:
 
             # Update suspicion on the TARGET (j) from the SOURCE (i)
             # When i flags j as anomalous, j's suspicion record grows
-            update_suspicion(agents[j], agents[i].id, anomaly)
+            update_suspicion(agents[j], agents[i].id, anomaly, cfg)
 
         # Apply force
         for k in range(dim):
             agents[i].position[k] += net_force[k] * drift_rate
 
         # Clamp to Poincaré ball
-        agents[i].position = clamp_to_ball(agents[i].position, 0.99)
+        agents[i].position = clamp_to_ball(agents[i].position, cfg.ball_radius)
 
     return agents
 
@@ -211,10 +264,11 @@ def run_swarm(
     agents: List[Agent],
     num_steps: int = 10,
     drift_rate: float = 0.01,
+    config: Optional[GeoSealConfig] = None,
 ) -> List[Agent]:
     """Run multiple swarm steps."""
     for _ in range(num_steps):
-        swarm_step(agents, drift_rate)
+        swarm_step(agents, drift_rate, config)
     return agents
 
 
@@ -234,15 +288,20 @@ class GeoSealMetrics:
     final_trust_scores: Dict[str, float]
 
 
-def compute_metrics(agents: List[Agent], rogue_id: str) -> GeoSealMetrics:
+def compute_metrics(
+    agents: List[Agent],
+    rogue_id: str,
+    config: Optional[GeoSealConfig] = None,
+) -> GeoSealMetrics:
     """Compute GeoSeal metrics for a completed swarm run."""
+    cfg = config or DEFAULT_CONFIG
     rogue = next((a for a in agents if a.id == rogue_id), None)
     if rogue is None:
         raise ValueError(f"Rogue agent not found: {rogue_id}")
 
     norm = _norm(rogue.position)
 
-    suspicious = sum(1 for c in rogue.suspicion_count.values() if c >= SUSPICION_THRESHOLD)
+    suspicious = sum(1 for c in rogue.suspicion_count.values() if c >= cfg.suspicion_threshold)
     total_neighbors = len(rogue.suspicion_count)
     consensus = suspicious / total_neighbors if total_neighbors > 0 else 0.0
 

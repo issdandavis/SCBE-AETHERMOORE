@@ -22,3 +22,9 @@ from .dcp_routes import (  # noqa: F401
     github_command_route,
     route_tetris_tree,
 )
+from .quarantine_lock import (  # noqa: F401
+    QuarantineLockPolicy,
+    QuarantineLockReceipt,
+    apply_quarantine_lock_to_dcp,
+    create_quarantine_lock,
+)

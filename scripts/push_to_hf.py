@@ -14,7 +14,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 DEFAULT_DATA_PATH = "data/perplexity/normalized/perplexity_normalized.jsonl"
 DEFAULT_HF_REPO = "your-username/aethermore-perplexity"
 

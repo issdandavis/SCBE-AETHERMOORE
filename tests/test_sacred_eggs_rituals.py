@@ -15,27 +15,15 @@ for root in (REPO_ROOT, REPO_ROOT / "src"):
     if root.exists() and str(root) not in sys.path:
         sys.path.insert(0, str(root))
 
-MODULE_CANDIDATES = (
-    "sacred_eggs",
-    "sacred_egg",
-    "scbe_sacred_eggs",
-    "scbe_eggs",
-    "src.sacred_eggs",
-    "src.sacred_egg",
-    "src.scbe_sacred_eggs",
-    "src.scbe_14layer_reference",
-    "scbe_14layer_reference",
-)
+# The ritual API exercised here is a self-contained conformance shim bundled
+# with this test at tests/fixtures/sacred_eggs_ritual_shim.py. It previously
+# lived at src/sacred_eggs.py, but it is a test-only reference implementation,
+# not a production module, and sitting in the production namespace made
+# `import sacred_eggs` ambiguous. The loader now binds to it by path; no
+# production module is consulted.
+MODULE_CANDIDATES: tuple[str, ...] = ()
 
-FILE_CANDIDATES = (
-    REPO_ROOT / "src" / "sacred_eggs.py",
-    REPO_ROOT / "src" / "sacred_egg.py",
-    REPO_ROOT / "src" / "scbe_sacred_eggs.py",
-    REPO_ROOT / "src" / "scbe_eggs.py",
-    REPO_ROOT / "src" / "scbe_14layer_reference.py",
-    REPO_ROOT / "sacred_eggs.py",
-    REPO_ROOT / "sacred_egg.py",
-)
+FILE_CANDIDATES = (REPO_ROOT / "tests" / "fixtures" / "sacred_eggs_ritual_shim.py",)
 
 INVOKE_ALIASES = (
     "invoke_ritual",
@@ -232,6 +220,11 @@ def _import_file(path: Path) -> Any:
     if spec is None or spec.loader is None:
         raise ImportError(f"Unable to build import spec for {path}")
     module = importlib.util.module_from_spec(spec)
+    # Register before exec_module: dataclasses (and typing/pickle) resolve a
+    # class's module via sys.modules[cls.__module__]; on Python 3.14 a module
+    # absent from sys.modules makes that lookup return None and raise
+    # AttributeError during @dataclass processing.
+    sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
 

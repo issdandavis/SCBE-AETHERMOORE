@@ -403,14 +403,20 @@ def deferred_targets() -> dict[str, Any]:
             "summary": "Task folder + Docker/sandbox + verifier (Terminal-Bench analog)",
             "status": "adapter_scaffolded",
             "reference": "https://www.tbench.ai/",
-            "local_adapter": "python scripts/benchmark/external_agentic_eval_driver.py --manifest config/eval/external_agentic_eval_tasks.sample.json",
+            "local_adapter": (
+                "python scripts/benchmark/external_agentic_eval_driver.py "
+                "--manifest config/eval/external_agentic_eval_tasks.sample.json"
+            ),
         },
         "3": {
             "name": "swe_bench_lite",
             "summary": "Public issue-resolution harness (SWE-bench Lite / Verified)",
             "status": "adapter_scaffolded",
             "reference": "https://www.swebench.com/",
-            "local_adapter": "python scripts/benchmark/external_agentic_eval_driver.py --manifest config/eval/external_agentic_eval_tasks.sample.json",
+            "local_adapter": (
+                "python scripts/benchmark/external_agentic_eval_driver.py "
+                "--manifest config/eval/external_agentic_eval_tasks.sample.json"
+            ),
         },
         "4": {
             "name": "web_gaia_style",

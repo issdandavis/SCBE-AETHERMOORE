@@ -123,9 +123,10 @@ def phase2_math_fluency(candidate_solution: Path | None = None) -> Tuple[bool, L
     notes: List[str] = []
     target = candidate_solution or (REPO_ROOT / "candidate" / "phase2_harmonic_scale.py")
     if not target.exists():
+        display = target.relative_to(REPO_ROOT) if target.is_relative_to(REPO_ROOT) else target
         notes.append(
-            f"Expected the candidate to create {target.relative_to(REPO_ROOT) if target.is_relative_to(REPO_ROOT) else target} "
-            f"with a function `harmonic_scale(d, pd) -> float`. Not found."
+            f"Expected the candidate to create {display} "
+            "with a function `harmonic_scale(d, pd) -> float`. Not found."
         )
         return False, notes
 

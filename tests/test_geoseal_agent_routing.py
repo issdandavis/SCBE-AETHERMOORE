@@ -372,7 +372,7 @@ class TestBijectionStress:
 
     def _check_bijection(self, tasks: list[str]):
         seals = [self._seal_for_task(t) for t in tasks]
-        assert len(seals) == len(set(seals)), f"Seal collision detected in task set:\n" + "\n".join(
+        assert len(seals) == len(set(seals)), "Seal collision detected in task set:\n" + "\n".join(
             f"  {t} -> {s[:16]}..." for t, s in zip(tasks, seals)
         )
 

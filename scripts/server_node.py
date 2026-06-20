@@ -232,12 +232,14 @@ def cmd_start(api_only: bool = False) -> None:
 
     # Print quick-start commands
     print("  Quick access:")
-    print(f"    Browser tools: curl http://localhost:8003/tools")
+    print("    Browser tools: curl http://localhost:8003/tools")
     print(
-        f"    Scrape a page: curl -X POST http://localhost:8003/tools/scrape_page -H 'Content-Type: application/json' -d '{{\"url\":\"https://example.com\"}}'"
+        "    Scrape a page: curl -X POST http://localhost:8003/tools/scrape_page "
+        "-H 'Content-Type: application/json' -d '{\"url\":\"https://example.com\"}'"
     )
     print(
-        f"    Research:      curl -X POST http://localhost:8003/workflow/research -H 'Content-Type: application/json' -d '{{\"query\":\"your topic\"}}'"
+        "    Research:      curl -X POST http://localhost:8003/workflow/research "
+        "-H 'Content-Type: application/json' -d '{\"query\":\"your topic\"}'"
     )
     print()
 

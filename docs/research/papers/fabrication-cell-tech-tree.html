@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Task-Autonomous Fabrication Cell Tech Tree | AetherMoore Research</title>
+<style>
+:root {
+  color-scheme: light;
+  --ink: #17201d;
+  --muted: #5b6762;
+  --rule: #d8ded8;
+  --paper: #fffdf7;
+  --wash: #f3f6f0;
+  --accent: #0f6f61;
+  --gold: #8b6a16;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--wash);
+  font-family: Georgia, "Times New Roman", serif;
+  line-height: 1.58;
+}
+a { color: var(--accent); }
+.shell {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 28px 20px 56px;
+}
+.paper {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  box-shadow: 0 18px 45px rgba(23, 32, 29, 0.08);
+  padding: 44px;
+}
+.kicker {
+  color: var(--gold);
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+h1 {
+  margin: 10px 0 10px;
+  font-size: 36px;
+  line-height: 1.08;
+}
+h2 {
+  margin-top: 34px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--rule);
+  font-size: 24px;
+}
+h3 { margin-top: 28px; font-size: 18px; }
+p { margin: 12px 0; }
+.subtitle, .abstract, .meta, .boundary {
+  color: var(--muted);
+}
+.abstract, .boundary {
+  border-left: 4px solid var(--accent);
+  padding-left: 16px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+.card {
+  display: block;
+  min-height: 100%;
+  padding: 18px;
+  border: 1px solid var(--rule);
+  background: #fff;
+  text-decoration: none;
+}
+.card h3 { margin-top: 0; color: var(--ink); }
+.card p { color: var(--muted); }
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+.tag {
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 3px 9px;
+  color: var(--muted);
+  background: #fff;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+}
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 22px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+}
+.source {
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid var(--rule);
+  color: var(--muted);
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+}
+pre, code {
+  font-family: Consolas, "Courier New", monospace;
+}
+pre {
+  overflow-x: auto;
+  padding: 14px;
+  border: 1px solid var(--rule);
+  background: #f8faf7;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0;
+  font-size: 14px;
+}
+th, td {
+  border: 1px solid var(--rule);
+  padding: 8px;
+  vertical-align: top;
+}
+th { background: #f1f5ef; }
+@media (max-width: 700px) {
+  .paper { padding: 24px; }
+  h1 { font-size: 28px; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+<nav class="nav"><a href="../../index.html">Home</a><a href="../../research/index.html">Research Library</a><a href="../../payments.html">Payments</a></nav>
+<main class="paper">
+
+<p class="kicker">AetherMoore Research Packet</p>
+<h1>Task-Autonomous Fabrication Cell Tech Tree</h1>
+<p class="subtitle">A build-sense-correct loop for governed fabrication workflows inside a human-specified goal envelope.</p>
+<div class="tags"><span class="tag">fabrication</span><span class="tag">robotics</span><span class="tag">agents</span><span class="tag">governance</span><span class="tag">receipts</span></div>
+<p class="abstract"><strong>Abstract.</strong> A task-autonomous fabrication cell receives a human-specified target, decomposes it into build steps, dispatches tools under governance, senses results, corrects its model, and emits receipts for physical actions.</p>
+<p class="boundary"><strong>Claim boundary.</strong> Not a canonical SCBE production commitment and not a claim of unbounded physical autonomy.</p>
+<p class="meta"><strong>Status:</strong> R&amp;D stepping-stone note and build queue seed.</p>
+<p class="meta"><strong>Research grade:</strong> Research Brief</p>
+<p class="meta"><strong>Review model:</strong> Concept stress-test with unsafe claims fenced before publication.</p>
+<p class="meta"><a href="../../research/papers/pdf/fabrication-cell-tech-tree.pdf">PDF</a> | <a href="../../research/TASK_AUTONOMOUS_FABRICATION_CELL_TECH_TREE_2026-05-22.md">Source note</a></p>
+<h2>Source Text</h2>
+<h1>Task-Autonomous Fabrication Cell Tech Tree</h1>
+<p>Status: R&amp;D stepping-stone note / build queue seed; not canonical SCBE architecture Date: 2026-05-22 Scope: agentic fabrication, robotics, embodied AI safety, GeoSeal runtime assurance Canonical constraint: task-autonomous within a human-specified goal and safety envelope Audience: internal R&amp;D triage; not a patent claim, proposal claim, or production commitment</p>
+<h2>0. Status Boundary</h2>
+<p>This note is adjacent to SCBE-AETHERMOORE. It shares the governance principle: every embodied action stays inside a deterministic envelope and leaves an audit receipt. It is not part of the canonical SCBE architecture unless later promoted through a separate review.</p>
+<p>The win preserved here is the method, not just the conclusion:</p>
+<pre><code>vivid idea -&gt; stress test -&gt; fenced overreach -&gt; kept core</code></pre>
+<p>If a later draft carries only the kept core and drops the fence, the claim is unsafe. The correction travels with the claim.</p>
+<h2>0.1 Provenance Ledger</h2>
+<table><thead><tr><th>Vivid idea</th><th>Stress test</th><th>Fence that must travel with it</th><th>Kept core</th></tr></thead><tbody><tr><td>Spin voxels / magnetics</td><td>Physical spin claims were asserted, not derived</td><td>Do not claim Heisenberg physics, topological crypto, magnonics, or Grover resistance</td><td>Vector-field coherence and angular disorder are useful read-side drift signals</td></tr><tr><td>Tesseract build orchestration</td><td>No fourth spatial dimension was specified</td><td>Use 3D plus build-time only; do not imply real 4D spatial machinery</td><td>Build sequence can be modeled as a time-indexed state space</td></tr><tr><td>Printer builds itself smaller</td><td>The first machine was built by an external supply chain</td><td>Do not claim total self-fabrication; silicon/controllers remain sourced until a real semiconductor process exists</td><td>Raise the self-fabricable fraction one capability at a time</td></tr><tr><td>Full autonomy by stacked tasks</td><td>Subtask generation still traces back to a root goal</td><td>Do not claim unbounded or self-originating autonomy</td><td>Use task-autonomy inside a human-specified goal-and-constraint envelope</td></tr><tr><td>Private crash testing</td><td>Concealment framing is wrong and harmful</td><td>Do not frame safety testing as hiding failures</td><td>Dangerous failures belong in simulation/closed environments, with audit logs that survive review</td></tr></tbody></table>
+<p>Every section below should be read through this ledger.</p>
+<h2>1. One-Sentence Mechanism</h2>
+<p>A task-autonomous fabrication cell receives a human-specified target artifact, decomposes it into build steps, dispatches fabrication tools as governed tool calls, senses the result, corrects its model, and emits receipts proving every physical action stayed inside a bounded safety envelope.</p>
+<p>Short form:</p>
+<pre><code>task-autonomous, human-specified goal-and-constraint envelope, unmanned execution</code></pre>
+<p>Do not shorten this to bare &quot;autonomous fabrication cell&quot; in technical, proposal, patent, or customer-facing materials.</p>
+<h2>2. What This Is Not</h2>
+<p>This is not a claim of unbounded autonomy.</p>
+<p>This is not a claim that a 3D printer can fabricate every component needed to replicate itself.</p>
+<p>This is not a claim that simulation removes the need for physical testing.</p>
+<p>This is not a claim that a kiln, foundry, or printer is the key invention. Those are possible test articles. The key invention candidate is the governed build-sense-correct loop.</p>
+<p>The honest scope is:</p>
+<pre><code>human specifies the target
+system owns the how
+governance owns the envelope
+receipts prove the path</code></pre>
+<p>That is task autonomy, and it is the useful level for this adjacent R&amp;D line.</p>
+<h2>3. The Senku Step</h2>
+<p>The generative step is not the kiln, the foundry, or the printer.</p>
+<p>The generative step is the closed build-sense-correct loop:</p>
+<pre><code>plan -&gt; act -&gt; sense -&gt; compare -&gt; correct -&gt; receipt</code></pre>
+<p>This is the &quot;kiln&quot; of the system because it produces a reusable capability rather than a one-off artifact. Once the loop is reliable, harder build targets become a schedule instead of a guess.</p>
+<p>Fence: this does not make self-fabrication solved. It only makes future fabrication claims measurable because the system can compare intended action against observed result.</p>
+<h2>4. Capability Ladder</h2>
+<table><thead><tr><th>Rung</th><th>Capability</th><th>Why it matters</th><th>Status target</th></tr></thead><tbody><tr><td>0</td><td>Digital twin / simulator</td><td>Failure is cheap; test policies before hardware</td><td>software-first</td></tr><tr><td>1</td><td>Tool-call registry</td><td>Printers, cameras, scales, heaters, arms become typed operations</td><td>buildable now</td></tr><tr><td>2</td><td>Self-modeling sensor loop</td><td>System measures its own tool/body state and calibration drift</td><td>first hard rung</td></tr><tr><td>3</td><td>Closed-loop trivial build</td><td>Make/assemble a simple bracket or block stack, verify tolerance</td><td>first demo</td></tr><tr><td>4</td><td>Multi-step thermal artifact</td><td>Kiln-like target with heat schedule and crack/failure checks</td><td>first real target</td></tr><tr><td>5</td><td>Output becomes tool</td><td>Built artifact extends the cell&#x27;s capability, e.g. kiln used for next material step</td><td>first recursion</td></tr><tr><td>6</td><td>Collaborative machine buddies</td><td>Multiple tools hold, hand off, inspect, and correct each other</td><td>robotics expansion</td></tr><tr><td>7</td><td>Continual learning under rate limits</td><td>Online adaptation without catastrophic forgetting</td><td>controlled R&amp;D</td></tr><tr><td>8</td><td>Fabrication fraction increases</td><td>Structure + conductors + coils + simple actuators</td><td>capability curve</td></tr><tr><td>9</td><td>Silicon remains sourced</td><td>Chips/controllers remain bought-in until a real fab process exists</td><td>hard boundary</td></tr></tbody></table>
+<p>The self-fabrication question becomes measurable:</p>
+<pre><code>self-fabricable fraction = components made in-cell / components required by target</code></pre>
+<p>The goal is to raise that fraction honestly, not claim total self-replication.</p>
+<p>Boundary: if a target depends on chips, controllers, sensors, precision bearings, or materials the cell cannot make, those components are sourced. Sourced components are allowed, but they must be named.</p>
+<h2>5. Tool Calls For Physical Fabrication</h2>
+<p>Treat each physical machine as a governed tool surface.</p>
+<table><thead><tr><th>Tool class</th><th>Example operations</th><th>Required gate</th></tr></thead><tbody><tr><td>3D printer</td><td>slice, print, pause, resume, cancel</td><td>thermal/workspace safety</td></tr><tr><td>CNC / subtractive</td><td>cut, drill, surface, deburr</td><td>material + collision gate</td></tr><tr><td>camera / scanner</td><td>capture, measure, compare</td><td>read-only provenance</td></tr><tr><td>scale / caliper</td><td>weigh, measure, tolerance check</td><td>read-only provenance</td></tr><tr><td>kiln / heater</td><td>ramp, hold, cool, emergency stop</td><td>high-risk thermal gate</td></tr><tr><td>robot arm</td><td>grasp, hold, move, handoff</td><td>collision + human-zone gate</td></tr><tr><td>winder</td><td>wind coil, count turns, tension check</td><td>actuator fabrication gate</td></tr><tr><td>human interface</td><td>approve, reject, abort, re-scope</td><td>explicit envelope boundary</td></tr></tbody></table>
+<p>Every tool call should produce a receipt:</p>
+<pre><code>{
+  &quot;schema_version&quot;: &quot;scbe-fab-receipt-v0.1&quot;,
+  &quot;tool&quot;: &quot;printer.main&quot;,
+  &quot;operation&quot;: &quot;print&quot;,
+  &quot;target&quot;: &quot;calibration_bracket_v1&quot;,
+  &quot;decision&quot;: &quot;ALLOW&quot;,
+  &quot;pre_state_hash&quot;: &quot;sha256:...&quot;,
+  &quot;post_state_hash&quot;: &quot;sha256:...&quot;,
+  &quot;sensor_refs&quot;: [],
+  &quot;risk&quot;: {
+    &quot;thermal&quot;: &quot;low&quot;,
+    &quot;collision&quot;: &quot;none&quot;,
+    &quot;human_zone&quot;: &quot;clear&quot;
+  }
+}</code></pre>
+<h2>6. Safety Envelope</h2>
+<p>Constraints are not the weakness of the system. They are the safety case.</p>
+<p>They are also the liability case: the system should be able to show what was requested, what was allowed or denied, why the decision was made, and which sensor evidence supported the decision.</p>
+<p>The envelope must make the following impossible or fail-closed:</p>
+<ul>
+<li>tool motion outside workspace bounds</li>
+<li>heater/kiln runaway</li>
+<li>robot arm entering human exclusion zone</li>
+<li>printer continuing after thermal fault</li>
+<li>destructive operation without a dry-run or explicit authorization</li>
+<li>model-generated command reaching actuator without deterministic gate</li>
+<li>post-release learning changing actuator policy without rate limits and rollback</li>
+</ul>
+<p>Minimum decision tiers:</p>
+<table><thead><tr><th>Tier</th><th>Meaning</th><th>Physical action</th></tr></thead><tbody><tr><td>ALLOW</td><td>within bounds, low risk</td><td>execute</td></tr><tr><td>PROBE</td><td>uncertain but safe to simulate/test</td><td>dry-run or sensor-only</td></tr><tr><td>ATTENUATE</td><td>allowed only at reduced speed/power/scope</td><td>execute bounded</td></tr><tr><td>ESCALATE</td><td>needs human approval</td><td>stop and request</td></tr><tr><td>DENY</td><td>unsafe or out of envelope</td><td>stop and receipt</td></tr></tbody></table>
+<p>Fence: the envelope is not optional polish. Removing it does not produce a more advanced system; it removes the system&#x27;s safety case.</p>
+<h2>7. Training And Learning Boundary</h2>
+<p>The system can learn during use, but only in controlled lanes.</p>
+<p>Allowed first:</p>
+<ul>
+<li>update calibration offsets</li>
+<li>update sensor-noise estimates</li>
+<li>update tool wear estimates</li>
+<li>store failure cases for offline replay</li>
+<li>train small adapters in a sandbox</li>
+</ul>
+<p>Not allowed first:</p>
+<ul>
+<li>live weight updates to actuator-control policy</li>
+<li>irreversible changes to safety thresholds without review</li>
+<li>model-originated expansion of allowed operations</li>
+<li>hidden &quot;goal&quot; creation outside human target and envelope</li>
+<li>task generation that detaches from the human-specified root goal</li>
+</ul>
+<p>Safe architecture:</p>
+<pre><code>fast actor: executes bounded task plan
+slow learner: consolidates logs offline
+gate: promotes changes only after tests
+rollback: restores previous policy on regression</code></pre>
+<h2>8. Cross-Platform Transfer</h2>
+<p>The transferable asset is not the hardware. It is the abstract governance loop.</p>
+<p>The same state-vector gate can support:</p>
+<ul>
+<li>fabrication cell</li>
+<li>wheelchair / adaptive mobility platform</li>
+<li>drone / aerial platform</li>
+<li>robot arm / lab automation platform</li>
+</ul>
+<p>Shared state fields:</p>
+<pre><code>{
+  &quot;pose&quot;: [],
+  &quot;velocity&quot;: [],
+  &quot;energy&quot;: 0.0,
+  &quot;thermal_state&quot;: {},
+  &quot;tool_state&quot;: {},
+  &quot;human_zone_clear&quot;: true,
+  &quot;risk_scalar&quot;: 0.0,
+  &quot;intent&quot;: &quot;human-specified-target&quot;,
+  &quot;workspace&quot;: &quot;bounded-volume-id&quot;
+}</code></pre>
+<p>Vehicle/platform-specific testing still remains required. The shared gate can be validated once as logic; actuators and dynamics are validated per platform.</p>
+<p>Fence: cross-platform transfer applies to the abstract governance loop and representation. It does not transfer vehicle dynamics, actuator safety, certification evidence, or physical hazard testing.</p>
+<h2>9. First Demo</h2>
+<p>Do not begin with kiln-to-foundry.</p>
+<p>Begin with:</p>
+<pre><code>task: make and verify a calibration bracket
+tools: printer + camera/scanner + caliper/scale if available
+loop: plan -&gt; print -&gt; inspect -&gt; compare -&gt; reprint/correct -&gt; receipt</code></pre>
+<p>Acceptance:</p>
+<ul>
+<li>target dimensions specified before print</li>
+<li>printer command generated as a governed operation packet</li>
+<li>sensor inspection produces a measured error vector</li>
+<li>system chooses either accept, adjust, or reject</li>
+<li>all steps emit receipts</li>
+<li>no live dangerous action occurs without a deterministic gate</li>
+</ul>
+<p>This is the first demonstrable milestone because it proves the method:</p>
+<pre><code>the loop closes unmanned on a trivial task</code></pre>
+<p>It is more important than the artifact being impressive.</p>
+<h2>10. Later Demo: Kiln-To-Foundry</h2>
+<p>The kiln/foundry path is a strong later target because controlled heat unlocks many downstream capabilities.</p>
+<p>Frame it as:</p>
+<pre><code>the closed loop builds a tool that expands the closed loop&#x27;s future toolset</code></pre>
+<p>not:</p>
+<pre><code>the machine is self-replicating</code></pre>
+<p>Milestones:</p>
+<ol>
+<li>simulate kiln build and thermal ramp</li>
+<li>build passive refractory test piece</li>
+<li>measure cracks/deformation after firing</li>
+<li>close thermal feedback loop</li>
+<li>use kiln output in a second controlled build</li>
+</ol>
+<p>Fence: kiln-to-foundry is a later integration target, not the first milestone and not evidence of full autonomy or self-replication.</p>
+<h2>11. Claims Safe For External Use</h2>
+<p>Safe:</p>
+<ul>
+<li>task-autonomous fabrication workflow</li>
+<li>governed physical tool calls</li>
+<li>digital twin before hardware</li>
+<li>closed-loop self-modeling and calibration</li>
+<li>auditable safety receipts</li>
+<li>platform-agnostic runtime assurance for embodied AI</li>
+<li>increasing self-fabricable fraction over time</li>
+</ul>
+<p>Avoid:</p>
+<ul>
+<li>fully autonomous self-originating goals</li>
+<li>self-replicating machine without component-boundary disclosure</li>
+<li>no-human-input without specifying level of autonomy</li>
+<li>hiding failures to avoid liability</li>
+<li>claims that simulation replaces physical validation</li>
+</ul>
+<h2>11.1 Audience Split</h2>
+<p>This note should not be copied unchanged into proposals, patent material, or public pages.</p>
+<table><thead><tr><th>Destination</th><th>Use</th><th>Required rewrite</th></tr></thead><tbody><tr><td>internal R&amp;D</td><td>Preserve the whole correction ledger</td><td>keep fences and dead ends visible</td></tr><tr><td>implementation build card</td><td>Simulated bracket loop only</td><td>remove kiln/foundry except as deferred target</td></tr><tr><td>SBIR/capability statement</td><td>Platform-agnostic runtime assurance</td><td>lead with bounded autonomy and audit receipts</td></tr><tr><td>patent counsel packet</td><td>Mechanism disclosure</td><td>identify human root goal, envelope, receipts, and sourced components</td></tr><tr><td>public demo</td><td>Safe visual proof</td><td>no self-replication or full-autonomy language</td></tr></tbody></table>
+<p>If this idea feeds the SBIR/capability-statement track, the phrase to carry forward is:</p>
+<pre><code>platform-agnostic runtime assurance for embodied AI systems</code></pre>
+<p>not:</p>
+<pre><code>self-replicating autonomous fabrication</code></pre>
+<h2>12. Build Card</h2>
+<pre><code>{
+  &quot;schema_version&quot;: &quot;scbe-doc-build-card-v1&quot;,
+  &quot;title&quot;: &quot;Task-Autonomous Fabrication Cell&quot;,
+  &quot;status&quot;: &quot;research-only/design&quot;,
+  &quot;not_canonical_scbe&quot;: true,
+  &quot;do_not_build_yet&quot;: [
+    &quot;live hardware actuation&quot;,
+    &quot;autonomous goal origination&quot;,
+    &quot;self-replication claims&quot;,
+    &quot;kiln/foundry endpoint&quot;
+  ],
+  &quot;core_claim&quot;: &quot;A bounded agentic system can dispatch physical fabrication tools as governed operations, close the build-sense-correct loop, and emit auditable receipts while remaining under a human-specified goal envelope.&quot;,
+  &quot;repo_anchors&quot;: [
+    &quot;docs/research/TASK_AUTONOMOUS_FABRICATION_CELL_TECH_TREE_2026-05-22.md&quot;,
+    &quot;docs/specs/AETHERFAB_PUF_NEGATIVE_RESULT.md&quot;,
+    &quot;docs/research/drone_autonomy_training_patterns_2026-05-02.md&quot;,
+    &quot;docs/ops/REGENERATIVE_AI_MOBILITY_OPEN_SOURCE_STACK_2026-05-21.md&quot;,
+    &quot;docs/superpowers/specs/2026-05-22-geoseed-infinity-box-runtime.md&quot;
+  ],
+  &quot;risk_class&quot;: &quot;physical-action&quot;,
+  &quot;first_slice&quot;: {
+    &quot;goal&quot;: &quot;simulate a governed build-sense-correct loop for a calibration bracket with no real hardware actuation&quot;,
+    &quot;files&quot;: [
+      &quot;scripts/system/fab_cell_sim.py&quot;,
+      &quot;tests/system/test_fab_cell_sim.py&quot;,
+      &quot;artifacts/fab_cell/&quot;
+    ],
+    &quot;tests&quot;: [
+      &quot;safe print plan emits ALLOW receipt&quot;,
+      &quot;out-of-bounds tool path emits DENY receipt&quot;,
+      &quot;measured error triggers adjust/retry decision&quot;,
+      &quot;no hardware command is emitted in simulation mode&quot;
+    ],
+    &quot;acceptance&quot;: [
+      &quot;deterministic JSON receipts&quot;,
+      &quot;human target remains root of task tree&quot;,
+      &quot;all physical action stays simulated&quot;
+    ]
+  }
+}</code></pre>
+<p class="source">Generated from <code>research/TASK_AUTONOMOUS_FABRICATION_CELL_TECH_TREE_2026-05-22.md</code> by <code>scripts/research/build_research_library.py</code>.</p>
+
+</main>
+</div>
+</body>
+</html>

@@ -252,6 +252,65 @@ def test_quality_flags_reject_missing_context_symbol():
     assert "symbol_not_found:scripts/system/scbe_swarm_router.py#DefinitelyMissingRouter" in flags
 
 
+def test_quality_flags_accept_symbol_imported_from_local_python_module():
+    module = load_module()
+
+    text = """
+    1. Decision: build
+    2. Files:
+       - src/cddm/tongue_domains.py
+    3. Patch:
+    ```diff
+    --- a/src/cddm/tongue_domains.py
+    +++ b/src/cddm/tongue_domains.py
+    @@ -31,6 +31,7 @@ TONGUE_DOMAINS: Dict[str, Domain] = {
+         "KO": Domain("Energy", units=("Joule",), bounds=(0, 1e6)),
+    ```
+    4. Verification: python -m py_compile src/cddm/tongue_domains.py
+    """
+
+    flags = module.quality_flags(text, ("src/",), require_paths=True)
+
+    assert "symbol_not_found:src/cddm/tongue_domains.py#Domain" not in flags
+
+
+def test_file_contains_symbol_resolves_local_python_imports():
+    module = load_module()
+
+    assert module._file_contains_symbol("src/cddm/tongue_domains.py", "Domain") is True
+
+
+def test_file_contains_symbol_resolves_src_layout_absolute_import(tmp_path):
+    module = load_module()
+    probe = Path("artifacts") / "tmp_symbol_probe.py"
+    target = REPO_ROOT / probe
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text("from cddm.domain import Domain\n\nvalue = Domain\n", encoding="utf-8")
+    try:
+        assert module._file_contains_symbol(probe.as_posix(), "Domain") is True
+    finally:
+        target.unlink(missing_ok=True)
+
+
+def test_file_contains_symbol_still_rejects_missing_local_symbol():
+    module = load_module()
+
+    assert module._file_contains_symbol("src/cddm/tongue_domains.py", "NotDomain") is False
+
+
+def test_file_contains_symbol_rejects_missing_relative_import(tmp_path):
+    module = load_module()
+    probe_dir = REPO_ROOT / "artifacts" / "tmp_symbol_pkg"
+    probe_dir.mkdir(parents=True, exist_ok=True)
+    probe = probe_dir / "module.py"
+    probe.write_text("from .missing import MissingThing\n\nvalue = MissingThing\n", encoding="utf-8")
+    try:
+        assert module._file_contains_symbol("artifacts/tmp_symbol_pkg/module.py", "MissingThing") is False
+    finally:
+        probe.unlink(missing_ok=True)
+        probe_dir.rmdir()
+
+
 def test_quality_flags_reject_evidence_symbols_not_present_in_checked_files():
     module = load_module()
 

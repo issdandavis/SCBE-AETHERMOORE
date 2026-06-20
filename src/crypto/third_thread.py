@@ -157,7 +157,7 @@ class ThreadResonance:
             return 0.0
         layers = [self.mortal_energy, self.divine_energy, self.collective_energy]
         expected = total / 3.0
-        deviation = sum(abs(l - expected) for l in layers) / total
+        deviation = sum(abs(layer - expected) for layer in layers) / total
         return max(0.0, 1.0 - deviation)
 
 
@@ -720,7 +720,10 @@ def run_third_thread_study(
             InvocationParticipant(
                 name=w.panel_agent_name,
                 tongue=w.resonance.system_b_tongue,
-                intent=f"I bring {w.panel_agent_name}'s {panel_results[i].agent.role if i < len(panel_results) else 'wisdom'}",
+                intent=(
+                    f"I bring {w.panel_agent_name}'s "
+                    f"{panel_results[i].agent.role if i < len(panel_results) else 'wisdom'}"
+                ),
                 need=f"I need translation to {w.resonance.system_a_tongue}",
             )
             for i, w in enumerate(weavings)

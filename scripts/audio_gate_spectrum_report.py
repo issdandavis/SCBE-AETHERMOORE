@@ -217,7 +217,9 @@ def analyze_wav(
     if not frames:
         raise ValueError("No complete frames could be extracted from the WAV input.")
 
-    avg = lambda key: float(np.mean([getattr(frame, key) for frame in frames]))
+    def avg(key: str) -> float:
+        return float(np.mean([getattr(frame, key) for frame in frames]))
+
     max_pressure_frame = max(frames, key=lambda frame: frame.overall_pressure)
 
     return {

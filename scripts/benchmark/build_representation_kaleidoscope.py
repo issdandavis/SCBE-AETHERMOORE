@@ -15,7 +15,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_INPUTS = [
     REPO_ROOT / "training-data" / "sft" / "coding_system_full_v1_train.sft.jsonl",
@@ -89,9 +88,7 @@ def _lens_entry(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _autosearch_pack(
-    concept_id: str, intent: str, languages: list[str]
-) -> dict[str, Any]:
+def _autosearch_pack(concept_id: str, intent: str, languages: list[str]) -> dict[str, Any]:
     language_list = ", ".join(languages)
     return {
         "purpose": "auto_search_when_lens_drift_or_missing_evidence",
@@ -130,9 +127,7 @@ def build_kaleidoscope(paths: list[Path]) -> dict[str, Any]:
         lenses = [_lens_entry(item) for item in items]
         languages = sorted({lens["language"] for lens in lenses if lens["language"]})
         tongues = sorted({lens["tongue"] for lens in lenses if lens["tongue"]})
-        intents = sorted(
-            {str((item.get("concept") or {}).get("intent", "")) for item in items}
-        )
+        intents = sorted({str((item.get("concept") or {}).get("intent", "")) for item in items})
         missing_languages = sorted(EXPECTED_LANGUAGES - set(languages))
         drift_flags = [
             {
@@ -142,8 +137,7 @@ def build_kaleidoscope(paths: list[Path]) -> dict[str, Any]:
                 "risk": lens["contract"]["operational_failure_risk"],
             }
             for lens in lenses
-            if lens["contract"]["mismatch_lanes"]
-            or lens["contract"]["operational_failure_risk"] == "HIGH"
+            if lens["contract"]["mismatch_lanes"] or lens["contract"]["operational_failure_risk"] == "HIGH"
         ]
         frame = {
             "concept_id": concept_id,
@@ -166,18 +160,14 @@ def build_kaleidoscope(paths: list[Path]) -> dict[str, Any]:
             ],
             "lenses": lenses,
             "drift_flags": drift_flags,
-            "autosearch": _autosearch_pack(
-                concept_id, str(concept.get("intent", "")), languages
-            ),
+            "autosearch": _autosearch_pack(concept_id, str(concept.get("intent", "")), languages),
         }
         frames.append(frame)
 
     coverage = {
         "concept_count": len(frames),
         "lens_count": sum(len(frame["lenses"]) for frame in frames),
-        "complete_language_frames": sum(
-            1 for frame in frames if not frame["missing_languages"]
-        ),
+        "complete_language_frames": sum(1 for frame in frames if not frame["missing_languages"]),
         "expected_languages": sorted(EXPECTED_LANGUAGES),
     }
     return {
@@ -193,7 +183,8 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
     lines = [
         "# SCBE Representation Kaleidoscope",
         "",
-        "Each frame is one concept. Each lens is a code language plus Sacred Tongue, music, tokenizer, binary transport, and workflow view over the same concept.",
+        "Each frame is one concept. Each lens is a code language plus Sacred Tongue, music, "
+        "tokenizer, binary transport, and workflow view over the same concept.",
         "",
         "## Coverage",
         "",
@@ -206,11 +197,7 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
         "",
     ]
     for frame in report["frames"]:
-        status = (
-            "complete"
-            if not frame["missing_languages"]
-            else "missing " + ", ".join(frame["missing_languages"])
-        )
+        status = "complete" if not frame["missing_languages"] else "missing " + ", ".join(frame["missing_languages"])
         lines.extend(
             [
                 f"### {frame['concept_id']}",
@@ -226,9 +213,7 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
             ]
         )
         for lens in frame["lenses"]:
-            preview = " ".join(str(lens["sample_code"]).strip().split())[:80].replace(
-                "|", "\\|"
-            )
+            preview = " ".join(str(lens["sample_code"]).strip().split())[:80].replace("|", "\\|")
             source_hash = str(lens["binary"]["source_sha256"])[:12]
             lines.append(
                 f"| {lens['tongue']} / {lens['tongue_name']} | {lens['language']} | {lens['mode']} | "
@@ -239,20 +224,13 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Build the SCBE representation kaleidoscope matrix."
-    )
-    parser.add_argument(
-        "--input", action="append", default=[], help="JSONL input file. Repeatable."
-    )
+    parser = argparse.ArgumentParser(description="Build the SCBE representation kaleidoscope matrix.")
+    parser.add_argument("--input", action="append", default=[], help="JSONL input file. Repeatable.")
     parser.add_argument("--out-dir", default=str(DEFAULT_OUT_DIR))
     args = parser.parse_args()
 
     inputs = [Path(item) for item in args.input] if args.input else DEFAULT_INPUTS
-    inputs = [
-        (REPO_ROOT / path).resolve() if not path.is_absolute() else path
-        for path in inputs
-    ]
+    inputs = [(REPO_ROOT / path).resolve() if not path.is_absolute() else path for path in inputs]
     out_dir = Path(args.out_dir)
     if not out_dir.is_absolute():
         out_dir = (REPO_ROOT / out_dir).resolve()

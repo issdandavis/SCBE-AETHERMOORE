@@ -46,34 +46,133 @@ MAX_RESPONSE_CHARS = 2000
 # Technical terms that indicate meaningful content (at least one must be present)
 TECHNICAL_TERMS = {
     # Core SCBE terms
-    "scbe", "aethermoore", "aethermoor", "governance", "pipeline", "axiom",
-    "hyperbolic", "poincare", "poincaré", "harmonic", "symphonic", "cipher",
-    "tongue", "tongues", "langues", "sacred", "spectral", "quantum",
+    "scbe",
+    "aethermoore",
+    "aethermoor",
+    "governance",
+    "pipeline",
+    "axiom",
+    "hyperbolic",
+    "poincare",
+    "poincaré",
+    "harmonic",
+    "symphonic",
+    "cipher",
+    "tongue",
+    "tongues",
+    "langues",
+    "sacred",
+    "spectral",
+    "quantum",
     # Architecture terms
-    "layer", "mesh", "node", "embedding", "tensor", "manifold", "lattice",
-    "topology", "topological", "hamiltonian", "mobius", "möbius",
+    "layer",
+    "mesh",
+    "node",
+    "embedding",
+    "tensor",
+    "manifold",
+    "lattice",
+    "topology",
+    "topological",
+    "hamiltonian",
+    "mobius",
+    "möbius",
     # Security / crypto terms
-    "cryptographic", "post-quantum", "pqc", "dilithium", "kyber", "ml-dsa",
-    "ml-kem", "aes", "encryption", "signature", "seal", "envelope",
+    "cryptographic",
+    "post-quantum",
+    "pqc",
+    "dilithium",
+    "kyber",
+    "ml-dsa",
+    "ml-kem",
+    "aes",
+    "encryption",
+    "signature",
+    "seal",
+    "envelope",
     # AI / ML terms
-    "model", "training", "inference", "fine-tuning", "finetuning", "sft",
-    "dpo", "grpo", "rlhf", "reward", "policy", "dataset", "tokenizer",
-    "transformer", "llm", "lora", "peft", "gguf",
+    "model",
+    "training",
+    "inference",
+    "fine-tuning",
+    "finetuning",
+    "sft",
+    "dpo",
+    "grpo",
+    "rlhf",
+    "reward",
+    "policy",
+    "dataset",
+    "tokenizer",
+    "transformer",
+    "llm",
+    "lora",
+    "peft",
+    "gguf",
     # Decision terms
-    "allow", "deny", "quarantine", "escalate", "risk", "safety", "audit",
+    "allow",
+    "deny",
+    "quarantine",
+    "escalate",
+    "risk",
+    "safety",
+    "audit",
     # Geometry terms
-    "geoseed", "sphere", "seed", "dimension", "21d", "14-layer", "6-tongue",
-    "ko", "av", "ru", "ca", "um", "dr",
+    "geoseed",
+    "sphere",
+    "seed",
+    "dimension",
+    "21d",
+    "14-layer",
+    "6-tongue",
+    "ko",
+    "av",
+    "ru",
+    "ca",
+    "um",
+    "dr",
     # Infrastructure terms
-    "api", "endpoint", "webhook", "workflow", "n8n", "docker", "kubernetes",
-    "deploy", "cloud", "huggingface", "vertex", "airtable", "notion",
+    "api",
+    "endpoint",
+    "webhook",
+    "workflow",
+    "n8n",
+    "docker",
+    "kubernetes",
+    "deploy",
+    "cloud",
+    "huggingface",
+    "vertex",
+    "airtable",
+    "notion",
     # Agent terms
-    "agent", "swarm", "fleet", "browser", "hydra", "aetherbrowse",
+    "agent",
+    "swarm",
+    "fleet",
+    "browser",
+    "hydra",
+    "aetherbrowse",
     # General technical
-    "algorithm", "function", "protocol", "architecture", "implementation",
-    "framework", "configuration", "schema", "parameter", "specification",
-    "formula", "equation", "metric", "threshold", "gradient", "vector",
-    "matrix", "coefficient", "optimization", "convergence",
+    "algorithm",
+    "function",
+    "protocol",
+    "architecture",
+    "implementation",
+    "framework",
+    "configuration",
+    "schema",
+    "parameter",
+    "specification",
+    "formula",
+    "equation",
+    "metric",
+    "threshold",
+    "gradient",
+    "vector",
+    "matrix",
+    "coefficient",
+    "optimization",
+    "convergence",
 }
 
 # Patterns indicating a section is just a link list or TOC
@@ -86,20 +185,21 @@ SKIP_PATTERNS = [
 
 # Code / formula indicators
 CODE_FORMULA_PATTERNS = [
-    re.compile(r"```"),              # fenced code block
-    re.compile(r"`[^`]+`"),          # inline code
-    re.compile(r"[=+\-*/^]{2,}"),   # math operators
-    re.compile(r"\b\w+\(.*?\)"),    # function calls
+    re.compile(r"```"),  # fenced code block
+    re.compile(r"`[^`]+`"),  # inline code
+    re.compile(r"[=+\-*/^]{2,}"),  # math operators
+    re.compile(r"\b\w+\(.*?\)"),  # function calls
     re.compile(r"\\frac|\\sum|\\int|\\sqrt"),  # LaTeX math
-    re.compile(r"H\(.*?\)\s*="),    # formula definitions
-    re.compile(r"d_H\s*="),         # distance formula
-    re.compile(r"\bO\(.*?\)"),      # big-O notation
+    re.compile(r"H\(.*?\)\s*="),  # formula definitions
+    re.compile(r"d_H\s*="),  # distance formula
+    re.compile(r"\bO\(.*?\)"),  # big-O notation
 ]
 
 
 # ---------------------------------------------------------------------------
 # Text cleaning
 # ---------------------------------------------------------------------------
+
 
 def clean_markdown(text: str) -> str:
     """Remove markdown formatting noise while preserving technical content."""
@@ -140,6 +240,7 @@ def clean_heading(heading: str) -> str:
 # ---------------------------------------------------------------------------
 # Section extraction
 # ---------------------------------------------------------------------------
+
 
 def extract_sections(content: str, filepath: Path) -> List[Tuple[str, str]]:
     """Split markdown by ## headings, returning (heading, body) pairs.
@@ -182,12 +283,13 @@ def extract_sections(content: str, filepath: Path) -> List[Tuple[str, str]]:
 # Quality filters
 # ---------------------------------------------------------------------------
 
+
 def is_link_list(text: str) -> bool:
     """Check if text is predominantly a list of links."""
-    lines = [l.strip() for l in text.strip().split("\n") if l.strip()]
+    lines = [ln.strip() for ln in text.strip().split("\n") if ln.strip()]
     if not lines:
         return True
-    link_lines = sum(1 for l in lines if re.match(r"^\s*[-*]\s*\[", l))
+    link_lines = sum(1 for ln in lines if re.match(r"^\s*[-*]\s*\[", ln))
     return len(lines) > 0 and link_lines / len(lines) > 0.7
 
 
@@ -197,13 +299,10 @@ def is_toc(text: str) -> bool:
     if "table of contents" in lower:
         return True
     # If most lines are just numbered/bulleted links
-    lines = [l.strip() for l in text.strip().split("\n") if l.strip()]
+    lines = [ln.strip() for ln in text.strip().split("\n") if ln.strip()]
     if not lines:
         return True
-    toc_lines = sum(
-        1 for l in lines
-        if re.match(r"^\s*(\d+\.|\-|\*)\s*\[", l)
-    )
+    toc_lines = sum(1 for ln in lines if re.match(r"^\s*(\d+\.|\-|\*)\s*\[", ln))
     return len(lines) >= 3 and toc_lines / len(lines) > 0.8
 
 
@@ -253,6 +352,7 @@ def should_skip_section(heading: str, body: str) -> bool:
 # Question generation
 # ---------------------------------------------------------------------------
 
+
 def generate_questions(heading: str, body: str, source_file: str) -> List[str]:
     """Generate question variations from a section heading."""
     clean_h = clean_heading(heading)
@@ -290,6 +390,7 @@ def generate_questions(heading: str, body: str, source_file: str) -> List[str]:
 # ---------------------------------------------------------------------------
 # SFT pair generation
 # ---------------------------------------------------------------------------
+
 
 def make_sft_record(question: str, answer: str) -> Dict:
     """Create a chat-format SFT record."""
@@ -342,7 +443,7 @@ def process_file(filepath: Path, seen_hashes: Set[str]) -> List[Dict]:
             last_newline = truncated.rfind("\n")
             cut_at = max(last_period, last_newline)
             if cut_at > MAX_RESPONSE_CHARS * 0.6:
-                response = truncated[:cut_at + 1].rstrip()
+                response = truncated[: cut_at + 1].rstrip()
             else:
                 response = truncated.rstrip()
 
@@ -370,6 +471,7 @@ def process_file(filepath: Path, seen_hashes: Set[str]) -> List[Dict]:
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+
 
 def main():
     print("=" * 70)

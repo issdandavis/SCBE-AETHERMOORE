@@ -121,7 +121,7 @@ def build_supervised_inputs(
         input_ids = input_ids[:max_length]
         labels = labels[:max_length]
 
-    if not any(l != -100 for l in labels):
+    if not any(label != -100 for label in labels):
         return None
     return input_ids, labels
 

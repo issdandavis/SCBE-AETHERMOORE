@@ -152,9 +152,7 @@ def create_snapshot_packet(
         raise ValueError("workflow_name is required")
 
     day = datetime.now().strftime("%Y-%m-%d")
-    folder = (
-        out_root / day / f"{_slug(intake.buyer_email)}-{_slug(intake.workflow_name)}"
-    )
+    folder = out_root / day / f"{_slug(intake.buyer_email)}-{_slug(intake.workflow_name)}"
     folder.mkdir(parents=True, exist_ok=True)
 
     intake_path = folder / "intake.json"
@@ -177,9 +175,7 @@ def create_snapshot_packet(
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Create an AI Governance Snapshot buyer fulfillment packet."
-    )
+    parser = argparse.ArgumentParser(description="Create an AI Governance Snapshot buyer fulfillment packet.")
     parser.add_argument("--buyer-email", required=True)
     parser.add_argument("--workflow-name", required=True)
     parser.add_argument("--payment-reference", default="")

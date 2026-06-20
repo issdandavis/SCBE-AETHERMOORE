@@ -50,7 +50,12 @@ CHEMISTRY_CASES = [
     ("2H2 + O2 -> 2H2O", "stable", "synthesis", "atoms conserved and products well-formed"),
     ("HCl + NaOH -> NaCl + H2O", "stable", "neutralization", "acid-base balance closes cleanly"),
     ("2Na + 2H2O -> 2NaOH + H2", "unstable", "displacement", "reactivity is high and release is vigorous"),
-    ("2Al + Fe2O3 -> Al2O3 + 2Fe", "unstable", "redox", "thermite-style energy release indicates a high-reactivity lane"),
+    (
+        "2Al + Fe2O3 -> Al2O3 + 2Fe",
+        "unstable",
+        "redox",
+        "thermite-style energy release indicates a high-reactivity lane",
+    ),
 ]
 
 
@@ -78,7 +83,7 @@ def letter_records() -> list[dict]:
             f"math: symbol_index({letter}) = {idx}\n"
             f"english: the letter {letter} is primitive symbol {idx}\n"
             f"binary: {idx} -> {binary}\n"
-            f"invariant: one symbol, one index, one binary encoding"
+            "invariant: one symbol, one index, one binary encoding"
         )
         rows.append(make_record(user, assistant, category="alphabet", holdout=idx % 5 == 0))
     return rows
@@ -137,7 +142,7 @@ def tier_records() -> list[dict]:
             f"set: {all_names}\n"
             f"focus: {name}\n"
             f"definition: {meaning}\n"
-            f"invariant: all four tiers are part of one governance decision box"
+            "invariant: all four tiers are part of one governance decision box"
         )
         rows.append(make_record(user, assistant, category="risk_tiers", holdout=idx == 2))
     return rows
@@ -152,7 +157,7 @@ def chemistry_records() -> list[dict]:
             f"class: {reaction_class}\n"
             f"stability: {stability}\n"
             f"reason: {why}\n"
-            f"transfer: stability and instability can be mapped into other governed transformation fields"
+            "transfer: stability and instability can be mapped into other governed transformation fields"
         )
         rows.append(make_record(user, assistant, category="chemistry", holdout=idx % 2 == 1))
     return rows
@@ -160,12 +165,7 @@ def chemistry_records() -> list[dict]:
 
 def main() -> int:
     all_rows = (
-        letter_records()
-        + number_records()
-        + tongue_records()
-        + layer_records()
-        + tier_records()
-        + chemistry_records()
+        letter_records() + number_records() + tongue_records() + layer_records() + tier_records() + chemistry_records()
     )
 
     train_rows = [row for row in all_rows if row["meta"]["split"] == "train"]

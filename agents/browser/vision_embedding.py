@@ -29,6 +29,7 @@ EPSILON = 1e-10
 @dataclass
 class EmbeddingResult:
     """Result of embedding an observation."""
+
     euclidean_embedding: np.ndarray
     poincare_embedding: np.ndarray
     euclidean_norm: float
@@ -56,6 +57,7 @@ class VisionEmbedder:
         clip_model: CLIP model name
         projection_matrix: Learned projection from CLIP dim to target dim
     """
+
     target_dim: int = 16
     clip_model_name: str = "ViT-B/32"
     curvature: float = 1.0  # Poincare ball curvature
@@ -103,7 +105,7 @@ class VisionEmbedder:
         if device is None:
             if torch.cuda.is_available():
                 device = "cuda"
-            elif hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
+            elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
                 device = "mps"
             else:
                 device = "cpu"
@@ -153,7 +155,7 @@ class VisionEmbedder:
 
         # Ensure correct shape (may need to transpose if input_dim < target_dim)
         if input_dim >= self.target_dim:
-            projection = q[:, :self.target_dim]
+            projection = q[:, : self.target_dim]
         else:
             projection = q
 
@@ -194,11 +196,7 @@ class VisionEmbedder:
 
         return result
 
-    def project_to_poincare_scaled(
-        self,
-        v: np.ndarray,
-        temperature: float = 1.0
-    ) -> np.ndarray:
+    def project_to_poincare_scaled(self, v: np.ndarray, temperature: float = 1.0) -> np.ndarray:
         """
         Project to Poincare ball with temperature scaling.
 
@@ -229,11 +227,7 @@ class VisionEmbedder:
 
         return result
 
-    async def embed_image(
-        self,
-        image_data: bytes,
-        source: str = "unknown"
-    ) -> EmbeddingResult:
+    async def embed_image(self, image_data: bytes, source: str = "unknown") -> EmbeddingResult:
         """
         Embed an image into the Poincare ball.
 
@@ -280,7 +274,7 @@ class VisionEmbedder:
             euclidean_norm=euclidean_norm,
             poincare_radius=poincare_radius,
             embedding_hash=data_hash,
-            source=source
+            source=source,
         )
 
         # Update cache
@@ -345,6 +339,7 @@ class VisionEmbedder:
         # Use SHA-256 to generate deterministic values
         # Expand hash to full dimension using SHAKE-256
         import hashlib as hl
+
         shake = hl.shake_256(image_data)
         expanded = shake.digest(self._projection_matrix.shape[0] * 4)
 
@@ -365,11 +360,7 @@ class VisionEmbedder:
 
         return embedding
 
-    async def embed_text(
-        self,
-        text: str,
-        source: str = "text"
-    ) -> EmbeddingResult:
+    async def embed_text(self, text: str, source: str = "text") -> EmbeddingResult:
         """
         Embed text into the Poincare ball using CLIP.
 
@@ -384,7 +375,7 @@ class VisionEmbedder:
             await self.initialize()
 
         # Check cache
-        text_hash = self._compute_hash(text.encode('utf-8'))
+        text_hash = self._compute_hash(text.encode("utf-8"))
         if text_hash in self._cache:
             return self._cache[text_hash]
 
@@ -409,7 +400,7 @@ class VisionEmbedder:
             euclidean_norm=euclidean_norm,
             poincare_radius=poincare_radius,
             embedding_hash=text_hash,
-            source=source
+            source=source,
         )
 
         # Cache
@@ -423,7 +414,7 @@ class VisionEmbedder:
     async def _get_text_embedding(self, text: str) -> np.ndarray:
         """Get CLIP embedding for text."""
         if self._model is None:
-            return self._fallback_embedding(text.encode('utf-8'))
+            return self._fallback_embedding(text.encode("utf-8"))
 
         try:
             import torch
@@ -438,13 +429,10 @@ class VisionEmbedder:
 
         except Exception as e:
             logger.warning(f"CLIP text encoding failed: {e}")
-            return self._fallback_embedding(text.encode('utf-8'))
+            return self._fallback_embedding(text.encode("utf-8"))
 
     async def embed_action(
-        self,
-        action_type: str,
-        target: str,
-        context_embedding: Optional[np.ndarray] = None
+        self, action_type: str, target: str, context_embedding: Optional[np.ndarray] = None
     ) -> EmbeddingResult:
         """
         Embed an action into the Poincare ball.
@@ -488,7 +476,7 @@ class VisionEmbedder:
                 euclidean_norm=result.euclidean_norm,
                 poincare_radius=blended_radius,
                 embedding_hash=result.embedding_hash,
-                source=result.source
+                source=result.source,
             )
 
         return result
@@ -499,10 +487,7 @@ class VisionEmbedder:
         logger.info("Embedding cache cleared")
 
 
-async def create_vision_embedder(
-    target_dim: int = 16,
-    device: Optional[str] = None
-) -> VisionEmbedder:
+async def create_vision_embedder(target_dim: int = 16, device: Optional[str] = None) -> VisionEmbedder:
     """
     Factory function to create and initialize a vision embedder.
 

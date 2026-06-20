@@ -181,7 +181,7 @@ class TestInvocation:
                 name=f"voice_{t}",
                 tongue=t,
                 intent=f"I bring {t}",
-                need=f"I need all others",
+                need="I need all others",
             )
             for t in tongues
         ]

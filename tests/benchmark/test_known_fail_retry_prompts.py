@@ -68,7 +68,9 @@ def test_retry_prompt_bundle_turns_known_fail_into_bounded_prompt(tmp_path: Path
                         "consensus_role": "advisory_only",
                         "success_gate": "executable_tests_and_artifact_evidence",
                         "failure_role": "learning_packet_for_retry",
-                        "retry_shape": "problem + retry_with_knowledge + multi_agent_research + bigger_agent_confirmation",
+                        "retry_shape": (
+                            "problem + retry_with_knowledge + multi_agent_research + bigger_agent_confirmation"
+                        ),
                     },
                 }
             }

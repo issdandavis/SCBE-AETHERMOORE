@@ -234,7 +234,8 @@ def main() -> int:
         json.dump(report, f, ensure_ascii=False, indent=2)
 
     print(
-        f"PR merge report: {out_path} | prs={report['summary']['prs']} merged={report['summary']['merged']} blocked={report['summary']['blocked']}"
+        f"PR merge report: {out_path} | prs={report['summary']['prs']} "
+        f"merged={report['summary']['merged']} blocked={report['summary']['blocked']}"
     )
     return 0
 

@@ -20,15 +20,11 @@ def utc_now() -> str:
 
 
 def _hash_obj(obj: Any) -> str:
-    raw = json.dumps(
-        obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False
-    ).encode("utf-8")
+    raw = json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
     return hashlib.sha256(raw).hexdigest()
 
 
-def lower_ast(
-    nodes: list[dict[str, Any]], *, source_name: str = "inline.aether"
-) -> dict[str, Any]:
+def lower_ast(nodes: list[dict[str, Any]], *, source_name: str = "inline.aether") -> dict[str, Any]:
     goal = ""
     command_key = "route"
     language = "python"
@@ -41,9 +37,7 @@ def lower_ast(
         if kind == "set_goal":
             goal = str(data["goal"])
         elif kind == "encode":
-            command_key = (
-                str(data["content"]).strip().split("(")[0].split()[0].lower() or "route"
-            )
+            command_key = str(data["content"]).strip().split("(")[0].split()[0].lower() or "route"
             tongue = str(data["tongue"]).upper()
             language = LANG_MAP.get(tongue, "python")
         elif kind == "apply_fold":
@@ -67,7 +61,5 @@ def lower_ast(
         },
         "operations": operations,
     }
-    core["build_bijection"] = prove_dict(
-        {k: v for k, v in core.items() if k != "build_bijection"}
-    )
+    core["build_bijection"] = prove_dict({k: v for k, v in core.items() if k != "build_bijection"})
     return core

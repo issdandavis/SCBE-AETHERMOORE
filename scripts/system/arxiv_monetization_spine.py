@@ -21,7 +21,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
@@ -348,7 +347,8 @@ def _build_markdown_report(
         price_range = f"${offer.get('price_min_usd', 0):,} - ${offer.get('price_max_usd', 0):,}"
         title = str(lead.get("title", "")).replace("|", " ")
         lines.append(
-            f"| {lead.get('rank', '-') } | {lead.get('money_score', 0):.4f} | {offer.get('label', '')} | {price_range} | {title} |"
+            f"| {lead.get('rank', '-')} | {lead.get('money_score', 0):.4f} "
+            f"| {offer.get('label', '')} | {price_range} | {title} |"
         )
 
     lines.append("")

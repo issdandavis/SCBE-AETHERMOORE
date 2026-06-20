@@ -115,7 +115,13 @@ import torch
 from datasets import Dataset
 from huggingface_hub import hf_hub_download, whoami
 from peft import LoraConfig, PeftModel, get_peft_model
-from transformers import AutoModelForCausalLM, AutoTokenizer, DataCollatorForLanguageModeling, Trainer, TrainingArguments
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    DataCollatorForLanguageModeling,
+    Trainer,
+    TrainingArguments,
+)
 
 PROFILE = json.loads(r"""{profile_json}""")
 CONTRACT = json.loads(r"""{contract_json}""")
@@ -233,7 +239,11 @@ def main() -> None:
     train_rows = _load_jsonl_files(TRAIN_FILES, "train", token)
     eval_rows = _load_jsonl_files(EVAL_FILES, "eval", token) if EVAL_FILES else None
     train_ds = _build_dataset(train_rows, tokenizer, int(train_cfg.get("max_train_records", 1200)), seed)
-    eval_ds = _build_dataset(eval_rows, tokenizer, int(train_cfg.get("max_eval_records", 120)), seed) if eval_rows is not None else None
+    eval_ds = (
+        _build_dataset(eval_rows, tokenizer, int(train_cfg.get("max_eval_records", 120)), seed)
+        if eval_rows is not None
+        else None
+    )
 
     def tokenize(batch):
         return tokenizer(batch["text"], truncation=True, max_length=max_length)
@@ -275,7 +285,11 @@ def main() -> None:
     # Profiles with evaluation.contract_path use the frozen contract before push.
     # Focused repair profiles may omit contract_path; those push after training and
     # are evaluated by their own post-merge smoke gate.
-    print(json.dumps({{"event": "gate_start", "contract_id": CONTRACT.get("contract_id"), "n_prompts": len(CONTRACT.get("prompts") or [])}}))
+    print(json.dumps({{
+        "event": "gate_start",
+        "contract_id": CONTRACT.get("contract_id"),
+        "n_prompts": len(CONTRACT.get("prompts") or []),
+    }}))
     del trainer
     del model
     gc.collect()
@@ -300,7 +314,12 @@ def main() -> None:
         missing_required = [str(t) for t in (prompt.get("required") or []) if str(t).lower() not in body_lower]
         triggered_forbidden = [str(t) for t in (prompt.get("forbidden") or []) if str(t).lower() in body_lower]
         ok = (not missing_required) and (not triggered_forbidden)
-        return {{"id": prompt.get("id"), "ok": ok, "missing_required": missing_required, "triggered_forbidden": triggered_forbidden}}
+        return {{
+            "id": prompt.get("id"),
+            "ok": ok,
+            "missing_required": missing_required,
+            "triggered_forbidden": triggered_forbidden,
+        }}
 
     def _gate_generate(user_prompt, max_new_tokens=320):
         msgs = [
@@ -340,7 +359,13 @@ def main() -> None:
         if diag["ok"]:
             n_pass += 1
         elapsed = time.time() - t0
-        print(json.dumps({{"event": "gate_prompt", "id": diag["id"], "ok": diag["ok"], "missing": diag["missing_required"], "elapsed_s": round(elapsed, 1)}}))
+        print(json.dumps({{
+            "event": "gate_prompt",
+            "id": diag["id"],
+            "ok": diag["ok"],
+            "missing": diag["missing_required"],
+            "elapsed_s": round(elapsed, 1),
+        }}))
 
     n_total = len(results)
     pass_rate = (n_pass / n_total) if n_total else 1.0
@@ -378,7 +403,12 @@ def main() -> None:
         pushed_adapter = True
     else:
         reason = "gate_failed" if (push_requested and not overall_pass) else "push_disabled"
-        print(json.dumps({{"event": "push_skipped", "reason": reason, "overall_pass": overall_pass, "push_requested": push_requested}}))
+        print(json.dumps({{
+            "event": "push_skipped",
+            "reason": reason,
+            "overall_pass": overall_pass,
+            "push_requested": push_requested,
+        }}))
 
     summary = {{
         "profile_id": PROFILE["profile_id"],

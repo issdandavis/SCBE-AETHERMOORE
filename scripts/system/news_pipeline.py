@@ -709,12 +709,12 @@ def sft_raw_to_geo(raw: dict, geo: dict, idx: int) -> dict:
     tongue = SOURCE_TONGUE.get(src, "KO")
     return _sft(
         f"news:raw->geo:{idx}",
-        f"Apply GeoSeal geographic tagging to this news article. "
+        "Apply GeoSeal geographic tagging to this news article. "
         f"Identify the geographic origin from the source field ('{src}', region '{rgn}'), "
-        f"resolve precise WGS-84 coordinates, assign an ISO-3166 country code, determine "
+        "resolve precise WGS-84 coordinates, assign an ISO-3166 country code, determine "
         f"the canonical Sacred Tongue for this source ({TONGUE_NAMES[tongue]}), "
-        f"and produce a geometry-bound phase seal that encodes tongue-phase, "
-        f"phi-weight, and a SHA-256 geographic fingerprint.",
+        "and produce a geometry-bound phase seal that encodes tongue-phase, "
+        "phi-weight, and a SHA-256 geographic fingerprint.",
         {k: v for k, v in raw.items()},
         {"geo": geo["geo"]},
     )
@@ -727,9 +727,9 @@ def sft_geo_to_tok_encode(geo: dict, tok: dict, idx: int) -> dict:
     return _sft(
         f"news:geo->tok-encode:{tongue}:{idx}",
         f"Encode the title and URL of this geo-tagged news article into {tname} ({tongue}) "
-        f"Sacred Tongue tokens. Each byte maps bijectively to one prefix'suffix token pair "
-        f"using the deterministic 16×16 tongue grid. "
-        f"Return the token list, byte length, and first 8 preview tokens.",
+        "Sacred Tongue tokens. Each byte maps bijectively to one prefix'suffix token pair "
+        "using the deterministic 16×16 tongue grid. "
+        "Return the token list, byte length, and first 8 preview tokens.",
         {
             "title": geo.get("title", ""),
             "url": geo.get("url", ""),
@@ -753,8 +753,8 @@ def sft_tok_decode_roundtrip(tok: dict, idx: int) -> dict:
     return _sft(
         f"news:tok-decode-roundtrip:{tongue}:{idx}",
         f"Decode these {tname} ({tongue}) Sacred Tongue tokens back to the original "
-        f"UTF-8 text and verify the bijective round-trip. "
-        f"Confirm that decode(encode(text)) == text for each of the six tongues.",
+        "UTF-8 text and verify the bijective round-trip. "
+        "Confirm that decode(encode(text)) == text for each of the six tongues.",
         {
             "tokens_preview": preview,
             "tongue": tongue,
@@ -899,14 +899,14 @@ def sft_braid_alignment(tok: dict, idx: int) -> dict | None:
     preview_tokens = tok.get("tokenization", {}).get("tongue_matrix", {}).get(tongue, {}).get("tokens_preview", [])
     return _sft(
         f"news:braid-align:{tongue}:{idx}",
-        f"Score the semantic-atomic braid alignment for this news article. "
+        "Score the semantic-atomic braid alignment for this news article. "
         f"The primary Sacred Tongue is {tname} ({tongue}). "
-        f"Compute the 4-component alignment score: "
-        f"semantic_alignment (×0.25), roundtrip_ok (×0.20), atomic_home_alignment (×0.40), "
-        f"phi_underlay_alignment (×0.15). "
-        f"Report the aligned score, the full tongue-matrix cross-scores, and the "
-        f"discriminatory delta (aligned_score - worst_mismatch_score). "
-        f"A high delta means the payload is strongly bound to its canonical tongue.",
+        "Compute the 4-component alignment score: "
+        "semantic_alignment (×0.25), roundtrip_ok (×0.20), atomic_home_alignment (×0.40), "
+        "phi_underlay_alignment (×0.15). "
+        "Report the aligned score, the full tongue-matrix cross-scores, and the "
+        "discriminatory delta (aligned_score - worst_mismatch_score). "
+        "A high delta means the payload is strongly bound to its canonical tongue.",
         {
             "title": title,
             "source": source,

@@ -23,15 +23,9 @@ from src.crypto.sacred_tongue_payload_bijection import (
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--self-check", action="store_true", help="Run bijection on a tiny fixture dict"
-    )
-    parser.add_argument(
-        "--file", type=Path, help="Read raw bytes from file and round-trip all tongues"
-    )
-    parser.add_argument(
-        "--json-file", type=Path, help="Read JSON object and prove canonical encoding"
-    )
+    parser.add_argument("--self-check", action="store_true", help="Run bijection on a tiny fixture dict")
+    parser.add_argument("--file", type=Path, help="Read raw bytes from file and round-trip all tongues")
+    parser.add_argument("--json-file", type=Path, help="Read JSON object and prove canonical encoding")
     args = parser.parse_args()
 
     if args.self_check:

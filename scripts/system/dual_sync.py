@@ -50,13 +50,18 @@ HOOK_DEST = REPO_ROOT / ".git" / "hooks" / "post-push"
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-def run(cmd: list[str], *, cwd: Optional[Path] = None, check: bool = True,
-        capture: bool = True, timeout: int = 60) -> subprocess.CompletedProcess:
+def run(
+    cmd: list[str], *, cwd: Optional[Path] = None, check: bool = True, capture: bool = True, timeout: int = 60
+) -> subprocess.CompletedProcess:
     """Run a subprocess command and return the result."""
     cwd = cwd or REPO_ROOT
     return subprocess.run(
-        cmd, cwd=str(cwd), capture_output=capture, text=True,
-        check=check, timeout=timeout,
+        cmd,
+        cwd=str(cwd),
+        capture_output=capture,
+        text=True,
+        check=check,
+        timeout=timeout,
     )
 
 
@@ -141,13 +146,24 @@ def push_to_remote(remote: str, branch: str) -> tuple[bool, str]:
 # ---------------------------------------------------------------------------
 def create_github_pr(source_branch: str, target_branch: str, title: str) -> Optional[str]:
     """Create a GitHub PR using gh CLI. Returns PR URL or None."""
-    r = run(["gh", "pr", "create",
-             "--repo", GITHUB_REPO,
-             "--head", source_branch,
-             "--base", target_branch,
-             "--title", title,
-             "--body", f"Auto-created by dual_sync.py on {datetime.now(timezone.utc).isoformat()}"],
-            check=False)
+    r = run(
+        [
+            "gh",
+            "pr",
+            "create",
+            "--repo",
+            GITHUB_REPO,
+            "--head",
+            source_branch,
+            "--base",
+            target_branch,
+            "--title",
+            title,
+            "--body",
+            f"Auto-created by dual_sync.py on {datetime.now(timezone.utc).isoformat()}",
+        ],
+        check=False,
+    )
     if r.returncode == 0:
         return r.stdout.strip()
     print(f"  [WARN] GitHub PR creation failed: {r.stderr.strip()}")
@@ -162,18 +178,26 @@ def create_gitlab_mr(source_branch: str, target_branch: str, title: str) -> Opti
         return None
     import urllib.request
     import urllib.error
+
     project_id = GITLAB_PROJECT.replace("/", "%2F")
     url = f"https://gitlab.com/api/v4/projects/{project_id}/merge_requests"
-    data = json.dumps({
-        "source_branch": source_branch,
-        "target_branch": target_branch,
-        "title": title,
-        "remove_source_branch": False,
-    }).encode("utf-8")
-    req = urllib.request.Request(url, data=data, method="POST", headers={
-        "PRIVATE-TOKEN": token,
-        "Content-Type": "application/json",
-    })
+    data = json.dumps(
+        {
+            "source_branch": source_branch,
+            "target_branch": target_branch,
+            "title": title,
+            "remove_source_branch": False,
+        }
+    ).encode("utf-8")
+    req = urllib.request.Request(
+        url,
+        data=data,
+        method="POST",
+        headers={
+            "PRIVATE-TOKEN": token,
+            "Content-Type": "application/json",
+        },
+    )
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
             mr = json.loads(resp.read().decode())
@@ -355,20 +379,17 @@ def main() -> None:
               %(prog)s --install-hook
         """),
     )
-    parser.add_argument("--status", action="store_true",
-                        help="Show sync status (JSON)")
-    parser.add_argument("--sync", action="store_true",
-                        help="Perform sync")
-    parser.add_argument("--create-pr-if-blocked", action="store_true",
-                        help="Create PR/MR if direct push is blocked by branch protection")
-    parser.add_argument("--branch", action="append", default=None,
-                        help="Branch(es) to sync (default: current branch)")
-    parser.add_argument("--all-branches", action="store_true",
-                        help="Sync all branches that exist on either remote")
-    parser.add_argument("--install-hook", action="store_true",
-                        help="Install post-push-gitlab hook")
-    parser.add_argument("--json", action="store_true",
-                        help="Output as JSON (default for --status)")
+    parser.add_argument("--status", action="store_true", help="Show sync status (JSON)")
+    parser.add_argument("--sync", action="store_true", help="Perform sync")
+    parser.add_argument(
+        "--create-pr-if-blocked",
+        action="store_true",
+        help="Create PR/MR if direct push is blocked by branch protection",
+    )
+    parser.add_argument("--branch", action="append", default=None, help="Branch(es) to sync (default: current branch)")
+    parser.add_argument("--all-branches", action="store_true", help="Sync all branches that exist on either remote")
+    parser.add_argument("--install-hook", action="store_true", help="Install post-push-gitlab hook")
+    parser.add_argument("--json", action="store_true", help="Output as JSON (default for --status)")
 
     args = parser.parse_args()
 
@@ -392,7 +413,7 @@ def main() -> None:
             # strip remote prefix
             for remote in (GITHUB_REMOTE, GITLAB_REMOTE):
                 if line.startswith(f"{remote}/"):
-                    branches.add(line[len(remote) + 1:])
+                    branches.add(line[len(remote) + 1 :])
         branch_list = sorted(branches)
     elif args.branch:
         branch_list = args.branch

@@ -1,0 +1,28 @@
+{
+  "name": "repo-health-check",
+  "description": "3-step repo health check: observe state, verify bench 26/26, confirm npm pack includes workflow driver.",
+  "initial_terminal_state": "$ ",
+  "steps": [
+    {
+      "id": "git-status",
+      "instruction": "Run these two commands and report what you find:\n  git status --short\n  git log --oneline -5\nSummarize: any uncommitted changes, untracked files, and the last 5 commits.",
+      "loop": false,
+      "max_turns": 3,
+      "allow_unverified": true
+    },
+    {
+      "id": "shell-benchmark",
+      "instruction": "Run the shell benchmark:\n  node packages/cli/scripts/shell_benchmark.cjs\nAll 26 tests must pass (exit 0). Report the score line and which cases passed or failed.",
+      "done_if": "node packages/cli/scripts/shell_benchmark.cjs --last-artifact",
+      "loop": true,
+      "max_turns": 3
+    },
+    {
+      "id": "pack-verify",
+      "instruction": "Run the npm pack dry-run for the CLI package:\n  npm pack --dry-run --json --prefix packages/cli\nConfirm that scripts/scbe_workflow.cjs appears in the file list.",
+      "done_if": "node -e \"const {execSync}=require('child_process');const out=execSync('npm pack --dry-run --json',{cwd:'packages/cli',encoding:'utf8'});const files=JSON.parse(out)[0].files.map(f=>f.path);if(!files.some(f=>f.includes('scbe_workflow')))throw new Error('scbe_workflow.cjs missing');console.log('OK: '+files.length+' files')\"",
+      "loop": false,
+      "max_turns": 3
+    }
+  ]
+}

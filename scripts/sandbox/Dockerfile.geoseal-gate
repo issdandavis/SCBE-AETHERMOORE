@@ -1,0 +1,36 @@
+# Throwaway sandbox for exercising the GeoSeal execution gate in isolation.
+#
+# WHY: the gate's execution path (execute_governed_command) actually launches
+# subprocesses. We never want to test that on a dev machine. Inside this
+# container, anything a test passes through the gate only ever touches THIS
+# container's filesystem — which is destroyed on exit (`docker run --rm`).
+#
+# Build/run via: scripts/sandbox/run-geoseal-gate-sandbox.sh  (or .ps1)
+FROM python:3.12-slim
+
+# Unprivileged user + isolated workdir.
+RUN useradd -m -u 1001 sandbox && mkdir -p /work && chown sandbox:sandbox /work
+WORKDIR /work
+
+# Python deps. The liboqs C library is intentionally skipped — the PQC code has
+# a pure-Python fallback (SCBE_FORCE_SKIP_LIBOQS) so the gate imports without it.
+COPY requirements.txt ./
+RUN pip install --no-cache-dir pytest \
+    && pip install --no-cache-dir -r requirements.txt || true
+
+# Only what the gate tests need (keeps the image small — no node_modules/dist).
+COPY src ./src
+COPY tests ./tests
+COPY scripts/sandbox ./scripts/sandbox
+COPY pytest.ini ./
+
+RUN chown -R sandbox:sandbox /work
+USER sandbox
+ENV PYTHONPATH=/work \
+    SCBE_SANDBOX=1 \
+    SCBE_FORCE_SKIP_LIBOQS=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+# Default: gate unit tests + the sandbox-only execution smoke.
+# `-o addopts=""` drops repo-wide coverage flags so this stays a fast, targeted run.
+CMD ["sh", "-c", "python -m pytest tests/crypto/test_geoseal_execution_gate.py -v -o addopts='' -p no:cacheprovider && python scripts/sandbox/sandbox_exec_smoke.py"]

@@ -93,4 +93,4 @@ No system catches everything. The geometry catches 74.2% in under 8ms with no in
 
 *Code: [src/harmonic/harmonicScaling.ts](https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/src/harmonic/harmonicScaling.ts)*
 
-*Related: [Hyperbolic geometry for AI governance](/articles/hyperbolic-geometry-for-ai-governance) | [The Six Sacred Tongues as a coordinate system](/articles/the-six-sacred-tongues-coordinate-system)*
+*Related: [Hyperbolic geometry for AI governance](2026-05-23-hyperbolic-geometry-for-ai-governance.md) | [The Six Sacred Tongues as a coordinate system](2026-05-23-the-six-sacred-tongues-coordinate-system.md)*

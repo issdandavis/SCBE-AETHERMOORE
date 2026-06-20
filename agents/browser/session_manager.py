@@ -8,7 +8,12 @@ from typing import Any, Dict, Optional
 
 import numpy as np
 
-from agents.browser.action_validator import ActionValidationResult, ActionValidator, ValidationDecision, ValidationPolicy
+from agents.browser.action_validator import (
+    ActionValidationResult,
+    ActionValidator,
+    ValidationDecision,
+    ValidationPolicy,
+)
 from agents.browser.dom_snapshot import DomSnapshot, make_action_snapshot_context, make_dom_snapshot
 
 
@@ -56,7 +61,6 @@ class _MockBrowserBackend:
 
     async def close(self) -> None:
         self.event_log.append({"event": "close"})
-
 
 
 class SessionDecision(str, Enum):
@@ -117,18 +121,21 @@ class AetherbrowseSession:
         if self.config.backend != "cdp":
             if self.config.backend == "playwright":
                 from agents.browsers import PlaywrightBackend
+
                 return PlaywrightBackend(
                     browser_type=self.config.playwright_browser,
                     headless=self.config.headless,
                 )
             if self.config.backend == "selenium":
                 from agents.browsers import SeleniumBackend
+
                 return SeleniumBackend(
                     browser=self.config.selenium_browser,
                     headless=self.config.headless,
                 )
             if self.config.backend == "chrome_mcp":
                 from agents.browsers import ChromeMCPBackend
+
                 return ChromeMCPBackend(tab_id=self.config.chrome_mcp_tab_id)
             if self.config.backend == "auto":
                 candidates = ("playwright", "cdp", "selenium", "chrome_mcp")
@@ -150,6 +157,7 @@ class AetherbrowseSession:
 
     def _make_session_id(self, prefix: str) -> str:
         import uuid
+
         return f"{prefix}-{uuid.uuid4().hex[:10]}"
 
     async def initialize(self) -> bool:
@@ -320,10 +328,13 @@ class AetherbrowseSession:
                 "audit": _as_dict(entry),
             }
 
-        can_execute = validation.can_execute or (self.config.auto_escalate and validation.decision == ValidationDecision.ESCALATE)
+        can_execute = validation.can_execute or (
+            self.config.auto_escalate and validation.decision == ValidationDecision.ESCALATE
+        )
         if not can_execute or audit_only:
             entry = self._record_audit(
-                action, target,
+                action,
+                target,
                 SessionDecision.ALLOW if can_execute else validation.decision,
                 validation,
                 error=None if audit_only else "dry-run",
@@ -341,7 +352,11 @@ class AetherbrowseSession:
             execution = await self._dispatch(action, target, value)
             await self._maybe_snapshot(action, True)
             self.current_embedding = np.array(validation.embedding, dtype=float)
-            session_decision = SessionDecision.QUARANTINE if validation.decision == ValidationDecision.QUARANTINE else SessionDecision.ALLOW
+            session_decision = (
+                SessionDecision.QUARANTINE
+                if validation.decision == ValidationDecision.QUARANTINE
+                else SessionDecision.ALLOW
+            )
             entry = self._record_audit(action, target, session_decision, validation, execution=execution)
             return {
                 "session_id": self.session_id,

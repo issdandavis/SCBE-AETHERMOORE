@@ -12,7 +12,6 @@ from dataclasses import asdict, dataclass
 from typing import Any, Literal
 import math
 
-
 Decision = Literal["ALLOW", "QUARANTINE", "DENY"]
 
 
@@ -196,4 +195,3 @@ class MultiModelModalMatrix:
             signals=signals,
             rationale=rationale,
         )
-

@@ -6,7 +6,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 TRAIN_PATH = REPO_ROOT / "training-data" / "sft" / "ca_opcode_literal_sft_v1_train.sft.jsonl"
 HOLDOUT_PATH = REPO_ROOT / "training-data" / "sft" / "ca_opcode_literal_sft_v1_holdout.sft.jsonl"

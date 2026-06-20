@@ -153,7 +153,9 @@ def build_report(
         "score": average,
         "passed_records": sum(1 for item in scores if item["ok"]),
         "decision": "PASS" if rows and average >= 0.9 else "HOLD",
-        "promotion_gate": "PASS requires source identity, observed evidence, inference boundary, and verification step preservation.",
+        "promotion_gate": (
+            "PASS requires source identity, observed evidence, inference boundary, and verification step preservation."
+        ),
         "record_scores": scores,
     }
     run_dir = output_dir / run_id

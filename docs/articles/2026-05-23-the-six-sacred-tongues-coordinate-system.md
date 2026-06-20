@@ -108,4 +108,4 @@ The full tokenizer source is in [src/tokenizer/](https://github.com/issdandavis/
 
 ---
 
-*Related: [What the harmonic wall is actually measuring](/articles/why-our-safety-system-scores-low)*
+*Related: [What the harmonic wall is actually measuring](2026-05-23-why-our-safety-system-scores-low.md)*

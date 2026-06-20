@@ -182,4 +182,4 @@ The demo shows:
 - Interactive Poincaré ball with hyperbolic distance
 - Risk amplification via H(d*) = exp(d*²)
 - Anti-fragile stiffness response
-- 13-layer security stack
+- 14-Layer security stack

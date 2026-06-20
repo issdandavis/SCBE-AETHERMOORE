@@ -93,6 +93,10 @@ def replay_log(
     durations = [float(e.get("duration_seconds", 0) or 0) for e in events]
     tokens_in = [int(e.get("tokens_in", 0) or 0) for e in events]
     tokens_out = [int(e.get("tokens_out", 0) or 0) for e in events]
+    # cost_usd is additive in schema 1.1.0; pre-1.1.0 events price at 0.
+    cost_by_provider: Dict[str, float] = defaultdict(float)
+    for e in events:
+        cost_by_provider[e.get("llm_provider") or "(none)"] += float(e.get("cost_usd", 0) or 0)
 
     by_provider = Counter(e.get("llm_provider") or "(none)" for e in events)
     by_task = Counter(e.get("task_type", "?") for e in events)
@@ -131,6 +135,10 @@ def replay_log(
             "in_total": sum(tokens_in),
             "out_total": sum(tokens_out),
             "out_per_event_mean": round(statistics.fmean(tokens_out), 1) if tokens_out else 0.0,
+        },
+        "cost_usd": {
+            "total": round(sum(cost_by_provider.values()), 6),
+            "by_provider": {p: round(c, 6) for p, c in cost_by_provider.items()},
         },
         "providers": dict(by_provider),
         "tasks": dict(by_task),
