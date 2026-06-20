@@ -36,3 +36,5 @@ python/scbe/token_board.py :: conlang tokens bound to verified prime-classificat
 python/scbe/process_router.py :: the assistant -- correct process injection via context+permissions; classify a job and route it (destructive->refuse permission floor, compute->PAL, classify->deterministic tool, judgment->direct), measured router vs raw on a mixed job set
 
 python/scbe/code_factory.py :: warehouse-topology job orchestrator -- gate, conveyor-route, cheap station does the work, QC verifies (differential cross-check for compute), ship if ok else summon a capable manager on exception; headline metric = manager-call rate
+
+python/scbe/tongue_diff.py :: differential dimension analysis over the six sacred tongues -- multi-state venn membership across the 6 tongue dimensions + phi-weighted differential (shared vs distinguishing tongues + phase deviation); governance tongues UM/DR drift weighs more than transport
