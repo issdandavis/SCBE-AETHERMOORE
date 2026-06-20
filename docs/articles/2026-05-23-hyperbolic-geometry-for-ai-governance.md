@@ -90,4 +90,4 @@ The codebase: [issdandavis/SCBE-AETHERMOORE](https://github.com/issdandavis/SCBE
 
 ---
 
-*Related: [The Six Sacred Tongues as a coordinate system](/articles/the-six-sacred-tongues-coordinate-system)*
+*Related: [The Six Sacred Tongues as a coordinate system](2026-05-23-the-six-sacred-tongues-coordinate-system.md)*

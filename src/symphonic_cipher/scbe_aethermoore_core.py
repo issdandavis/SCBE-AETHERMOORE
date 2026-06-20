@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 SCBE-AETHERMOORE v3.0: Unified Governance Runtime
-13-Layer Cryptographic-Geometric Stack
+14-Layer Cryptographic-Geometric Stack
 
 GOLDEN MASTER - LOCKED & VERIFIED
 Version: 3.0.0
@@ -313,7 +313,7 @@ def aethermoore_snap(state: AethermooreState, V_max: float = 1.5) -> Tuple[Aethe
 # INTEGRATION: THE VERIFIER
 # ============================================================================
 class SCBEAethermooreVerifier:
-    """Complete 13-layer authorization verifier."""
+    """Complete 14-Layer authorization verifier."""
 
     def __init__(self, key: bytes, W_hopfield: np.ndarray = None):
         self.hmac_chain = HMACChain(key)
@@ -324,7 +324,7 @@ class SCBEAethermooreVerifier:
 
     def verify_request(self, context: np.ndarray, intent: np.ndarray, payload: bytes):
         """
-        Full 13-layer verification pipeline.
+        Full 14-Layer verification pipeline.
         Returns: (is_accept, reason, final_state)
         """
         self.hmac_chain.tag(payload)

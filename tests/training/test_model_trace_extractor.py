@@ -17,7 +17,13 @@ def test_extract_records_from_jsonl_is_deterministic(tmp_path: Path) -> None:
                     {"role": "user", "content": "Turn this conversation into a schema and builder."},
                     {
                         "role": "assistant",
-                        "content": "The route-consistency object should preserve intent and execution.\n\n1. Add schema\n2. Add builder for scripts/build_route_consistency_records.py\n\n```python\nprint('ok')\n```\n\nALLOW once verified.",
+                        "content": (
+                            "The route-consistency object should preserve intent and execution.\n\n"
+                            "1. Add schema\n"
+                            "2. Add builder for scripts/build_route_consistency_records.py\n\n"
+                            "```python\nprint('ok')\n```\n\n"
+                            "ALLOW once verified."
+                        ),
                     },
                 ],
             }

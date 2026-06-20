@@ -118,7 +118,7 @@ def make_dom_snapshot(
         button_count=_count_tag(html, "button"),
         timestamp=datetime.now(timezone.utc).isoformat(),
         html_sha256=digest,
-        raw_html=html[:max(64, 2 * max_text)] if include_html else None,
+        raw_html=html[: max(64, 2 * max_text)] if include_html else None,
     )
 
 

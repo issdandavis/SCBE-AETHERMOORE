@@ -21,10 +21,20 @@ scbe demo --json
 scbe selftest
 scbe doctor --json
 scbe credits
+scbe do "build the browser benchmark adapter and prove it" --squad --loops 6 --land every-stage --json
+scbe work init --objective "cross language compile lane" --json
+scbe agent spawn --workflow <id> --role tester --mandate "prove fixtures" --json
+scbe land create --workflow <id> --summary "stage verified" --json
 scbe shell
+scbe shell --squad
 scbe run "npm test"
 scbe status
 scbe history --limit 20
+scbe bench status
+scbe bench list --json
+scbe bench rubix-browser --json
+scbe bench prove rubix-browser --write proof.json
+scbe youtube review video-package.json --json
 scbe ca-plan --ops "abs abs add" --json
 scbe compile ca --opcodes "0x09 0x09 0x00" --target python --fn score --args a,b
 scbe render-op --op add --target KO --a left --b right
@@ -45,11 +55,29 @@ The same binary is also exposed as `geoseal` and `scbe-geoseal`.
 - `selftest`: runs the npm-installable smoke test (`version` + `doctor`).
 - `credits`: prints the hosted-run intake, service-credit policy, and top-up
   links for paid hosted work.
+- `shell`: opens the SCBE terminal wrapper. `shell --squad` routes plain
+  English turns across local/free Ollama, fast Cerebras, and Groq policy/safety
+  lanes based on the task text.
+- `do`: creates or resumes a durable Longform Bridge workflow, records the
+  objective, optionally spawns a governed squad contract, and emits a verified
+  landing receipt.
+- `work`: initializes, lists, and verifies local Longform Bridge workflows.
+- `agent spawn`: records an agent role, mandate, allowed-tool contract, and
+  receipt into the workflow ledger.
+- `land create`: writes a protected context landing with mission/invariant/
+  claim-boundary/open-question fields preserved for later resume packs.
 - `shell`: opens the SCBE terminal wrapper.
 - `run`: executes a normal shell command with Compass metadata, Clock metadata,
   GeoSeal governance, exit-code preservation, and JSONL history.
 - `status`: prints local terminal/compiler/router capability status.
 - `history`: prints recent SCBE terminal runs.
+- `bench`: runs and inspects local executable evidence lanes. Use
+  `bench status` for a compact operator view, `bench list` to see available
+  lanes, `bench latest <lane>` to inspect the latest artifact, and
+  `bench prove <lane> --write proof.json` to create a portable proof packet
+  with command, artifact, commit, and claim boundary.
+- `youtube`: local-first creator utility gates. `youtube review <package.json>`
+  checks title, description, tags, privacy, and script length before upload.
 - `ca-plan`: resolves Cassisivadan operation names into canonical opcode bytes.
 - `compile ca`: compiles CA opcode bytes into target source (`python`,
   `typescript`, or `go`) with a round-trip trace.
@@ -80,6 +108,31 @@ placed between an AI agent and its tools:
 
 This is the buyer-facing promise: put SCBE in front of an AI agent and see what
 it catches, why it caught it, and what audit trail it leaves behind.
+
+## Durable Longform Bridge Lane
+
+The Longform Bridge commands are the CLI-first durable spine for later MCP and
+Temporal wrappers. They are local-first and write a hash-chained JSONL ledger
+under `.scbe/longform/workflows/<workflow_id>/ledger.jsonl`; the raw ledger
+remains the authoritative record.
+
+```bash
+scbe do "build the browser benchmark adapter and prove it" \
+  --squad --loops 6 --land every-stage --resume-policy latest-safe --json
+
+scbe work status --workflow build-the-browser-benchmark-adapter-and-prove-it --json
+```
+
+For manual staged work:
+
+```bash
+scbe work init --objective "cross-language compile lane" --workflow wf-cross --json
+scbe agent spawn --workflow wf-cross --role tester --mandate "prove fixtures" --json
+scbe land create --workflow wf-cross --stage verify --summary "fixtures verified" --json
+```
+
+Each event stores `previous_hash` and `event_hash`, so `scbe work status --json`
+can detect tampering before a future resume or MCP tool call trusts the state.
 
 ## Local Compiler Lane
 
@@ -161,6 +214,47 @@ Each run records:
 
 Use `scbe shell` to stay inside that wrapper while typing normal terminal
 commands.
+
+## Benchmark Evidence Lane
+
+Use `scbe bench` when you need proof you can run, not just a status claim:
+
+```bash
+scbe bench status
+scbe bench list --json
+scbe bench rubix-browser --json
+scbe bench latest rubix-browser
+scbe bench prove rubix-browser --write proof.json
+```
+
+The proof packet is designed for website and release notes. It records the
+command, latest artifact path, current commit, and claim boundary so local
+evidence does not get overstated as a public leaderboard result.
+
+## YouTube Package Review
+
+Use `scbe youtube review` before publishing or handing a video package to an
+upload workflow:
+
+```bash
+scbe youtube review video-package.json
+scbe youtube review video-package.json --json
+```
+
+The package is plain JSON:
+
+```json
+{
+  "title": "How I Automate My YouTube Workflow Without Losing Control",
+  "description": "A practical walkthrough of a local-first workflow for creators with review gates and manual approval.",
+  "tags": ["youtube automation", "creator tools", "workflow"],
+  "privacy": "unlisted",
+  "script": "..."
+}
+```
+
+This command is a local readiness gate only. It does not upload or change a
+YouTube account.
 
 ## Free Local Use + Paid Hosted Runs
 

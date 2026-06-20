@@ -173,7 +173,10 @@ PATTERN_REGISTRY: List[CodePattern] = [
         description="Shared mutable state accessed from concurrent paths without synchronization",
         why="Outcome depends on timing, not logic. Passes tests 99% of the time, fails in prod.",
         code_good="async with lock:\n    balance = await get_balance()\n    await set_balance(balance - amount)",
-        code_bad="balance = await get_balance()  # another task modifies balance HERE\nawait set_balance(balance - amount)",
+        code_bad=(
+            "balance = await get_balance()  # another task modifies balance HERE\n"
+            "await set_balance(balance - amount)"
+        ),
         cross_domain="Two tongues casting on the same target without coordination. Spell collision.",
     ),
     # ── RU / Governance (n=2+) ──────────────────────────────────────────
@@ -185,7 +188,10 @@ PATTERN_REGISTRY: List[CodePattern] = [
         description="Authentication and authorization checked at system boundary, not sprinkled through code",
         why="Security scattered through business logic = holes everywhere. One gate, one check.",
         code_good="@require_auth(role='admin')\ndef delete_user(user_id: str) -> None:",
-        code_bad="def delete_user(user_id, auth_token):\n    if not check_token(auth_token): ...  # missed in 3 other callers",
+        code_bad=(
+            "def delete_user(user_id, auth_token):\n"
+            "    if not check_token(auth_token): ...  # missed in 3 other callers"
+        ),
         cross_domain="RU governance: one gatekeeper at the boundary, not a hundred scattered guards.",
     ),
     CodePattern(
@@ -216,7 +222,9 @@ PATTERN_REGISTRY: List[CodePattern] = [
         domain="compute",
         is_antipattern=False,
         min_n=1,
-        description="Choose data structure by access pattern: sets for membership, dicts for lookup, heaps for priority",
+        description=(
+            "Choose data structure by access pattern: " "sets for membership, dicts for lookup, heaps for priority"
+        ),
         why="Wrong structure = wrong complexity class. A list used as a set is O(n) for every lookup.",
         code_good="seen = set()\nfor item in stream:\n    if item.id not in seen: ...",
         code_bad="seen = []\nfor item in stream:\n    if item.id not in seen: ...",
@@ -252,7 +260,10 @@ PATTERN_REGISTRY: List[CodePattern] = [
         min_n=0,
         description="Catch specific exceptions, handle or propagate with context",
         why="Every error is information. Silencing it destroys the signal.",
-        code_good="try:\n    result = parse(data)\nexcept ValueError as e:\n    log.warning('Parse failed: %s', e)\n    return fallback(data)",
+        code_good=(
+            "try:\n    result = parse(data)\nexcept ValueError as e:\n"
+            "    log.warning('Parse failed: %s', e)\n    return fallback(data)"
+        ),
         code_bad="try:\n    result = parse(data)\nexcept:\n    pass",
         cross_domain="UM shadow: the edge case IS the boundary signal. Silencing it = going blind at the edge.",
     ),
@@ -262,7 +273,10 @@ PATTERN_REGISTRY: List[CodePattern] = [
         is_antipattern=True,
         min_n=0,
         description="Catching all exceptions without discrimination, especially silently",
-        why="Hides bugs, hides crashes, hides security violations. The worst anti-pattern because it hides ALL anti-patterns.",
+        why=(
+            "Hides bugs, hides crashes, hides security violations. "
+            "The worst anti-pattern because it hides ALL anti-patterns."
+        ),
         code_good="except (ConnectionError, TimeoutError) as e:\n    retry_with_backoff(e)",
         code_bad="except:\n    pass  # this swallows KeyboardInterrupt, SystemExit, EVERYTHING",
         cross_domain="Worst swear word in UM: painting over the cracks. The void hides what the void consumes.",
@@ -274,7 +288,10 @@ PATTERN_REGISTRY: List[CodePattern] = [
         min_n=3,
         description="Operations that can produce wrong results without raising errors",
         why="Wrong answer > no answer > silent wrong answer. The last one compounds into cascading lies.",
-        code_good="def divide(a: float, b: float) -> float:\n    if b == 0:\n        raise ZeroDivisionError('denominator is zero')\n    return a / b",
+        code_good=(
+            "def divide(a: float, b: float) -> float:\n    if b == 0:\n"
+            "        raise ZeroDivisionError('denominator is zero')\n    return a / b"
+        ),
         code_bad="def divide(a, b):\n    return a / b if b else 0  # silently returns 0 for division by zero",
         cross_domain="Trit boundary without a fork: the model saw one side, believed it was the only side.",
     ),
@@ -286,8 +303,14 @@ PATTERN_REGISTRY: List[CodePattern] = [
         min_n=2,
         description="Each module/class/function does one thing and owns one reason to change",
         why="When a unit has two responsibilities, changes to one break the other. Coupling compounds.",
-        code_good="class UserRepository:\n    def find(self, user_id): ...\n\nclass EmailService:\n    def send(self, to, body): ...",
-        code_bad="class UserManager:\n    def find(self, user_id): ...\n    def send_email(self, to, body): ...\n    def generate_report(self): ...",
+        code_good=(
+            "class UserRepository:\n    def find(self, user_id): ...\n\n"
+            "class EmailService:\n    def send(self, to, body): ..."
+        ),
+        code_bad=(
+            "class UserManager:\n    def find(self, user_id): ...\n"
+            "    def send_email(self, to, body): ...\n    def generate_report(self): ..."
+        ),
         cross_domain="DR forge: one anvil, one blade. A forge that also bakes bread makes bad swords and bad bread.",
     ),
     CodePattern(
@@ -296,9 +319,17 @@ PATTERN_REGISTRY: List[CodePattern] = [
         is_antipattern=True,
         min_n=2,
         description="One class that knows about and controls everything",
-        why="Every change touches the god object. Every test needs the god object. It becomes the bottleneck of all work.",
-        code_good="# Separate concerns into focused modules\nauth = AuthService()\nrouter = Router()\nstore = DataStore()",
-        code_bad="class App:\n    def authenticate(self): ...\n    def route(self): ...\n    def query_db(self): ...\n    def send_email(self): ...\n    def render_html(self): ...",
+        why=(
+            "Every change touches the god object. Every test needs the god object. "
+            "It becomes the bottleneck of all work."
+        ),
+        code_good=(
+            "# Separate concerns into focused modules\n" "auth = AuthService()\nrouter = Router()\nstore = DataStore()"
+        ),
+        code_bad=(
+            "class App:\n    def authenticate(self): ...\n    def route(self): ...\n"
+            "    def query_db(self): ...\n    def send_email(self): ...\n    def render_html(self): ..."
+        ),
         cross_domain="Swear word in DR: one polyhedron trying to be all 16 shapes at once. Structural impossibility.",
     ),
     CodePattern(
@@ -308,9 +339,14 @@ PATTERN_REGISTRY: List[CodePattern] = [
         min_n=4,
         description="Module A imports B, B imports A (directly or through a chain)",
         why="Creates a Mobius strip of initialization: neither can exist without the other already existing.",
-        code_good="# A depends on interface, B implements interface\nclass Repository(Protocol):\n    def save(self, item): ...",
+        code_good=(
+            "# A depends on interface, B implements interface\n"
+            "class Repository(Protocol):\n    def save(self, item): ..."
+        ),
         code_bad="# a.py: from b import B\n# b.py: from a import A\n# boom on import",
-        cross_domain="Two tongues that each require the other to be spoken first. Logical deadlock. Break with interface.",
+        cross_domain=(
+            "Two tongues that each require the other to be spoken first. " "Logical deadlock. Break with interface."
+        ),
     ),
     CodePattern(
         name="mutable_global_state",
@@ -319,8 +355,13 @@ PATTERN_REGISTRY: List[CodePattern] = [
         min_n=1,
         description="Global mutable variables that any code can read and write",
         why="Every function that touches global state has an invisible dependency on every other such function.",
-        code_good="def process(config: Config, data: Data) -> Result:\n    return Result(data.transform(config.params))",
-        code_bad="CONFIG = {}  # any module mutates this\ndef process(data):\n    return data.transform(CONFIG['params'])  # who set this? when?",
+        code_good=(
+            "def process(config: Config, data: Data) -> Result:\n" "    return Result(data.transform(config.params))"
+        ),
+        code_bad=(
+            "CONFIG = {}  # any module mutates this\ndef process(data):\n"
+            "    return data.transform(CONFIG['params'])  # who set this? when?"
+        ),
         cross_domain="Swear word in DR: uncontrolled torque on the lattice. Every node vibrates from every mutation.",
     ),
 ]
@@ -465,7 +506,7 @@ def select_patterns(
     # Sort by compound intent (highest first) and deduplicate by pattern name
     seen = set()
     unique_lessons = []
-    for lesson in sorted(lessons, key=lambda l: l.compound_intent, reverse=True):
+    for lesson in sorted(lessons, key=lambda item: item.compound_intent, reverse=True):
         if lesson.pattern.name not in seen:
             seen.add(lesson.pattern.name)
             unique_lessons.append(lesson)
@@ -506,9 +547,9 @@ def generate_code_lattice_bundle(
         gain=qho_bundle.multipath.monty_hall_gain,
     )
 
-    active_domains = list(dict.fromkeys(l.pattern.domain for l in lessons))
-    swear_count = sum(1 for l in lessons if l.pattern.is_antipattern)
-    total_compound = sum(l.compound_intent for l in lessons)
+    active_domains = list(dict.fromkeys(lesson.pattern.domain for lesson in lessons))
+    swear_count = sum(1 for lesson in lessons if lesson.pattern.is_antipattern)
+    total_compound = sum(lesson.compound_intent for lesson in lessons)
 
     return CodeLatticeBundle(
         qho_bundle=qho_bundle,

@@ -30,21 +30,138 @@ from .source_adapter import IngestionResult
 # ---------------------------------------------------------------------------
 
 _STOP_WORDS: Set[str] = {
-    "a", "about", "above", "after", "again", "against", "all", "am", "an",
-    "and", "any", "are", "as", "at", "be", "because", "been", "before",
-    "being", "below", "between", "both", "but", "by", "can", "could", "did",
-    "do", "does", "doing", "down", "during", "each", "few", "for", "from",
-    "further", "get", "got", "had", "has", "have", "having", "he", "her",
-    "here", "hers", "herself", "him", "himself", "his", "how", "if", "in",
-    "into", "is", "it", "its", "itself", "just", "me", "might", "more",
-    "most", "must", "my", "myself", "no", "nor", "not", "now", "of", "off",
-    "on", "once", "only", "or", "other", "our", "ours", "ourselves", "out",
-    "over", "own", "re", "same", "shall", "she", "should", "so", "some",
-    "such", "than", "that", "the", "their", "theirs", "them", "themselves",
-    "then", "there", "these", "they", "this", "those", "through", "to",
-    "too", "under", "until", "up", "us", "very", "was", "we", "were",
-    "what", "when", "where", "which", "while", "who", "whom", "why", "will",
-    "with", "would", "you", "your", "yours", "yourself", "yourselves",
+    "a",
+    "about",
+    "above",
+    "after",
+    "again",
+    "against",
+    "all",
+    "am",
+    "an",
+    "and",
+    "any",
+    "are",
+    "as",
+    "at",
+    "be",
+    "because",
+    "been",
+    "before",
+    "being",
+    "below",
+    "between",
+    "both",
+    "but",
+    "by",
+    "can",
+    "could",
+    "did",
+    "do",
+    "does",
+    "doing",
+    "down",
+    "during",
+    "each",
+    "few",
+    "for",
+    "from",
+    "further",
+    "get",
+    "got",
+    "had",
+    "has",
+    "have",
+    "having",
+    "he",
+    "her",
+    "here",
+    "hers",
+    "herself",
+    "him",
+    "himself",
+    "his",
+    "how",
+    "if",
+    "in",
+    "into",
+    "is",
+    "it",
+    "its",
+    "itself",
+    "just",
+    "me",
+    "might",
+    "more",
+    "most",
+    "must",
+    "my",
+    "myself",
+    "no",
+    "nor",
+    "not",
+    "now",
+    "of",
+    "off",
+    "on",
+    "once",
+    "only",
+    "or",
+    "other",
+    "our",
+    "ours",
+    "ourselves",
+    "out",
+    "over",
+    "own",
+    "re",
+    "same",
+    "shall",
+    "she",
+    "should",
+    "so",
+    "some",
+    "such",
+    "than",
+    "that",
+    "the",
+    "their",
+    "theirs",
+    "them",
+    "themselves",
+    "then",
+    "there",
+    "these",
+    "they",
+    "this",
+    "those",
+    "through",
+    "to",
+    "too",
+    "under",
+    "until",
+    "up",
+    "us",
+    "very",
+    "was",
+    "we",
+    "were",
+    "what",
+    "when",
+    "where",
+    "which",
+    "while",
+    "who",
+    "whom",
+    "why",
+    "will",
+    "with",
+    "would",
+    "you",
+    "your",
+    "yours",
+    "yourself",
+    "yourselves",
 }
 
 # ---------------------------------------------------------------------------
@@ -54,6 +171,7 @@ _STOP_WORDS: Set[str] = {
 
 class LinkType(str, Enum):
     """Classification of how a wikilink was discovered."""
+
     KEYWORD = "keyword"
     SEMANTIC = "semantic"
     CDDM_MORPHISM = "cddm_morphism"
@@ -64,9 +182,10 @@ class LinkType(str, Enum):
 @dataclass
 class WikiLink:
     """A proposed [[wikilink]] to an existing vault page."""
+
     target_page: str
     link_type: LinkType
-    confidence: float          # 0.0 -- 1.0
+    confidence: float  # 0.0 -- 1.0
     reason: str
     cddm_morphism: Optional[str] = None
 
@@ -77,46 +196,109 @@ class WikiLink:
 
 _DOMAIN_VOCAB: Dict[str, List[str]] = {
     "Energy": [
-        "energy", "force", "power", "joule", "kinetic", "potential", "watt",
-        "encryption", "key",
+        "energy",
+        "force",
+        "power",
+        "joule",
+        "kinetic",
+        "potential",
+        "watt",
+        "encryption",
+        "key",
     ],
     "Authority": [
-        "authority", "control", "command", "governance", "permission", "admin",
+        "authority",
+        "control",
+        "command",
+        "governance",
+        "permission",
+        "admin",
     ],
     "Entropy": [
-        "entropy", "chaos", "disorder", "randomness", "noise", "drift",
+        "entropy",
+        "chaos",
+        "disorder",
+        "randomness",
+        "noise",
+        "drift",
     ],
     "PlotChaos": [
-        "plot", "narrative", "story", "drama", "conflict", "tension",
+        "plot",
+        "narrative",
+        "story",
+        "drama",
+        "conflict",
+        "tension",
     ],
     "PolicyBreakdown": [
-        "policy", "rule", "regulation", "compliance", "violation", "breakdown",
+        "policy",
+        "rule",
+        "regulation",
+        "compliance",
+        "violation",
+        "breakdown",
     ],
     "Complexity": [
-        "complexity", "computation", "algorithm", "flop", "processing",
+        "complexity",
+        "computation",
+        "algorithm",
+        "flop",
+        "processing",
         "optimize",
     ],
     "Intrigue": [
-        "intrigue", "mystery", "puzzle", "deception", "subtlety",
+        "intrigue",
+        "mystery",
+        "puzzle",
+        "deception",
+        "subtlety",
     ],
     "Risk": [
-        "risk", "threat", "vulnerability", "attack", "exploit", "danger",
+        "risk",
+        "threat",
+        "vulnerability",
+        "attack",
+        "exploit",
+        "danger",
         "security",
     ],
     "Danger": [
-        "danger", "hazard", "harm", "critical", "emergency", "severe",
+        "danger",
+        "hazard",
+        "harm",
+        "critical",
+        "emergency",
+        "severe",
     ],
     "Structure": [
-        "structure", "schema", "pattern", "topology", "graph", "lattice",
+        "structure",
+        "schema",
+        "pattern",
+        "topology",
+        "graph",
+        "lattice",
     ],
     "Momentum": [
-        "momentum", "flow", "velocity", "inertia", "transport", "network",
+        "momentum",
+        "flow",
+        "velocity",
+        "inertia",
+        "transport",
+        "network",
     ],
     "Communication": [
-        "communication", "signal", "message", "protocol", "channel",
+        "communication",
+        "signal",
+        "message",
+        "protocol",
+        "channel",
     ],
     "DataFlow": [
-        "data", "bandwidth", "throughput", "latency", "streaming",
+        "data",
+        "bandwidth",
+        "throughput",
+        "latency",
+        "streaming",
     ],
 }
 
@@ -183,8 +365,7 @@ class CrossReferenceEngine:
 
         # Pre-compute lowercase keyword sets per page for fast lookup.
         self._kw_sets: Dict[str, Set[str]] = {
-            title: {kw.lower() for kw in kws}
-            for title, kws in vault_page_keywords.items()
+            title: {kw.lower() for kw in kws} for title, kws in vault_page_keywords.items()
         }
 
     # ------------------------------------------------------------------ #
@@ -217,10 +398,7 @@ class CrossReferenceEngine:
             if existing is None or link.confidence > existing.confidence:
                 best[link.target_page] = link
 
-        merged = [
-            lnk for lnk in best.values()
-            if lnk.confidence >= min_confidence
-        ]
+        merged = [lnk for lnk in best.values() if lnk.confidence >= min_confidence]
         merged.sort(key=lambda lnk: lnk.confidence, reverse=True)
         return merged
 
@@ -257,12 +435,14 @@ class CrossReferenceEngine:
                         best_kw = kw
 
             if best_kw is not None:
-                links.append(WikiLink(
-                    target_page=title,
-                    link_type=LinkType.KEYWORD,
-                    confidence=best_conf,
-                    reason=f"keyword match: '{best_kw}'",
-                ))
+                links.append(
+                    WikiLink(
+                        target_page=title,
+                        link_type=LinkType.KEYWORD,
+                        confidence=best_conf,
+                        reason=f"keyword match: '{best_kw}'",
+                    )
+                )
 
         return links
 
@@ -322,17 +502,19 @@ class CrossReferenceEngine:
                 overlap = page_kws & target_vocab
                 if overlap:
                     seen_pages.add(title)
-                    links.append(WikiLink(
-                        target_page=title,
-                        link_type=LinkType.CDDM_MORPHISM,
-                        confidence=0.65,
-                        reason=(
-                            f"CDDM morphism '{morphism_name}' bridges "
-                            f"to domain '{target_domain}' via keyword "
-                            f"overlap: {sorted(overlap)}"
-                        ),
-                        cddm_morphism=morphism_name,
-                    ))
+                    links.append(
+                        WikiLink(
+                            target_page=title,
+                            link_type=LinkType.CDDM_MORPHISM,
+                            confidence=0.65,
+                            reason=(
+                                f"CDDM morphism '{morphism_name}' bridges "
+                                f"to domain '{target_domain}' via keyword "
+                                f"overlap: {sorted(overlap)}"
+                            ),
+                            cddm_morphism=morphism_name,
+                        )
+                    )
 
         return links
 
@@ -382,12 +564,14 @@ class CrossReferenceEngine:
                 if cid in page_text:
                     conf = 0.95 if cid in explicit_ids else 0.90
                     seen_pages.add(title)
-                    links.append(WikiLink(
-                        target_page=title,
-                        link_type=LinkType.CITATION,
-                        confidence=conf,
-                        reason=f"shared identifier: '{cid}'",
-                    ))
+                    links.append(
+                        WikiLink(
+                            target_page=title,
+                            link_type=LinkType.CITATION,
+                            confidence=conf,
+                            reason=f"shared identifier: '{cid}'",
+                        )
+                    )
                     break  # one link per page
 
         return links
@@ -404,7 +588,4 @@ class CrossReferenceEngine:
         word list referenced by vault_source.py.
         """
         tokens = re.split(r"[^a-zA-Z0-9]+", text.lower())
-        return [
-            tok for tok in tokens
-            if len(tok) >= 3 and tok not in _STOP_WORDS
-        ]
+        return [tok for tok in tokens if len(tok) >= 3 and tok not in _STOP_WORDS]

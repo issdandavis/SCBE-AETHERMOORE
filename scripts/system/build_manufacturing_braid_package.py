@@ -20,14 +20,12 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SPIRAL_WORD_APP = REPO_ROOT / "spiral-word-app"
 if str(SPIRAL_WORD_APP) not in sys.path:
     sys.path.insert(0, str(SPIRAL_WORD_APP))
 
 from braid_ledger import BraidLedger, BraidReceipt  # type: ignore  # noqa: E402
-
 
 DEFAULT_MASTER_SEED = b"AETHERMOORE_DUAL_NODAL_PHASE_3A_v1_2026"
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "artifacts" / "manufacturing" / "dual_nodal_braid"

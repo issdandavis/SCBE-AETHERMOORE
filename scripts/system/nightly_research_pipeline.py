@@ -164,7 +164,7 @@ def run_phase(phase_name, dry_run=False):
         config = NEWS_SOURCES.get(phase_name, NEWS_SOURCES.get("night_darker"))
         print(f"\n  Source: {config['description']}")
         print(f"  Time window: {config['time_window']}")
-        print(f"  Queries:")
+        print("  Queries:")
         for q in config["queries"]:
             print(f"    - {q}")
 

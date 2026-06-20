@@ -81,9 +81,7 @@ def score_cell(tokenizer, model, prompts: list[str], expected: str, max_new: int
                 do_sample=False,
                 pad_token_id=tokenizer.pad_token_id,
             )
-        completion = tokenizer.decode(
-            out[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True
-        )
+        completion = tokenizer.decode(out[0][inputs["input_ids"].shape[1] :], skip_special_tokens=True)
         got_norm = completion.strip().lower()
         correct = expected_norm in got_norm[: len(expected_norm) + 20]
         if correct:

@@ -5,7 +5,6 @@ import datetime as _dt
 import json
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -105,9 +104,19 @@ def build_packets(goal: str) -> dict[str, str]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Generate an agentic-dev chessboard packet (Spec Kit + BMAD + GSD + Superpowers).")
-    parser.add_argument("--goal", default="Improve SCBE long-running agentic workflows with governed momentum trains.", help="Goal for the run.")
-    parser.add_argument("--output-dir", default="", help="Output directory relative to repo root (default: artifacts/chessboard/<timestamp>).")
+    parser = argparse.ArgumentParser(
+        description="Generate an agentic-dev chessboard packet (Spec Kit + BMAD + GSD + Superpowers)."
+    )
+    parser.add_argument(
+        "--goal",
+        default="Improve SCBE long-running agentic workflows with governed momentum trains.",
+        help="Goal for the run.",
+    )
+    parser.add_argument(
+        "--output-dir",
+        default="",
+        help="Output directory relative to repo root (default: artifacts/chessboard/<timestamp>).",
+    )
     args = parser.parse_args()
 
     stamp = _now_stamp()
@@ -126,10 +135,11 @@ def main() -> int:
     _write_json(out_dir / "meta.json", meta)
     _write_json(out_dir / "packets.json", packets)
 
-    print(json.dumps({"ok": True, "output_dir": str(out_dir.relative_to(ROOT)), "packet_count": len(packets)}, indent=2))
+    print(
+        json.dumps({"ok": True, "output_dir": str(out_dir.relative_to(ROOT)), "packet_count": len(packets)}, indent=2)
+    )
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

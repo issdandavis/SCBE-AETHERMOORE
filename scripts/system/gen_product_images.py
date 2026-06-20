@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Generate professional product cover images for Shopify store."""
+
 import math
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont

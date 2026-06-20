@@ -75,7 +75,9 @@ def run_gate(repo_root: Path, run_smoke: bool) -> dict[str, object]:
 
     smoke_results: list[CheckResult] = []
     if run_smoke:
-        ok_compile, detail_compile = _run_cmd([sys.executable, "-m", "py_compile", "scripts/scbe-system-cli.py"], repo_root)
+        ok_compile, detail_compile = _run_cmd(
+            [sys.executable, "-m", "py_compile", "scripts/scbe-system-cli.py"], repo_root
+        )
         smoke_results.append(CheckResult("smoke:compile_scbe_system_cli", ok_compile, detail_compile))
 
         ok_test, detail_test = _run_cmd(

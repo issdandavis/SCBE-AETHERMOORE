@@ -59,7 +59,7 @@ def format_grid(animals: list[dict], width: int = 24) -> list[str]:
 
 def render(board: dict, only_pack: str | None, max_per_pack: int) -> str:
     out_lines: list[str] = []
-    out_lines.append(f"Wildlife Board - harvested {board.get('harvested_at','?')}")
+    out_lines.append(f"Wildlife Board - harvested {board.get('harvested_at', '?')}")
     out_lines.append("=" * 64)
 
     totals = board.get("totals", {})
@@ -115,7 +115,7 @@ def render(board: dict, only_pack: str | None, max_per_pack: int) -> str:
         urgent = animals[:max_per_pack]
         for a in urgent:
             url = a.get("url") or a.get("path") or ""
-            out_lines.append(f"    {stone(a.get('liberties',0))} {a.get('id','?'):<32s} {a.get('title','')[:80]}")
+            out_lines.append(f"    {stone(a.get('liberties', 0))} {a.get('id', '?'):<32s} {a.get('title', '')[:80]}")
             if url:
                 out_lines.append(f"        {url}")
         if len(animals) > max_per_pack:
@@ -124,8 +124,8 @@ def render(board: dict, only_pack: str | None, max_per_pack: int) -> str:
         # Show bus command for the most urgent
         if urgent:
             out_lines.append("")
-            out_lines.append(f"    next move (most urgent):")
-            out_lines.append(f"      $ {urgent[0].get('tame_command','')}")
+            out_lines.append("    next move (most urgent):")
+            out_lines.append(f"      $ {urgent[0].get('tame_command', '')}")
         out_lines.append("")
 
     return "\n".join(out_lines)
@@ -148,7 +148,7 @@ def main() -> int:
     board_path = Path(args.board)
     if not board_path.exists():
         print(
-            f"[wildlife] no board at {board_path} - run " f"`python scripts/wildlife/harvest_packs.py` first.",
+            f"[wildlife] no board at {board_path} - run " "`python scripts/wildlife/harvest_packs.py` first.",
             file=sys.stderr,
         )
         return 1

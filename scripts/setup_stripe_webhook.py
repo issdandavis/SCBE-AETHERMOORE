@@ -101,7 +101,7 @@ def create_webhook(url: str):
         description="SCBE-AETHERMOORE product delivery + subscription lifecycle",
     )
 
-    print(f"\nWebhook created successfully!")
+    print("\nWebhook created successfully!")
     print(f"  ID:     {endpoint.id}")
     print(f"  URL:    {endpoint.url}")
     print(f"  Events: {', '.join(WEBHOOK_EVENTS)}")

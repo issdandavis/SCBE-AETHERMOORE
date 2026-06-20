@@ -40,34 +40,111 @@ if _env.exists():
 
 TONGUE_SIGNALS: Dict[str, List[str]] = {
     "KO": [  # Intent / control / requests
-        "please", "request", "asking", "need", "want", "action required",
-        "follow up", "deadline", "urgent", "asap", "priority", "approve",
-        "confirm", "decision", "next steps", "todo", "task",
+        "please",
+        "request",
+        "asking",
+        "need",
+        "want",
+        "action required",
+        "follow up",
+        "deadline",
+        "urgent",
+        "asap",
+        "priority",
+        "approve",
+        "confirm",
+        "decision",
+        "next steps",
+        "todo",
+        "task",
     ],
     "AV": [  # Metadata / context / informational
-        "fyi", "update", "newsletter", "digest", "summary", "report",
-        "notification", "alert", "info", "announcement", "release notes",
-        "changelog", "status", "weekly", "daily", "monthly",
+        "fyi",
+        "update",
+        "newsletter",
+        "digest",
+        "summary",
+        "report",
+        "notification",
+        "alert",
+        "info",
+        "announcement",
+        "release notes",
+        "changelog",
+        "status",
+        "weekly",
+        "daily",
+        "monthly",
     ],
     "RU": [  # Binding / commitments / obligations
-        "agreement", "contract", "terms", "commitment", "promise",
-        "invoice", "receipt", "payment due", "subscription", "renewal",
-        "obligation", "signed", "binding", "warranty", "guarantee",
+        "agreement",
+        "contract",
+        "terms",
+        "commitment",
+        "promise",
+        "invoice",
+        "receipt",
+        "payment due",
+        "subscription",
+        "renewal",
+        "obligation",
+        "signed",
+        "binding",
+        "warranty",
+        "guarantee",
     ],
     "CA": [  # Compute / technical / code
-        "deploy", "build", "error", "bug", "fix", "merge", "pr ",
-        "pull request", "commit", "pipeline", "ci/cd", "api", "token",
-        "server", "database", "migration", "release", "version",
+        "deploy",
+        "build",
+        "error",
+        "bug",
+        "fix",
+        "merge",
+        "pr ",
+        "pull request",
+        "commit",
+        "pipeline",
+        "ci/cd",
+        "api",
+        "token",
+        "server",
+        "database",
+        "migration",
+        "release",
+        "version",
     ],
     "UM": [  # Security / sensitive / redaction
-        "password", "credential", "security", "breach", "vulnerability",
-        "2fa", "mfa", "verification", "suspicious", "unauthorized",
-        "phishing", "malware", "encrypt", "confidential", "private",
+        "password",
+        "credential",
+        "security",
+        "breach",
+        "vulnerability",
+        "2fa",
+        "mfa",
+        "verification",
+        "suspicious",
+        "unauthorized",
+        "phishing",
+        "malware",
+        "encrypt",
+        "confidential",
+        "private",
     ],
     "DR": [  # Structure / administrative / filing
-        "account", "settings", "profile", "unsubscribe", "preferences",
-        "policy", "privacy", "terms of service", "welcome", "onboarding",
-        "registration", "confirmation", "verify email", "activate",
+        "account",
+        "settings",
+        "profile",
+        "unsubscribe",
+        "preferences",
+        "policy",
+        "privacy",
+        "terms of service",
+        "welcome",
+        "onboarding",
+        "registration",
+        "confirmation",
+        "verify email",
+        "activate",
     ],
 }
 
@@ -87,6 +164,7 @@ ROUTE_TABLE = {
 @dataclass
 class EmailDigest:
     """Classified email digest entry."""
+
     msg_id: str
     account: str
     sender: str
@@ -161,8 +239,9 @@ def get_snippet(msg) -> str:
     return ""
 
 
-def read_account(host: str, port: int, user: str, password: str, account_name: str,
-                 days: int = 1, use_ssl: bool = False) -> List[EmailDigest]:
+def read_account(
+    host: str, port: int, user: str, password: str, account_name: str, days: int = 1, use_ssl: bool = False
+) -> List[EmailDigest]:
     """Read recent emails from an IMAP account and classify them."""
     try:
         if use_ssl:
@@ -177,7 +256,7 @@ def read_account(host: str, port: int, user: str, password: str, account_name: s
     mail.select("INBOX")
 
     since = (datetime.date.today() - datetime.timedelta(days=days)).strftime("%d-%b-%Y")
-    _, msg_ids = mail.search(None, f'(SINCE {since})')
+    _, msg_ids = mail.search(None, f"(SINCE {since})")
 
     if not msg_ids[0]:
         print(f"  [{account_name}] No messages in last {days} day(s)")
@@ -204,18 +283,20 @@ def read_account(host: str, port: int, user: str, password: str, account_name: s
             scores, tongues, top = classify_tongues(subject, snippet)
             route = route_email(tongues)
 
-            digests.append(EmailDigest(
-                msg_id=msg_hash,
-                account=account_name,
-                sender=sender[:80],
-                subject=subject[:120],
-                date=date_str[:30],
-                tongues=tongues,
-                top_tongue=top,
-                route=route,
-                snippet=snippet[:200],
-                tongue_scores=scores,
-            ))
+            digests.append(
+                EmailDigest(
+                    msg_id=msg_hash,
+                    account=account_name,
+                    sender=sender[:80],
+                    subject=subject[:120],
+                    date=date_str[:30],
+                    tongues=tongues,
+                    top_tongue=top,
+                    route=route,
+                    snippet=snippet[:200],
+                    tongue_scores=scores,
+                )
+            )
         except Exception:
             continue
 
@@ -228,12 +309,20 @@ def generate_sft_pairs(digests: List[EmailDigest]) -> List[Dict]:
     pairs = []
     for d in digests:
         # Classification pair
-        pairs.append({
-            "instruction": f"Classify this email by priority and route it to the correct workflow queue.\n\nFrom: {d.sender}\nSubject: {d.subject}",
-            "response": f"Tongue activation: {', '.join(d.tongues)} (primary: {d.top_tongue}). Route: {d.route['action']} -> {d.route['queue']}. Reason: {d.route['desc']}.",
-            "source": "apollo_email_reader",
-            "category": "email_triage",
-        })
+        pairs.append(
+            {
+                "instruction": (
+                    "Classify this email by priority and route it to the correct workflow queue."
+                    f"\n\nFrom: {d.sender}\nSubject: {d.subject}"
+                ),
+                "response": (
+                    f"Tongue activation: {', '.join(d.tongues)} (primary: {d.top_tongue}). "
+                    f"Route: {d.route['action']} -> {d.route['queue']}. Reason: {d.route['desc']}."
+                ),
+                "source": "apollo_email_reader",
+                "category": "email_triage",
+            }
+        )
 
     return pairs
 
@@ -251,7 +340,15 @@ def print_digest(digests: List[EmailDigest], show_route: bool = False):
         group = by_action.get(action, [])
         if not group:
             continue
-        marker = {"ESCALATE": "!!!", "FLAG": "!!", "RESPOND": "!", "TRIAGE": ">", "FILE": "$", "READ": ".", "ARCHIVE": "-"}.get(action, " ")
+        marker = {
+            "ESCALATE": "!!!",
+            "FLAG": "!!",
+            "RESPOND": "!",
+            "TRIAGE": ">",
+            "FILE": "$",
+            "READ": ".",
+            "ARCHIVE": "-",
+        }.get(action, " ")
         print(f"\n  [{action}] ({len(group)} emails)")
         for d in group[:10]:
             tongue_str = "/".join(d.tongues)

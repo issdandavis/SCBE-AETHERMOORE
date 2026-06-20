@@ -14,18 +14,17 @@ from typing import List
 
 from .recon_goggles import SemanticNode, SemanticSkeleton
 
-
 # ------------------------------------------------------------------
 # Colour & glyph constants
 # ------------------------------------------------------------------
 
 TONGUE_ANSI = {
-    "KO": "\033[38;5;196m",   # red     -- navigation
-    "AV": "\033[38;5;208m",   # orange  -- media
-    "RU": "\033[38;5;46m",    # green   -- text / content
-    "CA": "\033[38;5;33m",    # blue    -- interactive
-    "UM": "\033[38;5;129m",   # purple  -- forms
-    "DR": "\033[38;5;250m",   # grey    -- metadata
+    "KO": "\033[38;5;196m",  # red     -- navigation
+    "AV": "\033[38;5;208m",  # orange  -- media
+    "RU": "\033[38;5;46m",  # green   -- text / content
+    "CA": "\033[38;5;33m",  # blue    -- interactive
+    "UM": "\033[38;5;129m",  # purple  -- forms
+    "DR": "\033[38;5;250m",  # grey    -- metadata
 }
 
 GLYPH_MAP = {
@@ -46,6 +45,7 @@ _EMPTY_GLYPH = " "
 # ------------------------------------------------------------------
 # PixelScanner
 # ------------------------------------------------------------------
+
 
 class PixelScanner:
     """Render a :class:`SemanticSkeleton` as a compact ANSI minimap.
@@ -164,8 +164,12 @@ class PixelScanner:
         """Return a one-line tongue colour legend."""
         parts: List[str] = []
         tongue_labels = {
-            "KO": "nav", "AV": "media", "RU": "text",
-            "CA": "interact", "UM": "form", "DR": "meta",
+            "KO": "nav",
+            "AV": "media",
+            "RU": "text",
+            "CA": "interact",
+            "UM": "form",
+            "DR": "meta",
         }
         for tongue, label in tongue_labels.items():
             colour = TONGUE_ANSI.get(tongue, "")

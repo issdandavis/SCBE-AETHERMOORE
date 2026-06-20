@@ -17,7 +17,6 @@ from typing import Any
 from scripts.render_grok_storyboard_packet import build_render_jobs, run_packet
 from scripts.webtoon_quality_gate import govern_packet, lookup_episode_metadata
 
-
 ROOT = Path(__file__).resolve().parent.parent
 PROMPTS_DIR = ROOT / "artifacts" / "webtoon" / "panel_prompts"
 SERIES_MANIFEST = ROOT / "artifacts" / "webtoon" / "series_storyboard_manifest.json"

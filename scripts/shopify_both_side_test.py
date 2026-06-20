@@ -343,7 +343,8 @@ def main() -> int:
         print(f"[shopify-both-side] store={store_domain}")
         print(f"[shopify-both-side] admin_status={admin_report.status} url={admin_report.final_url or admin_url}")
         print(
-            f"[shopify-both-side] storefront_status={storefront_report.status} url={storefront_report.final_url or storefront_url}"
+            f"[shopify-both-side] storefront_status={storefront_report.status} "
+            f"url={storefront_report.final_url or storefront_url}"
         )
         if app_report is not None:
             print(f"[shopify-both-side] app_status={app_report.status} url={app_report.final_url or args.app_url}")

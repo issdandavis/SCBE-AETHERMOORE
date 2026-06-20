@@ -12,7 +12,8 @@ CLI usage:
     python scripts/headless_browser.py --url https://example.com --action screenshot
     python scripts/headless_browser.py --url https://example.com --action extract --selector h1
     python scripts/headless_browser.py --url https://example.com --action text
-    python scripts/headless_browser.py --url https://example.com --action fill --selector "#email" --value "test@example.com"
+    python scripts/headless_browser.py --url https://example.com --action fill \
+        --selector "#email" --value "test@example.com"
     python scripts/headless_browser.py --url https://example.com --action navigate
     python scripts/headless_browser.py --url https://example.com --action screenshot --govern
 
@@ -587,7 +588,7 @@ def main(argv: Optional[List[str]] = None) -> int:
                 print(f"  data: {result.data}")
 
         if result.governance:
-            print(f"  governance:")
+            print("  governance:")
             for k, v in result.governance.items():
                 print(f"    {k}: {v}")
 

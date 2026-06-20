@@ -20,7 +20,8 @@ import path from 'node:path';
 import { spawn } from 'node:child_process';
 import type { AgentBusEvent, AgentBusResult, RunOptions } from './index.js';
 import { runBeforeRunPlugins, runAfterRunPlugins } from './plugins.js';
-import { getTool, buildToolArgv } from './tools.js';
+import { autoDiscoverTools, getTool, buildToolArgv } from './tools.js';
+import { runPipeline } from './pipeline.js';
 
 export interface QueuedEvent {
   run_id: string;
@@ -204,6 +205,7 @@ function executeEventAsync(
         return;
       }
 
+      autoDiscoverTools();
       const registeredTool = getTool(normalized.tool);
       if (!registeredTool) {
         // Unknown tool name — resolve immediately with an error result
@@ -384,9 +386,50 @@ export async function processOneEvent(): Promise<boolean> {
     };
   } else {
     receipt.event = allowedEvent;
-    const repoRoot = path.resolve(receipt.options.repoRoot || process.cwd());
-    const python = receipt.options.python || process.env.PYTHON || 'python';
-    result = await executeEventAsync(receipt, repoRoot, python);
+    if (allowedEvent.taskType === 'pipeline') {
+      const pipelineResult = await runPipeline(allowedEvent.task, receipt.options);
+      if (pipelineResult.blocked) {
+        result = {
+          schema_version: 'scbe-agentbus-node-result-v1',
+          event_index: 1,
+          started_at: receipt.started_at || new Date().toISOString(),
+          finished_at: new Date().toISOString(),
+          ok: false,
+          exit_code: 403,
+          stderr_tail: pipelineResult.block_reason || 'pipeline blocked by policy gate',
+          event: {
+            task_sha256: null,
+            task_chars: allowedEvent.task.length,
+            series_id: allowedEvent.seriesId || receipt.run_id,
+            operation_command_chars: (allowedEvent.operationCommand || '').length,
+          },
+          result: { blocked: true, plan: pipelineResult.plan },
+        };
+      } else if (pipelineResult.result) {
+        result = pipelineResult.result;
+      } else {
+        result = {
+          schema_version: 'scbe-agentbus-node-result-v1',
+          event_index: 1,
+          started_at: receipt.started_at || new Date().toISOString(),
+          finished_at: new Date().toISOString(),
+          ok: false,
+          exit_code: 500,
+          stderr_tail: 'pipeline returned no result',
+          event: {
+            task_sha256: null,
+            task_chars: allowedEvent.task.length,
+            series_id: allowedEvent.seriesId || receipt.run_id,
+            operation_command_chars: (allowedEvent.operationCommand || '').length,
+          },
+          result: null,
+        };
+      }
+    } else {
+      const repoRoot = path.resolve(receipt.options.repoRoot || process.cwd());
+      const python = receipt.options.python || process.env.PYTHON || 'python';
+      result = await executeEventAsync(receipt, repoRoot, python);
+    }
   }
 
   receipt.result = result;
@@ -400,12 +443,17 @@ export async function processOneEvent(): Promise<boolean> {
     startedAt: receipt.started_at || receipt.created_at,
   });
 
-  // Retry logic — skip retry for plugin-denied events (they won't pass the gate on re-run)
+  // Retry logic — skip retry for plugin-denied or pipeline-blocked events
+  // (they won't pass the gate on re-run)
   const denied =
     result.exit_code === 403 &&
     typeof result.result === 'object' &&
     !!(result.result as Record<string, unknown>)?.denied;
-  if (!result.ok && !denied && receipt.retry_count < receipt.max_retries) {
+  const blocked =
+    result.exit_code === 403 &&
+    typeof result.result === 'object' &&
+    !!(result.result as Record<string, unknown>)?.blocked;
+  if (!result.ok && !denied && !blocked && receipt.retry_count < receipt.max_retries) {
     receipt.retry_count += 1;
     receipt.status = 'pending';
     receipt.error_message = `retry ${receipt.retry_count}/${receipt.max_retries}: ${result.stderr_tail}`;

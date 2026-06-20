@@ -24,7 +24,6 @@ from typing import Any, Dict, Tuple
 
 from scripts.system.html_text import html_to_text
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 EVIDENCE_DIR = REPO_ROOT / "artifacts" / "page_evidence"
 _SESSION_RE = re.compile(r"[^A-Za-z0-9._-]+")

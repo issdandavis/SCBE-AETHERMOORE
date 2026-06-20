@@ -53,6 +53,7 @@ def write_jsonl(path: Path, records: list[dict]) -> int:
 # 1. Code Brushes — reusable patterns from TS
 # ─────────────────────────────────────────────
 
+
 def generate_code_brushes() -> list[dict]:
     records = []
     ts_files = sorted((ROOT / "src").rglob("*.ts"))
@@ -102,7 +103,7 @@ def generate_code_brushes() -> list[dict]:
             if doc_hint:
                 answer += f"Documentation: {doc_hint}\n\n"
             answer += f"```typescript\n{snippet}\n```\n\n"
-            answer += f"This is part of the SCBE 14-layer pipeline."
+            answer += "This is part of the SCBE 14-layer pipeline."
 
             records.append(sft_record(user_q, answer, ["code-brush", kind]))
 
@@ -116,6 +117,7 @@ def generate_code_brushes() -> list[dict]:
 # 2. Code Substrate L0 — binary-first patterns
 # ─────────────────────────────────────────────
 
+
 def generate_code_substrate_l0() -> list[dict]:
     records = []
 
@@ -128,8 +130,17 @@ def generate_code_substrate_l0() -> list[dict]:
     ]
 
     binary_keywords = [
-        "binary", "bit", "encode", "decode", "hash", "digest",
-        "token", "embed", "quantize", "normalize", "clamp",
+        "binary",
+        "bit",
+        "encode",
+        "decode",
+        "hash",
+        "digest",
+        "token",
+        "embed",
+        "quantize",
+        "normalize",
+        "clamp",
     ]
 
     for d in substrate_dirs:
@@ -191,9 +202,9 @@ def generate_code_substrate_l0() -> list[dict]:
         fn_re = re.compile(r"(?:export\s+)?function\s+(\w+)\s*\(([^)]*)\)[^{]*\{", re.MULTILINE)
         for m in fn_re.finditer(text):
             name = m.group(1)
-            if not any(kw in name.lower() or kw in text[m.start():m.start()+500].lower() for kw in binary_keywords):
+            if not any(kw in name.lower() or kw in text[m.start() : m.start() + 500].lower() for kw in binary_keywords):
                 continue
-            snippet = text[m.start():m.start()+1000]
+            snippet = text[m.start() : m.start() + 1000]
             user_q = f"How does `{name}` in `{rel}` handle binary/encoding at the substrate level?"
             answer = f"`{name}` from `{rel}` operates at the binary substrate layer:\n\n```typescript\n{snippet}\n```"
             records.append(sft_record(user_q, answer, ["l0-substrate", "typescript"]))
@@ -207,6 +218,7 @@ def generate_code_substrate_l0() -> list[dict]:
 # ─────────────────────────────────────────────
 # 3. Infrastructure — Docker, CI, deploy, config
 # ─────────────────────────────────────────────
+
 
 def generate_infrastructure() -> list[dict]:
     records = []
@@ -242,8 +254,7 @@ def generate_infrastructure() -> list[dict]:
 
             user_q = f"What does the `{wf_name}` CI workflow do and when does it trigger?"
             answer = (
-                f"The `{wf_name}` workflow (`{wf.name}`) triggers on: {trigger_str}.\n\n"
-                f"```yaml\n{text[:1200]}\n```"
+                f"The `{wf_name}` workflow (`{wf.name}`) triggers on: {trigger_str}.\n\n" f"```yaml\n{text[:1200]}\n```"
             )
             records.append(sft_record(user_q, answer, ["infrastructure", "ci-cd"]))
 
@@ -295,6 +306,7 @@ def generate_infrastructure() -> list[dict]:
 # ─────────────────────────────────────────────
 # 4. TypeScript Docs — module-level explanations
 # ─────────────────────────────────────────────
+
 
 def generate_typescript_docs() -> list[dict]:
     records = []
@@ -350,6 +362,7 @@ def generate_typescript_docs() -> list[dict]:
 # 5. Python Docstrings — function-level Q&A
 # ─────────────────────────────────────────────
 
+
 def generate_python_docstrings() -> list[dict]:
     records = []
 
@@ -403,6 +416,7 @@ def generate_python_docstrings() -> list[dict]:
 # 6. Universal Code Primitives — cross-language
 # ─────────────────────────────────────────────
 
+
 def generate_universal_primitives() -> list[dict]:
     records = []
 
@@ -421,7 +435,7 @@ def generate_universal_primitives() -> list[dict]:
         rel = str(f.relative_to(ROOT))
         for m in re.finditer(r"(?:export\s+)?function\s+(\w+)", text):
             name = m.group(1)
-            snippet = text[m.start():m.start()+800]
+            snippet = text[m.start() : m.start() + 800]
             ts_names[name.lower()] = (rel, snippet)
 
     # Collect Python function names
@@ -435,7 +449,7 @@ def generate_universal_primitives() -> list[dict]:
         rel = str(f.relative_to(ROOT))
         for m in re.finditer(r"^def\s+(\w+)", text, re.MULTILINE):
             name = m.group(1)
-            snippet = text[m.start():m.start()+800]
+            snippet = text[m.start() : m.start() + 800]
             # Normalize: snake_case -> lowercase for matching
             normalized = name.lower().replace("_", "")
             py_names[normalized] = (rel, snippet)
@@ -449,15 +463,12 @@ def generate_universal_primitives() -> list[dict]:
     for py_key, (py_path, py_snip) in py_names.items():
         if py_key in ts_normalized:
             _, (ts_path, ts_snip) = ts_normalized[py_key]
-            user_q = (
-                f"Show the cross-language implementation of `{py_key}` "
-                f"in both TypeScript and Python."
-            )
+            user_q = f"Show the cross-language implementation of `{py_key}` " "in both TypeScript and Python."
             answer = (
-                f"This primitive exists in both languages:\n\n"
+                "This primitive exists in both languages:\n\n"
                 f"**TypeScript** (`{ts_path}`):\n```typescript\n{ts_snip[:600]}\n```\n\n"
                 f"**Python** (`{py_path}`):\n```python\n{py_snip[:600]}\n```\n\n"
-                f"Both implementations must produce identical outputs for cross-language parity."
+                "Both implementations must produce identical outputs for cross-language parity."
             )
             records.append(sft_record(user_q, answer, ["universal-primitive", "cross-language"]))
             matched += 1
@@ -479,8 +490,8 @@ def generate_universal_primitives() -> list[dict]:
         answer = (
             f"The `{name}` is a universal SCBE primitive.\n\n"
             f"**Formula**: `{formula}`\n\n"
-            f"This primitive is implemented in both TypeScript (canonical) and Python (reference). "
-            f"Cross-language parity tests verify identical outputs."
+            "This primitive is implemented in both TypeScript (canonical) and Python (reference). "
+            "Cross-language parity tests verify identical outputs."
         )
         records.append(sft_record(user_q, answer, ["universal-primitive", "formula"]))
 
@@ -490,6 +501,7 @@ def generate_universal_primitives() -> list[dict]:
 # ─────────────────────────────────────────────
 # Main
 # ─────────────────────────────────────────────
+
 
 def main():
     generators = [

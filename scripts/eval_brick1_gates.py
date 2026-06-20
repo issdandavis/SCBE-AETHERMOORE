@@ -23,6 +23,7 @@ Usage:
     python scripts/eval_brick1_gates.py
     python scripts/eval_brick1_gates.py --adapter artifacts/tongue-table-lora-brick1-v1/lora_final
 """
+
 from __future__ import annotations
 
 import argparse
@@ -46,11 +47,19 @@ BRICK0_DRILL = BRICK0_ROOT / "final_drill_map_eval.json"
 
 GATE_SPEC = {
     "G1_structural_overall": {"target": 0.70, "floor": 0.60, "source": "structural.summary.validator_pass_rate"},
-    "G2_causal_transform":   {"target": 0.60, "floor": 0.40, "source": "structural.by_stage.causal_transform.validator_pass_rate"},
-    "G3_route_governance":   {"target": 0.40, "floor": 0.25, "source": "structural.by_stage.route_governance.validator_pass_rate"},
-    "G4_KO_tongue":          {"target": 0.55, "floor": 0.45, "source": "structural.by_tongue.KO.validator_pass_rate"},
-    "G5_braid_helix":        {"target": 0.90, "floor": 0.85, "source": "structural.by_stage.braid_helix.validator_pass_rate"},
-    "G6_drill_map_loss":     {"tolerance": 0.02, "source": "drill._summary.avg_loss"},
+    "G2_causal_transform": {
+        "target": 0.60,
+        "floor": 0.40,
+        "source": "structural.by_stage.causal_transform.validator_pass_rate",
+    },
+    "G3_route_governance": {
+        "target": 0.40,
+        "floor": 0.25,
+        "source": "structural.by_stage.route_governance.validator_pass_rate",
+    },
+    "G4_KO_tongue": {"target": 0.55, "floor": 0.45, "source": "structural.by_tongue.KO.validator_pass_rate"},
+    "G5_braid_helix": {"target": 0.90, "floor": 0.85, "source": "structural.by_stage.braid_helix.validator_pass_rate"},
+    "G6_drill_map_loss": {"tolerance": 0.02, "source": "drill._summary.avg_loss"},
 }
 
 

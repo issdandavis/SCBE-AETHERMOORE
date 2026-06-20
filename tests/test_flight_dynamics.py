@@ -186,9 +186,9 @@ class TestForces:
 
     def test_zero_velocity_zero_force(self):
         """No airspeed = no aerodynamic forces."""
-        l = lift_force(0, math.radians(5), 20)
+        lift = lift_force(0, math.radians(5), 20)
         d = drag_force(0, math.radians(5), 20)
-        assert l == 0.0
+        assert lift == 0.0
         assert abs(d) < 1e-10
 
 
@@ -490,7 +490,8 @@ class TestQHOToFlightMapping:
     def test_higher_excitation_higher_speed(self):
         """Higher QHO excitation → more kinetic energy → higher airspeed."""
         f2 = self._make_flight(
-            "The extraordinary polymorphic boundary fractures into multiple divergent quantum-entangled crystallographic pathological extreme excitation"
+            "The extraordinary polymorphic boundary fractures into multiple divergent "
+            "quantum-entangled crystallographic pathological extreme excitation"
         )
         # f2 likely has higher excitation → higher speed
         # (may not always hold due to hash-based affinity, so check energy instead)

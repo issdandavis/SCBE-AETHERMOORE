@@ -26,6 +26,7 @@ PHI = (1 + math.sqrt(5)) / 2
 
 class SafetyDecision(Enum):
     """4-tier governance decision outcomes."""
+
     ALLOW = "ALLOW"
     QUARANTINE = "QUARANTINE"
     ESCALATE = "ESCALATE"
@@ -35,6 +36,7 @@ class SafetyDecision(Enum):
 @dataclass
 class ContainmentResult:
     """Result of a containment check."""
+
     decision: SafetyDecision
     radius: float
     hyperbolic_distance: float
@@ -63,6 +65,7 @@ class SimplePHDM:
         harmonic_base: Base for risk amplification (default 1.5)
         origin: The safe reference point (origin of Poincare ball)
     """
+
     safe_radius: float = 0.92
     dim: int = 16
     harmonic_base: float = 1.5
@@ -267,6 +270,7 @@ class SimplePHDM:
 
         # Record in history for temporal analysis
         import time
+
         self._history.append((time.time(), embedding.copy()))
         if len(self._history) > self._max_history:
             self._history.pop(0)
@@ -296,7 +300,7 @@ class SimplePHDM:
             hyperbolic_distance=h_dist,
             risk_score=risk,
             message=message,
-            embedding=embedding
+            embedding=embedding,
         )
 
     def mobius_addition(self, u: np.ndarray, v: np.ndarray) -> np.ndarray:
@@ -368,7 +372,7 @@ class SimplePHDM:
                 "avg_radius": 0.0,
                 "max_radius": 0.0,
                 "min_radius": 0.0,
-                "boundary_violations": 0
+                "boundary_violations": 0,
             }
 
         radii = [self.euclidean_radius(emb) for _, emb in self._history]
@@ -378,7 +382,7 @@ class SimplePHDM:
             "avg_radius": sum(radii) / len(radii),
             "max_radius": max(radii),
             "min_radius": min(radii),
-            "boundary_violations": sum(1 for r in radii if r >= self.safe_radius)
+            "boundary_violations": sum(1 for r in radii if r >= self.safe_radius),
         }
 
     def reset_history(self):
@@ -386,11 +390,7 @@ class SimplePHDM:
         self._history.clear()
 
 
-def create_phdm_brain(
-    safe_radius: float = 0.92,
-    dim: int = 16,
-    harmonic_base: float = 1.5
-) -> SimplePHDM:
+def create_phdm_brain(safe_radius: float = 0.92, dim: int = 16, harmonic_base: float = 1.5) -> SimplePHDM:
     """
     Factory function to create a SimplePHDM brain.
 
@@ -402,8 +402,4 @@ def create_phdm_brain(
     Returns:
         Configured SimplePHDM instance
     """
-    return SimplePHDM(
-        safe_radius=safe_radius,
-        dim=dim,
-        harmonic_base=harmonic_base
-    )
+    return SimplePHDM(safe_radius=safe_radius, dim=dim, harmonic_base=harmonic_base)

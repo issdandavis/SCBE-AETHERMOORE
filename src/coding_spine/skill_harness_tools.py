@@ -45,7 +45,8 @@ FUNCTION_AREAS: dict[str, dict[str, str]] = {
     },
     "recon_tool": {
         "abbrev": "rec",
-        "label": "Research, browsing, source verification, email triage, opportunity discovery, and intelligence gathering.",
+        "label": "Research, browsing, source verification, email triage, opportunity discovery, "
+        "and intelligence gathering.",
     },
     "training_tool": {
         "abbrev": "trn",
@@ -530,7 +531,8 @@ def build_harness_skill_tools_v1(
         "invocation_kinds": {
             "skill_lookup": "Non-executing skill route for reading guidance, references, recon, and policy context.",
             "skill_write": "Skill route for drafting, editing, packaging, or repo-local authoring under write policy.",
-            "tool_call": "Executable harness tool for multi-step automation, recursive build/test loops, remote compute, or live system actions.",
+            "tool_call": "Executable harness tool for multi-step automation, recursive build/test loops, "
+            "remote compute, or live system actions.",
         },
         "invocation_counts": {k: v for k, v in invocation_counts.items() if v},
         "routes_by_invocation": {k: v for k, v in routes_by_invocation.items() if v},

@@ -12,7 +12,10 @@ Confusion matrix per attack class.
 """
 
 from __future__ import annotations
-import math, json, time, sys
+import math
+import json
+import time
+import sys
 from pathlib import Path
 from collections import Counter
 from typing import Dict
@@ -263,7 +266,9 @@ def main():
     print("-" * 75)
     for r in results:
         print(
-            f"{r['name']:<30} {r['attacks_detected']:>5}/91 {r['detection_rate']:>7.1%} {r['calib_fp']:>5}/{len(CALIB_CLEAN)} {r['holdout_fp']:>6}/{len(HOLDOUT_CLEAN)} {r['holdout_fp_rate']:>9.1%}"
+            f"{r['name']:<30} {r['attacks_detected']:>5}/91 {r['detection_rate']:>7.1%} "
+            f"{r['calib_fp']:>5}/{len(CALIB_CLEAN)} {r['holdout_fp']:>6}/{len(HOLDOUT_CLEAN)} "
+            f"{r['holdout_fp_rate']:>9.1%}"
         )
 
     # Incremental gain

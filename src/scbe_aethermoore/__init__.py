@@ -45,6 +45,8 @@ import hashlib
 import math
 from typing import Any, Dict, List, Sequence
 
+from . import _intent_screen  # L13 pattern/concept screen + optional model gate
+
 __version__ = "3.3.0"
 __author__ = "Issac Daniel Davis"
 __license__ = "MIT"
@@ -152,7 +154,14 @@ def _byte_freq(raw: bytes) -> List[int]:
     return freq
 
 
-_PROFILE_KEYS = ("alpha_ratio", "digit_ratio", "space_ratio", "punct_ratio", "control_ratio", "highbyte_ratio")
+_PROFILE_KEYS = (
+    "alpha_ratio",
+    "digit_ratio",
+    "space_ratio",
+    "punct_ratio",
+    "control_ratio",
+    "highbyte_ratio",
+)
 
 
 def _char_profile(raw: bytes) -> Dict[str, float]:
@@ -305,6 +314,8 @@ def scan(text: str) -> Dict[str, Any]:
             "phase_deviation": 2.0,
             "x_poincare": 0.0,
             "input_len": 0,
+            "intent_flags": [],
+            "intent_model_prob": None,
             "digest": digest,
         }
 
@@ -312,6 +323,17 @@ def scan(text: str) -> Dict[str, Any]:
     profile = _char_profile(raw)
     bigram_h = _bigram_entropy(raw)
     d_star = _hyperbolic_distance(profile, freq, n, bigram_h)
+    # L13 intent screen: pattern + concept families on canonicalized text, plus an
+    # OPTIONAL model second pass. The penalty bypasses the natural-language discount so a
+    # fluent paraphrased injection cannot read as benign. Off by default -- the model adds
+    # nothing unless SCBE_INJECTION_MODEL is set, keeping the gate pure-Python.
+    intent_risk, intent_flags = _intent_screen.adversarial_intent(text)
+    model_prob = _intent_screen.maybe_model_intent(text)
+    if model_prob is not None and model_prob >= _intent_screen.MODEL_THRESHOLD:
+        if "model:injection" not in intent_flags:
+            intent_flags = intent_flags + ["model:injection"]
+        intent_risk += 1.0
+    d_star = d_star + _intent_screen.INTENT_PENALTY * intent_risk
     pd = _phase_deviation(profile, d_star, n, text.lower())
     H_eff = 1.0 / (1.0 + d_star + 2.0 * pd)
 
@@ -331,6 +353,8 @@ def scan(text: str) -> Dict[str, Any]:
         "phase_deviation": round(pd, 6),
         "x_poincare": round(math.tanh(d_star), 6),
         "input_len": n,
+        "intent_flags": intent_flags,
+        "intent_model_prob": round(model_prob, 4) if model_prob is not None else None,
         "digest": hashlib.sha256(raw).hexdigest(),
     }
 
@@ -351,6 +375,47 @@ def scan_batch(texts: Sequence[str]) -> List[Dict[str, Any]]:
     ['ALLOW', 'ESCALATE', 'ALLOW']
     """
     return [scan(t) for t in texts]
+
+
+def _demo_tongue_profile(text: str, result: Dict[str, Any]) -> Dict[str, float]:
+    """Return lightweight demo bars for the six Sacred Tongue axes.
+
+    This is intentionally not the full semantic projector. It is a dependency-free
+    visualization derived from the same public features used by scan().
+    """
+    raw = text.encode("utf-8")
+    profile = _char_profile(raw)
+    entropy = _shannon(_byte_freq(raw), len(raw)) if raw else 0.0
+    d_star = float(result["d_star"])
+    pd = float(result["phase_deviation"])
+    score = float(result["score"])
+
+    def clamp01(v: float) -> float:
+        return round(max(0.0, min(1.0, v)), 6)
+
+    return {
+        "KO": clamp01(profile["alpha_ratio"] + profile["space_ratio"] * 0.35),
+        "AV": clamp01(entropy / 6.8),
+        "RU": clamp01(1.0 - profile["punct_ratio"] - profile["control_ratio"]),
+        "CA": clamp01(profile["digit_ratio"] + profile["punct_ratio"] * 0.75),
+        "UM": clamp01(pd / 2.0),
+        "DR": clamp01((1.0 - score) + min(d_star, 2.0) / 4.0),
+    }
+
+
+def scan_with_tongues(text: str) -> Dict[str, Any]:
+    """Scan text and include a six-axis demo visualization profile.
+
+    The `tongues` field is designed for approachable demos and UI bars. Use
+    `scan()` for the stable decision contract.
+    """
+    result = scan(text)
+    enriched = dict(result)
+    enriched["tongues"] = _demo_tongue_profile(text, result)
+    enriched["tongues_note"] = (
+        "Demo activation bars derived from lightweight Python scan features; " "not the full semantic projector."
+    )
+    return enriched
 
 
 def is_safe(text: str, threshold: str = QUARANTINE) -> bool:
@@ -419,6 +484,7 @@ from scbe_aethermoore._assistant import explain, Assistant  # noqa: E402
 
 __all__ = [
     "scan",
+    "scan_with_tongues",
     "scan_batch",
     "is_safe",
     "harmonic_wall",

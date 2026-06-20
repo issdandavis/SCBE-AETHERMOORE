@@ -89,7 +89,9 @@ async def _playwright_capture(url: str, output_dir: Path, timeout_ms: int = 3000
                 if len(links) >= 20:
                     break
 
-        artifact_slug = hashlib.sha256(f"{url}:{datetime.now(timezone.utc).timestamp()}".encode("utf-8")).hexdigest()[:12]
+        artifact_slug = hashlib.sha256(f"{url}:{datetime.now(timezone.utc).timestamp()}".encode("utf-8")).hexdigest()[
+            :12
+        ]
         output_dir.mkdir(parents=True, exist_ok=True)
         screenshot_path = str(output_dir / f"{artifact_slug}.png")
         await page.screenshot(path=screenshot_path, full_page=True)

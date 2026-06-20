@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AETHERMON — Spiral Unit</title>
+<style>
+  :root {
+    --tint: #dc3c3c;
+    --shell: #16161f;
+    --screen-bg: #0a0a12;
+    --text: #d8d8e8;
+    --gold: #ffd75a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Courier New', ui-monospace, monospace;
+    color: var(--text);
+    background:
+      radial-gradient(ellipse at 50% 20%, color-mix(in srgb, var(--tint) 22%, transparent), transparent 60%),
+      linear-gradient(180deg, #07070d, #0d0d16 70%, #07070d);
+    transition: background 0.8s;
+  }
+  .device {
+    width: min(520px, 96vw);
+    border-radius: 26px;
+    padding: 14px 16px 18px;
+    background: linear-gradient(165deg, #232333, var(--shell) 55%, #101019);
+    border: 1px solid color-mix(in srgb, var(--tint) 45%, #333);
+    box-shadow: 0 24px 70px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.07);
+  }
+  .device-head {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; letter-spacing: 3px; padding: 2px 6px 10px;
+    color: color-mix(in srgb, var(--tint) 70%, #fff);
+  }
+  .device-head .phi { color: var(--gold); }
+  .screen {
+    position: relative;
+    border-radius: 14px;
+    background: var(--screen-bg);
+    border: 2px solid color-mix(in srgb, var(--tint) 35%, #222);
+    min-height: 300px;
+    overflow: hidden;
+    padding: 14px;
+  }
+  .scanlines {
+    pointer-events: none;
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0 1px, transparent 1px 3px);
+    mix-blend-mode: overlay;
+  }
+  .screen-view { position: relative; min-height: 270px; }
+  .hidden { display: none !important; }
+
+  .game-title {
+    margin: 18px 0 4px; text-align: center; font-size: 34px; letter-spacing: 10px;
+    color: var(--gold); text-shadow: 0 0 18px color-mix(in srgb, var(--tint) 70%, transparent);
+  }
+  .tagline { text-align: center; font-size: 12px; opacity: .75; margin: 0 0 16px; }
+  #tamer-name {
+    display: block; margin: 0 auto 14px; width: 70%;
+    background: #11111c; color: var(--text); border: 1px solid #3a3a52;
+    border-radius: 8px; padding: 8px 10px; font-family: inherit; font-size: 14px;
+    text-align: center; letter-spacing: 2px;
+  }
+  #egg-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .egg-card {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 10px 8px 8px; border-radius: 10px; cursor: pointer;
+    border: 1px solid #33334a; background: #11111c; min-width: 96px;
+    transition: transform .12s, border-color .12s;
+  }
+  .egg-card:hover { transform: translateY(-3px); }
+  .egg-card.selected { border-color: var(--egg-color, var(--gold)); box-shadow: 0 0 14px color-mix(in srgb, var(--egg-color, #fff) 35%, transparent); }
+  .egg-name { font-size: 11px; letter-spacing: 1px; color: var(--egg-color, var(--text)); }
+
+  .pixel { image-rendering: pixelated; }
+  .bounce { animation: bounce 1.4s ease-in-out infinite; }
+  @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+  .shake { animation: shake .32s; }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-3px); }
+  }
+  .fainted { opacity: .15; filter: grayscale(1); transition: opacity .6s, filter .6s; }
+
+  #screen-egg { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
+  .big-sprite { margin-top: 8px; }
+  .warmth { font-size: 22px; letter-spacing: 8px; color: var(--gold); }
+  .subhead { font-size: 12px; letter-spacing: 2px; opacity: .85; }
+
+  /* Scene stages — region backdrops behind the creatures */
+  .stage {
+    position: relative; height: 148px; border-radius: 10px; overflow: hidden;
+    border: 1px solid #26263a; margin-bottom: 10px; background: #07070d;
+  }
+  .battle-stage { height: 215px; }
+  .scene-bg {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    image-rendering: pixelated; opacity: .95;
+  }
+  .stage-actor {
+    position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .ground-shadow {
+    position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%);
+    width: 80%; height: 12px; border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(0,0,0,.6), transparent 70%);
+    pointer-events: none;
+  }
+  .info { padding: 2px 4px; }
+  .info .name { font-size: 20px; letter-spacing: 2px; color: #fff; }
+  .mono { font-size: 12px; letter-spacing: 1px; margin-top: 4px; }
+  .dim { opacity: .6; }
+  .plate { text-shadow: 0 1px 3px #000, 0 0 6px rgba(0,0,0,.8); }
+  #meters { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; margin-top: 12px; }
+
+  /* Battle effects */
+  .dmg-float {
+    position: absolute; top: 6%; z-index: 4; pointer-events: none;
+    font-size: 17px; font-weight: bold; color: #fff;
+    text-shadow: 0 0 4px #000, 0 2px 2px #000;
+    animation: floatUp .9s ease-out forwards;
+  }
+  .dmg-float.crit { color: var(--gold); font-size: 22px; }
+  .dmg-float.heal { color: #6fe09a; }
+  .dmg-float.miss { color: #9aa0b8; font-size: 12px; }
+  @keyframes floatUp { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-36px); opacity: 0; } }
+  .spark {
+    position: absolute; width: 4px; height: 4px; border-radius: 1px; z-index: 4;
+    pointer-events: none; animation: sparkFly .55s ease-out forwards;
+    box-shadow: 0 0 4px currentColor;
+  }
+  @keyframes sparkFly { from { transform: translate(0, 0); opacity: 1; } to { transform: translate(var(--dx), var(--dy)); opacity: 0; } }
+  .lunge-right { animation: lungeRight .3s ease-out; }
+  .lunge-left { animation: lungeLeft .3s ease-out; }
+  @keyframes lungeRight { 30% { transform: translateX(20px); } }
+  @keyframes lungeLeft { 30% { transform: translateX(-20px); } }
+  .meter { display: flex; align-items: center; gap: 8px; }
+  .meter-label { font-size: 10px; width: 36px; opacity: .7; letter-spacing: 1px; }
+  .meter-track { flex: 1; height: 9px; border-radius: 5px; background: #1c1c2b; border: 1px solid #2d2d44; overflow: hidden; }
+  .meter-fill { height: 100%; background: linear-gradient(90deg, color-mix(in srgb, var(--tint) 80%, #fff), var(--tint)); transition: width .35s; }
+  .meter-fill.low { background: linear-gradient(90deg, #ff5a5a, #b02020); }
+
+  .battle-row {
+    position: relative; z-index: 1; display: flex; align-items: flex-end;
+    justify-content: space-around; height: 100%; padding: 14px 6px 10px;
+  }
+  .fighter { position: relative; display: flex; flex-direction: column; align-items: center; gap: 5px; width: 42%; }
+  .fighter .ground-shadow { bottom: 58px; }
+  .vs { font-size: 18px; color: var(--gold); letter-spacing: 2px; align-self: center; text-shadow: 0 0 8px var(--tint); }
+  .hp-track { width: 100%; height: 10px; border-radius: 5px; background: #1c1c2b; border: 1px solid #2d2d44; overflow: hidden; }
+  .hp-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #51e08a, #2da55e); transition: width .4s; }
+  .hp-fill.low { background: linear-gradient(90deg, #ff8a5a, #d03a3a); }
+
+  .overlay {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 10px; text-align: center;
+    background: radial-gradient(circle, color-mix(in srgb, var(--flash-color, #fff) 28%, rgba(5,5,12,.92)), rgba(5,5,12,.94));
+    z-index: 5;
+  }
+  .overlay.animate #overlay-title { animation: flashIn 2.2s ease-out; }
+  #overlay-title { font-size: 24px; letter-spacing: 6px; color: var(--flash-color, var(--gold)); text-shadow: 0 0 24px var(--flash-color, var(--gold)); }
+  #overlay-sub { font-size: 13px; opacity: .9; max-width: 80%; }
+  @keyframes flashIn { 0% { transform: scale(.4); opacity: 0; } 18% { transform: scale(1.15); opacity: 1; } 30% { transform: scale(1); } 100% { transform: scale(1); } }
+
+  .log {
+    height: 96px; overflow: hidden; margin: 12px 2px 10px; padding: 8px 10px;
+    border-radius: 10px; background: #0c0c15; border: 1px solid #26263a;
+    font-size: 11.5px; line-height: 1.5;
+  }
+  .log-line { opacity: .85; }
+  .log-line.good { color: #6fe09a; }
+  .log-line.warn { color: #ffb35a; }
+  .log-line.hollow-text { color: #b05cff; }
+
+  .buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .btn {
+    font-family: inherit; font-size: 11px; letter-spacing: 1px; cursor: pointer;
+    padding: 10px 4px; border-radius: 10px; color: var(--text);
+    background: linear-gradient(180deg, #26263a, #181826);
+    border: 1px solid #34344e; transition: transform .08s, border-color .12s;
+  }
+  .btn:hover { border-color: var(--tint); transform: translateY(-1px); }
+  .btn:active { transform: translateY(1px); }
+  .btn.primary { border-color: var(--gold); color: var(--gold); }
+  .btn.danger { border-color: #a04040; color: #ff9a7a; }
+  .btn.hollow { border-color: #6a3aa0; color: #c08aff; }
+
+  .lcd {
+    margin-top: 12px; text-align: center; font-size: 11px; letter-spacing: 2px;
+    color: color-mix(in srgb, var(--tint) 75%, #fff); opacity: .9;
+  }
+</style>
+</head>
+<body>
+  <div class="device">
+    <div class="device-head"><span>⬡ AETHERMON</span><span>SPIRAL UNIT <span class="phi">φ</span></span></div>
+    <div class="screen">
+      <div id="screen-title" class="screen-view">
+        <h1 class="game-title">AETHERMON</h1>
+        <p class="tagline">Raise a digital creature of the Aethermoore realm.<br/>How you raise it decides what it becomes.</p>
+        <input id="tamer-name" placeholder="TAMER NAME" aria-label="Tamer name" maxlength="16" />
+        <div id="egg-row"></div>
+      </div>
+
+      <div id="screen-egg" class="screen-view hidden">
+        <div id="egg-title" class="subhead"></div>
+        <canvas id="egg-canvas" class="pixel big-sprite bounce"></canvas>
+        <div id="egg-warmth" class="warmth"></div>
+        <div class="subhead">Warm it three times. Name what hatches.</div>
+      </div>
+
+      <div id="screen-main" class="screen-view hidden">
+        <div class="stage">
+          <canvas id="main-scene" class="scene-bg pixel"></canvas>
+          <div class="stage-actor">
+            <div class="ground-shadow"></div>
+            <canvas id="monster-canvas" class="pixel bounce"></canvas>
+          </div>
+        </div>
+        <div class="info">
+          <div id="monster-name" class="name"></div>
+          <div id="monster-species" class="subhead"></div>
+          <div id="monster-stats" class="mono"></div>
+          <div id="monster-extra" class="mono dim"></div>
+        </div>
+        <div id="meters"></div>
+      </div>
+
+      <div id="screen-battle" class="screen-view hidden">
+        <div class="stage battle-stage">
+          <canvas id="battle-scene" class="scene-bg pixel"></canvas>
+          <div class="battle-row">
+            <div class="fighter" id="fighter-a">
+              <div class="ground-shadow"></div>
+              <canvas id="battle-mine" class="pixel bounce"></canvas>
+              <div id="battle-mine-name" class="mono plate"></div>
+              <div class="hp-track"><div id="hp-a" class="hp-fill"></div></div>
+              <div id="hp-a-text" class="mono dim plate"></div>
+            </div>
+            <div class="vs">VS</div>
+            <div class="fighter" id="fighter-b">
+              <div class="ground-shadow"></div>
+              <canvas id="battle-foe" class="pixel bounce"></canvas>
+              <div id="battle-foe-name" class="mono plate"></div>
+              <div class="hp-track"><div id="hp-b" class="hp-fill"></div></div>
+              <div id="hp-b-text" class="mono dim plate"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="overlay" class="overlay hidden">
+        <div id="overlay-title"></div>
+        <div id="overlay-sub"></div>
+      </div>
+      <div class="scanlines"></div>
+    </div>
+
+    <div id="log" class="log"></div>
+    <div id="buttons" class="buttons"></div>
+    <div id="lcd" class="lcd"></div>
+  </div>
+  <script src="aethermon.js" defer></script>
+</body>
+</html>

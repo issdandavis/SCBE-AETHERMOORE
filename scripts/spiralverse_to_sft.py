@@ -20,6 +20,7 @@ Usage:
     python scripts/spiralverse_to_sft.py --codex path/to/codex.md --registry path/to/registry.json
     python scripts/spiralverse_to_sft.py -o custom_output.jsonl
 """
+
 from __future__ import annotations
 
 import argparse
@@ -28,7 +29,6 @@ import math
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional
-
 
 # ---------------------------------------------------------------------------
 # Metadata template
@@ -251,11 +251,13 @@ SLANG = [
 IDIOMS = [
     (
         "Like carving Runethic with your tongue",
-        "Describes something extremely difficult and painstaking, referencing the archaic complexity of Runethic ritual language.",
+        "Describes something extremely difficult and painstaking, "
+        "referencing the archaic complexity of Runethic ritual language.",
     ),
     (
         "She's got sil'val in her blood",
-        "Means someone has a natural talent for collaboration and growth; 'sil'val' combines the growth particle with the invitation particle.",
+        "Means someone has a natural talent for collaboration and growth; "
+        "'sil'val' combines the growth particle with the invitation particle.",
     ),
     (
         "Walking the Thana-line",
@@ -263,7 +265,8 @@ IDIOMS = [
     ),
     (
         "His nav runs deeper than the root-song",
-        "Describes someone whose uniqueness or difference is profound; 'nav' is the difference particle, and root-song references Cassisivadan's ecological communion.",
+        "Describes someone whose uniqueness or difference is profound; 'nav' is the difference particle, "
+        "and root-song references Cassisivadan's ecological communion.",
     ),
 ]
 
@@ -497,7 +500,7 @@ def gen_individual_tongue_pairs() -> List[tuple]:
                 f"However, this power comes with a significant risk: {t['risk']} "
                 f"The tongue's weight of {t['weight']} ({t['weight_formula']}) and phase of "
                 f"{t['phase']} determine its position in the harmonic spectrum of the SCBE-AETHERMOORE "
-                f"tokenizer, which in turn affects the potency and character of its magical operations.",
+                "tokenizer, which in turn affects the potency and character of its magical operations.",
             )
         )
 
@@ -523,9 +526,9 @@ def gen_individual_tongue_pairs() -> List[tuple]:
                 f"{t['function']}. It is assigned a tokenizer weight of {t['weight']} "
                 f"({t['weight_formula']}) and phase {t['phase']}, placing it at a specific point "
                 f"in the six-tongue harmonic structure. The tokenizer maps {name} to a bijective "
-                f"256-token alphabet (16 prefixes x 16 suffixes), enabling deterministic byte/token "
+                "256-token alphabet (16 prefixes x 16 suffixes), enabling deterministic byte/token "
                 f"mapping. Its magical property -- {t['magic'].lower().rstrip('.')} -- is enforced "
-                f"through the GeoSeal context-aware envelope with concentric policy rings.",
+                "through the GeoSeal context-aware envelope with concentric policy rings.",
             )
         )
 
@@ -537,10 +540,10 @@ def gen_individual_tongue_pairs() -> List[tuple]:
                 f'The primary risk of improper {name} ({code}, "{meaning}") usage is: '
                 f"{t['risk']} This risk is inherent to its magical property of "
                 f"{t['magic'].lower().rstrip('.')}. The SCBE-AETHERMOORE framework mitigates "
-                f"this through the GeoSeal attestation system, which includes SHA-256 hashes, "
-                f"HMAC verification, and phase-delta checks. The tokenizer's selftest invariants "
-                f"(bijection, roundtrip integrity, cross-translation byte preservation) provide "
-                f"an additional safety layer.",
+                "this through the GeoSeal attestation system, which includes SHA-256 hashes, "
+                "HMAC verification, and phase-delta checks. The tokenizer's selftest invariants "
+                "(bijection, roundtrip integrity, cross-translation byte preservation) provide "
+                "an additional safety layer.",
             )
         )
 
@@ -557,10 +560,10 @@ def gen_runic_alphabet_pairs() -> List[tuple]:
         (
             "runic-alphabet",
             "List all 24 runic letters of the Kor'aelin alphabet with their meanings.",
-            f"The Kor'aelin alphabet is a 24-letter runic system. The canonical order is:\n\n"
+            "The Kor'aelin alphabet is a 24-letter runic system. The canonical order is:\n\n"
             f"{letter_lines}\n\n"
-            f"The Shadow Variant (Varn'ka'zul Script) uses the same 24 letters with barbed "
-            f"and spiked visual modifications.",
+            "The Shadow Variant (Varn'ka'zul Script) uses the same 24 letters with barbed "
+            "and spiked visual modifications.",
         )
     )
 
@@ -575,10 +578,10 @@ def gen_runic_alphabet_pairs() -> List[tuple]:
         (
             "runic-alphabet",
             "Which Kor'aelin runes represent natural elements?",
-            f"Several Kor'aelin runes are associated with natural and celestial elements:\n\n"
+            "Several Kor'aelin runes are associated with natural and celestial elements:\n\n"
             f"{elem_lines}\n\n"
-            f"These elemental runes form a natural sub-group within the 24-letter system, "
-            f"encoding the Spiralverse's connection between language and the physical world.",
+            "These elemental runes form a natural sub-group within the 24-letter system, "
+            "encoding the Spiralverse's connection between language and the physical world.",
         )
     )
 
@@ -596,10 +599,10 @@ def gen_runic_alphabet_pairs() -> List[tuple]:
         (
             "runic-alphabet",
             "Which Kor'aelin runes represent abstract or spiritual concepts?",
-            f"The following Kor'aelin runes encode abstract, spiritual, or metaphysical concepts:\n\n"
+            "The following Kor'aelin runes encode abstract, spiritual, or metaphysical concepts:\n\n"
             f"{abs_lines}\n\n"
-            f"These runes carry deeper symbolic weight in ritual and magical contexts within "
-            f"the Spiralverse.",
+            "These runes carry deeper symbolic weight in ritual and magical contexts within "
+            "the Spiralverse.",
         )
     )
 
@@ -628,11 +631,11 @@ def gen_runic_alphabet_pairs() -> List[tuple]:
         (
             "runic-alphabet",
             "Which Kor'aelin runes relate to cycles of life, death, and renewal?",
-            f"The Spiralverse encodes cycles of existence through several runes:\n\n"
+            "The Spiralverse encodes cycles of existence through several runes:\n\n"
             f"{lc_lines}\n\n"
-            f"Together these runes trace the arc from creation (Arul) through growth (Parun) "
-            f"and renewal (Yul/Orun) to transition (Thana), reflecting the Spiralverse's "
-            f"fundamental emphasis on spiraling evolution rather than linear progression.",
+            "Together these runes trace the arc from creation (Arul) through growth (Parun) "
+            "and renewal (Yul/Orun) to transition (Thana), reflecting the Spiralverse's "
+            "fundamental emphasis on spiraling evolution rather than linear progression.",
         )
     )
 
@@ -675,8 +678,8 @@ def gen_runic_alphabet_pairs() -> List[tuple]:
             "runic-alphabet",
             "What diacritical marks are used in the Kor'aelin script?",
             f"Kor'aelin uses four diacritical marks:\n\n{diac_lines}\n\n"
-            f"These diacritics enable precise phonetic representation and disambiguation "
-            f"within the 24-letter runic system.",
+            "These diacritics enable precise phonetic representation and disambiguation "
+            "within the 24-letter runic system.",
         )
     )
 
@@ -689,20 +692,20 @@ def gen_runic_alphabet_pairs() -> List[tuple]:
         (
             "runic-alphabet",
             "What are the first twelve runes in the Kor'aelin alphabet?",
-            f"The first twelve runes of the Kor'aelin alphabet, in canonical order, are: "
+            "The first twelve runes of the Kor'aelin alphabet, in canonical order, are: "
             f"{f_lines}. These runes progress from Origin (Arul) through foundational concepts "
-            f"like Balance, Clarity, Divinity, and the elements, culminating in Protection (Laris) "
-            f"at position twelve.",
+            "like Balance, Clarity, Divinity, and the elements, culminating in Protection (Laris) "
+            "at position twelve.",
         )
     )
     pairs.append(
         (
             "runic-alphabet",
             "What are the last twelve runes in the Kor'aelin alphabet?",
-            f"The last twelve runes of the Kor'aelin alphabet, in canonical order, are: "
+            "The last twelve runes of the Kor'aelin alphabet, in canonical order, are: "
             f"{s_lines}. These runes progress from celestial and internal concepts (Moon, "
-            f"Abundance) through journeying and radiance to the temporal and transformative "
-            f"runes, ending with Thana (Ending, Closure, Transition) at position twenty-four.",
+            "Abundance) through journeying and radiance to the temporal and transformative "
+            "runes, ending with Thana (Ending, Closure, Transition) at position twenty-four.",
         )
     )
 
@@ -720,9 +723,9 @@ def gen_particle_grammar_pairs() -> List[tuple]:
             "particle-grammar",
             "List all core particles in Kor'aelin grammar.",
             f"Kor'aelin grammar uses 14 core particles:\n\n{particle_lines}\n\n"
-            f"These particles combine through apostrophe-delimited compounding to form words "
-            f"and phrases. The particle system operates at the Inner Ring of the Dual-Layer "
-            f"Key Principle.",
+            "These particles combine through apostrophe-delimited compounding to form words "
+            "and phrases. The particle system operates at the Inner Ring of the Dual-Layer "
+            "Key Principle.",
         )
     )
 
@@ -732,11 +735,11 @@ def gen_particle_grammar_pairs() -> List[tuple]:
         (
             "particle-grammar",
             "What are the function particles in Kor'aelin and what do they mark?",
-            f"Kor'aelin has four function particles that serve as grammatical markers:\n\n"
+            "Kor'aelin has four function particles that serve as grammatical markers:\n\n"
             f"{func_lines}\n\n"
-            f"These function particles are prefixed with an apostrophe and attach to root "
-            f"particles to modify their meaning or grammatical role within the SOV sentence "
-            f"structure.",
+            "These function particles are prefixed with an apostrophe and attach to root "
+            "particles to modify their meaning or grammatical role within the SOV sentence "
+            "structure.",
         )
     )
 
@@ -795,7 +798,8 @@ def gen_phrase_lexicon_pairs() -> List[tuple]:
             (
                 "kor-aelin" if code == "KO" else "sacred-tongues",
                 f"What are the canonical phrases in {tname} ({code})?",
-                f"The canonical phrases attested in {tname} ({code}, \"{next(t['meaning'] for t in TONGUES if t['code'] == code)}\") are:\n\n"
+                f"The canonical phrases attested in {tname} "
+                f"({code}, \"{next(t['meaning'] for t in TONGUES if t['code'] == code)}\") are:\n\n"
                 f"{phrase_lines}\n\n"
                 f"These phrases demonstrate {tname}'s grammatical structure and its primary "
                 f"function of {next(t['function'] for t in TONGUES if t['code'] == code)}.",
@@ -810,7 +814,8 @@ def gen_phrase_lexicon_pairs() -> List[tuple]:
                     f'Translate the {tname} phrase: "{phrase}"',
                     f'The {tname} ({code}) phrase "{phrase}" translates to: "{translation}." '
                     f"{tname} is the {next(t['meaning'] for t in TONGUES if t['code'] == code)} "
-                    f"of the Spiralverse, characterized by {next(t['grammar'] for t in TONGUES if t['code'] == code).lower()}.",
+                    "of the Spiralverse, characterized by "
+                    f"{next(t['grammar'] for t in TONGUES if t['code'] == code).lower()}.",
                 )
             )
 
@@ -828,8 +833,8 @@ def gen_slang_idiom_pairs() -> List[tuple]:
             "spiralverse-lore",
             "List the youth slang terms used in the Spiralverse.",
             f"The Spiralverse has the following youth slang terms:\n\n{slang_lines}\n\n"
-            f"These slang terms reflect the living, evolving nature of the Spiralverse's "
-            f"linguistic ecosystem, blending sacred tongue roots with informal usage.",
+            "These slang terms reflect the living, evolving nature of the Spiralverse's "
+            "linguistic ecosystem, blending sacred tongue roots with informal usage.",
         )
     )
 
@@ -840,9 +845,9 @@ def gen_slang_idiom_pairs() -> List[tuple]:
             "spiralverse-lore",
             "What are the cultural idioms of the Spiralverse and what do they mean?",
             f"The Spiralverse has several culturally significant idioms:\n\n{idiom_lines}\n\n"
-            f"Each idiom draws on specific sacred tongue particles, runic concepts, or tongue "
-            f"characteristics, demonstrating how the formal linguistic system permeates "
-            f"everyday speech.",
+            "Each idiom draws on specific sacred tongue particles, runic concepts, or tongue "
+            "characteristics, demonstrating how the formal linguistic system permeates "
+            "everyday speech.",
         )
     )
 
@@ -952,10 +957,10 @@ def gen_provenance_pairs() -> List[tuple]:
             "provenance",
             "Describe the provenance chain of the Spiralverse Canonical Linguistic Codex.",
             f"The provenance chain of the Spiralverse has five layers:\n\n{layer_lines}\n\n"
-            f"The governing rule is: any higher-layer artifact that conflicts with a lower-layer "
-            f"seed provenance is considered a fork and must be pruned back to seed. Layer 0 "
-            f"(the Everweave Origin Logs) is the immutable genesis block from which all other "
-            f"layers are deterministically derived.",
+            "The governing rule is: any higher-layer artifact that conflicts with a lower-layer "
+            "seed provenance is considered a fork and must be pruned back to seed. Layer 0 "
+            "(the Everweave Origin Logs) is the immutable genesis block from which all other "
+            "layers are deterministically derived.",
         )
     )
 
@@ -1003,11 +1008,11 @@ def gen_magical_properties_overview() -> List[tuple]:
         (
             "magical-properties",
             "Summarize the magical properties and risks of all six sacred tongues.",
-            f"Each sacred tongue has distinct magical properties and associated risks:\n\n"
+            "Each sacred tongue has distinct magical properties and associated risks:\n\n"
             f"{magic_lines}\n\n"
-            f"The SCBE-AETHERMOORE framework mitigates these risks through the GeoSeal "
-            f"attestation system, tokenizer selftest invariants, and the provenance chain "
-            f"governance model.",
+            "The SCBE-AETHERMOORE framework mitigates these risks through the GeoSeal "
+            "attestation system, tokenizer selftest invariants, and the provenance chain "
+            "governance model.",
         )
     )
 
@@ -1134,7 +1139,7 @@ def print_summary(records: List[dict]) -> None:
 
     print("\n=== SFT Spiralverse Generation Summary ===", file=sys.stderr)
     print(f"Total records generated: {len(records)}", file=sys.stderr)
-    print(f"\nRecords per category:", file=sys.stderr)
+    print("\nRecords per category:", file=sys.stderr)
     for cat, count in sorted(cats.items(), key=lambda x: -x[1]):
         print(f"  {cat}: {count}", file=sys.stderr)
     print(file=sys.stderr)

@@ -63,9 +63,7 @@ def _generate(model, tokenizer, user_prompt: str, max_new_tokens: int = 320) -> 
         },
         {"role": "user", "content": user_prompt},
     ]
-    text = tokenizer.apply_chat_template(
-        msgs, tokenize=False, add_generation_prompt=True
-    )
+    text = tokenizer.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
     inputs = tokenizer(text, return_tensors="pt").to(model.device)
     n_in = inputs["input_ids"].shape[1]
     out = model.generate(
@@ -80,9 +78,7 @@ def _generate(model, tokenizer, user_prompt: str, max_new_tokens: int = 320) -> 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument(
-        "--adapter", required=True, help="HF repo id or local path of the LoRA"
-    )
+    ap.add_argument("--adapter", required=True, help="HF repo id or local path of the LoRA")
     ap.add_argument("--base", default="Qwen/Qwen2.5-Coder-0.5B-Instruct")
     ap.add_argument(
         "--contract",

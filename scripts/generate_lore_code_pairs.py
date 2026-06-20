@@ -58,10 +58,14 @@ TONGUE_FULL_NAMES = {
     "um": "Umbroth",
     "dr": "Draumric",
 }
-TONGUE_WEIGHTS = {t: PHI ** i for i, t in enumerate(TONGUE_ORDER)}
+TONGUE_WEIGHTS = {t: PHI**i for i, t in enumerate(TONGUE_ORDER)}
 TONGUE_FREQUENCIES = {
-    "ko": 440.0, "av": 523.25, "ru": 293.66,
-    "ca": 659.25, "um": 196.0, "dr": 392.0,
+    "ko": 440.0,
+    "av": 523.25,
+    "ru": 293.66,
+    "ca": 659.25,
+    "um": 196.0,
+    "dr": 392.0,
 }
 TONGUE_PARADIGMS = {
     "ko": ("Lisp", "VSO", "prefix-evaluated S-expressions"),
@@ -96,124 +100,165 @@ TONGUE_DOMAINS = {
 
 LORE_CODE_PATTERNS: List[Tuple[str, str, str, str]] = [
     # Spells → Functions
-    (r"(?i)\bspell\b|\bcast(?:ing)?\b|\bincantation\b|\binvok(?:e|ation)\b",
-     "function_definition", "ko",
-     "A spell is a function: it takes inputs (reagents), executes operations (gestures/words), and returns output (effect). "
-     "In Kor'aelin (VSO/Lisp): (cast reagent1 reagent2) → result."),
-
+    (
+        r"(?i)\bspell\b|\bcast(?:ing)?\b|\bincantation\b|\binvok(?:e|ation)\b",
+        "function_definition",
+        "ko",
+        "A spell is a function: it takes inputs (reagents), executes operations (gestures/words), and returns output (effect). "
+        "In Kor'aelin (VSO/Lisp): (cast reagent1 reagent2) → result.",
+    ),
     # Enchantments → Encryption
-    (r"(?i)\benchant(?:ment|ing|ed)?\b|\bward(?:ing|ed|s)?\b|\bprotect(?:ion|ing|ed)?\b|\bseal(?:ing|ed)?\b",
-     "encryption_envelope", "um",
-     "An enchantment is an encryption envelope: plaintext (the object) is transformed by a key (the incantation) "
-     "into ciphertext (the enchanted object). In Umbroth (OSV/Assembly): MOV [object], ENCRYPT(key)."),
-
+    (
+        r"(?i)\benchant(?:ment|ing|ed)?\b|\bward(?:ing|ed|s)?\b|\bprotect(?:ion|ing|ed)?\b|\bseal(?:ing|ed)?\b",
+        "encryption_envelope",
+        "um",
+        "An enchantment is an encryption envelope: plaintext (the object) is transformed by a key (the incantation) "
+        "into ciphertext (the enchanted object). In Umbroth (OSV/Assembly): MOV [object], ENCRYPT(key).",
+    ),
     # Binding oaths → Digital signatures
-    (r"(?i)\bbind(?:ing)?\b|\boath\b|\bpact\b|\bcontract\b|\bvow\b|\bpledge\b",
-     "digital_signature", "ru",
-     "A binding oath is a digital signature: the signer commits to a message (the oath) using a private key "
-     "(their true name). Verification uses the public key (their reputation). In Runethic (SOV/Forth): oath signer SIGN."),
-
+    (
+        r"(?i)\bbind(?:ing)?\b|\boath\b|\bpact\b|\bcontract\b|\bvow\b|\bpledge\b",
+        "digital_signature",
+        "ru",
+        "A binding oath is a digital signature: the signer commits to a message (the oath) using a private key "
+        "(their true name). Verification uses the public key (their reputation). In Runethic (SOV/Forth): oath signer SIGN.",
+    ),
     # Governance / Laws → Policy checks
-    (r"(?i)\bgovern(?:ance|ing|ed|s)?\b|\blaw(?:s)?\b|\brule(?:s)?\b|\bedict\b|\bdecree\b|\bjudg(?:e|ment)\b",
-     "governance_policy", "ru",
-     "A governance edict is a policy check: IF condition THEN allow/deny. The Harmonic Wall function "
-     "H(d,pd) = 1/(1+d_H+2*pd) computes the safety score. In Runethic: condition threshold COMPARE → ALLOW/DENY."),
-
+    (
+        r"(?i)\bgovern(?:ance|ing|ed|s)?\b|\blaw(?:s)?\b|\brule(?:s)?\b|\bedict\b|\bdecree\b|\bjudg(?:e|ment)\b",
+        "governance_policy",
+        "ru",
+        "A governance edict is a policy check: IF condition THEN allow/deny. The Harmonic Wall function "
+        "H(d,pd) = 1/(1+d_H+2*pd) computes the safety score. In Runethic: condition threshold COMPARE → ALLOW/DENY.",
+    ),
     # Potions / Alchemy → Data transformations
-    (r"(?i)\bpotion\b|\balchemy\b|\bbrew(?:ing)?\b|\btransmut(?:e|ation)\b|\belixir\b|\bmix(?:ture|ing)?\b",
-     "data_transformation", "ca",
-     "A potion is a data transformation pipeline: ingredients (inputs) are combined via recipe (algorithm) "
-     "to produce a result. In Cassisivadan (V2/SQL): SELECT transform(ingredient1, ingredient2) FROM cauldron."),
-
+    (
+        r"(?i)\bpotion\b|\balchemy\b|\bbrew(?:ing)?\b|\btransmut(?:e|ation)\b|\belixir\b|\bmix(?:ture|ing)?\b",
+        "data_transformation",
+        "ca",
+        "A potion is a data transformation pipeline: ingredients (inputs) are combined via recipe (algorithm) "
+        "to produce a result. In Cassisivadan (V2/SQL): SELECT transform(ingredient1, ingredient2) FROM cauldron.",
+    ),
     # Maps / Navigation → Graph traversal
-    (r"(?i)\bmap\b|\bpath\b|\bjourney\b|\bquest\b|\bnavig(?:ate|ation)\b|\broute\b|\bwaypoint\b",
-     "graph_traversal", "av",
-     "A map/quest is a graph traversal: waypoints are nodes, paths are edges, the quest is a search algorithm. "
-     "In Avali (SVO/Python): current_node.traverse(edge) → next_node."),
-
+    (
+        r"(?i)\bmap\b|\bpath\b|\bjourney\b|\bquest\b|\bnavig(?:ate|ation)\b|\broute\b|\bwaypoint\b",
+        "graph_traversal",
+        "av",
+        "A map/quest is a graph traversal: waypoints are nodes, paths are edges, the quest is a search algorithm. "
+        "In Avali (SVO/Python): current_node.traverse(edge) → next_node.",
+    ),
     # Runes / Glyphs → Tokens / Encoding
-    (r"(?i)\brune(?:s)?\b|\bglyph(?:s)?\b|\bsigil\b|\bsymbol(?:s)?\b|\binscri(?:be|ption)\b",
-     "token_encoding", "ko",
-     "A rune is a token: visual symbol encoding semantic information via bijective mapping. "
-     "SS1 protocol: byte → prefixes[byte>>4] + suffixes[byte&0x0F]. In Kor'aelin: (ENCODE byte tongue)."),
-
+    (
+        r"(?i)\brune(?:s)?\b|\bglyph(?:s)?\b|\bsigil\b|\bsymbol(?:s)?\b|\binscri(?:be|ption)\b",
+        "token_encoding",
+        "ko",
+        "A rune is a token: visual symbol encoding semantic information via bijective mapping. "
+        "SS1 protocol: byte → prefixes[byte>>4] + suffixes[byte&0x0F]. In Kor'aelin: (ENCODE byte tongue).",
+    ),
     # Battles / Combat → Adversarial testing
-    (r"(?i)\bbattle\b|\bcombat\b|\bfight(?:ing)?\b|\battack\b|\bdefend\b|\bstrike\b|\bclash\b",
-     "adversarial_test", "um",
-     "A battle is an adversarial test: red team (attacker) vs blue team (defender). "
-     "The Harmonic Wall makes attacks exponentially costly. In Umbroth: threat_vector defense_posture EVALUATE."),
-
+    (
+        r"(?i)\bbattle\b|\bcombat\b|\bfight(?:ing)?\b|\battack\b|\bdefend\b|\bstrike\b|\bclash\b",
+        "adversarial_test",
+        "um",
+        "A battle is an adversarial test: red team (attacker) vs blue team (defender). "
+        "The Harmonic Wall makes attacks exponentially costly. In Umbroth: threat_vector defense_posture EVALUATE.",
+    ),
     # Healing → Error recovery
-    (r"(?i)\bheal(?:ing|ed|er|s)?\b|\bcure\b|\brestore?\b|\brecovery?\b|\bmend(?:ing)?\b",
-     "error_recovery", "av",
-     "Healing is error recovery: detect damage (error), apply remedy (fix), verify restoration (test). "
-     "Self-healing module pattern. In Avali: damaged_state.heal(remedy) → restored_state."),
-
+    (
+        r"(?i)\bheal(?:ing|ed|er|s)?\b|\bcure\b|\brestore?\b|\brecovery?\b|\bmend(?:ing)?\b",
+        "error_recovery",
+        "av",
+        "Healing is error recovery: detect damage (error), apply remedy (fix), verify restoration (test). "
+        "Self-healing module pattern. In Avali: damaged_state.heal(remedy) → restored_state.",
+    ),
     # Forging / Crafting → Build systems
-    (r"(?i)\bforg(?:e|ing|ed)\b|\bcraft(?:ing|ed)?\b|\bbuild(?:ing)?\b|\bconstruct(?:ion|ing)?\b|\bcreate?\b|\bassembl(?:e|y)\b",
-     "build_system", "dr",
-     "Forging is a build system: raw materials (source), blueprints (config), forge process (compiler), "
-     "artifact (binary). In Draumric (SOV/Make): materials blueprint → forge → artifact."),
-
+    (
+        r"(?i)\bforg(?:e|ing|ed)\b|\bcraft(?:ing|ed)?\b|\bbuild(?:ing)?\b|\bconstruct(?:ion|ing)?\b|\bcreate?\b|\bassembl(?:e|y)\b",
+        "build_system",
+        "dr",
+        "Forging is a build system: raw materials (source), blueprints (config), forge process (compiler), "
+        "artifact (binary). In Draumric (SOV/Make): materials blueprint → forge → artifact.",
+    ),
     # Summoning → API calls / imports
-    (r"(?i)\bsummon(?:ing|ed|s)?\b|\bcall(?:ing|ed)?\b.*(?:spirit|creature|entity)\b|\binvoke?\b.*\b(?:spirit|power|entity)\b",
-     "api_call", "ko",
-     "A summoning is an API call: name the entity (endpoint), provide offerings (parameters), "
-     "receive response (return value). In Kor'aelin: (SUMMON entity offering1 offering2)."),
-
+    (
+        r"(?i)\bsummon(?:ing|ed|s)?\b|\bcall(?:ing|ed)?\b.*(?:spirit|creature|entity)\b|\binvoke?\b.*\b(?:spirit|power|entity)\b",
+        "api_call",
+        "ko",
+        "A summoning is an API call: name the entity (endpoint), provide offerings (parameters), "
+        "receive response (return value). In Kor'aelin: (SUMMON entity offering1 offering2).",
+    ),
     # Prophecy / Divination → Prediction / Inference
-    (r"(?i)\bprophe(?:cy|t|sied|sy)\b|\bdivin(?:e|ation)\b|\bforesee\b|\bpredict(?:ion)?\b|\boracle\b|\bvision\b",
-     "prediction_inference", "ca",
-     "A prophecy is model inference: past data (signs) → trained model (oracle) → prediction (prophecy). "
-     "In Cassisivadan: SELECT prediction FROM oracle WHERE signs MATCH pattern."),
-
+    (
+        r"(?i)\bprophe(?:cy|t|sied|sy)\b|\bdivin(?:e|ation)\b|\bforesee\b|\bpredict(?:ion)?\b|\boracle\b|\bvision\b",
+        "prediction_inference",
+        "ca",
+        "A prophecy is model inference: past data (signs) → trained model (oracle) → prediction (prophecy). "
+        "In Cassisivadan: SELECT prediction FROM oracle WHERE signs MATCH pattern.",
+    ),
     # Portal / Teleport → Network routing
-    (r"(?i)\bportal\b|\bteleport\b|\bwarp\b|\btransport\b|\brift\b|\bgateway\b|\bdimensional?\b",
-     "network_routing", "av",
-     "A portal is a network route: source (origin realm), tunnel (encrypted channel), "
-     "destination (target realm). SpaceTor router pattern. In Avali: source.connect(portal) → destination."),
-
+    (
+        r"(?i)\bportal\b|\bteleport\b|\bwarp\b|\btransport\b|\brift\b|\bgateway\b|\bdimensional?\b",
+        "network_routing",
+        "av",
+        "A portal is a network route: source (origin realm), tunnel (encrypted channel), "
+        "destination (target realm). SpaceTor router pattern. In Avali: source.connect(portal) → destination.",
+    ),
     # Shield / Barrier → Firewall / Access control
-    (r"(?i)\bshield\b|\bbarrier\b|\bwall\b|\bfortif(?:y|ication)\b|\bbulwark\b",
-     "firewall_acl", "um",
-     "A shield is a firewall: inspect packets (incoming threats), apply rules (shield strength), "
-     "allow/deny passage. GeoSeal pattern. In Umbroth: packet rule_set FILTER → ALLOW/DENY."),
-
+    (
+        r"(?i)\bshield\b|\bbarrier\b|\bwall\b|\bfortif(?:y|ication)\b|\bbulwark\b",
+        "firewall_acl",
+        "um",
+        "A shield is a firewall: inspect packets (incoming threats), apply rules (shield strength), "
+        "allow/deny passage. GeoSeal pattern. In Umbroth: packet rule_set FILTER → ALLOW/DENY.",
+    ),
     # Library / Archive → Database
-    (r"(?i)\blibrary\b|\barchive\b|\btome\b|\bscroll\b|\brecord(?:s)?\b|\bknowledge\b.*\bstore\b",
-     "database_storage", "ca",
-     "A library is a database: scrolls are rows, shelves are tables, catalog is index. "
-     "In Cassisivadan: SELECT scroll FROM library WHERE topic = 'binding' ORDER BY date."),
-
+    (
+        r"(?i)\blibrary\b|\barchive\b|\btome\b|\bscroll\b|\brecord(?:s)?\b|\bknowledge\b.*\bstore\b",
+        "database_storage",
+        "ca",
+        "A library is a database: scrolls are rows, shelves are tables, catalog is index. "
+        "In Cassisivadan: SELECT scroll FROM library WHERE topic = 'binding' ORDER BY date.",
+    ),
     # Guild / Faction → Agent swarm / Fleet
-    (r"(?i)\bguild\b|\bfaction\b|\border\b|\bclan\b|\bcouncil\b|\bfleet\b|\bswarm\b",
-     "agent_swarm", "ko",
-     "A guild is an agent swarm: members (agents), hierarchy (coordination), missions (tasks). "
-     "HYDRA fleet pattern. In Kor'aelin: (DISPATCH agent_pool task priority)."),
-
+    (
+        r"(?i)\bguild\b|\bfaction\b|\border\b|\bclan\b|\bcouncil\b|\bfleet\b|\bswarm\b",
+        "agent_swarm",
+        "ko",
+        "A guild is an agent swarm: members (agents), hierarchy (coordination), missions (tasks). "
+        "HYDRA fleet pattern. In Kor'aelin: (DISPATCH agent_pool task priority).",
+    ),
     # Sacred Tongue mentions → Tongue encoding explanation
-    (r"(?i)\bsacred\s*tongue\b|\btongue\s*of\b|\bspeak(?:ing)?\s*in\b.*\btongue\b",
-     "tongue_encoding", "ko",
-     "The Sacred Tongues are a 6-language bijective encoding system: each tongue maps 256 bytes to 256 tokens "
-     "via SS1 protocol. Cross-tongue translation produces attestation metadata (phase_delta, weight_ratio)."),
-
+    (
+        r"(?i)\bsacred\s*tongue\b|\btongue\s*of\b|\bspeak(?:ing)?\s*in\b.*\btongue\b",
+        "tongue_encoding",
+        "ko",
+        "The Sacred Tongues are a 6-language bijective encoding system: each tongue maps 256 bytes to 256 tokens "
+        "via SS1 protocol. Cross-tongue translation produces attestation metadata (phase_delta, weight_ratio).",
+    ),
     # Elemental / Nature magic → Physical constants / Math
-    (r"(?i)\belement(?:al|s)?\b|\bfire\b|\bwater\b|\bearth\b|\bair\b|\blight(?:ning)?\b|\bstorm\b",
-     "physical_constants", "ca",
-     "Elemental forces are physical constants: fire=energy (E=mc^2), water=flow (Navier-Stokes), "
-     "earth=mass (gravity), air=wave propagation, lightning=charge (Maxwell). In Cassisivadan: SELECT force FROM physics."),
-
+    (
+        r"(?i)\belement(?:al|s)?\b|\bfire\b|\bwater\b|\bearth\b|\bair\b|\blight(?:ning)?\b|\bstorm\b",
+        "physical_constants",
+        "ca",
+        "Elemental forces are physical constants: fire=energy (E=mc^2), water=flow (Navier-Stokes), "
+        "earth=mass (gravity), air=wave propagation, lightning=charge (Maxwell). In Cassisivadan: SELECT force FROM physics.",
+    ),
     # Ritual → Protocol
-    (r"(?i)\britual\b|\bceremony\b|\brite\b",
-     "protocol_handshake", "ru",
-     "A ritual is a protocol handshake: prescribed steps in order, each verified before proceeding. "
-     "TLS handshake, Sacred Egg hatching sequence. In Runethic: step1 step2 step3 VALIDATE."),
-
+    (
+        r"(?i)\britual\b|\bceremony\b|\brite\b",
+        "protocol_handshake",
+        "ru",
+        "A ritual is a protocol handshake: prescribed steps in order, each verified before proceeding. "
+        "TLS handshake, Sacred Egg hatching sequence. In Runethic: step1 step2 step3 VALIDATE.",
+    ),
     # Destiny / Fate → Deterministic computation
-    (r"(?i)\bdestiny\b|\bfate\b|\bpreordain\b|\binevitabl\b",
-     "deterministic_computation", "dr",
-     "Destiny is deterministic computation: given the same inputs, the same output is guaranteed. "
-     "Hash functions are destiny — SHA-256(input) always yields the same hash. In Draumric: input rules → forge → hash."),
+    (
+        r"(?i)\bdestiny\b|\bfate\b|\bpreordain\b|\binevitabl\b",
+        "deterministic_computation",
+        "dr",
+        "Destiny is deterministic computation: given the same inputs, the same output is guaranteed. "
+        "Hash functions are destiny — SHA-256(input) always yields the same hash. In Draumric: input rules → forge → hash.",
+    ),
 ]
 
 
@@ -223,18 +268,99 @@ LORE_CODE_PATTERNS: List[Tuple[str, str, str, str]] = [
 
 # Keywords that strongly indicate a tongue's domain
 TONGUE_KEYWORDS: Dict[str, List[str]] = {
-    "ko": ["command", "intent", "action", "dispatch", "invoke", "call", "nonce", "flow",
-           "kor'aelin", "kora", "leader", "captain", "order"],
-    "av": ["wisdom", "diplomacy", "transport", "travel", "portal", "heal", "peace",
-           "avali", "saina", "talan", "navigate", "bridge", "connect"],
-    "ru": ["govern", "bind", "oath", "law", "witness", "salt", "proof", "judge",
-           "runethic", "khar", "drath", "stone", "anchor", "court"],
-    "ca": ["compute", "analyze", "calculate", "number", "formula", "data", "cipher",
-           "cassisivadan", "bip", "bop", "click", "loop", "math", "code"],
-    "um": ["shadow", "secret", "veil", "redact", "hide", "stealth", "guard", "dark",
-           "umbroth", "hush", "thorn", "whisper", "cloak", "conceal"],
-    "dr": ["forge", "craft", "build", "construct", "design", "architect", "create",
-           "draumric", "stone", "iron", "hammer", "anvil", "blueprint"],
+    "ko": [
+        "command",
+        "intent",
+        "action",
+        "dispatch",
+        "invoke",
+        "call",
+        "nonce",
+        "flow",
+        "kor'aelin",
+        "kora",
+        "leader",
+        "captain",
+        "order",
+    ],
+    "av": [
+        "wisdom",
+        "diplomacy",
+        "transport",
+        "travel",
+        "portal",
+        "heal",
+        "peace",
+        "avali",
+        "saina",
+        "talan",
+        "navigate",
+        "bridge",
+        "connect",
+    ],
+    "ru": [
+        "govern",
+        "bind",
+        "oath",
+        "law",
+        "witness",
+        "salt",
+        "proof",
+        "judge",
+        "runethic",
+        "khar",
+        "drath",
+        "stone",
+        "anchor",
+        "court",
+    ],
+    "ca": [
+        "compute",
+        "analyze",
+        "calculate",
+        "number",
+        "formula",
+        "data",
+        "cipher",
+        "cassisivadan",
+        "bip",
+        "bop",
+        "click",
+        "loop",
+        "math",
+        "code",
+    ],
+    "um": [
+        "shadow",
+        "secret",
+        "veil",
+        "redact",
+        "hide",
+        "stealth",
+        "guard",
+        "dark",
+        "umbroth",
+        "hush",
+        "thorn",
+        "whisper",
+        "cloak",
+        "conceal",
+    ],
+    "dr": [
+        "forge",
+        "craft",
+        "build",
+        "construct",
+        "design",
+        "architect",
+        "create",
+        "draumric",
+        "stone",
+        "iron",
+        "hammer",
+        "anvil",
+        "blueprint",
+    ],
 }
 
 
@@ -272,15 +398,17 @@ def null_tongues(active: List[str]) -> List[str]:
 # Pattern Extraction
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class LoreCodeMapping:
     """A single lore→code mapping found in text."""
-    lore_pattern: str       # what was matched (e.g., "spell", "enchantment")
-    code_concept: str       # computational equivalent (e.g., "function_definition")
-    tongue: str             # primary tongue for this mapping
-    explanation: str        # how lore maps to code
-    match_text: str         # actual text that triggered the match
-    confidence: float       # 0-1 match confidence
+
+    lore_pattern: str  # what was matched (e.g., "spell", "enchantment")
+    code_concept: str  # computational equivalent (e.g., "function_definition")
+    tongue: str  # primary tongue for this mapping
+    explanation: str  # how lore maps to code
+    match_text: str  # actual text that triggered the match
+    confidence: float  # 0-1 match confidence
 
 
 def extract_patterns(text: str) -> List[LoreCodeMapping]:
@@ -294,14 +422,16 @@ def extract_patterns(text: str) -> List[LoreCodeMapping]:
             end = min(len(text), m.end() + 50)
             context = text[start:end].strip()
 
-            mappings.append(LoreCodeMapping(
-                lore_pattern=pattern,
-                code_concept=code_concept,
-                tongue=tongue,
-                explanation=explanation,
-                match_text=context,
-                confidence=min(1.0, 0.5 + 0.1 * len(matches)),
-            ))
+            mappings.append(
+                LoreCodeMapping(
+                    lore_pattern=pattern,
+                    code_concept=code_concept,
+                    tongue=tongue,
+                    explanation=explanation,
+                    match_text=context,
+                    confidence=min(1.0, 0.5 + 0.1 * len(matches)),
+                )
+            )
     return mappings
 
 
@@ -310,6 +440,7 @@ def extract_patterns(text: str) -> List[LoreCodeMapping]:
 # ---------------------------------------------------------------------------
 
 HBAR = 1.054571817e-34
+
 
 def compute_qho_energy(tongue: str, n: int = 1) -> float:
     """E_n = hbar * omega * (n + 0.5)"""
@@ -339,6 +470,7 @@ def tongue_distance(t1: str, t2: str) -> float:
 # ---------------------------------------------------------------------------
 # Lore→Code Pair Generator
 # ---------------------------------------------------------------------------
+
 
 def generate_lore_code_record(
     lore_text: str,
@@ -370,8 +502,7 @@ def generate_lore_code_record(
     for mapping in patterns:
         code_concepts.append(mapping.code_concept)
         code_explanations.append(
-            f"[{mapping.code_concept.upper()}] ({TONGUE_FULL_NAMES[mapping.tongue]}): "
-            f"{mapping.explanation}"
+            f"[{mapping.code_concept.upper()}] ({TONGUE_FULL_NAMES[mapping.tongue]}): " f"{mapping.explanation}"
         )
 
     # QHO enrichment
@@ -382,7 +513,7 @@ def generate_lore_code_record(
     # Cross-tongue distances (between active tongues)
     cross_distances = {}
     for i, t1 in enumerate(a_tongues):
-        for t2 in a_tongues[i + 1:]:
+        for t2 in a_tongues[i + 1 :]:
             key = f"{t1}-{t2}"
             cross_distances[key] = round(tongue_distance(t1, t2), 4)
 
@@ -409,12 +540,11 @@ def generate_lore_code_record(
     # The CODE side: the computational structure expressed in the tongue's paradigm
 
     lore_instruction = (
-        f"Translate this narrative into its computational structure. "
-        f"Identify the code patterns hiding in the lore."
+        "Translate this narrative into its computational structure. " "Identify the code patterns hiding in the lore."
     )
 
     code_response = (
-        f"## Computational Analysis\n\n"
+        "## Computational Analysis\n\n"
         f"**Primary Tongue**: {TONGUE_FULL_NAMES[p_tongue]} ({p_tongue.upper()}) — "
         f"{paradigm_name} paradigm ({word_order}), {geometry}\n"
         f"**Domain**: {TONGUE_DOMAINS[p_tongue]}\n"
@@ -427,12 +557,12 @@ def generate_lore_code_record(
         code_response += (
             f"{i}. **{mapping.code_concept.replace('_', ' ').title()}** "
             f"({TONGUE_FULL_NAMES[mapping.tongue]})\n"
-            f"   - Match: \"{mapping.match_text[:100]}...\"\n"
+            f'   - Match: "{mapping.match_text[:100]}..."\n'
             f"   - {mapping.explanation}\n\n"
         )
 
     code_response += (
-        f"### Physics\n\n"
+        "### Physics\n\n"
         f"- QHO excitation level: n={excitation}\n"
         f"- Energy: {qho_energy:.4e} J (phi-weighted: {phi_cost:.4e} J)\n"
         f"- Harmonic wall score: H={h_score:.4f}\n"
@@ -492,6 +622,7 @@ def generate_lore_code_record(
 # Main: Process all lore sources
 # ---------------------------------------------------------------------------
 
+
 def main():
     lore_sources = [
         ROOT / "training-data" / "sft" / "everweave_lore_tagged.jsonl",
@@ -545,8 +676,7 @@ def main():
                     if "messages" in record:
                         # Chat format
                         text = " ".join(
-                            m.get("content", "") for m in record["messages"]
-                            if m.get("role") in ("user", "assistant")
+                            m.get("content", "") for m in record["messages"] if m.get("role") in ("user", "assistant")
                         ).strip()
                     elif "output" in record:
                         # Instruction format
@@ -573,9 +703,7 @@ def main():
                     seen_hashes.add(text_hash)
 
                     # Generate the pair
-                    pair = generate_lore_code_record(
-                        text, src_path.name, idx, existing_tongue
-                    )
+                    pair = generate_lore_code_record(text, src_path.name, idx, existing_tongue)
                     if pair is None:
                         continue
 
@@ -611,21 +739,21 @@ def main():
 
     print()
     print("=" * 70)
-    print(f"  RESULTS")
+    print("  RESULTS")
     print(f"  Lore records processed:  {total_lore:,}")
     print(f"  Code pairs generated:    {total_pairs:,}")
     print(f"  Conversion rate:         {conversion_rate:.1f}%")
     print(f"  Unique code concepts:    {len(concept_counts)}")
     print()
-    print(f"  Top concepts:")
+    print("  Top concepts:")
     for concept, count in sorted(concept_counts.items(), key=lambda x: -x[1])[:10]:
         print(f"    {concept:30s} {count:,}")
     print()
-    print(f"  Tongue distribution:")
+    print("  Tongue distribution:")
     for tongue, count in sorted(tongue_counts.items(), key=lambda x: -x[1]):
         print(f"    {TONGUE_FULL_NAMES.get(tongue, tongue):20s} {count:,}")
     print()
-    print(f"  Governance tiers:")
+    print("  Governance tiers:")
     for tier, count in governance_counts.items():
         print(f"    {tier:15s} {count:,}")
     print()

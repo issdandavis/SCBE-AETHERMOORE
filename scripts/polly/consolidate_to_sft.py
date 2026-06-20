@@ -231,8 +231,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--out",
-        help="Local output path. Defaults to polly-sft-{month}.jsonl or "
-        "polly-sft-all.jsonl.",
+        help="Local output path. Defaults to polly-sft-{month}.jsonl or " "polly-sft-all.jsonl.",
     )
     parser.add_argument(
         "--upload",

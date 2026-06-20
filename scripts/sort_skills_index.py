@@ -11,7 +11,6 @@ from pathlib import Path
 import re
 from typing import List
 
-
 ROOT = Path(__file__).resolve().parent.parent
 SKILLS_DIR = ROOT / "skills"
 OUT_PATH = SKILLS_DIR / "SKILLS_INDEX.md"

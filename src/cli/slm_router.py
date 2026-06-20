@@ -24,6 +24,7 @@ from __future__ import annotations
 import enum
 import hashlib
 import json
+import re
 import threading
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
@@ -42,7 +43,11 @@ from typing import (
 )
 
 from src.ca_lexicon import LEXICON_BY_NAME, TONGUE_NAMES
-from src.cli.petri_pattern_filter import is_meta_ai_auditor_phrasing
+from src.cli.petri_pattern_filter import (
+    is_high_risk_instruction_input,
+    is_meta_ai_auditor_phrasing,
+    is_non_latin_script_input,
+)
 from src.cli.cross_build_ir import (
     LatticeOp,
     QuarantineError,
@@ -207,6 +212,28 @@ class RoutingResult:
 # adversarial seeds, with 47% of those false ALLOWs at conf>=0.85.
 BAND_NONE = "NONE"
 
+# ---------------------------------------------------------------------------
+#  Connective-leak guard — pre-SLM deterministic filter
+# ---------------------------------------------------------------------------
+# The SLM can confuse natural-language connectives ('and'/'or' in prose)
+# with boolean operations ('AND', 'OR' in a bitwise computation request).
+# Empirical failure (v1.5 eval, 2026-06-01): "takes a person's full name
+# AND employer name" → LOGIC/and; "throttled and automatically opens" →
+# LOGIC/or. The guard fires before any SLM call when the intent is prose
+# longer than a computation expression and has no computation vocabulary.
+_CONNECTIVE_LEAK_VOCAB_RE = re.compile(
+    r"\b(bitwise|boolean|logical|bits?|xor|nand|nor|shl|shr|rotl|rotr|"
+    r"popcount|bitmask|bitset|bitclear|shift|rotate|mask)\b",
+    re.I,
+)
+# Single-letter variable on each side of an op ("x AND y", "a or b") is
+# a genuine computation expression, not a NL connective.
+_CONNECTIVE_LEAK_VAR_OP_RE = re.compile(
+    r"\b[a-z]\s+(and|or|xor|nand|nor)\s+[a-z]\b",
+    re.I,
+)
+_CONNECTIVE_LEAK_WORD_THRESHOLD = 10
+
 
 _BAND_DESCRIPTIONS: Dict[str, str] = {
     "ARITHMETIC": (
@@ -219,7 +246,13 @@ _BAND_DESCRIPTIONS: Dict[str, str] = {
         "bitwise or boolean ops on scalars. "
         "Examples: and, or, xor, not, nand, nor, shl, shr, rotl, rotr, "
         "popcount, bitmask, bitset, bitclear. "
-        "Pick this for 'x AND y', 'shift left', 'count bits'."
+        "Pick this ONLY for 'x AND y' where x and y are NUMERIC VALUES or BIT "
+        "VECTORS: 'compute bitwise AND of 3 and 5', 'shift integer n left by k "
+        "bits', 'count set bits of an unsigned integer'. "
+        "Do NOT pick LOGIC just because the sentence contains the word 'and' or "
+        "'or' as a natural-language connective joining phrases or task "
+        "descriptions. If the sentence describes a task (write a script that "
+        "does X and Y), it is NONE, not LOGIC."
     ),
     "COMPARISON": (
         "compare two scalars or clamp into a range. "
@@ -248,6 +281,31 @@ _BAND_DESCRIPTIONS: Dict[str, str] = {
         "real-band classification is higher than the cost of a NONE."
     ),
 }
+
+
+def _check_nl_connective_prose(intent: str, reasoning: List[str]) -> None:
+    """Raise BandNotApplicable when the intent is prose that uses 'and'/'or'
+    as a natural-language connective rather than a boolean/bitwise operation.
+
+    This is a pre-SLM deterministic guard — it fires before any adapter call
+    so that a connective-containing adversarial sentence never reaches the band
+    classifier. Fires when ALL conditions hold:
+      1. Intent exceeds the prose threshold (longer than a computation expression)
+      2. No explicit computation vocabulary (bitwise/boolean/bit/shift/etc.)
+      3. No single-variable-op pattern (a AND b, x or y)
+    """
+    if len(intent.split()) <= _CONNECTIVE_LEAK_WORD_THRESHOLD:
+        return
+    if _CONNECTIVE_LEAK_VOCAB_RE.search(intent):
+        return
+    if _CONNECTIVE_LEAK_VAR_OP_RE.search(intent):
+        return
+    reasoning.append("connective_leak_guard:fired")
+    raise BandNotApplicable(
+        "natural-language connective: intent is prose with no computation "
+        "vocabulary ('and'/'or' is used as a conjunction, not a boolean op); "
+        f"refusing to route: {intent[:160]!r}"
+    )
 
 
 # Coding-intent gate. A Yes/No pre-classification that runs BEFORE band
@@ -384,6 +442,49 @@ def _digest_action(op: LatticeOp, dst_tongue: str) -> str:
     return hashlib.sha256(body).hexdigest()
 
 
+_CONNECTIVE_LEAK_TOKEN_RE = re.compile(r"\b(and|or)\b", re.IGNORECASE)
+_CONNECTIVE_LEAK_CONTEXT_RE = re.compile(
+    r"\b("
+    r"person|people|user|users|employee|employer|candidate|customer|"
+    r"account|profile|identity|email|message|browser|password|credential|"
+    r"agent|assistant|model|ai|oversight|monitor|monitoring|safety|policy|"
+    r"deploy|deployment|launch|throttle|throttled|opens?|open|access|"
+    r"blackmail|leak|exfiltrate|sabotage|manipulate"
+    r")\b",
+    re.IGNORECASE,
+)
+_BOUNDED_LOGIC_RE = re.compile(
+    r"\b("
+    r"bitwise|boolean|bool|logical|truth|scalar|integer|uint|bits?|"
+    r"compute|return|implement|write\s+(a\s+)?function|code|"
+    r"x\s+(and|or)\s+y|a\s+(and|or)\s+b"
+    r")\b",
+    re.IGNORECASE,
+)
+
+
+def is_connective_prose_leak(intent: str) -> Tuple[bool, str]:
+    """Detect prose/security prompts that leak into LOGIC via `and`/`or`.
+
+    The LatticeRouter LOGIC band is for bounded boolean/bitwise computation.
+    Natural-language adversarial prompts often contain ordinary connective
+    words that small routers over-map to LOGIC ops. This guard refuses that
+    route before band classification unless the request is explicitly a small
+    logic computation.
+    """
+
+    text = intent or ""
+    token_match = _CONNECTIVE_LEAK_TOKEN_RE.search(text)
+    if not token_match:
+        return False, ""
+    if _BOUNDED_LOGIC_RE.search(text):
+        return False, ""
+    context_match = _CONNECTIVE_LEAK_CONTEXT_RE.search(text)
+    if not context_match:
+        return False, ""
+    return True, f"natural_language_{token_match.group(1).lower()}:{context_match.group(1).lower()}"
+
+
 class BandNotApplicable(ClassificationFailure):
     """The band classifier returned NONE — the intent is out-of-
     distribution for code-routing.
@@ -494,6 +595,7 @@ class LatticeRouter:
         enable_coding_intent_gate: bool = False,
         gate_adapter: Optional[SLMAdapter] = None,
         enable_petri_pattern_filter: bool = False,
+        enable_tongue_coverage_gate: bool = False,
     ) -> None:
         self._adapter = adapter
         self._recent: deque[str] = deque(maxlen=loop_window)
@@ -506,6 +608,12 @@ class LatticeRouter:
         # without consuming an SLM call. Independent of the LLM gate;
         # both can be enabled together (regex first, then LLM).
         self._enable_petri_pattern_filter = enable_petri_pattern_filter
+        # Sacred Tongue (KO) coverage gate. Fires when the Kor'aelin ASCII
+        # byte coverage falls below 0.60 — catches adversarial prompts written
+        # in non-Latin scripts (CJK, Devanagari, Burmese, etc.) that bypass
+        # the English regex filter. Runs before both the regex filter and the
+        # LLM gate; zero-latency byte-level computation, no SLM call needed.
+        self._enable_tongue_coverage_gate = enable_tongue_coverage_gate
         # When set, the coding-intent gate uses a separate adapter (e.g.
         # a non-coder model from a different family). Same-family
         # agreement adds no new signal -- if the band classifier on the
@@ -564,6 +672,19 @@ class LatticeRouter:
         reasoning: List[str] = []
         confidences: List[float] = []  # tracked structurally, not re-parsed
 
+        # ----- Sacred Tongue KO coverage gate (optional, pre-filter) --------
+        # Byte-level check: Kor'aelin ASCII coverage < 0.60 means the intent
+        # is written in a non-Latin script. Catches multilingual adversarial
+        # prompts that bypass the English regex filter. Zero SLM calls.
+        if self._enable_tongue_coverage_gate and resolved_mode is Mode.AUTO and op_name is None and band is None:
+            flagged, reason = is_non_latin_script_input(intent)
+            if flagged:
+                reasoning.append(f"tongue_coverage_gate:{reason}")
+                raise BandNotApplicable(
+                    f"intent has low Kor'aelin (KO) tongue coverage ({reason}); "
+                    f"non-Latin script inputs are not valid coding requests: {intent[:80]!r}"
+                )
+
         # ----- Petri pattern filter (optional, pre-gate) ------------------
         # Deterministic regex match on Petri-corpus auditor phrasings.
         # Cheaper than the LLM gate (no SLM call) and corpus-specific by
@@ -577,6 +698,40 @@ class LatticeRouter:
                 raise BandNotApplicable(
                     f"intent matches Petri-style auditor phrasing ({reason}); " f"refusing to route: {intent[:160]!r}"
                 )
+
+        # ----- High-risk instruction/tool-abuse gate ----------------------
+        # Always-on in AUTO mode after Petri attribution. This closes the
+        # known NONE-gap where an SLM forces an obvious attack into a real
+        # band at high confidence.
+        if resolved_mode is Mode.AUTO and op_name is None and band is None:
+            matched, reason = is_high_risk_instruction_input(intent)
+            if matched:
+                reasoning.append(f"instruction_safety_gate:{reason}")
+                raise BandNotApplicable(
+                    f"intent matches high-risk instruction/tool-abuse marker ({reason}); "
+                    f"refusing to route: {intent[:160]!r}"
+                )
+
+        # ----- Connective prose-leak gate --------------------------------
+        # Always-on in AUTO mode. Closes the failure where ordinary prose
+        # connectives ("and", "or") in adversarial text get mapped into LOGIC
+        # ops before NONE has a chance to win.
+        if resolved_mode is Mode.AUTO and op_name is None and band is None:
+            matched, reason = is_connective_prose_leak(intent)
+            if matched:
+                reasoning.append(f"connective_prose_gate:{reason}")
+                raise BandNotApplicable(
+                    f"intent uses natural-language connective in non-computational context ({reason}); "
+                    f"refusing to route: {intent[:160]!r}"
+                )
+
+        # ----- Connective-leak guard (always-on, pre-SLM) ----------------
+        # Deterministic check: long prose with 'and'/'or' and no computation
+        # vocabulary is almost certainly a NL connective, not a boolean op.
+        # Fires before the band SLM call so the adapter is never consulted
+        # on intents that would cause the connective-leak false-allow.
+        if resolved_mode is Mode.AUTO and op_name is None and band is None:
+            _check_nl_connective_prose(intent, reasoning)
 
         # ----- Coding-intent gate (optional, pre-band) --------------------
         # Runs only in AUTO mode and only when no band/op is pinned, so

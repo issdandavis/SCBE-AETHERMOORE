@@ -73,18 +73,20 @@ def _build_prompt(failure: dict[str, Any], policy: dict[str, Any]) -> str:
     five_w = failure.get("five_w") if isinstance(failure.get("five_w"), dict) else {}
     help_plan = failure.get("help_plan") if isinstance(failure.get("help_plan"), dict) else {}
     retry_cycle = failure.get("retry_cycle") if isinstance(failure.get("retry_cycle"), dict) else {}
+    retry_shape_default = "problem + retry_with_knowledge + multi_agent_research + bigger_agent_confirmation"
 
     lines = [
         "# SCBE Known-Fail Retry Prompt",
         "",
         "You are repairing one captured benchmark miss. Failure is a learning packet, not a final verdict.",
-        "Do not chase model consensus. Multiple agents may disagree; preserve the overlapping working core and let executable tests decide.",
+        "Do not chase model consensus. Multiple agents may disagree; preserve the overlapping "
+        "working core and let executable tests decide.",
         "",
         "## Workingness Policy",
         f"- consensus role: {policy.get('consensus_role', 'advisory_only')}",
         f"- success gate: {policy.get('success_gate', 'executable_tests_and_artifact_evidence')}",
         f"- failure role: {policy.get('failure_role', 'learning_packet_for_retry')}",
-        f"- retry shape: {policy.get('retry_shape', 'problem + retry_with_knowledge + multi_agent_research + bigger_agent_confirmation')}",
+        f"- retry shape: {policy.get('retry_shape', retry_shape_default)}",
         "",
         "## Frozen Problem",
         f"- id: {failure_id}",
@@ -140,7 +142,8 @@ def _build_prompt(failure: dict[str, Any], policy: dict[str, Any]) -> str:
             "4. verification_command: the exact command or benchmark rerun needed.",
             "5. confidence_note: what still might be wrong after the patch.",
             "",
-            "Stop if you cannot identify a runnable verification path. Ask for a local evidence lane instead of inventing facts.",
+            "Stop if you cannot identify a runnable verification path. Ask for a local evidence "
+            "lane instead of inventing facts.",
         ]
     )
     return "\n".join(lines).strip() + "\n"

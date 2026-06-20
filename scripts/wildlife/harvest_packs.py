@@ -108,7 +108,7 @@ def harvest_issues(limit: int) -> list[dict]:
     )
     out = []
     for r in raw:
-        labels = [l.get("name", "") for l in r.get("labels", [])]
+        labels = [label.get("name", "") for label in r.get("labels", [])]
         out.append(
             {
                 "id": f"issue-{r.get('number')}",
@@ -140,7 +140,7 @@ def harvest_prs(limit: int) -> list[dict]:
     )
     out = []
     for r in raw:
-        labels = [l.get("name", "") for l in r.get("labels", [])]
+        labels = [label.get("name", "") for label in r.get("labels", [])]
         out.append(
             {
                 "id": f"pr-{r.get('number')}",
@@ -177,7 +177,7 @@ def harvest_failing_workflows(limit: int) -> list[dict]:
             {
                 "id": f"run-{r.get('databaseId')}",
                 "title": f"workflow failed: {name}",
-                "body": f"event={r.get('event','')}",
+                "body": f"event={r.get('event', '')}",
                 "labels": [],
                 "source": "workflow-failure",
                 "url": r.get("url", ""),
@@ -306,8 +306,8 @@ def liberties_for(signal: dict) -> int:
 
     Range 0-4. 0 = trapped, 4 = wide open.
     """
-    labels = [str(l).lower() for l in signal.get("labels", [])]
-    if any(l in ("blocked", "needs-info", "needs-decision", "draft") for l in labels):
+    labels = [str(label).lower() for label in signal.get("labels", [])]
+    if any(label in ("blocked", "needs-info", "needs-decision", "draft") for label in labels):
         return 0
     if signal.get("source") in {"workflow-failure", "broken-deploy"}:
         return 1

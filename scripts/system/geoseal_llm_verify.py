@@ -20,7 +20,7 @@ Optional hosted providers (disabled unless --allow-hosted is passed):
   CEREBRAS_API_KEY    → api.cerebras.ai    (llama-4-scout-17b-16e default)
   GROQ_API_KEY        → api.groq.com       (llama3-8b-8192 default)
   TOGETHER_API_KEY    → api.together.xyz   (Llama-3.2-3B-Instruct-Turbo default)
-  FIREWORKS_API_KEY   → api.fireworks.ai   (llama-v3p2-3b-instruct default)
+  FIREWORKS_API_KEY   → api.fireworks.ai   (kimi-k2p5 default; override with FIREWORKS_MODEL)
   OPENROUTER_API_KEY  → openrouter.ai/api  (meta-llama/llama-3.2-3b-instruct default)
 
 Usage:
@@ -151,7 +151,7 @@ PROVIDERS: list[ProviderSpec] = [
         name="fireworks-3b",
         base_url="https://api.fireworks.ai/inference/v1",
         api_key_env="FIREWORKS_API_KEY",
-        default_model="accounts/fireworks/models/llama-v3p2-3b-instruct",
+        default_model="accounts/fireworks/models/kimi-k2p5",
         phase=2,
         timeout_s=20,
         hosted=True,
@@ -194,6 +194,25 @@ def select_providers(
     if dry_run:
         return active
     return [s for s in active if s.is_local or (s.api_key_env and os.environ.get(s.api_key_env))]
+
+
+def provider_model(spec: ProviderSpec) -> str:
+    """Return provider model with optional env override.
+
+    Provider-specific env vars use the API-key prefix when available, e.g.
+    FIREWORKS_MODEL for FIREWORKS_API_KEY. A provider-name override such as
+    FIREWORKS_3B_MODEL also works for one-off experiments.
+    """
+    candidates: list[str] = []
+    if spec.api_key_env.endswith("_API_KEY"):
+        candidates.append(spec.api_key_env[: -len("_API_KEY")] + "_MODEL")
+    provider_key = spec.name.upper().replace("-", "_") + "_MODEL"
+    candidates.append(provider_key)
+    for key in candidates:
+        value = os.environ.get(key, "").strip()
+        if value:
+            return value
+    return spec.default_model
 
 
 # ─── Verdict schema ───────────────────────────────────────────────────────────
@@ -247,9 +266,10 @@ def _chat_sync(
     if not key and not is_local:
         return "", f"missing env var {spec.api_key_env}", 0.0
 
+    model = provider_model(spec)
     url = spec.base_url.rstrip("/") + "/chat/completions"
     body = {
-        "model": spec.default_model,
+        "model": model,
         "messages": messages,
         "max_tokens": spec.max_tokens,
         "temperature": 0.0,
@@ -349,10 +369,11 @@ def _build_focused_messages(
 
 
 def _parse_verdict(text: str, spec: ProviderSpec, latency_ms: float, error: Optional[str]) -> ProviderVerdict:
+    model = provider_model(spec)
     if error:
         return ProviderVerdict(
             provider=spec.name,
-            model=spec.default_model,
+            model=model,
             phase=spec.phase,
             decision="ERROR",
             confidence=0.0,
@@ -379,7 +400,7 @@ def _parse_verdict(text: str, spec: ProviderSpec, latency_ms: float, error: Opti
             rationale = line.split(":", 1)[1].strip()[:200]
     return ProviderVerdict(
         provider=spec.name,
-        model=spec.default_model,
+        model=model,
         phase=spec.phase,
         decision=decision,
         confidence=confidence,

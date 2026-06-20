@@ -9,7 +9,6 @@ from pathlib import Path
 
 from scripts.run_legacy_hf_eval import choose_python_for_eval
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 PROBE_SCRIPT = PROJECT_ROOT / "scripts" / "probe_thermal_mirror.py"
 

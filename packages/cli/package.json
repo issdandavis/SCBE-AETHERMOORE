@@ -1,7 +1,7 @@
 {
   "name": "scbe-aethermoore-cli",
   "version": "4.4.0",
-  "description": "Standalone CLI for SCBE-AETHERMOORE: natural-language command resolver with autocorrect ledger, GeoSeal tools, flow operator loop, liboqs proof receipts, bus workspace suite, agent-bus passthrough, tokenizer lanes, governance abacus (BigInt L12+L13), SCONE-class Solidity contract scanner, trap-in-good-loops dispatcher.",
+  "description": "SCBE Aethermoor CLI — governed AI operations platform with 60+ governed commands: 14-layer harmonic pipeline, Sacred Tongues tokenizer, post-quantum receipts (ML-KEM-768 + ML-DSA-65), multi-agent bus with audit-chain workspaces, deterministic BigInt governance abacus, SCONE-class Solidity contract scanner, adversarial prompt inspector, squad routing with multi-provider cross-validation, flow operator loop, and AI-first governed shell.",
   "author": "Issac Daniel Davis <issdandavis@gmail.com>",
   "license": "MIT OR Apache-2.0",
   "type": "commonjs",
@@ -12,6 +12,20 @@
   },
   "files": [
     "bin",
+    "lib",
+    "mcp",
+    "skills",
+    "scripts/scbe_tb_agent.py",
+    "scripts/shell_benchmark.cjs",
+    "scripts/bench_task_corpus.cjs",
+    "scripts/bench_harness_matrix.cjs",
+    "scripts/bench_code_ranker.cjs",
+    "scripts/bench_math_reasoning.cjs",
+    "scripts/bench_tb_smoke.cjs",
+    "scripts/desktop_subsystem.cjs",
+    "scripts/action_runner.cjs",
+    "scripts/scbe_workflow.cjs",
+    "tests",
     "README.md",
     "LICENSE",
     "LICENSE-APACHE",
@@ -20,14 +34,29 @@
   "scripts": {
     "help": "node ./bin/scbe.js --help",
     "selftest": "node ./bin/scbe.js selftest",
+    "mcp": "node mcp/scbe-mcp-server.cjs",
+    "test": "node --test tests/*.test.cjs",
+    "bench:shell": "node scripts/shell_benchmark.cjs",
+    "bench:corpus": "node scripts/bench_task_corpus.cjs",
+    "bench:matrix": "node scripts/bench_harness_matrix.cjs",
+    "bench:code-ranker": "node scripts/bench_code_ranker.cjs",
+    "bench:math": "node scripts/bench_math_reasoning.cjs",
+    "bench:tb-smoke": "node scripts/bench_tb_smoke.cjs",
+    "desktop": "node scripts/desktop_subsystem.cjs",
+    "actions": "node scripts/action_runner.cjs",
+    "workflow": "node scripts/scbe_workflow.cjs",
     "pack:dry": "npm pack --dry-run --json"
   },
   "engines": {
     "node": ">=20.0.0"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "ink": "^4.4.1",
+    "playwright-core": "^1.58.2",
+    "react": "^18.3.1",
     "scbe-aethermoore": "^4.1.0",
-    "scbe-agent-bus": "^0.3.10"
+    "scbe-agent-bus": "^0.4.0"
   },
   "keywords": [
     "scbe",

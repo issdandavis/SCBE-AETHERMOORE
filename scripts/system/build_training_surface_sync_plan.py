@@ -297,9 +297,7 @@ def run(
         "markdown_path": str(md_path),
         "profile_job_count": len(plan["profile_jobs"]),
         "kaggle_round_count": len(plan["kaggle_rounds"]),
-        "blocked_profile_jobs": [
-            item["profile_id"] for item in plan["profile_jobs"] if not item["safe_to_dispatch"]
-        ],
+        "blocked_profile_jobs": [item["profile_id"] for item in plan["profile_jobs"] if not item["safe_to_dispatch"]],
     }
 
 

@@ -321,7 +321,11 @@ def main() -> None:
     eval_rows = _load_jsonl_files(EVAL_FILES, "eval", token) if EVAL_FILES else None
     train_ds = _build_dataset(train_rows, tokenizer)
     eval_ds = _build_dataset(eval_rows, tokenizer) if eval_rows is not None else None
-    print(json.dumps({{"event": "datasets_built", "train_rows": len(train_ds), "eval_rows": len(eval_ds) if eval_ds is not None else 0}}))
+    print(json.dumps({{
+        "event": "datasets_built",
+        "train_rows": len(train_ds),
+        "eval_rows": len(eval_ds) if eval_ds is not None else 0,
+    }}))
 
     out_dir = WORKDIR / "adapter"
     sft_args = SFTConfig(
@@ -359,10 +363,20 @@ def main() -> None:
     stats = trainer.train()
     model.save_pretrained(str(out_dir))
     tokenizer.save_pretrained(str(out_dir))
-    print(json.dumps({{"event": "training_saved", "adapter_dir": str(out_dir), "global_step": int(getattr(stats, "global_step", 0)), "training_loss": float(getattr(stats, "training_loss", 0.0))}}))
+    print(json.dumps({{
+        "event": "training_saved",
+        "adapter_dir": str(out_dir),
+        "global_step": int(getattr(stats, "global_step", 0)),
+        "training_loss": float(getattr(stats, "training_loss", 0.0)),
+    }}))
 
     # === Inline cross-lane concept-preservation gate ===
-    print(json.dumps({{"event": "gate_start", "holdout": GATE_HOLDOUT, "min_packet": GATE_MIN_PACKET, "min_invariance": GATE_MIN_INVARIANCE}}))
+    print(json.dumps({{
+        "event": "gate_start",
+        "holdout": GATE_HOLDOUT,
+        "min_packet": GATE_MIN_PACKET,
+        "min_invariance": GATE_MIN_INVARIANCE,
+    }}))
     del trainer
     del model
     gc.collect()
@@ -434,7 +448,13 @@ def main() -> None:
             }}
             per_record_results.append(entry)
             records_with_responses.append((rec, ""))
-            print(json.dumps({{"event": "gate_record_error", "i": i, "n": len(holdout_rows), "meta": entry["meta"], "error": str(exc)}}))
+            print(json.dumps({{
+                "event": "gate_record_error",
+                "i": i,
+                "n": len(holdout_rows),
+                "meta": entry["meta"],
+                "error": str(exc),
+            }}))
             continue
         meta = rec.get("meta") or {{}}
         map_name = str(meta.get("map", ""))
@@ -461,7 +481,14 @@ def main() -> None:
         elif entry["ok"]:
             n_compliant += 1
         elapsed = time.time() - t0
-        print(json.dumps({{"event": "gate_record", "i": i, "n": len(holdout_rows), "ok": entry["ok"], "meta": entry["meta"], "elapsed_s": round(elapsed, 1)}}))
+        print(json.dumps({{
+            "event": "gate_record",
+            "i": i,
+            "n": len(holdout_rows),
+            "ok": entry["ok"],
+            "meta": entry["meta"],
+            "elapsed_s": round(elapsed, 1),
+        }}))
 
     by_concept = {{}}
     for rec, resp in records_with_responses:
@@ -528,7 +555,12 @@ def main() -> None:
     # (job 69f2c151d70108f37ace1989 ERRORed here: TypeError frozenset is not JSON serializable)
     report_path.write_text(json.dumps(report, indent=2, default=str), encoding="utf-8")
     # Emit gate_report BEFORE any push so it always lands in logs.
-    print(json.dumps({{"event": "gate_report", "report_summary": summary, "overall_pass": overall_pass, "unmapped": n_unmapped}}))
+    print(json.dumps({{
+        "event": "gate_report",
+        "report_summary": summary,
+        "overall_pass": overall_pass,
+        "unmapped": n_unmapped,
+    }}))
 
     should_push = push_requested and overall_pass and adapter_repo
     pushed_adapter = False
@@ -544,7 +576,12 @@ def main() -> None:
             reason = "push_disabled"
         else:
             reason = "gate_failed"
-        print(json.dumps({{"event": "push_skipped", "reason": reason, "overall_pass": overall_pass, "push_requested": push_requested}}))
+        print(json.dumps({{
+            "event": "push_skipped",
+            "reason": reason,
+            "overall_pass": overall_pass,
+            "push_requested": push_requested,
+        }}))
 
     final_summary = {{
         "profile_id": PROFILE["profile_id"],
@@ -677,7 +714,8 @@ def _render_run_note(packet: dict[str, Any]) -> str:
             f"- Base model: `{packet['base_model']}`",
             f"- Adapter repo: `{packet['adapter_repo']}`",
             f"- Dataset repo: `{packet['dataset_repo']}`",
-            f"- Cross-lane module: `{packet['cross_lane_module']}` (uploaded as `{packet['cross_lane_filename']}` in dataset repo)",
+            f"- Cross-lane module: `{packet['cross_lane_module']}` "
+            f"(uploaded as `{packet['cross_lane_filename']}` in dataset repo)",
             f"- Script: `{packet['script_path']}`",
             f"- Packet: `{Path(packet['run_dir']) / 'job_packet.json'}`",
             "",

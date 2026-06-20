@@ -9,6 +9,7 @@ Usage:
 
 Medium API: https://github.com/Medium/medium-api-docs
 """
+
 from __future__ import annotations
 
 import argparse
@@ -19,7 +20,6 @@ import time
 from pathlib import Path
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
-
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 CHAPTER_DIR = REPO_ROOT / "content" / "book" / "reader-edition"
@@ -36,7 +36,8 @@ BOOK_CTA = f"""
 
 **[Get the full novel on Amazon (Kindle $4.99 / Paperback $13.99)]({AMAZON_LINK})**
 
-*The Six Tongues Protocol is a fantasy novel born from 12,596 paragraphs of AI game logs, expanded into a world where languages are architecture and governance is geometry.*
+*The Six Tongues Protocol is a fantasy novel born from 12,596 paragraphs of AI game logs, \
+expanded into a world where languages are architecture and governance is geometry.*
 
 *Follow the author: [GitHub](https://github.com/issdandavis) | [ORCID](https://orcid.org/0009-0002-3936-9369)*
 """

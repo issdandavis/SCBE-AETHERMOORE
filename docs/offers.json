@@ -30,6 +30,48 @@
   },
   "offers": [
     {
+      "id": "workcell_cli_lifetime",
+      "name": "SCBE Workcell CLI",
+      "price_label": "$1 lifetime",
+      "type": "digital_access",
+      "checkout_url": "https://buy.stripe.com/fZu4gA5Ca1PFct211Ydby0o",
+      "alternate_checkout": {
+        "cash_app": "$IzzyDDavis7",
+        "cash_app_qr_url": "https://aethermoore.com/SCBE-AETHERMOORE/static/cash-app-payment.png"
+      },
+      "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/cli.html",
+      "status": "live",
+      "scope": [
+        "lifetime self-serve access path for the public SCBE command-line workcell tooling and docs",
+        "run the CLI, inspect workflows, and use the public workcell materials yourself",
+        "support, custom review, managed runs, private repo work, and regulated deployments sold separately"
+      ],
+      "checkout_note": "Stripe checkout is live. This is self-serve lifetime access, not unlimited support.",
+      "stripe_payment_link_id": "plink_1Tj3CyJTF2SuUODIq1uPTEqY"
+    },
+    {
+      "id": "black_box_self_serve",
+      "name": "SCBE Black Box",
+      "price_label": "$19 self-serve",
+      "type": "digital_download",
+      "checkout_url": "https://ko-fi.com/izdandavis",
+      "alternate_checkout": {
+        "cash_app": "$IzzyDDavis7",
+        "cash_app_qr_url": "https://aethermoore.com/SCBE-AETHERMOORE/static/cash-app-payment.png",
+        "manual_invoice": "mailto:aethermoregames@pm.me?subject=SCBE%20Black%20Box%20purchase"
+      },
+      "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/black-box.html",
+      "quickstart_url": "https://aethermoore.com/SCBE-AETHERMOORE/downloads/scbe-black-box-quickstart.md",
+      "status": "live",
+      "scope": [
+        "self-serve local workstation failure report",
+        "Windows shutdown, BSOD, disk, memory, storage, WHEA, service-crash, and top-process signals",
+        "plain-English text report plus JSON report",
+        "no installation service, no remote upload, no API key"
+      ],
+      "checkout_note": "Ko-fi and Cash App are active low-friction purchase paths. Use payment note: SCBE Black Box."
+    },
+    {
       "id": "service_credits",
       "name": "SCBE Service Credits",
       "price_label": "$5+ pay-as-you-go",

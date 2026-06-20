@@ -1,6 +1,9 @@
 {
-  "version": "2026-03-04",
+  "version": "2026-05-30",
   "provider_order": [
+    "cerebras",
+    "groq",
+    "huggingface",
     "openai",
     "anthropic",
     "xai"
@@ -103,7 +106,50 @@
         "HUGGING_FACE_HUB_TOKEN"
       ],
       "health_endpoint": "https://huggingface.co/api/whoami-v2",
-      "daily_cap_usd": 2.0
+      "chat_endpoint": "https://router.huggingface.co/v1/chat/completions",
+      "daily_cap_usd": 0.0,
+      "timeout_sec": 45,
+      "note": "Included-credit fallback through HuggingFace Router when Cerebras/Groq are unavailable.",
+      "tiers": {
+        "cheap": {
+          "model": "Qwen/Qwen2.5-Coder-32B-Instruct",
+          "estimated_cents": 0.0
+        }
+      }
+    },
+    "cerebras": {
+      "enabled": true,
+      "env_keys": [
+        "CEREBRAS_API_KEY"
+      ],
+      "health_endpoint": "https://api.cerebras.ai/v1/models",
+      "chat_endpoint": "https://api.cerebras.ai/v1/chat/completions",
+      "daily_cap_usd": 2.0,
+      "timeout_sec": 15,
+      "note": "Squad fast-ops unit. Free tier; use for triage and code-translation planning.",
+      "tiers": {
+        "cheap": {
+          "model": "gpt-oss-120b",
+          "estimated_cents": 0.0
+        }
+      }
+    },
+    "groq": {
+      "enabled": true,
+      "env_keys": [
+        "GROQ_API_KEY"
+      ],
+      "health_endpoint": "https://api.groq.com/openai/v1/models",
+      "chat_endpoint": "https://api.groq.com/openai/v1/chat/completions",
+      "daily_cap_usd": 2.0,
+      "timeout_sec": 20,
+      "note": "Squad safety/auth/policy unit. Free tier; use for policy decisions.",
+      "tiers": {
+        "cheap": {
+          "model": "llama-3.3-70b-versatile",
+          "estimated_cents": 0.0
+        }
+      }
     }
   },
   "default_system_prompt": "You are an SCBE terminal assistant. Keep answers short, practical, and evidence-aware."

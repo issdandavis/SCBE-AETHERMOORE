@@ -17,7 +17,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_SKILLS_ROOT = Path(os.environ.get("CODEX_HOME", str(Path.home() / ".codex"))) / "skills"
 
@@ -276,13 +275,15 @@ def write_outputs(
     ]
     for code, meta in lexicon["tongues"].items():
         summary_lines.append(
-            f"- {code} ({meta.get('prefix')}): role={meta.get('role')}, emotion={meta.get('emotion')}, intent={meta.get('intent')}, "
+            f"- {code} ({meta.get('prefix')}): role={meta.get('role')}, "
+            f"emotion={meta.get('emotion')}, intent={meta.get('intent')}, "
             f"agentic_character={meta.get('agentic_character')}, runtime_character={meta.get('runtime_character')}"
         )
     summary_lines += ["", "## Top Skills"]
     for row in matrix["rows"][:20]:
         summary_lines.append(
-            f"- {row['slug']} -> tongues={','.join(row['recommended_tongues'])} categories={','.join(row['categories'])}"
+            f"- {row['slug']} -> tongues={','.join(row['recommended_tongues'])} "
+            f"categories={','.join(row['categories'])}"
         )
     summary_lines.append("")
     summary_path.write_text("\n".join(summary_lines), encoding="utf-8")

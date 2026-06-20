@@ -125,9 +125,7 @@ def _shape_for(
     return None, [], None
 
 
-def _candidate_ops(
-    meta: Dict[str, Any], realms: Sequence[str]
-) -> List[Tuple[str, Tuple]]:
+def _candidate_ops(meta: Dict[str, Any], realms: Sequence[str]) -> List[Tuple[str, Tuple]]:
     """Per-record candidate primitive applications. Invalid ones are pruned at apply time."""
     cands: List[Tuple[str, Tuple]] = []
     seeds = {
@@ -240,9 +238,7 @@ def _last_msg(messages: List[Dict[str, str]], role: str) -> str:
     return ""
 
 
-def _build_triple(
-    record: Dict[str, Any], program: List[Tuple[str, Tuple]]
-) -> Optional[Dict[str, Any]]:
+def _build_triple(record: Dict[str, Any], program: List[Tuple[str, Tuple]]) -> Optional[Dict[str, Any]]:
     meta = record.get("meta", {})
     messages = record.get("messages", [])
     user_in = _last_msg(messages, "user")
@@ -361,15 +357,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     out_report = root / OUT_REPORT
     out_report.parent.mkdir(parents=True, exist_ok=True)
-    out_report.write_text(
-        json.dumps(report, indent=2, sort_keys=True), encoding="utf-8"
-    )
+    out_report.write_text(json.dumps(report, indent=2, sort_keys=True), encoding="utf-8")
 
     print(f"[coverage] {syn}/{total} = {coverage:.2%} (gate={COVERAGE_GATE:.0%})")
     for task, info in sorted(by_task_coverage.items()):
-        print(
-            f"  - {task:20s} {info['synthesised']:>4}/{info['total']:>4} = {info['coverage']:.2%}"
-        )
+        print(f"  - {task:20s} {info['synthesised']:>4}/{info['total']:>4} = {info['coverage']:.2%}")
 
     if not report["passed"]:
         print(

@@ -11,7 +11,6 @@ import json
 import os
 from pathlib import Path
 
-
 LOGIN_URL = "https://arxiv.org/login"
 SUBMIT_URL = "https://arxiv.org/submit"
 

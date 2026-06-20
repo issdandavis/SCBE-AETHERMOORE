@@ -45,12 +45,14 @@ def _checkpoint_rows(root: Path) -> list[dict[str, Any]]:
         except ValueError:
             continue
         size_bytes = sum(p.stat().st_size for p in entry.rglob("*") if p.is_file())
-        rows.append({
-            "name": entry.name,
-            "step": step,
-            "path": str(entry.resolve()),
-            "size_bytes": size_bytes,
-        })
+        rows.append(
+            {
+                "name": entry.name,
+                "step": step,
+                "path": str(entry.resolve()),
+                "size_bytes": size_bytes,
+            }
+        )
     return sorted(rows, key=lambda row: row["step"])
 
 
@@ -134,9 +136,15 @@ def _mirror_run_state(
     target = mirror_root / _safe_slug(run_name)
     target.mkdir(parents=True, exist_ok=True)
 
-    names = {"run_manifest.json", "baseline_table_lock.json", "baseline_drill_map_eval.json",
-             "final_table_lock.json", "final_drill_map_eval.json",
-             "table_lock_trajectory.jsonl", "drill_map_trajectory.jsonl"}
+    names = {
+        "run_manifest.json",
+        "baseline_table_lock.json",
+        "baseline_drill_map_eval.json",
+        "final_table_lock.json",
+        "final_drill_map_eval.json",
+        "table_lock_trajectory.jsonl",
+        "drill_map_trajectory.jsonl",
+    }
     for item in output_dir.iterdir():
         if item.name in names and item.is_file():
             shutil.copy2(item, target / item.name)
@@ -197,12 +205,14 @@ def load_drill_dataset(
             rec = json.loads(line)
             map_name = rec.get("map", "") or ""
             weight = float(map_weights.get(map_name, default_weight))
-            rows.append({
-                "text": rec["text"],
-                "prefix": rec.get("prefix", "") or "",
-                "map": map_name,
-                "loss_weight": weight,
-            })
+            rows.append(
+                {
+                    "text": rec["text"],
+                    "prefix": rec.get("prefix", "") or "",
+                    "map": map_name,
+                    "loss_weight": weight,
+                }
+            )
     ds = Dataset.from_list(rows)
 
     def tok_fn(batch):
@@ -368,10 +378,8 @@ def main():
     ap.add_argument("--lora_r", type=int, default=16)
     ap.add_argument("--lora_alpha", type=int, default=32)
     ap.add_argument("--block_size", type=int, default=256)
-    ap.add_argument("--early_stop_score", type=float, default=0.99,
-                    help="Stop if table-lock >= this fraction")
-    ap.add_argument("--drill_eval_split", default="holdout",
-                    choices=["all", "train", "holdout"])
+    ap.add_argument("--early_stop_score", type=float, default=0.99, help="Stop if table-lock >= this fraction")
+    ap.add_argument("--drill_eval_split", default="holdout", choices=["all", "train", "holdout"])
     ap.add_argument("--drill_holdout_mod", type=int, default=10)
     ap.add_argument("--drill_holdout_bucket", type=int, default=0)
     ap.add_argument("--drill_max_per_cell", type=int, default=10)
@@ -412,7 +420,8 @@ def main():
         "--checkpoint_hf_every",
         type=int,
         default=0,
-        help="Optional upload cadence in steps. 0 disables checkpoint uploads; final adapter still uploads if repo is set.",
+        help="Optional upload cadence in steps. 0 disables checkpoint uploads; "
+        "final adapter still uploads if repo is set.",
     )
     ap.add_argument(
         "--skip_structure_preflight",
@@ -503,7 +512,7 @@ def main():
         preflight_path.write_text(json.dumps(preflight, indent=2), encoding="utf-8")
         structural = preflight["structural"]["_summary"]
         print(
-            f"Preflight structural coverage: "
+            "Preflight structural coverage: "
             f"{structural['structural_count']}/{structural['count']} = "
             f"{structural['structural_ratio']:.1%}"
         )
@@ -513,8 +522,7 @@ def main():
             print(f"Preflight failures: {len(preflight['failures'])}")
         if not preflight["ok"]:
             raise SystemExit(
-                "Structural drill preflight failed; fix the drill or pass "
-                "--skip_structure_preflight to override."
+                "Structural drill preflight failed; fix the drill or pass " "--skip_structure_preflight to override."
             )
 
     print(f"Loading base model: {args.base_model}")
@@ -532,6 +540,7 @@ def main():
 
     if args.resume_adapter.strip():
         from peft import PeftModel
+
         resume_path = args.resume_adapter.strip()
         print(f"[CONTINUAL] Warm-starting LoRA from: {resume_path}")
         model = PeftModel.from_pretrained(model, resume_path, is_trainable=True)
@@ -540,8 +549,7 @@ def main():
         lora_cfg = LoraConfig(
             r=args.lora_r,
             lora_alpha=args.lora_alpha,
-            target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
-                            "gate_proj", "up_proj", "down_proj"],
+            target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
             lora_dropout=0.05,
             bias="none",
             task_type="CAUSAL_LM",
@@ -561,14 +569,17 @@ def main():
     if map_weights:
         weights_tensor = ds["loss_weight"]
         from collections import Counter
+
         wc = Counter(round(w, 3) for w in weights_tensor)
         print(f"Loss-weight distribution: {dict(sorted(wc.items()))}")
 
     # Baseline table-lock before training
     print("\n=== BASELINE TABLE-LOCK (before training) ===")
     baseline = run_table_lock_eval(model, tokenizer, "cuda")
-    print(f"Baseline: {baseline['_summary']['correct']}/{baseline['_summary']['total_cells']} "
-          f"= {baseline['_summary']['score']:.1%}")
+    print(
+        f"Baseline: {baseline['_summary']['correct']}/{baseline['_summary']['total_cells']} "
+        f"= {baseline['_summary']['score']:.1%}"
+    )
     (out_dir / "baseline_table_lock.json").write_text(json.dumps(baseline, indent=2))
 
     print("\n=== BASELINE DRILL MAP EVAL ===")
@@ -588,7 +599,7 @@ def main():
         f"{summarize_drill_eval(baseline_drill)}"
     )
     print(
-        f"Baseline structural coverage: "
+        "Baseline structural coverage: "
         f"{baseline_drill['_structural']['_summary']['structural_count']}/"
         f"{baseline_drill['_structural']['_summary']['count']} = "
         f"{baseline_drill['_structural']['_summary']['structural_ratio']:.1%}"
@@ -649,7 +660,9 @@ def main():
                 )
                 if should_upload:
                     source_dir = out_dir / "lora_final" if final_only else out_dir
-                    repo_subdir = f"{_safe_slug(out_dir.name)}/final" if final_only else f"{_safe_slug(out_dir.name)}/step-{step}"
+                    repo_subdir = (
+                        f"{_safe_slug(out_dir.name)}/final" if final_only else f"{_safe_slug(out_dir.name)}/step-{step}"
+                    )
                     try:
                         _maybe_upload_hf_folder(
                             source_dir,
@@ -657,7 +670,10 @@ def main():
                             repo_path=repo_subdir,
                             commit_message=f"{out_dir.name}: {'final' if final_only else f'checkpoint step {step}'}",
                         )
-                        print(f"[DURABILITY] uploaded {source_dir.name} -> hf://{args.checkpoint_hf_repo.strip()}/{repo_subdir}")
+                        print(
+                            f"[DURABILITY] uploaded {source_dir.name} "
+                            f"-> hf://{args.checkpoint_hf_repo.strip()}/{repo_subdir}"
+                        )
                     except Exception as exc:
                         print(f"[DURABILITY] checkpoint upload skipped: {exc}")
             if manifest_path.exists():
@@ -679,8 +695,9 @@ def main():
             }
             with trajectory_path.open("a", encoding="utf-8") as f:
                 f.write(json.dumps(entry) + "\n")
-            print(f"[TABLE-LOCK] step={state.global_step:>4} "
-                  f"score={score:.1%} ({entry['correct']}/{entry['total']})")
+            print(
+                f"[TABLE-LOCK] step={state.global_step:>4} " f"score={score:.1%} ({entry['correct']}/{entry['total']})"
+            )
 
             drill_summary = run_drill_map_eval(
                 model_local,
@@ -696,10 +713,7 @@ def main():
                 "step": state.global_step,
                 "loss": drill_summary["_summary"]["avg_loss"],
                 "perplexity": drill_summary["_summary"]["perplexity"],
-                "by_map": {
-                    name: stats["avg_loss"]
-                    for name, stats in drill_summary.get("by_map", {}).items()
-                },
+                "by_map": {name: stats["avg_loss"] for name, stats in drill_summary.get("by_map", {}).items()},
             }
             with drill_trajectory_path.open("a", encoding="utf-8") as f:
                 f.write(json.dumps(drill_entry) + "\n")
@@ -730,8 +744,7 @@ def main():
                     "validator_pass_rate": benchmark_summary["summary"]["validator_pass_rate"],
                     "trajectory_pass_rate": benchmark_summary["trajectory_bundles"]["pass_rate"],
                     "by_stage": {
-                        name: stats["pass_rate"]
-                        for name, stats in benchmark_summary.get("by_stage", {}).items()
+                        name: stats["pass_rate"] for name, stats in benchmark_summary.get("by_stage", {}).items()
                     },
                 }
                 benchmark_trajectory_path = out_dir / "structural_benchmark_trajectory.jsonl"
@@ -793,13 +806,13 @@ def main():
             shift_logits = logits[:, :-1, :].contiguous()
             shift_labels = labels[:, 1:].contiguous()
 
-            loss_fct = torch.nn.CrossEntropyLoss(
-                ignore_index=-100, reduction="none"
-            )
+            loss_fct = torch.nn.CrossEntropyLoss(ignore_index=-100, reduction="none")
             flat_loss = loss_fct(
                 shift_logits.view(-1, shift_logits.size(-1)),
                 shift_labels.view(-1),
-            ).view(shift_labels.size())  # (B, T-1)
+            ).view(
+                shift_labels.size()
+            )  # (B, T-1)
 
             mask = (shift_labels != -100).float()
             # Also treat pad tokens as zero-contribution (pad_token_id == eos for Qwen)
@@ -818,14 +831,10 @@ def main():
 
     def weighted_collate(features):
         """Collate tokenized examples and stack `loss_weight` as a float tensor."""
-        weights = torch.tensor(
-            [float(f.pop("loss_weight", 1.0)) for f in features], dtype=torch.float32
-        )
+        weights = torch.tensor([float(f.pop("loss_weight", 1.0)) for f in features], dtype=torch.float32)
         batch = {
             "input_ids": torch.tensor([f["input_ids"] for f in features], dtype=torch.long),
-            "attention_mask": torch.tensor(
-                [f["attention_mask"] for f in features], dtype=torch.long
-            ),
+            "attention_mask": torch.tensor([f["attention_mask"] for f in features], dtype=torch.long),
             "labels": torch.tensor([f["labels"] for f in features], dtype=torch.long),
             "loss_weight": weights,
         }
@@ -849,8 +858,10 @@ def main():
     # Final eval
     print("\n=== FINAL TABLE-LOCK ===")
     final = run_table_lock_eval(model, tokenizer, "cuda")
-    print(f"Final: {final['_summary']['correct']}/{final['_summary']['total_cells']} "
-          f"= {final['_summary']['score']:.1%}")
+    print(
+        f"Final: {final['_summary']['correct']}/{final['_summary']['total_cells']} "
+        f"= {final['_summary']['score']:.1%}"
+    )
     (out_dir / "final_table_lock.json").write_text(json.dumps(final, indent=2))
 
     print("\n=== FINAL DRILL MAP EVAL ===")
@@ -870,7 +881,7 @@ def main():
         f"{summarize_drill_eval(final_drill)}"
     )
     print(
-        f"Final structural coverage: "
+        "Final structural coverage: "
         f"{final_drill['_structural']['_summary']['structural_count']}/"
         f"{final_drill['_structural']['_summary']['count']} = "
         f"{final_drill['_structural']['_summary']['structural_ratio']:.1%}"

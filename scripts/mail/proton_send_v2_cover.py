@@ -2,6 +2,7 @@
 
 Attaches the full teaming_agreement_v2_draft.md contract.
 """
+
 from __future__ import annotations
 
 import email.policy
@@ -32,7 +33,8 @@ SUBJECT = "Re: MATHBAC TA1 \u2014 Signed teaming docs + strategy5.py [2026-04-20
 IN_REPLY_TO = "<69e6c82b.050a0220.282da2.72d4@mx.google.com>"
 REFERENCES = " ".join(
     [
-        "<XuTKP13pR0Jtw0wQ4lN8wbpqrpB-Ewgt48YA1lnuOyLojHWQLT0ym7-g0KZGrpjNOB--Euy7YWBt2m7mPzlLgw==@protonmail.internalid>",
+        "<XuTKP13pR0Jtw0wQ4lN8wbpqrpB-Ewgt48YA1lnuOyLojHWQLT0ym7-g0KZGrpjNOB-"
+        "-Euy7YWBt2m7mPzlLgw==@protonmail.internalid>",
         IN_REPLY_TO,
     ]
 )
@@ -63,7 +65,7 @@ def main() -> int:
 
     contract_bytes = CONTRACT.read_bytes()
     ctype, _ = mimetypes.guess_type(str(CONTRACT))
-    maintype, subtype = (ctype.split("/", 1) if ctype else ("text", "markdown"))
+    maintype, subtype = ctype.split("/", 1) if ctype else ("text", "markdown")
     msg.add_attachment(
         contract_bytes,
         maintype=maintype,

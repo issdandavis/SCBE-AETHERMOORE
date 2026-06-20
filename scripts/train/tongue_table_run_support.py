@@ -71,7 +71,11 @@ def resolve_run_alias(run_dir: Path) -> Path | None:
     for entry in parent.iterdir():
         if not entry.is_dir():
             continue
-        if entry.name == run_dir.name or entry.name.startswith(run_dir.name + "-") or run_dir.name.startswith(entry.name + "-"):
+        if (
+            entry.name == run_dir.name
+            or entry.name.startswith(run_dir.name + "-")
+            or run_dir.name.startswith(entry.name + "-")
+        ):
             resolution = best_available_adapter_dir(entry)
             score = 2 if resolution and resolution.source == "lora_final" else 1 if resolution else 0
             candidates.append((score, entry.stat().st_mtime, entry))
@@ -92,7 +96,11 @@ def resolve_best_available_adapter(path_like: Path) -> AdapterResolution | None:
 
 
 def materialize_final_adapter(run_dir: Path, *, source_dir: Path | None = None, overwrite: bool = False) -> Path:
-    resolution = best_available_adapter_dir(run_dir) if source_dir is None else AdapterResolution(run_dir, source_dir, source_dir.name)
+    resolution = (
+        best_available_adapter_dir(run_dir)
+        if source_dir is None
+        else AdapterResolution(run_dir, source_dir, source_dir.name)
+    )
     if resolution is None:
         raise FileNotFoundError(f"No adapter checkpoint available under {run_dir}")
 

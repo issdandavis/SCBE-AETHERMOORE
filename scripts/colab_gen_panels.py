@@ -109,7 +109,7 @@ for pf in prompt_files:
 
 elapsed_total = time.time() - t0_global
 print(f"\n{'='*50}")
-print(f"  COMPLETE")
+print("  COMPLETE")
 print(f"  Generated: {total_generated} panels")
 print(f"  Skipped: {total_skipped} panels")
 print(f"  Total time: {elapsed_total:.0f}s ({elapsed_total/60:.1f}m)")

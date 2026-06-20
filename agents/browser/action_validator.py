@@ -134,7 +134,9 @@ class ActionValidator:
         marker = (target or "").lower()
         return any(token in marker for token in ("password", "token", "secret", "api_key", "private_key"))
 
-    async def _embed(self, action: str, target: str, context_embedding: Optional[np.ndarray] = None) -> tuple[np.ndarray, np.ndarray]:
+    async def _embed(
+        self, action: str, target: str, context_embedding: Optional[np.ndarray] = None
+    ) -> tuple[np.ndarray, np.ndarray]:
         if self.embedder is None:
             self.embedder = VisionEmbedder(target_dim=self.policy.phdm_dim)
             # initialize is cheap if fallback mode is active
@@ -171,15 +173,14 @@ class ActionValidator:
             risk_score=sensitivity,
             scope_delta=float(context.get("scope_delta", 0.0)) if context else 0.0,
             provenance_score=float(context.get("provenance_score", 0.75)) if context else 0.75,
-            touches_secrets=(
-                bool(context.get("touches_secrets", False)) if context else False
-            )
+            touches_secrets=(bool(context.get("touches_secrets", False)) if context else False)
             or self._contains_sensitive_pattern(target),
             tool_class=action,
             coherence=float(context.get("coherence", 0.82)) if context else 0.82,
             votes=context.get("votes") if context else None,
-            agent_states=np.array(context.get("agent_states"))
-            if context and context.get("agent_states") is not None else None,
+            agent_states=(
+                np.array(context.get("agent_states")) if context and context.get("agent_states") is not None else None
+            ),
         )
 
         bounds = self.bounds_checker.check_all_bounds(bounds_ctx)

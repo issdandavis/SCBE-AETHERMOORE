@@ -20,7 +20,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Tuple
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PACKET_ROOT = REPO_ROOT / "artifacts" / "agent_comm"
 LANE_PATH = PACKET_ROOT / "github_lanes" / "cross_talk.jsonl"

@@ -65,7 +65,10 @@ C. AI Red Team as a Service — $5-50K/engagement. Page: /red-team.html
 INTENT_PATTERNS = {
     "pricing": {
         "patterns": [r"price", r"cost", r"how much", r"pricing", r"\$\d+", r"monthly", r"subscription", r"fee"],
-        "response": "Our solutions range from $29 one-time products to $150K/year enterprise services. See the full pricing grid at https://aethermoore.com/pricing.html",
+        "response": (
+            "Our solutions range from $29 one-time products to $150K/year enterprise services. "
+            "See the full pricing grid at https://aethermoore.com/pricing.html"
+        ),
         "route": "/pricing.html",
     },
     "cx_guardrail": {
@@ -78,7 +81,11 @@ INTENT_PATTERNS = {
             r"moffatt",
             r"policy enforcement",
         ],
-        "response": "The CX Refund Guardrail stops chatbots from promising refunds they can't deliver. It's policy-enforcement middleware between your LLM and customer. $500-5K/month. https://aethermoore.com/cx-guardrail.html",
+        "response": (
+            "The CX Refund Guardrail stops chatbots from promising refunds they can't deliver. "
+            "It's policy-enforcement middleware between your LLM and customer. "
+            "$500-5K/month. https://aethermoore.com/cx-guardrail.html"
+        ),
         "route": "/cx-guardrail.html",
     },
     "iso_42001": {
@@ -91,7 +98,10 @@ INTENT_PATTERNS = {
             r"sr 11-7",
             r"governance framework",
         ],
-        "response": "ISO 42001 Evidence-as-a-Service provides adversarial testing, risk reports, drift monitoring, and audit response dossiers. $50-150K/year. https://aethermoore.com/iso-42001.html",
+        "response": (
+            "ISO 42001 Evidence-as-a-Service provides adversarial testing, risk reports, drift monitoring, "
+            "and audit response dossiers. $50-150K/year. https://aethermoore.com/iso-42001.html"
+        ),
         "route": "/iso-42001.html",
     },
     "red_team": {
@@ -104,52 +114,82 @@ INTENT_PATTERNS = {
             r"vulnerability",
             r"threat",
         ],
-        "response": "AI Red Team as a Service runs 6,000+ adversarial tests against your LLM application. Branded PDF report and remediation roadmap. $5-50K/engagement. https://aethermoore.com/red-team.html",
+        "response": (
+            "AI Red Team as a Service runs 6,000+ adversarial tests against your LLM application. "
+            "Branded PDF report and remediation roadmap. $5-50K/engagement. https://aethermoore.com/red-team.html"
+        ),
         "route": "/red-team.html",
     },
     "datasets": {
         "patterns": [r"dataset", r"training data", r"sft", r"corpus", r"prompt pack", r"adversarial prompts"],
-        "response": "We sell training datasets including the Governance SFT Pack ($99), Red Team Fortress ($149), and The Full Arsenal bundle ($399). https://aethermoore.com/datasets.html",
+        "response": (
+            "We sell training datasets including the Governance SFT Pack ($99), Red Team Fortress ($149), "
+            "and The Full Arsenal bundle ($399). https://aethermoore.com/datasets.html"
+        ),
         "route": "/datasets.html",
     },
     "contact": {
         "patterns": [r"contact", r"email", r"reach out", r"talk to", r"schedule", r"book a call", r"get in touch"],
-        "response": "Email me directly at issac@aethermoorgames.com or use the contact form at https://aethermoore.com/contact.html. I usually reply within 24 hours.",
+        "response": (
+            "Email me directly at issac@aethermoorgames.com or use the contact form at "
+            "https://aethermoore.com/contact.html. I usually reply within 24 hours."
+        ),
         "route": "/contact.html",
     },
     "support": {
         "patterns": [r"help", r"support", r"broken", r"missing", r"delivery", r"refund", r"issue", r"problem"],
-        "response": "For support with purchases, delivery, or broken links, visit https://aethermoore.com/support.html or email issac@aethermoorgames.com.",
+        "response": (
+            "For support with purchases, delivery, or broken links, "
+            "visit https://aethermoore.com/support.html or email issac@aethermoorgames.com."
+        ),
         "route": "/support.html",
     },
     "tools": {
         "patterns": [r"tool", r"calculator", r"demo", r"interactive", r"browser tool", r"visualization"],
-        "response": "Our live browser tools and interactive demos are at https://aethermoore.com/demos/index.html. No install needed.",
+        "response": (
+            "Our live browser tools and interactive demos are at https://aethermoore.com/demos/index.html. "
+            "No install needed."
+        ),
         "route": "/demos/index.html",
     },
     "research": {
         "patterns": [r"research", r"benchmark", r"evidence", r"paper", r"study", r"proof", r"technical"],
-        "response": "Benchmarks, proofs, and technical justification are at https://aethermoore.com/research/index.html. Member-only raw notes are at https://aethermoore.com/members/research-notes.html",
+        "response": (
+            "Benchmarks, proofs, and technical justification are at https://aethermoore.com/research/index.html. "
+            "Member-only raw notes are at https://aethermoore.com/members/research-notes.html"
+        ),
         "route": "/research/index.html",
     },
     "members": {
         "patterns": [r"member", r"exclusive", r"insider", r"gated", r"research notes", r"early access"],
-        "response": "Members get raw research notes, early datasets, and member-only tools. Join SCBE Weekly to get the access PIN. https://aethermoore.com/members/",
+        "response": (
+            "Members get raw research notes, early datasets, and member-only tools. "
+            "Join SCBE Weekly to get the access PIN. https://aethermoore.com/members/"
+        ),
         "route": "/members/",
     },
     "open_source": {
         "patterns": [r"github", r"open source", r"repo", r"code", r"npm", r"pypi", r"install"],
-        "response": "The framework is MIT-licensed and split across 9 repos. Main repo: github.com/issdandavis/SCBE-AETHERMOORE. npm install scbe-aethermoore",
+        "response": (
+            "The framework is MIT-licensed and split across 9 repos. "
+            "Main repo: github.com/issdandavis/SCBE-AETHERMOORE. npm install scbe-aethermoore"
+        ),
         "route": "https://github.com/issdandavis/SCBE-AETHERMOORE",
     },
     "book": {
         "patterns": [r"book", r"novel", r"story", r"six tongues", r"fiction", r"read"],
-        "response": "The Six Tongues Protocol is a 70K-word novel that teaches the SCBE framework through story. Available on Amazon KDP.",
+        "response": (
+            "The Six Tongues Protocol is a 70K-word novel that teaches the SCBE framework through story. "
+            "Available on Amazon KDP."
+        ),
         "route": "https://www.amazon.com/dp/B0F28PHSPR",
     },
     "greeting": {
         "patterns": [r"^hi\b", r"^hello\b", r"^hey\b", r"^howdy\b"],
-        "response": "Hey. I'm Polly, the route-first operator for SCBE-AETHERMOORE. Tell me what you're looking for — pricing, products, research, support, or something else — and I'll point you to the right page.",
+        "response": (
+            "Hey. I'm Polly, the route-first operator for SCBE-AETHERMOORE. Tell me what you're looking for "
+            "— pricing, products, research, support, or something else — and I'll point you to the right page."
+        ),
         "route": "/assistant.html",
     },
 }
@@ -163,7 +203,10 @@ def classify_intent(text: str) -> tuple[str, dict]:
             if re.search(pattern, text_lower):
                 return intent_key, data
     return "unknown", {
-        "response": "I'm not sure I understood. I can help with pricing, products, support, research, or point you to the right page. What are you looking for?",
+        "response": (
+            "I'm not sure I understood. I can help with pricing, products, support, research, "
+            "or point you to the right page. What are you looking for?"
+        ),
         "route": "/assistant.html",
     }
 
@@ -262,9 +305,15 @@ async def generate_response(message: str, thinking: bool = False) -> dict:
 
     mode_label = "DEEP THINKING" if thinking else "STANDARD"
     mode_instruction = (
-        "Think step by step. Analyze the user's request carefully, identify the domain, then provide a thorough, well-reasoned response. Use 2-4 paragraphs."
+        (
+            "Think step by step. Analyze the user's request carefully, identify the domain, "
+            "then provide a thorough, well-reasoned response. Use 2-4 paragraphs."
+        )
         if thinking
-        else "Be concise and direct. Route first, explain second. Use 1-2 sentences for simple questions, 1 short paragraph for complex ones."
+        else (
+            "Be concise and direct. Route first, explain second. "
+            "Use 1-2 sentences for simple questions, 1 short paragraph for complex ones."
+        )
     )
     system = f"""{POLLY_LORE}
 
@@ -277,7 +326,8 @@ You have access to:
 - Slack notifications
 - Site routing and product knowledge
 
-If the user asks you to send an email, schedule something, or notify someone, say you can do it and ask for the details you need.
+If the user asks you to send an email, schedule something, or notify someone, \
+say you can do it and ask for the details you need.
 If you don't know something, say "I don't have that" — never invent.
 """
 

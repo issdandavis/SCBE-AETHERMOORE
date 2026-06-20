@@ -2,7 +2,7 @@
 """
 SCBE-AETHERMOORE Demo - Quantum-Resistant Authorization System
 
-This is a simplified demo of the SCBE-AETHERMOORE 13-layer security stack.
+This is a simplified demo of the SCBE-AETHERMOORE 14-layer security stack.
 For full implementation, see the main repository.
 
 Author: Isaac Davis / SpiralVerse OS
@@ -142,7 +142,7 @@ def demo():
         print("-" * 40)
 
     print()
-    print("Demo complete. See full implementation for all 13 layers.")
+    print("Demo complete. See full implementation for all 14 layers.")
 
 
 if __name__ == "__main__":

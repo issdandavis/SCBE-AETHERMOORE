@@ -16,7 +16,6 @@ from typing import Dict, List, Optional, Tuple
 import importlib.util
 import struct
 
-
 MAGIC = b"STV1"
 INSTR_SIZE = 8
 HEADER_SIZE = 8

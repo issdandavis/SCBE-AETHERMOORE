@@ -45,7 +45,7 @@ class TestPatternRegistry:
 
     def test_all_patterns_have_required_fields(self):
         for p in PATTERN_REGISTRY:
-            assert p.name, f"Pattern missing name"
+            assert p.name, "Pattern missing name"
             assert p.domain, f"Pattern {p.name} missing domain"
             assert p.description, f"Pattern {p.name} missing description"
             assert p.why, f"Pattern {p.name} missing why"
@@ -167,8 +167,8 @@ class TestPatternSelection:
         high_gain = select_patterns(signal, excited_qho, gain=2.5)
 
         if low_gain and high_gain:
-            low_max = max(l.compound_intent for l in low_gain)
-            high_max = max(l.compound_intent for l in high_gain)
+            low_max = max(lesson.compound_intent for lesson in low_gain)
+            high_max = max(lesson.compound_intent for lesson in high_gain)
             assert high_max > low_max
 
     def test_no_duplicate_patterns(self, excited_qho):
@@ -177,7 +177,7 @@ class TestPatternSelection:
 
         signal = compute_trit_signal("dedup test text")
         lessons = select_patterns(signal, excited_qho, gain=1.0)
-        names = [l.pattern.name for l in lessons]
+        names = [lesson.pattern.name for lesson in lessons]
         assert len(names) == len(set(names))
 
     def test_lessons_have_valid_fields(self, excited_qho):
@@ -225,18 +225,18 @@ class TestCodeLatticeBundle:
 
     def test_active_domains_match_lessons(self):
         bundle = generate_code_lattice_bundle("Domain matching test text")
-        lesson_domains = set(l.pattern.domain for l in bundle.lessons)
+        lesson_domains = set(lesson.pattern.domain for lesson in bundle.lessons)
         for d in bundle.active_domains:
             assert d in lesson_domains
 
     def test_swear_word_count_correct(self):
         bundle = generate_code_lattice_bundle("Counting anti-patterns in this text")
-        actual_count = sum(1 for l in bundle.lessons if l.pattern.is_antipattern)
+        actual_count = sum(1 for lesson in bundle.lessons if lesson.pattern.is_antipattern)
         assert bundle.swear_word_count == actual_count
 
     def test_total_compound_intent_is_sum(self):
         bundle = generate_code_lattice_bundle("Compound intent sum check")
-        expected = sum(l.compound_intent for l in bundle.lessons)
+        expected = sum(lesson.compound_intent for lesson in bundle.lessons)
         assert abs(bundle.total_compound_intent - round(expected, 4)) < 0.01
 
     def test_different_texts_different_bundles(self):
@@ -284,8 +284,8 @@ class TestCompoundIntent:
         high_lessons = select_patterns(signal, high_qho, gain=1.0)
 
         if low_lessons and high_lessons:
-            low_max = max(l.compound_intent for l in low_lessons)
-            high_max = max(l.compound_intent for l in high_lessons)
+            low_max = max(lesson.compound_intent for lesson in low_lessons)
+            high_max = max(lesson.compound_intent for lesson in high_lessons)
             assert high_max > low_max
 
 

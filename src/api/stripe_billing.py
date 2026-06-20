@@ -1,5 +1,17 @@
 """Stripe billing integration for SCBE SaaS API.
 
+============================================================================
+CANONICAL LIVE MONEY PATH. This module (mounted in the canonical app
+src/api/main.py) plus the Stripe Payment Links registered in docs/offers.json
+is the ONE path that takes real money. It uses real Stripe price/product IDs
+(price_1TBnUm.../prod_UA7k...) and needs no Stripe SDK (raw urllib).
+
+There is a SECOND, parallel billing stack under api/billing/ (Stripe SDK +
+SQLAlchemy) behind the separate api/main.py app. That one uses PLACEHOLDER
+price IDs and is NOT the live revenue path — see api/billing/routes.py. Do not
+add new money logic there; add it here (or as a Payment Link in offers.json).
+============================================================================
+
 Provides:
 - Checkout session creation for 3 plan tiers
 - Webhook handler for subscription lifecycle events
@@ -66,14 +78,91 @@ PLANS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-# In-memory mapping: stripe_customer_id -> tenant record
-# In production this would be a database table.
-BILLING_CUSTOMERS: Dict[str, Dict[str, Any]] = {}
-
-# API keys issued via billing (api_key -> {customer_id, plan, tenant_id, ...})
-BILLING_API_KEYS: Dict[str, Dict[str, Any]] = {}
-
 LOGGER = logging.getLogger("scbe.billing")
+
+_KEYS_FILE = Path(__file__).resolve().parents[2] / "artifacts" / "revenue" / "api_keys.jsonl"
+
+
+def _billing_cipher():
+    """Fernet cipher for encrypting API keys at rest, or None if unconfigured.
+
+    Without SCBE_BILLING_ENC_KEY the store runs IN-MEMORY ONLY and never writes a
+    secret to disk in clear text. Generate a key with:
+      python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+    """
+    raw = os.getenv("SCBE_BILLING_ENC_KEY", "").strip()
+    if not raw:
+        return None
+    try:
+        from cryptography.fernet import Fernet
+
+        return Fernet(raw.encode("utf-8"))
+    except Exception as exc:
+        LOGGER.warning("SCBE_BILLING_ENC_KEY invalid; billing keys will not persist: %s", exc)
+        return None
+
+
+def _load_keys() -> tuple[Dict[str, Any], Dict[str, Any]]:
+    """Load persisted billing records from disk on startup."""
+    customers: Dict[str, Any] = {}
+    keys: Dict[str, Any] = {}
+    if not _KEYS_FILE.exists():
+        return customers, keys
+    cipher = _billing_cipher()
+    try:
+        with open(_KEYS_FILE, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                record = json.loads(line)
+                enc = record.pop("credential_enc", None) or record.pop("api_key_enc", None)
+                if enc and cipher is not None:
+                    try:
+                        record["api_key"] = cipher.decrypt(enc.encode("ascii")).decode("utf-8")
+                    except Exception:
+                        continue  # cannot decrypt (wrong/rotated key) — skip record
+                cid = record.get("customer_id", "")
+                key = record.get("api_key", "")
+                if cid:
+                    customers[cid] = record
+                if key:
+                    keys[key] = record
+    except Exception as exc:
+        LOGGER.warning("Failed to load billing keys from disk: %s", exc)
+    return customers, keys
+
+
+def _persist_key(record: Dict[str, Any]) -> None:
+    """Append an API key record to disk with the API key ENCRYPTED at rest.
+
+    If no encryption key is configured the record is NOT written (in-memory only),
+    so a raw key is never stored in clear text.
+    """
+    cipher = _billing_cipher()
+    if cipher is None:
+        return
+    _KEYS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    raw_api_key = str(record.get("api_key") or "")
+    if not raw_api_key:
+        return
+    stored_record = {
+        "customer_id": record.get("customer_id", ""),
+        "subscription_id": record.get("subscription_id", ""),
+        "plan": record.get("plan", ""),
+        "email": record.get("email", ""),
+        "created_at": record.get("created_at", int(time.time())),
+        "credential_enc": cipher.encrypt(raw_api_key.encode("utf-8")).decode("ascii"),
+    }
+    try:
+        with open(_KEYS_FILE, "a", encoding="utf-8") as f:
+            f.write(json.dumps(stored_record, sort_keys=True) + "\n")
+    except Exception as exc:
+        LOGGER.warning("Failed to persist API key record: %s", exc)
+
+
+# Load persisted state on import
+BILLING_CUSTOMERS, BILLING_API_KEYS = _load_keys()
 
 
 def _owner_token() -> str:
@@ -350,11 +439,15 @@ def _handle_checkout_completed(session: Dict[str, Any]) -> None:
 
     BILLING_CUSTOMERS[customer_id] = record
     BILLING_API_KEYS[api_key] = record
+    _persist_key(record)
 
     # Also register in the SaaS API key store so endpoints accept it
-    from src.api.saas_routes import VALID_API_KEYS
+    try:
+        from src.api.saas_routes import VALID_API_KEYS
 
-    VALID_API_KEYS[api_key] = email or customer_id
+        VALID_API_KEYS[api_key] = email or customer_id
+    except ImportError:
+        pass
 
 
 def _handle_subscription_updated(subscription: Dict[str, Any]) -> None:
@@ -525,10 +618,10 @@ def _send_delivery_email(
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
 
-    smtp_host = os.getenv("SCBE_SMTP_HOST", "smtp.porkbun.com")
+    smtp_host = os.getenv("SCBE_SMTP_HOST", "smtp.protonmail.ch")
     smtp_port = int(os.getenv("SCBE_SMTP_PORT", "587"))
-    smtp_user = os.getenv("SCBE_SMTP_USER", "ai@aethermoore.com")
-    smtp_pass = os.getenv("SCBE_SMTP_PASS", "")
+    smtp_user = os.getenv("SCBE_SMTP_USER") or os.getenv("PM_USER", "")
+    smtp_pass = os.getenv("SCBE_SMTP_PASS") or os.getenv("PM_PW", "")
 
     subject = f"Your {product_name} is ready"
     html_body = f"""<html><body style="font-family: Georgia, serif; color: #333; max-width: 600px;">
@@ -548,7 +641,8 @@ If you have any questions, reply to this email or reach us at ai@aethermoore.com
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
-    msg["From"] = f"AetherMoore <{smtp_user}>"
+    from_addr = os.getenv("PM_FROM") or smtp_user
+    msg["From"] = f"AetherMoore <{from_addr}>"
     msg["To"] = to_email
     msg["Reply-To"] = "ai@aethermoore.com"
     msg.attach(

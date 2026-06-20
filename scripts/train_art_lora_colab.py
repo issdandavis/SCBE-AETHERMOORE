@@ -21,7 +21,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_LOCAL_DATASET_DIR = ROOT / "training-data" / "art-style-lora"
 DEFAULT_NOTEBOOK_PATH = ROOT / "artifacts" / "webtoon" / "six_tongues_lora_training.ipynb"
@@ -383,7 +382,7 @@ print(f"VRAM: {props.total_memory / 1e9:.1f} GB")
 
 
 def make_train_cell(config: dict[str, Any]) -> str:
-    return f"""
+    return """
 from pathlib import Path
 import shlex
 
@@ -393,20 +392,20 @@ if not train_script.exists():
 
 command_parts = [
     "accelerate launch train_dreambooth_lora_flux.py",
-    f"--pretrained_model_name_or_path={{shlex.quote(CONFIG['base_model'])}}",
-    f"--instance_data_dir={{shlex.quote(CONFIG['prepared_dataset_dir'])}}",
-    f"--instance_prompt={{shlex.quote(CONFIG['trigger_word'])}}",
-    f"--output_dir={{shlex.quote(CONFIG['output_dir'])}}",
-    f"--resolution={{CONFIG['resolution']}}",
-    f"--train_batch_size={{CONFIG['train_batch_size']}}",
-    f"--gradient_accumulation_steps={{CONFIG['gradient_accumulation_steps']}}",
-    f"--learning_rate={{CONFIG['learning_rate']}}",
-    f"--lr_scheduler={{CONFIG['lr_scheduler']}}",
-    f"--max_train_steps={{CONFIG['max_train_steps']}}",
-    f"--rank={{CONFIG['lora_rank']}}",
-    f"--checkpointing_steps={{CONFIG['save_steps']}}",
+    f"--pretrained_model_name_or_path={shlex.quote(CONFIG['base_model'])}",
+    f"--instance_data_dir={shlex.quote(CONFIG['prepared_dataset_dir'])}",
+    f"--instance_prompt={shlex.quote(CONFIG['trigger_word'])}",
+    f"--output_dir={shlex.quote(CONFIG['output_dir'])}",
+    f"--resolution={CONFIG['resolution']}",
+    f"--train_batch_size={CONFIG['train_batch_size']}",
+    f"--gradient_accumulation_steps={CONFIG['gradient_accumulation_steps']}",
+    f"--learning_rate={CONFIG['learning_rate']}",
+    f"--lr_scheduler={CONFIG['lr_scheduler']}",
+    f"--max_train_steps={CONFIG['max_train_steps']}",
+    f"--rank={CONFIG['lora_rank']}",
+    f"--checkpointing_steps={CONFIG['save_steps']}",
     "--mixed_precision=fp16",
-    f"--seed={{CONFIG['seed']}}",
+    f"--seed={CONFIG['seed']}",
 ]
 
 train_command = " ".join(command_parts)

@@ -11,7 +11,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
 
-
 DEFAULT_CHECKLIST = [
     "notion-sync",
     "notion-to-dataset",
@@ -344,7 +343,8 @@ def _evaluate_metadata(metadata: Dict[str, Any], tasks: List[Dict[str, Any]]) ->
         tasks.append(
             _build_task(
                 title="Notion export returned zero records",
-                description="The last notion-to-dataset run exported 0 records, indicating token scope or query issues.",
+                description="The last notion-to-dataset run exported 0 records, "
+                "indicating token scope or query issues.",
                 component="Notion Export Pipeline",
                 mode="code-assistant",
                 priority="critical",

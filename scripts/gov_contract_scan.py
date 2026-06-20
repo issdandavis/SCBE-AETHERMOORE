@@ -12,7 +12,6 @@ from typing import Any
 
 import requests
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SOURCES_JSON = REPO_ROOT / "references" / "federal-opportunity-sources.json"
 DEFAULT_OUT_DIR = REPO_ROOT / "artifacts" / "contracts"
@@ -174,7 +173,9 @@ def main() -> int:
     results: list[dict[str, Any]] = []
     for source in sources:
         fetched = fetch_source(source, timeout_s=int(args.timeout))
-        score, counts = score_text(fetched.get("text", ""), keywords) if fetched.get("text") else (0.0, {k: 0 for k in keywords})
+        score, counts = (
+            score_text(fetched.get("text", ""), keywords) if fetched.get("text") else (0.0, {k: 0 for k in keywords})
+        )
         results.append(
             {
                 "name": source.name,
