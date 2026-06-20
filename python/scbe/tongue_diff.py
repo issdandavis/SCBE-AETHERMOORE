@@ -121,6 +121,39 @@ def drift(text: str, baseline: Set[str] = BENIGN_BASELINE) -> Dict[str, object]:
     }
 
 
+_R_SCALE = 5.0  # maps total phi-weight -> Poincare radius; governance-heavy inputs land near the boundary
+
+
+def embed(text: str) -> List[float]:
+    """Place an input as a point in the 6D Poincare ball: DIRECTION = its phi-weighted tongue mix,
+    RADIUS = how much total (governance-heavy) weight it carries. So UM/DR-heavy inputs sit near the
+    boundary, where hyperbolic distance grows exponentially -- the doc's 'drift toward governance costs
+    disproportionately more', now as actual geometry. The embedding is a modeling choice; the DISTANCE
+    is the exact closed-form Poincare formula (no research needed)."""
+    m = membership(text)
+    v = [TONGUES[c][1] if c in m else 0.0 for c in CODES]
+    norm = math.sqrt(sum(x * x for x in v))
+    if norm == 0.0:
+        return [0.0] * len(CODES)  # the safe center
+    r = 1.0 - 1.0 / (1.0 + sum(v) / _R_SCALE)  # total weight -> radius in [0,1)
+    return [x / norm * r for x in v]
+
+
+def hyper_distance(a_text: str, b_text: str) -> float:
+    """REAL Poincare-ball hyperbolic distance between two inputs -- reuses the L5 core
+    (src/aaoe/task_monitor.hyperbolic_distance): d_H = arccosh(1 + 2||u-v||^2/((1-||u||^2)(1-||v||^2)))."""
+    from src.aaoe.task_monitor import hyperbolic_distance
+
+    return round(hyperbolic_distance(embed(a_text), embed(b_text)), 3)
+
+
+def hyper_drift(text: str) -> float:
+    """Hyperbolic distance from the safe center (origin): exponential cost as governance weight grows."""
+    from src.aaoe.task_monitor import hyperbolic_distance
+
+    return round(hyperbolic_distance([0.0] * len(CODES), embed(text)), 3)
+
+
 def render(text: str) -> str:
     d = drift(text)
     parts = ["%s(%s)" % (c, TONGUES[c][0].split("/")[0]) for c in d["membership"]]
