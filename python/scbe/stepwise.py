@@ -14,12 +14,15 @@ mistake into the final answer with no chance to recover. This machine removes bo
     the goal + the steps that already ran + what went wrong, and lets the model try again from
     exactly the position before the misstep.
   * AUTO-OFFLOAD ON FAILURE -- a `choice` step may register an `oracle`: a deterministic tool that
-    computes the correct value. When the model burns its rewinds and still can't, the machine does
-    NOT go stuck -- it falls back to the oracle (correct by construction) and continues. This is the
-    measured lift, automated: the harness SUPPLIES the capability the model lacks instead of just
-    surfacing the wall. The honest boundary holds: a step with NO oracle (a genuine judgement the
-    code can't do) still stops honestly. And the oracle's value is itself checked, so even a buggy
-    oracle can never ship a wrong answer -- it falls through to stuck.
+    computes a value. When the model burns its rewinds and still can't, the machine does NOT go
+    stuck -- it falls back to the oracle and continues. This is the measured lift, automated: the
+    harness SUPPLIES the capability the model lacks instead of just surfacing the wall. The honest
+    boundary holds: a step with NO oracle (a genuine judgement the code can't do) still stops
+    honestly. The oracle is held to the SAME gate as the model -- its value must be legal (in the
+    step's options) and pass the step's `check` if one exists; a value that fails the gate is never
+    committed, it falls through to stuck. (Caveat, no overclaim: when the `check` is derived from the
+    same rule as the oracle, that gate is only a legality wall -- not an independent correctness
+    proof. The gate is exactly as strong as the predicates the step supplies, no stronger.)
 
 So the scaffold carries the exactness, the memory, AND a tool fallback; the model supplies judgement,
 its mistakes are caught + rewound, and the steps a tool CAN do are auto-rescued when it can't.
@@ -42,8 +45,8 @@ Proposer = Callable[[str, List[str]], str]
 class Step:
     """One step. A `calc` step is deterministic (code, never the model). A `choice` step asks the
     model for a value, gated by `options` (the legal set / walls) and `check` (is it correct). An
-    optional `oracle` is a deterministic tool that computes the correct value -- the auto-offload
-    fallback used when the model exhausts its rewinds on this step."""
+    optional `oracle` is a deterministic tool that computes a value -- the auto-offload fallback used
+    when the model exhausts its rewinds; its value is held to the same options/check gate as the model."""
 
     name: str
     key: str
@@ -83,9 +86,11 @@ def run_stepwise(task: Task, proposer: Proposer, max_rewinds: int = 3, allow_off
     """Walk the steps. Calc steps run in code; choice steps call the model and rewind on a misstep.
 
     When a choice step exhausts its rewinds: if `allow_offload` and the step has an `oracle`, fall
-    back to the oracle (auto-offload) instead of going stuck -- but only if the oracle's value passes
-    the step's check, so a wrong answer is never shipped. With no oracle (or allow_offload=False) the
-    step stops honestly at the model's ceiling. `allow_offload=False` measures the un-rescued baseline.
+    back to the oracle (auto-offload) instead of going stuck -- but only if the oracle's value clears
+    the SAME gate the model must (legal/in-options, and the step's check if any); otherwise it falls
+    through to stuck, so a gate-failing oracle value is never committed. With no oracle (or
+    allow_offload=False) the step stops honestly at the model's ceiling; `allow_offload=False`
+    measures the un-rescued baseline.
     """
     state: Dict[str, Any] = {}
     trace: List[dict] = []
@@ -123,7 +128,10 @@ def run_stepwise(task: Task, proposer: Proposer, max_rewinds: int = 3, allow_off
                 state.pop("_warning", None)
                 if allow_offload and step.oracle is not None:
                     ov = step.oracle(state)
-                    if step.check is None or step.check(state, ov):  # oracle is checked too: never ship wrong
+                    # hold the oracle to the SAME gate as the model: legal (in options) AND, if the step
+                    # has a check, passing it. A gate-failing oracle value is never committed -> stuck.
+                    legal = (not options) or (ov in options)
+                    if legal and (step.check(state, ov) if step.check else True):
                         state[step.key] = ov
                         offloaded.append(step.name)
                         trace.append({"step": step.name, "source": "offload", "value": ov, "status": "ok"})
