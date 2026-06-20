@@ -19,7 +19,9 @@ not full word->meaning; a richer dictionary makes the classification richer.
 
 from __future__ import annotations
 
+import json
 import re
+from pathlib import Path
 from typing import Dict, List, Optional, Sequence
 
 from .tongue_diff import _GRID_CODE, _grid
@@ -65,6 +67,21 @@ class Lexicon:
         hits = self.classify(text)
         return max(hits, key=lambda t: len(hits[t])) if hits else None
 
+    def meaning(self, word: str) -> Dict[str, str]:
+        """{tongue: meaning} for a word across all tongues it appears in (multi-state Venn)."""
+        w = word.lower().strip()
+        return {t: wm[w] for t, wm in self.words.items() if w in wm}
+
+    def load_conlang(self, path: str) -> "Lexicon":
+        """Ingest a real conlang file: {tongue, words{...}, particles{...}, roots{...}} -> word:meaning.
+        This is the slot Issac's word lists drop into -- e.g. lexicons/kor_aelin.json (the KO tongue)."""
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
+        tongue = data["tongue"]
+        for section in ("particles", "roots", "words"):
+            for word, gloss in (data.get(section) or {}).items():
+                self.add(tongue, word, gloss)
+        return self
+
 
 def load_seed() -> Lexicon:
     """Seed from the REAL sixtongues conlang prefixes (16 tongue-specific fragments per tongue). Real
@@ -74,6 +91,22 @@ def load_seed() -> Lexicon:
     lex = Lexicon()
     for code, spec in m.TONGUES.items():
         lex.add_wordlist(inv[code], list(spec.prefixes))
+    return lex
+
+
+def load_full(lexicon_dir: Optional[str] = None) -> Lexicon:
+    """The seed (form-fragments) PLUS every real conlang file in lexicons/ -- so when Issac drops a
+    word list (kor_aelin.json today; the other five tongues next), it merges automatically. A conlang
+    file is any JSON with a 'tongue' key + a 'words'/'particles'/'roots' section."""
+    lex = load_seed()
+    root = Path(lexicon_dir) if lexicon_dir else Path(__file__).resolve().parents[2] / "lexicons"
+    for f in sorted(root.glob("*.json")):
+        try:
+            data = json.loads(f.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if isinstance(data, dict) and "tongue" in data and any(k in data for k in ("words", "particles", "roots")):
+            lex.load_conlang(str(f))
     return lex
 
 

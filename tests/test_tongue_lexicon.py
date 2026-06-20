@@ -49,3 +49,25 @@ def test_no_match_is_empty_not_a_guess():
     lex = tl.load_seed()
     assert lex.classify("a plain english sentence with no tongue words") == {}
     assert lex.best("nothing here") is None
+
+
+def test_real_kor_aelin_conlang_loads_and_classifies():
+    # the payoff: Issac's real Kor'aelin word list drops in and the classifier reads it WITH meaning
+    full = tl.load_full()
+    seed = tl.load_seed()
+    assert full.size() > seed.size()  # conlang words merged on top of the seed
+    assert full.best("the zar'thul opens and maeji'kor flows") == "KO"
+    assert full.best("sil binds, thul transforms, ael endures") == "KO"  # the 7 sacred particles
+    assert full.meaning("maeji'kor") == {"KO": "heart of magic"}
+    assert full.meaning("vel")["KO"].startswith("invitation")
+
+
+def test_load_conlang_file_directly():
+    import json
+    from pathlib import Path
+
+    path = Path(tl.__file__).resolve().parents[2] / "lexicons" / "kor_aelin.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    assert data["tongue"] == "KO" and "words" in data  # valid conlang-file shape
+    lex = tl.Lexicon().load_conlang(str(path))
+    assert lex.best("zar'sil'ael") == "KO" and "eternal" in lex.meaning("zar'sil'ael")["KO"]
