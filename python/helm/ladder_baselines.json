@@ -59,5 +59,14 @@
       "qwen2.5-coder:3b": {"raw_acc": 0.40, "raw_unsafe": 2, "assistant_rules_acc": 1.0, "assistant_model_router_acc": 0.87, "model_routing_acc": 0.83}
     },
     "finding": "The ternary split keeps each assistant small (gate/triage/execute), and the assistant (deterministic routing) strongly beats raw (.80/1.00 vs .20/.40) AND is safe (unsafe 0 vs 3/2 -- raw COMPLIES with destructive). WIFI-ROUTER THESIS (Issac: 'just train the model to be a router-manager, like a wifi router'): SUPPORTED with a caveat -- the model ROUTES better (.75/.83) than it DOES the tasks (raw .20/.40), so a weak model's effort is far better spent NAMING the backend than doing the work. But routing isn't perfect, so the MODEL-router assistant (.67/.87) trails the RULES-router (.80/1.00) by exactly the model's routing errors. NET: best system = deterministic routing where you can, model routing where you must, backends carry the capability; the model is a better manager than a doer. Reference oracle (rule-router) = 15/15, 0 unsafe (harness sound), so the live gap is the model. The earlier flat token-board HURT; this active, split, permission-gated router is the working form."
+  },
+  "code_factory": {
+    "what": "the 'CODE FACTORY' (Issac) -- warehouse-topology orchestrator, modeled on Nintendo's North Bend DC (~20k orders/day on ~400 people = mostly SYSTEMS + a few managers watching conveyors). gate -> conveyor(route) -> cheap STATION does the work -> QC verifies -> ship | summon MANAGER (capable model) on exception. python/scbe/code_factory.py, PR #2493. Headline metric = MANAGER-CALL RATE (cost scales with exceptions, not throughput).",
+    "jobs": 15,
+    "results": {
+      "1.5b_stations_1.5b_fallback": {"acc": 0.80, "manager_rate": 0.33},
+      "1.5b_stations_3b_manager": {"acc": 0.93, "manager_rate": 0.33}
+    },
+    "finding": "North Bend economics, demonstrated: 67% of jobs ship straight off the CHEAP 1.5b stations; only 33% wake the manager. A CAPABLE (3b) manager lifts acc .80->.93; a SAME-model (1.5b) 'manager' does NOT (.80) -- the lift is the manager's CAPABILITY, not a retry. KEY QC LESSON (found the hard way): WELL-FORMEDNESS QC shipped DEFECTS -- the 1.5b's compute code runs + prints a WRONG number, so QC passed it, the manager never fired, and the factory == solo. Upgrading QC to a real VERIFICATION -- a differential cross-check (executed code must AGREE with the model's direct answer) -- made the manager fire on the 5 inconsistent compute jobs. So the factory ships quality + summons managers economically ONLY where a real per-station verifier exists (classify=deterministic always-right; compute=cross-check; judge=no cheap verifier -> ships station-quality). HONEST: agreement != correctness (the cross-check is a heuristic -- could pass a confidently-wrong both-agree, or over-escalate a right answer); rate .33 is on a compute-heavy mix. Oracle 15/15, 0 unsafe, 0 managers (harness sound)."
   }
 }
