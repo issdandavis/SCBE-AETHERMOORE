@@ -40,6 +40,20 @@ SYSTEM = (
     "Prefer to run_code at least once before answering."
 )
 
+# A worked example shown to coax a weak model into the CALL/TOOL/ANSWER protocol. It is PROMPTING
+# scaffolding only -- solve_with_tools strips it from the saved record so we never train on the demo,
+# just on the model's own real trajectory. Uses a throwaway problem (no leakage into any eval).
+FEWSHOT_TURNS: List[Dict[str, str]] = [
+    {
+        "role": "user",
+        "content": "Write triple(n) returning n*3.\n\nExample test (you may run_code against it):\n"
+        "assert triple(2) == 6",
+    },
+    {"role": "assistant", "content": "```python\ndef triple(n):\n    return n * 3\n```\nCALL run_code"},
+    {"role": "user", "content": "TOOL run_code: PASS (example test)"},
+    {"role": "assistant", "content": "ANSWER:\n```python\ndef triple(n):\n    return n * 3\n```"},
+]
+
 
 # --------------------------------------------------------------------------------------------------
 # tools (deterministic; the model calls them, the harness runs them)
@@ -174,20 +188,25 @@ def solve_with_tools(
     max_steps: int = 5,
     public_k: int = 1,
     system: str = SYSTEM,
+    few_shot: bool = True,
 ) -> Dict[str, Any]:
     """Run the model through a tool dialogue and record EVERY turn. Verify the final answer on HELD-BACK
-    tests (test_list[public_k:]) the model never saw. Returns the transcript + whether it verified and
-    whether it actually used a tool."""
+    tests (test_list[public_k:]) the model never saw. With few_shot, a worked example is prepended to coax
+    a weak model into the protocol, then STRIPPED from the saved record (we don't train on the demo).
+    Returns the (demo-stripped) transcript + whether it verified and whether it actually used a tool."""
     tools = tools or build_tools(problem, public_k)
     head = (problem.get("prompt") or problem.get("text") or "").strip()
     tl = list(problem.get("test_list", []))
     public, held = tl[:public_k], tl[public_k:]
     imports = list(problem.get("test_imports", []))
 
-    msgs: List[Dict[str, str]] = [
-        {"role": "system", "content": system},
-        {"role": "user", "content": head + "\n\nExample test (you may run_code against it):\n" + "\n".join(public)},
-    ]
+    demo = list(FEWSHOT_TURNS) if few_shot else []
+    real_user = {
+        "role": "user",
+        "content": head + "\n\nExample test (you may run_code against it):\n" + "\n".join(public),
+    }
+    msgs: List[Dict[str, str]] = [{"role": "system", "content": system}] + demo + [real_user]
+    keep_from = 1 + len(demo)  # record = system + real problem onward; the demo is scaffolding, not data
     final_code = ""
     tool_calls = 0
     tools_used: List[str] = []
@@ -211,8 +230,9 @@ def solve_with_tools(
         msgs.append({"role": "user", "content": "Use a tool (CALL ...) or give ANSWER: with a code block."})
     # TRUTH: held-back tests the model never saw (the shown example is public[0])
     verified = bool(final_code) and bool(_verify(final_code, public, held, imports).get("hidden_passed"))
+    record_messages = [msgs[0]] + msgs[keep_from:]  # drop the few-shot demo: train on the real trajectory only
     return {
-        "messages": msgs,
+        "messages": record_messages,
         "final_code": final_code,
         "verified": verified,
         "tool_calls": tool_calls,
