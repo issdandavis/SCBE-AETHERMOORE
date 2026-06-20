@@ -265,7 +265,11 @@
         lastCommand = data.command;
         document.getElementById("jsonOut").textContent = JSON.stringify(data, null, 2);
         document.getElementById("results").innerHTML = [
-          '<article class="card"><strong>Command</strong><pre>' + esc(data.command) + '</pre></article>',
+          '<article class="card"><strong>Command</strong><pre>' +
+            esc(data.command) +
+            '</pre><p>Automation argv: <code>' +
+            esc(JSON.stringify(data.command_argv || [])) +
+            '</code></p></article>',
           '<article class="card"><strong>Route</strong>' + pills([data.route_type, data.backend, data.policy]) + '</article>',
           '<article class="card"><strong>Receipt</strong><p>' + esc(data.receipt_id) + '</p><p>' + esc(data.summary) + '</p></article>',
           '<article class="card"><strong>Next steps</strong><p>' + esc(data.next_steps.join(" ")) + '</p></article>'
