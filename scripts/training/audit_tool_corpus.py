@@ -86,12 +86,14 @@ def main(argv=None) -> int:
     repair = confirm = multi_call = 0
     task_ids = []
     tool_counter = Counter()
+    prompt_mode_counter = Counter()
     mismatches = []
 
     for rec in records:
         meta = rec.get("meta", {})
         tid = meta.get("task_id")
         task_ids.append(tid)
+        prompt_mode_counter[meta.get("prompt_mode", "unknown")] += 1
         msgs = rec.get("messages", [])
 
         # structural checks
@@ -144,6 +146,7 @@ def main(argv=None) -> int:
     print("  duplicate task_ids    : %d  %s" % (len(dupes), dupes[:20] if dupes else ""))
     print("  problems unresolved   : %d" % missing_problem)
     print("  tool-call distribution: %s" % dict(tool_counter))
+    print("  prompt-mode distribution: %s" % dict(prompt_mode_counter))
     print("  -- trajectory shape (teaching depth, not correctness) --")
     print("  repair (FAIL->fix->pass): %d  [the 'becoming' loop]" % repair)
     print("  confirm (tool PASS only): %d  [tool rubber-stamped correct code]" % confirm)

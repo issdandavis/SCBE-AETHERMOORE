@@ -59,6 +59,20 @@ def test_solve_with_tools_records_verified_trajectory():
     assert any(m["role"] == "user" and m["content"].startswith("TOOL run_code:") for m in tr["messages"])
 
 
+def test_repair_biased_prompt_mode_adds_feedback_loop_instruction():
+    seen = {}
+
+    def ask(msgs):
+        seen["system"] = msgs[0]["content"]
+        seen["user"] = msgs[-1]["content"]
+        return "ANSWER:\n```python\ndef add(a, b):\n    return a + b\n```"
+
+    tr = solve_with_tools(PROBLEM, ask, max_steps=1, prompt_mode="repair-biased", few_shot=False)
+    assert tr["verified"] is True
+    assert "Repair-biased harvest mode" in seen["system"]
+    assert "quick minimal candidate" in seen["user"]
+
+
 def test_held_back_rejects_shown_test_only_pass():
     # a solver that returns code passing ONLY the shown example (add(1,2)==3) but wrong otherwise
     def cheat_ask(_msgs):
@@ -76,6 +90,13 @@ def test_harvest_keeps_verified_tooluse_only():
     rec = res["records"][0]
     assert rec["meta"]["verified"] is True and rec["meta"]["tool_calls"] >= 1
     assert rec["meta"]["source"] == "tool_trajectory"
+    assert rec["meta"]["prompt_mode"] == "confirm"
+
+
+def test_harvest_accepts_repair_biased_prompt_mode():
+    res = harvest_tool_traces([PROBLEM], reference_tool_solver(PROBLEM), max_steps=4, prompt_mode="repair-biased")
+    assert res["verified"] == 1 and res["with_tool_use"] == 1
+    assert res["records"][0]["meta"]["prompt_mode"] == "repair-biased"
 
 
 def test_harvest_drops_no_tool_use_when_required():

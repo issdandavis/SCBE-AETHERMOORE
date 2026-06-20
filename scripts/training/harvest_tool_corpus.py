@@ -39,6 +39,12 @@ def main(argv=None) -> int:
     ap.add_argument("--public-k", type=int, default=1, help="tests shown to the model; the rest are held back")
     ap.add_argument("--max-steps", type=int, default=5, help="max tool-dialogue turns per problem")
     ap.add_argument(
+        "--prompt-mode",
+        choices=["confirm", "repair-biased"],
+        default="confirm",
+        help="confirm keeps the original prompt; repair-biased asks for quick test -> feedback -> repair loops",
+    )
+    ap.add_argument(
         "--out",
         default=str(REPO / "training" / "sft_records" / "tool_trajectory_mbpp.jsonl"),
         help="output corpus path (gitignored)",
@@ -61,7 +67,13 @@ def main(argv=None) -> int:
         for i, p in enumerate(problems, 1):
             attempted += 1
             try:
-                tr = solve_with_tools(p, ask, max_steps=args.max_steps, public_k=args.public_k)
+                tr = solve_with_tools(
+                    p,
+                    ask,
+                    max_steps=args.max_steps,
+                    public_k=args.public_k,
+                    prompt_mode=args.prompt_mode,
+                )
             except Exception as exc:  # one bad problem must not abort a long run
                 print("  [%d/%d] task %s ERROR %s" % (i, len(problems), p.get("task_id"), exc), flush=True)
                 continue
@@ -76,6 +88,7 @@ def main(argv=None) -> int:
                         "task_id": p.get("task_id"),
                         "tool_calls": tr["tool_calls"],
                         "tools_used": tr["tools_used"],
+                        "prompt_mode": args.prompt_mode,
                         "source": "tool_trajectory",
                     },
                 }
