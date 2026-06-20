@@ -270,8 +270,13 @@ def run_face(prog: Sequence[Instr], lang: str) -> Optional[float]:
 
 def verify(prog: Sequence[Instr], faces: Sequence[str] = ("python", "javascript", "rust", "c")) -> dict:
     """Run the reference, then every face that has a local toolchain; compare each honestly."""
-    ref = interpret(prog)
-    reference = ref[-1] if ref else None
+    # GUARD the reference like the face runs already are: a program whose reference raises (div-by-zero,
+    # an out-of-range index) must not crash the verifier OR hide a real divergence -- surface it.
+    try:
+        ref = interpret(prog)
+        reference, ref_error = (ref[-1] if ref else None), None
+    except Exception as e:
+        reference, ref_error = None, "%s: %s" % (type(e).__name__, e)
     results: Dict[str, dict] = {}
     for lang in faces:
         tool = _RUN.get(lang, "<none>")
@@ -283,11 +288,15 @@ def verify(prog: Sequence[Instr], faces: Sequence[str] = ("python", "javascript"
         except Exception as e:
             results[lang] = {"status": "ERROR", "value": None, "note": "%s: %s" % (type(e).__name__, e)}
             continue
+        if ref_error is not None:  # no reference to compare against -> we cannot certify agreement
+            results[lang] = {"status": "NO_REFERENCE", "value": v}
+            continue
         agree = v == reference or (v is not None and reference is not None and abs(v - reference) <= 1e-9)
         results[lang] = {"status": "AGREE" if agree else "DISAGREE", "value": v}
     verified = [lang for lang, r in results.items() if r["status"] == "AGREE"]
     return {
         "reference": reference,
+        "reference_error": ref_error,
         "results": results,
         "verified": verified,
         "verified_count": len(verified),

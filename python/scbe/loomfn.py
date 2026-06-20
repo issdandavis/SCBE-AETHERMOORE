@@ -144,6 +144,21 @@ def _arrays(prog: Sequence[Instr]) -> List[str]:
 # --- the reference interpreter -------------------------------------------------
 
 
+def _index(raw: float, length: int, op: str) -> int:
+    """The portable index contract: a non-negative, in-bounds integer. Out of contract RAISES instead
+    of guessing, because indexing is the one place the faces genuinely disagree -- Python ``h[-1]``
+    wraps to the last element, JS ``arr[-1]`` is ``undefined``, Rust ``-1 as usize`` saturates to 0, and
+    a positive OOB is an IndexError / undefined / panic respectively. Enforcing the contract in the
+    reference means any out-of-contract index surfaces as reference_error, never a silent "verified" on
+    a program whose answer depends on which language ran it."""
+    i = int(raw)
+    if not 0 <= i < length:
+        raise IndexError(
+            "index %d out of contract [0,%d) for '%s' (indices must be non-negative + in-bounds)" % (i, length, op)
+        )
+    return i
+
+
 def interpret(prog: Sequence[Instr], step_limit: int = 1_000_000) -> List[float]:
     """Run the IR directly (the reference every face is compared against); return printed values."""
     labels, funcs = _labels(prog), _funcs(prog)
@@ -188,10 +203,10 @@ def interpret(prog: Sequence[Instr], step_limit: int = 1_000_000) -> List[float]
             s[a[0]] = h[a[1]].pop()
             pc += 1
         elif op == "get":
-            s[a[0]] = h[a[1]][int(s[a[2]])]
+            s[a[0]] = h[a[1]][_index(s[a[2]], len(h[a[1]]), "get")]
             pc += 1
         elif op == "set":
-            h[a[0]][int(s[a[1]])] = s[a[2]]
+            h[a[0]][_index(s[a[1]], len(h[a[0]]), "set")] = s[a[2]]
             pc += 1
         elif op == "alen":
             s[a[0]] = float(len(h[a[1]]))
@@ -519,9 +534,18 @@ def verify(prog: Sequence[Instr], faces: Sequence[str] = ("python", "javascript"
 
     The answer is whatever the program printed last -- a number (compared within 1e-9) or text from
     `prints` (compared as an exact string). A face is AGREE only if it actually ran and matched.
+
+    The index contract is non-negative, in-bounds integers (see interpret): an out-of-contract index
+    makes the reference raise, which surfaces here as reference_error -- never a silent "verified" on a
+    program whose answer is language-dependent.
     """
-    ref = interpret(prog)
-    reference = ref[-1] if ref else None
+    # GUARD the reference like the face runs already are: a program whose reference raises (e.g. an
+    # out-of-range index, a div-by-zero) must not crash the verifier or hide a divergence -- surface it.
+    try:
+        ref = interpret(prog)
+        reference, ref_error = (ref[-1] if ref else None), None
+    except Exception as e:
+        reference, ref_error = None, "%s: %s" % (type(e).__name__, e)
     text_answer = isinstance(reference, str)
     results: Dict[str, dict] = {}
     for lang in faces:
@@ -533,6 +557,9 @@ def verify(prog: Sequence[Instr], faces: Sequence[str] = ("python", "javascript"
             line = _face_line(prog, lang)
         except Exception as e:
             results[lang] = {"status": "ERROR", "value": None, "note": "%s: %s" % (type(e).__name__, e)}
+            continue
+        if ref_error is not None:  # no trustworthy reference -> we cannot certify agreement
+            results[lang] = {"status": "NO_REFERENCE", "value": line}
             continue
         if text_answer:
             value: object = line
@@ -546,6 +573,7 @@ def verify(prog: Sequence[Instr], faces: Sequence[str] = ("python", "javascript"
     verified = [lang for lang, r in results.items() if r["status"] == "AGREE"]
     return {
         "reference": reference,
+        "reference_error": ref_error,
         "results": results,
         "verified": verified,
         "verified_count": len(verified),
