@@ -53,8 +53,10 @@ def test_verify_conlang_runs_and_is_bijective():
     assert r["read_back"]
     assert math.isclose(float(r["answer"]), 15.0)  # python reference, always available
     assert r["disagree"] == []
-    if r["agree"]:
+    if r["cross_verified_by"]:  # a non-python face actually ran and agreed
         assert r["verified"] is True
+    else:
+        assert r["verified"] is False  # python-vs-python alone is NOT verification
 
 
 def test_verify_conlang_bad_program_is_an_error_not_a_crash():
@@ -62,12 +64,36 @@ def test_verify_conlang_bad_program_is_an_error_not_a_crash():
     assert "error" in r
 
 
+def test_verify_conlang_rejects_code_injection():
+    # SECURITY (the critical RCE the review found): an operand carrying a code payload (a subscript /
+    # call -- anything that is not a plain identifier or number) must be REJECTED before any emit/run,
+    # returned as a clean error, never executed. 'x[1]' stands in for 'x[__import__(...)...]'.
+    inj = "bop'a x 0\nbop'a x[1] 1\nbop'ta"
+    r = M._verify_conlang(inj)
+    assert "error" in r and r.get("verified") is not True
+    # and at the loomflow layer directly (parse front-gate + emit last-gate)
+    from python.scbe import loomflow
+
+    import pytest
+
+    with pytest.raises(ValueError):
+        loomflow.parse("const x[1] 0")
+    with pytest.raises(ValueError):
+        loomflow.emit([("const", ("x[evil]", "0")), ("halt", ())], "python")
+
+
 def test_verify_loomfn_arrays_and_arithmetic():
     r = M._verify_loomfn("const a 5 / const b 3 / add c a b / print c")
     assert r["disagree"] == []
     assert math.isclose(float(r["answer"]), 8.0)  # python reference
-    if r["agree"]:
+    if r["cross_verified_by"]:
         assert r["verified"] is True
+
+
+def test_verify_polyglot_returns_clean_error_not_crash_on_raising_program():
+    # div-by-zero makes the python reference raise inside conformance; the tool must catch it
+    r = M._verify_polyglot(["div"], [[0.0, 1.0, 0.0]])
+    assert "error" in r and r.get("verified") is not True
 
 
 def test_score_intent_allows_benign_denies_attack():

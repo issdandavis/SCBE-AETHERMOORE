@@ -35,8 +35,22 @@ _CMP = {"lt": "<", "le": "<=", "gt": ">", "ge": ">=", "eq": "==", "ne": "!="}
 _OPS = {"const", "mov", "inc", "dec", "label", "jmp", "brz", "print", "halt"} | set(_ARITH) | set(_CMP)
 
 
+def _is_number(tok: str) -> bool:
+    try:
+        float(tok)
+        return True
+    except ValueError:
+        return False
+
+
 def parse(text: str) -> List[Instr]:
-    """Parse the line-based assembly into (op, args) instructions."""
+    """Parse the line-based assembly into (op, args) instructions.
+
+    SECURITY: every operand must be a plain identifier or a number. Slot names are interpolated
+    verbatim into emitted source (`s_<name>`) which is then compiled and RUN, so an operand like
+    `x[__import__('os').system('...')]` would be code injection. Identifiers/numbers can't carry a
+    payload (no brackets/quotes/calls), exactly as polyglot.emit forces fn/arg names to .isidentifier().
+    """
     prog: List[Instr] = []
     for raw in text.splitlines():
         line = raw.split(";", 1)[0].split("#", 1)[0].strip()
@@ -46,6 +60,9 @@ def parse(text: str) -> List[Instr]:
         op, args = parts[0].lower(), tuple(parts[1:])
         if op not in _OPS:
             raise ValueError("unknown op %r (have %s)" % (op, ", ".join(sorted(_OPS))))
+        for a in args:
+            if not (a.isidentifier() or _is_number(a)):
+                raise ValueError("illegal operand %r: operands must be identifiers or numbers" % a)
         prog.append((op, args))
     return prog
 
@@ -125,7 +142,10 @@ def _arms(prog: Sequence[Instr], labels: Dict[str, int], lang: str) -> List[Tupl
     """For each instruction k, the (effect, pc-update) statement pair in `lang`'s syntax."""
 
     def slot(n):
-        return "s_" + n
+        name = "s_" + n
+        if not name.isidentifier():  # last gate before this becomes runnable source (defense in depth)
+            raise ValueError("illegal slot name %r (would inject into emitted source)" % n)
+        return name
 
     def cmp_to_bool(op, a):
         return "%s %s %s" % (slot(a[1]), _CMP[op], slot(a[2]))
