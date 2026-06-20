@@ -184,6 +184,27 @@ function executeEventAsync(
     let spawnArgs: string[];
 
     if (normalized.tool) {
+      if (receipt.options.allowToolDispatch !== true) {
+        resolve({
+          schema_version: 'scbe-agentbus-node-result-v1',
+          event_index: 1,
+          started_at: new Date().toISOString(),
+          finished_at: new Date().toISOString(),
+          ok: false,
+          exit_code: null,
+          stderr_tail:
+            'tool dispatch is disabled; set allowToolDispatch=true in trusted worker options',
+          event: {
+            task_sha256: null,
+            task_chars: normalized.task.length,
+            series_id: normalized.seriesId || receipt.run_id,
+            operation_command_chars: (normalized.operationCommand || '').length,
+          },
+          result: null,
+        });
+        return;
+      }
+
       autoDiscoverTools();
       const registeredTool = getTool(normalized.tool);
       if (!registeredTool) {

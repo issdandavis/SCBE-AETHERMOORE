@@ -303,6 +303,11 @@ export interface RunOptions {
   python?: string;
   continueOnError?: boolean;
   /**
+   * Opt-in gate for routing queued events to registered CLI tools via event.tool.
+   * Disabled by default to prevent untrusted API callers from selecting arbitrary tools.
+   */
+  allowToolDispatch?: boolean;
+  /**
    * Optional persisted trajectory gate for GeoSeal pipelines.
    * When enabled, the pipeline checks whether the compiled plan is reachable
    * from the session's current governed state before execution.
@@ -1680,7 +1685,7 @@ function normalizeEvent(event: AgentBusEvent, index: number): Required<AgentBusE
     budgetCents: Number(event.budgetCents || 0),
     dispatch: event.dispatch !== false,
     dispatchProvider: String(event.dispatchProvider || 'offline').trim(),
-    tool: event.tool ?? '',
+    tool: String(event.tool || '').trim(),
   };
 }
 
