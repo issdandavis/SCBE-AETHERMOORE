@@ -19,6 +19,7 @@ from python.scbe.stepwise import (  # noqa: E402
     number_label_task,
     run_stepwise,
     scripted_proposer,
+    sticky_proposer,
 )
 
 
@@ -165,3 +166,64 @@ def test_a_step_with_no_oracle_still_stops_honestly():
     assert r["completed"] is False
     assert r["stuck_at"] == "judge"
     assert r["offloaded"] == []
+
+
+# --- stuck-prior detector: forced deviation prunes the rut so a looping model can't repeat it ---
+
+
+def test_without_restructure_a_sticky_prior_loops_and_stops():
+    # the +0-repair wall: a model that keeps re-proposing the same wrong label never deviates -> stuck.
+    # prune off, offload off: 'Fizz' is wrong for 10 ('Buzz'); it loops, and stuck_priors counts the loop.
+    r = run_stepwise(
+        number_label_task(10), sticky_proposer("Fizz"), max_rewinds=3, allow_offload=False, prune_wrong=False
+    )
+    assert r["completed"] is False
+    assert r["stuck_at"] == "label"
+    assert r["stuck_priors"] >= 1  # it re-proposed a known-wrong value (the stuck-prior tell)
+
+
+def test_forced_deviation_rescues_a_looping_model_without_a_tool():
+    # prune on, offload OFF: eliminating the proven-wrong 'Fizz' forces the model onto a new region and
+    # it lands on the correct 'Buzz' -- a RESTRUCTURE rescue, no oracle/tool involved.
+    r = run_stepwise(
+        number_label_task(10), sticky_proposer("Fizz"), max_rewinds=3, allow_offload=False, prune_wrong=True
+    )
+    assert r["completed"] is True
+    assert r["answer"] == "Buzz"
+    assert r["offloaded"] == []  # no tool was used; the lift came purely from restructuring the options
+    assert r["stuck_priors"] == 0  # it never got to repeat -- the rut was pruned out from under it
+
+
+def test_pruning_never_eliminates_the_correct_answer():
+    # safety of forced deviation: only proven-wrong values are pruned; the correct value passes the
+    # check so it is never removed. A model that tries two wrongs then the right one still succeeds.
+    r = run_stepwise(
+        number_label_task(10),
+        scripted_proposer(["Fizz", "FizzBuzz", "Buzz"]),
+        max_rewinds=3,
+        allow_offload=False,
+        prune_wrong=True,
+    )
+    assert r["completed"] is True
+    assert r["answer"] == "Buzz"  # the correct answer was always still on the menu when finally chosen
+    assert r["offloaded"] == []
+
+
+def test_stuck_priors_counts_repeated_wrong_proposals():
+    # with pruning off, a model that always repeats the same wrong value loops; each repeat is counted.
+    r = run_stepwise(
+        number_label_task(6), always_proposer("Buzz"), max_rewinds=2, allow_offload=False, prune_wrong=False
+    )
+    assert r["completed"] is False
+    # first 'Buzz' is a fresh misstep; the next two (rewinds 1,2 within max_rewinds=2) are repeats
+    assert r["stuck_priors"] == 2
+
+
+def test_restructure_then_tool_backstops_a_model_that_ignores_the_pruned_menu():
+    # the full ladder: a model so stuck it re-proposes an eliminated value (ignores forced deviation)
+    # cannot be restructured -- so the tool (oracle) backstops it. retry -> restructure -> tool.
+    r = run_stepwise(number_label_task(6), always_proposer("Buzz"), max_rewinds=2, allow_offload=True, prune_wrong=True)
+    assert r["completed"] is True
+    assert r["answer"] == "Fizz"  # 6 is 'Fizz'; the oracle supplied it after restructuring failed
+    assert r["offloaded"] == ["label"]
+    assert r["stuck_priors"] >= 1  # it did keep re-proposing the eliminated 'Buzz'
