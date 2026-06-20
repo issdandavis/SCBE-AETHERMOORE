@@ -8,7 +8,6 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Iterable, Sequence
 
-
 Point = tuple[float, float]
 
 
@@ -270,16 +269,10 @@ def evaluate_shape(shape: SemanticTokenShape) -> PackingReport:
         1 for vertices in cell_polygons if not polygon_inside_convex_polygon(vertices, outer_vertices)
     )
     octave_links = sum(
-        1
-        for index, left in enumerate(shape.cells)
-        for right in shape.cells[index + 1 :]
-        if octave_linked(left, right)
+        1 for index, left in enumerate(shape.cells) for right in shape.cells[index + 1 :] if octave_linked(left, right)
     )
     phase_links = sum(
-        1
-        for index, left in enumerate(shape.cells)
-        for right in shape.cells[index + 1 :]
-        if phase_linked(left, right)
+        1 for index, left in enumerate(shape.cells) for right in shape.cells[index + 1 :] if phase_linked(left, right)
     )
     utilization = inner_area / outer_area
     semantic_loss = min(1.0, collisions * 0.18 + boundary_violations * 0.32)
@@ -326,13 +319,9 @@ def build_benchmark() -> BenchmarkReport:
         ("GOVERNANCE_GATE", 7),
     ]
     optimized_shapes = [
-        optimize_token_shape(token, outer_sides, DEFAULT_FEATURES[token])
-        for token, outer_sides in specs
+        optimize_token_shape(token, outer_sides, DEFAULT_FEATURES[token]) for token, outer_sides in specs
     ]
-    baselines = [
-        baseline_token_shape(token, outer_sides, DEFAULT_FEATURES[token])
-        for token, outer_sides in specs
-    ]
+    baselines = [baseline_token_shape(token, outer_sides, DEFAULT_FEATURES[token]) for token, outer_sides in specs]
     reports = [evaluate_shape(shape) for shape in optimized_shapes]
     baseline_reports = [evaluate_shape(shape) for shape in baselines]
     avg_loss = sum(report.semantic_loss for report in reports) / len(reports)
@@ -343,7 +332,9 @@ def build_benchmark() -> BenchmarkReport:
         source={
             "inspiration": "polygon packing optimization and separating-axis collision checks",
             "implementation": "independent SCBE semantic geometry probe; no GPL source vendored",
-            "boundary": "outer hull identity stays invariant; inner geometry can re-pack only if semantic loss stays bounded",
+            "boundary": (
+                "outer hull identity stays invariant; " "inner geometry can re-pack only if semantic loss stays bounded"
+            ),
         },
         passed=all(report.semantic_loss == 0.0 for report in reports) and avg_score > avg_baseline_score,
         generated_shapes=[shape_to_record(shape) for shape in optimized_shapes],
@@ -368,7 +359,9 @@ def write_report(path: Path) -> BenchmarkReport:
 
 def main(argv: Iterable[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run the layered semantic geometry packing benchmark.")
-    parser.add_argument("--out", type=Path, default=Path("artifacts/experiments/layered_geometry_semantic_packing.json"))
+    parser.add_argument(
+        "--out", type=Path, default=Path("artifacts/experiments/layered_geometry_semantic_packing.json")
+    )
     args = parser.parse_args(list(argv) if argv is not None else None)
     report = write_report(args.out)
     print(json.dumps(asdict(report), indent=2, sort_keys=True))

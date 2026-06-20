@@ -374,13 +374,17 @@ def format_mirror_report(result: ManifoldMirrorResult) -> str:
     lines.append("-" * 80)
     lines.append(f"                        {'Complement':>14}  {'Non-Complement':>14}  {'Ratio':>8}")
     lines.append(
-        f"  Angular gap (rad):    {result.mean_complement_gap:>14.4f}  {result.mean_non_complement_gap:>14.4f}  {result.mean_complement_gap / (result.mean_non_complement_gap + 1e-12):>8.3f}"
+        f"  Angular gap (rad):    {result.mean_complement_gap:>14.4f}  {result.mean_non_complement_gap:>14.4f}  "
+        f"{result.mean_complement_gap / (result.mean_non_complement_gap + 1e-12):>8.3f}"
     )
     lines.append(
-        f"  Interference:         {result.mean_complement_interference:>14.4f}  {result.mean_non_complement_interference:>14.4f}  {result.mean_complement_interference / (result.mean_non_complement_interference + 1e-12):>8.3f}"
+        f"  Interference:         {result.mean_complement_interference:>14.4f}  "
+        f"{result.mean_non_complement_interference:>14.4f}  "
+        f"{result.mean_complement_interference / (result.mean_non_complement_interference + 1e-12):>8.3f}"
     )
     lines.append(
-        f"  Mid-surface radius:   {result.mean_complement_radius:>14.4f}  {result.mean_non_complement_radius:>14.4f}  {result.mean_complement_radius / (result.mean_non_complement_radius + 1e-12):>8.3f}"
+        f"  Mid-surface radius:   {result.mean_complement_radius:>14.4f}  {result.mean_non_complement_radius:>14.4f}  "
+        f"{result.mean_complement_radius / (result.mean_non_complement_radius + 1e-12):>8.3f}"
     )
     lines.append(
         f"  Energy asymmetry:     {result.complement_asymmetry:>14.4f}  {result.non_complement_asymmetry:>14.4f}"

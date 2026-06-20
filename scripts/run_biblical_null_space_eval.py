@@ -53,17 +53,23 @@ def call_openai(prompt: str, model: str = "gpt-4o-mini") -> str:
     api_key = os.environ.get("OPENAI_API_KEY", "")
     url = "https://api.openai.com/v1/chat/completions"
 
-    payload = json.dumps({
-        "model": model,
-        "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.3,
-        "max_tokens": 500,
-    }).encode()
+    payload = json.dumps(
+        {
+            "model": model,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.3,
+            "max_tokens": 500,
+        }
+    ).encode()
 
-    req = urllib.request.Request(url, data=payload, headers={
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {api_key}",
-    })
+    req = urllib.request.Request(
+        url,
+        data=payload,
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}",
+        },
+    )
     resp = urllib.request.urlopen(req, timeout=30)
     data = json.loads(resp.read().decode())
     return data["choices"][0]["message"]["content"]
@@ -77,17 +83,23 @@ def call_xai(prompt: str, model: str = "grok-3-mini-fast") -> str:
     base_url = os.environ.get("XAI_BASE_URL", "https://api.x.ai/v1")
     url = f"{base_url}/chat/completions"
 
-    payload = json.dumps({
-        "model": model,
-        "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.3,
-        "max_tokens": 500,
-    }).encode()
+    payload = json.dumps(
+        {
+            "model": model,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.3,
+            "max_tokens": 500,
+        }
+    ).encode()
 
-    req = urllib.request.Request(url, data=payload, headers={
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {api_key}",
-    })
+    req = urllib.request.Request(
+        url,
+        data=payload,
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}",
+        },
+    )
     resp = urllib.request.urlopen(req, timeout=30)
     data = json.loads(resp.read().decode())
     return data["choices"][0]["message"]["content"]
@@ -96,12 +108,15 @@ def call_xai(prompt: str, model: str = "grok-3-mini-fast") -> str:
 def call_ollama(prompt: str, model: str = "llama3.2") -> str:
     """Call local Ollama (free, no API key needed)."""
     import urllib.request
-    payload = json.dumps({
-        "model": model,
-        "prompt": prompt,
-        "stream": False,
-        "options": {"temperature": 0.3, "num_predict": 500},
-    }).encode()
+
+    payload = json.dumps(
+        {
+            "model": model,
+            "prompt": prompt,
+            "stream": False,
+            "options": {"temperature": 0.3, "num_predict": 500},
+        }
+    ).encode()
     req = urllib.request.Request(
         "http://localhost:11434/api/generate",
         data=payload,
@@ -143,30 +158,39 @@ def main():
             scores.append(result)
 
             symbol = {0: "NULL", 1: "WEAK", 2: "GOOD", 3: "FULL"}[result["score"]]
-            print(f"  [{probe.id:5s}] {probe.tongue} {probe.pattern:20s} -> {symbol} ({result['score']}/3)  ideal={result['ideal_count']} anti={result['anti_count']}")
+            print(
+                f"  [{probe.id:5s}] {probe.tongue} {probe.pattern:20s} -> {symbol} "
+                f"({result['score']}/3)  ideal={result['ideal_count']} anti={result['anti_count']}"
+            )
 
             time.sleep(0.5)  # rate limit
         except Exception as e:
             print(f"  [{probe.id:5s}] ERROR: {e}")
-            scores.append({
-                "probe_id": probe.id, "tongue": probe.tongue,
-                "pattern": probe.pattern, "score": 0,
-                "ideal_hits": [], "anti_hits": [],
-                "ideal_count": 0, "anti_count": 0,
-                "error": str(e),
-            })
+            scores.append(
+                {
+                    "probe_id": probe.id,
+                    "tongue": probe.tongue,
+                    "pattern": probe.pattern,
+                    "score": 0,
+                    "ideal_hits": [],
+                    "anti_hits": [],
+                    "ideal_count": 0,
+                    "anti_count": 0,
+                    "error": str(e),
+                }
+            )
 
     print(f"\n{'='*70}")
     analysis = run_null_space_analysis(scores)
 
     print(f"\nTotal: {analysis['total_score']}/{analysis['max_score']} ({analysis['percentage']}%)")
-    print(f"\nTongue means (0-3 scale):")
+    print("\nTongue means (0-3 scale):")
     for tongue, mean in sorted(analysis["tongue_means"].items()):
         bar = "#" * int(mean * 10)
         null_marker = " <-- NULL-SPACE" if mean < 1.0 else ""
         print(f"  {tongue}: {mean:.2f} [{bar:30s}]{null_marker}")
 
-    print(f"\nPattern means:")
+    print("\nPattern means:")
     for pattern, mean in sorted(analysis["pattern_means"].items()):
         bar = "#" * int(mean * 10)
         null_marker = " <-- NULL" if mean < 1.0 else ""
@@ -175,7 +199,7 @@ def main():
     if analysis["null_tongues"]:
         print(f"\nNULL-SPACE DETECTED in tongues: {', '.join(analysis['null_tongues'])}")
     else:
-        print(f"\nNo null-space detected — all tongues above threshold")
+        print("\nNo null-space detected — all tongues above threshold")
 
     if analysis["null_patterns"]:
         print(f"NULL-SPACE DETECTED in patterns: {', '.join(analysis['null_patterns'])}")
@@ -184,13 +208,17 @@ def main():
     out_path = args.output or f"artifacts/biblical_null_space_{args.provider}_{model.replace('/', '_')}.json"
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     with open(out_path, "w") as f:
-        json.dump({
-            "provider": args.provider,
-            "model": model,
-            "timestamp": time.time(),
-            "analysis": analysis,
-            "scores": scores,
-        }, f, indent=2)
+        json.dump(
+            {
+                "provider": args.provider,
+                "model": model,
+                "timestamp": time.time(),
+                "analysis": analysis,
+                "scores": scores,
+            },
+            f,
+            indent=2,
+        )
     print(f"\nResults saved to: {out_path}")
 
 

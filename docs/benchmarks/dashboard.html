@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SCBE Benchmark Evidence Dashboard</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, sans-serif; margin: 32px; color: #15171a; background: #f7f8fa; }
+    main { max-width: 1180px; margin: 0 auto; }
+    h1 { margin-bottom: 6px; }
+    .meta { color: #515861; margin-bottom: 24px; }
+    .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .card { background: white; border: 1px solid #dfe3e8; border-radius: 8px; padding: 14px; }
+    .value { font-size: 28px; font-weight: 700; }
+    table { width: 100%; border-collapse: collapse; background: white; border: 1px solid #dfe3e8; }
+    th, td { padding: 10px; border-bottom: 1px solid #e7eaee; text-align: left; vertical-align: top; font-size: 14px; }
+    th { background: #eef2f6; }
+    code { font-size: 12px; }
+    small, span { color: #59616b; }
+    @media (max-width: 760px) { body { margin: 14px; } .cards { grid-template-columns: 1fr; } table { display: block; overflow-x: auto; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>SCBE Benchmark Evidence Dashboard</h1>
+    <div class="meta">Generated 2026-05-31T04:03:11.771Z from unknown @ e8fb9af2a</div>
+    <section class="cards">
+      <div class="card"><div>Evidence lanes</div><div class="value">6/10</div></div>
+      <div class="card"><div>Readiness</div><div class="value">60%</div></div>
+      <div class="card"><div>Proof rule</div><small>Every public claim must cite: command, artifact path, commit hash, and claim boundary.</small></div>
+    </section>
+    <table>
+      <thead><tr><th>Lane</th><th>Status</th><th>Command / Artifact</th><th>Hash</th><th>Summary / Boundary</th></tr></thead>
+      <tbody><tr><td><strong>hard-agentic</strong><br><span>hard agentic pretest matrix (12/14 readiness lanes)</span></td><td>evidence-ready</td><td><code>scbe bench hard-agentic --json</code><br><small>artifacts/benchmarks/hard_agentic_pretest/latest_report.json</small></td><td>7e0de2ea</td><td>{&quot;blocked_or_failed&quot;:5,&quot;executed&quot;:8,&quot;ready_or_pass&quot;:9,&quot;target_count&quot;:14}<br><small>local readiness/pretest matrix; not a public benchmark leaderboard score</small></td></tr>
+<tr><td><strong>research</strong><br><span>BrowseComp/GAIA-style local research fixtures</span></td><td>evidence-ready</td><td><code>scbe bench research --json</code><br><small>artifacts/benchmarks/research_agent_fixtures/latest_report.json</small></td><td>5564f227</td><td>{&quot;baseline_pass_rate&quot;:0,&quot;baseline_passes&quot;:0,&quot;decision&quot;:&quot;PASS&quot;,&quot;scbe_pass_rate&quot;:1,&quot;scbe_passes&quot;:2,&quot;task_count&quot;:2,&quot;unresolved_tasks&quot;:[]}<br><small>local BrowseComp/GAIA-style fixtures; not public BrowseComp or GAIA scores</small></td></tr>
+<tr><td><strong>rubix-browser</strong><br><span>permission-hypercube browser-control geometry fixture</span></td><td>evidence-ready</td><td><code>scbe bench rubix-browser --json</code><br><small>artifacts/benchmarks/rubix_browser_hypercube/latest_report.json</small></td><td>b2f4096e</td><td>{&quot;baseline_avg&quot;:0.4167,&quot;baseline_completed&quot;:0,&quot;baseline_illegal_moves&quot;:3,&quot;decision&quot;:&quot;PASS&quot;,&quot;hypercube_avg&quot;:1,&quot;hypercube_completed&quot;:3,&quot;hypercube_illegal_moves&quot;:0,&quot;task_count&quot;:3}<br><small>local browser-control geometry fixture; not WebArena, BrowserGym, OSWorld, or VisualWebArena score</small></td></tr>
+<tr><td><strong>arc-agi2</strong><br><span>ARC-AGI-2 local baseline (rule-free strategies, lower bound)</span></td><td>missing-artifact</td><td><code>scbe bench arc-agi2 --json</code><br><small>artifacts/benchmarks/arc_agi2_local/latest_report.json</small></td><td>missing</td><td>No latest artifact yet<br><small>rule-free lower-bound baselines on public ARC-AGI-2 data; not a competitive ARC-AGI-2 submission score</small></td></tr>
+<tr><td><strong>arc-style-grid</strong><br><span>ARC-style grid reasoning fixture (SCBE sensor outputs)</span></td><td>missing-artifact</td><td><code>scbe bench arc-style-grid --json</code><br><small>artifacts/benchmarks/arc_style_grid/latest_report.json</small></td><td>missing</td><td>No latest artifact yet<br><small>local ARC-style grid fixture using SCBE sensor outputs; not a public ARC score</small></td></tr>
+<tr><td><strong>swe-local</strong><br><span>SWE-style local real-patch repair fixtures</span></td><td>missing-artifact</td><td><code>scbe bench swe-local --json</code><br><small>artifacts/benchmarks/swe_local/latest_report.json</small></td><td>missing</td><td>No latest artifact yet<br><small>local real-patch fixtures; not SWE-bench Verified or SWEbench.com leaderboard score</small></td></tr>
+<tr><td><strong>cli-competitive</strong><br><span>CLI command accuracy vs Codex/Claude-Code-style baselines</span></td><td>evidence-ready</td><td><code>scbe bench cli-competitive --json</code><br><small>artifacts/benchmarks/cli_competitive/cli_competitive_benchmark_latest.json</small></td><td>8710eb77</td><td>{}<br><small>local CLI command accuracy fixture; not a published competitive benchmark score</small></td></tr>
+<tr><td><strong>compound-decompose</strong><br><span>RDKit compound decomposition/recomposition through atom mud</span></td><td>evidence-ready</td><td><code>scbe bench compound-decompose --json</code><br><small>artifacts/benchmarks/compound_decomposition_recomposition/latest_report.json</small></td><td>c1c9f514</td><td>{&quot;decision&quot;:&quot;PASS&quot;,&quot;rdkit_available&quot;:true,&quot;case_count&quot;:30,&quot;passed&quot;:30,&quot;pass_rate&quot;:1,&quot;mud_step&quot;:5,&quot;rdkit_error&quot;:null}<br><small>computational compound decomposition/recomposition benchmark; not wet-lab synthesis, biological efficacy proof, dosing guidance, or medical advice</small></td></tr>
+<tr><td><strong>providers</strong><br><span>AI provider health matrix (local &gt; free &gt; paid free-first policy)</span></td><td>missing-artifact</td><td><code>scbe bench providers --json</code><br><small>artifacts/benchmarks/provider_health/latest_report.json</small></td><td>missing</td><td>No latest artifact yet<br><small>local provider reachability check; not an API reliability guarantee</small></td></tr>
+<tr><td><strong>longform</strong><br><span>Longform Bridge durable CLI workflow with squad dispatch receipts</span></td><td>evidence-ready</td><td><code>scbe bench longform --json</code><br><small>artifacts/benchmarks/longform_cli_benchmark_latest.json</small></td><td>40eea47c</td><td>{}<br><small>local durable-workflow CLI fixture; not a guarantee of autonomous task completion</small></td></tr></tbody>
+    </table>
+  </main>
+</body>
+</html>

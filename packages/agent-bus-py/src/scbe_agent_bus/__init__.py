@@ -28,6 +28,13 @@ from pathlib import Path
 from typing import Any, Iterable, Literal, Optional, TypedDict
 
 from .companions import COMPANION_PACKAGES, recommend_companion_packages
+from .governance import (
+    GovernanceScan,
+    harmonic_score,
+    risk_tier,
+    scan_agent_request,
+    scan_command,
+)
 from .lineage import (
     LINEAGE_SCHEMA,
     REPORT_SCHEMA,
@@ -66,6 +73,12 @@ __all__ = [
     "AgentBusError",
     "COMPANION_PACKAGES",
     "recommend_companion_packages",
+    # governance SDK
+    "GovernanceScan",
+    "scan_command",
+    "scan_agent_request",
+    "harmonic_score",
+    "risk_tier",
     # workspace audit chain
     "WorkspaceError",
     "workspace_new",
@@ -154,23 +167,13 @@ def _normalize_event(event: AgentBusEvent | dict, index: int) -> dict:
         raise AgentBusError(f"event {index} missing task/text")
     return {
         "task": task,
-        "operation_command": str(
-            event.get("operation_command") or event.get("operationCommand") or ""
-        ).strip(),
-        "task_type": str(
-            event.get("task_type") or event.get("taskType") or "general"
-        ).strip(),
-        "series_id": str(
-            event.get("series_id") or event.get("seriesId") or f"pipe-event-{index}"
-        ).strip(),
+        "operation_command": str(event.get("operation_command") or event.get("operationCommand") or "").strip(),
+        "task_type": str(event.get("task_type") or event.get("taskType") or "general").strip(),
+        "series_id": str(event.get("series_id") or event.get("seriesId") or f"pipe-event-{index}").strip(),
         "privacy": str(event.get("privacy") or "local_only").strip(),
-        "budget_cents": float(
-            event.get("budget_cents", event.get("budgetCents", 0)) or 0
-        ),
+        "budget_cents": float(event.get("budget_cents", event.get("budgetCents", 0)) or 0),
         "dispatch": event.get("dispatch") is not False,
-        "dispatch_provider": str(
-            event.get("dispatch_provider") or event.get("dispatchProvider") or "offline"
-        ).strip(),
+        "dispatch_provider": str(event.get("dispatch_provider") or event.get("dispatchProvider") or "offline").strip(),
     }
 
 
@@ -191,8 +194,7 @@ def _run_one(
     runner = _resolve_runner(repo_root)
     if not runner.exists():
         raise AgentBusError(
-            f"agent-bus runner not found at {runner}. "
-            "Pass repo_root pointing at a SCBE-AETHERMOORE checkout."
+            f"agent-bus runner not found at {runner}. " "Pass repo_root pointing at a SCBE-AETHERMOORE checkout."
         )
 
     argv = [

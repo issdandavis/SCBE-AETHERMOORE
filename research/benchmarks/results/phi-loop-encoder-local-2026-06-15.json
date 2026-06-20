@@ -1,0 +1,93 @@
+{
+  "schema_version": "scbe_phi_loop_benchmark_v1",
+  "benchmark": "ast-cube-encoder",
+  "phi": 1.618033988749895,
+  "controller": {
+    "loop_sample_sizes": "Fibonacci sequence",
+    "target_rule": "next_target = observed + (next_phi_power - observed) / phi",
+    "interpretation": "speedup is mapped to phi^n layers; target moves toward the next layer each loop"
+  },
+  "loops": [
+    {
+      "loop": 1,
+      "runs": 5,
+      "warmup": 3,
+      "pure_runs": 3,
+      "card": "research/benchmarks/results/phi-loop-cards/encoder-phi-loop-01.json",
+      "stdout": "corpus: 20 files / 6046 LOC\npython : median 230.99 ms  CV 5.301%  (n=5)\nrust   : median 69.70 ms  CV 6.931%  (n=5)\ne2e    : 3.31x (UNSTABLE - re-run)  (small corpus, incl. subprocess startup)\nengine : 3.61x startup-excluded (py 10.632 vs rust 2.9480 ms/file; startup ~12.3 ms)\ncard   : research\\benchmarks\\results\\phi-loop-cards\\encoder-phi-loop-01.json",
+      "end_to_end_speedup_x": 3.31,
+      "end_to_end_phi": {
+        "layer": 2,
+        "lower_phi_power": 2.618034,
+        "upper_phi_power": 4.236068,
+        "progress_to_next_phi_layer": 0.427659,
+        "moving_target_speedup_x": 3.882341
+      },
+      "engine_speedup_x": 3.61,
+      "engine_phi": {
+        "layer": 2,
+        "lower_phi_power": 2.618034,
+        "upper_phi_power": 4.236068,
+        "progress_to_next_phi_layer": 0.613069,
+        "moving_target_speedup_x": 3.996931
+      },
+      "stable": false,
+      "python_cv_pct": 5.301,
+      "rust_cv_pct": 6.931
+    },
+    {
+      "loop": 2,
+      "runs": 8,
+      "warmup": 5,
+      "pure_runs": 3,
+      "card": "research/benchmarks/results/phi-loop-cards/encoder-phi-loop-02.json",
+      "stdout": "corpus: 20 files / 6046 LOC\npython : median 212.74 ms  CV 5.184%  (n=8)\nrust   : median 63.60 ms  CV 4.992%  (n=8)\ne2e    : 3.34x (UNSTABLE - re-run)  (small corpus, incl. subprocess startup)\nengine : 4.38x startup-excluded (py 10.991 vs rust 2.5069 ms/file; startup ~13.1 ms)\ncard   : research\\benchmarks\\results\\phi-loop-cards\\encoder-phi-loop-02.json",
+      "end_to_end_speedup_x": 3.34,
+      "end_to_end_phi": {
+        "layer": 2,
+        "lower_phi_power": 2.618034,
+        "upper_phi_power": 4.236068,
+        "progress_to_next_phi_layer": 0.4462,
+        "moving_target_speedup_x": 3.8938
+      },
+      "engine_speedup_x": 4.38,
+      "engine_phi": {
+        "layer": 3,
+        "lower_phi_power": 4.236068,
+        "upper_phi_power": 6.854102,
+        "progress_to_next_phi_layer": 0.054977,
+        "moving_target_speedup_x": 5.909079
+      },
+      "stable": false,
+      "python_cv_pct": 5.184,
+      "rust_cv_pct": 4.992
+    },
+    {
+      "loop": 3,
+      "runs": 13,
+      "warmup": 8,
+      "pure_runs": 3,
+      "card": "research/benchmarks/results/phi-loop-cards/encoder-phi-loop-03.json",
+      "stdout": "corpus: 20 files / 6046 LOC\npython : median 205.75 ms  CV 5.708%  (n=13)\nrust   : median 62.76 ms  CV 3.299%  (n=13)\ne2e    : 3.28x (UNSTABLE - re-run)  (small corpus, incl. subprocess startup)\nengine : 4.24x startup-excluded (py 10.557 vs rust 2.4894 ms/file; startup ~13.9 ms)\ncard   : research\\benchmarks\\results\\phi-loop-cards\\encoder-phi-loop-03.json",
+      "end_to_end_speedup_x": 3.28,
+      "end_to_end_phi": {
+        "layer": 2,
+        "lower_phi_power": 2.618034,
+        "upper_phi_power": 4.236068,
+        "progress_to_next_phi_layer": 0.409117,
+        "moving_target_speedup_x": 3.870883
+      },
+      "engine_speedup_x": 4.24,
+      "engine_phi": {
+        "layer": 3,
+        "lower_phi_power": 4.236068,
+        "upper_phi_power": 6.854102,
+        "progress_to_next_phi_layer": 0.001502,
+        "moving_target_speedup_x": 5.855604
+      },
+      "stable": false,
+      "python_cv_pct": 5.708,
+      "rust_cv_pct": 3.299
+    }
+  ]
+}

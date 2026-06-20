@@ -60,15 +60,19 @@ SECRET_PATTERNS = [
     (re.compile(r"\brk_live_[A-Za-z0-9_-]{8,}\b"), "[SCRUBBED:stripe_key]"),
     (re.compile(r"\bxox[ebp]-[A-Za-z0-9._-]{8,}\b"), "[SCRUBBED:slack_token]"),
     (re.compile(r"Authorization:\s*Bearer\s+[^\s]+", re.I), "Authorization: Bearer [SCRUBBED]"),
-    (re.compile(r"(api[_-]?key|token|secret|password|passwd|pwd)\s*[:=]\s*['\"]?[^'\"\s,;]{4,}['\"]?", re.I),
-     r"\1=[SCRUBBED]"),
+    (
+        re.compile(r"(api[_-]?key|token|secret|password|passwd|pwd)\s*[:=]\s*['\"]?[^'\"\s,;]{4,}['\"]?", re.I),
+        r"\1=[SCRUBBED]",
+    ),
     # Credit cards (basic pattern)
     (re.compile(r"\b(?:\d{4}[-\s]?){3}\d{4}\b"), "[SCRUBBED:card_number]"),
     # SSN
     (re.compile(r"\b\d{3}-\d{2}-\d{4}\b"), "[SCRUBBED:ssn]"),
     # Email addresses (partial — keep domain, scrub local)
-    (re.compile(r"\b[a-zA-Z0-9._%+-]+@(gmail|yahoo|hotmail|outlook|proton)\.(com|me|net)\b", re.I),
-     r"[SCRUBBED:email]@\1.\2"),
+    (
+        re.compile(r"\b[a-zA-Z0-9._%+-]+@(gmail|yahoo|hotmail|outlook|proton)\.(com|me|net)\b", re.I),
+        r"[SCRUBBED:email]@\1.\2",
+    ),
     # Phone numbers
     (re.compile(r"\b(?:\+1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b"), "[SCRUBBED:phone]"),
     # IP addresses (private ranges kept, public scrubbed)
@@ -90,12 +94,14 @@ def scrub_text(text: str) -> tuple[str, list[dict]]:
         for match in pattern.finditer(clean):
             original = match.group()
             fingerprint = hashlib.blake2s(original.encode(), digest_size=8).hexdigest()
-            scrubbed_items.append({
-                "fingerprint": fingerprint,
-                "pattern_type": replacement.split(":")[1].rstrip("]") if ":" in replacement else "generic",
-                "position": match.start(),
-                "length": len(original),
-            })
+            scrubbed_items.append(
+                {
+                    "fingerprint": fingerprint,
+                    "pattern_type": replacement.split(":")[1].rstrip("]") if ":" in replacement else "generic",
+                    "position": match.start(),
+                    "length": len(original),
+                }
+            )
         clean = pattern.sub(replacement, clean)
 
     return clean, scrubbed_items
@@ -110,13 +116,15 @@ def vault_secrets(scrubbed_items: list[dict], context: str = ""):
         vault = json.loads(VAULT_PATH.read_text())
 
     entries = vault.setdefault("entries", [])
-    entries.append({
-        "timestamp": datetime.datetime.now().isoformat(),
-        "context": context,
-        "count": len(scrubbed_items),
-        "fingerprints": [s["fingerprint"] for s in scrubbed_items],
-        "types": list(set(s["pattern_type"] for s in scrubbed_items)),
-    })
+    entries.append(
+        {
+            "timestamp": datetime.datetime.now().isoformat(),
+            "context": context,
+            "count": len(scrubbed_items),
+            "fingerprints": [s["fingerprint"] for s in scrubbed_items],
+            "types": list(set(s["pattern_type"] for s in scrubbed_items)),
+        }
+    )
 
     # Keep last 1000 entries
     vault["entries"] = entries[-1000:]
@@ -133,6 +141,7 @@ FEEDBACK_PATH = ROOT / "training-data" / "apollo" / "feedback_corrections.jsonl"
 @dataclass
 class FeedbackRecord:
     """A correction from the user about how an email should have been classified."""
+
     msg_id: str
     original_tongue: str
     correct_tongue: str
@@ -180,6 +189,7 @@ def apply_feedback_to_routes(feedback: list[dict]) -> dict:
 #  Interactive Search
 # =========================================================================== #
 
+
 def search_emails(query: str, days: int = 7, accounts: str = "both") -> list[dict]:
     """Search emails across accounts by keyword."""
     results = []
@@ -218,16 +228,21 @@ def search_emails(query: str, days: int = 7, accounts: str = "both") -> list[dic
     if accounts in ("both", "proton"):
         pm_pass = os.environ.get("PROTONMAIL_BRIDGE_PASSWORD", "")
         if pm_pass:
-            _search_account("127.0.0.1", 1143,
-                            os.environ.get("PROTONMAIL_USER", "issdandavis@proton.me"),
-                            pm_pass, "ProtonMail")
+            _search_account(
+                "127.0.0.1", 1143, os.environ.get("PROTONMAIL_USER", "issdandavis@proton.me"), pm_pass, "ProtonMail"
+            )
 
     if accounts in ("both", "gmail"):
         gm_pass = os.environ.get("GMAIL_APP_PASSWORD", "")
         if gm_pass:
-            _search_account("imap.gmail.com", 993,
-                            os.environ.get("GMAIL_USER", "issdandavis7795@gmail.com"),
-                            gm_pass, "Gmail", use_ssl=True)
+            _search_account(
+                "imap.gmail.com",
+                993,
+                os.environ.get("GMAIL_USER", "issdandavis7795@gmail.com"),
+                gm_pass,
+                "Gmail",
+                use_ssl=True,
+            )
 
     # Deduplicate by subject+from
     seen = set()
@@ -245,6 +260,7 @@ def search_emails(query: str, days: int = 7, accounts: str = "both") -> list[dic
 #  Context Collector (scrub → collect → prepare for training)
 # =========================================================================== #
 
+
 def collect_training_context(days: int = 7) -> dict:
     """Collect email context, scrub secrets, prepare for training."""
     from scripts.apollo.email_reader import read_account, generate_sft_pairs
@@ -257,16 +273,22 @@ def collect_training_context(days: int = 7) -> dict:
     # Read both accounts
     pm_pass = os.environ.get("PROTONMAIL_BRIDGE_PASSWORD", "")
     if pm_pass:
-        digests = read_account("127.0.0.1", 1143,
-                               os.environ.get("PROTONMAIL_USER", "issdandavis@proton.me"),
-                               pm_pass, "ProtonMail", days)
+        digests = read_account(
+            "127.0.0.1", 1143, os.environ.get("PROTONMAIL_USER", "issdandavis@proton.me"), pm_pass, "ProtonMail", days
+        )
         all_digests.extend(digests)
 
     gm_pass = os.environ.get("GMAIL_APP_PASSWORD", "")
     if gm_pass:
-        digests = read_account("imap.gmail.com", 993,
-                               os.environ.get("GMAIL_USER", "issdandavis7795@gmail.com"),
-                               gm_pass, "Gmail", days, use_ssl=True)
+        digests = read_account(
+            "imap.gmail.com",
+            993,
+            os.environ.get("GMAIL_USER", "issdandavis7795@gmail.com"),
+            gm_pass,
+            "Gmail",
+            days,
+            use_ssl=True,
+        )
         all_digests.extend(digests)
 
     print(f"\nCollected {len(all_digests)} emails from last {days} days")
@@ -298,13 +320,18 @@ def collect_training_context(days: int = 7) -> dict:
     # Phase 4: Add feedback-based DPO pairs
     dpo_pairs = []
     for fb in feedback:
-        dpo_pairs.append({
-            "instruction": f"How should an email classified as {fb['original_tongue']} be reclassified?",
-            "chosen": f"Reclassify to {fb['correct_tongue']}. Route to {fb['correct_route']}. Reason: {fb.get('reason', 'user correction')}.",
-            "rejected": f"Keep as {fb['original_tongue']}. Route to {fb['original_route']}.",
-            "source": "apollo_feedback",
-            "category": "email_correction",
-        })
+        dpo_pairs.append(
+            {
+                "instruction": f"How should an email classified as {fb['original_tongue']} be reclassified?",
+                "chosen": (
+                    f"Reclassify to {fb['correct_tongue']}. Route to {fb['correct_route']}. "
+                    f"Reason: {fb.get('reason', 'user correction')}."
+                ),
+                "rejected": f"Keep as {fb['original_tongue']}. Route to {fb['original_route']}.",
+                "source": "apollo_feedback",
+                "category": "email_correction",
+            }
+        )
 
     # Save
     out_dir = ROOT / "training-data" / "apollo"
@@ -338,6 +365,7 @@ def collect_training_context(days: int = 7) -> dict:
 # =========================================================================== #
 #  CLI
 # =========================================================================== #
+
 
 def main():
     parser = argparse.ArgumentParser(description="Apollo Core — Email agent with learning")

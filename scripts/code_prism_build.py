@@ -15,6 +15,5 @@ if str(SRC_DIR) not in sys.path:
 
 from code_prism.cli import main
 
-
 if __name__ == "__main__":
     main()

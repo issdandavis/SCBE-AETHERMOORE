@@ -41,15 +41,14 @@ from src.crypto.choral_render import (
 )
 from src.audio.tongue_prosody import TongueWeightVector, tongue_to_prosody
 
-
 # ---------------------------------------------------------------------------
 # Phrase Splitter
 # ---------------------------------------------------------------------------
 
 _SENTENCE_RE = re.compile(
-    r'(?<=[.!?;:])\s+'         # split on sentence-ending punctuation
-    r'|(?<=\n)\s*'             # or newlines
-    r'|(?<=,)\s+(?=[A-Z])'    # or comma before uppercase (clause boundary)
+    r"(?<=[.!?;:])\s+"  # split on sentence-ending punctuation
+    r"|(?<=\n)\s*"  # or newlines
+    r"|(?<=,)\s+(?=[A-Z])"  # or comma before uppercase (clause boundary)
 )
 
 
@@ -75,6 +74,7 @@ def split_into_phrases(text: str) -> List[str]:
 # Phoneme Tokenizer (simple word-level)
 # ---------------------------------------------------------------------------
 
+
 def text_to_phonemes(text: str) -> List[PhonemeToken]:
     """Convert text to word-level phoneme tokens.
 
@@ -86,7 +86,7 @@ def text_to_phonemes(text: str) -> List[PhonemeToken]:
     # Pre-filter to get only real words (with alphanumeric content)
     cleaned_words = []
     for word in words:
-        clean = re.sub(r'[^\w]', '', word).lower()
+        clean = re.sub(r"[^\w]", "", word).lower()
         if clean:
             cleaned_words.append((word, clean))
 
@@ -98,7 +98,7 @@ def text_to_phonemes(text: str) -> List[PhonemeToken]:
 
         # Stress: content words (longer) get more stress, first/last words too
         is_content = len(clean) > 3
-        is_boundary = (i == 0 or i == n - 1)
+        is_boundary = i == 0 or i == n - 1
         stress = 0.3
         if is_content:
             stress += 0.3
@@ -106,18 +106,21 @@ def text_to_phonemes(text: str) -> List[PhonemeToken]:
             stress += 0.2
         stress = min(1.0, stress)
 
-        phonemes.append(PhonemeToken(
-            text=word,
-            ipa=clean,  # placeholder — real G2P would go here
-            duration_ms=dur,
-            stress=stress,
-        ))
+        phonemes.append(
+            PhonemeToken(
+                text=word,
+                ipa=clean,  # placeholder — real G2P would go here
+                duration_ms=dur,
+                stress=stress,
+            )
+        )
     return phonemes
 
 
 # ---------------------------------------------------------------------------
 # Chunk Record Builder
 # ---------------------------------------------------------------------------
+
 
 def build_chunk_record(
     phrase: str,
@@ -139,8 +142,12 @@ def build_chunk_record(
     # Tongue weights from QHO coefficients
     coeffs = {t: bundle.qho.states[t].coefficient for t in TONGUE_ORDER}
     tw = TongueWeightVector(
-        ko=coeffs["ko"], av=coeffs["av"], ru=coeffs["ru"],
-        ca=coeffs["ca"], um=coeffs["um"], dr=coeffs["dr"],
+        ko=coeffs["ko"],
+        av=coeffs["av"],
+        ru=coeffs["ru"],
+        ca=coeffs["ca"],
+        um=coeffs["um"],
+        dr=coeffs["dr"],
     )
     prosody = tongue_to_prosody(tw)
 
@@ -224,6 +231,7 @@ def build_chunk_record(
 # File Container Writer
 # ---------------------------------------------------------------------------
 
+
 def write_chunk_containers(
     records: List[dict],
     outdir: str,
@@ -270,19 +278,20 @@ def write_chunk_containers(
 # Main
 # ---------------------------------------------------------------------------
 
+
 def main():
-    parser = argparse.ArgumentParser(
-        description="TTS Chunk Render — phrase-level speech plans labeled by grammar code"
-    )
+    parser = argparse.ArgumentParser(description="TTS Chunk Render — phrase-level speech plans labeled by grammar code")
     parser.add_argument("--input", "-i", help="Input text file")
     parser.add_argument("--text", "-t", help="Direct text input (instead of file)")
     parser.add_argument(
-        "--outdir", "-o",
+        "--outdir",
+        "-o",
         default="output/tts_chunks",
         help="Output directory for chunk containers (default: output/tts_chunks/)",
     )
     parser.add_argument(
-        "--mode", "-m",
+        "--mode",
+        "-m",
         choices=["plain_speech", "speech_song", "choral_ritual"],
         default="plain_speech",
         help="Render mode (default: plain_speech)",

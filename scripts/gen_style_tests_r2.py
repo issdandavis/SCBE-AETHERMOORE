@@ -3,7 +3,8 @@
 import argparse
 from google import genai
 from google.genai import types
-import os, time
+import os
+import time
 from PIL import Image
 
 client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
@@ -167,7 +168,7 @@ def main():
                 img = Image.open(path)
                 print(f"  OK {img.size[0]}x{img.size[1]}")
             else:
-                print(f"  FAIL: no image")
+                print("  FAIL: no image")
         except Exception as e:
             print(f"  ERR: {e}")
         time.sleep(args.sleep_sec)

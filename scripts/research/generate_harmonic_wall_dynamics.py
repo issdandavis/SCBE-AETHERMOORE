@@ -25,7 +25,6 @@ from typing import List
 import matplotlib.pyplot as plt
 import numpy as np
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "artifacts" / "research"
 

@@ -29,7 +29,6 @@ from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
-
 # Heuristic stage classifiers — the SLM router's ClassificationFailure
 # messages carry enough structural cues to bucket failures by stage.
 # These patterns are intentionally generous: when the router code
@@ -93,19 +92,19 @@ def analyze(report: Dict[str, Any]) -> Dict[str, Any]:
             stage = classify_failure_stage(entry.get("error_message"))
             stage_counter[stage] += 1
             if len(error_msg_samples[stage]) < 3:
-                error_msg_samples[stage].append(
-                    (entry.get("seed_id", "?"), (entry.get("error_message") or "")[:160])
-                )
+                error_msg_samples[stage].append((entry.get("seed_id", "?"), (entry.get("error_message") or "")[:160]))
         elif verdict == "ALLOW":
             conf_buckets[confidence_bucket(entry.get("confidence"))] += 1
-            false_allows.append({
-                "seed_id": entry.get("seed_id"),
-                "tags": tags,
-                "op_band": entry.get("op_band"),
-                "op_name": entry.get("op_name"),
-                "dst_tongue": entry.get("dst_tongue"),
-                "confidence": entry.get("confidence"),
-            })
+            false_allows.append(
+                {
+                    "seed_id": entry.get("seed_id"),
+                    "tags": tags,
+                    "op_band": entry.get("op_band"),
+                    "op_name": entry.get("op_name"),
+                    "dst_tongue": entry.get("dst_tongue"),
+                    "confidence": entry.get("confidence"),
+                }
+            )
         # accumulate per-tag matrix
         affected = tags or ["__untagged__"]
         for t in affected:
@@ -117,13 +116,15 @@ def analyze(report: Dict[str, Any]) -> Dict[str, Any]:
     for t, v in tag_verdicts.items():
         n = v["ALLOW"] + v["QUARANTINE"]
         ratio = (v["QUARANTINE"] / n) if n else 0.0
-        tag_summary.append({
-            "tag": t,
-            "n": n,
-            "allow": v["ALLOW"],
-            "quarantine": v["QUARANTINE"],
-            "quarantine_ratio": round(ratio, 3),
-        })
+        tag_summary.append(
+            {
+                "tag": t,
+                "n": n,
+                "allow": v["ALLOW"],
+                "quarantine": v["QUARANTINE"],
+                "quarantine_ratio": round(ratio, 3),
+            }
+        )
     tag_summary.sort(key=lambda r: (-r["quarantine_ratio"], -r["n"], r["tag"]))
 
     return {
@@ -143,7 +144,7 @@ def analyze(report: Dict[str, Any]) -> Dict[str, Any]:
 
 def render_markdown(analysis: Dict[str, Any]) -> str:
     lines: List[str] = []
-    lines.append(f"# Petri governance-gate run — analysis")
+    lines.append("# Petri governance-gate run — analysis")
     lines.append("")
     lines.append(f"- **model**: `{analysis['model']}`")
     lines.append(f"- **seeds**: `{analysis['seeds_dir']}` ({analysis['total']} loaded)")
@@ -151,13 +152,13 @@ def render_markdown(analysis: Dict[str, Any]) -> str:
 
     n_allow = sum(b for b in analysis["confidence_buckets_when_allow"].values())
     n_quar = analysis["total"] - n_allow
-    lines.append(f"## Verdict")
+    lines.append("## Verdict")
     lines.append(f"- ALLOW: **{n_allow}** ({n_allow / max(1, analysis['total']):.1%})")
     lines.append(f"- QUARANTINE: **{n_quar}** ({n_quar / max(1, analysis['total']):.1%})")
     lines.append("")
 
     if analysis["stage_failure_counts"]:
-        lines.append(f"## Quarantine reason — by stage")
+        lines.append("## Quarantine reason — by stage")
         for stage, count in analysis["stage_failure_counts"].items():
             lines.append(f"- `{stage}` — {count}")
         lines.append("")
@@ -186,7 +187,7 @@ def render_markdown(analysis: Dict[str, Any]) -> str:
             lines.append(f"- `{bucket}` — {count}")
         lines.append("")
 
-    lines.append(f"## Per-tag verdict matrix")
+    lines.append("## Per-tag verdict matrix")
     lines.append("| tag | n | quarantine | allow | quar ratio |")
     lines.append("|---|---:|---:|---:|---:|")
     for row in analysis["tag_summary"]:
@@ -200,8 +201,7 @@ def render_markdown(analysis: Dict[str, Any]) -> str:
 
 def main(argv: Iterable[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--artifact", type=Path, required=True,
-                        help="JSON output from petri_governance_gate_run.py")
+    parser.add_argument("--artifact", type=Path, required=True, help="JSON output from petri_governance_gate_run.py")
     parser.add_argument("--markdown-out", type=Path, default=None)
     parser.add_argument("--json-out", type=Path, default=None)
     args = parser.parse_args(argv)

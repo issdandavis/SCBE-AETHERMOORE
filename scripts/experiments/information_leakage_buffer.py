@@ -53,13 +53,9 @@ def simulate(scenario: LeakageScenario) -> LeakageResult:
 
     balance = _clamp01(scenario.path_balance)
     phase = float(scenario.phase_radians)
-    reversible_mark = _clamp01(scenario.buffer_coupling) * (
-        1.0 - _clamp01(scenario.erase_strength)
-    )
+    reversible_mark = _clamp01(scenario.buffer_coupling) * (1.0 - _clamp01(scenario.erase_strength))
     irreversible_mark = _clamp01(scenario.environment_leak)
-    distinguishability = _clamp01(
-        1.0 - (1.0 - reversible_mark) * (1.0 - irreversible_mark)
-    )
+    distinguishability = _clamp01(1.0 - (1.0 - reversible_mark) * (1.0 - irreversible_mark))
     symmetric_noise = _clamp01(scenario.symmetric_noise)
 
     # Coherence is reduced by route-distinguishable information. Symmetric noise
@@ -105,21 +101,15 @@ def default_scenarios() -> list[LeakageScenario]:
             erase_strength=0.2,
             environment_leak=0.03,
         ),
-        LeakageScenario(
-            name="glass_common_mode_heat", environment_leak=0.0, symmetric_noise=0.25
-        ),
-        LeakageScenario(
-            name="left_path_heat_mark", environment_leak=0.62, symmetric_noise=0.1
-        ),
+        LeakageScenario(name="glass_common_mode_heat", environment_leak=0.0, symmetric_noise=0.25),
+        LeakageScenario(name="left_path_heat_mark", environment_leak=0.62, symmetric_noise=0.1),
         LeakageScenario(
             name="mechanical_recoil_record",
             buffer_coupling=0.5,
             erase_strength=0.0,
             environment_leak=0.45,
         ),
-        LeakageScenario(
-            name="imbalanced_paths", path_balance=0.8, symmetric_noise=0.02
-        ),
+        LeakageScenario(name="imbalanced_paths", path_balance=0.8, symmetric_noise=0.02),
         LeakageScenario(
             name="phase_shifted_recombined",
             phase_radians=math.pi / 2,
@@ -136,7 +126,10 @@ def run_suite(scenarios: list[LeakageScenario] | None = None) -> dict[str, Any]:
         counts[result.decision] = counts.get(result.decision, 0) + 1
     return {
         "schema_version": "scbe_information_leakage_buffer_v1",
-        "hypothesis": "internal routing can remain coherent only when no irreversible distinguishable route metadata leaves the box",
+        "hypothesis": (
+            "internal routing can remain coherent only when no irreversible distinguishable "
+            "route metadata leaves the box"
+        ),
         "metrics": {
             "route_metadata_leak": "0 means no recoverable route record; 1 means route is fully distinguishable",
             "interference_visibility": "higher values mean the two-route alternatives still recombine coherently",
@@ -144,7 +137,9 @@ def run_suite(scenarios: list[LeakageScenario] | None = None) -> dict[str, Any]:
         "decision_counts": counts,
         "scenarios": [asdict(s) for s in scenarios],
         "results": [asdict(r) for r in results],
-        "promotion_rule": "only PRESERVE_BUFFER and WEAK_BUFFER_TEST scenarios can become training examples for reversible routing",
+        "promotion_rule": (
+            "only PRESERVE_BUFFER and WEAK_BUFFER_TEST scenarios can become training examples " "for reversible routing"
+        ),
     }
 
 
@@ -156,9 +151,7 @@ def write_suite(path: Path) -> dict[str, Any]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Run SCBE information leakage buffer scenarios"
-    )
+    parser = argparse.ArgumentParser(description="Run SCBE information leakage buffer scenarios")
     parser.add_argument(
         "--output",
         default="artifacts/experiments/information_leakage_buffer/latest.json",

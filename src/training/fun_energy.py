@@ -404,13 +404,13 @@ class EcholationEngine:
         echoes: List[EchoEvent] = []
         R = 0.0
 
-        for l in range(origin_layer, self.C.n_layers):
+        for layer in range(origin_layer, self.C.n_layers):
             # Forward pulse amplitude at this layer (exponential decay)
-            depth = l - origin_layer
+            depth = layer - origin_layer
             fwd_amp = pulse_amplitude * math.exp(-depth / self.C.echo_decay_len)
 
             # Update layer phase and get coherence
-            coherence = self.pm.update(l, pulse_phase, pulse_frequency, fwd_amp)
+            coherence = self.pm.update(layer, pulse_phase, pulse_frequency, fwd_amp)
 
             # Echo amplitude: portion reflected back based on coherence
             # Non-coherent layers still reflect a little (noise floor = 0.05)
@@ -436,7 +436,7 @@ class EcholationEngine:
 
             ev = EchoEvent(
                 origin_layer=origin_layer,
-                echo_layer=l,
+                echo_layer=layer,
                 amplitude=echo_amp,
                 phase_shift=phase_shift,
                 coherence=coherence,
@@ -989,7 +989,7 @@ if __name__ == "__main__":
     print("=" * 72)
 
     C = SystemConstraints()
-    print(f"System constraints:")
+    print("System constraints:")
     print(f"  P_budget  = {C.p_budget}")
     print(f"  P_base    = {C.p_base}  (trickle — most steps)")
     print(f"  P_burst   = {C.p_burst}  (burst envelope peak)")

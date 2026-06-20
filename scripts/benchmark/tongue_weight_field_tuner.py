@@ -23,7 +23,6 @@ from tests.adversarial.scbe_harness import (
     text_to_tongue_coords,
 )
 
-
 RNG = random.Random(20260324)
 WEIGHTS = np.array(TONGUE_WEIGHTS, dtype=float)
 
@@ -630,13 +629,16 @@ def main() -> None:
     print("Pre-sim baseline vs tuned families vs holdout triangulation")
     print()
     print(
-        f"{'Run':<20} {'Family':<18} {'AdvRec':>7} {'FPR':>7} {'RUdom':>7} {'Div':>7} {'Sep':>7} {'Align':>7} {'Top2':>7} {'Tri':>7}"
+        f"{'Run':<20} {'Family':<18} {'AdvRec':>7} {'FPR':>7} {'RUdom':>7} "
+        f"{'Div':>7} {'Sep':>7} {'Align':>7} {'Top2':>7} {'Tri':>7}"
     )
     print("-" * 100)
     rows = [baseline] + best_by_family + [holdout]
     for row in rows:
         print(
-            f"{row.name:<20} {row.family:<18} {row.adv_recall:>7.2%} {row.fp_rate:>7.2%} {row.ru_dominance:>7.2%} {row.dominant_diversity:>7.3f} {row.class_separation:>7.3f} {row.target_alignment:>7.3f} {row.top2_accuracy:>7.2%} {row.triangulated_score:>7.3f}"
+            f"{row.name:<20} {row.family:<18} {row.adv_recall:>7.2%} {row.fp_rate:>7.2%} "
+            f"{row.ru_dominance:>7.2%} {row.dominant_diversity:>7.3f} {row.class_separation:>7.3f} "
+            f"{row.target_alignment:>7.3f} {row.top2_accuracy:>7.2%} {row.triangulated_score:>7.3f}"
         )
 
     print("\nBest family on train:", winner.family)
@@ -681,19 +683,26 @@ def main() -> None:
     csv_path = out_dir / "tongue_weight_field_tuning.csv"
     with csv_path.open("w", encoding="utf-8") as f:
         f.write(
-            "run,family,adv_recall,fp_rate,ru_dominance,dominant_diversity,class_separation,target_alignment,top2_accuracy,security_triangle,geometry_triangle,intent_triangle,triangulated_score\n"
+            "run,family,adv_recall,fp_rate,ru_dominance,dominant_diversity,class_separation,"
+            "target_alignment,top2_accuracy,security_triangle,geometry_triangle,intent_triangle,"
+            "triangulated_score\n"
         )
         for row in rows:
             f.write(
-                f"{row.name},{row.family},{row.adv_recall},{row.fp_rate},{row.ru_dominance},{row.dominant_diversity},{row.class_separation},{row.target_alignment},{row.top2_accuracy},{row.security_triangle},{row.geometry_triangle},{row.intent_triangle},{row.triangulated_score}\n"
+                f"{row.name},{row.family},{row.adv_recall},{row.fp_rate},{row.ru_dominance},"
+                f"{row.dominant_diversity},{row.class_separation},{row.target_alignment},"
+                f"{row.top2_accuracy},{row.security_triangle},{row.geometry_triangle},"
+                f"{row.intent_triangle},{row.triangulated_score}\n"
             )
         f.write("\n")
         f.write(
-            "remainder_run,threshold,avg_remainder,clean_avg,adv_avg,separation,slow_path_rate,adv_slow_recall,clean_fast_allow\n"
+            "remainder_run,threshold,avg_remainder,clean_avg,adv_avg,separation,slow_path_rate,"
+            "adv_slow_recall,clean_fast_allow\n"
         )
         for row in [remainder_train, remainder_holdout]:
             f.write(
-                f"{row.name},{row.threshold},{row.avg_remainder},{row.clean_avg},{row.adv_avg},{row.separation},{row.slow_path_rate},{row.adv_slow_recall},{row.clean_fast_allow}\n"
+                f"{row.name},{row.threshold},{row.avg_remainder},{row.clean_avg},{row.adv_avg},"
+                f"{row.separation},{row.slow_path_rate},{row.adv_slow_recall},{row.clean_fast_allow}\n"
             )
 
     print(f"\nSaved: {json_path}")

@@ -2,7 +2,8 @@
 
 from google import genai
 from google.genai import types
-import os, time
+import os
+import time
 from pathlib import Path
 from PIL import Image
 
@@ -135,7 +136,7 @@ for name, data in heroes.items():
             img = Image.open(path)
             print(f"  OK {img.size[0]}x{img.size[1]}")
         else:
-            print(f"  FAIL: no image")
+            print("  FAIL: no image")
     except Exception as e:
         print(f"  ERR: {e}")
     time.sleep(3)

@@ -3,6 +3,7 @@
 Generate 10th-grade tutorial responses for SCBE codex skill stubs.
 Reads stubs, fills in responses, strips skill_content/sample_packets, writes output JSONL.
 """
+
 import json
 import re
 
@@ -60,15 +61,27 @@ def get_category_analogy(category: str) -> dict:
     analogies = {
         "infrastructure": {
             "domain": "school IT lab",
-            "examples": ["setting up a computer lab", "rebooting the school Wi-Fi", "getting a new phone ready for class"],
+            "examples": [
+                "setting up a computer lab",
+                "rebooting the school Wi-Fi",
+                "getting a new phone ready for class",
+            ],
         },
         "browser": {
             "domain": "library research",
-            "examples": ["looking up a book in the library catalog", "using the school database for a research paper", "browsing the internet for a project"],
+            "examples": [
+                "looking up a book in the library catalog",
+                "using the school database for a research paper",
+                "browsing the internet for a project",
+            ],
         },
         "ai_coordination": {
             "domain": "group project",
-            "examples": ["passing notes in class", "a relay race where runners hand off the baton", "a group chat where everyone updates their progress"],
+            "examples": [
+                "passing notes in class",
+                "a relay race where runners hand off the baton",
+                "a group chat where everyone updates their progress",
+            ],
         },
         "security": {
             "domain": "school safety",
@@ -80,19 +93,35 @@ def get_category_analogy(category: str) -> dict:
         },
         "publishing": {
             "domain": "school newspaper",
-            "examples": ["submitting an article to the school paper", "posting on the school bulletin board", "publishing a yearbook"],
+            "examples": [
+                "submitting an article to the school paper",
+                "posting on the school bulletin board",
+                "publishing a yearbook",
+            ],
         },
         "governance": {
             "domain": "student council rules",
-            "examples": ["the student council voting on a new rule", "a referee making a call in a game", "classroom rules everyone agrees to follow"],
+            "examples": [
+                "the student council voting on a new rule",
+                "a referee making a call in a game",
+                "classroom rules everyone agrees to follow",
+            ],
         },
         "data": {
             "domain": "organizing your binder",
-            "examples": ["sorting papers into folders", "organizing your notes by subject", "keeping a planner updated"],
+            "examples": [
+                "sorting papers into folders",
+                "organizing your notes by subject",
+                "keeping a planner updated",
+            ],
         },
         "general": {
             "domain": "everyday school life",
-            "examples": ["managing your homework schedule", "coordinating a group project", "keeping track of your assignments"],
+            "examples": [
+                "managing your homework schedule",
+                "coordinating a group project",
+                "keeping track of your assignments",
+            ],
         },
         "game": {
             "domain": "video games",
@@ -129,208 +158,220 @@ def generate_what_is_response(record: dict) -> str:
     elif "phone" in name.lower() or "emulator" in name.lower():
         response_parts.append(
             f"{name} is a set of tools for running a virtual phone on your computer. "
-            f"Imagine you could have a fake Android phone running right on your desktop -- that is what an emulator does. "
-            f"This skill helps you start it up, fix it when it freezes, and connect it to the rest of the system. "
+            "Imagine you could have a fake Android phone running right on your desktop -- that is what an emulator does. "
+            "This skill helps you start it up, fix it when it freezes, and connect it to the rest of the system. "
             f"Think of it like {analogy['examples'][0]}."
         )
-    elif "cross-talk" in record.get("skill_source", "") or "communication" in name.lower() or "crosstalk" in record.get("source_type", ""):
+    elif (
+        "cross-talk" in record.get("skill_source", "")
+        or "communication" in name.lower()
+        or "crosstalk" in record.get("source_type", "")
+    ):
         response_parts.append(
             f"{name} is about how AI agents send messages to each other so they can work together without stepping on each other's toes. "
             f"Think of it like {analogy['examples'][0]}. "
-            f"When you are working on a group project, you need to tell your teammates what you finished, what you are stuck on, and what they should do next. AI agents need the same thing."
+            "When you are working on a group project, you need to tell your teammates what you finished, what you are stuck on, and what they should do next. AI agents need the same thing."
         )
     elif "governance" in name.lower() or "gate" in name.lower():
         response_parts.append(
             f"{name} is a safety checkpoint system for AI agents. "
             f"Think of it like {analogy['examples'][0]}. "
-            f"Before an AI agent can do something important, it has to pass through a gate that checks whether the action is safe, appropriate, and follows the rules."
+            "Before an AI agent can do something important, it has to pass through a gate that checks whether the action is safe, appropriate, and follows the rules."
         )
     elif "training" in name.lower() or "sft" in name.lower():
         response_parts.append(
             f"{name} is about teaching AI models to get better at their jobs. "
             f"Think of it like {analogy['examples'][0]}. "
-            f"Just like you study to improve your grades, AI models need practice data to learn how to respond correctly."
+            "Just like you study to improve your grades, AI models need practice data to learn how to respond correctly."
         )
     elif "publish" in name.lower() or "content" in name.lower():
         response_parts.append(
             f"{name} handles getting content out into the world across different platforms. "
             f"Think of it like {analogy['examples'][0]}. "
-            f"When you write something good, you want people to see it -- this tool helps post content to multiple places at once while making sure everything follows the rules."
+            "When you write something good, you want people to see it -- this tool helps post content to multiple places at once while making sure everything follows the rules."
         )
     elif "security" in name.lower() or "audit" in name.lower() or "antivirus" in name.lower():
         response_parts.append(
             f"{name} is a security tool that protects the system from threats. "
             f"Think of it like {analogy['examples'][0]}. "
-            f"Just like your school has security measures to keep everyone safe, this tool checks for vulnerabilities and blocks anything suspicious."
+            "Just like your school has security measures to keep everyone safe, this tool checks for vulnerabilities and blocks anything suspicious."
         )
     elif "browser" in name.lower() or "web" in name.lower():
         response_parts.append(
             f"{name} helps AI agents browse the internet safely and efficiently. "
             f"Think of it like {analogy['examples'][0]}. "
-            f"Instead of a person clicking through websites, an AI agent navigates web pages, extracts useful information, and brings it back in an organized format."
+            "Instead of a person clicking through websites, an AI agent navigates web pages, extracts useful information, and brings it back in an organized format."
         )
     elif "deploy" in name.lower() or "fleet" in name.lower():
         response_parts.append(
             f"{name} handles sending trained AI models out into the real world where they can actually be used. "
-            f"Think of it like a coach deciding which players go into the game. "
-            f"The tool checks that each model is ready, then puts it where it needs to be."
+            "Think of it like a coach deciding which players go into the game. "
+            "The tool checks that each model is ready, then puts it where it needs to be."
         )
     elif "shopify" in name.lower() or "store" in name.lower() or "revenue" in name.lower():
         response_parts.append(
             f"{name} connects the AI system to online stores and revenue tracking. "
-            f"Think of it like running a school fundraiser -- you need to manage products, track sales, and make sure everything adds up. "
-            f"This tool automates the business side of things."
+            "Think of it like running a school fundraiser -- you need to manage products, track sales, and make sure everything adds up. "
+            "This tool automates the business side of things."
         )
     elif "youtube" in name.lower() or "video" in name.lower():
         response_parts.append(
             f"{name} manages YouTube video content -- titles, descriptions, tags, and scheduling. "
-            f"Think of it like being the editor of your school's YouTube channel. "
-            f"You need to make sure every video has a good title, the right description, and proper tags so people can find it."
+            "Think of it like being the editor of your school's YouTube channel. "
+            "You need to make sure every video has a good title, the right description, and proper tags so people can find it."
         )
     elif "notion" in name.lower() or "obsidian" in name.lower():
         response_parts.append(
             f"{name} connects the system to note-taking and knowledge management tools. "
-            f"Think of it like having a super-organized digital binder that automatically sorts your notes, links related topics together, and makes everything searchable."
+            "Think of it like having a super-organized digital binder that automatically sorts your notes, links related topics together, and makes everything searchable."
         )
     elif "discord" in name.lower() or "slack" in name.lower() or "social" in name.lower() or "twitter" in name.lower():
         response_parts.append(
             f"{name} manages social media and community interactions. "
-            f"Think of it like being the social media manager for your school club. "
-            f"You post updates, respond to messages, and keep the community engaged -- but this tool does it across multiple platforms at once."
+            "Think of it like being the social media manager for your school club. "
+            "You post updates, respond to messages, and keep the community engaged -- but this tool does it across multiple platforms at once."
         )
     elif "sacred" in name.lower() or "tongue" in name.lower() or "egg" in name.lower():
         response_parts.append(
             f"{name} is part of the system's special language and identity framework. "
-            f"Think of it like a secret code that your friend group uses. "
-            f"The system has six special 'languages' (called Sacred Tongues) that encode information in different ways, making data more secure and meaningful."
+            "Think of it like a secret code that your friend group uses. "
+            "The system has six special 'languages' (called Sacred Tongues) that encode information in different ways, making data more secure and meaningful."
         )
     elif "manifold" in name.lower() or "geometry" in name.lower() or "hyperbolic" in name.lower():
         response_parts.append(
             f"{name} uses advanced math to measure how safe or risky an AI action is. "
-            f"Think of it like a video game map where the further you go from the safe zone, the harder the enemies get -- exponentially harder. "
-            f"This math makes it so that bad actors would need impossibly huge amounts of computing power to cause harm."
+            "Think of it like a video game map where the further you go from the safe zone, the harder the enemies get -- exponentially harder. "
+            "This math makes it so that bad actors would need impossibly huge amounts of computing power to cause harm."
         )
-    elif "story" in name.lower() or "lore" in name.lower() or "canon" in name.lower() or "book" in name.lower() or "manuscript" in name.lower():
+    elif (
+        "story" in name.lower()
+        or "lore" in name.lower()
+        or "canon" in name.lower()
+        or "book" in name.lower()
+        or "manuscript" in name.lower()
+    ):
         response_parts.append(
             f"{name} helps create and manage story content that stays consistent with the project's world-building. "
-            f"Think of it like being the continuity editor for a TV show -- making sure characters act consistently and plot details do not contradict each other across episodes."
+            "Think of it like being the continuity editor for a TV show -- making sure characters act consistently and plot details do not contradict each other across episodes."
         )
     elif "colab" in name.lower() or "compute" in name.lower():
         response_parts.append(
             f"{name} manages cloud computing resources for training AI models. "
-            f"Think of it like borrowing the school's fancy computer lab when you need extra processing power. "
-            f"Instead of running everything on your own machine, you can use powerful remote computers to do heavy work."
+            "Think of it like borrowing the school's fancy computer lab when you need extra processing power. "
+            "Instead of running everything on your own machine, you can use powerful remote computers to do heavy work."
         )
     elif "session" in name.lower() or "analytics" in name.lower() or "sitrep" in name.lower():
         response_parts.append(
             f"{name} tracks what AI agents have been doing and how resources are being used. "
-            f"Think of it like checking your screen time on your phone -- it tells you how long you spent, what you did, and how much it cost."
+            "Think of it like checking your screen time on your phone -- it tells you how long you spent, what you did, and how much it cost."
         )
     elif "disk" in name.lower() or "storage" in name.lower():
         response_parts.append(
             f"{name} helps manage storage space on the computer. "
-            f"Think of it like cleaning out your locker at school -- finding old papers you do not need, organizing what you want to keep, and making room for new stuff."
+            "Think of it like cleaning out your locker at school -- finding old papers you do not need, organizing what you want to keep, and making room for new stuff."
         )
     elif "state" in name.lower() or "9d" in name.lower() or "entropy" in name.lower():
         response_parts.append(
             f"{name} tracks the current condition of the AI system across multiple dimensions. "
-            f"Think of it like a health bar in a video game, except instead of just one bar, you have nine different stats (like strength, speed, defense) that all work together to determine what the AI can and should do."
+            "Think of it like a health bar in a video game, except instead of just one bar, you have nine different stats (like strength, speed, defense) that all work together to determine what the AI can and should do."
         )
     elif "patch" in name.lower() or "diff" in name.lower():
         response_parts.append(
             f"{name} helps visualize and manage changes to code. "
-            f"Think of it like using 'track changes' in a Google Doc -- you can see exactly what was added, removed, or modified before accepting the changes."
+            "Think of it like using 'track changes' in a Google Doc -- you can see exactly what was added, removed, or modified before accepting the changes."
         )
     elif "pdf" in name.lower() or "doc" in name.lower():
         response_parts.append(
             f"{name} creates and manages documents and reports. "
-            f"Think of it like having a really smart printer that can also merge, split, and edit documents automatically."
+            "Think of it like having a really smart printer that can also merge, split, and edit documents automatically."
         )
     elif "email" in name.lower():
         response_parts.append(
             f"{name} checks and manages email across different accounts. "
-            f"Think of it like having a personal assistant who checks your inbox, flags the important messages, and gives you a summary so you do not miss anything."
+            "Think of it like having a personal assistant who checks your inbox, flags the important messages, and gives you a summary so you do not miss anything."
         )
     elif "pitch" in name.lower() or "investor" in name.lower():
         response_parts.append(
             f"{name} helps prepare presentations and outreach to potential investors or partners. "
-            f"Think of it like preparing for a Shark Tank pitch at school -- you need to organize your idea, know your audience, and present it convincingly."
+            "Think of it like preparing for a Shark Tank pitch at school -- you need to organize your idea, know your audience, and present it convincingly."
         )
     elif "git" in name.lower() or "release" in name.lower() or "dual forge" in name.lower():
         response_parts.append(
             f"{name} manages code versions and releases across platforms like GitHub. "
-            f"Think of it like keeping a journal where every entry is dated and you can always go back to any previous version. "
-            f"When you are ready to share your work with the world, this tool packages it up properly."
+            "Think of it like keeping a journal where every entry is dated and you can always go back to any previous version. "
+            "When you are ready to share your work with the world, this tool packages it up properly."
         )
     elif "ide" in name.lower() or "copilot" in name.lower():
         response_parts.append(
             f"{name} provides intelligent coding assistance within the development environment. "
-            f"Think of it like having a really smart tutor looking over your shoulder while you write code, catching mistakes and suggesting improvements."
+            "Think of it like having a really smart tutor looking over your shoulder while you write code, catching mistakes and suggesting improvements."
         )
     elif "n8n" in name.lower() or "workflow" in name.lower():
         response_parts.append(
             f"{name} automates multi-step workflows by connecting different tools together. "
-            f"Think of it like a Rube Goldberg machine where one action triggers the next -- except instead of dominoes and marbles, it is connecting web services, databases, and AI agents."
+            "Think of it like a Rube Goldberg machine where one action triggers the next -- except instead of dominoes and marbles, it is connecting web services, databases, and AI agents."
         )
     elif "flock" in name.lower() or "swarm" in name.lower() or "fleet" in name.lower():
         response_parts.append(
             f"{name} coordinates multiple AI agents working together. "
-            f"Think of it like coaching a basketball team -- each player has a role (point guard, center, shooting guard), and the coach makes sure everyone is in the right position and communicating."
+            "Think of it like coaching a basketball team -- each player has a role (point guard, center, shooting guard), and the coach makes sure everyone is in the right position and communicating."
         )
     elif "mobile" in name.lower() or "connector" in name.lower():
         response_parts.append(
             f"{name} connects the AI system to external services like Shopify, Slack, or Notion. "
-            f"Think of it like having adapters that let you plug different chargers into the same outlet -- each service speaks a different language, and this tool translates between them."
+            "Think of it like having adapters that let you plug different chargers into the same outlet -- each service speaks a different language, and this tool translates between them."
         )
     elif "personal" in name.lower() or "rag" in name.lower():
         response_parts.append(
             f"{name} is a fast-recall knowledge base that stores important facts about the project. "
-            f"Think of it like a cheat sheet you keep in your pocket -- instead of searching through hundreds of files, you can quickly look up the answer."
+            "Think of it like a cheat sheet you keep in your pocket -- instead of searching through hundreds of files, you can quickly look up the answer."
         )
     elif "longform" in name.lower():
         response_parts.append(
             f"{name} manages long-running tasks that take many steps to complete. "
-            f"Think of it like a multi-day school project -- you save your progress, leave notes about where you stopped, and pick up right where you left off next time."
+            "Think of it like a multi-day school project -- you save your progress, leave notes about where you stopped, and pick up right where you left off next time."
         )
     elif "transcri" in name.lower() or "audio" in name.lower():
         response_parts.append(
             f"{name} converts audio into text or works with sound data. "
-            f"Think of it like those auto-generated captions on YouTube videos -- the system listens to audio and writes down what it hears."
+            "Think of it like those auto-generated captions on YouTube videos -- the system listens to audio and writes down what it hears."
         )
     elif "art" in name.lower() or "image" in name.lower() or "visual" in name.lower():
         response_parts.append(
             f"{name} generates visual content like illustrations, character art, and diagrams. "
-            f"Think of it like having a digital art assistant that can draw what you describe -- characters, scenes, diagrams, whatever you need."
+            "Think of it like having a digital art assistant that can draw what you describe -- characters, scenes, diagrams, whatever you need."
         )
     elif "research" in name.lower():
         response_parts.append(
             f"{name} runs structured research across the internet and academic sources. "
-            f"Think of it like having a research assistant who checks multiple sources, verifies facts, and organizes everything with dates and confidence scores."
+            "Think of it like having a research assistant who checks multiple sources, verifies facts, and organizes everything with dates and confidence scores."
         )
     elif "skill" in name.lower() and "creat" in name.lower():
         response_parts.append(
             f"{name} helps create new capabilities for the AI system. "
-            f"Think of it like writing a recipe -- you define the ingredients (inputs), the steps (workflow), and what the dish should look like when it is done (output)."
+            "Think of it like writing a recipe -- you define the ingredients (inputs), the steps (workflow), and what the dish should look like when it is done (output)."
         )
     elif "context" in name.lower() and "catalog" in name.lower():
         response_parts.append(
             f"{name} maps different types of tasks to the right tools and resources. "
-            f"Think of it like a school class schedule that tells you which room, teacher, and supplies you need for each subject."
+            "Think of it like a school class schedule that tells you which room, teacher, and supplies you need for each subject."
         )
     elif "credit" in name.lower() or "ledger" in name.lower():
         response_parts.append(
             f"{name} tracks computing resources and credits like a digital bank account. "
-            f"Think of it like tracking your lunch money balance -- every time an AI agent does work, it costs credits, and this system keeps the books balanced."
+            "Think of it like tracking your lunch money balance -- every time an AI agent does work, it costs credits, and this system keeps the books balanced."
         )
-    elif "webtoon" in name.lower() or "manhwa" in name.lower() or "comic" in name.lower() or "storyboard" in name.lower():
+    elif (
+        "webtoon" in name.lower() or "manhwa" in name.lower() or "comic" in name.lower() or "storyboard" in name.lower()
+    ):
         response_parts.append(
             f"{name} adapts stories into visual comic or webtoon format. "
-            f"Think of it like turning a book you love into a graphic novel -- you need to decide which scenes get panels, how to frame the action, and how the story flows visually."
+            "Think of it like turning a book you love into a graphic novel -- you need to decide which scenes get panels, how to frame the action, and how the story flows visually."
         )
     elif "tuxemon" in name.lower() or "game" in name.lower():
         response_parts.append(
             f"{name} works with game development and modification. "
-            f"Think of it like modding your favorite video game -- adding new creatures, maps, or features to make the game your own."
+            "Think of it like modding your favorite video game -- adding new creatures, maps, or features to make the game your own."
         )
     else:
         response_parts.append(
@@ -342,9 +383,7 @@ def generate_what_is_response(record: dict) -> str:
     # Middle - what it does specifically
     if concepts:
         key = concepts[:3]
-        response_parts.append(
-            f"\n\nHere is what it actually handles: {', '.join(c.lower() for c in key)}. "
-        )
+        response_parts.append(f"\n\nHere is what it actually handles: {', '.join(c.lower() for c in key)}. ")
     elif desc:
         response_parts.append(f"\n\n{desc} ")
 
@@ -372,135 +411,269 @@ def generate_step_by_step_response(record: dict) -> str:
 
     # Analogy opener
     if "phone" in name.lower() or "emulator" in name.lower():
-        response_parts.append(
-            f"Let me walk you through {name} like setting up a new phone for the first time."
-        )
+        response_parts.append(f"Let me walk you through {name} like setting up a new phone for the first time.")
         step_analogies = [
-            ("Check if the phone is already on", "First, the system checks if the virtual phone is already running. No point turning on a phone that is already on."),
-            ("Fix it if it is stuck", "If the phone froze or crashed, you force-restart it. The system clears out stale lock files and restarts the emulator."),
-            ("Boot it up", "Now you actually start the virtual phone. You can customize the screen size and font, just like adjusting settings on a real phone."),
-            ("Open your apps", "Once the phone is running, you navigate to the apps you need -- in this case, Polly Pad and the chat interface."),
-            ("Use it", "Now the AI agent can interact with the phone just like you would -- tapping, typing, and browsing."),
+            (
+                "Check if the phone is already on",
+                "First, the system checks if the virtual phone is already running. No point turning on a phone that is already on.",
+            ),
+            (
+                "Fix it if it is stuck",
+                "If the phone froze or crashed, you force-restart it. The system clears out stale lock files and restarts the emulator.",
+            ),
+            (
+                "Boot it up",
+                "Now you actually start the virtual phone. You can customize the screen size and font, just like adjusting settings on a real phone.",
+            ),
+            (
+                "Open your apps",
+                "Once the phone is running, you navigate to the apps you need -- in this case, Polly Pad and the chat interface.",
+            ),
+            (
+                "Use it",
+                "Now the AI agent can interact with the phone just like you would -- tapping, typing, and browsing.",
+            ),
         ]
     elif "arxiv" in name.lower():
-        response_parts.append(
-            f"Let me walk you through {name} like doing research at a library."
-        )
+        response_parts.append(f"Let me walk you through {name} like doing research at a library.")
         step_analogies = [
-            ("Walk into the library", "First, the system opens up a browser lane dedicated to research, kind of like walking into the research section of the library."),
-            ("Search the catalog", "Next, it searches arXiv for papers on your topic. ArXiv is like a massive digital library with millions of science papers."),
-            ("Pull the book off the shelf", "The system opens the paper's abstract page to read the summary, title, authors, and categories -- like reading the back cover of a book."),
-            ("Take notes", "Finally, it saves everything it found into a structured file so other parts of the system can use it later. Like writing notes on index cards."),
+            (
+                "Walk into the library",
+                "First, the system opens up a browser lane dedicated to research, kind of like walking into the research section of the library.",
+            ),
+            (
+                "Search the catalog",
+                "Next, it searches arXiv for papers on your topic. ArXiv is like a massive digital library with millions of science papers.",
+            ),
+            (
+                "Pull the book off the shelf",
+                "The system opens the paper's abstract page to read the summary, title, authors, and categories -- like reading the back cover of a book.",
+            ),
+            (
+                "Take notes",
+                "Finally, it saves everything it found into a structured file so other parts of the system can use it later. Like writing notes on index cards.",
+            ),
         ]
-    elif "cross-talk" in record.get("skill_source", "") or "communication" in name.lower() or "crosstalk" in record.get("source_type", ""):
-        response_parts.append(
-            f"Let me walk you through {name} like passing notes in a group project."
-        )
+    elif (
+        "cross-talk" in record.get("skill_source", "")
+        or "communication" in name.lower()
+        or "crosstalk" in record.get("source_type", "")
+    ):
+        response_parts.append(f"Let me walk you through {name} like passing notes in a group project.")
         step_analogies = [
-            ("Write your note", "An AI agent creates a message packet with what it did, what is blocking it, and what should happen next. Like writing 'I finished the intro paragraph, need someone to do the body.'"),
-            ("Label the note", "The message gets a unique ID, a timestamp, and labels for who sent it and who should read it. Like putting your name and the date on your note."),
-            ("Put it in the shared folder", "The packet goes into a shared location where other agents can find it. Think of dropping your note into a shared Google Drive folder."),
-            ("Other agents read and respond", "The receiving agent picks up the packet, does its part, and writes its own note back. The cycle continues until the task is done."),
+            (
+                "Write your note",
+                "An AI agent creates a message packet with what it did, what is blocking it, and what should happen next. Like writing 'I finished the intro paragraph, need someone to do the body.'",
+            ),
+            (
+                "Label the note",
+                "The message gets a unique ID, a timestamp, and labels for who sent it and who should read it. Like putting your name and the date on your note.",
+            ),
+            (
+                "Put it in the shared folder",
+                "The packet goes into a shared location where other agents can find it. Think of dropping your note into a shared Google Drive folder.",
+            ),
+            (
+                "Other agents read and respond",
+                "The receiving agent picks up the packet, does its part, and writes its own note back. The cycle continues until the task is done.",
+            ),
         ]
     elif "governance" in name.lower() or "gate" in name.lower():
-        response_parts.append(
-            f"Let me walk you through {name} like going through school security."
-        )
+        response_parts.append(f"Let me walk you through {name} like going through school security.")
         step_analogies = [
-            ("Approach the gate", "An AI agent wants to do something -- maybe send a message or access data. First it has to approach the governance checkpoint."),
-            ("Show your ID", "The system checks the agent's identity, what it is trying to do, and whether it has permission. Like showing your student ID at the school entrance."),
-            ("Get scanned", "The request gets evaluated against safety rules. Is this action risky? Does it follow the guidelines? This is like walking through a metal detector."),
-            ("Get a verdict", "The gate gives one of four answers: ALLOW (go ahead), QUARANTINE (hold on, need review), ESCALATE (talk to the principal), or DENY (absolutely not)."),
+            (
+                "Approach the gate",
+                "An AI agent wants to do something -- maybe send a message or access data. First it has to approach the governance checkpoint.",
+            ),
+            (
+                "Show your ID",
+                "The system checks the agent's identity, what it is trying to do, and whether it has permission. Like showing your student ID at the school entrance.",
+            ),
+            (
+                "Get scanned",
+                "The request gets evaluated against safety rules. Is this action risky? Does it follow the guidelines? This is like walking through a metal detector.",
+            ),
+            (
+                "Get a verdict",
+                "The gate gives one of four answers: ALLOW (go ahead), QUARANTINE (hold on, need review), ESCALATE (talk to the principal), or DENY (absolutely not).",
+            ),
         ]
     elif "training" in name.lower() or "sft" in name.lower():
-        response_parts.append(
-            f"Let me walk you through {name} like studying for a big exam."
-        )
+        response_parts.append(f"Let me walk you through {name} like studying for a big exam.")
         step_analogies = [
-            ("Gather your study materials", "First, you collect all the data the AI needs to learn from -- questions, answers, examples. Like gathering your textbook, notes, and practice problems."),
-            ("Organize by topic", "The data gets sorted and validated. Bad data gets filtered out. Like sorting your notes by chapter and throwing away the ones with wrong info."),
-            ("Do the practice problems", "The AI model trains on the data, learning patterns and improving. Like actually sitting down and working through practice problems."),
-            ("Check your score", "After training, you test the model to see if it improved. Like taking a practice quiz to see if your studying paid off."),
+            (
+                "Gather your study materials",
+                "First, you collect all the data the AI needs to learn from -- questions, answers, examples. Like gathering your textbook, notes, and practice problems.",
+            ),
+            (
+                "Organize by topic",
+                "The data gets sorted and validated. Bad data gets filtered out. Like sorting your notes by chapter and throwing away the ones with wrong info.",
+            ),
+            (
+                "Do the practice problems",
+                "The AI model trains on the data, learning patterns and improving. Like actually sitting down and working through practice problems.",
+            ),
+            (
+                "Check your score",
+                "After training, you test the model to see if it improved. Like taking a practice quiz to see if your studying paid off.",
+            ),
         ]
     elif "publish" in name.lower() or "content" in name.lower():
-        response_parts.append(
-            f"Let me walk you through {name} like publishing the school newspaper."
-        )
+        response_parts.append(f"Let me walk you through {name} like publishing the school newspaper.")
         step_analogies = [
-            ("Write your article", "First, the content gets created or queued up -- an article, a social post, or a dataset description."),
-            ("Editorial review", "Before publishing, the content goes through a governance check. Is it accurate? Does it follow guidelines? Like an editor reviewing your article."),
-            ("Format for each platform", "The same content might go to Twitter, LinkedIn, GitHub, and more. Each platform needs different formatting. Like reformatting an article for the website vs. the printed paper."),
-            ("Hit publish", "Finally, the content goes live on all platforms. The system tracks what was published where and when."),
+            (
+                "Write your article",
+                "First, the content gets created or queued up -- an article, a social post, or a dataset description.",
+            ),
+            (
+                "Editorial review",
+                "Before publishing, the content goes through a governance check. Is it accurate? Does it follow guidelines? Like an editor reviewing your article.",
+            ),
+            (
+                "Format for each platform",
+                "The same content might go to Twitter, LinkedIn, GitHub, and more. Each platform needs different formatting. Like reformatting an article for the website vs. the printed paper.",
+            ),
+            (
+                "Hit publish",
+                "Finally, the content goes live on all platforms. The system tracks what was published where and when.",
+            ),
         ]
     elif "security" in name.lower() or "audit" in name.lower():
-        response_parts.append(
-            f"Let me walk you through {name} like a school safety drill."
-        )
+        response_parts.append(f"Let me walk you through {name} like a school safety drill.")
         step_analogies = [
-            ("Check the perimeter", "First, the system scans for exposed secrets, weak passwords, and open vulnerabilities. Like checking that all doors and windows are locked."),
-            ("Test the alarms", "It runs automated tests to make sure security measures are actually working. Like testing the fire alarm to make sure it goes off."),
-            ("Write the report", "Everything gets documented -- what passed, what failed, and what needs fixing. Like the safety report the principal gets after a drill."),
-            ("Fix what is broken", "Any issues found get flagged for immediate action. Critical problems get escalated, just like a real safety hazard gets reported right away."),
+            (
+                "Check the perimeter",
+                "First, the system scans for exposed secrets, weak passwords, and open vulnerabilities. Like checking that all doors and windows are locked.",
+            ),
+            (
+                "Test the alarms",
+                "It runs automated tests to make sure security measures are actually working. Like testing the fire alarm to make sure it goes off.",
+            ),
+            (
+                "Write the report",
+                "Everything gets documented -- what passed, what failed, and what needs fixing. Like the safety report the principal gets after a drill.",
+            ),
+            (
+                "Fix what is broken",
+                "Any issues found get flagged for immediate action. Critical problems get escalated, just like a real safety hazard gets reported right away.",
+            ),
         ]
     elif "youtube" in name.lower() or "video" in name.lower():
-        response_parts.append(
-            f"Let me walk you through {name} like managing a school YouTube channel."
-        )
+        response_parts.append(f"Let me walk you through {name} like managing a school YouTube channel.")
         step_analogies = [
-            ("Plan your updates", "First, you create a plan for what needs to change -- new titles, better descriptions, updated tags. Like making a list of edits before touching anything."),
-            ("Preview the changes", "Before anything goes live, you preview what the changes will look like. Like proofreading before posting."),
-            ("Apply the changes", "Once you are happy with the preview, the tool pushes the updates to YouTube. Like hitting 'save' on your edits."),
-            ("Check the results", "Finally, you review the scores and analytics to see if the changes helped. Like checking your view count the next day."),
+            (
+                "Plan your updates",
+                "First, you create a plan for what needs to change -- new titles, better descriptions, updated tags. Like making a list of edits before touching anything.",
+            ),
+            (
+                "Preview the changes",
+                "Before anything goes live, you preview what the changes will look like. Like proofreading before posting.",
+            ),
+            (
+                "Apply the changes",
+                "Once you are happy with the preview, the tool pushes the updates to YouTube. Like hitting 'save' on your edits.",
+            ),
+            (
+                "Check the results",
+                "Finally, you review the scores and analytics to see if the changes helped. Like checking your view count the next day.",
+            ),
         ]
     elif "browser" in name.lower() or "web" in name.lower() or "swarm" in name.lower():
-        response_parts.append(
-            f"Let me walk you through {name} like organizing a research team at the library."
-        )
+        response_parts.append(f"Let me walk you through {name} like organizing a research team at the library.")
         step_analogies = [
-            ("Assign the task", "First, you tell the AI browser agent what you need -- search this, navigate there, extract that. Like giving each team member a specific research question."),
-            ("Navigate to the source", "The agent opens a browser and goes to the right website. Like walking to the right section of the library."),
-            ("Extract the information", "It reads the page, grabs the relevant data, and structures it neatly. Like taking organized notes from a textbook."),
-            ("Bring it back safely", "The data comes back through safety checks to make sure nothing malicious snuck in. Like a librarian checking your sources are legitimate."),
+            (
+                "Assign the task",
+                "First, you tell the AI browser agent what you need -- search this, navigate there, extract that. Like giving each team member a specific research question.",
+            ),
+            (
+                "Navigate to the source",
+                "The agent opens a browser and goes to the right website. Like walking to the right section of the library.",
+            ),
+            (
+                "Extract the information",
+                "It reads the page, grabs the relevant data, and structures it neatly. Like taking organized notes from a textbook.",
+            ),
+            (
+                "Bring it back safely",
+                "The data comes back through safety checks to make sure nothing malicious snuck in. Like a librarian checking your sources are legitimate.",
+            ),
         ]
     elif "sacred" in name.lower() or "tongue" in name.lower() or "egg" in name.lower():
-        response_parts.append(
-            f"Let me walk you through {name} like a secret language club at school."
-        )
+        response_parts.append(f"Let me walk you through {name} like a secret language club at school.")
         step_analogies = [
-            ("Choose your language", "The system has six special encoding languages called Sacred Tongues. Each one processes information differently, like how different subjects use different notation (math uses numbers, music uses notes)."),
-            ("Encode the message", "Your data gets transformed through the chosen tongue. Each tongue adds a different weight and perspective to the information."),
-            ("Layer the protection", "Multiple tongues can be combined for stronger encoding. Like encrypting a message, then putting it in a locked box, then hiding the box."),
-            ("Verify identity", "Sacred Eggs serve as identity tokens -- like digital birth certificates that prove who created what and when."),
+            (
+                "Choose your language",
+                "The system has six special encoding languages called Sacred Tongues. Each one processes information differently, like how different subjects use different notation (math uses numbers, music uses notes).",
+            ),
+            (
+                "Encode the message",
+                "Your data gets transformed through the chosen tongue. Each tongue adds a different weight and perspective to the information.",
+            ),
+            (
+                "Layer the protection",
+                "Multiple tongues can be combined for stronger encoding. Like encrypting a message, then putting it in a locked box, then hiding the box.",
+            ),
+            (
+                "Verify identity",
+                "Sacred Eggs serve as identity tokens -- like digital birth certificates that prove who created what and when.",
+            ),
         ]
     elif "colab" in name.lower() or "compute" in name.lower():
-        response_parts.append(
-            f"Let me walk you through {name} like borrowing the computer lab for a big project."
-        )
+        response_parts.append(f"Let me walk you through {name} like borrowing the computer lab for a big project.")
         step_analogies = [
-            ("Reserve the lab", "First, the system claims a cloud computing session. Like signing up for computer lab time."),
-            ("Set up your workspace", "It uploads the right notebooks and data to the cloud machine. Like loading your project files onto the lab computers."),
-            ("Run the heavy work", "The cloud machine does the computationally expensive training. Like using the lab's powerful computers instead of your slow laptop."),
-            ("Save and return", "When done, results are saved and the session is released for others. Like saving your work to a USB drive and logging off."),
+            (
+                "Reserve the lab",
+                "First, the system claims a cloud computing session. Like signing up for computer lab time.",
+            ),
+            (
+                "Set up your workspace",
+                "It uploads the right notebooks and data to the cloud machine. Like loading your project files onto the lab computers.",
+            ),
+            (
+                "Run the heavy work",
+                "The cloud machine does the computationally expensive training. Like using the lab's powerful computers instead of your slow laptop.",
+            ),
+            (
+                "Save and return",
+                "When done, results are saved and the session is released for others. Like saving your work to a USB drive and logging off.",
+            ),
         ]
     elif "deploy" in name.lower() or "fleet" in name.lower():
-        response_parts.append(
-            f"Let me walk you through {name} like getting a school team ready for a tournament."
-        )
+        response_parts.append(f"Let me walk you through {name} like getting a school team ready for a tournament.")
         step_analogies = [
-            ("Check who is ready", "First, you verify each model passed its quality checks. Like making sure every player passed their physical and academic requirements."),
-            ("Assign positions", "Each model gets deployed to the right server or service. Like putting each player in their best position."),
+            (
+                "Check who is ready",
+                "First, you verify each model passed its quality checks. Like making sure every player passed their physical and academic requirements.",
+            ),
+            (
+                "Assign positions",
+                "Each model gets deployed to the right server or service. Like putting each player in their best position.",
+            ),
             ("Go live", "The models start serving real requests. Like the team taking the field for the actual game."),
-            ("Monitor performance", "You watch how everything performs and can roll back if something goes wrong. Like a coach pulling a player who is not performing."),
+            (
+                "Monitor performance",
+                "You watch how everything performs and can roll back if something goes wrong. Like a coach pulling a player who is not performing.",
+            ),
         ]
     else:
-        response_parts.append(
-            f"Let me walk you through {name} step by step, using an everyday analogy."
-        )
+        response_parts.append(f"Let me walk you through {name} step by step, using an everyday analogy.")
         step_analogies = [
-            ("Get oriented", "First, the system figures out what it is working with -- what tools are available, what state things are in. Like looking at your assignment before starting."),
-            ("Plan the approach", "It decides the best way to accomplish the task based on the current situation. Like outlining an essay before writing it."),
-            ("Execute carefully", "Each step happens in order, with checks along the way. Like showing your work on a math test."),
-            ("Verify and report", "Finally, it confirms everything worked and creates a record of what happened. Like turning in your assignment and checking the grade."),
+            (
+                "Get oriented",
+                "First, the system figures out what it is working with -- what tools are available, what state things are in. Like looking at your assignment before starting.",
+            ),
+            (
+                "Plan the approach",
+                "It decides the best way to accomplish the task based on the current situation. Like outlining an essay before writing it.",
+            ),
+            (
+                "Execute carefully",
+                "Each step happens in order, with checks along the way. Like showing your work on a math test.",
+            ),
+            (
+                "Verify and report",
+                "Finally, it confirms everything worked and creates a record of what happened. Like turning in your assignment and checking the grade.",
+            ),
         ]
 
     # Build the step-by-step
@@ -543,7 +716,11 @@ def generate_three_situations_response(record: dict) -> str:
             "3. You want to build a training dataset from scientific papers. "
             "The tool can systematically search and collect paper information, saving it in structured files that can feed into AI training pipelines."
         )
-    elif "cross-talk" in record.get("skill_source", "") or "communication" in name.lower() or "crosstalk" in record.get("source_type", ""):
+    elif (
+        "cross-talk" in record.get("skill_source", "")
+        or "communication" in name.lower()
+        or "crosstalk" in record.get("source_type", "")
+    ):
         response_parts.append(
             "1. Two AI agents (say, Claude and Codex) are both working on the same project at the same time. "
             "They need a way to say 'I am working on file X, do not touch it' and 'I finished task Y, you can start task Z.' Without this, they would overwrite each other's work.\n\n"
@@ -822,7 +999,9 @@ def generate_three_situations_response(record: dict) -> str:
             "3. Two AI systems need to exchange computing resources fairly. "
             "The credit system acts as a neutral bank, ensuring neither side overspends or underpays."
         )
-    elif "webtoon" in name.lower() or "manhwa" in name.lower() or "comic" in name.lower() or "storyboard" in name.lower():
+    elif (
+        "webtoon" in name.lower() or "manhwa" in name.lower() or "comic" in name.lower() or "storyboard" in name.lower()
+    ):
         response_parts.append(
             "1. You wrote a novel chapter and want to turn key scenes into comic panels. "
             "The storyboard tool breaks the text into visual beats and generates panel scripts.\n\n"
@@ -891,7 +1070,27 @@ def generate_intent_response(record: dict) -> str:
 
     # Extract intent names from instruction
     intent_match = re.findall(r"(\w+(?:[-_]\w+)*)", instruction)
-    intents = [i for i in intent_match if "_" in i or any(kw in i.lower() for kw in ["ready", "update", "claim", "evidence", "unknown", "handoff", "status", "critical", "lease", "done", "blocked"])]
+    intents = [
+        i
+        for i in intent_match
+        if "_" in i
+        or any(
+            kw in i.lower()
+            for kw in [
+                "ready",
+                "update",
+                "claim",
+                "evidence",
+                "unknown",
+                "handoff",
+                "status",
+                "critical",
+                "lease",
+                "done",
+                "blocked",
+            ]
+        )
+    ]
 
     # If we found specific intents in the instruction, explain those
     if not intents:
@@ -929,7 +1128,7 @@ def generate_intent_response(record: dict) -> str:
     # If we did not find specific matches, give general explanations
     if not explained:
         for key in ["claim_colab_worker", "colab_worker_ready", "critical-update", "unknown", "colab_worker_evidence"]:
-            response_parts.append(f"- {intent_explanations.get(key.replace('-','_'), '')}\n\n")
+            response_parts.append(f"- {intent_explanations.get(key.replace('-', '_'), '')}\n\n")
 
     response_parts.append(
         "The key idea is that every message between AI agents has a clear label. "
@@ -1025,7 +1224,9 @@ def classify_instruction(instruction: str, source_type: str = "") -> str:
         return "intent_explain"
     if "status" in inst_lower and ("field" in inst_lower or "mean" in inst_lower or "values" in inst_lower):
         return "status_explain"
-    if "packet" in inst_lower and ("structure" in inst_lower or "field" in inst_lower or "part" in inst_lower or "look like" in inst_lower):
+    if "packet" in inst_lower and (
+        "structure" in inst_lower or "field" in inst_lower or "part" in inst_lower or "look like" in inst_lower
+    ):
         return "packet_structure"
     if "layer" in inst_lower and "14" in inst_lower:
         return "layer14"
@@ -1165,7 +1366,7 @@ def generate_generic_crosstalk_response(record: dict) -> str:
     """Fallback for unclassified crosstalk tutorial questions."""
     record.get("instruction", "")
     return (
-        f"Great question! Let me break this down in simple terms.\n\n"
+        "Great question! Let me break this down in simple terms.\n\n"
         "In the SCBE system, AI agents work together like a team of students on a group project. "
         "They need to communicate clearly, share their work, and coordinate so nobody steps on "
         "anyone else's toes.\n\n"
@@ -1204,7 +1405,8 @@ def flesh_out(response: str, record: dict, target_min: int = 150) -> str:
         if concept_strs:
             extras.append(
                 f"\n\nLooking more closely at what {name} covers, some of its core areas include: "
-                + ", ".join(concept_strs) + ". "
+                + ", ".join(concept_strs)
+                + ". "
                 "Each of these areas represents a different piece of the puzzle. "
                 "When they all work together, you get a system that is more than the sum of its parts -- "
                 "like how a basketball team is better than five people playing alone."

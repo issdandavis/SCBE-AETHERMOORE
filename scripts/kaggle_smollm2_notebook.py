@@ -113,9 +113,12 @@ model = AutoModelForCausalLM.from_pretrained(
 model = prepare_model_for_kbit_training(model)
 
 lora_config = LoraConfig(
-    r=16, lora_alpha=32, lora_dropout=0.05,
+    r=16,
+    lora_alpha=32,
+    lora_dropout=0.05,
     target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
-    bias="none", task_type="CAUSAL_LM",
+    bias="none",
+    task_type="CAUSAL_LM",
 )
 model = get_peft_model(model, lora_config)
 trainable, total = model.get_nb_trainable_parameters()
@@ -124,9 +127,11 @@ log.info(f"Trainable: {trainable:,} / {total:,} ({100*trainable/total:.2f}%)")
 # %% Cell 5: Prepare Dataset
 from datasets import Dataset
 
+
 def format_record(example):
     text = tokenizer.apply_chat_template(example["messages"], tokenize=False, add_generation_prompt=False)
     return {"text": text}
+
 
 train_ds = Dataset.from_list(train_records).map(format_record, remove_columns=["messages"])
 eval_ds = Dataset.from_list(eval_records).map(format_record, remove_columns=["messages"])
@@ -184,7 +189,7 @@ for prompt in ["What are the Sacred Tongues?", "Explain the harmonic wall.", "Wh
     inputs = tokenizer(inp, return_tensors="pt").to(model.device)
     with torch.no_grad():
         out = model.generate(**inputs, max_new_tokens=150, temperature=0.7, do_sample=True)
-    resp = tokenizer.decode(out[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True)
+    resp = tokenizer.decode(out[0][inputs["input_ids"].shape[1] :], skip_special_tokens=True)
     print(f"\nQ: {prompt}\nA: {resp[:300]}\n{'─'*60}")
 
 # %% Cell 9: Push to HuggingFace (optional)

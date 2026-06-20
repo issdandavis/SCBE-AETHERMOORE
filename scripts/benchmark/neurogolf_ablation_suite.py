@@ -18,7 +18,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ARTIFACTS = REPO_ROOT / "artifacts"
 TRAIN_REPORT = ARTIFACTS / "neurogolf_ablation_train.json"
@@ -39,11 +38,7 @@ def _load(path: Path) -> dict[str, object]:
 
 
 def _family_set(report: dict[str, object]) -> set[str]:
-    return {
-        row["family"]
-        for row in report["families"]
-        if row["family"] != "no_program"
-    }
+    return {row["family"] for row in report["families"] if row["family"] != "no_program"}
 
 
 def _format_pct(value: float) -> str:
@@ -69,9 +64,7 @@ def build_summary() -> dict[str, object]:
             "train_solve_rate": train_summary["solve_rate"],
             "eval_solve_rate": eval_summary["solve_rate"],
             "generalization_ratio": (
-                eval_summary["solve_rate"] / train_summary["solve_rate"]
-                if train_summary["solve_rate"]
-                else 0.0
+                eval_summary["solve_rate"] / train_summary["solve_rate"] if train_summary["solve_rate"] else 0.0
             ),
             "train_solved": train_summary["solved"],
             "eval_solved": eval_summary["solved"],
@@ -113,7 +106,10 @@ def print_summary(summary: dict[str, object]) -> None:
     print(f"  avg ms/task (train) : {solver['train_avg_ms']}")
     print(f"  avg ms/task (eval)  : {solver['eval_avg_ms']}")
     print(f"  family overlap      : {', '.join(solver['family_overlap']) if solver['family_overlap'] else '(none)'}")
-    print(f"  eval-only families  : {', '.join(solver['eval_only_families']) if solver['eval_only_families'] else '(none)'}")
+    print(
+        "  eval-only families  : "
+        f"{', '.join(solver['eval_only_families']) if solver['eval_only_families'] else '(none)'}"
+    )
     print()
     print("ranking")
     print(

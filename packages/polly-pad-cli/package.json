@@ -8,7 +8,7 @@
   "scripts": {
     "help": "node ./bin/polly.js --help",
     "doctor": "node ./bin/polly.js doctor",
-    "test": "node --test tests/workspace.test.cjs"
+    "test": "node --test tests/*.test.cjs"
   },
   "engines": { "node": ">=20.0.0" },
   "keywords": ["scbe", "polly", "cli", "agent", "workspace", "ai-operator", "governance"],

@@ -9,7 +9,6 @@ in browser_agent.py and swarm_browser.py without this dependency.
 
 from __future__ import annotations
 
-import asyncio
 import logging
 from typing import Any, Optional
 
@@ -17,6 +16,7 @@ logger = logging.getLogger("scbe.agents.playwright_runtime")
 
 try:
     from playwright.async_api import async_playwright, Browser, BrowserContext, Page
+
     _PW_AVAILABLE = True
 except ImportError:
     _PW_AVAILABLE = False
@@ -50,8 +50,7 @@ class PlaywrightRuntime:
     async def launch(self, *, headless: bool = True, **kwargs: Any) -> None:
         if not _PW_AVAILABLE:
             raise RuntimeError(
-                "playwright is not installed. "
-                "Run: pip install playwright && python -m playwright install chromium"
+                "playwright is not installed. " "Run: pip install playwright && python -m playwright install chromium"
             )
         self._pw = await async_playwright().start()
         self._browser = await self._pw.chromium.launch(headless=headless, **kwargs)
@@ -181,7 +180,10 @@ class PlaywrightRuntime:
             self._display_mgr._browser = self._browser
 
         handle = await self._display_mgr.connect_display(
-            name, host_id=host_id, pin=pin, resolution=resolution,
+            name,
+            host_id=host_id,
+            pin=pin,
+            resolution=resolution,
         )
         self._remote_displays[name] = handle
         logger.info("Remote display '%s' opened via PlaywrightRuntime", name)
@@ -190,25 +192,25 @@ class PlaywrightRuntime:
     async def remote_screenshot(self, name: str, *, path: Optional[str] = None) -> bytes:
         """Take a screenshot of a remote display by name."""
         if not hasattr(self, "_display_mgr") or self._display_mgr is None:
-            raise RuntimeError(f"No remote displays open — call open_remote_display() first")
+            raise RuntimeError("No remote displays open — call open_remote_display() first")
         return await self._display_mgr.screenshot(name, path=path)
 
     async def remote_click(self, name: str, x: int, y: int) -> None:
         """Click at pixel coordinates on a remote display."""
         if not hasattr(self, "_display_mgr") or self._display_mgr is None:
-            raise RuntimeError(f"No remote displays open")
+            raise RuntimeError("No remote displays open")
         await self._display_mgr.click(name, x, y)
 
     async def remote_type(self, name: str, text: str) -> None:
         """Type text on a remote display."""
         if not hasattr(self, "_display_mgr") or self._display_mgr is None:
-            raise RuntimeError(f"No remote displays open")
+            raise RuntimeError("No remote displays open")
         await self._display_mgr.type_text(name, text)
 
     async def remote_keys(self, name: str, keys: str) -> None:
         """Send key combination to a remote display."""
         if not hasattr(self, "_display_mgr") or self._display_mgr is None:
-            raise RuntimeError(f"No remote displays open")
+            raise RuntimeError("No remote displays open")
         await self._display_mgr.send_keys(name, keys)
 
     @property

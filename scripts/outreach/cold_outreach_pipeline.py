@@ -20,6 +20,7 @@ Usage:
 Also available via CLI:
   scbe-system outreach draft --target "NIST AISI" --type design_partner
 """
+
 from __future__ import annotations
 
 import argparse
@@ -37,7 +38,6 @@ from email import encoders
 from pathlib import Path
 from typing import Optional
 from urllib.request import Request, urlopen
-
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 DRAFTS_DIR = REPO_ROOT / "artifacts" / "outreach" / "drafts"
@@ -172,6 +172,7 @@ OUTREACH_TYPES = {
 
 # ── Templates ────────────────────────────────────────────────────────────────
 
+
 def generate_email_body(target: dict, outreach_type: dict) -> str:
     return f"""Dear {target['org']} Team,
 
@@ -206,6 +207,7 @@ GitHub: {GITHUB}
 
 
 # ── Draft Management ─────────────────────────────────────────────────────────
+
 
 @dataclass
 class OutreachDraft:
@@ -256,6 +258,7 @@ def log_outreach(draft: OutreachDraft, result: str):
 
 # ── Compliance Report Generator ──────────────────────────────────────────────
 
+
 def generate_compliance_attachment() -> Path:
     """Generate a text compliance summary as an attachment."""
     ATTACHMENTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -264,6 +267,7 @@ def generate_compliance_attachment() -> Path:
     try:
         sys.path.insert(0, str(REPO_ROOT / "src"))
         from licensing import generate_compliance_report, generate_policy_framework_report
+
         compliance = generate_compliance_report()
         policy = generate_policy_framework_report()
 
@@ -271,9 +275,9 @@ def generate_compliance_attachment() -> Path:
             "SCBE-AETHERMOORE Compliance Summary",
             "=" * 50,
             f"Generated: {time.strftime('%Y-%m-%d %H:%M UTC', time.gmtime())}",
-            f"System: SCBE-AETHERMOORE v3.3.0",
-            f"Patent: USPTO #63/961,403 (provisional)",
-            f"Author: Issac Daniel Davis (ORCID: 0009-0002-3936-9369)",
+            "System: SCBE-AETHERMOORE v3.3.0",
+            "Patent: USPTO #63/961,403 (provisional)",
+            "Author: Issac Daniel Davis (ORCID: 0009-0002-3936-9369)",
             "",
             "NIST AI RMF 1.0 Compliance",
             "-" * 40,
@@ -286,57 +290,64 @@ def generate_compliance_attachment() -> Path:
             lines.append(f"  [{check.status}] {check.check_id}: {check.description}")
             lines.append(f"         SCBE mapping: {check.scbe_mapping}")
 
-        lines.extend([
-            "",
-            "White House AI Policy Framework (March 2026)",
-            "-" * 40,
-            f"Readiness: {policy.readiness_rate:.0%}",
-            "",
-        ])
+        lines.extend(
+            [
+                "",
+                "White House AI Policy Framework (March 2026)",
+                "-" * 40,
+                f"Readiness: {policy.readiness_rate:.0%}",
+                "",
+            ]
+        )
 
         for pillar in policy.pillars:
-            name = getattr(pillar, 'pillar_name', getattr(pillar, 'name', str(pillar)))
-            readiness = getattr(pillar, 'readiness', 'Unknown')
+            name = getattr(pillar, "pillar_name", getattr(pillar, "name", str(pillar)))
+            readiness = getattr(pillar, "readiness", "Unknown")
             lines.append(f"  {name}: {readiness}")
-            cap = getattr(pillar, 'scbe_capability', '')
+            cap = getattr(pillar, "scbe_capability", "")
             if cap:
                 lines.append(f"    SCBE: {cap}")
             lines.append("")
 
-        lines.extend([
-            "",
-            "Cryptographic Stack",
-            "-" * 40,
-            "  Symmetric: AES-256-GCM (FIPS 197)",
-            "  Key Encapsulation: ML-KEM-768 (FIPS 203)",
-            "  Digital Signatures: ML-DSA-65 (FIPS 204)",
-            "  Hashing: SHA-3-256 (FIPS 202)",
-            "  Key Derivation: HKDF (RFC 5869)",
-            "",
-            "Deployment Options",
-            "-" * 40,
-            "  - Air-gapped (no network, HMAC-only license validation)",
-            "  - Sovereign Cloud (FedRAMP High)",
-            "  - On-premises (enterprise data center)",
-            "  - Edge/tactical (SCIF-compatible)",
-            "",
-            f"Install: npm install scbe-aethermoore",
-            f"Install: pip install scbe-aethermoore",
-            f"Source: {GITHUB}",
-        ])
+        lines.extend(
+            [
+                "",
+                "Cryptographic Stack",
+                "-" * 40,
+                "  Symmetric: AES-256-GCM (FIPS 197)",
+                "  Key Encapsulation: ML-KEM-768 (FIPS 203)",
+                "  Digital Signatures: ML-DSA-65 (FIPS 204)",
+                "  Hashing: SHA-3-256 (FIPS 202)",
+                "  Key Derivation: HKDF (RFC 5869)",
+                "",
+                "Deployment Options",
+                "-" * 40,
+                "  - Air-gapped (no network, HMAC-only license validation)",
+                "  - Sovereign Cloud (FedRAMP High)",
+                "  - On-premises (enterprise data center)",
+                "  - Edge/tactical (SCIF-compatible)",
+                "",
+                "Install: npm install scbe-aethermoore",
+                "Install: pip install scbe-aethermoore",
+                f"Source: {GITHUB}",
+            ]
+        )
 
         with open(path, "w") as f:
             f.write("\n".join(lines))
 
     except Exception as e:
         with open(path, "w") as f:
-            f.write(f"SCBE-AETHERMOORE Compliance Summary\n\nGeneration error: {e}\n"
-                    f"Install and run: python -c 'from src.licensing import generate_compliance_report; print(generate_compliance_report())'")
+            f.write(
+                f"SCBE-AETHERMOORE Compliance Summary\n\nGeneration error: {e}\n"
+                "Install and run: python -c 'from src.licensing import generate_compliance_report; print(generate_compliance_report())'"
+            )
 
     return path
 
 
 # ── Sending ──────────────────────────────────────────────────────────────────
+
 
 def send_email(draft: OutreachDraft) -> str:
     """Send via SMTP (ProtonMail Bridge or any SMTP)."""
@@ -379,8 +390,9 @@ def send_telegram(draft: OutreachDraft) -> str:
 
     text = f"**Outreach Draft: {draft.org}**\n\nSubject: {draft.subject}\nTo: {draft.contact}\n\n{draft.body[:3000]}"
     data = json.dumps({"chat_id": chat_id, "text": text, "parse_mode": "Markdown"}).encode()
-    req = Request(f"https://api.telegram.org/bot{token}/sendMessage", data=data,
-                  headers={"Content-Type": "application/json"})
+    req = Request(
+        f"https://api.telegram.org/bot{token}/sendMessage", data=data, headers={"Content-Type": "application/json"}
+    )
     try:
         urlopen(req, timeout=10)
         return "sent_to_telegram"
@@ -389,6 +401,7 @@ def send_telegram(draft: OutreachDraft) -> str:
 
 
 # ── Commands ─────────────────────────────────────────────────────────────────
+
 
 def cmd_draft(args):
     target_id = args.target.lower().replace(" ", "-")
@@ -488,9 +501,14 @@ def cmd_draft_all(args):
         attachment = generate_compliance_attachment()
         body = generate_email_body(target, ot)
         draft = OutreachDraft(
-            target_id=target_id, org=target["org"], contact=target["contact"],
-            channel=target["channel"], outreach_type=otype, subject=ot["subject"],
-            body=body, attachment_path=str(attachment),
+            target_id=target_id,
+            org=target["org"],
+            contact=target["contact"],
+            channel=target["channel"],
+            outreach_type=otype,
+            subject=ot["subject"],
+            body=body,
+            attachment_path=str(attachment),
         )
         path = save_draft(draft)
         print(f"  [{target_id}] {target['org']} -> {path.name}")

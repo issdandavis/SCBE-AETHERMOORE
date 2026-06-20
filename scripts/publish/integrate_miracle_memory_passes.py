@@ -18,6 +18,7 @@ Renumbering uses a two-pass placeholder substitution so inline references
 Three new Endnote Packet entries are added to the back matter.
 A timestamped backup of the manuscript is written before overwrite.
 """
+
 from __future__ import annotations
 
 import re
@@ -57,7 +58,7 @@ def extract_prose(pass_file: Path) -> tuple[str, str]:
     if not match:
         raise ValueError(f"No '## Scene:' header in {pass_file.name}")
     title = match.group(1).strip()
-    prose = text[match.end():].lstrip()
+    prose = text[match.end() :].lstrip()
     # Strip trailing whitespace
     prose = prose.rstrip() + "\n"
     return title, prose
@@ -92,9 +93,12 @@ def renumber_chapters(manuscript: str) -> str:
 
 def insert_new_chapters(
     manuscript: str,
-    title46: str, prose46: str,
-    title47: str, prose47: str,
-    title48: str, prose48: str,
+    title46: str,
+    prose46: str,
+    title47: str,
+    prose47: str,
+    title48: str,
+    prose48: str,
 ) -> str:
     """Insert the three new chapters at their target positions in Part III."""
 
@@ -104,10 +108,10 @@ def insert_new_chapters(
     # 3 blank lines between adjacent chapters.
     anchor_a = "# Part III. Jerusalem Narrows\n\n\n## Chapter 13. The Temple Moment"
     block_a = (
-        f"# Part III. Jerusalem Narrows\n\n\n"
+        "# Part III. Jerusalem Narrows\n\n\n"
         f"## Chapter 11. {title46}\n\n{prose46}\n\n\n"
         f"## Chapter 12. {title47}\n\n{prose47}\n\n\n"
-        f"## Chapter 13. The Temple Moment"
+        "## Chapter 13. The Temple Moment"
     )
     if anchor_a not in manuscript:
         raise RuntimeError("Part III anchor for Pass 46/47 insertion not found")
@@ -117,10 +121,7 @@ def insert_new_chapters(
     # (was Ch 14, Rome Has Procedure). 3 blank lines after Pass 48 prose
     # before the next chapter heading.
     anchor_b = "## Chapter 17. Rome Has Procedure"
-    block_b = (
-        f"## Chapter 16. {title48}\n\n{prose48}\n\n\n"
-        f"## Chapter 17. Rome Has Procedure"
-    )
+    block_b = f"## Chapter 16. {title48}\n\n{prose48}\n\n\n" "## Chapter 17. Rome Has Procedure"
     if anchor_b not in manuscript:
         raise RuntimeError("Ch 17 anchor for Pass 48 insertion not found")
     manuscript = manuscript.replace(anchor_b, block_b, 1)
@@ -223,10 +224,7 @@ def insert_endnotes(manuscript: str) -> str:
     # existing "Chapter 11 (Temple Moment)" entry to "Chapter 13".
     anchor_c = "### Part III — Jerusalem\n\n**Chapter 13. The Temple Moment.**"
     block_c = (
-        "### Part III — Jerusalem\n\n"
-        f"{ENDNOTE_CH11}\n\n"
-        f"{ENDNOTE_CH12}\n\n"
-        "**Chapter 13. The Temple Moment.**"
+        "### Part III — Jerusalem\n\n" f"{ENDNOTE_CH11}\n\n" f"{ENDNOTE_CH12}\n\n" "**Chapter 13. The Temple Moment.**"
     )
     if anchor_c not in manuscript:
         raise RuntimeError("Endnote Part III anchor not found")
@@ -240,8 +238,7 @@ def insert_endnotes(manuscript: str) -> str:
         raise RuntimeError("Endnote Ch 17 anchor not found")
     if manuscript.count(anchor_d) != 1:
         raise RuntimeError(
-            f"Endnote Ch 17 anchor appears {manuscript.count(anchor_d)} times "
-            "after renumbering; expected exactly 1"
+            f"Endnote Ch 17 anchor appears {manuscript.count(anchor_d)} times " "after renumbering; expected exactly 1"
         )
     manuscript = manuscript.replace(anchor_d, block_d, 1)
 
@@ -277,9 +274,12 @@ def main() -> None:
     # Step 2: insert new chapter bodies in the main manuscript
     manuscript = insert_new_chapters(
         manuscript,
-        title46, prose46,
-        title47, prose47,
-        title48, prose48,
+        title46,
+        prose46,
+        title47,
+        prose47,
+        title48,
+        prose48,
     )
 
     # Step 3: insert new Endnote Packet entries in the back matter
@@ -288,8 +288,7 @@ def main() -> None:
     # Write
     MANUSCRIPT.write_text(manuscript, encoding="utf-8")
     after_words = len(manuscript.split())
-    print(f"Manuscript after:  {after_words:,} words "
-          f"(+{after_words - before_words:,})")
+    print(f"Manuscript after:  {after_words:,} words " f"(+{after_words - before_words:,})")
 
     # Verify final chapter count
     chapter_headers = re.findall(r"^## Chapter \d+\. ", manuscript, re.MULTILINE)

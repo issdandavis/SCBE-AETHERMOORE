@@ -192,18 +192,18 @@ def main():
     # Filter chapters
     if args.chapter:
         target = args.chapter.lower()
-        chapters = [(l, p) for l, p in chapters if target in l.lower()]
+        chapters = [(label, p) for label, p in chapters if target in label.lower()]
         if not chapters:
             print(f"No chapter matching '{args.chapter}'")
             return
     elif args.interludes:
-        chapters = [(l, p) for l, p in chapters if "interlude" in l]
+        chapters = [(label, p) for label, p in chapters if "interlude" in label]
     else:
         # Skip chapters before --start
         chapters = [
-            (l, p)
-            for l, p in chapters
-            if not re.match(r"ch(\d+)", l) or int(re.match(r"ch(\d+)", l).group(1)) >= args.start
+            (label, p)
+            for label, p in chapters
+            if not re.match(r"ch(\d+)", label) or int(re.match(r"ch(\d+)", label).group(1)) >= args.start
         ]
 
     print(f"Narrating {len(chapters)} chapters with voice={args.voice}, speed={args.speed}")

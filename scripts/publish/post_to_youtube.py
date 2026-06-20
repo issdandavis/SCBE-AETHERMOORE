@@ -19,6 +19,7 @@ Environment (from config/connector_oauth/.env.connector.oauth):
     YOUTUBE_CLIENT_ID      - OAuth 2.0 Client ID
     YOUTUBE_CLIENT_SECRET  - OAuth 2.0 Client Secret
 """
+
 from __future__ import annotations
 
 import argparse
@@ -53,7 +54,11 @@ THUMBNAILS_URL = "https://www.googleapis.com/youtube/v3/thumbnails/set"
 PLAYLISTS_URL = "https://www.googleapis.com/youtube/v3/playlists"
 PLAYLIST_ITEMS_URL = "https://www.googleapis.com/youtube/v3/playlistItems"
 REDIRECT_URI = "http://127.0.0.1:8922/callback"
-SCOPES = "https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube https://www.googleapis.com/auth/youtube.force-ssl"
+SCOPES = (
+    "https://www.googleapis.com/auth/youtube.upload "
+    "https://www.googleapis.com/auth/youtube "
+    "https://www.googleapis.com/auth/youtube.force-ssl"
+)
 
 AUTHOR_NAME = "Issac Daniel Davis"
 GITHUB_URL = "https://github.com/issdandavis/SCBE-AETHERMOORE"
@@ -119,12 +124,14 @@ def refresh_access_token(refresh_token: str) -> dict | None:
     if not client_id or not client_secret:
         return None
 
-    data = urllib.parse.urlencode({
-        "grant_type": "refresh_token",
-        "refresh_token": refresh_token,
-        "client_id": client_id,
-        "client_secret": client_secret,
-    }).encode("utf-8")
+    data = urllib.parse.urlencode(
+        {
+            "grant_type": "refresh_token",
+            "refresh_token": refresh_token,
+            "client_id": client_id,
+            "client_secret": client_secret,
+        }
+    ).encode("utf-8")
 
     req = urllib.request.Request(TOKEN_URL, data=data, method="POST")
     req.add_header("Content-Type", "application/x-www-form-urlencoded")
@@ -231,7 +238,7 @@ def do_auth() -> None:
         tokens = json.loads(resp.read().decode())
         tokens["expires_at"] = time.time() + tokens.get("expires_in", 3600)
         save_tokens(tokens)
-        print(f"\n  Access token obtained!")
+        print("\n  Access token obtained!")
         print(f"  Scopes: {tokens.get('scope', 'unknown')}")
         print(f"  Expires in: {tokens.get('expires_in', '?')}s")
         if tokens.get("refresh_token"):
@@ -253,7 +260,7 @@ def _auto_description(article_path: Path | None, max_words: int = 200) -> str:
     if text.startswith("---"):
         end = text.find("---", 3)
         if end != -1:
-            text = text[end + 3:]
+            text = text[end + 3 :]
 
     # Strip markdown artifacts
     text = re.sub(r"```[\s\S]*?```", " ", text)
@@ -329,10 +336,12 @@ def upload_video(
         return result
 
     # Step 1: Initiate resumable upload
-    params = urllib.parse.urlencode({
-        "uploadType": "resumable",
-        "part": "snippet,status",
-    })
+    params = urllib.parse.urlencode(
+        {
+            "uploadType": "resumable",
+            "part": "snippet,status",
+        }
+    )
     init_url = f"{UPLOAD_URL}?{params}"
 
     metadata_bytes = json.dumps(metadata).encode("utf-8")
@@ -351,7 +360,7 @@ def upload_video(
             result["status"] = "error"
             result["detail"] = "No upload URL returned from initiation"
             return result
-        print(f"  Upload initiated, got resumable URL")
+        print("  Upload initiated, got resumable URL")
     except urllib.error.HTTPError as e:
         body = e.read().decode() if e.fp else ""
         result["status"] = "error"
@@ -406,7 +415,7 @@ def _upload_thumbnail(token: str, video_id: str, thumb_path: Path) -> bool:
 
     try:
         urllib.request.urlopen(req, context=ctx, timeout=30)
-        print(f"  Thumbnail uploaded successfully")
+        print("  Thumbnail uploaded successfully")
         return True
     except urllib.error.HTTPError as e:
         body = e.read().decode() if e.fp else ""
@@ -416,10 +425,12 @@ def _upload_thumbnail(token: str, video_id: str, thumb_path: Path) -> bool:
 
 def create_playlist(token: str, title: str, description: str, privacy: str) -> str:
     """Create a YouTube playlist and return its ID."""
-    body = json.dumps({
-        "snippet": {"title": title, "description": description},
-        "status": {"privacyStatus": privacy},
-    }).encode("utf-8")
+    body = json.dumps(
+        {
+            "snippet": {"title": title, "description": description},
+            "status": {"privacyStatus": privacy},
+        }
+    ).encode("utf-8")
 
     params = urllib.parse.urlencode({"part": "snippet,status"})
     url = f"{PLAYLISTS_URL}?{params}"
@@ -442,13 +453,15 @@ def create_playlist(token: str, title: str, description: str, privacy: str) -> s
 
 def add_to_playlist(token: str, playlist_id: str, video_id: str, position: int) -> bool:
     """Add a video to a playlist at a specific position."""
-    body = json.dumps({
-        "snippet": {
-            "playlistId": playlist_id,
-            "resourceId": {"kind": "youtube#video", "videoId": video_id},
-            "position": position,
+    body = json.dumps(
+        {
+            "snippet": {
+                "playlistId": playlist_id,
+                "resourceId": {"kind": "youtube#video", "videoId": video_id},
+                "position": position,
+            }
         }
-    }).encode("utf-8")
+    ).encode("utf-8")
 
     params = urllib.parse.urlencode({"part": "snippet"})
     url = f"{PLAYLIST_ITEMS_URL}?{params}"
@@ -505,7 +518,7 @@ def run_queue_upload(args) -> int:
         print(f"       File: {ep['file']} ({size})")
         print(f"       Thumb: {'yes' if thumb.exists() else 'no'}")
         if not mp4.exists():
-            print(f"       WARNING: Video file not found!")
+            print("       WARNING: Video file not found!")
         print()
 
     if args.dry_run:
@@ -554,7 +567,7 @@ def run_queue_upload(args) -> int:
             if playlist_id and video_id:
                 ok = add_to_playlist(token, playlist_id, video_id, len(uploaded) - 1)
                 if ok:
-                    print(f"    Added to playlist.")
+                    print("    Added to playlist.")
 
             # Rate-limit (YouTube quota = 10,000 units/day, each upload = 1600 units)
             if i < start + len(episodes):
@@ -593,12 +606,15 @@ def main() -> int:
     parser.add_argument("--description", default="", help="Video description (auto-generated if omitted)")
     parser.add_argument("--tags", default="", help="Comma-separated tags")
     parser.add_argument(
-        "--category", default=DEFAULT_CATEGORY,
+        "--category",
+        default=DEFAULT_CATEGORY,
         help=f"YouTube category ID (default: {DEFAULT_CATEGORY} = Science & Technology)",
     )
     parser.add_argument("--thumbnail", default="", help="Path to thumbnail image (PNG/JPEG)")
     parser.add_argument(
-        "--privacy", default=DEFAULT_PRIVACY, choices=VALID_PRIVACIES,
+        "--privacy",
+        default=DEFAULT_PRIVACY,
+        choices=VALID_PRIVACIES,
         help=f"Privacy status (default: {DEFAULT_PRIVACY})",
     )
     parser.add_argument("--article", default="", help="Source article for auto-description generation")
@@ -647,9 +663,17 @@ def main() -> int:
     if not description:
         description = f"{title} by {AUTHOR_NAME}"
 
-    tags = [t.strip() for t in args.tags.split(",") if t.strip()] if args.tags else [
-        "SCBE", "AETHERMOORE", "AI Safety", "machine learning", "Issac Daniel Davis",
-    ]
+    tags = (
+        [t.strip() for t in args.tags.split(",") if t.strip()]
+        if args.tags
+        else [
+            "SCBE",
+            "AETHERMOORE",
+            "AI Safety",
+            "machine learning",
+            "Issac Daniel Davis",
+        ]
+    )
 
     thumbnail_path = Path(args.thumbnail) if args.thumbnail else None
     if thumbnail_path and not thumbnail_path.is_absolute():

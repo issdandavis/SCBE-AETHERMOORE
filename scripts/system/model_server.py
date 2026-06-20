@@ -14,6 +14,7 @@ Endpoints:
 import argparse
 import os
 import time
+
 # BASE_MODELS and _build_adapter_configs defined below after os import
 from pathlib import Path
 
@@ -24,7 +25,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from peft import PeftModel
 from pydantic import BaseModel
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
-
 
 # Detect which model size to serve (set via --model flag or MODEL_SIZE env var)
 _MODEL_SIZE = os.environ.get("MODEL_SIZE", "360m")
@@ -37,7 +37,10 @@ ADAPTER_BASE = "F:/scbe-rag/adapters"
 
 _SYSTEMS = {
     "coder": "You are a precise coding assistant. Write clean, working code with brief explanations.",
-    "lawbot": "You are a helpful legal information assistant. Always clarify you provide general information, not legal advice, and recommend consulting an attorney for specific situations.",
+    "lawbot": (
+        "You are a helpful legal information assistant. Always clarify you provide general information, "
+        "not legal advice, and recommend consulting an attorney for specific situations."
+    ),
     "commerce": (
         "You are a commerce and web development assistant. "
         "You help with Square payments, Stripe, frontend/backend code, security, and checkout processing. "
@@ -46,6 +49,7 @@ _SYSTEMS = {
     "base": "You are a helpful assistant.",
 }
 
+
 def _build_adapter_configs(model_size: str) -> dict:
     return {
         "coder": {"path": f"{ADAPTER_BASE}/coder-{model_size}", "system": _SYSTEMS["coder"]},
@@ -53,6 +57,7 @@ def _build_adapter_configs(model_size: str) -> dict:
         "commerce": {"path": f"{ADAPTER_BASE}/commerce-{model_size}", "system": _SYSTEMS["commerce"]},
         "base": {"path": None, "system": _SYSTEMS["base"]},
     }
+
 
 BASE_MODEL = BASE_MODELS[_MODEL_SIZE]
 ADAPTER_CONFIGS = _build_adapter_configs(_MODEL_SIZE)
@@ -105,7 +110,7 @@ def load_base():
 
 
 def load_adapter(adapter_name: str):
-    global _active_adapter, _model_with_adapter, _base_model
+    global _active_adapter, _model_with_adapter
 
     if adapter_name == _active_adapter:
         return  # Already loaded
@@ -121,7 +126,10 @@ def load_adapter(adapter_name: str):
 
     adapter_path = cfg["path"]
     if not (Path(adapter_path) / "adapter_config.json").exists():
-        raise ValueError(f"Adapter '{adapter_name}' not trained yet. Run: python scripts/system/hand_tune.py --adapter {adapter_name}")
+        raise ValueError(
+            f"Adapter '{adapter_name}' not trained yet. "
+            f"Run: python scripts/system/hand_tune.py --adapter {adapter_name}"
+        )
 
     print(f"Loading adapter: {adapter_name}")
     _model_with_adapter = PeftModel.from_pretrained(_base_model, adapter_path)
@@ -152,7 +160,7 @@ def generate(adapter_name: str, prompt: str, max_tokens: int = 256) -> str:
             pad_token_id=_tokenizer.eos_token_id,
         )
 
-    new_tokens = output[0][inputs["input_ids"].shape[1]:]
+    new_tokens = output[0][inputs["input_ids"].shape[1] :]
     return _tokenizer.decode(new_tokens, skip_special_tokens=True).strip()
 
 
@@ -217,8 +225,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--port", type=int, default=8010)
     parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--model", choices=["360m", "7b"], default=_MODEL_SIZE,
-                        help="Which base model to serve (default: 360m)")
+    parser.add_argument(
+        "--model", choices=["360m", "7b"], default=_MODEL_SIZE, help="Which base model to serve (default: 360m)"
+    )
     args = parser.parse_args()
 
     if args.model != _MODEL_SIZE:

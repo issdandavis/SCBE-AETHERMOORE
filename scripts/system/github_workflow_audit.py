@@ -96,7 +96,8 @@ def audit_local_workflows(repo_root: Path, reason: str | None = None) -> list[Wo
                 last_run_id=None,
                 failure_reason=reason,
                 triage="yellow",
-                fix_suggestion="Live GitHub workflow status unavailable from this shell; local workflow inventory generated instead.",
+                fix_suggestion="Live GitHub workflow status unavailable from this shell; "
+                "local workflow inventory generated instead.",
             )
         )
     return results
@@ -162,17 +163,20 @@ def triage_failure(name: str, log: str) -> tuple[str, str]:
     if "dependabot" in log_lower and ("doesn't have access" in log_lower or "does not have access" in log_lower):
         return (
             "yellow",
-            "Dependabot cannot access one dependency source — remove the private/unreachable source or grant Dependabot access",
+            "Dependabot cannot access one dependency source — "
+            "remove the private/unreachable source or grant Dependabot access",
         )
     if "failed to request additional scope" in log_lower:
         return (
             "yellow",
-            "Dependabot failed while requesting repository scope — fix dependency source visibility or Dependabot permissions",
+            "Dependabot failed while requesting repository scope — "
+            "fix dependency source visibility or Dependabot permissions",
         )
     if "either the repo doesn't exist" in log_lower or "repository not found" in log_lower:
         return (
             "yellow",
-            "Dependency source repository is missing or inaccessible — fix the dependency URL/source or repository permissions",
+            "Dependency source repository is missing or inaccessible — "
+            "fix the dependency URL/source or repository permissions",
         )
     if "assertionerror" in log_lower or "assert" in log_lower:
         return "red", "Test assertion failure — real bug, needs code fix"
@@ -216,7 +220,8 @@ def audit() -> list[WorkflowHealth]:
                     last_run_id=None,
                     failure_reason=None,
                     triage="yellow",
-                    fix_suggestion="No run found in the recent audit window — trigger manually if this workflow should still be active",
+                    fix_suggestion="No run found in the recent audit window — "
+                    "trigger manually if this workflow should still be active",
                 )
             )
             continue

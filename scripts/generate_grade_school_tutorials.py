@@ -20,6 +20,7 @@ Grade bands:
 
 Output: training-data/sft/grade_school_coding_tutorials.jsonl
 """
+
 import json
 import hashlib
 from datetime import datetime, timezone
@@ -35,10 +36,25 @@ TONGUES = {
         "phi_weight": 1.000,
         "sound": "soft vowels (a, ae, ei, ia)",
         "flavor": "gentle commander",
-        "prefixes": ["sil", "kor", "vel", "zar", "keth", "thul", "nav", "ael",
-                     "ra", "med", "gal", "lan", "joy", "good", "nex", "vara"],
-        "suffixes": ["a", "ae", "ei", "ia", "oa", "uu", "eth", "ar",
-                     "or", "il", "an", "en", "un", "ir", "oth", "esh"],
+        "prefixes": [
+            "sil",
+            "kor",
+            "vel",
+            "zar",
+            "keth",
+            "thul",
+            "nav",
+            "ael",
+            "ra",
+            "med",
+            "gal",
+            "lan",
+            "joy",
+            "good",
+            "nex",
+            "vara",
+        ],
+        "suffixes": ["a", "ae", "ei", "ia", "oa", "uu", "eth", "ar", "or", "il", "an", "en", "un", "ir", "oth", "esh"],
     },
     "AV": {
         "name": "Avali",
@@ -47,11 +63,25 @@ TONGUES = {
         "phi_weight": 1.618,
         "sound": "melodic syllables (saina, talan, vessa)",
         "flavor": "wise traveler",
-        "prefixes": ["saina", "talan", "vessa", "maren", "oriel", "serin",
-                     "nurel", "lirea", "kiva", "lumen", "calma", "ponte",
-                     "verin", "nava", "sela", "tide"],
-        "suffixes": ["a", "e", "i", "o", "u", "y", "la", "re",
-                     "na", "sa", "to", "mi", "ve", "ri", "en", "ul"],
+        "prefixes": [
+            "saina",
+            "talan",
+            "vessa",
+            "maren",
+            "oriel",
+            "serin",
+            "nurel",
+            "lirea",
+            "kiva",
+            "lumen",
+            "calma",
+            "ponte",
+            "verin",
+            "nava",
+            "sela",
+            "tide",
+        ],
+        "suffixes": ["a", "e", "i", "o", "u", "y", "la", "re", "na", "sa", "to", "mi", "ve", "ri", "en", "ul"],
     },
     "RU": {
         "name": "Runethic",
@@ -60,11 +90,42 @@ TONGUES = {
         "phi_weight": 2.618,
         "sound": "hard consonants (khar, drath, bront)",
         "flavor": "stern judge",
-        "prefixes": ["khar", "drath", "bront", "geld", "storn", "valk",
-                     "krenn", "borg", "thane", "jord", "mosk", "grim",
-                     "holt", "rust", "norn", "weld"],
-        "suffixes": ["ak", "en", "ir", "oth", "uk", "ash", "eld", "orn",
-                     "un", "arg", "isk", "olt", "eth", "ard", "ung", "ost"],
+        "prefixes": [
+            "khar",
+            "drath",
+            "bront",
+            "geld",
+            "storn",
+            "valk",
+            "krenn",
+            "borg",
+            "thane",
+            "jord",
+            "mosk",
+            "grim",
+            "holt",
+            "rust",
+            "norn",
+            "weld",
+        ],
+        "suffixes": [
+            "ak",
+            "en",
+            "ir",
+            "oth",
+            "uk",
+            "ash",
+            "eld",
+            "orn",
+            "un",
+            "arg",
+            "isk",
+            "olt",
+            "eth",
+            "ard",
+            "ung",
+            "ost",
+        ],
     },
     "CA": {
         "name": "Cassisivadan",
@@ -73,11 +134,25 @@ TONGUES = {
         "phi_weight": 4.236,
         "sound": "playful clicks (bip, bop, klik, loopa)",
         "flavor": "playful calculator",
-        "prefixes": ["bip", "bop", "klik", "loopa", "zix", "taka",
-                     "noo", "fiz", "wub", "deka", "pix", "roto",
-                     "skii", "blep", "yotz", "mek"],
-        "suffixes": ["a", "o", "i", "u", "ee", "oo", "ix", "op",
-                     "az", "ik", "ul", "ep", "oz", "ak", "ip", "ux"],
+        "prefixes": [
+            "bip",
+            "bop",
+            "klik",
+            "loopa",
+            "zix",
+            "taka",
+            "noo",
+            "fiz",
+            "wub",
+            "deka",
+            "pix",
+            "roto",
+            "skii",
+            "blep",
+            "yotz",
+            "mek",
+        ],
+        "suffixes": ["a", "o", "i", "u", "ee", "oo", "ix", "op", "az", "ik", "ul", "ep", "oz", "ak", "ip", "ux"],
     },
     "UM": {
         "name": "Umbroth",
@@ -86,11 +161,25 @@ TONGUES = {
         "phi_weight": 6.854,
         "sound": "hushed sounds (veil, zhur, hush, thorn)",
         "flavor": "quiet guardian",
-        "prefixes": ["veil", "zhur", "hush", "thorn", "shade", "murk",
-                     "pall", "dusk", "nyx", "gloam", "soot", "crypt",
-                     "wraith", "fog", "dim", "void"],
-        "suffixes": ["a", "e", "i", "o", "ur", "ys", "en", "ash",
-                     "il", "oth", "un", "eth", "ar", "ix", "om", "ul"],
+        "prefixes": [
+            "veil",
+            "zhur",
+            "hush",
+            "thorn",
+            "shade",
+            "murk",
+            "pall",
+            "dusk",
+            "nyx",
+            "gloam",
+            "soot",
+            "crypt",
+            "wraith",
+            "fog",
+            "dim",
+            "void",
+        ],
+        "suffixes": ["a", "e", "i", "o", "ur", "ys", "en", "ash", "il", "oth", "un", "eth", "ar", "ix", "om", "ul"],
     },
     "DR": {
         "name": "Draumric",
@@ -99,11 +188,25 @@ TONGUES = {
         "phi_weight": 11.090,
         "sound": "metallic weight (anvil, forge, stone, steam)",
         "flavor": "master builder",
-        "prefixes": ["anvil", "forge", "stone", "steam", "bolt", "gear",
-                     "rivet", "plate", "beam", "iron", "slag", "temper",
-                     "quench", "weld", "cast", "press"],
-        "suffixes": ["a", "e", "i", "o", "ak", "en", "ir", "ot",
-                     "um", "as", "ik", "ol", "eth", "ar", "un", "ox"],
+        "prefixes": [
+            "anvil",
+            "forge",
+            "stone",
+            "steam",
+            "bolt",
+            "gear",
+            "rivet",
+            "plate",
+            "beam",
+            "iron",
+            "slag",
+            "temper",
+            "quench",
+            "weld",
+            "cast",
+            "press",
+        ],
+        "suffixes": ["a", "e", "i", "o", "ak", "en", "ir", "ot", "um", "as", "ik", "ol", "eth", "ar", "un", "ox"],
     },
 }
 
@@ -338,13 +441,13 @@ def build_tongue_section(tongue_key: str, lesson: dict) -> str:
     encoded_words = [tongue_word(tongue_key, b) for b in keyword_bytes[:6]]
 
     section = (
-        f"\n\n---\n"
+        "\n\n---\n"
         f"**{t['name']} Translation** ({t['freq']}, the tongue of {t['domain']})\n\n"
         f"In {t['name']}, we speak with {t['sound']} — like a {t['flavor']}.\n\n"
         f"The keyword '{lesson['key_word']}' sounds like this in {t['name']}:\n"
         f"  {' '.join(encoded_words)}\n\n"
-        f"Say it out loud! Each word is built from a prefix (the BIG idea) and "
-        f"a suffix (the small detail), joined by an apostrophe. "
+        "Say it out loud! Each word is built from a prefix (the BIG idea) and "
+        "a suffix (the small detail), joined by an apostrophe. "
         f"{t['name']} has exactly 256 words — one for every possible byte value.\n\n"
         f"**{t['name']} fun fact:** {t['name']} resonates at {t['freq']}. "
     )
@@ -357,11 +460,15 @@ def build_tongue_section(tongue_key: str, lesson: dict) -> str:
     elif tongue_key == "RU":
         section += "Runethic is the language of rules — perfect for writing the LAWS your program must follow."
     elif tongue_key == "CA":
-        section += "Cassisivadan is the language of computation — perfect for the MATH and LOGIC inside your code. Bip bop!"
+        section += (
+            "Cassisivadan is the language of computation — perfect for the MATH and LOGIC inside your code. Bip bop!"
+        )
     elif tongue_key == "UM":
         section += "Umbroth is the language of secrets — perfect for keeping your program SAFE and your data HIDDEN."
     elif tongue_key == "DR":
-        section += "Draumric is the language of building — perfect for CONSTRUCTING solid, reliable programs piece by piece."
+        section += (
+            "Draumric is the language of building — perfect for CONSTRUCTING solid, reliable programs piece by piece."
+        )
 
     return section
 
@@ -375,22 +482,22 @@ def build_lesson_response(lesson: dict) -> str:
     parts.append(f"**Grade band:** {lesson['grade_band']} (ages {lesson['ages']})\n")
     parts.append(f"**Key concept:** {lesson['key_word']}\n\n")
 
-    parts.append(f"## What is it?\n")
+    parts.append("## What is it?\n")
     parts.append(f"{lesson['analogy']}\n\n")
 
-    parts.append(f"## Try it WITHOUT a computer first!\n")
+    parts.append("## Try it WITHOUT a computer first!\n")
     parts.append(f"{lesson['unplugged']}\n\n")
 
-    parts.append(f"## Story time\n")
+    parts.append("## Story time\n")
     parts.append(f"{lesson['story']}\n\n")
 
-    parts.append(f"## Now try it with code!\n")
+    parts.append("## Now try it with code!\n")
     parts.append(f"{lesson['code_idea']}\n\n")
 
-    parts.append(f"## Your challenge\n")
+    parts.append("## Your challenge\n")
     parts.append(f"{lesson['challenge']}\n\n")
 
-    parts.append(f"---\n")
+    parts.append("---\n")
     parts.append(f"*Research says:* {lesson['research_note']}\n")
 
     # Add all 6 Sacred Tongue translations
@@ -437,8 +544,8 @@ def build_user_prompt(lesson: dict) -> str:
     return (
         f"Teach me about {lesson['key_word']} in coding! "
         f"I am {grade_label}. "
-        f"Show me with a story, something I can try without a computer, "
-        f"and then real code. Also teach me the word in all Six Sacred Tongues!"
+        "Show me with a story, something I can try without a computer, "
+        "and then real code. Also teach me the word in all Six Sacred Tongues!"
     )
 
 
@@ -484,8 +591,8 @@ def generate_records() -> list[dict]:
                 f"You speak with {t['sound']}.\n\n"
                 f"{t['name']} resonates at {t['freq']} with phi weight {t['phi_weight']:.3f}.\n\n"
                 f"Teach coding concepts to children in grades {lesson['grade_band']} (ages {lesson['ages']}). "
-                f"Use stories, unplugged activities, and Sacred Tongue words. "
-                f"Be encouraging and playful."
+                "Use stories, unplugged activities, and Sacred Tongue words. "
+                "Be encouraging and playful."
             )
 
             keyword_bytes = lesson["key_word"].encode("utf-8")
@@ -495,18 +602,18 @@ def generate_records() -> list[dict]:
                 f"# {lesson['title']} — in {t['name']}\n\n"
                 f"Welcome, young coder! I am your {t['name']} teacher. "
                 f"Let me teach you about **{lesson['key_word']}** in my tongue.\n\n"
-                f"## The Word\n"
+                "## The Word\n"
                 f"In {t['name']}, '{lesson['key_word']}' sounds like:\n"
                 f"**{' '.join(encoded_words)}**\n\n"
                 f"Say each word out loud. Feel the {t['sound']} in your voice. "
                 f"Good! You are speaking {t['name']}!\n\n"
-                f"## The Story\n"
+                "## The Story\n"
                 f"{lesson['story']}\n\n"
-                f"## Try It Without a Computer\n"
+                "## Try It Without a Computer\n"
                 f"{lesson['unplugged']}\n\n"
-                f"## The Code\n"
+                "## The Code\n"
                 f"{lesson['code_idea']}\n\n"
-                f"## Your Challenge\n"
+                "## Your Challenge\n"
                 f"{lesson['challenge']}\n\n"
                 f"## {t['name']} Encoding\n"
                 f"Every letter of '{lesson['key_word']}' becomes a {t['name']} word:\n"
@@ -518,14 +625,17 @@ def generate_records() -> list[dict]:
 
             tongue_response += (
                 f"\nWith 16 prefixes and 16 suffixes, {t['name']} has 256 words — "
-                f"one for every byte. When you learn all 256, you can encode ANY message "
+                "one for every byte. When you learn all 256, you can encode ANY message "
                 f"in the tongue of {t['domain']}!"
             )
 
             tongue_record = {
                 "messages": [
                     {"role": "system", "content": tongue_system},
-                    {"role": "user", "content": f"Teach me '{lesson['key_word']}' in {t['name']}! I am in grade {lesson['grade_band']}."},
+                    {
+                        "role": "user",
+                        "content": f"Teach me '{lesson['key_word']}' in {t['name']}! I am in grade {lesson['grade_band']}.",
+                    },
                     {"role": "assistant", "content": tongue_response},
                 ],
                 "metadata": {
@@ -537,7 +647,9 @@ def generate_records() -> list[dict]:
                     "record_type": "coding_tutorial_single_tongue",
                     "tongue": tongue_key,
                     "tongue_name": t["name"],
-                    "research_citation": lesson["research_note"].split(":")[0] if ":" in lesson["research_note"] else "",
+                    "research_citation": (
+                        lesson["research_note"].split(":")[0] if ":" in lesson["research_note"] else ""
+                    ),
                     "timestamp": now,
                     "content_hash": content_hash(tongue_response),
                 },

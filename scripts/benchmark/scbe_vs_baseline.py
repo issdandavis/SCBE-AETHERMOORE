@@ -39,12 +39,20 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from tests.adversarial.scbe_harness import SCBEDetectionGate, text_to_tongue_coords, quantize_spin, build_metric_tensor, TONGUE_NAMES, TONGUE_WEIGHTS, PI, PHI
+from tests.adversarial.scbe_harness import (
+    SCBEDetectionGate,
+    text_to_tongue_coords,
+    quantize_spin,
+    build_metric_tensor,
+    TONGUE_NAMES,
+    TONGUE_WEIGHTS,
+    PI,
+    PHI,
+)
 from tests.adversarial.attack_corpus import (
     BASELINE_CLEAN,
     get_all_attacks,
 )
-
 
 # ═══════════════════════════════════════════════════════════
 # Layer-by-layer state capture ("time dilation")
@@ -503,13 +511,16 @@ def run_benchmark():
         f"{'Avg harmonic cost':.<30} {result_a.avg_cost:>12.2f} {result_b.avg_cost:>12.2f} {result_c.avg_cost:>12.2f}"
     )
     print(
-        f"{'Avg drift magnitude':.<30} {result_a.avg_drift:>12.4f} {result_b.avg_drift:>12.4f} {result_c.avg_drift:>12.4f}"
+        f"{'Avg drift magnitude':.<30} {result_a.avg_drift:>12.4f} {result_b.avg_drift:>12.4f} "
+        f"{result_c.avg_drift:>12.4f}"
     )
     print(
-        f"{'Audio divergence':.<30} {result_a.audio_divergence:>12.2f} {result_b.audio_divergence:>12.2f} {result_c.audio_divergence:>12.2f}"
+        f"{'Audio divergence':.<30} {result_a.audio_divergence:>12.2f} {result_b.audio_divergence:>12.2f} "
+        f"{result_c.audio_divergence:>12.2f}"
     )
     print(
-        f"{'Avg detection time (ms)':.<30} {result_a.avg_detection_ms:>12.3f} {result_b.avg_detection_ms:>12.3f} {result_c.avg_detection_ms:>12.3f}"
+        f"{'Avg detection time (ms)':.<30} {result_a.avg_detection_ms:>12.3f} {result_b.avg_detection_ms:>12.3f} "
+        f"{result_c.avg_detection_ms:>12.3f}"
     )
     print("=" * 70)
 

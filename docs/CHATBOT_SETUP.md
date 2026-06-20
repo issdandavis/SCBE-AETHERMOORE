@@ -51,7 +51,7 @@ The widget calls `${base}/v1/chat` (POST) and `${base}/v1/spaceport/status` (GET
 
 ## Deploying the HF Space
 
-Source lives in `space/scbe-chat/`:
+Source lives in `spaces/scbe-chat/`:
 
 - `app.py` - FastAPI proxy that never leaks the token
 - `requirements.txt` - FastAPI, Uvicorn, httpx, Pydantic
@@ -61,7 +61,7 @@ Source lives in `space/scbe-chat/`:
 One-time deploy:
 
 1. Create a Space named `issdandavis/scbe-polly-chat`, SDK docker.
-2. Copy the four files from `space/scbe-chat/` into the Space repo.
+2. Copy the four files from `spaces/scbe-chat/` into the Space repo.
 3. In Space settings, add the secret `HF_TOKEN` (read scope).
 4. Optional variable `HF_MODEL` (default `Qwen/Qwen2.5-7B-Instruct`).
 5. Wait for build. Live URL: `https://<user>-scbe-polly-chat.hf.space`.
@@ -102,7 +102,7 @@ bag-of-words, so dense keyword coverage ranks better than verbose prose.
 | `docs/static/polly-companion.js` | Widget source (runs on every page) |
 | `docs/static/polly-sidebar.css` | Widget styles |
 | `docs/chatbot-corpus.json` | Offline passage index |
-| `space/scbe-chat/app.py` | HF Space backend |
-| `space/scbe-chat/Dockerfile` | Space container |
-| `space/scbe-chat/requirements.txt` | Space Python deps |
-| `space/scbe-chat/README.md` | Space deploy instructions |
+| `spaces/scbe-chat/app.py` | HF Space backend |
+| `spaces/scbe-chat/Dockerfile` | Space container |
+| `spaces/scbe-chat/requirements.txt` | Space Python deps |
+| `spaces/scbe-chat/README.md` | Space deploy instructions |

@@ -1,0 +1,42 @@
+{
+  "_source": "MBPP sanitized (google-research/google-research, mbpp/) -- public benchmark",
+  "_note": "3 problems bundled verbatim for a hermetic test; live runner pulls the full 427",
+  "problems": [
+    {
+      "task_id": 2,
+      "prompt": "Write a function to find the shared elements from the given two lists.",
+      "code": "def similar_elements(test_tup1, test_tup2):\n  res = tuple(set(test_tup1) & set(test_tup2))\n  return (res) ",
+      "test_list": [
+        "assert set(similar_elements((3, 4, 5, 6),(5, 7, 4, 10))) == set((4, 5))",
+        "assert set(similar_elements((1, 2, 3, 4),(5, 4, 3, 7))) == set((3, 4))",
+        "assert set(similar_elements((11, 12, 14, 13),(17, 15, 14, 13))) == set((13, 14))"
+      ],
+      "test_imports": []
+    },
+    {
+      "task_id": 6,
+      "prompt": "Write a python function to check whether the two numbers differ at one bit position only or not.",
+      "code": "def is_Power_Of_Two (x): \n    return x and (not(x & (x - 1))) \ndef differ_At_One_Bit_Pos(a,b): \n    return is_Power_Of_Two(a ^ b)",
+      "test_list": [
+        "assert differ_At_One_Bit_Pos(13,9) == True",
+        "assert differ_At_One_Bit_Pos(15,8) == False",
+        "assert differ_At_One_Bit_Pos(2,4) == False",
+        "assert differ_At_One_Bit_Pos(2, 3) == True",
+        "assert differ_At_One_Bit_Pos(5, 1) == True",
+        "assert differ_At_One_Bit_Pos(1, 5) == True"
+      ],
+      "test_imports": []
+    },
+    {
+      "task_id": 8,
+      "prompt": "Write a function to find squares of individual elements in a list.",
+      "code": "def square_nums(nums):\n square_nums = list(map(lambda x: x ** 2, nums))\n return square_nums",
+      "test_list": [
+        "assert square_nums([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])==[1, 4, 9, 16, 25, 36, 49, 64, 81, 100]",
+        "assert square_nums([10,20,30])==([100,400,900])",
+        "assert square_nums([12,15])==([144,225])"
+      ],
+      "test_imports": []
+    }
+  ]
+}

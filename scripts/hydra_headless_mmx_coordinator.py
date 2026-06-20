@@ -30,7 +30,6 @@ from agents.antivirus_membrane import scan_text_for_threats
 from agents.multi_model_modal_matrix import Decision, MultiModelModalMatrix
 from hydra.limbs import MultiTabBrowserLimb
 
-
 MODEL_WEIGHTS: dict[str, dict[str, float]] = {
     "ko_navigator": {"navigation": 0.60, "content": 0.20, "threat": 0.20},
     "ru_reader": {"navigation": 0.20, "content": 0.60, "threat": 0.20},

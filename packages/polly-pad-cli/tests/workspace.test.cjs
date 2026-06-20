@@ -692,7 +692,7 @@ test('polly ps run is dry-run by default and renders named params', () => {
   }
 });
 // ---------------------------------------------------------------------------
-// Test 29: polly ps run dry-run does not execute PATH-resolved pwsh probes
+// Test 31: polly ps run dry-run does not execute PATH-resolved pwsh probes
 // ---------------------------------------------------------------------------
 test('polly ps run dry-run does not execute PATH-resolved pwsh probes', () => {
   const dir = mktemp();
@@ -721,5 +721,46 @@ test('polly ps run dry-run does not execute PATH-resolved pwsh probes', () => {
   } finally {
     cleanup(dir);
     cleanup(binDir);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Test 29: polly next emits a deterministic operator packet
+// ---------------------------------------------------------------------------
+test('polly next emits a deterministic operator packet', () => {
+  const dir = mktemp();
+  try {
+    run(dir, ['init', 'NextPacketTest']);
+    run(dir, ['task', 'add', 'wire the benchmark dashboard']);
+    const result = run(dir, ['next', '--json']);
+    assert.strictEqual(result.status, 0, 'next should exit 0\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.strictEqual(payload.schema_version, 'polly_operator_packet_v1');
+    assert.strictEqual(payload.pad.name, 'NextPacketTest');
+    assert.strictEqual(payload.pad.pending_count, 1);
+    assert.strictEqual(payload.next_task.id, 'task-001');
+    assert.strictEqual(payload.next_task.text, 'wire the benchmark dashboard');
+    assert.strictEqual(payload.audit.ok, true);
+    assert.ok(payload.suggested_commands.some((cmd) => cmd.includes('polly task done task-001')));
+  } finally {
+    cleanup(dir);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Test 30: polly next handles an empty workspace
+// ---------------------------------------------------------------------------
+test('polly next handles an empty workspace', () => {
+  const dir = mktemp();
+  try {
+    run(dir, ['init', 'EmptyNextTest']);
+    const result = run(dir, ['next', '--json']);
+    assert.strictEqual(result.status, 0, 'next should exit 0\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.strictEqual(payload.next_task, null);
+    assert.strictEqual(payload.pad.pending_count, 0);
+    assert.ok(payload.suggested_commands.some((cmd) => cmd.includes('polly task add')));
+  } finally {
+    cleanup(dir);
   }
 });

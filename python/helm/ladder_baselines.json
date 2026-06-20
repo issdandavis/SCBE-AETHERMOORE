@@ -1,0 +1,72 @@
+{
+  "schema": "scbe_ladder_baselines_v1",
+  "measured": "2026-06-19",
+  "note": "RAW small-model baselines (no harness/rails) -- the floor any harness must beat with the SAME model. 3-run variance bands added; temperature 0, so variance is low (code is deterministic across runs; reasoning moves +-1). Findings: coder models strong on the code ladder (~87%), weak on math reasoning (~40-50%); 1.5b vs 3b barely differ -- size is not the lever, the harness is.",
+  "method": "3 runs per model per ladder; min/mean/max over the 3 totals; per_tier from a representative run.",
+  "reasoning_ladder": {
+    "of": 20,
+    "qwen2.5-coder:1.5b": {"runs": [9, 8, 8], "min": 8, "mean": 8.3, "max": 9,
+      "per_tier": {"arithmetic": 4, "pre-algebra": 3, "competition-lite": 1, "multi-step": 1, "hard": 0}},
+    "qwen2.5-coder:3b": {"runs": [10, 10, 10], "min": 10, "mean": 10.0, "max": 10,
+      "per_tier": {"arithmetic": 4, "pre-algebra": 3, "competition-lite": 2, "multi-step": 1, "hard": 0}}
+  },
+  "code_curriculum": {
+    "of": 15,
+    "qwen2.5-coder:1.5b": {"runs": [13, 13, 13], "min": 13, "mean": 13.0, "max": 13,
+      "per_tier": {"elementary": 3, "middle-school": 2, "high-school": 3, "undergrad": 3, "grad/phd+": 2}},
+    "qwen2.5-coder:3b": {"runs": [13, 13, 13], "min": 13, "mean": 13.0, "max": 13,
+      "per_tier": {"elementary": 3, "middle-school": 2, "high-school": 3, "undergrad": 2, "grad/phd+": 3}}
+  },
+  "walls": {
+    "note": "Specific items both models consistently fail -- the capability basement. Verified REAL misses, not extraction artifacts (p4 'perimeter 5x8' -> 3b answers 42, expected 26: small models flub even easy word problems). fizzbuzz is a UNIVERSAL code wall = the memorized-prior ceiling, independently reproducing the stepwise finding.",
+    "reasoning_both_miss": ["p4", "c2", "c3", "m1", "m3", "m4", "h1", "h2", "h3", "h4"],
+    "reasoning_only_1.5b_misses": ["c1", "p1"],
+    "code_both_miss": ["t2_fizzbuzz"],
+    "code_only_1.5b_misses": ["t5_regex"],
+    "code_only_3b_misses": ["t4_lis"]
+  },
+  "lift": {
+    "note": "FIRST measured LIFT -- the thesis: NOT a smarter model, the SAME model with its choices routed through a tool/logic-gate. program_aided_climber = the model WRITES a short python program that computes the answer, executed in a sandboxed subprocess; RAW = it does the arithmetic in its head. Plays to a coder model's strength (write code) and offloads the mental math it botches.",
+    "method": "measure_lift(llm_climber, program_aided_climber) on the reasoning ladder, SAME model in both slots.",
+    "qwen2.5-coder:1.5b": {"raw_mean": 8.3, "raw_runs": [9, 8, 8], "pal_runs": [15, 15, 15], "pal_total": 15,
+      "total_lift": "+6 to +7 of 20", "note": "stable +6-7. The contiguous-tier metric UNDERSTATES it (PAL trips one arithmetic item, so contiguous reads T0) -- the TOTAL (8.3 -> 15) is the real signal."},
+    "qwen2.5-coder:3b": {"raw_total": 10, "pal_runs": [18, 18, 18], "pal_total": 18,
+      "total_lift": "+7 to +8 of 20", "note": "re-pulled 2026-06-19. Even bigger lift than 1.5b: RAW 10 -> PAL 17-18 (measure_lift run 17, three fresh runs 18). Lift holds and scales slightly with the base model."},
+    "code_curriculum_execution_feedback": {
+      "tool": "make_repair_generator (free_generator.py): write code -> run the PUBLIC test -> on fail, feed the failure back and retry (hidden held out, no leakage). The code-ladder analog of routing reasoning through execution.",
+      "qwen2.5-coder:1.5b": {"raw": 13, "repair_rounds_2": 13, "total_lift": "+0 of 15"},
+      "qwen2.5-coder:3b": {"raw": 13, "repair_rounds_2": 13, "total_lift": "+0 of 15"},
+      "finding": "LIFT = +0 for BOTH models on the curriculum, and that is the point. The repair loop FIRES on the misses (public fails for fizzbuzz + regex; proven by unit test that it retries with feedback) but the model regenerates code that STILL fails -- it cannot ACT on the signal: fizzbuzz = prior-override (keeps writing the reflexive Fizz/Buzz despite the failing test), regex = a real capability ceiling. CONTRAST with the +6-8 reasoning lift: tool-routing lifts when it SUPPLIES missing capability (compute the math the model can't do in its head), NOT when the failure is a prior/capability ceiling. Reinforces 'harness rescues interface/computation gaps, not capability'.",
+      "feedback_quality_matters": "On a HEADROOM set (MBPP-30), the SIGNAL quality moved the needle: bare 'AssertionError()' feedback gave +0, but GOT-vs-EXPECTED feedback (_diagnose) + 3 rounds gave 1.5b 20->21 (+1 in that run). 3b stayed +0 and curriculum +0. So better execution feedback yields a SMALL real lift for the weaker model -- but the residual misses are prior-override + capability ceilings that no amount of feedback crosses. The fixable part is the part where the model just needed to SEE what its code actually returned.",
+      "stuck_prior_detector": "make_repair_generator now detects when the model REGENERATES an approach it already tried (its stuck prior) via _norm_code and escalates the next round from 'fix this' to 'you are STUCK, solve it a structurally DIFFERENT way'. Mechanism is UNIT-TESTED (it provably escalates on a repeat and the restructure can break the loop). Live (one run): MBPP-30 1.5b 20->22 (+2, vs +1 for plain repair), 3b 23->24 (+1, vs +0); curriculum 1.5b 13->14. HONEST LIMITS: the lift is SMALL and near run-to-run noise (small local models on Ollama are not perfectly deterministic even at temp 0 -- but a 5x5 mean/range run RESOLVES it: RAW is deterministic at 20/30, REPAIR is [21,22,22,22,22] = mean 21.8, range 21-22, so the lift is REAL and reproducible (+1.8, ALWAYS +1 to +2, never 0). My earlier 'near noise' hedge was too conservative. Separately, the curriculum's hardest item (fizzbuzz) still fails in isolation, so the detector helps the headroom set reliably but does NOT defeat the strongest memorized prior. The thesis boundary holds: tools/structure lift interface+computation gaps and SOME stuck loops, not capability or the hardest priors."
+    }
+  },
+  "token_control_board": {
+    "task": "classify n into {unit, prime, prime-power, composite}; each conlang token (UNE/ZOR/KAEL/VEX) bound to a verified predicate; graded by the math (_truth, exact), reference oracle = 100% on every condition (harness validated). python/scbe/token_board.py, PR #2484.",
+    "numbers": 15,
+    "accuracy": {
+      "qwen2.5-coder:1.5b": {"raw": 0.53, "board": 0.27, "pruned": 0.93, "restructured": 0.33, "tool": 1.0},
+      "qwen2.5-coder:3b": {"raw": 0.67, "board": 0.20, "pruned": 0.87, "restructured": 0.73, "tool": 1.0}
+    },
+    "findings": "(1) NAIVE token-board HURTS (0.27/0.20 < raw 0.53/0.67): forcing an UNFAMILIAR conlang token is a tax -- the model knows 'prime', not 'ZOR'. Binding is not free; the aesthetic layer costs accuracy unless governance pays it back. (2) PRUNED looks huge (0.93/0.87) but it is a TRAP: with only 4 categories, pruning provably-wrong moves is largely PROCESS-OF-ELIMINATION -- the structure forces the answer, it is NOT the model choosing better (pruned fails only when the reply is unparseable). The same 'a clean-looking setup can fake the lift' caution, now applied to our OWN board. A LARGER move space is required before pruned-lift means anything. (3) RESTRUCTURE helps the stronger 3b (0.67->0.73) but HURTS the weaker 1.5b (0.53->0.33): decomposition only works if the model can answer the sub-predicates; the 1.5b is bad at primality, so the binary errors COMPOUND. (4) TOOL = 1.00 for both, always -- the deterministic route is the guaranteed ceiling. NET: the honest lever remains tool-routing; constraining to tokens or decomposing only helps conditionally, and pruning's apparent win is mostly structural on a tiny option set.",
+    "next": "re-run on a LARGER token/category space (10-20 mutually-exclusive moves) so pruning is real choice-narrowing, not 4-way elimination."
+  },
+  "process_router": {
+    "what": "the ASSISTANT as a TERNARY pipeline so no stage is overloaded (Issac's suggestion): GATE (Policy -- the owner's permission rules, a configurable object) -> TRIAGE (the router-manager: rule-based reference OR the MODEL as a 'WiFi router' that only NAMES the route) -> EXECUTOR (inject the process: compute->PAL, classify->sieve, judge->direct). python/scbe/process_router.py, PRs #2489 + #2490.",
+    "jobs": 15,
+    "results": {
+      "qwen2.5-coder:1.5b": {"raw_acc": 0.20, "raw_unsafe": 3, "assistant_rules_acc": 0.80, "assistant_model_router_acc": 0.67, "model_routing_acc": 0.75},
+      "qwen2.5-coder:3b": {"raw_acc": 0.40, "raw_unsafe": 2, "assistant_rules_acc": 1.0, "assistant_model_router_acc": 0.87, "model_routing_acc": 0.83}
+    },
+    "finding": "The ternary split keeps each assistant small (gate/triage/execute), and the assistant (deterministic routing) strongly beats raw (.80/1.00 vs .20/.40) AND is safe (unsafe 0 vs 3/2 -- raw COMPLIES with destructive). WIFI-ROUTER THESIS (Issac: 'just train the model to be a router-manager, like a wifi router'): SUPPORTED with a caveat -- the model ROUTES better (.75/.83) than it DOES the tasks (raw .20/.40), so a weak model's effort is far better spent NAMING the backend than doing the work. But routing isn't perfect, so the MODEL-router assistant (.67/.87) trails the RULES-router (.80/1.00) by exactly the model's routing errors. NET: best system = deterministic routing where you can, model routing where you must, backends carry the capability; the model is a better manager than a doer. Reference oracle (rule-router) = 15/15, 0 unsafe (harness sound), so the live gap is the model. The earlier flat token-board HURT; this active, split, permission-gated router is the working form."
+  },
+  "code_factory": {
+    "what": "the 'CODE FACTORY' (Issac) -- warehouse-topology orchestrator, modeled on Nintendo's North Bend DC (~20k orders/day on ~400 people = mostly SYSTEMS + a few managers watching conveyors). gate -> conveyor(route) -> cheap STATION does the work -> QC verifies -> ship | summon MANAGER (capable model) on exception. python/scbe/code_factory.py, PR #2493. Headline metric = MANAGER-CALL RATE (cost scales with exceptions, not throughput).",
+    "jobs": 15,
+    "results": {
+      "1.5b_stations_1.5b_fallback": {"acc": 0.80, "manager_rate": 0.33},
+      "1.5b_stations_3b_manager": {"acc": 0.93, "manager_rate": 0.33}
+    },
+    "finding": "North Bend economics, demonstrated: 67% of jobs ship straight off the CHEAP 1.5b stations; only 33% wake the manager. A CAPABLE (3b) manager lifts acc .80->.93; a SAME-model (1.5b) 'manager' does NOT (.80) -- the lift is the manager's CAPABILITY, not a retry. KEY QC LESSON (found the hard way): WELL-FORMEDNESS QC shipped DEFECTS -- the 1.5b's compute code runs + prints a WRONG number, so QC passed it, the manager never fired, and the factory == solo. Upgrading QC to a real VERIFICATION -- a differential cross-check (executed code must AGREE with the model's direct answer) -- made the manager fire on the 5 inconsistent compute jobs. So the factory ships quality + summons managers economically ONLY where a real per-station verifier exists (classify=deterministic always-right; compute=cross-check; judge=no cheap verifier -> ships station-quality). HONEST: agreement != correctness (the cross-check is a heuristic -- could pass a confidently-wrong both-agree, or over-escalate a right answer); rate .33 is on a compute-heavy mix. Oracle 15/15, 0 unsafe, 0 managers (harness sound)."
+  }
+}

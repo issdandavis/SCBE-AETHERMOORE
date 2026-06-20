@@ -61,10 +61,41 @@ def test_sidebar_sends_scbe_web_agent_role_packet() -> None:
     """The v2 sidebar should prime Polly with the public SCBE web-agent role."""
     src = _read(ROOT / "docs" / "static" / "polly-sidebar.js")
     assert "POLLY_AGENT_ROLE" in src
-    assert 'role: "scbe-web-agent"' in src
+    assert re.search(r"role:\s*['\"]scbe-web-agent['\"]", src)
     assert "superpowers:subagent-driven-development" in src
     assert "polly_role: pollyRolePacket()" in src
     assert "agent-task packet" in src
+
+
+def test_sidebar_has_pre_ai_routes_for_zero_cost_chat() -> None:
+    """The visible Polly chat must route useful questions without paid model calls."""
+    for filename in ["polly-sidebar.js", "polly-sidebar-agent.js"]:
+        src = _read(ROOT / "docs" / "static" / filename)
+        assert "function preAiReply" in src
+        assert "function preAiFallback" in src
+        assert "Pre-AI" in src
+        assert "POLLY_ENABLE_BACKEND_CHAT" in src
+        assert "POLLY_ENABLE_BROWSER_LLM" in src
+        assert "STATIC_ONLY" in src
+        assert "staticBackendNotice" in src
+        assert "Static Polly commands" in src
+        assert "workflow snapshot" in src.lower()
+        assert "ai-workflow-snapshot.html" in src
+        assert "proof-workbench.html" in src
+
+
+def test_ai_workflow_snapshot_page_is_static_intake() -> None:
+    """The $99 intake page must work without a backend form service."""
+    src = _read(ROOT / "docs" / "ai-workflow-snapshot.html")
+    assert "$99" in src
+    assert "Download intake JSON" in src
+    assert "packet_type" in src
+    assert "aethermoore_ai_workflow_snapshot_intake_v1" in src
+    assert "POLLY_STATIC_ONLY" in src
+    assert 'data-polly-static="true"' in src
+    assert "fetch(" not in src
+    assert "mailto:" not in src
+    assert 'action="' not in src
 
 
 def test_sidebar_has_useful_product_and_agent_starters() -> None:

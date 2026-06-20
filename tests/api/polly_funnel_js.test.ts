@@ -17,6 +17,8 @@ import { describe, it, expect, beforeEach } from 'vitest';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const funnelHandler = require('../../api/polly/funnel.js');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
+const fs = require('fs');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const hfUpload = require('../../api/_polly_hf_upload.js');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const rateLimit = require('../../api/_polly_rate_limit.js');
@@ -182,5 +184,17 @@ describe('polly funnel — allowed events', () => {
     ]) {
       expect(events.has(e)).toBe(true);
     }
+  });
+});
+
+describe('polly funnel — static buyer click instrumentation', () => {
+  it('auto-tracks buy and intake CTA clicks without page-specific inline JS', () => {
+    const src = fs.readFileSync('docs/static/polly-funnel.js', 'utf8');
+
+    expect(src).toContain('autoAttachClicks');
+    expect(src).toContain("closest('a,button')");
+    expect(src).toContain('data-funnel-event');
+    expect(src).toContain('buy.stripe.com');
+    expect(src).toContain('cta_click_buy');
   });
 });

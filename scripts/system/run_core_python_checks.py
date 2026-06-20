@@ -7,7 +7,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ARTIFACT_DIR = REPO_ROOT / "artifacts" / "system-audit"
 
@@ -36,6 +35,19 @@ CORE_SMOKE_PATHS: tuple[str, ...] = (
     "tests/system/test_trap_redirect_cli.py",
     "tests/system/test_trap_dispatch_cli.py",
     "tests/system/test_trap_dispatch_workspace_cli.py",
+    # Reaction-state spine + chemistry verifier lanes (signed receipts,
+    # exact units, balancer, geometry view). rdkit-dependent geometry
+    # tests importorskip cleanly where rdkit is absent.
+    "tests/test_reaction_state_packet.py",
+    "tests/test_reaction_ledger_checkpoint.py",
+    "tests/test_jcs_canonicalization.py",
+    "tests/test_acta_receipt_export.py",
+    "tests/test_units.py",
+    "tests/test_units_pathology.py",
+    "tests/test_reaction_balance.py",
+    "tests/test_geometry_view.py",
+    "tests/test_controlled_substance_screen.py",
+    "tests/test_reaction_language.py",
 )
 
 # Optional or experimental lanes that currently pull in extra services,

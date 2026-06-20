@@ -16,11 +16,34 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_TASK_FILE = REPO_ROOT / "config" / "eval" / "common_agentic_benchmark_tasks.v1.json"
 DEFAULT_CANDIDATE_FILE = REPO_ROOT / "artifacts" / "benchmarks" / "scbe_harness_controls" / "stub_candidate.json"
 DEFAULT_OUTPUT_ROOT = REPO_ROOT / "artifacts" / "swe_local_benchmark"
+
+
+def _ensure_default_stub_candidate(path: Path) -> None:
+    """Create the default negative-control candidate when absent.
+
+    The default candidate lives under the gitignored artifacts/ tree, so fresh
+    checkouts do not ship it. The stub intentionally provides no task
+    solutions; it is a harness control that exercises command shape and
+    scoring plumbing deterministically.
+    """
+    if path.is_file():
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "schema_version": "scbe_swe_local_stub_candidate_v1",
+        "candidates": [
+            {
+                "name": "stub_candidate",
+                "description": "Harness control candidate with no task solutions.",
+                "tasks": {},
+            }
+        ],
+    }
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
 def _run(cmd: list[str], timeout: int) -> subprocess.CompletedProcess[str]:
@@ -93,13 +116,9 @@ def _write_summary(summary: dict[str, Any], output_root: Path) -> None:
         "| --- | ---: | ---: | ---: |",
     ]
     for row in summary["results"]:
-        md.append(
-            f"| `{row['adapter']}` | {row['tasks']} | {row['passed']} | {float(row['pass_rate']):.2%} |"
-        )
+        md.append(f"| `{row['adapter']}` | {row['tasks']} | {row['passed']} | {float(row['pass_rate']):.2%} |")
     ens = summary["mechanical_ensemble"]
-    md.append(
-        f"| `mechanical_ensemble` | {ens['tasks']} | {ens['passed']} | {float(ens['pass_rate']):.2%} |"
-    )
+    md.append(f"| `mechanical_ensemble` | {ens['tasks']} | {ens['passed']} | {float(ens['pass_rate']):.2%} |")
     md.extend(
         [
             "",
@@ -126,6 +145,8 @@ def main() -> int:
     args = build_parser().parse_args()
     if not args.task_file.is_file():
         raise SystemExit(f"missing task file: {args.task_file}")
+    if args.candidate_file == DEFAULT_CANDIDATE_FILE:
+        _ensure_default_stub_candidate(args.candidate_file)
     if not args.candidate_file.is_file():
         raise SystemExit(f"missing candidate file: {args.candidate_file}")
 

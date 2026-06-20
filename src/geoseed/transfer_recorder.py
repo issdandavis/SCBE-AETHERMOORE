@@ -1,52 +1,73 @@
-"""Atom-transfer recorder for GeoSeed tongue routing.
+"""
+@file transfer_recorder.py
+@module geoseed/transfer_recorder
+@component AtomTransferRecorder
 
-This module tracks symbolic atom transfers: minimal token units moving from one
-Sacred Tongue shell to another during tokenization or compilation. It is a
-deterministic audit scaffold, not a chemistry simulator.
+Tracks token/atom transfers between GeoSeed orbital shells (tongues).
+
+Analogy: isotope tracing in chemistry — label each token with the shell
+it enters on, follow where it resolves, record the hop.
+
+Each shell-to-shell hop costs a geodesic distance that is a multiple of
+ln(φ): adjacent shells = ln(φ), two apart = 2·ln(φ), etc.  Because all
+adjacent gaps are uniform (proven by tests/geoseed/test_orbital_model.py),
+the transfer cost is simply n·ln(φ) where n = |from_index - to_index|.
+
+This is a STUB — the interface is fixed; the tokenizer wires in later.
+The recorder itself has no tokenizer dependency.
 """
 
-from __future__ import annotations
-
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import Any, Iterable
+from typing import Dict, Iterable, List, Optional, Tuple, Union
 
 PHI = (1.0 + math.sqrt(5.0)) / 2.0
 LN_PHI = math.log(PHI)
-TONGUE_ORDER = ("KO", "AV", "RU", "CA", "UM", "DR")
-TONGUE_INDEX = {tongue: index for index, tongue in enumerate(TONGUE_ORDER)}
+
+# Canonical tongue order — index is the shell index
+TONGUE_ORDER = ["KO", "AV", "RU", "CA", "UM", "DR"]
+TONGUE_INDEX: Dict[str, int] = {t: i for i, t in enumerate(TONGUE_ORDER)}
+TONGUE_NAMES = {
+    "KO": "Kor'aelin",
+    "AV": "Avali",
+    "RU": "Runethic",
+    "CA": "Cassisivadan",
+    "UM": "Umbroth",
+    "DR": "Draumric",
+}
 
 
-def normalize_tongue(tongue: str) -> str:
-    """Normalize and validate a Sacred Tongue abbreviation."""
-
-    normalized = tongue.strip().upper()
-    if normalized not in TONGUE_INDEX:
-        raise ValueError(f"unknown tongue {tongue!r}; expected one of {', '.join(TONGUE_ORDER)}")
-    return normalized
+# ── Normalisation ─────────────────────────────────────────────────────────────
 
 
-def transfer_cost(from_tongue: str, to_tongue: str) -> float:
-    """Return the hyperbolic shell-hop cost between two tongue abbreviations."""
+def normalize_tongue(value: str) -> str:
+    """
+    Canonicalise a tongue abbreviation: trim whitespace, uppercase, validate.
+    Raises ValueError for anything outside the six known tongues.
+    """
+    cleaned = value.strip().upper()
+    if cleaned not in TONGUE_INDEX:
+        raise ValueError(f"unknown tongue: {value!r} (expected one of {TONGUE_ORDER})")
+    return cleaned
 
-    start = normalize_tongue(from_tongue)
-    end = normalize_tongue(to_tongue)
-    return abs(TONGUE_INDEX[end] - TONGUE_INDEX[start]) * LN_PHI
+
+# ── Core types ────────────────────────────────────────────────────────────────
 
 
-@dataclass(frozen=True)
+@dataclass
 class TransferEvent:
-    """One symbolic atom transfer across the GeoSeed tongue ladder."""
+    """One atom/token moving from one orbital shell to another."""
 
-    from_tongue: str
-    to_tongue: str
-    token: str
-    geodesic_cost: float
-    is_self: bool
-    step: int
-    metadata: dict[str, Any] = field(default_factory=dict)
+    from_tongue: str  # e.g. "KO"
+    to_tongue: str  # e.g. "AV"
+    token: str  # the token that transferred
+    geodesic_cost: float  # n·ln(φ), n = |from_idx - to_idx|
+    is_self: bool  # True when from == to (no hop)
+    step: int  # sequence number within this recording session
+    metadata: dict = field(default_factory=dict)
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> dict:
         return {
             "from_tongue": self.from_tongue,
             "to_tongue": self.to_tongue,
@@ -58,181 +79,253 @@ class TransferEvent:
         }
 
 
-@dataclass(frozen=True)
+# A batch item is either a (from, to, token) triple or a mapping with the
+# same field names as TransferEvent (metadata optional).
+BatchItem = Union[Tuple[str, str, str], Mapping]
+
+
+@dataclass
 class TransferMatrix:
-    """Dense 6x6 transfer matrix with counts, row rates, and shell-hop costs."""
+    """
+    6×6 count matrix M[from_idx][to_idx] and derived rate/cost matrices.
+    Rows = source shell, columns = destination shell.
+    """
 
-    counts: list[list[int]]
-    rates: list[list[float]]
-    costs: list[list[float]]
+    counts: List[List[int]]  # raw hop counts
+    rates: List[List[float]]  # counts / total_events (row-normalised)
+    costs: List[List[float]]  # geodesic cost per cell (n·ln(φ))
     total_events: int
-    self_transfer_count: int
-    cross_transfer_count: int
+    self_transfer_count: int  # diagonal sum
+    cross_transfer_count: int  # off-diagonal sum
 
-    def dominant_flow(self, include_self: bool = False) -> dict[str, Any] | None:
-        """Return the highest-count transfer lane."""
+    def dominant_flow(self) -> List[Tuple[str, str, int]]:
+        """Top-5 (from, to) pairs by count, excluding self-transfers."""
+        flows = []
+        for i, row in enumerate(self.counts):
+            for j, cnt in enumerate(row):
+                if i != j and cnt > 0:
+                    flows.append((TONGUE_ORDER[i], TONGUE_ORDER[j], cnt))
+        flows.sort(key=lambda x: -x[2])
+        return flows[:5]
 
-        best: tuple[int, int, int] | None = None
-        for row_index, row in enumerate(self.counts):
-            for col_index, count in enumerate(row):
-                if count == 0:
-                    continue
-                if not include_self and row_index == col_index:
-                    continue
-                if best is None or count > best[2]:
-                    best = (row_index, col_index, count)
-        if best is None:
-            return None
-        row_index, col_index, count = best
+    def to_dict(self) -> dict:
         return {
-            "from_tongue": TONGUE_ORDER[row_index],
-            "to_tongue": TONGUE_ORDER[col_index],
-            "count": count,
-            "rate": self.rates[row_index][col_index],
-            "geodesic_cost": self.costs[row_index][col_index],
-        }
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "tongues": list(TONGUE_ORDER),
+            "schema_version": "geoseed_transfer_matrix_v1",
+            "tongues": TONGUE_ORDER,
             "counts": self.counts,
-            "rates": self.rates,
+            "rates": [[round(v, 6) for v in row] for row in self.rates],
             "costs": self.costs,
             "total_events": self.total_events,
             "self_transfer_count": self.self_transfer_count,
             "cross_transfer_count": self.cross_transfer_count,
-            "dominant_flow": self.dominant_flow(),
+            "dominant_flow": [{"from": f, "to": t, "count": c} for f, t, c in self.dominant_flow()],
         }
 
 
-class AtomTransferRecorder:
-    """Record token movements through the six-shell GeoSeed tongue ladder."""
+# ── Geodesic cost helper ──────────────────────────────────────────────────────
 
-    def __init__(self, session_id: str = "default") -> None:
-        self.session_id = session_id
-        self._events: list[TransferEvent] = []
+
+def transfer_cost(from_tongue: str, to_tongue: str) -> float:
+    """
+    Geodesic distance between two orbital shells.
+    Cost = |from_index - to_index| · ln(φ).
+    Same-shell transfer costs 0.
+    """
+    fi = TONGUE_INDEX[normalize_tongue(from_tongue)]
+    ti = TONGUE_INDEX[normalize_tongue(to_tongue)]
+    return abs(fi - ti) * LN_PHI
+
+
+# ── Recorder ─────────────────────────────────────────────────────────────────
+
+
+class AtomTransferRecorder:
+    """
+    Accumulates TransferEvents and computes the 6×6 transfer matrix.
+
+    Usage (standalone):
+        rec = AtomTransferRecorder()
+        rec.record("KO", "AV", "def")
+        rec.record("CA", "CA", "heapq")   # self-transfer (no hop)
+        matrix = rec.transfer_matrix()
+        print(rec.summary())
+
+    Usage (from tokenizer — wired later):
+        for token, from_t, to_t in tokenizer.route_tokens(text):
+            rec.record(from_t, to_t, token)
+    """
+
+    def __init__(self, session_id: Optional[str] = None):
+        self.session_id = session_id or "default"
+        self._events: List[TransferEvent] = []
         self._step = 0
 
-    @property
-    def events(self) -> tuple[TransferEvent, ...]:
-        return tuple(self._events)
-
-    @property
-    def event_count(self) -> int:
-        return len(self._events)
+    # ── Recording ─────────────────────────────────────────────────────────
 
     def record(
         self,
         from_tongue: str,
         to_tongue: str,
         token: str,
-        metadata: dict[str, Any] | None = None,
+        metadata: Optional[dict] = None,
     ) -> TransferEvent:
-        """Record one token transfer and return the immutable event."""
-
-        start = normalize_tongue(from_tongue)
-        end = normalize_tongue(to_tongue)
-        event = TransferEvent(
-            from_tongue=start,
-            to_tongue=end,
-            token=str(token),
-            geodesic_cost=transfer_cost(start, end),
-            is_self=start == end,
+        """Record one atom/token transfer between shells (tongue case/spacing tolerant)."""
+        from_t = normalize_tongue(from_tongue)
+        to_t = normalize_tongue(to_tongue)
+        cost = transfer_cost(from_t, to_t)
+        evt = TransferEvent(
+            from_tongue=from_t,
+            to_tongue=to_t,
+            token=token,
+            geodesic_cost=cost,
+            is_self=(from_t == to_t),
             step=self._step,
-            metadata=dict(metadata or {}),
+            metadata=metadata or {},
         )
-        self._events.append(event)
+        self._events.append(evt)
         self._step += 1
-        return event
+        return evt
 
-    def record_batch(self, records: Iterable[tuple[str, str, str] | dict[str, Any]]) -> tuple[TransferEvent, ...]:
-        """Record a batch of tuple or mapping records."""
-
-        events: list[TransferEvent] = []
-        for record in records:
-            if isinstance(record, dict):
+    def record_batch(self, items: Iterable[BatchItem]) -> List[TransferEvent]:
+        """Record many transfers; items are (from, to, token) triples or mappings."""
+        events: List[TransferEvent] = []
+        for item in items:
+            if isinstance(item, Mapping):
                 events.append(
                     self.record(
-                        str(record["from_tongue"]),
-                        str(record["to_tongue"]),
-                        str(record["token"]),
-                        metadata=dict(record.get("metadata", {})),
+                        item["from_tongue"],
+                        item["to_tongue"],
+                        item["token"],
+                        metadata=item.get("metadata"),
                     )
                 )
             else:
-                from_tongue, to_tongue, token = record
-                events.append(self.record(from_tongue, to_tongue, token))
-        return tuple(events)
-
-    def events_for_token(self, token: str) -> tuple[TransferEvent, ...]:
-        return tuple(event for event in self._events if event.token == token)
-
-    def events_from(self, tongue: str) -> tuple[TransferEvent, ...]:
-        start = normalize_tongue(tongue)
-        return tuple(event for event in self._events if event.from_tongue == start)
-
-    def events_to(self, tongue: str) -> tuple[TransferEvent, ...]:
-        end = normalize_tongue(tongue)
-        return tuple(event for event in self._events if event.to_tongue == end)
-
-    def total_geodesic_cost(self) -> float:
-        return sum(event.geodesic_cost for event in self._events)
-
-    def mean_hop_distance(self, include_self: bool = False) -> float:
-        events = [event for event in self._events if include_self or not event.is_self]
-        if not events:
-            return 0.0
-        return sum(event.geodesic_cost for event in events) / len(events)
-
-    def transfer_matrix(self) -> TransferMatrix:
-        counts = [[0 for _ in TONGUE_ORDER] for _ in TONGUE_ORDER]
-        for event in self._events:
-            counts[TONGUE_INDEX[event.from_tongue]][TONGUE_INDEX[event.to_tongue]] += 1
-
-        rates: list[list[float]] = []
-        for row in counts:
-            row_total = sum(row)
-            if row_total == 0:
-                rates.append([0.0 for _ in row])
-            else:
-                rates.append([count / row_total for count in row])
-
-        costs = [
-            [round(abs(col_index - row_index) * LN_PHI, 12) for col_index in range(len(TONGUE_ORDER))]
-            for row_index in range(len(TONGUE_ORDER))
-        ]
-        self_count = sum(1 for event in self._events if event.is_self)
-        return TransferMatrix(
-            counts=counts,
-            rates=rates,
-            costs=costs,
-            total_events=len(self._events),
-            self_transfer_count=self_count,
-            cross_transfer_count=len(self._events) - self_count,
-        )
-
-    def summary(self) -> dict[str, Any]:
-        matrix = self.transfer_matrix()
-        return {
-            "schema_version": "geoseed_transfer_recorder_v1",
-            "session_id": self.session_id,
-            "event_count": self.event_count,
-            "total_geodesic_cost": round(self.total_geodesic_cost(), 12),
-            "mean_cross_hop_distance": round(self.mean_hop_distance(include_self=False), 12),
-            "dominant_flow": matrix.dominant_flow(),
-            "self_transfer_count": matrix.self_transfer_count,
-            "cross_transfer_count": matrix.cross_transfer_count,
-        }
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "schema_version": "geoseed_transfer_recorder_v1",
-            "session_id": self.session_id,
-            "events": [event.to_dict() for event in self._events],
-            "matrix": self.transfer_matrix().to_dict(),
-            "summary": self.summary(),
-        }
+                from_t, to_t, token = item
+                events.append(self.record(from_t, to_t, token))
+        return events
 
     def reset(self) -> None:
         self._events.clear()
         self._step = 0
+
+    # ── Queries ───────────────────────────────────────────────────────────
+
+    @property
+    def events(self) -> List[TransferEvent]:
+        return list(self._events)
+
+    @property
+    def event_count(self) -> int:
+        return len(self._events)
+
+    def events_for_token(self, token: str) -> List[TransferEvent]:
+        return [e for e in self._events if e.token == token]
+
+    def events_from(self, tongue: str) -> List[TransferEvent]:
+        return [e for e in self._events if e.from_tongue == tongue]
+
+    def events_to(self, tongue: str) -> List[TransferEvent]:
+        return [e for e in self._events if e.to_tongue == tongue]
+
+    def total_geodesic_cost(self) -> float:
+        return sum(e.geodesic_cost for e in self._events)
+
+    def mean_hop_distance(self, include_self: bool = False) -> float:
+        pool = self._events if include_self else [e for e in self._events if not e.is_self]
+        if not pool:
+            return 0.0
+        return sum(e.geodesic_cost for e in pool) / len(pool)
+
+    # ── Matrix computation ─────────────────────────────────────────────────
+
+    def transfer_matrix(self) -> TransferMatrix:
+        n = len(TONGUE_ORDER)
+        counts = [[0] * n for _ in range(n)]
+        for e in self._events:
+            fi = TONGUE_INDEX[e.from_tongue]
+            ti = TONGUE_INDEX[e.to_tongue]
+            counts[fi][ti] += 1
+
+        total = sum(sum(row) for row in counts)
+        rates: List[List[float]] = []
+        for row in counts:
+            row_sum = sum(row)
+            if row_sum == 0:
+                rates.append([0.0] * n)
+            else:
+                rates.append([c / row_sum for c in row])
+
+        costs = [[round(abs(i - j) * LN_PHI, 12) for j in range(n)] for i in range(n)]
+
+        self_count = sum(counts[i][i] for i in range(n))
+        cross_count = total - self_count
+
+        return TransferMatrix(
+            counts=counts,
+            rates=rates,
+            costs=costs,
+            total_events=total,
+            self_transfer_count=self_count,
+            cross_transfer_count=cross_count,
+        )
+
+    # ── Summary ───────────────────────────────────────────────────────────
+
+    def summary(self) -> str:
+        if not self._events:
+            return "AtomTransferRecorder: no events recorded."
+
+        mx = self.transfer_matrix()
+        lines = [
+            f"AtomTransferRecorder  session={self.session_id}",
+            f"  events       : {self.event_count}",
+            f"  self-hops    : {mx.self_transfer_count}",
+            f"  cross-hops   : {mx.cross_transfer_count}",
+            f"  total cost   : {self.total_geodesic_cost():.4f}  (units: ln φ = {LN_PHI:.4f})",
+            f"  mean hop Δρ  : {self.mean_hop_distance():.4f}",
+            "",
+            "  Transfer matrix (counts):",
+            "        " + "  ".join(f"{t:>4}" for t in TONGUE_ORDER),
+        ]
+        for i, row in enumerate(mx.counts):
+            lines.append(f"  {TONGUE_ORDER[i]:<4}  " + "  ".join(f"{c:>4}" for c in row))
+
+        if mx.dominant_flow():
+            lines.append("")
+            lines.append("  Dominant flows:")
+            for f, t, c in mx.dominant_flow():
+                cost = transfer_cost(f, t)
+                lines.append(f"    {f} → {t}  ×{c}  (Δρ={cost:.3f})")
+
+        return "\n".join(lines)
+
+    def to_dict(self) -> dict:
+        mx = self.transfer_matrix()
+        dominant: Optional[dict] = None
+        flows = mx.dominant_flow()
+        if flows:
+            f, t, c = flows[0]
+            fi, ti = TONGUE_INDEX[f], TONGUE_INDEX[t]
+            dominant = {
+                "from_tongue": f,
+                "to_tongue": t,
+                "count": c,
+                "rate": mx.rates[fi][ti],
+                "geodesic_cost": mx.costs[fi][ti],
+            }
+        return {
+            "schema_version": "geoseed_transfer_recorder_v1",
+            "session_id": self.session_id,
+            "event_count": self.event_count,
+            "total_geodesic_cost": round(self.total_geodesic_cost(), 6),
+            "mean_hop_distance": round(self.mean_hop_distance(), 6),
+            "ln_phi": round(LN_PHI, 9),
+            "summary": {
+                "event_count": self.event_count,
+                "total_geodesic_cost": round(self.total_geodesic_cost(), 12),
+                "mean_hop_distance": round(self.mean_hop_distance(), 12),
+                "dominant_flow": dominant,
+            },
+            "events": [e.to_dict() for e in self._events],
+            "matrix": mx.to_dict(),
+        }

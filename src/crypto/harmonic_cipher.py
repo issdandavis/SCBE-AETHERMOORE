@@ -307,7 +307,8 @@ def _harmonic_verify(
         if abs(actual_freq - f_i) > EPS_F:
             return (
                 False,
-                f"missing peak at {f_i:.1f}Hz (nearest: {actual_freq:.1f}Hz, deviation {abs(actual_freq-f_i):.2f}Hz > {EPS_F}Hz)",
+                f"missing peak at {f_i:.1f}Hz (nearest: {actual_freq:.1f}Hz, "
+                f"deviation {abs(actual_freq-f_i):.2f}Hz > {EPS_F}Hz)",
             )
 
         # Check 1/h amplitude pattern (relative to fundamental bin)

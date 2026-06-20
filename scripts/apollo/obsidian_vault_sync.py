@@ -62,16 +62,14 @@ TONGUE_SECTORS_DEGREES = {
     "UM": 240.0,
     "DR": 300.0,
 }
-TONGUE_SECTORS_RADIANS = {
-    tongue: math.radians(degrees) for tongue, degrees in TONGUE_SECTORS_DEGREES.items()
-}
+TONGUE_SECTORS_RADIANS = {tongue: math.radians(degrees) for tongue, degrees in TONGUE_SECTORS_DEGREES.items()}
 TONGUE_PHI_WEIGHTS = {
     "KO": 1.0,
-    "AV": PHI ** 1,
-    "RU": PHI ** 2,
-    "CA": PHI ** 3,
-    "UM": PHI ** 4,
-    "DR": PHI ** 5,
+    "AV": PHI**1,
+    "RU": PHI**2,
+    "CA": PHI**3,
+    "UM": PHI**4,
+    "DR": PHI**5,
 }
 TONGUE_KEYWORDS = {
     "KO": ["intent", "purpose", "goal", "governance", "route", "session", "flow", "agent"],
@@ -123,8 +121,27 @@ RELATION_KEYWORDS = {
     "sequence": ["first", "next", "then", "before", "after"],
 }
 GENERIC_LABEL_STOPWORDS = {
-    "the", "and", "for", "with", "from", "into", "root", "notes", "system", "library", "repo", "repository",
-    "files", "docs", "doc", "data", "general", "misc", "miscellaneous", "master", "index",
+    "the",
+    "and",
+    "for",
+    "with",
+    "from",
+    "into",
+    "root",
+    "notes",
+    "system",
+    "library",
+    "repo",
+    "repository",
+    "files",
+    "docs",
+    "doc",
+    "data",
+    "general",
+    "misc",
+    "miscellaneous",
+    "master",
+    "index",
 }
 MAX_CANDIDATE_BUCKET_SIZE = 200
 SEMANTIC_EDGE_MIN_GRAVITY = 0.2
@@ -220,18 +237,24 @@ def extract_semantic_labels(
     tags: Iterable[str],
     content: str,
 ) -> Tuple[List[str], List[str], List[str]]:
-    signal_text = _normalize_text(" ".join([
-        name.replace("_", " ").replace("-", " "),
-        folder.replace("\\", " ").replace("/", " "),
-        " ".join(tags),
-        " ".join(headings),
-        content[:4000],
-    ]))
+    signal_text = _normalize_text(
+        " ".join(
+            [
+                name.replace("_", " ").replace("-", " "),
+                folder.replace("\\", " ").replace("/", " "),
+                " ".join(tags),
+                " ".join(headings),
+                content[:4000],
+            ]
+        )
+    )
     subject_labels = _extract_label_matches(signal_text, SUBJECT_KEYWORDS)
     tasks = _extract_label_matches(signal_text, TASK_KEYWORDS)
     relations = _extract_label_matches(signal_text, RELATION_KEYWORDS)
     high_signal_tokens = []
-    token_counter = Counter(token for token in signal_text.split() if len(token) >= 4 and token not in GENERIC_LABEL_STOPWORDS)
+    token_counter = Counter(
+        token for token in signal_text.split() if len(token) >= 4 and token not in GENERIC_LABEL_STOPWORDS
+    )
     for token, _count in token_counter.most_common(8):
         if token not in subject_labels:
             high_signal_tokens.append(token)
@@ -349,26 +372,28 @@ def scan_vault() -> List[VaultNote]:
         tongue_profile = compute_tongue_profile(name, folder, headings, tags, content, tongue)
         subjects, tasks, relations = extract_semantic_labels(name, folder, headings, tags, content)
 
-        notes.append(VaultNote(
-            path=rel_path,
-            name=name,
-            folder=folder,
-            size=len(content),
-            headings=headings[:10],
-            tags=tags,
-            outgoing_links=links,
-            word_count=words,
-            content_hash=content_hash,
-            tongue=tongue,
-            tongue_profile=tongue_profile,
-            primary_weight_phi=round(TONGUE_PHI_WEIGHTS[tongue], 6),
-            semantic_mass_phi=compute_semantic_mass(tongue_profile),
-            tongue_sector_degrees=TONGUE_SECTORS_DEGREES[tongue],
-            tongue_sector_radians=round(TONGUE_SECTORS_RADIANS[tongue], 6),
-            subjects=subjects,
-            tasks=tasks,
-            relations=relations,
-        ))
+        notes.append(
+            VaultNote(
+                path=rel_path,
+                name=name,
+                folder=folder,
+                size=len(content),
+                headings=headings[:10],
+                tags=tags,
+                outgoing_links=links,
+                word_count=words,
+                content_hash=content_hash,
+                tongue=tongue,
+                tongue_profile=tongue_profile,
+                primary_weight_phi=round(TONGUE_PHI_WEIGHTS[tongue], 6),
+                semantic_mass_phi=compute_semantic_mass(tongue_profile),
+                tongue_sector_degrees=TONGUE_SECTORS_DEGREES[tongue],
+                tongue_sector_radians=round(TONGUE_SECTORS_RADIANS[tongue], 6),
+                subjects=subjects,
+                tasks=tasks,
+                relations=relations,
+            )
+        )
 
     # Build incoming links
     name_map = {n.name: n for n in notes}
@@ -395,26 +420,28 @@ def build_graph(notes: List[VaultNote]) -> Dict:
     nodes = []
 
     for note in notes:
-        nodes.append({
-            "id": note.name,
-            "path": note.path,
-            "folder": note.folder,
-            "tongue": note.tongue,
-            "tongue_full_name": TONGUE_FULL_NAMES[note.tongue],
-            "tongue_profile": note.tongue_profile,
-            "primary_weight_phi": note.primary_weight_phi,
-            "semantic_mass_phi": note.semantic_mass_phi,
-            "tongue_sector_degrees": note.tongue_sector_degrees,
-            "tongue_sector_radians": note.tongue_sector_radians,
-            "subjects": note.subjects,
-            "tasks": note.tasks,
-            "relations": note.relations,
-            "words": note.word_count,
-            "headings": len(note.headings),
-            "tags": note.tags,
-            "outgoing": len(note.outgoing_links),
-            "incoming": len(note.incoming_links),
-        })
+        nodes.append(
+            {
+                "id": note.name,
+                "path": note.path,
+                "folder": note.folder,
+                "tongue": note.tongue,
+                "tongue_full_name": TONGUE_FULL_NAMES[note.tongue],
+                "tongue_profile": note.tongue_profile,
+                "primary_weight_phi": note.primary_weight_phi,
+                "semantic_mass_phi": note.semantic_mass_phi,
+                "tongue_sector_degrees": note.tongue_sector_degrees,
+                "tongue_sector_radians": note.tongue_sector_radians,
+                "subjects": note.subjects,
+                "tasks": note.tasks,
+                "relations": note.relations,
+                "words": note.word_count,
+                "headings": len(note.headings),
+                "tags": note.tags,
+                "outgoing": len(note.outgoing_links),
+                "incoming": len(note.incoming_links),
+            }
+        )
 
         for target in note.outgoing_links:
             explicit_connected.add(note.name)
@@ -449,7 +476,10 @@ def build_graph(notes: List[VaultNote]) -> Dict:
             name_map[target_name],
             explicit_link=(source_name, target_name) in explicit_target_pairs,
         )
-        if metrics["semantic_gravity"] >= SEMANTIC_EDGE_MIN_GRAVITY or (source_name, target_name) in explicit_target_pairs:
+        if (
+            metrics["semantic_gravity"] >= SEMANTIC_EDGE_MIN_GRAVITY
+            or (source_name, target_name) in explicit_target_pairs
+        ):
             pair_metrics[(source_name, target_name)] = metrics
 
     edges = []
@@ -465,23 +495,27 @@ def build_graph(notes: List[VaultNote]) -> Dict:
                 "target_exists": target in name_map,
             }
             if target in name_map:
-                metrics = pair_metrics.get(_pair_key(note.name, target)) or compute_semantic_gravity(note, name_map[target], explicit_link=True)
+                metrics = pair_metrics.get(_pair_key(note.name, target)) or compute_semantic_gravity(
+                    note, name_map[target], explicit_link=True
+                )
                 edge.update(metrics)
                 total_edge_graph[note.name].append(metrics["semantic_gravity"])
                 total_edge_graph[target].append(metrics["semantic_gravity"])
             else:
-                edge.update({
-                    "subject_overlap": 0.0,
-                    "task_overlap": 0.0,
-                    "relation_overlap": 0.0,
-                    "semantic_overlap": 0.0,
-                    "shared_tongue_weight_phi": 0.0,
-                    "sector_alignment": 0.0,
-                    "semantic_gravity": 0.0,
-                    "shared_subjects": [],
-                    "shared_tasks": [],
-                    "shared_relations": [],
-                })
+                edge.update(
+                    {
+                        "subject_overlap": 0.0,
+                        "task_overlap": 0.0,
+                        "relation_overlap": 0.0,
+                        "semantic_overlap": 0.0,
+                        "shared_tongue_weight_phi": 0.0,
+                        "sector_alignment": 0.0,
+                        "semantic_gravity": 0.0,
+                        "shared_subjects": [],
+                        "shared_tasks": [],
+                        "shared_relations": [],
+                    }
+                )
             edges.append(edge)
 
     explicit_edge_keys = {(edge["source"], edge["target"]) for edge in edges}
@@ -515,9 +549,11 @@ def build_graph(notes: List[VaultNote]) -> Dict:
         node["null_space_score"] = node_null_scores.get(node["id"], 0.0)
         node["gravity_degree"] = len(total_edge_graph.get(node["id"], []))
         node["average_incident_gravity"] = round(
-            (sum(total_edge_graph.get(node["id"], [])) / len(total_edge_graph.get(node["id"], [])))
-            if total_edge_graph.get(node["id"])
-            else 0.0,
+            (
+                (sum(total_edge_graph.get(node["id"], [])) / len(total_edge_graph.get(node["id"], [])))
+                if total_edge_graph.get(node["id"])
+                else 0.0
+            ),
             6,
         )
 
@@ -532,15 +568,17 @@ def build_graph(notes: List[VaultNote]) -> Dict:
             null_flux = round(((source_pressure + target_pressure) / 2.0) * (1.0 - gravity_norm), 6)
             if null_flux <= 0:
                 continue
-            null_space_paths.append({
-                "source": edge["source"],
-                "target": edge["target"],
-                "edge_kind": edge["edge_kind"],
-                "semantic_gravity": edge["semantic_gravity"],
-                "null_space_flux": null_flux,
-                "source_null_space_score": node_null_scores.get(edge["source"], 0.0),
-                "target_null_space_score": node_null_scores.get(edge["target"], 0.0),
-            })
+            null_space_paths.append(
+                {
+                    "source": edge["source"],
+                    "target": edge["target"],
+                    "edge_kind": edge["edge_kind"],
+                    "semantic_gravity": edge["semantic_gravity"],
+                    "null_space_flux": null_flux,
+                    "source_null_space_score": node_null_scores.get(edge["source"], 0.0),
+                    "target_null_space_score": node_null_scores.get(edge["target"], 0.0),
+                }
+            )
         null_space_paths.sort(key=lambda item: item["null_space_flux"], reverse=True)
         null_space_paths = null_space_paths[:NULL_PATH_LIMIT]
 
@@ -582,7 +620,9 @@ def build_graph(notes: List[VaultNote]) -> Dict:
             "semantic_orphan_notes": semantic_orphans,
             "semantic_orphan_count": len(semantic_orphans),
             "max_semantic_gravity": round(max_gravity, 6),
-            "mean_null_space_score": round(sum(node_null_scores.values()) / len(node_null_scores), 6) if node_null_scores else 0.0,
+            "mean_null_space_score": (
+                round(sum(node_null_scores.values()) / len(node_null_scores), 6) if node_null_scores else 0.0
+            ),
             "folders": dict(by_folder),
             "tongues": {t: len(v) for t, v in by_tongue.items()},
         },
@@ -608,11 +648,13 @@ def suggest_connections(notes: List[VaultNote]) -> List[Dict]:
                 continue
             # Check if the other note's name appears in this note's content
             if other_name.lower() in content.lower():
-                suggestions.append({
-                    "source": note.name,
-                    "target": other_name,
-                    "reason": f"'{other_name}' mentioned in content but not linked",
-                })
+                suggestions.append(
+                    {
+                        "source": note.name,
+                        "target": other_name,
+                        "reason": f"'{other_name}' mentioned in content but not linked",
+                    }
+                )
 
     return suggestions
 
@@ -659,9 +701,9 @@ def add_connections(suggestions: List[Dict], dry_run: bool = True) -> int:
                 original = match.group()
                 # Don't replace if already inside a wiki-link
                 start = match.start()
-                before = modified[max(0, start - 2):start]
+                before = modified[max(0, start - 2) : start]
                 if "[[" not in before:
-                    modified = modified[:start] + f"[[{target}|{original}]]" + modified[match.end():]
+                    modified = modified[:start] + f"[[{target}|{original}]]" + modified[match.end() :]
                     continue
 
             # Fallback: if we can't inline-link, append an idempotent auto-links block.
@@ -672,12 +714,7 @@ def add_connections(suggestions: List[Dict], dry_run: bool = True) -> int:
             base = auto_block_re.sub("\n", modified).rstrip()
 
             links_lines = "\n".join(f"- [[{t}]]" for t in sorted(append_targets))
-            auto_block = (
-                "\n\n## Auto links\n"
-                f"{auto_start}\n"
-                f"{links_lines}\n"
-                f"{auto_end}\n"
-            )
+            auto_block = "\n\n## Auto links\n" f"{auto_start}\n" f"{links_lines}\n" f"{auto_end}\n"
             modified = base + auto_block
 
         if modified != content and not dry_run:
@@ -704,14 +741,16 @@ def export_sft(notes: List[VaultNote]) -> int:
 
         # Pair 1: What is this note about?
         snippet = content[:600].replace("\n", " ").strip()
-        pairs.append({
-            "instruction": f"What is the Obsidian note '{note.name}' about in the SCBE knowledge vault?",
-            "response": f"'{note.name}' is in the {note.folder or 'root'} folder (tongue: {note.tongue}). "
-                        f"It has {note.word_count} words and covers: {snippet[:400]}",
-            "source": "obsidian_vault",
-            "category": f"vault_{note.tongue.lower()}",
-            "tongue": note.tongue,
-        })
+        pairs.append(
+            {
+                "instruction": f"What is the Obsidian note '{note.name}' about in the SCBE knowledge vault?",
+                "response": f"'{note.name}' is in the {note.folder or 'root'} folder (tongue: {note.tongue}). "
+                f"It has {note.word_count} words and covers: {snippet[:400]}",
+                "source": "obsidian_vault",
+                "category": f"vault_{note.tongue.lower()}",
+                "tongue": note.tongue,
+            }
+        )
 
         # Pair 2: How does this note connect to others?
         if note.outgoing_links or note.incoming_links:
@@ -720,13 +759,15 @@ def export_sft(notes: List[VaultNote]) -> int:
                 links_desc += f"Links to: {', '.join(note.outgoing_links[:5])}. "
             if note.incoming_links:
                 links_desc += f"Referenced by: {', '.join(note.incoming_links[:5])}."
-            pairs.append({
-                "instruction": f"How does '{note.name}' connect to other notes in the SCBE vault?",
-                "response": links_desc,
-                "source": "obsidian_vault",
-                "category": "vault_graph",
-                "tongue": note.tongue,
-            })
+            pairs.append(
+                {
+                    "instruction": f"How does '{note.name}' connect to other notes in the SCBE vault?",
+                    "response": links_desc,
+                    "source": "obsidian_vault",
+                    "category": "vault_graph",
+                    "tongue": note.tongue,
+                }
+            )
 
     SFT_OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     with open(SFT_OUTPUT, "w", encoding="utf-8") as f:
@@ -744,9 +785,11 @@ def sync_to_cloud():
         target.mkdir(parents=True, exist_ok=True)
         # Use robocopy on Windows for efficient sync
         import subprocess
+
         subprocess.run(
             ["robocopy", str(VAULT_PATH), str(target), "/MIR", "/XD", ".obsidian", "/NFL", "/NDL", "/NJH", "/NJS"],
-            capture_output=True, text=True
+            capture_output=True,
+            text=True,
         )
         synced.append(str(target))
     return synced
@@ -776,14 +819,14 @@ def main():
         by_tongue = defaultdict(int)
         for n in notes:
             by_tongue[n.tongue] += 1
-        print(f"  By tongue:")
+        print("  By tongue:")
         for t, c in sorted(by_tongue.items()):
             print(f"    {t}: {c}")
 
         by_folder = defaultdict(int)
         for n in notes:
             by_folder[n.folder or "(root)"] += 1
-        print(f"  By folder:")
+        print("  By folder:")
         for f, c in sorted(by_folder.items(), key=lambda x: x[1], reverse=True):
             print(f"    {f}: {c}")
 
@@ -794,7 +837,7 @@ def main():
         with open(GRAPH_OUTPUT, "w", encoding="utf-8") as f:
             json.dump(graph, f, indent=2, ensure_ascii=False)
         s = graph["stats"]
-        print(f"\nKNOWLEDGE GRAPH:")
+        print("\nKNOWLEDGE GRAPH:")
         print(f"  Nodes: {s['total_notes']} | Edges: {s['total_links']}")
         print(f"  Orphans (no links): {s['orphan_count']}")
         if s["orphan_notes"]:
@@ -813,7 +856,7 @@ def main():
             added = add_connections(suggestions, dry_run=False)
             print(f"\n  Applied {added} new wiki-links")
         elif suggestions:
-            print(f"\n  Dry run. Use --apply to add links.")
+            print("\n  Dry run. Use --apply to add links.")
 
     if args.command in ("export-sft", "full"):
         notes = scan_vault()
@@ -822,7 +865,7 @@ def main():
 
     if args.command in ("sync-cloud", "full"):
         synced = sync_to_cloud()
-        print(f"\nCLOUD SYNC:")
+        print("\nCLOUD SYNC:")
         for s in synced:
             print(f"  -> {s}")
 

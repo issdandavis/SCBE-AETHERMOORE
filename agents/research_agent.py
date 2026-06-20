@@ -8,12 +8,10 @@ and MCP tool integration.
 
 from __future__ import annotations
 
-import asyncio
-import json
 import logging
 import time
 from dataclasses import dataclass, field, asdict
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 logger = logging.getLogger("scbe.agents.research_agent")
 

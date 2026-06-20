@@ -99,8 +99,9 @@ class TestLayer1PQCGating:
         authorized, _ = authorize_pqc_level(5, 5)
         assert authorized is True
 
-    def test_build_lattice_point_gated_success(self):
-        """Build lattice point with valid PQC levels."""
+    def test_build_lattice_point_gated_fail_closed_without_real_pqc(self, monkeypatch):
+        """Valid levels still fail closed if only the insecure lattice embedding is available."""
+        monkeypatch.delenv("SCBE_ALLOW_INSECURE_PQC", raising=False)
         vector, decision = build_lattice_point_gated(
             tongues={SacredTongue.KO: 0.9, SacredTongue.AV: 0.5},
             intent=0.7,
@@ -108,9 +109,10 @@ class TestLayer1PQCGating:
             kyber_level=3,
             dilithium_level=3,
         )
-        assert vector is not None
+        assert vector is None
         assert decision.layer == 1
-        assert decision.decision == "ALLOW"
+        assert decision.decision == "DENY"
+        assert "SCBE_ALLOW_INSECURE_PQC" in decision.metadata["reason"]
 
     def test_build_lattice_point_gated_fail(self):
         """Reject lattice point with weak PQC."""
@@ -480,7 +482,8 @@ class TestDualLatticeIntegrator:
     """Test complete 14-layer integration."""
 
     @pytest.fixture
-    def integrator(self):
+    def integrator(self, monkeypatch):
+        monkeypatch.setenv("SCBE_ALLOW_INSECURE_PQC", "1")
         return DualLatticeIntegrator()
 
     def test_process_low_sensitivity_action(self, integrator):

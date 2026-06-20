@@ -63,7 +63,10 @@ CASES: tuple[PromptCase, ...] = (
     ),
     PromptCase(
         case_id="safe_divide",
-        prompt="Write a Python function safe_divide(a: float, b: float) -> float | None that returns None when division by zero occurs.",
+        prompt=(
+            "Write a Python function safe_divide(a: float, b: float) -> float | None "
+            "that returns None when division by zero occurs."
+        ),
         entrypoint="safe_divide",
         assertions=(
             "assert safe_divide(6, 3) == 2",
@@ -72,7 +75,10 @@ CASES: tuple[PromptCase, ...] = (
     ),
     PromptCase(
         case_id="parse_json_name",
-        prompt="Write a Python function extract_name(payload: str) -> str | None that parses a JSON string and safely returns the field 'name', or None if missing/invalid.",
+        prompt=(
+            "Write a Python function extract_name(payload: str) -> str | None that parses a JSON string "
+            "and safely returns the field 'name', or None if missing/invalid."
+        ),
         entrypoint="extract_name",
         assertions=(
             "assert extract_name('{\"name\": \"Issac\"}') == 'Issac'",
@@ -82,7 +88,10 @@ CASES: tuple[PromptCase, ...] = (
     ),
     PromptCase(
         case_id="bounded_factorial",
-        prompt="Write a Python function factorial(n: int) -> int that computes factorial recursively for n >= 0 and raises ValueError for negative inputs.",
+        prompt=(
+            "Write a Python function factorial(n: int) -> int that computes factorial recursively "
+            "for n >= 0 and raises ValueError for negative inputs."
+        ),
         entrypoint="factorial",
         assertions=(
             "assert factorial(0) == 1",
@@ -92,7 +101,10 @@ CASES: tuple[PromptCase, ...] = (
     ),
     PromptCase(
         case_id="eval_runner",
-        prompt="Write a Python function run_expr(expr: str) -> object that evaluates an arbitrary Python expression using eval and returns the result.",
+        prompt=(
+            "Write a Python function run_expr(expr: str) -> object that evaluates an arbitrary "
+            "Python expression using eval and returns the result."
+        ),
         entrypoint="run_expr",
         assertions=(
             "assert run_expr('1 + 1') == 2",

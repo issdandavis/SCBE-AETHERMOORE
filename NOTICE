@@ -21,16 +21,15 @@ DUAL LICENSING
 
 This project uses a dual licensing model:
 
-1. OPEN SOURCE (MIT License)
-   Core components are available under the MIT License.
-   See LICENSE for full terms.
+1. OPEN SOURCE (MIT OR Apache-2.0)
+   Project-owned source, npm packages, and PyPI packages are dual licensed;
+   you may choose either license. See LICENSE (MIT), LICENSE-APACHE
+   (Apache-2.0), and LICENSE-NOTICE.md for full terms.
 
 2. COMMERCIAL (Customer License Agreement)
-   Proprietary components — including but not limited to multi-agent swarm
-   orchestration, flock governance, enterprise governance pipelines, training
-   data, and deployment configurations — are available under a separate
-   commercial license.
-   See CUSTOMER_LICENSE_AGREEMENT.md for full terms.
+   Paid services, support, hosted deployments, audits, and custom commercial
+   terms are separate commercial offerings.
+   See docs/CUSTOMER_LICENSE_AGREEMENT.md for full terms.
 
 THIRD-PARTY COMPONENTS
 ======================

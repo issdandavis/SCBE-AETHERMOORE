@@ -356,7 +356,7 @@ class PhraseWellMiner:
     def report(self) -> str:
         wells = self.extract_wells()
         lines = [
-            f"Phrase Well Report",
+            "Phrase Well Report",
             f"  Total phrases seen:   {len(self._index)}",
             f"  Wells found (>=min):  {len(wells)}",
             "",

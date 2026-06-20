@@ -64,9 +64,7 @@ def _load_tasks(split: str, limit: int | None = None) -> list[ArcTask]:
     tasks = []
     for p in paths:
         d = json.loads(p.read_text(encoding="utf-8"))
-        train = tuple(
-            ArcPair(input=pair["input"], output=pair["output"]) for pair in d["train"]
-        )
+        train = tuple(ArcPair(input=pair["input"], output=pair["output"]) for pair in d["train"])
         test_entry = d["test"][0]
         tasks.append(
             ArcTask(
@@ -159,9 +157,7 @@ class SolverResult:
     sample_failures: list[dict[str, Any]] = field(default_factory=list)
 
 
-def run_solver(
-    tasks: list[ArcTask], solver_name: str, *, seed: int = 42
-) -> SolverResult:
+def run_solver(tasks: list[ArcTask], solver_name: str, *, seed: int = 42) -> SolverResult:
     fn = SOLVERS[solver_name]
     rng = random.Random(seed)
     passes = 0
@@ -200,12 +196,7 @@ def run_solver(
 
 
 def _utc_now() -> str:
-    return (
-        datetime.now(timezone.utc)
-        .replace(microsecond=0)
-        .isoformat()
-        .replace("+00:00", "Z")
-    )
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _write_json(path: Path, payload: Any) -> None:
@@ -284,8 +275,7 @@ def _render_markdown(report: dict[str, Any]) -> str:
     ]
     for b in report["baselines"]:
         lines.append(
-            f"| `{b['solver']}` | {b['passes']} | {b['task_count']} "
-            f"| `{b['pass_rate']}` | {b['duration_ms']} |"
+            f"| `{b['solver']}` | {b['passes']} | {b['task_count']} " f"| `{b['pass_rate']}` | {b['duration_ms']} |"
         )
     lines.extend(
         [
@@ -348,7 +338,9 @@ def main(argv: list[str] | None = None) -> int:
             f"best={report['best_baseline']['solver']}@{report['best_baseline']['pass_rate']}"
         )
         for b in report["baselines"]:
-            print(f"  {b['solver']:25s} {b['passes']:3d}/{b['task_count']}  ({b['pass_rate']:.4f})  {b['duration_ms']}ms")
+            print(
+                f"  {b['solver']:25s} {b['passes']:3d}/{b['task_count']}  ({b['pass_rate']:.4f})  {b['duration_ms']}ms"
+            )
         print(f"report={args.out_dir / report['run_id'] / 'report.json'}")
     return 0
 

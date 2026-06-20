@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Iterable
 import re
 
-
 TEXT_SUFFIXES = {".md", ".txt", ".rst", ".yaml", ".yml", ".json"}
 
 FLAVOR_TERMS = (

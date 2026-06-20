@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Audit bijective DSL v5 holdout promotion boundary."""
+
 from __future__ import annotations
 
 import hashlib
@@ -8,7 +9,6 @@ from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
-
 
 ROOT = Path(__file__).resolve().parents[2]
 SFT = ROOT / "training-data" / "sft"

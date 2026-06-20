@@ -42,16 +42,18 @@ class NoteRenderer:
         abs_url = result.url or ""
         categories = [t for t in result.tags if t]
 
-        fm = self._render_frontmatter({
-            "title": result.title,
-            "date": self._now_iso(),
-            "source": "arxiv",
-            "arxiv_id": arxiv_id,
-            "pdf_url": pdf_url,
-            "authors": result.authors,
-            "categories": categories,
-            "tags": list(set(categories + ["arxiv", "research"])),
-        })
+        fm = self._render_frontmatter(
+            {
+                "title": result.title,
+                "date": self._now_iso(),
+                "source": "arxiv",
+                "arxiv_id": arxiv_id,
+                "pdf_url": pdf_url,
+                "authors": result.authors,
+                "categories": categories,
+                "tags": list(set(categories + ["arxiv", "research"])),
+            }
+        )
 
         body_parts: List[str] = [
             fm,
@@ -82,9 +84,7 @@ class NoteRenderer:
         # SCBE Relevance
         if result.scbe_relevance:
             body_parts.append("## SCBE Relevance\n")
-            for concept, score in sorted(
-                result.scbe_relevance.items(), key=lambda kv: kv[1], reverse=True
-            ):
+            for concept, score in sorted(result.scbe_relevance.items(), key=lambda kv: kv[1], reverse=True):
                 bar = self._confidence_bar(score)
                 body_parts.append(f"- **{concept}**: {score:.2f} {bar}")
             body_parts.append("")
@@ -106,14 +106,16 @@ class NoteRenderer:
         subreddit = result.metadata.get("subreddit", "unknown")
         score = result.metadata.get("score", 0)
 
-        fm = self._render_frontmatter({
-            "title": result.title,
-            "date": self._now_iso(),
-            "source": "reddit",
-            "subreddit": subreddit,
-            "url": result.url or "",
-            "score": score,
-        })
+        fm = self._render_frontmatter(
+            {
+                "title": result.title,
+                "date": self._now_iso(),
+                "source": "reddit",
+                "subreddit": subreddit,
+                "url": result.url or "",
+                "score": score,
+            }
+        )
 
         body_parts: List[str] = [
             fm,
@@ -149,13 +151,15 @@ class NoteRenderer:
             except Exception:
                 domain = ""
 
-        fm = self._render_frontmatter({
-            "title": result.title,
-            "date": self._now_iso(),
-            "source": "web_page",
-            "url": result.url or "",
-            "domain": domain,
-        })
+        fm = self._render_frontmatter(
+            {
+                "title": result.title,
+                "date": self._now_iso(),
+                "source": "web_page",
+                "url": result.url or "",
+                "domain": domain,
+            }
+        )
 
         body_parts: List[str] = [
             fm,
@@ -180,13 +184,15 @@ class NoteRenderer:
     # ------------------------------------------------------------------
 
     def render_brainstorm(self, result: IngestionResult, links: List[WikiLink]) -> str:
-        fm = self._render_frontmatter({
-            "title": result.title,
-            "date": self._now_iso(),
-            "source": "brainstorm",
-            "author": "Issac Davis",
-            "status": "draft",
-        })
+        fm = self._render_frontmatter(
+            {
+                "title": result.title,
+                "date": self._now_iso(),
+                "source": "brainstorm",
+                "author": "Issac Davis",
+                "status": "draft",
+            }
+        )
 
         body_parts: List[str] = [
             fm,
@@ -226,12 +232,14 @@ class NoteRenderer:
         """Produce a conflict-tracking note for contradictory claims."""
         title = f"Discrepancy \u2014 {concept}"
 
-        fm = self._render_frontmatter({
-            "title": title,
-            "date": self._now_iso(),
-            "severity": severity,
-            "status": "unresolved",
-        })
+        fm = self._render_frontmatter(
+            {
+                "title": title,
+                "date": self._now_iso(),
+                "severity": severity,
+                "status": "unresolved",
+            }
+        )
 
         body_parts: List[str] = [
             fm,
@@ -285,7 +293,7 @@ class NoteRenderer:
                 else:
                     lines.append(f"{key}:")
                     for item in value:
-                        lines.append(f"  - \"{item}\"" if _needs_quoting(str(item)) else f"  - {item}")
+                        lines.append(f'  - "{item}"' if _needs_quoting(str(item)) else f"  - {item}")
             elif isinstance(value, bool):
                 lines.append(f"{key}: {'true' if value else 'false'}")
             elif isinstance(value, (int, float)):
@@ -325,6 +333,7 @@ class NoteRenderer:
 # ------------------------------------------------------------------
 # Module-level helpers
 # ------------------------------------------------------------------
+
 
 def _needs_quoting(s: str) -> bool:
     """Return True if the YAML value string needs double-quoting."""

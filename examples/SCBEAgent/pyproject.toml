@@ -10,7 +10,7 @@ requires-python = ">=3.10"
 
 dependencies = [
     "aws-opentelemetry-distro >= 0.10.0",
-    "bedrock-agentcore >= 1.0.3",
+    "bedrock-agentcore>=1.6.1",
     "mcp >= 1.19.0",
     "pytest>=9.0.3",
     "pytest-asyncio >= 0.21.0",

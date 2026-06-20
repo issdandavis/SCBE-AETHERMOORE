@@ -1,0 +1,101 @@
+{
+  "schema_version": "scbe_benchmark_score_v1",
+  "benchmark": "ast-cube-encoder",
+  "goal": "comparison",
+  "type": {
+    "scope": "macro",
+    "axis": "latency",
+    "state": "warm",
+    "clock": "wall"
+  },
+  "metric": {
+    "name": "wall_time",
+    "unit": "s",
+    "lower_is_better": true,
+    "definition": "end-to-end encode of the corpus; Python in-process (no interpreter startup), Rust one subprocess incl. process startup + binary transport"
+  },
+  "result": {
+    "runs": 8,
+    "mean": 0.063705,
+    "median": 0.063605,
+    "stddev": 0.00318,
+    "min": 0.058632,
+    "max": 0.068328,
+    "cv_pct": 4.992,
+    "ci95": [
+      0.061501,
+      0.065909
+    ],
+    "unit": "s"
+  },
+  "variants": {
+    "python_reference": {
+      "runs": 8,
+      "mean": 0.212714,
+      "median": 0.212735,
+      "stddev": 0.011026,
+      "min": 0.19683,
+      "max": 0.229908,
+      "cv_pct": 5.184,
+      "ci95": [
+        0.205073,
+        0.220355
+      ],
+      "unit": "s"
+    },
+    "rust": {
+      "runs": 8,
+      "mean": 0.063705,
+      "median": 0.063605,
+      "stddev": 0.00318,
+      "min": 0.058632,
+      "max": 0.068328,
+      "cv_pct": 4.992,
+      "ci95": [
+        0.061501,
+        0.065909
+      ],
+      "unit": "s"
+    }
+  },
+  "pure_encode": {
+    "method": "two-point linear model t(k)=startup+k*per_file; subprocess startup excluded",
+    "batch_files": 200,
+    "rust_startup_ms": 13.063,
+    "rust_per_file_ms": 2.5069,
+    "python_per_file_ms": 10.9912,
+    "engine_speedup_x": 4.38,
+    "python_batch_cv_pct": 4.361,
+    "reliable": true
+  },
+  "baseline": {
+    "name": "python-reference (encode_matrix)",
+    "median": 0.212735,
+    "speedup_x": 3.34,
+    "speedup_note": "speedup = python.median / rust.median; quote only when both cv_pct < 5.0"
+  },
+  "input": {
+    "description": "python/scbe/*.py (excl __init__)",
+    "size": "20 files / 6046 LOC",
+    "seed": 0
+  },
+  "environment": {
+    "cpu": "Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",
+    "cores": 12,
+    "os": "Windows 11",
+    "runtime": "python 3.12.10",
+    "toolchain_versions": {
+      "rust_exe": "ast_cube.exe"
+    },
+    "commit": "fb785cd89",
+    "date": "2026-06-15",
+    "machine_class": "laptop",
+    "cpu_governor": "unknown"
+  },
+  "command": "python scripts/benchmarks/encoder_bench.py --runs 8 --warmup 5",
+  "tool": "custom (perf_counter, stdlib statistics)",
+  "reproducible": true,
+  "modeled_not_measured": false,
+  "stable": false,
+  "notes": "Rust path includes subprocess startup; on a small corpus that startup caps the observed speedup vs the pure-encode ratio. Not stable => re-run on a quiet machine with CPU governor pinned before publishing."
+}

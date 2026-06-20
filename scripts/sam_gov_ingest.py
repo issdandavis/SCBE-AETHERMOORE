@@ -14,7 +14,9 @@ from api.darpa_prep.client import SamGovClient
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Search and normalize SAM.gov opportunities into SCBE DARPA-prep records")
+    parser = argparse.ArgumentParser(
+        description="Search and normalize SAM.gov opportunities into SCBE DARPA-prep records"
+    )
     parser.add_argument("query", help="SAM.gov search query")
     parser.add_argument("--limit", type=int, default=10)
     parser.add_argument("--output", type=Path, default=None, help="Optional JSON output path")

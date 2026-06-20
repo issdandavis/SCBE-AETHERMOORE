@@ -16,6 +16,7 @@ Usage:
     python scripts/grok_image_gen.py --list-backends
     python scripts/grok_image_gen.py --check
 """
+
 from __future__ import annotations
 
 import argparse
@@ -134,7 +135,7 @@ def gen_hf_inference(
             print(f"  Rate limited, waiting {wait}s...")
             time.sleep(wait)
         elif resp.status_code == 503:
-            print(f"  Model loading, waiting 30s...")
+            print("  Model loading, waiting 30s...")
             time.sleep(30)
         else:
             raise RuntimeError(f"HF API error {resp.status_code}: {resp.text[:200]}")

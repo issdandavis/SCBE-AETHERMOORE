@@ -14,7 +14,8 @@ hand-labeled eval set.
 Usage:
   python scripts/system/memory_overlay_benchmark.py
   python scripts/system/memory_overlay_benchmark.py --top-k 5
-  python scripts/system/memory_overlay_benchmark.py --corpus-root notes/System\\ Library/Indexes --corpus-root docs/01-architecture
+  python scripts/system/memory_overlay_benchmark.py --corpus-root notes/System\\ Library/Indexes \\
+      --corpus-root docs/01-architecture
 """
 
 from __future__ import annotations
@@ -24,7 +25,7 @@ import json
 import math
 import re
 import sys
-from collections import Counter, defaultdict
+from collections import Counter
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -558,9 +559,7 @@ def evaluate(
 ) -> Dict[str, object]:
     modes = ("baseline", "mempalace_style", "overlay")
     rows: List[Dict[str, object]] = []
-    summary: Dict[str, Dict[str, float]] = {
-        mode: {"hits": 0.0, "mrr_sum": 0.0, "queries": 0.0} for mode in modes
-    }
+    summary: Dict[str, Dict[str, float]] = {mode: {"hits": 0.0, "mrr_sum": 0.0, "queries": 0.0} for mode in modes}
 
     for item in eval_items:
         row: Dict[str, object] = {

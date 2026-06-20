@@ -1,0 +1,322 @@
+{
+  "schema_version": "scbe_benchmark_score_v1",
+  "benchmark": "aether-console-capability",
+  "goal": "capability-coverage",
+  "metric": {
+    "name": "engine_capability_pass_rate",
+    "unit": "pct",
+    "lower_is_better": false
+  },
+  "summary": {
+    "total_choices": 50,
+    "engine_capabilities_tested": 36,
+    "passed": 36,
+    "failed": 0,
+    "pass_rate_pct": 100.0,
+    "skipped_integration_or_destructive": 14,
+    "latency_ms_mean": 379.0,
+    "latency_ms_max": 905.7
+  },
+  "rows": [
+    {
+      "category": "GitHub",
+      "label": "See why my build broke",
+      "status": "skip:network",
+      "ms": 0
+    },
+    {
+      "category": "GitHub",
+      "label": "Read the full error log for a failed run",
+      "status": "skip:network",
+      "ms": 0
+    },
+    {
+      "category": "GitHub",
+      "label": "Check on my pull requests",
+      "status": "skip:network",
+      "ms": 0
+    },
+    {
+      "category": "GitHub",
+      "label": "Look at one pull request in detail",
+      "status": "skip:network",
+      "ms": 0
+    },
+    {
+      "category": "GitHub",
+      "label": "Save and send my work to GitHub",
+      "status": "skip:destructive",
+      "ms": 0
+    },
+    {
+      "category": "GitHub",
+      "label": "Open a pull request for my changes",
+      "status": "skip:destructive",
+      "ms": 0
+    },
+    {
+      "category": "GitHub",
+      "label": "Merge a pull request into the project",
+      "status": "skip:destructive",
+      "ms": 0
+    },
+    {
+      "category": "Tokens & Cube",
+      "label": "Turn my writing into secret tokens",
+      "status": "pass",
+      "ms": 240.8927000069525
+    },
+    {
+      "category": "Tokens & Cube",
+      "label": "Read my secret tokens back as plain text",
+      "status": "pass",
+      "ms": 223.92340000078548
+    },
+    {
+      "category": "Tokens & Cube",
+      "label": "Hide my writing in the veil tongue",
+      "status": "pass",
+      "ms": 223.5720000026049
+    },
+    {
+      "category": "Tokens & Cube",
+      "label": "Lock my writing with the binding tongue",
+      "status": "pass",
+      "ms": 229.3394000007538
+    },
+    {
+      "category": "Tokens & Cube",
+      "label": "See all six sacred tongues I can use",
+      "status": "pass",
+      "ms": 235.10330000135582
+    },
+    {
+      "category": "Tokens & Cube",
+      "label": "Turn my writing into tokens (any tongue)",
+      "status": "pass",
+      "ms": 229.21190000488423
+    },
+    {
+      "category": "Chemistry",
+      "label": "Turn my words into atoms",
+      "status": "pass",
+      "ms": 445.4870000045048
+    },
+    {
+      "category": "Chemistry",
+      "label": "Translate an SCBE action to chemistry",
+      "status": "pass",
+      "ms": 222.58899999724235
+    },
+    {
+      "category": "Chemistry",
+      "label": "Clean up a molecule formula",
+      "status": "pass",
+      "ms": 404.42170000460465
+    },
+    {
+      "category": "Chemistry",
+      "label": "Check how strongly six tongues bond",
+      "status": "pass",
+      "ms": 319.2879999987781
+    },
+    {
+      "category": "Chemistry",
+      "label": "Show the orbital shell map",
+      "status": "pass",
+      "ms": 640.6828999897698
+    },
+    {
+      "category": "Chemistry",
+      "label": "Check the chemistry engine is healthy",
+      "status": "pass",
+      "ms": 799.0403000003425
+    },
+    {
+      "category": "Safety & Governance",
+      "label": "Is this text risky? Allow or block",
+      "status": "pass",
+      "ms": 220.01160000218078
+    },
+    {
+      "category": "Safety & Governance",
+      "label": "Pass/fail safety check on this text",
+      "status": "pass",
+      "ms": 229.431099985959
+    },
+    {
+      "category": "Safety & Governance",
+      "label": "See the full safety breakdown for this text",
+      "status": "pass",
+      "ms": 236.25580000225455
+    },
+    {
+      "category": "Safety & Governance",
+      "label": "Get the safety result as data (JSON)",
+      "status": "pass",
+      "ms": 221.3606000004802
+    },
+    {
+      "category": "Safety & Governance",
+      "label": "Check one of my files for problems",
+      "status": "pass",
+      "ms": 367.3147999943467
+    },
+    {
+      "category": "Code & AI",
+      "label": "Ask the AI anything",
+      "status": "skip:ai-backend",
+      "ms": 0
+    },
+    {
+      "category": "Code & AI",
+      "label": "Have the AI do a task for me",
+      "status": "skip:destructive",
+      "ms": 0
+    },
+    {
+      "category": "Code & AI",
+      "label": "Check my code file for problems",
+      "status": "pass",
+      "ms": 382.6091999944765
+    },
+    {
+      "category": "Code & AI",
+      "label": "Get a plain review of my code",
+      "status": "pass",
+      "ms": 242.9446000023745
+    },
+    {
+      "category": "Code & AI",
+      "label": "Full health check on my code",
+      "status": "pass",
+      "ms": 368.8912000070559
+    },
+    {
+      "category": "Code & AI",
+      "label": "Translate code into another language",
+      "status": "skip:needs-real-id",
+      "ms": 0
+    },
+    {
+      "category": "Code & AI",
+      "label": "Show all languages I can translate to",
+      "status": "pass",
+      "ms": 490.4882999981055
+    },
+    {
+      "category": "Code & AI",
+      "label": "Explain a part of the safety system",
+      "status": "skip:needs-real-id",
+      "ms": 0
+    },
+    {
+      "category": "Notes & Vault",
+      "label": "Find one of my notes by name",
+      "status": "pass",
+      "ms": 518.3134999970207
+    },
+    {
+      "category": "Notes & Vault",
+      "label": "Search inside my notes for a word",
+      "status": "pass",
+      "ms": 905.748199991649
+    },
+    {
+      "category": "Notes & Vault",
+      "label": "Open the newest note about something",
+      "status": "pass",
+      "ms": 503.8325000059558
+    },
+    {
+      "category": "Notes & Vault",
+      "label": "Show what I worked on lately",
+      "status": "pass",
+      "ms": 518.8047999981791
+    },
+    {
+      "category": "Notes & Vault",
+      "label": "See all my note vaults",
+      "status": "pass",
+      "ms": 259.71909999498166
+    },
+    {
+      "category": "Notes & Vault",
+      "label": "Open one of my vault folders",
+      "status": "skip:needs-real-id",
+      "ms": 0
+    },
+    {
+      "category": "System & Health",
+      "label": "Check if my PC is healthy",
+      "status": "pass",
+      "ms": 656.3108999980614
+    },
+    {
+      "category": "System & Health",
+      "label": "Make sure SCBE itself is working",
+      "status": "pass",
+      "ms": 375.818700005766
+    },
+    {
+      "category": "System & Health",
+      "label": "See what SCBE knows about my project",
+      "status": "pass",
+      "ms": 406.1056000064127
+    },
+    {
+      "category": "System & Health",
+      "label": "Check my tools are set up right",
+      "status": "skip:ai-backend",
+      "ms": 0
+    },
+    {
+      "category": "System & Health",
+      "label": "Get a clear warning if storage is low",
+      "status": "pass",
+      "ms": 647.0425000006799
+    },
+    {
+      "category": "System & Health",
+      "label": "Save a health report I can keep",
+      "status": "pass",
+      "ms": 630.755299993325
+    },
+    {
+      "category": "See & Feel (Synesthesia)",
+      "label": "See, hear & feel my words",
+      "status": "pass",
+      "ms": 260.3003000112949
+    },
+    {
+      "category": "See & Feel (Synesthesia)",
+      "label": "Show me a quick taste of the senses",
+      "status": "pass",
+      "ms": 231.086800005869
+    },
+    {
+      "category": "See & Feel (Synesthesia)",
+      "label": "What does my writing taste like?",
+      "status": "pass",
+      "ms": 242.63629999768455
+    },
+    {
+      "category": "See & Feel (Synesthesia)",
+      "label": "Explain what the Risk layer does",
+      "status": "pass",
+      "ms": 266.27240001107566
+    },
+    {
+      "category": "See & Feel (Synesthesia)",
+      "label": "Explain what the Sound layer does",
+      "status": "pass",
+      "ms": 248.57640000118408
+    },
+    {
+      "category": "See & Feel (Synesthesia)",
+      "label": "Explain a layer by its number",
+      "status": "skip:needs-real-id",
+      "ms": 0
+    }
+  ]
+}

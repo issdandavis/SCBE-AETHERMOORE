@@ -77,9 +77,7 @@ class NotebookLMSource(SourceAdapter):
         # Uses BRAINSTORM source type since no dedicated NOTEBOOK_LM type
         super().__init__(source_type=SourceType.BRAINSTORM, config=config or {})
         self._encoding: str = self.config.get("encoding", "utf-8")
-        self._default_ai_source: str = self.config.get(
-            "default_ai_source", "unknown"
-        )
+        self._default_ai_source: str = self.config.get("default_ai_source", "unknown")
 
     # ------------------------------------------------------------------
     # SourceAdapter interface
@@ -206,7 +204,7 @@ class NotebookLMSource(SourceAdapter):
                 line_end = len(text)
 
             if i + 1 < len(markers):
-                body = text[line_end:markers[i + 1][0]].strip()
+                body = text[line_end : markers[i + 1][0]].strip()
             else:
                 body = text[line_end:].strip()
 

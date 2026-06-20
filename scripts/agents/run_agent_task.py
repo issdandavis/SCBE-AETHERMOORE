@@ -24,7 +24,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
@@ -49,9 +48,7 @@ def _utc_stamp() -> str:
 
 
 def _load_free_compute_module():
-    spec = importlib.util.spec_from_file_location(
-        "_scbe_free_compute_agent_array", FREE_COMPUTE_PLANNER
-    )
+    spec = importlib.util.spec_from_file_location("_scbe_free_compute_agent_array", FREE_COMPUTE_PLANNER)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"Could not load {FREE_COMPUTE_PLANNER}")
     module = importlib.util.module_from_spec(spec)
@@ -60,9 +57,7 @@ def _load_free_compute_module():
     return module
 
 
-def build_trajectory(
-    packet: Any, max_attempts: int, critic: bool, rerank: bool
-) -> list[dict[str, Any]]:
+def build_trajectory(packet: Any, max_attempts: int, critic: bool, rerank: bool) -> list[dict[str, Any]]:
     """Build inference-time scaling steps for a packet.
 
     This is deliberately model-agnostic: any agent can fill in the attempt
@@ -162,7 +157,10 @@ def build_task_run(
         },
         "operator_commands": {
             "matrix": f"npm run agent:free-compute-array -- --goal {json.dumps(goal)} --workers {workers}",
-            "enqueue": "powershell -ExecutionPolicy Bypass -File artifacts/free_compute_agent_array/enqueue_dispatch_commands.ps1",
+            "enqueue": (
+                "powershell -ExecutionPolicy Bypass "
+                "-File artifacts/free_compute_agent_array/enqueue_dispatch_commands.ps1"
+            ),
             "status": "python scripts/system/advanced_ai_dispatch.py status --limit 20",
         },
         "packets": [
@@ -183,9 +181,7 @@ def attach_build_bijection(payload: dict[str, Any]) -> None:
     payload["build_bijection"] = prove_dict(core)
 
 
-def write_task_run(
-    payload: dict[str, Any], output_root: Path, *, attach_bijection: bool = True
-) -> dict[str, str]:
+def write_task_run(payload: dict[str, Any], output_root: Path, *, attach_bijection: bool = True) -> dict[str, str]:
     run_dir = output_root / _utc_stamp()
     run_dir.mkdir(parents=True, exist_ok=True)
     intent_path = run_dir / "task_intent.txt"
@@ -195,9 +191,7 @@ def write_task_run(
     if attach_bijection:
         attach_build_bijection(payload)
     report_path = run_dir / "agent_task_run.json"
-    report_path.write_text(
-        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    report_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     md_lines = [
         "# SCBE Agent Task Run",
@@ -238,12 +232,8 @@ def write_task_run(
 
     latest = output_root / "latest"
     latest.mkdir(parents=True, exist_ok=True)
-    (latest / "agent_task_run.json").write_text(
-        report_path.read_text(encoding="utf-8"), encoding="utf-8"
-    )
-    (latest / "agent_task_run.md").write_text(
-        md_path.read_text(encoding="utf-8"), encoding="utf-8"
-    )
+    (latest / "agent_task_run.json").write_text(report_path.read_text(encoding="utf-8"), encoding="utf-8")
+    (latest / "agent_task_run.md").write_text(md_path.read_text(encoding="utf-8"), encoding="utf-8")
     return {"json": str(report_path), "markdown": str(md_path), "latest": str(latest)}
 
 
@@ -319,9 +309,7 @@ def main() -> int:
     )
     if args.execute_verify:
         payload["verify_results"] = execute_verify(payload, args.verify_limit)
-    outputs = write_task_run(
-        payload, args.output_root, attach_bijection=not args.no_build_bijection
-    )
+    outputs = write_task_run(payload, args.output_root, attach_bijection=not args.no_build_bijection)
     print(
         json.dumps(
             {"ok": True, "outputs": outputs, "packets": len(payload["packets"])},

@@ -114,6 +114,360 @@
     "args": ["packages/cli/scripts/bench_harness_matrix.cjs"]
   },
   {
+    "name": "video-pocket-director",
+    "description": "Run the SCBE video lattice pocket-dimension director demo through the local deterministic round-table harness",
+    "command": "python",
+    "args": ["scripts/video_lattice/pocket_director_demo.py", "--roundtable", "{task}"]
+  },
+  {
+    "name": "research-arxiv",
+    "description": "Search arXiv preprints for papers matching a query. Free, no auth required. Returns titles, authors, abstract summaries, and URLs.",
+    "command": "python",
+    "args": ["scripts/research_api_bus.py", "--api", "arxiv", "--query", "{task}", "--limit", "5"]
+  },
+  {
+    "name": "research-semantic-scholar",
+    "description": "Search Semantic Scholar for academic papers with citation counts. Free, no auth required. Good for finding highly-cited work.",
+    "command": "python",
+    "args": [
+      "scripts/research_api_bus.py",
+      "--api",
+      "semantic_scholar",
+      "--query",
+      "{task}",
+      "--limit",
+      "5"
+    ]
+  },
+  {
+    "name": "research-openalex",
+    "description": "Search OpenAlex scholarly works index. Free, no auth required. Covers 250M+ works with open-access flag and citation counts.",
+    "command": "python",
+    "args": [
+      "scripts/research_api_bus.py",
+      "--api",
+      "openalex",
+      "--query",
+      "{task}",
+      "--limit",
+      "5"
+    ]
+  },
+  {
+    "name": "research-crossref",
+    "description": "Search CrossRef for DOI-registered publications. Free, no auth required. Best for finding official citations and publisher metadata.",
+    "command": "python",
+    "args": [
+      "scripts/research_api_bus.py",
+      "--api",
+      "crossref",
+      "--query",
+      "{task}",
+      "--limit",
+      "5"
+    ]
+  },
+  {
+    "name": "research-pubmed",
+    "description": "Search PubMed biomedical literature via NCBI E-utilities. Free, no auth required. Best for medical, biology, and life-sciences queries.",
+    "command": "python",
+    "args": ["scripts/research_api_bus.py", "--api", "pubmed", "--query", "{task}", "--limit", "5"]
+  },
+  {
+    "name": "research-sam-gov",
+    "description": "Search SAM.gov active federal contract and grant opportunities. Requires SAM_GOV_API_KEY env var. Returns NAICS, set-aside, close dates.",
+    "command": "python",
+    "args": [
+      "scripts/research_api_bus.py",
+      "--api",
+      "sam_gov",
+      "--query",
+      "{task}",
+      "--limit",
+      "10"
+    ]
+  },
+  {
+    "name": "research-uspto",
+    "description": "Search USPTO patent applications via the Open Data Portal File Wrapper API. Requires USPTO_ODP_API_KEY env var. Returns application numbers, status, inventors.",
+    "command": "python",
+    "args": ["scripts/research_api_bus.py", "--api", "uspto", "--query", "{task}", "--limit", "5"]
+  },
+  {
+    "name": "research-hf-models",
+    "description": "Search HuggingFace model hub for models matching a query. Free; HF_TOKEN optional for higher rate limits. Returns model IDs, downloads, pipeline tags.",
+    "command": "python",
+    "args": [
+      "scripts/research_api_bus.py",
+      "--api",
+      "hf_models",
+      "--query",
+      "{task}",
+      "--limit",
+      "10"
+    ]
+  },
+  {
+    "name": "research-github-repos",
+    "description": "Search GitHub public repositories by stars and relevance. GITHUB_TOKEN recommended for quota. Returns names, descriptions, stars, languages.",
+    "command": "python",
+    "args": [
+      "scripts/research_api_bus.py",
+      "--api",
+      "github_repos",
+      "--query",
+      "{task}",
+      "--limit",
+      "10"
+    ]
+  },
+  {
+    "name": "geoseal-cross-build",
+    "description": "Cross-build a rendered Tier 1 lexicon template from one Sacred Tongue to another. Input must be a rendered template string, e.g. \"(x + y)\" (KO/python add). Returns src/dst code, language names, and the lattice IR. Run geoseal-cross-build with --list-ops to see all 64 ops and their templates per tongue.",
+    "patentSurface": "bijective-transport",
+    "command": "python",
+    "args": [
+      "src/geoseal_cli.py",
+      "cross-build",
+      "--src-code",
+      "{task}",
+      "--src-tongue",
+      "KO",
+      "--dst-tongue",
+      "RU"
+    ]
+  },
+  {
+    "name": "geoseal-cross-build-broadcast",
+    "description": "Broadcast a rendered Tier 1 lexicon template from one Sacred Tongue into ALL other five tongues simultaneously. Returns a translation map: {KO,AV,RU,CA,UM,DR}→rendered_code. Input format: same as geoseal-cross-build.",
+    "patentSurface": "bijective-transport",
+    "command": "python",
+    "args": [
+      "src/geoseal_cli.py",
+      "cross-build",
+      "--src-code",
+      "{task}",
+      "--src-tongue",
+      "KO",
+      "--all-tongues"
+    ]
+  },
+  {
+    "name": "scbe-compass",
+    "description": "SCBE Compass governed route planner — classify a task and emit a native ScbeCompassRoutePlan with formation, command path, board rules, adapter slots, and governance constraints (local_only, budget_cents=0 by default).",
+    "patentSurface": "agent-harness",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/compass.cjs", "{task}"]
+  },
+  {
+    "name": "scbe-hermes",
+    "description": "Hermes compatibility alias over SCBE Compass — same planning logic, emits HermesRoutePlan schema (hermes_route_plan.v1) for backward-compatible bus integrations.",
+    "patentSurface": "agent-harness",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/compass.cjs", "--hermes", "{task}"]
+  },
+  {
+    "name": "roll-stack-maze-benchmark",
+    "description": "Run the SCBE Compass roll-stack execution benchmark on deterministic maze pathfinding fixtures. Requires a real local BFS execution, output-contract validation, and receipt hashes; plan-only results fail the lane.",
+    "patentSurface": "agent-harness",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/bench_roll_stack_maze.cjs"]
+  },
+  {
+    "name": "worm-environment-adapter-benchmark",
+    "description": "Run a local-sensing worm/pathfinding benchmark with touch, chemo-gradient, frontier, edge-channel, and memory sensors. Scores depth of penetration, loop rate, greedy-baseline delta, and receipt hashes instead of only solved/failed.",
+    "patentSurface": "agent-harness",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/bench_worm_environment_adapter.cjs"]
+  },
+  {
+    "name": "projection-board-pathfinding-benchmark",
+    "description": "Run a fog-of-war projection-board benchmark where visible x,y movement is projected from hidden goal, frontier, permission, security, importance-depth, memory, spin-coherence, and 3x3 kernel-convolution lattice fields.",
+    "patentSurface": "agent-harness",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/bench_projection_board_pathfinding.cjs"]
+  },
+  {
+    "name": "pathfinding-suite-benchmark",
+    "description": "Run every current agent-bus pathfinding benchmark: roll-stack maze, worm environmental adapter, projection-board hidden-lattice navigation, and vector-field navigation. Emits one combined evidence scorecard.",
+    "patentSurface": "agent-harness",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/bench_pathfinding_suite.cjs"]
+  },
+  {
+    "name": "vector-field-nav-benchmark",
+    "description": "Run seeded multi-lattice, depth-first, and ensemble-beam vector-field navigation against A*, greedy, and random baselines with receipt-chain scoring, ablations, security tiers, importance depth, 3x3 kernel convolution, fluidic heat maps, and pressure sensing.",
+    "patentSurface": "agent-harness",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/vector_field_bench.cjs"]
+  },
+  {
+    "name": "vector-field-random-solve-sweep",
+    "description": "Run deterministic randomized maze solves using the random baseline and report solve rate, receipt chains, fluidic heat peaks, and pressure averages.",
+    "patentSurface": "agent-harness",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/vector_field_bench.cjs", "--random-solve-sweep"]
+  },
+  {
+    "name": "semantic-hex-bridge",
+    "description": "Encode text through the agent-bus 6D semantic bridge into binary and 12-character hex routing evidence.",
+    "patentSurface": "atomic-tokenizer",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/semantic_hex_bridge.cjs", "{task}"]
+  },
+  {
+    "name": "tokenizer-atomic-selfcheck",
+    "description": "Run Sacred Tongue byte-bijection self-check as the current atomic-tokenizer transport smoke test.",
+    "patentSurface": "atomic-tokenizer",
+    "command": "python",
+    "args": ["scripts/system/sacred_tongue_build_bijection.py", "--self-check"]
+  },
+  {
+    "name": "ai-router-health",
+    "description": "Check all configured model provider health (cerebras, groq, huggingface, openai, xai, anthropic). Free/local lanes are distinguished from quota-limited remote free tiers. No secrets are exposed in output.",
+    "patentSurface": "agent-harness",
+    "command": "python",
+    "args": ["scripts/system/terminal_ai_router.py", "health", "--checks", "all"]
+  },
+  {
+    "name": "ai-router-call",
+    "description": "Route a prompt through the squad cheap-first terminal AI router. Tries cerebras (~920ms free tier) first, then groq, then huggingface. Provider caps and daily budget limits are enforced. Requires at least one of: CEREBRAS_API_KEY, GROQ_API_KEY, HF_TOKEN.",
+    "patentSurface": "agent-harness",
+    "command": "python",
+    "args": [
+      "scripts/system/terminal_ai_router.py",
+      "call",
+      "--prompt",
+      "{task}",
+      "--providers",
+      "cerebras,groq,huggingface"
+    ]
+  },
+  {
+    "name": "youtube-video-review",
+    "description": "Review uploaded YouTube videos and emit score reports for titles, descriptions, transcripts, and tags.",
+    "patentSurface": "agent-harness",
+    "command": "python",
+    "args": ["scripts/apollo/video_review.py", "review-all"]
+  },
+  {
+    "name": "youtube-article-dry-run",
+    "description": "Dry-run article-to-video generation for a provided article path before rendering or upload.",
+    "patentSurface": "agent-harness",
+    "command": "python",
+    "args": ["scripts/publish/article_to_video.py", "--file", "{task}", "--dry-run"]
+  },
+  {
+    "name": "youtube-upload-unlisted",
+    "description": "Upload a rendered video to YouTube as unlisted. Public publishing still requires explicit human approval.",
+    "patentSurface": "agent-harness",
+    "command": "python",
+    "args": ["scripts/publish/post_to_youtube.py", "--file", "{task}", "--privacy", "unlisted"]
+  },
+  {
+    "name": "writing-roundtable-review",
+    "description": "Run the existing longform round-table review pipeline for writing/manuscript quality checks.",
+    "patentSurface": "agent-harness",
+    "command": "python",
+    "args": ["scripts/publish/roundtable_review.py", "--phase", "synthesize"]
+  },
+  {
+    "name": "agentic-pazaak-board",
+    "description": "Run the deterministic Pazaak-style bitboard planner for bounded agentic task routing moves.",
+    "patentSurface": "agent-harness",
+    "command": "python",
+    "args": ["scripts/system/agentic_pazaak_board.py", "--limit", "5"]
+  },
+  {
+    "name": "coding-board-trial",
+    "description": "Run the non-destructive coding-board legality probe through GeoSeal legitimacy before execution.",
+    "patentSurface": "agent-harness",
+    "command": "python",
+    "args": [
+      "-m",
+      "src.geoseal_cli",
+      "coding-trial",
+      "--goal",
+      "{task}",
+      "--tool",
+      "git.status",
+      "--json",
+      "--",
+      "python",
+      "-m",
+      "py_compile",
+      "src/coding_board/__init__.py"
+    ]
+  },
+  {
+    "name": "chessboard-dev-stack",
+    "description": "Generate Spec Kit/BMAD/GSD/Superpowers chessboard packets for an agentic development goal.",
+    "patentSurface": "agent-harness",
+    "command": "python",
+    "args": ["scripts/system/chessboard_dev_stack.py", "--goal", "{task}"]
+  },
+  {
+    "name": "scbe-tool-register",
+    "description": "Register a new agent-bus tool from a validated JSON ToolSpec. Writes tools.json atomically after command-target verification. Input is the JSON spec.",
+    "patentSurface": "agent-harness",
+    "command": "node",
+    "args": [
+      "packages/agent-bus/scripts/toolsmith.cjs",
+      "register",
+      "--tools-json",
+      "packages/agent-bus/tools.json",
+      "--spec",
+      "{task}"
+    ]
+  },
+  {
+    "name": "binary-hex-compiler",
+    "description": "Compile text into lossless UTF-8 byte hex/binary plus SCBE semantic hex routing evidence.",
+    "patentSurface": "atomic-tokenizer",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/toolsmith.cjs", "binary-hex", "{task}"]
+  },
+  {
+    "name": "auto-abridge",
+    "description": "Deterministically abridge long text into a compact bounded packet with omitted-character accounting.",
+    "patentSurface": "agent-harness",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/toolsmith.cjs", "abridge", "{task}"]
+  },
+  {
+    "name": "scbe-clock-ticker",
+    "description": "Emit compact ISS/UTC time, local time, system time, and an optional task ticker. ISS time is UTC/GMT.",
+    "patentSurface": "agent-harness",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/toolsmith.cjs", "clock", "--tasks", "{task}"]
+  },
+  {
+    "name": "tool-validate",
+    "description": "Validate a tool spec JSON without registering it. Input is a JSON object with the proposed spec (name, description, command, args, optional patentSurface). Returns ok=true/false with a list of schema errors. Use as a dry-run before calling scbe-tool-register.",
+    "patentSurface": "agent-harness",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/toolsmith.cjs", "validate", "--spec", "{task}"]
+  },
+  {
+    "name": "tool-list",
+    "description": "List all registered agent-bus tools. Input is an optional name filter substring (pass empty string to list all, or a partial name to filter). Returns tools_count and a per-tool summary: name, command, patentSurface, description_head.",
+    "patentSurface": "agent-harness",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/toolsmith.cjs", "list", "--filter", "{task}"]
+  },
+  {
+    "name": "star-path-bench",
+    "description": "Benchmark the tool graph as a star-navigation mission planner (BFS, Dijkstra, A*). Returns galaxy map, hub tools, delta-V stats, and six canonical mission trajectories.",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/star_path_bench.cjs"]
+  },
+  {
+    "name": "life-ledger-encounter",
+    "description": "Record an encounter in an agent life ledger. Detects known vs new persons, tracks alignment and interaction history. Provide {task} as --ledger <path> --agent-id <id> [--alignment <float>].",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/life_ledger_cli.cjs", "encounter", "--ledger", "{task}"]
+  },
+  {
     "name": "rubix-browser-plan",
     "description": "Plan a browser-control route as permission-defined Rubix/tesseract faces with blocked-move audit evidence",
     "command": "node",

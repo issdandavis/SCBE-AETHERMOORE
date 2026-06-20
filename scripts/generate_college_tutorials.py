@@ -4,6 +4,7 @@ Generate college-level tutorial responses for SCBE codex skill stubs.
 Reads stubs, generates 250-600 word responses per record, writes completed JSONL.
 Strips skill_content and sample_packets from output.
 """
+
 import json
 import re
 import hashlib
@@ -14,17 +15,29 @@ OUTPUT = Path("C:/Users/issda/SCBE-AETHERMOORE/training-data/sft/codex_skill_tut
 
 # ── helpers ──────────────────────────────────────────────────────────
 
+
 def skill_title(src):
     t = src.replace("-", " ").title()
-    for old, new in [("Scbe", "SCBE"), ("Hf", "HF"), (" Ai ", " AI "), ("Mcp", "MCP"),
-                     ("N8N", "n8n"), ("Gh ", "GitHub "), ("Api", "API"), ("Npm", "npm"),
-                     ("Ci", "CI"), ("Ops", "Ops"), ("Dtn", "DTN"), ("Sft", "SFT")]:
+    for old, new in [
+        ("Scbe", "SCBE"),
+        ("Hf", "HF"),
+        (" Ai ", " AI "),
+        ("Mcp", "MCP"),
+        ("N8N", "n8n"),
+        ("Gh ", "GitHub "),
+        ("Api", "API"),
+        ("Npm", "npm"),
+        ("Ci", "CI"),
+        ("Ops", "Ops"),
+        ("Dtn", "DTN"),
+        ("Sft", "SFT"),
+    ]:
         t = t.replace(old, new)
     return t
 
 
 def extract_paths(content):
-    paths = re.findall(r'[\w/\\.-]+\.(?:ps1|py|ts|js|json|md|yml|yaml|html|jsonl)', content)
+    paths = re.findall(r"[\w/\\.-]+\.(?:ps1|py|ts|js|json|md|yml|yaml|html|jsonl)", content)
     return list(dict.fromkeys(paths))[:6]
 
 
@@ -33,31 +46,31 @@ def extract_urls(content):
 
 
 def extract_commands(content):
-    cmds = re.findall(r'```(?:powershell|bash|python|sh)?\n(.+?)```', content, re.DOTALL)
+    cmds = re.findall(r"```(?:powershell|bash|python|sh)?\n(.+?)```", content, re.DOTALL)
     result = []
     for block in cmds:
-        for line in block.strip().split('\n'):
+        for line in block.strip().split("\n"):
             line = line.strip()
-            if line and not line.startswith('#') and not line.startswith('//'):
+            if line and not line.startswith("#") and not line.startswith("//"):
                 result.append(line)
     return list(dict.fromkeys(result))[:6]
 
 
 def extract_headers(content):
-    return re.findall(r'#+\s+(.+)', content)
+    return re.findall(r"#+\s+(.+)", content)
 
 
 def extract_bullets(content):
-    return [m.strip() for m in re.findall(r'^[-*]\s+(.+)', content, re.MULTILINE)][:10]
+    return [m.strip() for m in re.findall(r"^[-*]\s+(.+)", content, re.MULTILINE)][:10]
 
 
 def first_paragraph(content):
     """Get the first substantive paragraph from content."""
-    for block in content.split('\n\n'):
+    for block in content.split("\n\n"):
         text = block.strip()
-        if text and not text.startswith('#') and not text.startswith('```') and len(text) > 40:
+        if text and not text.startswith("#") and not text.startswith("```") and len(text) > 40:
             # Remove markdown formatting
-            text = re.sub(r'[`*_]', '', text)
+            text = re.sub(r"[`*_]", "", text)
             return text[:300]
     return ""
 
@@ -104,17 +117,17 @@ TONGUES = [
 ]
 
 CAT_PRIMARY_TONGUES = {
-    "infrastructure": [0, 3],   # KO, CA
-    "browser": [4, 0],          # UM, KO
-    "training": [1, 5],         # AV, DR
-    "governance": [5, 4],       # DR, UM
-    "publishing": [1, 3],       # AV, CA
-    "creative": [2, 1],         # RU, AV
+    "infrastructure": [0, 3],  # KO, CA
+    "browser": [4, 0],  # UM, KO
+    "training": [1, 5],  # AV, DR
+    "governance": [5, 4],  # DR, UM
+    "publishing": [1, 3],  # AV, CA
+    "creative": [2, 1],  # RU, AV
     "ai_coordination": [0, 4],  # KO, UM
-    "devops": [3, 0],           # CA, KO
-    "monetization": [5, 3],     # DR, CA
-    "knowledge": [1, 2],        # AV, RU
-    "general": [0, 1],          # KO, AV
+    "devops": [3, 0],  # CA, KO
+    "monetization": [5, 3],  # DR, CA
+    "knowledge": [1, 2],  # AV, RU
+    "general": [0, 1],  # KO, AV
 }
 
 CAT_PRIMARY_LAYERS = {
@@ -132,25 +145,81 @@ CAT_PRIMARY_LAYERS = {
 }
 
 DESIGN_PATTERNS = [
-    ("Command-Query Separation (CQRS)", "read operations are strictly separated from write operations, ensuring observability never triggers side effects"),
-    ("Event Sourcing", "state changes are captured as an append-only sequence of events, enabling full auditability and replay"),
-    ("Circuit Breaker", "cascading failures are prevented by failing fast when a dependency is unhealthy, with configurable recovery thresholds"),
-    ("Store-and-Forward", "messages are durably persisted before delivery, decoupling sender availability from receiver availability"),
-    ("Bulkhead Isolation", "failure domains are isolated so that a crash in one subsystem does not propagate to others"),
-    ("Saga Pattern", "long-running operations are decomposed into compensatable steps, with explicit rollback for each stage"),
-    ("Strangler Fig", "legacy behavior is incrementally replaced by routing traffic through new implementations alongside old ones"),
-    ("Sidecar Pattern", "auxiliary concerns (logging, governance) run alongside the main process without modifying its code"),
+    (
+        "Command-Query Separation (CQRS)",
+        "read operations are strictly separated from write operations, ensuring observability never triggers side effects",
+    ),
+    (
+        "Event Sourcing",
+        "state changes are captured as an append-only sequence of events, enabling full auditability and replay",
+    ),
+    (
+        "Circuit Breaker",
+        "cascading failures are prevented by failing fast when a dependency is unhealthy, with configurable recovery thresholds",
+    ),
+    (
+        "Store-and-Forward",
+        "messages are durably persisted before delivery, decoupling sender availability from receiver availability",
+    ),
+    (
+        "Bulkhead Isolation",
+        "failure domains are isolated so that a crash in one subsystem does not propagate to others",
+    ),
+    (
+        "Saga Pattern",
+        "long-running operations are decomposed into compensatable steps, with explicit rollback for each stage",
+    ),
+    (
+        "Strangler Fig",
+        "legacy behavior is incrementally replaced by routing traffic through new implementations alongside old ones",
+    ),
+    (
+        "Sidecar Pattern",
+        "auxiliary concerns (logging, governance) run alongside the main process without modifying its code",
+    ),
 ]
 
 TRADEOFF_PAIRS = [
-    ("idempotency", "latency", "operations are safely re-runnable at the cost of additional state checks on each invocation"),
-    ("consistency", "availability", "the system refuses operations rather than allowing inconsistent state, following CP in the CAP theorem"),
-    ("auditability", "storage", "every state transition produces governance artifacts, consuming disk space for complete traceability"),
-    ("security depth", "throughput", "multi-layer governance scoring adds processing time but ensures adversarial operations face exponential cost"),
-    ("explicit recovery", "code simplicity", "dedicated recovery scripts for each failure mode replace generic retry logic at the cost of more code"),
-    ("local-first operation", "collaboration", "avoiding network dependencies improves reliability but requires explicit sync mechanisms for multi-node setups"),
-    ("deterministic output", "flexibility", "operations produce predictable results at the cost of not adapting dynamically to unusual contexts"),
-    ("artifact persistence", "disk I/O", "JSON-based state surfaces enable cross-agent inspection but add file system overhead"),
+    (
+        "idempotency",
+        "latency",
+        "operations are safely re-runnable at the cost of additional state checks on each invocation",
+    ),
+    (
+        "consistency",
+        "availability",
+        "the system refuses operations rather than allowing inconsistent state, following CP in the CAP theorem",
+    ),
+    (
+        "auditability",
+        "storage",
+        "every state transition produces governance artifacts, consuming disk space for complete traceability",
+    ),
+    (
+        "security depth",
+        "throughput",
+        "multi-layer governance scoring adds processing time but ensures adversarial operations face exponential cost",
+    ),
+    (
+        "explicit recovery",
+        "code simplicity",
+        "dedicated recovery scripts for each failure mode replace generic retry logic at the cost of more code",
+    ),
+    (
+        "local-first operation",
+        "collaboration",
+        "avoiding network dependencies improves reliability but requires explicit sync mechanisms for multi-node setups",
+    ),
+    (
+        "deterministic output",
+        "flexibility",
+        "operations produce predictable results at the cost of not adapting dynamically to unusual contexts",
+    ),
+    (
+        "artifact persistence",
+        "disk I/O",
+        "JSON-based state surfaces enable cross-agent inspection but add file system overhead",
+    ),
 ]
 
 TRAD_TOOLS = {
@@ -170,11 +239,12 @@ TRAD_TOOLS = {
 
 # ── response generators ──────────────────────────────────────────────
 
+
 def gen_architecture(record):
-    skill = skill_title(record['skill_source'])
-    cat = record['category']
-    content = record.get('skill_content', '')
-    seed = record['skill_source'] + 'arch'
+    skill = skill_title(record["skill_source"])
+    cat = record["category"]
+    content = record.get("skill_content", "")
+    seed = record["skill_source"] + "arch"
 
     desc = first_paragraph(content)
     paths = extract_paths(content)
@@ -186,15 +256,15 @@ def gen_architecture(record):
     t1, t2 = TONGUES[ti[0]], TONGUES[ti[1]]
     layers = CAT_PRIMARY_LAYERS.get(cat, [1, 5, 12, 13])
 
-    h1 = int(hashlib.sha256((seed + 'p1').encode()).hexdigest(), 16) % len(DESIGN_PATTERNS)
-    h2 = int(hashlib.sha256((seed + 'p2').encode()).hexdigest(), 16) % len(DESIGN_PATTERNS)
+    h1 = int(hashlib.sha256((seed + "p1").encode()).hexdigest(), 16) % len(DESIGN_PATTERNS)
+    h2 = int(hashlib.sha256((seed + "p2").encode()).hexdigest(), 16) % len(DESIGN_PATTERNS)
     if h2 == h1:
         h2 = (h1 + 1) % len(DESIGN_PATTERNS)
     pat1, pat1_desc = DESIGN_PATTERNS[h1]
     pat2, pat2_desc = DESIGN_PATTERNS[h2]
 
-    h3 = int(hashlib.sha256((seed + 't1').encode()).hexdigest(), 16) % len(TRADEOFF_PAIRS)
-    h4 = int(hashlib.sha256((seed + 't2').encode()).hexdigest(), 16) % len(TRADEOFF_PAIRS)
+    h3 = int(hashlib.sha256((seed + "t1").encode()).hexdigest(), 16) % len(TRADEOFF_PAIRS)
+    h4 = int(hashlib.sha256((seed + "t2").encode()).hexdigest(), 16) % len(TRADEOFF_PAIRS)
     if h4 == h3:
         h4 = (h3 + 1) % len(TRADEOFF_PAIRS)
     tf1 = TRADEOFF_PAIRS[h3]
@@ -207,42 +277,61 @@ def gen_architecture(record):
     if desc:
         parts.append(f"{skill} is a {cat} subsystem in SCBE-AETHERMOORE. {desc}")
     else:
-        parts.append(f"{skill} is a {cat} subsystem within the SCBE-AETHERMOORE framework, responsible for managing {cat}-related operations under full governance compliance.")
+        parts.append(
+            f"{skill} is a {cat} subsystem within the SCBE-AETHERMOORE framework, responsible for managing {cat}-related operations under full governance compliance."
+        )
 
     # Architecture overview with patterns
-    parts.append(f"\nArchitecturally, {skill} applies two key design patterns from distributed systems theory. First, it uses {pat1}: {pat1_desc}. Second, it employs the {pat2} pattern, where {pat2_desc}. These patterns work together to ensure that the subsystem remains reliable under concurrent multi-agent access, which is a common operational scenario in SCBE deployments where Claude, Codex, and Gemini agents may all interact with the same resources.")
+    parts.append(
+        f"\nArchitecturally, {skill} applies two key design patterns from distributed systems theory. First, it uses {pat1}: {pat1_desc}. Second, it employs the {pat2} pattern, where {pat2_desc}. These patterns work together to ensure that the subsystem remains reliable under concurrent multi-agent access, which is a common operational scenario in SCBE deployments where Claude, Codex, and Gemini agents may all interact with the same resources."
+    )
 
     # Code paths
     if paths:
-        path_list = ', '.join(f'`{p}`' for p in paths[:3])
-        parts.append(f"\nThe implementation is organized across several key files: {path_list}. These files follow SCBE's convention of separating discovery (read-only inspection), mutation (state-changing operations), and recovery (failure handling) into distinct code paths.")
+        path_list = ", ".join(f"`{p}`" for p in paths[:3])
+        parts.append(
+            f"\nThe implementation is organized across several key files: {path_list}. These files follow SCBE's convention of separating discovery (read-only inspection), mutation (state-changing operations), and recovery (failure handling) into distinct code paths."
+        )
 
     if cmds:
-        parts.append(f"\nThe primary entry point is `{cmds[0]}`. " + (f"Supporting operations include `{cmds[1]}`." if len(cmds) > 1 else ""))
+        parts.append(
+            f"\nThe primary entry point is `{cmds[0]}`. "
+            + (f"Supporting operations include `{cmds[1]}`." if len(cmds) > 1 else "")
+        )
 
     # Workflow phases
     if headers and len(headers) > 2:
-        phase_list = ', '.join(headers[1:5])
-        parts.append(f"\nThe workflow is structured in phases: {phase_list}. Each phase produces artifacts that serve as the input for the next, creating a data pipeline where intermediate state is always inspectable.")
+        phase_list = ", ".join(headers[1:5])
+        parts.append(
+            f"\nThe workflow is structured in phases: {phase_list}. Each phase produces artifacts that serve as the input for the next, creating a data pipeline where intermediate state is always inspectable."
+        )
 
     # Tradeoffs
-    parts.append(f"\nThe key engineering tradeoffs include:")
-    parts.append(f"\n1. **{tf1[0].title()} vs {tf1[1].title()}**: {tf1[2].capitalize()}. This is the right choice for AI safety contexts where the cost of an unrecoverable error exceeds the cost of operational overhead.")
-    parts.append(f"\n2. **{tf2[0].title()} vs {tf2[1].title()}**: {tf2[2].capitalize()}. In a traditional microservices architecture you might accept the opposite tradeoff, but SCBE's threat model requires this posture.")
+    parts.append("\nThe key engineering tradeoffs include:")
+    parts.append(
+        f"\n1. **{tf1[0].title()} vs {tf1[1].title()}**: {tf1[2].capitalize()}. This is the right choice for AI safety contexts where the cost of an unrecoverable error exceeds the cost of operational overhead."
+    )
+    parts.append(
+        f"\n2. **{tf2[0].title()} vs {tf2[1].title()}**: {tf2[2].capitalize()}. In a traditional microservices architecture you might accept the opposite tradeoff, but SCBE's threat model requires this posture."
+    )
 
     # Governance tie-in
-    parts.append(f"\n3. **Governance integration cost**: Every operation passes through pipeline layers L{layers[0]}, L{layers[1]}, L{layers[2]}, and L{layers[3]}. The {t1[0]} tongue (weight {t1[2]}) provides the primary scoring dimension ({t1[3]}), while {t2[0]} (weight {t2[2]}) handles {t2[3]}. The harmonic wall at Layer 12 ensures that operations drifting from safe parameters face exponentially increasing resistance through H(d*,R) = R^((phi*d*)^2).")
+    parts.append(
+        f"\n3. **Governance integration cost**: Every operation passes through pipeline layers L{layers[0]}, L{layers[1]}, L{layers[2]}, and L{layers[3]}. The {t1[0]} tongue (weight {t1[2]}) provides the primary scoring dimension ({t1[3]}), while {t2[0]} (weight {t2[2]}) handles {t2[3]}. The harmonic wall at Layer 12 ensures that operations drifting from safe parameters face exponentially increasing resistance through H(d*,R) = R^((phi*d*)^2)."
+    )
 
-    parts.append(f"\nThis architecture reflects SCBE's core principle: in AI safety systems, correctness and auditability take priority over raw performance. Every design decision can be traced back to the question of what happens when an adversarial agent attempts to exploit this subsystem.")
+    parts.append(
+        "\nThis architecture reflects SCBE's core principle: in AI safety systems, correctness and auditability take priority over raw performance. Every design decision can be traced back to the question of what happens when an adversarial agent attempts to exploit this subsystem."
+    )
 
-    return '\n'.join(parts)
+    return "\n".join(parts)
 
 
 def gen_integration(record):
-    skill = skill_title(record['skill_source'])
-    cat = record['category']
-    content = record.get('skill_content', '')
-    integration_tag = record['skill_source'] + 'integ'
+    skill = skill_title(record["skill_source"])
+    cat = record["category"]
+    content = record.get("skill_content", "")
+    integration_tag = record["skill_source"] + "integ"
 
     summary = first_paragraph(content)
     paths = extract_paths(content)
@@ -255,7 +344,9 @@ def gen_integration(record):
 
     parts = []
 
-    parts.append(f"{skill} integrates with the SCBE 14-layer pipeline at layers L{layers[0]}, L{layers[1]}, L{layers[2]}, and L{layers[3]}, with each integration point serving a specific governance function. Understanding these touch points is essential for extending or debugging {cat} operations within the framework.")
+    parts.append(
+        f"{skill} integrates with the SCBE 14-layer pipeline at layers L{layers[0]}, L{layers[1]}, L{layers[2]}, and L{layers[3]}, with each integration point serving a specific governance function. Understanding these touch points is essential for extending or debugging {cat} operations within the framework."
+    )
     if summary:
         parts.append(f"\nSummary anchor: {summary}")
     if commands:
@@ -266,45 +357,61 @@ def gen_integration(record):
     for lnum in layers:
         lname, ldesc = LAYER_DETAILS[lnum]
         if lnum == layers[0]:
-            parts.append(f"\n**Layer {lnum} ({lname})**: This is the entry point where {skill} operations first contact the pipeline. L{lnum} {ldesc}. For {cat} workflows, this means converting operational parameters (")
+            parts.append(
+                f"\n**Layer {lnum} ({lname})**: This is the entry point where {skill} operations first contact the pipeline. L{lnum} {ldesc}. For {cat} workflows, this means converting operational parameters ("
+            )
             if bullets:
                 parts[-1] += f"such as {bullets[0].lower()}"
                 if len(bullets) > 1:
                     parts[-1] += f" and {bullets[1].lower()}"
             else:
-                parts[-1] += f"including configuration state and target identifiers"
-            parts[-1] += f") into the canonical format the downstream layers expect."
+                parts[-1] += "including configuration state and target identifiers"
+            parts[-1] += ") into the canonical format the downstream layers expect."
         elif lnum == 12:
-            parts.append(f"\n**Layer 12 (Harmonic Wall)**: The critical governance gate. The canonical formula H(d*,R) = R^((phi*d*)^2) produces the wall score where phi = 1.618 (golden ratio), d* is the hyperbolic distance from Layer 5, and R > 1 (default e) is the exponential base. For {skill}, routine operations with small d* score near 1.0, meaning they pass with ALLOW status. Operations that deviate from expected patterns see their score drop exponentially as the phi-squared exponent amplifies small deviations.")
+            parts.append(
+                f"\n**Layer 12 (Harmonic Wall)**: The critical governance gate. The canonical formula H(d*,R) = R^((phi*d*)^2) produces the wall score where phi = 1.618 (golden ratio), d* is the hyperbolic distance from Layer 5, and R > 1 (default e) is the exponential base. For {skill}, routine operations with small d* score near 1.0, meaning they pass with ALLOW status. Operations that deviate from expected patterns see their score drop exponentially as the phi-squared exponent amplifies small deviations."
+            )
         elif lnum == 13:
-            parts.append(f"\n**Layer 13 (Risk Decision)**: Based on the L12 harmonic score, the pipeline classifies each operation into one of four tiers: ALLOW (score > 0.7, proceed normally), QUARANTINE (0.3-0.7, flag for review but do not block), ESCALATE (0.1-0.3, require human governance approval), or DENY (< 0.1, block completely). For {skill}, most normal operations hit ALLOW. Edge cases like unusual parameter combinations or first-time operations from a new agent may trigger QUARANTINE.")
+            parts.append(
+                f"\n**Layer 13 (Risk Decision)**: Based on the L12 harmonic score, the pipeline classifies each operation into one of four tiers: ALLOW (score > 0.7, proceed normally), QUARANTINE (0.3-0.7, flag for review but do not block), ESCALATE (0.1-0.3, require human governance approval), or DENY (< 0.1, block completely). For {skill}, most normal operations hit ALLOW. Edge cases like unusual parameter combinations or first-time operations from a new agent may trigger QUARANTINE."
+            )
         else:
-            parts.append(f"\n**Layer {lnum} ({lname})**: At this layer, the pipeline {ldesc}. For {skill} specifically, this means that {cat} operations receive additional validation to ensure they conform to the expected behavioral envelope.")
+            parts.append(
+                f"\n**Layer {lnum} ({lname})**: At this layer, the pipeline {ldesc}. For {skill} specifically, this means that {cat} operations receive additional validation to ensure they conform to the expected behavioral envelope."
+            )
 
     # Tongue integration
-    parts.append(f"\n**Sacred Tongues Encoding**: The six Sacred Tongues weight the governance evaluation. {skill} primarily activates the {t1[0]} tongue ({t1[1]}, weight {t1[2]}), which handles {t1[3]}. The secondary tongue is {t2[0]} ({t2[1]}, weight {t2[2]}), contributing {t2[3]}. Each tongue provides a 16x16 token grid (256 tokens), and the phi-scaled weights ensure that higher-order concerns (security, structure) carry proportionally more influence in the final governance score.")
+    parts.append(
+        f"\n**Sacred Tongues Encoding**: The six Sacred Tongues weight the governance evaluation. {skill} primarily activates the {t1[0]} tongue ({t1[1]}, weight {t1[2]}), which handles {t1[3]}. The secondary tongue is {t2[0]} ({t2[1]}, weight {t2[2]}), contributing {t2[3]}. Each tongue provides a 16x16 token grid (256 tokens), and the phi-scaled weights ensure that higher-order concerns (security, structure) carry proportionally more influence in the final governance score."
+    )
 
     if paths:
-        parts.append(f"\nYou can trace this integration in the codebase through files like `{paths[0]}`" + (f" and `{paths[1]}`" if len(paths) > 1 else "") + ". The pipeline implementation lives in `src/harmonic/pipeline14.ts` (TypeScript canonical) with a Python reference in `src/symphonic_cipher/`.")
+        parts.append(
+            f"\nYou can trace this integration in the codebase through files like `{paths[0]}`"
+            + (f" and `{paths[1]}`" if len(paths) > 1 else "")
+            + ". The pipeline implementation lives in `src/harmonic/pipeline14.ts` (TypeScript canonical) with a Python reference in `src/symphonic_cipher/`."
+        )
 
-    parts.append(f"\nCritically, this integration is not optional middleware. {skill} cannot function outside the pipeline because the pipeline IS the execution path. There is no bypass, no admin override that skips governance. This is by design: the 14-layer architecture ensures that even a compromised agent operating {skill} faces exponential cost scaling for adversarial behavior.")
+    parts.append(
+        f"\nCritically, this integration is not optional middleware. {skill} cannot function outside the pipeline because the pipeline IS the execution path. There is no bypass, no admin override that skips governance. This is by design: the 14-layer architecture ensures that even a compromised agent operating {skill} faces exponential cost scaling for adversarial behavior."
+    )
 
-    return '\n'.join(parts)
+    return "\n".join(parts)
 
 
 def gen_comparison(record):
-    skill = skill_title(record['skill_source'])
-    cat = record['category']
-    content = record.get('skill_content', '')
-    seed = record['skill_source'] + 'comp'
+    skill = skill_title(record["skill_source"])
+    cat = record["category"]
+    content = record.get("skill_content", "")
+    seed = record["skill_source"] + "comp"
 
     desc = first_paragraph(content)
     paths = extract_paths(content)
     extract_bullets(content)
 
-    tools = TRAD_TOOLS.get(cat, TRAD_TOOLS['general'])
-    h1 = int(hashlib.sha256((seed + 'tool1').encode()).hexdigest(), 16) % len(tools)
-    h2 = int(hashlib.sha256((seed + 'tool2').encode()).hexdigest(), 16) % len(tools)
+    tools = TRAD_TOOLS.get(cat, TRAD_TOOLS["general"])
+    h1 = int(hashlib.sha256((seed + "tool1").encode()).hexdigest(), 16) % len(tools)
+    h2 = int(hashlib.sha256((seed + "tool2").encode()).hexdigest(), 16) % len(tools)
     if h2 == h1 and len(tools) > 1:
         h2 = (h1 + 1) % len(tools)
     tool1 = tools[h1]
@@ -316,31 +423,53 @@ def gen_comparison(record):
 
     parts = []
 
-    parts.append(f"In traditional software engineering, the functionality provided by {skill} would typically be implemented using tools like {tool1} or {tool2}. While these tools are mature and widely adopted, the SCBE approach diverges in several fundamental ways that reflect the framework's AI safety priorities.")
+    parts.append(
+        f"In traditional software engineering, the functionality provided by {skill} would typically be implemented using tools like {tool1} or {tool2}. While these tools are mature and widely adopted, the SCBE approach diverges in several fundamental ways that reflect the framework's AI safety priorities."
+    )
 
-    parts.append(f"\n**Traditional Approach**: {tool1} solves the {cat} problem through discrete policy enforcement points. Authorization is binary (allowed or denied), state is managed through external stores or configuration services, and observability comes from separate logging pipelines (ELK stack, Prometheus/Grafana, Datadog). Error recovery follows retry-with-exponential-backoff, and security is perimeter-based (API keys, RBAC, network policies). This model works well for human-operated systems where the operator is trusted once authenticated.")
+    parts.append(
+        f"\n**Traditional Approach**: {tool1} solves the {cat} problem through discrete policy enforcement points. Authorization is binary (allowed or denied), state is managed through external stores or configuration services, and observability comes from separate logging pipelines (ELK stack, Prometheus/Grafana, Datadog). Error recovery follows retry-with-exponential-backoff, and security is perimeter-based (API keys, RBAC, network policies). This model works well for human-operated systems where the operator is trusted once authenticated."
+    )
 
     if desc:
-        parts.append(f"\n**SCBE Approach**: {skill} operates differently. {desc} Rather than binary authorization, SCBE uses continuous governance scoring through the 14-layer pipeline, where the harmonic wall formula H(d*,R) = R^((phi*d*)^2) produces the wall score. An attacker who passes initial authentication still faces exponentially increasing cost for adversarial behavior, because the Poincare ball geometry at Layer 5 amplifies drift from safe operation.")
+        parts.append(
+            f"\n**SCBE Approach**: {skill} operates differently. {desc} Rather than binary authorization, SCBE uses continuous governance scoring through the 14-layer pipeline, where the harmonic wall formula H(d*,R) = R^((phi*d*)^2) produces the wall score. An attacker who passes initial authentication still faces exponentially increasing cost for adversarial behavior, because the Poincare ball geometry at Layer 5 amplifies drift from safe operation."
+        )
     else:
-        parts.append(f"\n**SCBE Approach**: {skill} replaces binary authorization with continuous governance scoring. The harmonic wall formula H(d*,R) = R^((phi*d*)^2) at Layer 12 produces the wall score, and the Poincare ball geometry at Layer 5 ensures that adversarial operations face exponentially increasing cost as they drift from safe operation centers.")
+        parts.append(
+            f"\n**SCBE Approach**: {skill} replaces binary authorization with continuous governance scoring. The harmonic wall formula H(d*,R) = R^((phi*d*)^2) at Layer 12 produces the wall score, and the Poincare ball geometry at Layer 5 ensures that adversarial operations face exponentially increasing cost as they drift from safe operation centers."
+        )
 
-    parts.append(f"\nHere are the specific engineering differences:")
+    parts.append("\nHere are the specific engineering differences:")
 
-    parts.append(f"\n1. **Security model**: {tool1} uses perimeter defense. Once you have a valid credential, you are trusted. SCBE uses depth defense where every operation passes through layers L{layers[0]} through L{layers[3]}, and the {t1[0]} tongue (weight {t1[2]}) scores {t1[3]} continuously. This means a compromised credential does not grant free access; the pipeline still evaluates behavioral patterns.")
+    parts.append(
+        f"\n1. **Security model**: {tool1} uses perimeter defense. Once you have a valid credential, you are trusted. SCBE uses depth defense where every operation passes through layers L{layers[0]} through L{layers[3]}, and the {t1[0]} tongue (weight {t1[2]}) scores {t1[3]} continuously. This means a compromised credential does not grant free access; the pipeline still evaluates behavioral patterns."
+    )
 
-    parts.append(f"\n2. **State management**: Traditional tools use databases or key-value stores. {skill} uses artifact-driven state where JSON files on disk serve as the evidence surface. This is closer to event sourcing than CRUD, with the additional property that every artifact carries a governance stamp. The tradeoff is more disk I/O for complete auditability without a separate audit service.")
+    parts.append(
+        f"\n2. **State management**: Traditional tools use databases or key-value stores. {skill} uses artifact-driven state where JSON files on disk serve as the evidence surface. This is closer to event sourcing than CRUD, with the additional property that every artifact carries a governance stamp. The tradeoff is more disk I/O for complete auditability without a separate audit service."
+    )
 
-    parts.append(f"\n3. **Consistency guarantees**: Traditional {cat} systems face the CAP theorem head-on and typically choose AP (availability + partition tolerance). SCBE's local-first architecture chooses CP (consistency + partition tolerance), preferring to DENY an operation rather than allow inconsistent state. In distributed systems terms, SCBE behaves like a strict serializable database rather than an eventually consistent one.")
+    parts.append(
+        f"\n3. **Consistency guarantees**: Traditional {cat} systems face the CAP theorem head-on and typically choose AP (availability + partition tolerance). SCBE's local-first architecture chooses CP (consistency + partition tolerance), preferring to DENY an operation rather than allow inconsistent state. In distributed systems terms, SCBE behaves like a strict serializable database rather than an eventually consistent one."
+    )
 
-    parts.append(f"\n4. **Multi-agent awareness**: {tool1} assumes a single operator or a pool of equivalent operators. {skill} is designed for environments where Claude, Codex, and Gemini agents may interact with the same subsystem concurrently. Each agent's operations carry a sender identity that feeds into the tongue scoring, and the governance pipeline arbitrates conflicts. This has no direct equivalent in traditional tooling outside of distributed consensus protocols like Raft.")
+    parts.append(
+        f"\n4. **Multi-agent awareness**: {tool1} assumes a single operator or a pool of equivalent operators. {skill} is designed for environments where Claude, Codex, and Gemini agents may interact with the same subsystem concurrently. Each agent's operations carry a sender identity that feeds into the tongue scoring, and the governance pipeline arbitrates conflicts. This has no direct equivalent in traditional tooling outside of distributed consensus protocols like Raft."
+    )
 
-    parts.append(f"\n5. **Recovery philosophy**: Traditional systems use generic circuit breakers and retry queues. {skill} provides explicit recovery workflows per failure mode, eliminating the class of bugs where retry logic masks the actual problem. This is more code to maintain but produces more predictable failure behavior.")
+    parts.append(
+        f"\n5. **Recovery philosophy**: Traditional systems use generic circuit breakers and retry queues. {skill} provides explicit recovery workflows per failure mode, eliminating the class of bugs where retry logic masks the actual problem. This is more code to maintain but produces more predictable failure behavior."
+    )
 
     if paths:
-        parts.append(f"\nThe implementation details live in files like `{paths[0]}`" + (f" and `{paths[1]}`" if len(paths) > 1 else "") + ".")
+        parts.append(
+            f"\nThe implementation details live in files like `{paths[0]}`"
+            + (f" and `{paths[1]}`" if len(paths) > 1 else "")
+            + "."
+        )
 
-    return '\n'.join(parts)
+    return "\n".join(parts)
 
 
 def gen_crosstalk_schema(record):
@@ -417,23 +546,24 @@ The practical effect cascades through the pipeline. At Layer 5, a low initial KO
 
 # ── main dispatcher ──────────────────────────────────────────────────
 
+
 def generate_response(record):
-    inst = record['instruction'].lower()
+    inst = record["instruction"].lower()
 
     # Cross-talk specials
-    if 'cross-talk packet schema' in inst:
+    if "cross-talk packet schema" in inst:
         return gen_crosstalk_schema(record)
-    if 'packet delivery failure' in inst or 'duplicate de' in inst:
+    if "packet delivery failure" in inst or "duplicate de" in inst:
         return gen_crosstalk_reliability(record)
-    if 'senders like unknown' in inst or 'agent.codex' in inst:
+    if "senders like unknown" in inst or "agent.codex" in inst:
         return gen_crosstalk_senders(record)
 
     # Standard 3 patterns
-    if 'architecture' in inst and 'design decision' in inst:
+    if "architecture" in inst and "design decision" in inst:
         return gen_architecture(record)
-    if '14-layer' in inst or ('integrate' in inst and 'governance' in inst):
+    if "14-layer" in inst or ("integrate" in inst and "governance" in inst):
         return gen_integration(record)
-    if 'compare' in inst or 'traditional' in inst:
+    if "compare" in inst or "traditional" in inst:
         return gen_comparison(record)
 
     # Fallback
@@ -441,21 +571,21 @@ def generate_response(record):
 
 
 def clean(text):
-    lines = text.strip().split('\n')
+    lines = text.strip().split("\n")
     out = []
     prev_blank = False
     for line in lines:
-        blank = line.strip() == ''
+        blank = line.strip() == ""
         if blank and prev_blank:
             continue
         out.append(line)
         prev_blank = blank
-    return '\n'.join(out)
+    return "\n".join(out)
 
 
 def main():
     records = []
-    with open(STUBS, encoding='utf-8') as f:
+    with open(STUBS, encoding="utf-8") as f:
         for line in f:
             if line.strip():
                 records.append(json.loads(line))
@@ -467,24 +597,24 @@ def main():
         resp = clean(generate_response(record))
         out = {}
         for k, v in record.items():
-            if k in ('skill_content', 'sample_packets'):
+            if k in ("skill_content", "sample_packets"):
                 continue
-            out[k] = resp if k == 'response' else v
+            out[k] = resp if k == "response" else v
         output.append(out)
 
-    with open(OUTPUT, 'w', encoding='utf-8') as f:
+    with open(OUTPUT, "w", encoding="utf-8") as f:
         for rec in output:
-            f.write(json.dumps(rec, ensure_ascii=False) + '\n')
+            f.write(json.dumps(rec, ensure_ascii=False) + "\n")
 
     print(f"Wrote {len(output)} records to {OUTPUT}")
 
-    wcs = [len(r['response'].split()) for r in output]
+    wcs = [len(r["response"].split()) for r in output]
     print(f"Word counts: min={min(wcs)}, max={max(wcs)}, mean={sum(wcs)//len(wcs)}")
 
     # Check uniqueness
-    unique_responses = len(set(r['response'] for r in output))
+    unique_responses = len(set(r["response"] for r in output))
     print(f"Unique responses: {unique_responses}/{len(output)}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

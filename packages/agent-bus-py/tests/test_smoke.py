@@ -13,17 +13,17 @@ if str(PKG_SRC) not in sys.path:
     sys.path.insert(0, str(PKG_SRC))
 
 import scbe_agent_bus  # noqa: E402
-from scbe_agent_bus import (
+from scbe_agent_bus import (  # noqa: E402
     AgentBusError,
     recommend_companion_packages,
     run_batch,
     run_event,
-)  # noqa: E402
+)
 from scbe_agent_bus.__main__ import _parse_events, main  # noqa: E402
 
 
 def test_module_exports_version():
-    assert scbe_agent_bus.__version__ == "0.2.0"
+    assert scbe_agent_bus.__version__ == "0.3.0"
 
 
 def test_recommend_companion_packages_skips_installed_package():

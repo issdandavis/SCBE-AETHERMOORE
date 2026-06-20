@@ -3,10 +3,10 @@
 Reads .jsonl session logs from ~/.claude/projects/*, extracts user->assistant
 message pairs, filters for quality, and outputs SCBE-formatted SFT records.
 """
+
 import json
 import os
 from pathlib import Path
-
 
 SESSION_DIR = Path(os.path.expanduser("~")) / ".claude" / "projects" / "C--Users-issda-SCBE-AETHERMOORE"
 OUTPUT = Path("training-data/sft/claude_sessions_sft.jsonl")
@@ -56,15 +56,22 @@ def process_session(session_file):
             if len(user_msg) >= MIN_USER_LEN and MIN_ASSISTANT_LEN <= len(asst_msg) <= MAX_ASSISTANT_LEN:
                 # Skip if mostly tool calls / code output
                 if not asst_msg.startswith("{") and "tool_use" not in asst_msg[:100]:
-                    pairs.append({
-                        "messages": [
-                            {"role": "system", "content": "You are Polly, the SCBE-AETHERMOORE AI assistant. You help users understand and work with the SCBE AI safety and governance framework."},
-                            {"role": "user", "content": user_msg.strip()},
-                            {"role": "assistant", "content": asst_msg.strip()},
-                        ],
-                        "source": f"claude_session_{session_file.stem[:8]}",
-                        "timestamp": entries[i].get("timestamp", ""),
-                    })
+                    pairs.append(
+                        {
+                            "messages": [
+                                {
+                                    "role": "system",
+                                    "content": "You are Polly, the SCBE-AETHERMOORE AI assistant. "
+                                    "You help users understand and work with the SCBE AI safety "
+                                    "and governance framework.",
+                                },
+                                {"role": "user", "content": user_msg.strip()},
+                                {"role": "assistant", "content": asst_msg.strip()},
+                            ],
+                            "source": f"claude_session_{session_file.stem[:8]}",
+                            "timestamp": entries[i].get("timestamp", ""),
+                        }
+                    )
             i += 2
         else:
             i += 1

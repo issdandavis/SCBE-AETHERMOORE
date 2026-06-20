@@ -42,9 +42,7 @@ _ARTICLE_RE = re.compile(
     r"<(?:article|main)[^>]*>(.*?)</(?:article|main)>",
     re.IGNORECASE | re.DOTALL,
 )
-_PARAGRAPH_RE = re.compile(
-    r"<p[^>]*>(.*?)</p>", re.IGNORECASE | re.DOTALL
-)
+_PARAGRAPH_RE = re.compile(r"<p[^>]*>(.*?)</p>", re.IGNORECASE | re.DOTALL)
 _TAG_RE = re.compile(r"<[^>]+>")
 _WHITESPACE_RE = re.compile(r"\n{3,}")
 _ENTITY_MAP = {
@@ -76,12 +74,8 @@ class WebPageSource(SourceAdapter):
     def __init__(self, config: Optional[Dict[str, Any]] = None) -> None:
         super().__init__(source_type=SourceType.WEB_PAGE, config=config or {})
 
-        self._timeout: int = int(
-            self.config.get("timeout", _DEFAULT_TIMEOUT)
-        )
-        self._max_content_length: int = int(
-            self.config.get("max_content_length", _DEFAULT_MAX_CONTENT_LENGTH)
-        )
+        self._timeout: int = int(self.config.get("timeout", _DEFAULT_TIMEOUT))
+        self._max_content_length: int = int(self.config.get("max_content_length", _DEFAULT_MAX_CONTENT_LENGTH))
         self._user_agent: str = self.config.get("user_agent", _USER_AGENT)
 
     # ------------------------------------------------------------------
@@ -118,9 +112,7 @@ class WebPageSource(SourceAdapter):
 
     def _fetch_url(self, url: str) -> Optional[IngestionResult]:
         """Download *url* and convert to an ``IngestionResult``."""
-        req = urllib.request.Request(
-            url, headers={"User-Agent": self._user_agent}
-        )
+        req = urllib.request.Request(url, headers={"User-Agent": self._user_agent})
         try:
             with urllib.request.urlopen(req, timeout=self._timeout) as resp:
                 content_type = resp.headers.get("Content-Type", "")
@@ -144,10 +136,7 @@ class WebPageSource(SourceAdapter):
         parsed = urllib.parse.urlparse(url)
         path_lower = parsed.path.lower()
         is_markdown = path_lower.endswith(".md")
-        is_html = (
-            "text/html" in content_type.lower()
-            or text.strip()[:100].lower().startswith(("<!doctype", "<html"))
-        )
+        is_html = "text/html" in content_type.lower() or text.strip()[:100].lower().startswith(("<!doctype", "<html"))
 
         if is_markdown:
             # Markdown files: use content directly

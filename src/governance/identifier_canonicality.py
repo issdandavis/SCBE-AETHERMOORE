@@ -269,6 +269,21 @@ def _has_invisible(name: str) -> Optional[str]:
     return None
 
 
+def _has_source_text_bidi(src: str) -> Optional[str]:
+    """Return the first BiDi control or invisible codepoint found in source text.
+
+    Trojan Source attacks commonly place BiDi controls in comments or string
+    literals, not only inside identifiers. Zero-width characters inside
+    identifiers can also break tokenization, so an AST-stage check would never
+    see them. Catch both classes before parsing so the gate does not depend on
+    AST identifier extraction.
+    """
+    for ch in src:
+        if ch in _BIDI_CODEPOINTS or ch in _INVISIBLE_CODEPOINTS:
+            return ch
+    return None
+
+
 def _is_all_confusable(name: str) -> bool:
     """True if every non-Latin codepoint in the name is in the ASCII confusable
     table AND the name has at least one such codepoint AND, when we replace
@@ -426,6 +441,25 @@ def evaluate_code(src: str, language: str = "python") -> CanonicalityResult:
             identifier_count=0,
             fingerprint=None,
             detail={"error": f"unsupported language: {language}"},
+        )
+
+    source_bidi = _has_source_text_bidi(src)
+    if source_bidi is not None:
+        fingerprint = hashlib.sha256(src.encode("utf-8", errors="replace")).hexdigest()
+        return CanonicalityResult(
+            score=1.0,
+            kind="invisible",
+            findings=[
+                IdentifierFinding(
+                    name="<source>",
+                    kind="invisible",
+                    scripts=[],
+                    detail=f"source text contains invisible/BiDi codepoint U+{ord(source_bidi):04X}",
+                )
+            ],
+            identifier_count=0,
+            fingerprint=fingerprint,
+            detail={"source_text_bidi": f"U+{ord(source_bidi):04X}"},
         )
 
     extractor = _LANGUAGE_EXTRACTORS[language]

@@ -12,7 +12,6 @@ import importlib.util
 import sys
 from pathlib import Path
 
-
 _COMPAT_PATH = Path(__file__).with_name("openclaw_swarm.py")
 _SPEC = importlib.util.spec_from_file_location("_scbe_swarm_router_impl", _COMPAT_PATH)
 if _SPEC is None or _SPEC.loader is None:

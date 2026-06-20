@@ -752,7 +752,8 @@ def main() -> None:
                 "antivirus": antivirus_report,
             }
             print(
-                f"[job {idx+1}] job_id={out['job_id']} decision={decision} score={v['verification_score']} elapsed_ms={out['elapsed_ms']}"
+                f"[job {idx+1}] job_id={out['job_id']} decision={decision} "
+                f"score={v['verification_score']} elapsed_ms={out['elapsed_ms']}"
             )
 
     layer14_rows = [r["layer14"] for r in results if r is not None and isinstance(r.get("layer14"), dict)]

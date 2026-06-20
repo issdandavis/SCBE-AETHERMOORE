@@ -402,7 +402,7 @@ def compute_gallery_color_field(
     left_chromas = [left.chords[t].mean_chroma for t in DEAD_TONE_RATIOS]
     right_chromas = [right.chords[t].mean_chroma for t in DEAD_TONE_RATIOS]
     # Cosine similarity of chroma vectors
-    dot = sum(l * r for l, r in zip(left_chromas, right_chromas))
+    dot = sum(left_c * right_c for left_c, right_c in zip(left_chromas, right_chromas))
     mag_l = math.hypot(*left_chromas) or 1e-9
     mag_r = math.hypot(*right_chromas) or 1e-9
     coherence = max(0.0, min(1.0, dot / (mag_l * mag_r)))

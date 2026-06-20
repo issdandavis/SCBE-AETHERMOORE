@@ -15,7 +15,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONSOLIDATION_DIR = REPO_ROOT / "artifacts" / "ai_training_consolidation" / "latest"
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "artifacts" / "benchmark" / "specialist_bucket_readiness"
