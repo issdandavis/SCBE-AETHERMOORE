@@ -12,7 +12,7 @@
  * - Quantum key exchange
  */
 
-import { describe, expect, it, beforeEach } from 'vitest';
+import { describe, expect, it, beforeEach, afterEach } from 'vitest';
 import {
   UnifiedSCBEGateway,
   type AuthorizationRequest,
@@ -55,10 +55,20 @@ function makeAgent(overrides: Partial<AgentState> = {}): AgentState {
 // ============================================
 
 describe('UnifiedSCBEGateway', () => {
+  const originalGatewaySecret = process.env.SCBE_GATEWAY_HMAC_SECRET;
   let gateway: UnifiedSCBEGateway;
 
   beforeEach(() => {
+    process.env.SCBE_GATEWAY_HMAC_SECRET = 'unified-api-unit-test-secret';
     gateway = new UnifiedSCBEGateway();
+  });
+
+  afterEach(() => {
+    if (originalGatewaySecret === undefined) {
+      delete process.env.SCBE_GATEWAY_HMAC_SECRET;
+    } else {
+      process.env.SCBE_GATEWAY_HMAC_SECRET = originalGatewaySecret;
+    }
   });
 
   describe('authorization pipeline', () => {
