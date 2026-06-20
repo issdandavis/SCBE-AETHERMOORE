@@ -5744,10 +5744,14 @@ function runInteractiveShell(flags = {}) {
       if (taskBoard.attempts.length > 20) taskBoard.attempts.shift();
 
       // Run through GeoSeal governance
-      const busBin =
-        process.env.SCBE_AGENT_JSON_SKIP_GOVERNANCE === '1' ? null : resolveAgentBusBin();
-      let governance = { decision: 'ALLOW', reason: 'governance-unavailable' };
-      let blocked = false;
+      const skipGovernance = process.env.SCBE_AGENT_JSON_SKIP_GOVERNANCE === '1';
+      const busBin = skipGovernance ? null : resolveAgentBusBin();
+      // Fail closed: when governance is required but unavailable/unparseable, DENY. The explicit
+      // SCBE_AGENT_JSON_SKIP_GOVERNANCE=1 opt-out is the only path that starts from ALLOW.
+      let governance = skipGovernance
+        ? { decision: 'ALLOW', reason: 'governance-skipped' }
+        : { decision: 'DENY', reason: 'governance-unavailable' };
+      let blocked = !skipGovernance;
 
       if (busBin) {
         try {
@@ -5756,17 +5760,23 @@ function runInteractiveShell(flags = {}) {
             [busBin, 'pipeline', 'compile', '--intent', translated, '--json'],
             { encoding: 'utf8', timeout: 15000, maxBuffer: 1024 * 512 }
           );
-          if (r.status === 0 && r.stdout) {
+          if (r.stdout) {
             const plan = JSON.parse(r.stdout);
             if (plan.policy) {
               governance = { decision: plan.policy.decision, reason: plan.policy.reason };
               blocked = plan.policy.decision !== 'ALLOW';
+            } else {
+              governance = { decision: 'DENY', reason: 'governance-policy-missing' };
+              blocked = true;
             }
-            if (plan.semantic?.discourseProfile)
-              governance.semantic = plan.semantic.discourseProfile;
+            if (plan.semantic?.discourseProfile) governance.semantic = plan.semantic.discourseProfile;
+          } else {
+            governance = { decision: 'DENY', reason: 'governance-empty-response' };
+            blocked = true;
           }
         } catch {
-          /* stays ALLOW */
+          governance = { decision: 'DENY', reason: 'governance-parse-failed' };
+          blocked = true;
         }
       }
 
