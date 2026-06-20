@@ -73,7 +73,13 @@ def classify_number_task(n: int) -> Task:
             seed_calc("n", n),
             is_prime_calc("is_prime", "n"),
             factor_count_calc("nfac", "n"),
-            Step("label", "label", options=lambda st: list(_LABELS), check=lambda st, v: v == correct(st)),
+            Step(
+                "label",
+                "label",
+                options=lambda st: list(_LABELS),
+                check=lambda st, v: v == correct(st),
+                oracle=correct,  # auto-offload: if the model can't label it, the rule does
+            ),
         ],
     )
 

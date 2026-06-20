@@ -111,14 +111,34 @@ def test_a_model_can_walk_the_whole_map():
     assert w["cleared"] == 13 and w["sealed"] is True  # the map cleared + sealed the whole tour
 
 
-def test_run_with_drifted_stepwise_diagnoses_and_localizes_live():
+def test_run_self_heals_an_oracle_task_via_auto_offload():
+    # classify has an oracle, so a hopeless model no longer drifts THROUGH the map -- it self-heals:
+    # run_stepwise auto-offloads the wall step and the call completes, so there is nothing to diagnose.
     from python.scbe.sieve_calc import classify_number_task
     from python.scbe.stepwise import scripted_proposer
 
     m = TaskMap()
-    out = m.run("run_stepwise", classify_number_task(91), scripted_proposer(["prime", "prime", "prime", "prime"]))
+    out = m.run("run_stepwise", classify_number_task(91), scripted_proposer(["prime"]))
+    assert out["decision"] == "ALLOWED"
+    assert "diagnosis" not in out  # the harness supplied the capability; no drift surfaced
+    assert "drift" not in out
+    assert out["chain_ok"] is True
+
+
+def test_run_diagnoses_and_localizes_an_unrescuable_drift():
+    # a step with NO oracle is the honest boundary: it genuinely drifts, so run() diagnoses + localizes.
+    from python.scbe.stepwise import Step, Task, scripted_proposer
+
+    # one choice step named 'label' the model can never satisfy and the harness cannot offload (no oracle)
+    task = Task(
+        name="judge_label",
+        goal="a judgement only a model can make",
+        steps=[Step("label", "label", options=lambda st: ["composite", "prime"], check=lambda st, v: v == "composite")],
+    )
+    m = TaskMap()
+    out = m.run("run_stepwise", task, scripted_proposer(["prime"]))
     assert out["decision"] == "ALLOWED"  # the tool call itself succeeded; the RESULT drifted
     assert out["diagnosis"]["cause"] == "step_drift" and out["diagnosis"]["retry_safe"] is False
     assert out["chain_ok"] is True
-    # the LIVE run() path actually ran failure_map.localize -> the wall step
+    # the LIVE run() path actually ran failure_map.localize -> the wall step + an offload recommendation
     assert out["drift"]["drift"]["stuck_at"] == "label" and "offload" in out["drift"]["recovery"]

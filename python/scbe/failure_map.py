@@ -25,8 +25,14 @@ from .stepwise import Proposer, Step, Task, run_stepwise
 
 
 def localize(task: Task, proposer: Proposer, max_rewinds: int = 3) -> Dict[str, Any]:
-    """Run one (task, model) and report the drift point: where it stuck (point F) or that it cleared."""
-    r = run_stepwise(task, proposer, max_rewinds)
+    """Run one (task, model) and report the drift point: where it stuck (point F) or that it cleared.
+
+    Offload is forced OFF here: this measures the MODEL's true ceiling. An oracle would auto-rescue the
+    wall step and report 'cleared', blinding the map to where the model actually drifts. failure_map
+    diagnoses the wall; auto-offload (in run_stepwise) is the cure -- keep them separate or the map goes
+    blind. The recovery this returns is precisely "offload that step", which the harness can now do.
+    """
+    r = run_stepwise(task, proposer, max_rewinds, allow_offload=False)
     names = [s.name for s in task.steps]
     if r["completed"]:
         return {"task": task.name, "cleared": True, "stuck_at": None, "stuck_index": len(names), "total": len(names)}

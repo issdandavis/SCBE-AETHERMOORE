@@ -13,6 +13,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from python.scbe.stepwise import (  # noqa: E402
+    Step,
+    Task,
     always_proposer,
     number_label_task,
     run_stepwise,
@@ -39,8 +41,9 @@ def test_a_misstep_rewinds_and_recovers():
 
 
 def test_exhausted_rewinds_stops_honestly_at_the_step():
-    # a model that always mis-steps does not corrupt the answer -- it stops at its ceiling
-    r = run_stepwise(number_label_task(6), always_proposer("Buzz"), max_rewinds=2)
+    # a model that always mis-steps does not corrupt the answer -- it stops at its ceiling.
+    # allow_offload=False isolates the pure rewind-exhaustion path (the oracle rescue is tested separately).
+    r = run_stepwise(number_label_task(6), always_proposer("Buzz"), max_rewinds=2, allow_offload=False)
     assert r["completed"] is False
     assert r["stuck_at"] == "label"
     assert r["rewinds"] == 3  # max_rewinds=2 -> a third misstep ends it
@@ -65,3 +68,73 @@ def test_offloaded_modulo_makes_the_correct_label_pass_for_any_i():
     for i, label in [(3, "Fizz"), (5, "Buzz"), (15, "FizzBuzz"), (7, "7")]:
         r = run_stepwise(number_label_task(i), scripted_proposer([label]))
         assert r["completed"] is True and r["answer"] == label
+
+
+# --- auto-offload: when the model exhausts its rewinds, a deterministic oracle rescues the step ---
+
+
+def test_auto_offload_rescues_a_step_the_model_never_gets():
+    # a hopeless model (always 'Buzz', wrong for 6) burns its rewinds; the oracle supplies 'Fizz'
+    r = run_stepwise(number_label_task(6), always_proposer("Buzz"), max_rewinds=2, allow_offload=True)
+    assert r["completed"] is True
+    assert r["answer"] == "Fizz"  # the rule, not the model, produced it
+    assert r["offloaded"] == ["label"]
+    assert r["trace"][-1]["source"] == "offload"  # the final value came from the tool, recorded as such
+
+
+def test_allow_offload_false_preserves_the_un_rescued_baseline():
+    # the same hopeless model, offload disabled -> still stops honestly (this is the measured baseline)
+    r = run_stepwise(number_label_task(6), always_proposer("Buzz"), max_rewinds=2, allow_offload=False)
+    assert r["completed"] is False
+    assert r["stuck_at"] == "label"
+    assert r["offloaded"] == []
+
+
+def test_offload_only_fires_on_failure_not_when_the_model_succeeds():
+    # a model that gets it first try never invokes the oracle -- offload is a fallback, not a shortcut
+    r = run_stepwise(number_label_task(6), scripted_proposer(["Fizz"]), allow_offload=True)
+    assert r["completed"] is True and r["answer"] == "Fizz"
+    assert r["offloaded"] == []  # the tool stayed holstered; the model did the work
+
+
+def _buggy_oracle_task():
+    # one choice step: model can't pick the secret, and the oracle is WRONG (returns 'b', check wants 'a')
+    return Task(
+        name="buggy_oracle",
+        goal="pick the secret value",
+        steps=[
+            Step(
+                "pick",
+                "pick",
+                options=lambda st: ["a", "b"],
+                check=lambda st, v: v == "a",
+                oracle=lambda st: "b",  # a buggy tool: returns a value that fails the check
+            )
+        ],
+    )
+
+
+def test_a_buggy_oracle_never_ships_a_wrong_answer():
+    # the oracle's value is itself checked; a wrong oracle falls through to stuck, it does NOT commit
+    r = run_stepwise(_buggy_oracle_task(), always_proposer("b"), max_rewinds=1, allow_offload=True)
+    assert r["completed"] is False  # would have been True if we trusted the oracle blindly
+    assert r["stuck_at"] == "pick"
+    assert r["offloaded"] == []
+    assert "pick" not in r["state"]  # the bad oracle value was never written into state
+
+
+def _no_oracle_task():
+    # a genuine judgement the code can't do: a choice step with NO oracle registered
+    return Task(
+        name="no_oracle",
+        goal="make a judgement only a model can",
+        steps=[Step("judge", "judge", options=lambda st: ["x", "y"], check=lambda st, v: v == "x")],
+    )
+
+
+def test_a_step_with_no_oracle_still_stops_honestly():
+    # the honest boundary: no tool can supply this, so even with offload on, a hopeless model stops
+    r = run_stepwise(_no_oracle_task(), always_proposer("y"), max_rewinds=1, allow_offload=True)
+    assert r["completed"] is False
+    assert r["stuck_at"] == "judge"
+    assert r["offloaded"] == []
