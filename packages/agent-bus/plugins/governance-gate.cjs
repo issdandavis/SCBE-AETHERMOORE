@@ -55,8 +55,9 @@ const plugin = {
       { encoding: 'utf-8', cwd: repoRoot, timeout: 8000 }
     );
 
-    // Fail open — legitimacy tool may not be configured in all envs
-    if (r.status !== 0 || !r.stdout) {
+    // Fail open only when legitimacy output is unavailable.
+    // GeoSeal may intentionally return non-zero for policy outcomes.
+    if (!r.stdout) {
       return event;
     }
 
@@ -67,9 +68,12 @@ const plugin = {
       return event; // unparseable → fail open
     }
 
-    if (judgment && judgment.decision === 'DENY') {
+    const decision = judgment?.decision?.decision || judgment?.decision;
+    const reason = judgment?.decision?.reason || judgment?.reason;
+
+    if (decision === 'DENY') {
       process.stderr.write(
-        `[governance-gate] DENY run=${ctx.runId.slice(0, 8)} reason="${judgment.reason || 'legitimacy-trial blocked'}"\n`
+        `[governance-gate] DENY run=${ctx.runId.slice(0, 8)} reason="${reason || 'legitimacy-trial blocked'}"\n`
       );
       return null; // block the event
     }
