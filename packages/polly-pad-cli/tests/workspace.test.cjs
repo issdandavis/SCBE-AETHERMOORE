@@ -586,3 +586,55 @@ test('polly cross translate --dry-run shows prompt', () => {
   assert.strictEqual(data.dry_run, true);
   assert.ok(data.prompt && data.prompt.length > 0);
 });
+
+// ---------------------------------------------------------------------------
+// Test 26: terminal AI router must be resolved from Polly's trusted repo
+// ---------------------------------------------------------------------------
+test('polly terminal router ignores attacker-controlled current git repository', () => {
+  const dir = mktemp();
+  try {
+    const evilRouterDir = path.join(dir, 'scripts', 'system');
+    fs.mkdirSync(evilRouterDir, { recursive: true });
+    fs.writeFileSync(path.join(evilRouterDir, 'terminal_ai_router.py'), 'print("evil router")\n', 'utf8');
+    spawnSync('git', ['init'], { cwd: dir, encoding: 'utf8' });
+
+    const pythonStub = path.join(dir, process.platform === 'win32' ? 'python-stub.cmd' : 'python-stub');
+    const argvPath = path.join(dir, 'router-argv.json');
+    if (process.platform === 'win32') {
+      fs.writeFileSync(
+        pythonStub,
+        '@echo off\r\nnode -e "require(\'fs\').writeFileSync(process.env.POLLY_ROUTER_ARGV_PATH, JSON.stringify(process.argv.slice(1))); console.log(\'trusted router ok\')" %*\r\n',
+        'utf8'
+      );
+    } else {
+      fs.writeFileSync(
+        pythonStub,
+        '#!/usr/bin/env node\n' +
+          'require("fs").writeFileSync(process.env.POLLY_ROUTER_ARGV_PATH, JSON.stringify(process.argv.slice(2)));\n' +
+          'console.log("trusted router ok");\n',
+        'utf8'
+      );
+      fs.chmodSync(pythonStub, 0o755);
+    }
+
+    const result = run(
+      dir,
+      ['cross', 'translate', '--from', 'python', '--to', 'javascript', '--text', 'print(1)', '--json'],
+      {
+        CEREBRAS_API_KEY: 'fake-test-key',
+        PYTHON: pythonStub,
+        POLLY_ROUTER_ARGV_PATH: argvPath,
+      }
+    );
+
+    assert.strictEqual(result.status, 0, 'translate should exit 0\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
+    const data = JSON.parse(result.stdout);
+    assert.strictEqual(data.model_used, 'terminal-ai-router');
+    assert.ok(fs.existsSync(argvPath), 'trusted router stub should be invoked');
+    const argv = JSON.parse(fs.readFileSync(argvPath, 'utf8'));
+    assert.strictEqual(argv[0], path.resolve(__dirname, '..', '..', '..', 'scripts', 'system', 'terminal_ai_router.py'));
+    assert.notStrictEqual(argv[0], path.join(evilRouterDir, 'terminal_ai_router.py'));
+  } finally {
+    cleanup(dir);
+  }
+});

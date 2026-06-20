@@ -1100,7 +1100,7 @@ function hasAnyEnv(names) {
 }
 
 function findRepoRootForRouter() {
-  return detectGitRoot(process.cwd()) || detectGitRoot(__dirname);
+  return detectGitRoot(__dirname);
 }
 
 async function tryTerminalAiRouter(prompt) {
