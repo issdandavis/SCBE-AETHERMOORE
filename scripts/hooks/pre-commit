@@ -102,15 +102,15 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # 2. Secret scan on (potentially re-staged) files.
-    secrets = check_secrets(files)
-    if secrets:
+    findings = check_secrets(files)
+    if findings:
         print(f"\n{'='*60}")
-        print(f"BLOCKED: {len(secrets)} SECRET(S) DETECTED")
+        print(f"BLOCKED: {len(findings)} CREDENTIAL PATTERN(S) DETECTED")
         print(f"{'='*60}")
-        for path, name in secrets:
-            # Do NOT echo the matched secret value — report only where + what type.
-            print(f"  [{name}] {path}")
-        print("\nReplace secrets with [SCRUBBED:type] before committing.")
+        for path, _name in findings:
+            # Do NOT echo the matched value or type label here; report only the file path.
+            print(f"  {path}")
+        print("\nReplace credentials with [SCRUBBED:type] before committing.")
         print(f"{'='*60}")
         sys.exit(1)
 

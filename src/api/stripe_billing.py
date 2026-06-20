@@ -116,7 +116,7 @@ def _load_keys() -> tuple[Dict[str, Any], Dict[str, Any]]:
                 if not line:
                     continue
                 record = json.loads(line)
-                enc = record.pop("api_key_enc", None)
+                enc = record.pop("credential_enc", None) or record.pop("api_key_enc", None)
                 if enc and cipher is not None:
                     try:
                         record["api_key"] = cipher.decrypt(enc.encode("ascii")).decode("utf-8")
@@ -152,7 +152,7 @@ def _persist_key(record: Dict[str, Any]) -> None:
         "plan": record.get("plan", ""),
         "email": record.get("email", ""),
         "created_at": record.get("created_at", int(time.time())),
-        "api_key_enc": cipher.encrypt(raw_api_key.encode("utf-8")).decode("ascii"),
+        "credential_enc": cipher.encrypt(raw_api_key.encode("utf-8")).decode("ascii"),
     }
     try:
         with open(_KEYS_FILE, "a", encoding="utf-8") as f:

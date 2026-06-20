@@ -166,13 +166,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     ap.add_argument(
         "--demo",
         action="store_true",
-        help="HARNESS CHECK ONLY: stub(base) vs answer-key(trained) over the offline fixture -- proves the math",
+        help="HARNESS CHECK ONLY: minimal failing base vs reference solution over the offline fixture -- proves the math",
     )
     a = ap.parse_args(list(argv) if argv is not None else None)
     if a.demo:
         probs = pb.load_fixture()
         rep = measure_code_lift(pb.naive_generator, pb.reference_generator, probs)
-        print("[DEMO = harness check, NOT a model result: 'base' is a failing stub, 'trained' is the answer key]")
+        print("[HARNESS CHECK ONLY: failing base vs reference solution; this is not a model result]")
         print(render(rep))
         return 0
     print("code_lift is a library; the real run lives in notebooks/vtc_lift_qwen15_colab.ipynb")
