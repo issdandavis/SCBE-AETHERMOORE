@@ -76,7 +76,9 @@ function readSkill(path) {
 
 const skills = findSkillFiles(SKILLS_DIR).map(readSkill);
 
-console.log(`[skill-bridge] Found ${skills.length} skill(s): ${skills.map((skill) => skill.name).join(', ')}`);
+console.log(
+  `[skill-bridge] Found ${skills.length} skill(s): ${skills.map((skill) => skill.name).join(', ')}`
+);
 
 for (const skill of skills) {
   const id = relative(SKILLS_DIR, dirname(skill.path));
