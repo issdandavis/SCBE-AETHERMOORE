@@ -276,12 +276,20 @@ export class UnifiedSCBEGateway {
   ): Promise<{ valid: boolean; payload?: unknown; error?: string }> {
     // Verify all signatures
     for (const [tongue, signature] of Object.entries(envelope.signatures)) {
-      const valid = await this.verifyTongueSignature(
-        envelope.payload,
-        tongue as TongueID,
-        signature,
-        envelope.nonce
-      );
+      let valid = false;
+      try {
+        valid = await this.verifyTongueSignature(
+          envelope.payload,
+          tongue as TongueID,
+          signature,
+          envelope.nonce
+        );
+      } catch (error) {
+        return {
+          valid: false,
+          error: error instanceof Error ? error.message : `Invalid ${tongue} signature`,
+        };
+      }
       if (!valid) {
         return { valid: false, error: `Invalid ${tongue} signature` };
       }
@@ -610,9 +618,12 @@ export class UnifiedSCBEGateway {
   }
 
   private tongueKey(tongue: TongueID): Buffer {
-    // Per-tongue HMAC key derived from a server secret. Set SCBE_GATEWAY_HMAC_SECRET
-    // in production; the dev default keeps local runs working but is not secret.
-    const secret = process.env.SCBE_GATEWAY_HMAC_SECRET ?? 'scbe-gateway-dev-secret';
+    // Per-tongue HMAC key derived from a server secret. Fail closed instead of
+    // falling back to a public default that would let attackers forge envelopes.
+    const secret = process.env.SCBE_GATEWAY_HMAC_SECRET;
+    if (!secret) {
+      throw new Error('SCBE_GATEWAY_HMAC_SECRET must be configured for RWP envelope signatures');
+    }
     return crypto.createHmac('sha256', secret).update(`tongue-key:${tongue}`).digest();
   }
 
