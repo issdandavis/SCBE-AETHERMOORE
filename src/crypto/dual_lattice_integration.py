@@ -165,9 +165,17 @@ def build_lattice_point_gated(
     if not authorized:
         return None, layer_decision
 
-    # Build the vector
-    lattice = DualLatticeCrossStitch(security_level=kyber_level)
-    vector = lattice.create_context_vector(tongues, intent, flux_state)
+    # Build the vector. Some historical lattice constructors are intentionally
+    # blocked unless SCBE_ALLOW_INSECURE_PQC=1 is set; callers should get a
+    # fail-closed LayerDecision instead of an exception from that lower layer.
+    try:
+        lattice = DualLatticeCrossStitch(security_level=kyber_level)
+        vector = lattice.create_context_vector(tongues, intent, flux_state)
+    except RuntimeError as exc:
+        layer_decision.decision = "DENY"
+        layer_decision.score = 0.0
+        layer_decision.metadata["reason"] = str(exc)
+        return None, layer_decision
 
     return vector, layer_decision
 
@@ -948,9 +956,17 @@ class DualLatticeIntegrator:
         self.kyber_level = kyber_level
         self.dilithium_level = dilithium_level
 
-        # Initialize components
-        self.lattice = DualLatticeCrossStitch(security_level=kyber_level)
-        self.governor = TongueLatticeGovernor()
+        # Initialize components. The legacy DualLatticeCrossStitch constructor
+        # may be blocked unless insecure PQC is explicitly enabled; Layer 1
+        # handles that as a fail-closed decision during process_action.
+        try:
+            self.lattice = DualLatticeCrossStitch(security_level=kyber_level)
+        except RuntimeError:
+            self.lattice = None
+        try:
+            self.governor = TongueLatticeGovernor()
+        except RuntimeError:
+            self.governor = None
         self.octree = HyperbolicOctree(grid_size=grid_size, max_depth=max_depth)
         self.pathfinder = None  # Initialized when octree has points
         self.recent_points: List[np.ndarray] = []
@@ -1048,8 +1064,12 @@ class DualLatticeIntegrator:
         positive_scores = [d.score for d in decisions if d.score > 0]
         trust_score = np.mean(positive_scores) if positive_scores else 0.0
 
-        # Get lattice proof from governor
-        gov_result = self.governor.authorize(action, target, sensitivity)
+        # Get lattice proof from governor when the legacy lattice is explicitly available.
+        if self.governor is None:
+            governor_proof = {"governor_unavailable": True}
+        else:
+            gov_result = self.governor.authorize(action, target, sensitivity)
+            governor_proof = gov_result.get("lattice_proof", {})
 
         return IntegratedResult(
             decisions=decisions,
@@ -1059,7 +1079,7 @@ class DualLatticeIntegrator:
             path_cost=l13_decision.metadata.get("path_cost", 0.0),
             audio_signature=frequencies,
             lattice_proof={
-                **gov_result.get("lattice_proof", {}),
+                **governor_proof,
                 "intrinsic_path_points": len(path),
                 "realm_path": [r.value for r in realms],
             },

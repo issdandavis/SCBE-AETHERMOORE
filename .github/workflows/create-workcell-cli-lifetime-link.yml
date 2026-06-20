@@ -1,0 +1,29 @@
+name: Create Workcell CLI Lifetime Link
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  create-link:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Create Stripe link
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+        run: |
+          set -euo pipefail
+          python scripts/system/create_workcell_cli_lifetime_stripe_link.py
+
+      - name: Upload redacted artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: workcell-cli-lifetime-stripe-link
+          path: artifacts/monetization/workcell_cli_lifetime_stripe_link.json

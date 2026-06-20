@@ -42,7 +42,6 @@ from build_stage6_repair_sft import (  # noqa: E402  (sys.path edit needed first
     _lane_separation_terse,
 )
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SFT_ROOT = REPO_ROOT / "training-data" / "sft"
 TRAIN_OUT = SFT_ROOT / "atomic_workflow_stage6_must_pass_boost_train.sft.jsonl"
@@ -373,9 +372,7 @@ def build() -> dict[str, Any]:
         },
         "boundary": "Boost shard. Frozen Stage 6 eval prompts are not copied into training; only the must_pass token literals (transmit_burst, queue_drain_guard, crc_patch) are oversampled through analog scenarios.",
     }
-    MANIFEST_OUT.write_text(
-        json.dumps(manifest, indent=2, ensure_ascii=True), encoding="utf-8"
-    )
+    MANIFEST_OUT.write_text(json.dumps(manifest, indent=2, ensure_ascii=True), encoding="utf-8")
     return manifest
 
 

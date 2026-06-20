@@ -17,10 +17,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUT_DIR = REPO_ROOT / "docs" / "legal" / "patent-workbench" / "benchmarks"
-APPLICATION_NUMBER = "63/961,403"
+APPLICATION_NUMBER = "19/691,526"
 DOCKET = "SCBE-2026-0001"
 TITLE = "System and Method for Hyperbolic Geometry-Based Authorization with Topological Control-Flow Integrity"
 
@@ -38,13 +37,17 @@ class Task:
 TASKS: tuple[Task, ...] = (
     Task(
         task_id="claim_1_hyperbolic_gate",
-        query="Review claim 1 for support: hyperbolic authorization gate, semantic vector, distance, threshold decision.",
+        query=(
+            "Review claim 1 for support: hyperbolic authorization gate, semantic vector, "
+            "distance, threshold decision."
+        ),
         expected_terms=("hyperbolic", "semantic vector", "distance", "threshold", "decision"),
         anti_patterns=("guarantees", "unhackable", "proves patentable"),
         issue_terms=("threshold", "distance"),
         corpus=(
             "Claim 1 recites encoding an action into a semantic vector and computing a hyperbolic distance.",
-            "The detailed description maps the distance to a threshold decision among allow, quarantine, escalate, and deny.",
+            "The detailed description maps the distance to a threshold decision among allow, quarantine, "
+            "escalate, and deny.",
             "The result should be described as measured support, not as guarantees or patentability proof.",
         ),
     ),
@@ -103,7 +106,8 @@ TASKS: tuple[Task, ...] = (
         anti_patterns=("ready to file", "officially accepted", "legal advice"),
         issue_terms=("validation", "drawings"),
         corpus=(
-            "The assembled DOCX contains title, cross-reference, background, summary, drawing descriptions, detailed description, claims, and abstract.",
+            "The assembled DOCX contains title, cross-reference, background, summary, drawing descriptions, "
+            "detailed description, claims, and abstract.",
             "Drawings remain separate files and Patent Center validation remains open.",
             "The workbench is drafting support and not legal advice.",
         ),
@@ -226,7 +230,9 @@ def score_output(task: Task, output: dict[str, Any]) -> dict[str, Any]:
     text = str(output.get("answer", ""))
     coverage, hits, misses = term_coverage(text, task.expected_terms)
     anti_hits = anti_pattern_hits(text, task.anti_patterns)
-    issue_coverage, issue_hits, issue_misses = term_coverage(text + " " + " ".join(output.get("notes", [])), task.issue_terms)
+    issue_coverage, issue_hits, issue_misses = term_coverage(
+        text + " " + " ".join(output.get("notes", [])), task.issue_terms
+    )
     anti_score = 1.0 - (len(anti_hits) / len(task.anti_patterns) if task.anti_patterns else 0.0)
     score = (0.65 * coverage) + (0.20 * issue_coverage) + (0.15 * anti_score)
     return {
@@ -352,7 +358,8 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
             "",
             "- This is deterministic fixture evidence, not live LLM evidence.",
             "- It tests the controller/orchestration pattern, not a trained model's internal cognition.",
-            "- Next validation should run the same tasks through local and cloud models with captured prompts and outputs.",
+            "- Next validation should run the same tasks through local and cloud models "
+            "with captured prompts and outputs.",
             "",
         ]
     )

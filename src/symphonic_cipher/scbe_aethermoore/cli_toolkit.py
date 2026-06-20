@@ -633,34 +633,97 @@ class ConcentricRingPolicy:
         return {"ring": "beyond", "action": "REJECT"}
 
 
-# ---------- Envelope crypto (demo/mocked PQC) ----------
+# ---------- Envelope crypto: real post-quantum hybrid seal ----------
+#
+# The Sacred Egg path (create_egg / hatch_egg -> geoseal_encrypt / geoseal_decrypt)
+# seals payloads with a genuine post-quantum hybrid scheme:
+#   - ML-KEM-768 (FIPS 203) encapsulates a shared secret to the recipient.
+#   - HKDF binds that secret to the GeoSeal geometric coordinates (h, z, levels).
+#   - AES-256-GCM encrypts the payload with the geometric attestation as AAD,
+#     so any tamper of ciphertext OR geometry fails authentication.
+#   - ML-DSA-65 (FIPS 204) signs the whole envelope.
+#
+# Real liboqs is REQUIRED. Without it these functions fail closed (raise) rather
+# than falling back to mock crypto -- an egg is either sealed with real PQC or
+# not at all. (A prior revision used SHA-256/HMAC/XOR stand-ins labelled "Kyber"/
+# "Dilithium" that only round-tripped when pk == sk; that costume is gone.)
+#
+# Keys are passed as base64(JSON) "bundles" so a single public/secret handle
+# carries both the KEM and DSA material for its role:
+#   public bundle: {"kem_pub": b64, "dsa_pub": b64}
+#   secret bundle: {"kem_sec": b64, "dsa_sec": b64}
+
+
+def _kem_alg() -> str:
+    """Resolve the ML-KEM-768 mechanism name (new FIPS name first, legacy fallback)."""
+    import oqs
+
+    enabled = set(oqs.get_enabled_kem_mechanisms())
+    for name in ("ML-KEM-768", "Kyber768"):
+        if name in enabled:
+            return name
+    raise RuntimeError("liboqs has no ML-KEM-768 (or Kyber768) mechanism enabled")
+
+
+def _sig_alg() -> str:
+    """Resolve the ML-DSA-65 mechanism name (new FIPS name first, legacy fallback)."""
+    import oqs
+
+    enabled = set(oqs.get_enabled_sig_mechanisms())
+    for name in ("ML-DSA-65", "Dilithium3"):
+        if name in enabled:
+            return name
+    raise RuntimeError("liboqs has no ML-DSA-65 (or Dilithium3) mechanism enabled")
+
+
+def _require_pqc() -> None:
+    """Fail closed unless real PQC (liboqs) and a real AEAD (cryptography) are present."""
+    try:
+        import oqs  # noqa: F401
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM  # noqa: F401
+    except Exception as exc:  # pragma: no cover - exercised only without liboqs
+        raise RuntimeError(
+            "Real post-quantum crypto is unavailable: install 'liboqs-python' and "
+            "'cryptography'. The Sacred Egg seal path fails closed rather than using "
+            "mock crypto."
+        ) from exc
 
 
 def hkdf(key: bytes, info: str) -> bytes:
+    """32-byte key derivation: HMAC-SHA256 over a high-entropy KEM shared secret."""
     return hmac.new(key, info.encode(), hashlib.sha256).digest()
 
 
-def kyber_encaps(pk: bytes) -> Tuple[bytes, bytes]:
-    ss = hashlib.sha256(b"ss" + pk).digest()
-    ct = hashlib.sha256(b"ct" + pk).digest()
-    return ss, ct
+def geoseal_keygen() -> Tuple[str, str]:
+    """Generate a real ML-KEM-768 + ML-DSA-65 keypair.
+
+    Returns (public_bundle_b64, secret_bundle_b64) -- base64(JSON) bundles holding
+    both the KEM and DSA material for their respective public/secret roles.
+    """
+    _require_pqc()
+    import oqs
+
+    with oqs.KeyEncapsulation(_kem_alg()) as kem:
+        kem_pub = kem.generate_keypair()
+        kem_sec = kem.export_secret_key()
+    with oqs.Signature(_sig_alg()) as sig:
+        dsa_pub = sig.generate_keypair()
+        dsa_sec = sig.export_secret_key()
+
+    public = {"kem_pub": base64.b64encode(kem_pub).decode(), "dsa_pub": base64.b64encode(dsa_pub).decode()}
+    secret = {"kem_sec": base64.b64encode(kem_sec).decode(), "dsa_sec": base64.b64encode(dsa_sec).decode()}
+    pub_b64 = base64.b64encode(json.dumps(public, sort_keys=True).encode()).decode()
+    sec_b64 = base64.b64encode(json.dumps(secret, sort_keys=True).encode()).decode()
+    return pub_b64, sec_b64
 
 
-def kyber_decaps(sk: bytes, ct: bytes) -> bytes:
-    return hashlib.sha256(b"ss" + sk).digest()
-
-
-def _mock_dsa_key(material: bytes) -> bytes:
-    """Derive deterministic HMAC key so sign(sk)/verify(pk) round-trip in mock mode."""
-    return hashlib.sha256(b"mock-dsa:" + material).digest()
-
-
-def dsa_sign(sk: bytes, msg: bytes) -> bytes:
-    return hmac.new(_mock_dsa_key(sk), msg, hashlib.sha256).digest()
-
-
-def dsa_verify(pk: bytes, msg: bytes, sig: bytes) -> bool:
-    return hmac.compare_digest(hmac.new(_mock_dsa_key(pk), msg, hashlib.sha256).digest(), sig)
+def _unbundle(bundle_b64: str, field: str) -> bytes:
+    """Extract one role key (kem_pub / kem_sec / dsa_pub / dsa_sec) from a key bundle."""
+    try:
+        obj = json.loads(base64.b64decode(bundle_b64))
+        return base64.b64decode(obj[field])
+    except Exception as exc:
+        raise ValueError(f"Invalid key bundle (missing '{field}'); use geoseal_keygen() to make keys") from exc
 
 
 # ---------- GeoSeal encrypt/decrypt ----------
@@ -674,6 +737,15 @@ def geoseal_encrypt(
     Ls: int = 2,
     Lc: int = 2,
 ) -> dict:
+    """Seal a payload with real PQC hybrid crypto bound to GeoSeal geometry.
+
+    pk_kem_b64: public key bundle (provides the ML-KEM-768 encapsulation key)
+    sk_dsa_b64: secret key bundle (provides the ML-DSA-65 signing key)
+    """
+    _require_pqc()
+    import oqs
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
     pt = base64.b64decode(plaintext_b64)
     u = project_to_sphere(context)
     v = project_to_cube(context)
@@ -681,13 +753,11 @@ def geoseal_encrypt(
     z = morton_id(v, Lc)
     P, margin = potentials(u, v)
     path = classify(h, z, P, margin)
-    ss, ct_k = kyber_encaps(base64.b64decode(pk_kem_b64))
-    Ks = hkdf(ss, f"geo:sphere|{h}|{Ls}")
-    Kc = hkdf(ss, f"geo:cube|{z}|{Lc}")
-    Kmsg = hkdf(bytes(x ^ y for x, y in zip(Ks, Kc)), "geo:msg")
-    mask_seed = hashlib.sha256(Kmsg).digest()
-    mask = (mask_seed * ((len(pt) // len(mask_seed)) + 2))[: len(pt)]
-    ct_spec = bytes(a ^ b for a, b in zip(pt, mask))
+
+    # Real ML-KEM-768 encapsulation to the recipient's public key.
+    with oqs.KeyEncapsulation(_kem_alg()) as kem:
+        ct_k, ss = kem.encap_secret(_unbundle(pk_kem_b64, "kem_pub"))
+
     attest = {
         "h": h,
         "z": z,
@@ -698,15 +768,25 @@ def geoseal_encrypt(
         "ts": int(time.time()),
         "path": path,
     }
-    sig = dsa_sign(
-        base64.b64decode(sk_dsa_b64),
-        hashlib.sha256(json.dumps(attest, sort_keys=True).encode() + ct_spec).digest(),
-    )
+    aad = json.dumps(attest, sort_keys=True).encode()
+
+    # Bind the shared secret to the geometry, then AES-256-GCM with attest as AAD.
+    Kmsg = hkdf(ss, f"geoseal:msg|h={h}|z={z}|Ls={Ls}|Lc={Lc}")
+    nonce = os.urandom(12)
+    ct_spec = AESGCM(Kmsg).encrypt(nonce, pt, aad)  # ciphertext || GCM tag
+
+    # Real ML-DSA-65 signature over the full bound envelope.
+    signed = hashlib.sha256(aad + ct_k + nonce + ct_spec).digest()
+    with oqs.Signature(_sig_alg(), secret_key=_unbundle(sk_dsa_b64, "dsa_sec")) as signer:
+        sig = signer.sign(signed)
+
     return {
         "ct_k": base64.b64encode(ct_k).decode(),
         "ct_spec": base64.b64encode(ct_spec).decode(),
+        "nonce": base64.b64encode(nonce).decode(),
         "attest": attest,
         "sig": base64.b64encode(sig).decode(),
+        "pqc": {"kem": _kem_alg(), "sig": _sig_alg(), "aead": "AES-256-GCM"},
     }
 
 
@@ -716,23 +796,45 @@ def geoseal_decrypt(
     sk_kem_b64: str,
     pk_dsa_b64: str,
 ) -> Tuple[bool, bytes | None]:
-    ct_k = base64.b64decode(env["ct_k"]) if isinstance(env["ct_k"], str) else env["ct_k"]
-    ct_spec = base64.b64decode(env["ct_spec"]) if isinstance(env["ct_spec"], str) else env["ct_spec"]
-    attest = env["attest"]
-    sig = base64.b64decode(env["sig"]) if isinstance(env["sig"], str) else env["sig"]
-    if not dsa_verify(
-        base64.b64decode(pk_dsa_b64),
-        hashlib.sha256(json.dumps(attest, sort_keys=True).encode() + ct_spec).digest(),
-        sig,
-    ):
+    """Open a GeoSeal envelope: verify ML-DSA-65, decapsulate ML-KEM-768, AES-256-GCM decrypt.
+
+    sk_kem_b64: secret key bundle (provides the ML-KEM-768 decapsulation key)
+    pk_dsa_b64: public key bundle (provides the ML-DSA-65 verification key)
+    Returns (ok, plaintext) -- (False, None) on any signature/decapsulation/AEAD failure.
+    """
+    _require_pqc()
+    import oqs
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
+    try:
+        ct_k = base64.b64decode(env["ct_k"]) if isinstance(env["ct_k"], str) else env["ct_k"]
+        ct_spec = base64.b64decode(env["ct_spec"]) if isinstance(env["ct_spec"], str) else env["ct_spec"]
+        nonce = base64.b64decode(env["nonce"]) if isinstance(env["nonce"], str) else env["nonce"]
+        attest = env["attest"]
+        sig = base64.b64decode(env["sig"]) if isinstance(env["sig"], str) else env["sig"]
+    except (KeyError, ValueError, TypeError):
         return False, None
-    ss = kyber_decaps(base64.b64decode(sk_kem_b64), ct_k)
-    Ks = hkdf(ss, f"geo:sphere|{attest['h']}|{attest['L_s']}")
-    Kc = hkdf(ss, f"geo:cube|{attest['z']}|{attest['L_c']}")
-    Kmsg = hkdf(bytes(x ^ y for x, y in zip(Ks, Kc)), "geo:msg")
-    mask_seed = hashlib.sha256(Kmsg).digest()
-    mask = (mask_seed * ((len(ct_spec) // len(mask_seed)) + 2))[: len(ct_spec)]
-    pt = bytes(a ^ b for a, b in zip(ct_spec, mask))
+
+    aad = json.dumps(attest, sort_keys=True).encode()
+
+    # Verify the ML-DSA-65 signature first (cheap reject before any key work).
+    signed = hashlib.sha256(aad + ct_k + nonce + ct_spec).digest()
+    with oqs.Signature(_sig_alg()) as verifier:
+        if not verifier.verify(signed, sig, _unbundle(pk_dsa_b64, "dsa_pub")):
+            return False, None
+
+    # Decapsulate the shared secret with the recipient's secret key (bound via secret_key=).
+    try:
+        with oqs.KeyEncapsulation(_kem_alg(), secret_key=_unbundle(sk_kem_b64, "kem_sec")) as kem:
+            ss = kem.decap_secret(ct_k)
+    except Exception:
+        return False, None
+
+    Kmsg = hkdf(ss, f"geoseal:msg|h={attest['h']}|z={attest['z']}|Ls={attest['L_s']}|Lc={attest['L_c']}")
+    try:
+        pt = AESGCM(Kmsg).decrypt(nonce, ct_spec, aad)
+    except Exception:
+        return False, None
     return True, pt
 
 
@@ -1601,15 +1703,18 @@ def selftest() -> int:
     un = xt.unblend(pattern, pairs)
     assert un == payload
 
-    # ── GeoSeal ──
+    # ── GeoSeal (real PQC; skipped if liboqs is unavailable) ──
     ctx = [0.2, -0.3, 0.7, 1.0, -2.0, 0.5, 3.1, -9.9, 0.0]
     pt = b"hello aethermoore"
     pt_b64 = base64.b64encode(pt).decode()
-    kem = base64.b64encode(b"kem-key-32bytes-demo____").decode()
-    dsa = base64.b64encode(b"dsa-key-32bytes-demo____").decode()
-    env = geoseal_encrypt(pt_b64, ctx, kem, dsa)
-    ok, decpt = geoseal_decrypt(env, ctx, kem, dsa)
-    assert ok and decpt == pt
+    try:
+        pub, sec = geoseal_keygen()
+    except RuntimeError as exc:
+        print(f"  [skip] GeoSeal selftest (real PQC unavailable): {exc}")
+    else:
+        env = geoseal_encrypt(pt_b64, ctx, pub, sec)
+        ok, decpt = geoseal_decrypt(env, ctx, sec, pub)
+        assert ok and decpt == pt
 
     # ── Negative: corrupted token should fail ──
     bad = tok.encode_bytes("KO", b"\x00\x01")

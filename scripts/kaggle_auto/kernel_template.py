@@ -2,7 +2,10 @@
 """Auto-generated Kaggle kernel - SCBE Polly Training.
 Config is injected via the KERNEL_CONFIG dict at the top."""
 
-import subprocess, sys, json, os
+import subprocess
+import sys
+import json
+import os
 from collections import Counter
 
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
@@ -454,7 +457,8 @@ try:
 
     if REQUIRE_GPU and not has_cuda:
         raise RuntimeError(
-            f"GPU required for this round, but got gpu={gpu_name} compute capability sm_{compute_cap[0]}{compute_cap[1]}. "
+            f"GPU required for this round, but got gpu={gpu_name} "
+            f"compute capability sm_{compute_cap[0]}{compute_cap[1]}. "
             "No accelerator was assigned."
         )
 

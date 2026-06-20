@@ -109,10 +109,13 @@ class ScbeAgent(BaseAgent):
 
     def _build_cmd(self) -> list[str]:
         cli = self._scbe_cli
+        extra_args: list[str] = []
+        if os.environ.get("SCBE_AGENT_JSON_SCAFFOLD") == "1":
+            extra_args.append("--scaffold")
         if cli.endswith(".js"):
             node = shutil.which("node") or "node"
-            return [node, cli, "shell", "--agent-json"]
-        return [cli, "shell", "--agent-json"]
+            return [node, cli, "shell", "--agent-json", *extra_args]
+        return [cli, "shell", "--agent-json", *extra_args]
 
     # ── NDJSON helpers ────────────────────────────────────────────────────────
 
@@ -198,7 +201,7 @@ class ScbeAgent(BaseAgent):
                         continue
                     try:
                         session.send_keys(
-                            keystrokes,
+                            [keystrokes, "Enter"],
                             block=is_blocking,
                             max_timeout_sec=timeout_sec,
                         )

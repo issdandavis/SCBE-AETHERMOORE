@@ -13,7 +13,6 @@ import re
 from dataclasses import dataclass, asdict
 from typing import Iterable
 
-
 PROMPT_INJECTION_PATTERNS = (
     r"ignore\s+(all\s+)?previous\s+instructions",
     r"reveal\s+(the\s+)?system\s+prompt",
@@ -49,11 +48,7 @@ class ThreatScan:
 
 def _external_links(text: str) -> list[str]:
     links = re.findall(r"https?://[^\s)>\"]+", text)
-    return [
-        x
-        for x in links
-        if "x.com" not in x.lower() and "twitter.com" not in x.lower()
-    ]
+    return [x for x in links if "x.com" not in x.lower() and "twitter.com" not in x.lower()]
 
 
 def scan_text_for_threats(

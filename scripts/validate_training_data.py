@@ -348,7 +348,7 @@ def main():
         sources = validate_source_coverage(records)
         print(f"  Unique sources:       {sources['unique_sources']}")
         print(f"  Single-record sources: {sources['single_record_sources']}")
-        print(f"  Top sources:")
+        print("  Top sources:")
         for src, count in list(sources["top_20_sources"].items())[:15]:
             print(f"    {src:.<45} {count:>5}")
 
@@ -374,7 +374,7 @@ def main():
     report_path.write_text(json.dumps(report, indent=2, default=str))
 
     print(f"\n{'='*70}")
-    print(f"VALIDATION COMPLETE")
+    print("VALIDATION COMPLETE")
     print(f"  Report: {report_path}")
     print(f"{'='*70}")
 

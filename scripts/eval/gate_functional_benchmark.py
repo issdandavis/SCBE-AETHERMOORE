@@ -23,9 +23,7 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="Adapter/model name to gate. Defaults to all non-BASE results.",
     )
-    parser.add_argument(
-        "--min-pass-rate", type=float, default=0.85, help="Required pass rate, 0.0-1.0."
-    )
+    parser.add_argument("--min-pass-rate", type=float, default=0.85, help="Required pass rate, 0.0-1.0.")
     parser.add_argument(
         "--min-passed",
         type=int,
@@ -74,9 +72,7 @@ def main() -> int:
         if reasons:
             failed.append((row.get("adapter"), reasons))
         else:
-            print(
-                f"PASS: {row.get('adapter')} passed gate at {pass_rate:.2%} ({passed} tasks)"
-            )
+            print(f"PASS: {row.get('adapter')} passed gate at {pass_rate:.2%} ({passed} tasks)")
 
     if failed:
         for adapter, reasons in failed:

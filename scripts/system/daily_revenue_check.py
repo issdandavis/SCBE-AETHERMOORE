@@ -280,9 +280,7 @@ def check_sponsors() -> dict[str, Any]:
     if not token:
         return {"status": "skipped", "reason": "GITHUB_TOKEN not set"}
 
-    query = json.dumps(
-        {
-            "query": """{
+    query = json.dumps({"query": """{
             viewer {
                 sponsorsListing { isPublic }
                 sponsors(first: 20) {
@@ -295,9 +293,7 @@ def check_sponsors() -> dict[str, Any]:
                     }
                 }
             }
-        }"""
-        }
-    )
+        }"""})
 
     req = urllib.request.Request(
         "https://api.github.com/graphql",

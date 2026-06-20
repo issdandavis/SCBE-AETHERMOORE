@@ -457,7 +457,10 @@ class TestGenesisStudy:
         """Run agents with different scripts — the fact lattice connects them."""
         texts = {
             "Moses": "Torah cantillation marks encode melodic patterns",
-            "Pythagoras": "\u039c\u03bf\u03c5\u03c3\u03b9\u03ba\u03ae \u03c4\u03c9\u03bd \u03c3\u03c6\u03b1\u03b9\u03c1\u03ce\u03bd",  # Greek
+            "Pythagoras": (
+                "\u039c\u03bf\u03c5\u03c3\u03b9\u03ba\u03ae "
+                "\u03c4\u03c9\u03bd \u03c3\u03c6\u03b1\u03b9\u03c1\u03ce\u03bd"
+            ),  # Greek
             "Al-Kindi": "\u0627\u0644\u0643\u0646\u062f\u064a",  # Arabic
         }
         results = run_full_simulation(texts=texts)

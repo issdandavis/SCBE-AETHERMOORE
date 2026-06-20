@@ -17,7 +17,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 VALID_CHECKS = ("github", "notion", "drive")
 
 
@@ -60,9 +59,9 @@ def _pick_rclone_gdrive_token() -> tuple[str, str]:
     """Fallback: read access_token from rclone gdrive config."""
     try:
         if os.name == "nt":
-            rclone_conf = Path(
-                os.environ.get("APPDATA", str(Path.home() / "AppData/Roaming"))
-            ) / "rclone" / "rclone.conf"
+            rclone_conf = (
+                Path(os.environ.get("APPDATA", str(Path.home() / "AppData/Roaming"))) / "rclone" / "rclone.conf"
+            )
         else:
             rclone_conf = Path.home() / ".config" / "rclone" / "rclone.conf"
         if not rclone_conf.exists():

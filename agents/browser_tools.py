@@ -16,8 +16,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-import os
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List
 
 logger = logging.getLogger("scbe.agents.browser_tools")
 
@@ -31,6 +30,7 @@ _HANDLERS: Dict[str, Callable] = {}
 
 def tool(name: str, description: str, parameters: Dict[str, Any]):
     """Decorator to register a tool."""
+
     def decorator(fn):
         TOOLS[name] = {
             "name": name,
@@ -42,6 +42,7 @@ def tool(name: str, description: str, parameters: Dict[str, Any]):
         }
         _HANDLERS[name] = fn
         return fn
+
     return decorator
 
 
@@ -76,6 +77,7 @@ async def _get_runtime():
     global _runtime
     if _runtime is None:
         from agents.playwright_runtime import PlaywrightRuntime
+
         _runtime = PlaywrightRuntime()
         await _runtime.launch(headless=True)
     return _runtime
@@ -85,6 +87,7 @@ async def _get_scraper():
     global _scraper
     if _scraper is None:
         from agents.web_scraper import WebScraper
+
         rt = await _get_runtime()
         _scraper = WebScraper(rt)
     return _scraper
@@ -94,6 +97,7 @@ async def _get_researcher():
     global _researcher
     if _researcher is None:
         from agents.research_agent import ResearchAgent
+
         scraper = await _get_scraper()
         _researcher = ResearchAgent(scraper)
     return _researcher
@@ -111,6 +115,7 @@ async def shutdown():
 # Tools
 # ---------------------------------------------------------------------------
 
+
 @tool(
     name="browser_navigate",
     description="Navigate to a URL and return the page title and text content.",
@@ -123,9 +128,7 @@ async def browser_navigate(args: Dict[str, Any]) -> Dict[str, Any]:
     url = args["url"]
     await rt.navigate(url)
     title = await rt.title()
-    text = await rt.evaluate(
-        "() => document.body.innerText.substring(0, 5000)"
-    )
+    text = await rt.evaluate("() => document.body.innerText.substring(0, 5000)")
     return {"url": rt.current_url, "title": title, "text": text}
 
 
@@ -138,6 +141,7 @@ async def browser_navigate(args: Dict[str, Any]) -> Dict[str, Any]:
 )
 async def browser_screenshot(args: Dict[str, Any]) -> Dict[str, Any]:
     import base64
+
     rt = await _get_runtime()
     url = args.get("url")
     if url:
@@ -240,11 +244,17 @@ async def web_search(args: Dict[str, Any]) -> Dict[str, Any]:
 
 @tool(
     name="research",
-    description="Perform deep web research on a topic. Searches, reads multiple sources, scores relevance, and produces a structured report.",
+    description=(
+        "Perform deep web research on a topic. Searches, reads multiple sources, scores relevance, "
+        "and produces a structured report."
+    ),
     parameters={
         "query": {"type": "string", "description": "Research query"},
         "max_sources": {"type": "integer", "description": "Max sources to check (default 8)"},
-        "follow_links": {"type": "boolean", "description": "Follow promising links for deeper research (default false)"},
+        "follow_links": {
+            "type": "boolean",
+            "description": "Follow promising links for deeper research (default false)",
+        },
     },
 )
 async def do_research(args: Dict[str, Any]) -> Dict[str, Any]:
@@ -294,6 +304,7 @@ async def _get_bus():
     global _bus
     if _bus is None:
         from agents.agent_bus import AgentBus
+
         _bus = AgentBus()
         await _bus.start(headless=True)
     return _bus
@@ -301,7 +312,10 @@ async def _get_bus():
 
 @tool(
     name="ask",
-    description="Answer a question using web research + free LLM (HuggingFace/Ollama). Searches the web, scrapes relevant pages, sends context to a free model.",
+    description=(
+        "Answer a question using web research + free LLM (HuggingFace/Ollama). Searches the web, "
+        "scrapes relevant pages, sends context to a free model."
+    ),
     parameters={
         "question": {"type": "string", "description": "The question to answer"},
         "search_first": {"type": "boolean", "description": "Search web for context first (default true)"},
@@ -347,9 +361,11 @@ async def bus_analyze(args: Dict[str, Any]) -> Dict[str, Any]:
 # CLI entry point
 # ---------------------------------------------------------------------------
 
+
 async def _cli_main():
     """Run a tool from the command line: python -m agents.browser_tools <tool> '{json}'"""
     import sys
+
     if len(sys.argv) < 3:
         print(json.dumps({"tools": list_tools()}, indent=2))
         return

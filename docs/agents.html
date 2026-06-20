@@ -1,556 +1,1153 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Agents | AetherMoore</title>
-  <meta name="description" content="AI agents that research, monitor, and analyze the web — powered by free LLMs through the SCBE Agent Bus.">
-  <link rel="stylesheet" href="static/polly-sidebar-agent.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Quicksand:400,700">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Quicksand', -apple-system, sans-serif; background: #0d1117; color: #c9d1d9; min-height: 100vh; }
-    .container { max-width: 1000px; margin: 0 auto; padding: 2rem 1.5rem; }
-    h1 { font-size: 2rem; margin-bottom: 0.3rem; color: #e6edf3; }
-    h2 { font-size: 1.2rem; color: #58a6ff; margin-bottom: 0.5rem; }
-    .subtitle { color: #8b949e; margin-bottom: 2rem; font-size: 1rem; }
-    a { color: #58a6ff; text-decoration: none; }
-    a:hover { text-decoration: underline; }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Agents | AetherMoore</title>
+    <meta
+      name="description"
+      content="SCBE agent workflows for research, monitoring, and build checks with visible dispatch limits and latest-result receipts."
+    />
+    <link rel="stylesheet" href="static/polly-sidebar-agent.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Quicksand:400,700" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family:
+          'Quicksand',
+          -apple-system,
+          sans-serif;
+        background: #0d1117;
+        color: #c9d1d9;
+        min-height: 100vh;
+      }
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem;
+      }
+      h1 {
+        font-size: 2rem;
+        margin-bottom: 0.3rem;
+        color: #e6edf3;
+      }
+      h2 {
+        font-size: 1.2rem;
+        color: #58a6ff;
+        margin-bottom: 0.5rem;
+      }
+      .subtitle {
+        color: #8b949e;
+        margin-bottom: 2rem;
+        font-size: 1rem;
+      }
+      a {
+        color: #58a6ff;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
 
-    .nav { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
-    .nav a { background: #21262d; padding: 6px 14px; border-radius: 6px; font-size: 0.85rem; border: 1px solid #30363d; }
-    .nav a:hover { background: #30363d; text-decoration: none; }
+      .nav {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+      }
+      .nav a {
+        background: #21262d;
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        border: 1px solid #30363d;
+      }
+      .nav a:hover {
+        background: #30363d;
+        text-decoration: none;
+      }
 
-    .section { margin-bottom: 2.5rem; }
-    .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem; }
-    .card .meta { font-size: 0.8rem; color: #8b949e; margin-bottom: 0.5rem; }
-    .card .body { font-size: 0.9rem; line-height: 1.65; }
-    .tag { display: inline-block; background: #21262d; border: 1px solid #30363d; border-radius: 12px; padding: 2px 8px; font-size: 0.75rem; margin: 2px 2px; }
-    .tag.green { border-color: #238636; color: #3fb950; }
-    .tag.blue { border-color: #1f6feb; color: #58a6ff; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+      .section {
+        margin-bottom: 2.5rem;
+      }
+      .card {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+      }
+      .card .meta {
+        font-size: 0.8rem;
+        color: #8b949e;
+        margin-bottom: 0.5rem;
+      }
+      .card .body {
+        font-size: 0.9rem;
+        line-height: 1.65;
+      }
+      .tag {
+        display: inline-block;
+        background: #21262d;
+        border: 1px solid #30363d;
+        border-radius: 12px;
+        padding: 2px 8px;
+        font-size: 0.75rem;
+        margin: 2px 2px;
+      }
+      .tag.green {
+        border-color: #238636;
+        color: #3fb950;
+      }
+      .tag.blue {
+        border-color: #1f6feb;
+        color: #58a6ff;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1rem;
+      }
 
-    .task-list { list-style: none; }
-    .task-list li { padding: 0.75rem 0; border-bottom: 1px solid #21262d; }
-    .task-list li:last-child { border-bottom: none; }
-    .task-name { font-weight: 700; color: #e6edf3; }
-    .task-desc { font-size: 0.85rem; color: #8b949e; margin-top: 2px; }
+      .task-list {
+        list-style: none;
+      }
+      .task-list li {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #21262d;
+      }
+      .task-list li:last-child {
+        border-bottom: none;
+      }
+      .task-name {
+        font-weight: 700;
+        color: #e6edf3;
+      }
+      .task-desc {
+        font-size: 0.85rem;
+        color: #8b949e;
+        margin-top: 2px;
+      }
 
-    .dispatch { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1.5rem; }
-    .dispatch select, .dispatch input { padding: 8px 12px; border-radius: 4px; border: 1px solid #30363d; background: #0d1117; color: #c9d1d9; font-size: 0.9rem; width: 100%; }
-    .dispatch button { padding: 10px 20px; border-radius: 6px; border: none; background: #238636; color: #fff; font-size: 0.95rem; cursor: pointer; margin-top: 10px; }
-    .dispatch button:hover { background: #2ea043; }
-    .dispatch label { display: block; font-size: 0.85rem; color: #8b949e; margin: 10px 0 4px; }
+      .dispatch {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        padding: 1.5rem;
+      }
+      .dispatch select,
+      .dispatch input {
+        padding: 8px 12px;
+        border-radius: 4px;
+        border: 1px solid #30363d;
+        background: #0d1117;
+        color: #c9d1d9;
+        font-size: 0.9rem;
+        width: 100%;
+      }
+      .dispatch button {
+        padding: 10px 20px;
+        border-radius: 6px;
+        border: none;
+        background: #238636;
+        color: #fff;
+        font-size: 0.95rem;
+        cursor: pointer;
+        margin-top: 10px;
+      }
+      .dispatch button:hover {
+        background: #2ea043;
+      }
+      .dispatch label {
+        display: block;
+        font-size: 0.85rem;
+        color: #8b949e;
+        margin: 10px 0 4px;
+      }
 
-    .recipe-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-    .recipe-row button { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; margin-top: 0; }
-    .receipt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; margin: 10px 0; }
-    .receipt { background: #0d1117; border: 1px solid #21262d; border-radius: 6px; padding: 10px; }
-    .receipt .label { color: #8b949e; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; }
-    .receipt .value { color: #e6edf3; font-size: 0.9rem; margin-top: 3px; overflow-wrap: anywhere; }
-    .scorecard { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
-    .scorecard .tag { background: #0d1117; }
-    .source-outcomes { margin-top: 12px; border-top: 1px solid #21262d; padding-top: 8px; }
-    .outcome { display: grid; grid-template-columns: 105px 1fr 72px; gap: 8px; align-items: center; padding: 7px 0; border-bottom: 1px solid #21262d; font-size: 0.82rem; }
-    .outcome:last-child { border-bottom: none; }
-    .outcome-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .outcome-score { text-align: right; color: #8b949e; }
-    .badge { display: inline-block; border-radius: 12px; padding: 2px 8px; font-size: 0.72rem; border: 1px solid #30363d; color: #8b949e; }
-    .badge.matched, .badge.matched_followed_link { border-color: #238636; color: #3fb950; }
-    .badge.below_threshold, .badge.below_threshold_followed_link { border-color: #9e6a03; color: #d29922; }
-    .badge.error, .badge.error_followed_link { border-color: #da3633; color: #ff7b72; }
-    .json-link { float: right; font-size: 0.78rem; }
-    .small-note { color: #8b949e; font-size: 0.82rem; line-height: 1.55; }
-    .results-area { min-height: 100px; }
-    .empty { text-align: center; padding: 2rem; color: #484f58; }
-    .site-item { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid #21262d; }
-    .site-item:last-child { border-bottom: none; }
-    .site-title { font-weight: 600; color: #e6edf3; font-size: 0.95rem; }
-    .site-stats { font-size: 0.8rem; color: #8b949e; }
-    .site-preview { font-size: 0.85rem; color: #8b949e; margin-top: 4px; }
-    .finding { padding: 10px 0; border-bottom: 1px solid #21262d; }
-    .finding:last-child { border-bottom: none; }
-    .confidence { float: right; font-size: 0.8rem; padding: 2px 8px; border-radius: 10px; background: #21262d; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>AI Agents</h1>
-    <p class="subtitle">Free AI helpers that research the web, monitor sites, and answer questions for you. Pick a starter task below — no setup, no signup.</p>
+      .recipe-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+      .recipe-row button {
+        background: #21262d;
+        border: 1px solid #30363d;
+        color: #c9d1d9;
+        margin-top: 0;
+      }
+      .receipt-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 10px;
+        margin: 10px 0;
+      }
+      .receipt {
+        background: #0d1117;
+        border: 1px solid #21262d;
+        border-radius: 6px;
+        padding: 10px;
+      }
+      .receipt .label {
+        color: #8b949e;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .receipt .value {
+        color: #e6edf3;
+        font-size: 0.9rem;
+        margin-top: 3px;
+        overflow-wrap: anywhere;
+      }
+      .scorecard {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 10px 0;
+      }
+      .scorecard .tag {
+        background: #0d1117;
+      }
+      .source-outcomes {
+        margin-top: 12px;
+        border-top: 1px solid #21262d;
+        padding-top: 8px;
+      }
+      .outcome {
+        display: grid;
+        grid-template-columns: 105px 1fr 72px;
+        gap: 8px;
+        align-items: center;
+        padding: 7px 0;
+        border-bottom: 1px solid #21262d;
+        font-size: 0.82rem;
+      }
+      .outcome:last-child {
+        border-bottom: none;
+      }
+      .outcome-title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .outcome-score {
+        text-align: right;
+        color: #8b949e;
+      }
+      .badge {
+        display: inline-block;
+        border-radius: 12px;
+        padding: 2px 8px;
+        font-size: 0.72rem;
+        border: 1px solid #30363d;
+        color: #8b949e;
+      }
+      .badge.matched,
+      .badge.matched_followed_link {
+        border-color: #238636;
+        color: #3fb950;
+      }
+      .badge.below_threshold,
+      .badge.below_threshold_followed_link {
+        border-color: #9e6a03;
+        color: #d29922;
+      }
+      .badge.error,
+      .badge.error_followed_link {
+        border-color: #da3633;
+        color: #ff7b72;
+      }
+      .json-link {
+        float: right;
+        font-size: 0.78rem;
+      }
+      .small-note {
+        color: #8b949e;
+        font-size: 0.82rem;
+        line-height: 1.55;
+      }
+      .results-area {
+        min-height: 100px;
+      }
+      .empty {
+        text-align: center;
+        padding: 2rem;
+        color: #484f58;
+      }
+      .site-item {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        padding: 10px 0;
+        border-bottom: 1px solid #21262d;
+      }
+      .site-item:last-child {
+        border-bottom: none;
+      }
+      .site-title {
+        font-weight: 600;
+        color: #e6edf3;
+        font-size: 0.95rem;
+      }
+      .site-stats {
+        font-size: 0.8rem;
+        color: #8b949e;
+      }
+      .site-preview {
+        font-size: 0.85rem;
+        color: #8b949e;
+        margin-top: 4px;
+      }
+      .finding {
+        padding: 10px 0;
+        border-bottom: 1px solid #21262d;
+      }
+      .finding:last-child {
+        border-bottom: none;
+      }
+      .confidence {
+        float: right;
+        font-size: 0.8rem;
+        padding: 2px 8px;
+        border-radius: 10px;
+        background: #21262d;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>AI Agents</h1>
+      <p class="subtitle">
+        Agent workflow samples, latest-result receipts, and dispatch controls. Inspect the outputs
+        first; queueing a fresh run depends on the configured bridge or GitHub workflow permissions.
+      </p>
 
-    <div class="nav">
-      <a href="index.html">Home</a>
-      <a href="start-here.html">Start Here</a>
-      <a href="products.html">Products</a>
-      <a href="chat.html">Chat with Polly</a>
-      <a href="agents.html" style="background:#30363d;">Agents</a>
-      <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank">GitHub</a>
-    </div>
+      <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="start-here.html">Start Here</a>
+        <a href="products.html">Products</a>
+        <a href="chat.html">Chat with Polly</a>
+        <a href="agents.html" style="background: #30363d">Agents</a>
+        <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank">GitHub</a>
+      </div>
 
-    <!-- Plain-language entry for non-tech visitors -->
-    <div class="section">
-      <div class="card" style="background: linear-gradient(180deg, rgba(35, 134, 54, 0.08), rgba(22, 27, 34, 0.92)); border-color: rgba(35, 134, 54, 0.3);">
-        <h2 style="color:#3fb950;">New here? Read this first.</h2>
-        <div class="body" style="font-size:0.95rem;">
-          <p style="margin-bottom:10px;">An <strong>agent</strong> is a small AI helper that does one job and reports back. The agents below are free to use. You don't need an account.</p>
-          <p style="margin-bottom:10px;"><strong>The simplest use:</strong> click a starter card below, click <em>Run Agent</em>, and check back in a few minutes for the result. The agent runs on a free GitHub server, not your machine.</p>
-          <p style="color:#8b949e; font-size:0.9rem;">If you'd rather have help picking the right tool for a bigger task, <a href="chat.html">open Polly chat</a> or <a href="start-here.html">see the three starter routes</a>.</p>
+      <!-- Plain-language entry for non-tech visitors -->
+      <div class="section">
+        <div
+          class="card"
+          style="
+            background: linear-gradient(180deg, rgba(35, 134, 54, 0.08), rgba(22, 27, 34, 0.92));
+            border-color: rgba(35, 134, 54, 0.3);
+          "
+        >
+          <h2 style="color: #3fb950">New here? Read this first.</h2>
+          <div class="body" style="font-size: 0.95rem">
+            <p style="margin-bottom: 10px">
+              An <strong>agent</strong> is a bounded workflow that does one job and reports back
+              with a receipt. The public page can always show the latest published results. Fresh
+              dispatch requires the Vercel bridge or GitHub Actions path to be configured.
+            </p>
+            <p style="margin-bottom: 10px">
+              <strong>The simplest use:</strong> click a starter card below to load a sample task,
+              then queue it if the dispatch bridge is available. If it is not, the page opens the
+              GitHub workflow fallback instead of pretending the run happened.
+            </p>
+            <p style="color: #8b949e; font-size: 0.9rem">
+              If you'd rather have help picking the right tool for a bigger task,
+              <a href="chat.html">open Polly chat</a> or
+              <a href="start-here.html">see the three starter routes</a>.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Plain-language starter tasks -->
+      <div class="section">
+        <h2>Load a sample workflow</h2>
+        <p style="color: #8b949e; font-size: 0.9rem; margin-bottom: 1rem">
+          Each card pre-fills the dispatch form below and scrolls you to the queue button. These are
+          workflow recipes, not proof that a fresh run has already completed.
+        </p>
+        <div class="grid">
+          <div
+            class="card"
+            style="cursor: pointer"
+            onclick="trySample('research', 'Latest news about AI safety governance')"
+          >
+            <h2 style="color: #58a6ff">📚 Research a topic</h2>
+            <div class="body">
+              Asks the research agent to find recent sources on a topic, read them, and produce a
+              structured report with citations.
+              <p style="margin-top: 10px; color: #8b949e; font-size: 0.85rem">
+                <em>Pre-fills with: "Latest news about AI safety governance"</em>
+              </p>
+            </div>
+          </div>
+          <div
+            class="card"
+            style="cursor: pointer"
+            onclick="trySample('ask', 'What is the difference between an LLM and an AI agent?')"
+          >
+            <h2 style="color: #58a6ff">💬 Ask a question</h2>
+            <div class="body">
+              Web-searches for context and produces a plain-language answer with source links. Good
+              for "explain this to me" questions.
+              <p style="margin-top: 10px; color: #8b949e; font-size: 0.85rem">
+                <em>Pre-fills with a sample question</em>
+              </p>
+            </div>
+          </div>
+          <div
+            class="card"
+            style="cursor: pointer"
+            onclick="
+              trySample(
+                'monitor',
+                'https://aethermoore.com/SCBE-AETHERMOORE/,https://github.com/issdandavis/SCBE-AETHERMOORE'
+              )
+            "
+          >
+            <h2 style="color: #58a6ff">🔭 Watch a site</h2>
+            <div class="body">
+              Quick-reads one or more URLs and reports title, word count, link count, and a content
+              preview. Useful as a smoke test.
+              <p style="margin-top: 10px; color: #8b949e; font-size: 0.85rem">
+                <em>Pre-fills with two example URLs (comma-separated)</em>
+              </p>
+            </div>
+          </div>
+          <div
+            class="card"
+            style="cursor: pointer"
+            onclick="trySample('scrape', 'https://en.wikipedia.org/wiki/Hyperbolic_geometry')"
+          >
+            <h2 style="color: #58a6ff">🪟 Read a page</h2>
+            <div class="body">
+              Pulls structured data from any URL — text, links, tables, headings, metadata. No AI
+              involved, just a clean read.
+              <p style="margin-top: 10px; color: #8b949e; font-size: 0.85rem">
+                <em>Pre-fills with a Wikipedia URL</em>
+              </p>
+            </div>
+          </div>
+        </div>
+        <p style="color: #8b949e; font-size: 0.85rem; margin-top: 1rem">
+          Developer? The full agent catalog and recipes are below. Skip the friendly cards.
+        </p>
+      </div>
+
+      <!-- What the agents can do -->
+      <div class="section">
+        <h2>Available Agents</h2>
+        <div class="grid">
+          <div class="card">
+            <h2>Research Agent</h2>
+            <div class="body">
+              Searches the web, reads multiple sources, scores relevance, and produces a structured
+              report with confidence rankings when the configured runner is available.
+              <div style="margin-top: 8px">
+                <span class="tag green">Receipt-backed</span>
+                <span class="tag blue">Configured runner</span> <span class="tag">Web search</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Site Monitor</h2>
+            <div class="body">
+              Quick-reads multiple websites and reports title, word count, links, and content
+              preview. Runs every 6 hours automatically.
+              <div style="margin-top: 8px">
+                <span class="tag green">Free</span> <span class="tag">Playwright</span>
+                <span class="tag">Scheduled</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Ask Agent</h2>
+            <div class="body">
+              Answers a question using web context and the configured model path, then publishes the
+              answer with source citations and run metadata.
+              <div style="margin-top: 8px">
+                <span class="tag green">Receipt-backed</span>
+                <span class="tag blue">Model path varies</span>
+                <span class="tag">Ollama/HF capable</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Page Analyzer</h2>
+            <div class="body">
+              Scrapes any URL and extracts structured data: text, links, tables, headings, metadata,
+              JSON-LD. No AI needed.
+              <div style="margin-top: 8px">
+                <span class="tag green">Free</span> <span class="tag">Playwright</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Coding Smoke</h2>
+            <div class="body">
+              Runs the SCBE coding-system benchmark lane and returns pass/fail evidence for agentic
+              coding readiness.
+              <div style="margin-top: 8px">
+                <span class="tag green">Local</span> <span class="tag">Benchmark</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <h2>System Build Smoke</h2>
+            <div class="body">
+              Checks router entrypoints, required scripts, Node syntax, and Python compile health
+              before heavier build promotion.
+              <div style="margin-top: 8px">
+                <span class="tag green">Fast</span> <span class="tag">CI-ready</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Agentic Benchmark Ladder</h2>
+            <div class="body">
+              Runs Level 0 smokes plus Level 1 repo-native tasks; optional Level 6 adds GeoSeal/CLI
+              surface pytest gates. Reports multi-metric rollup (time, secret-leak heuristics, pass
+              rate) instead of a single score.
+              <div style="margin-top: 8px">
+                <span class="tag">Ladder</span> <span class="tag">Metrics</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Pair Benchmark</h2>
+            <div class="body">
+              Compares a one-body coding workflow against the paired builder/navigator pattern on
+              SCBE-native coding tasks.
+              <div style="margin-top: 8px">
+                <span class="tag green">Zero-cost</span> <span class="tag">Dual-agent</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Poly Coding Seed</h2>
+            <div class="body">
+              Regenerates the external coding seed corpus with language lenses, binary/hex
+              transport, CA operation hints, and GeoSeal metadata.
+              <div style="margin-top: 8px">
+                <span class="tag">Training</span> <span class="tag">GeoSeal</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Agent Bus</h2>
+            <div class="body">
+              Dispatches one SCBE agent-bus event through scripts/system/agentbus_pipe.mjs. Bridge
+              between the published scbe-agent-bus npm/PyPI package and the website chat surface;
+              returns a typed envelope.
+              <div style="margin-top: 8px">
+                <span class="tag green">Local</span> <span class="tag blue">scbe-agent-bus</span>
+                <span class="tag">Typed envelope</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dispatch a task -->
+      <div class="section">
+        <h2>Run a Task</h2>
+        <div class="dispatch">
+          <label for="d-task">Task</label>
+          <select id="d-task">
+            <option value="research">Research — deep web research with AI summary</option>
+            <option value="ask">Ask — answer a question with web context</option>
+            <option value="monitor">Monitor — quick-read multiple sites</option>
+            <option value="scrape">Scrape — extract structured page data</option>
+            <option value="web_search">Web Search — search and summarize public web results</option>
+            <option value="coding">Coding — run the agentic coding benchmark smoke</option>
+            <option value="system_build">System Build — run the fast repo build smoke</option>
+            <option value="agentic_ladder">
+              Agentic ladder — Levels 0–1 + optional 6 (query = max level: 1 fast, 6 includes
+              CLI/GeoSeal pytest)
+            </option>
+            <option value="pair_benchmark">
+              Pair Benchmark — compare solo vs paired coding workflow
+            </option>
+            <option value="poly_coding_seed">
+              Poly Coding Seed — rebuild external poly-coded training seed records
+            </option>
+            <option value="agent_bus">
+              Agent Bus — dispatch one SCBE bus event (query = task text or JSON event)
+            </option>
+          </select>
+          <label for="d-query">Query or URLs</label>
+          <input
+            id="d-query"
+            placeholder="e.g. URLs, research query, or ladder max level: 1 (default depth) or 6 (adds CLI/GeoSeal tests)"
+          />
+          <button onclick="dispatchTask()">Queue / open workflow</button>
+          <p id="d-status" style="font-size: 0.8rem; color: #8b949e; margin-top: 8px"></p>
+          <div class="recipe-row" aria-label="Task recipes">
+            <button
+              type="button"
+              onclick="setRecipe('research', 'SCBE hyperbolic geometry AI governance')"
+            >
+              Research demo
+            </button>
+            <button
+              type="button"
+              onclick="
+                setRecipe(
+                  'monitor',
+                  'https://aethermoore.com/SCBE-AETHERMOORE/,https://github.com/issdandavis/SCBE-AETHERMOORE,https://news.ycombinator.com,https://arxiv.org/list/cs.AI/recent'
+                )
+              "
+            >
+              Monitor demo
+            </button>
+            <button
+              type="button"
+              onclick="setRecipe('ask', 'What changed in the latest SCBE agent bus result?')"
+            >
+              Ask demo
+            </button>
+            <button
+              type="button"
+              onclick="setRecipe('scrape', 'https://aethermoore.com/SCBE-AETHERMOORE/agents.html')"
+            >
+              Scrape demo
+            </button>
+            <button
+              type="button"
+              onclick="setRecipe('web_search', 'multi-agent coding harness web search')"
+            >
+              Web search demo
+            </button>
+            <button
+              type="button"
+              onclick="setRecipe('coding', 'Run SCBE agentic coding readiness smoke')"
+            >
+              Coding smoke
+            </button>
+            <button
+              type="button"
+              onclick="setRecipe('system_build', 'Run SCBE repo entrypoint and build smoke')"
+            >
+              Build smoke
+            </button>
+            <button type="button" onclick="setRecipe('agentic_ladder', '1')">
+              Ladder (levels 0–1)
+            </button>
+            <button type="button" onclick="setRecipe('agentic_ladder', '6')">
+              Ladder through L6 (CLI/GeoSeal)
+            </button>
+            <button
+              type="button"
+              onclick="setRecipe('pair_benchmark', 'Run dual-agent pair benchmark')"
+            >
+              Pair benchmark
+            </button>
+            <button
+              type="button"
+              onclick="setRecipe('poly_coding_seed', 'Regenerate external poly coding seed corpus')"
+            >
+              Poly seed
+            </button>
+            <button
+              type="button"
+              onclick="
+                setRecipe(
+                  'agent_bus',
+                  'Summarize the latest SCBE governance posture in three sentences'
+                )
+              "
+            >
+              Agent bus demo
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quality harness -->
+      <div class="section">
+        <h2>Quality Harness</h2>
+        <div class="grid">
+          <div class="card">
+            <h2>What is measured now</h2>
+            <div class="body small-note">
+              The page reads the same JSON the agents publish: task freshness, checked sources,
+              accepted findings, confidence spread, source outcomes, errors, and output hashes. This
+              makes weak runs visible instead of hiding them behind a clean-looking summary.
+            </div>
+          </div>
+          <div class="card">
+            <h2>Known limits</h2>
+            <div class="body small-note">
+              GitHub Actions can be delayed, scraped sites can block bots, model providers can fail,
+              and the current public page shows latest results only. Historical run comparison needs
+              a retained run archive before it can be shown honestly.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Latest results -->
+      <div class="section">
+        <h2>Latest Results</h2>
+        <div id="results" class="results-area">
+          <div class="empty">Loading agent data...</div>
+        </div>
+      </div>
+
+      <!-- How it works -->
+      <div class="section">
+        <h2>How It Works</h2>
+        <div class="card">
+          <div class="body">
+            <ol style="padding-left: 1.2rem; line-height: 2">
+              <li>
+                <strong>You submit a task</strong> — the button tries the configured Vercel bridge
+                first
+              </li>
+              <li>
+                <strong>Fallback path opens</strong> — if the bridge is unavailable, the page opens
+                the GitHub Actions workflow
+              </li>
+              <li>
+                <strong>The runner gathers context</strong> — search, scrape, benchmark, or local
+                bus logic runs according to the selected task
+              </li>
+              <li>
+                <strong>The configured model path processes context</strong> — this may be
+                HuggingFace, Ollama, or a non-LLM scraper depending on the task and credentials
+              </li>
+              <li>
+                <strong>Results publish here</strong> — the public page reads the latest JSON
+                receipt once a run has actually produced one
+              </li>
+            </ol>
+            <p style="margin-top: 12px; color: #8b949e">
+              The heavy agent run still happens on GitHub Actions. A small Vercel bridge can queue
+              runs and read status when configured; otherwise this page falls back to the manual
+              GitHub workflow. The SCBE governance pipeline gates every action through the
+              <a
+                href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/specs/SCBE_CANONICAL_CONSTANTS.md"
+                >14-layer security pipeline</a
+              >.
+            </p>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Plain-language starter tasks -->
-    <div class="section">
-      <h2>Try one of these — one click, no typing</h2>
-      <p style="color:#8b949e; font-size:0.9rem; margin-bottom:1rem;">Each card pre-fills the dispatch form below and scrolls you to the Run Agent button. Pick whatever sounds useful.</p>
-      <div class="grid">
-        <div class="card" style="cursor:pointer;" onclick="trySample('research','Latest news about AI safety governance')">
-          <h2 style="color:#58a6ff;">📚 Research a topic</h2>
-          <div class="body">
-            Asks the research agent to find recent sources on a topic, read them, and produce a structured report with citations.
-            <p style="margin-top:10px;color:#8b949e;font-size:0.85rem;"><em>Pre-fills with: "Latest news about AI safety governance"</em></p>
-          </div>
-        </div>
-        <div class="card" style="cursor:pointer;" onclick="trySample('ask','What is the difference between an LLM and an AI agent?')">
-          <h2 style="color:#58a6ff;">💬 Ask a question</h2>
-          <div class="body">
-            Web-searches for context and produces a plain-language answer with source links. Good for "explain this to me" questions.
-            <p style="margin-top:10px;color:#8b949e;font-size:0.85rem;"><em>Pre-fills with a sample question</em></p>
-          </div>
-        </div>
-        <div class="card" style="cursor:pointer;" onclick="trySample('monitor','https://aethermoore.com/SCBE-AETHERMOORE/,https://github.com/issdandavis/SCBE-AETHERMOORE')">
-          <h2 style="color:#58a6ff;">🔭 Watch a site</h2>
-          <div class="body">
-            Quick-reads one or more URLs and reports title, word count, link count, and a content preview. Useful as a smoke test.
-            <p style="margin-top:10px;color:#8b949e;font-size:0.85rem;"><em>Pre-fills with two example URLs (comma-separated)</em></p>
-          </div>
-        </div>
-        <div class="card" style="cursor:pointer;" onclick="trySample('scrape','https://en.wikipedia.org/wiki/Hyperbolic_geometry')">
-          <h2 style="color:#58a6ff;">🪟 Read a page</h2>
-          <div class="body">
-            Pulls structured data from any URL — text, links, tables, headings, metadata. No AI involved, just a clean read.
-            <p style="margin-top:10px;color:#8b949e;font-size:0.85rem;"><em>Pre-fills with a Wikipedia URL</em></p>
-          </div>
-        </div>
-      </div>
-      <p style="color:#8b949e; font-size:0.85rem; margin-top:1rem;">Developer? The full agent catalog and recipes are below. Skip the friendly cards.</p>
-    </div>
+    <script>
+      var DATA_BASE = (location.pathname.replace(/\/[^/]*$/, '') || '.') + '/static/agent-data';
+      var DEFAULT_AGENT_API_BASE = 'https://scbe-agent-bridge-vercel.vercel.app';
+      var AGENT_API_BASE =
+        window.AGENT_API_BASE ||
+        localStorage.getItem('scbeAgentApiBase') ||
+        detectAgentApiBase() ||
+        DEFAULT_AGENT_API_BASE;
+      var AGENT_DISPATCH_SECRET =
+        window.AGENT_DISPATCH_SECRET || localStorage.getItem('scbeAgentDispatchSecret') || '';
 
-    <!-- What the agents can do -->
-    <div class="section">
-      <h2>Available Agents</h2>
-      <div class="grid">
-        <div class="card">
-          <h2>Research Agent</h2>
-          <div class="body">
-            Searches the web, reads multiple sources, scores relevance, and produces a structured report with confidence rankings.
-            <div style="margin-top:8px;"><span class="tag green">Free</span> <span class="tag blue">Qwen 72B</span> <span class="tag">DuckDuckGo</span></div>
-          </div>
-        </div>
-        <div class="card">
-          <h2>Site Monitor</h2>
-          <div class="body">
-            Quick-reads multiple websites and reports title, word count, links, and content preview. Runs every 6 hours automatically.
-            <div style="margin-top:8px;"><span class="tag green">Free</span> <span class="tag">Playwright</span> <span class="tag">Scheduled</span></div>
-          </div>
-        </div>
-        <div class="card">
-          <h2>Ask Agent</h2>
-          <div class="body">
-            Answer any question using web search + free LLM. Finds context online, then generates an answer with source citations.
-            <div style="margin-top:8px;"><span class="tag green">Free</span> <span class="tag blue">Qwen 72B</span> <span class="tag">Ollama fallback</span></div>
-          </div>
-        </div>
-        <div class="card">
-          <h2>Page Analyzer</h2>
-          <div class="body">
-            Scrapes any URL and extracts structured data: text, links, tables, headings, metadata, JSON-LD. No AI needed.
-            <div style="margin-top:8px;"><span class="tag green">Free</span> <span class="tag">Playwright</span></div>
-          </div>
-        </div>
-        <div class="card">
-          <h2>Coding Smoke</h2>
-          <div class="body">
-            Runs the SCBE coding-system benchmark lane and returns pass/fail evidence for agentic coding readiness.
-            <div style="margin-top:8px;"><span class="tag green">Local</span> <span class="tag">Benchmark</span></div>
-          </div>
-        </div>
-        <div class="card">
-          <h2>System Build Smoke</h2>
-          <div class="body">
-            Checks router entrypoints, required scripts, Node syntax, and Python compile health before heavier build promotion.
-            <div style="margin-top:8px;"><span class="tag green">Fast</span> <span class="tag">CI-ready</span></div>
-          </div>
-        </div>
-        <div class="card">
-          <h2>Agentic Benchmark Ladder</h2>
-          <div class="body">
-            Runs Level 0 smokes plus Level 1 repo-native tasks; optional Level 6 adds GeoSeal/CLI surface pytest gates. Reports multi-metric rollup (time, secret-leak heuristics, pass rate) instead of a single score.
-            <div style="margin-top:8px;"><span class="tag">Ladder</span> <span class="tag">Metrics</span></div>
-          </div>
-        </div>
-        <div class="card">
-          <h2>Pair Benchmark</h2>
-          <div class="body">
-            Compares a one-body coding workflow against the paired builder/navigator pattern on SCBE-native coding tasks.
-            <div style="margin-top:8px;"><span class="tag green">Zero-cost</span> <span class="tag">Dual-agent</span></div>
-          </div>
-        </div>
-        <div class="card">
-          <h2>Poly Coding Seed</h2>
-          <div class="body">
-            Regenerates the external coding seed corpus with language lenses, binary/hex transport, CA operation hints, and GeoSeal metadata.
-            <div style="margin-top:8px;"><span class="tag">Training</span> <span class="tag">GeoSeal</span></div>
-          </div>
-        </div>
-        <div class="card">
-          <h2>Agent Bus</h2>
-          <div class="body">
-            Dispatches one SCBE agent-bus event through scripts/system/agentbus_pipe.mjs. Bridge between the published scbe-agent-bus npm/PyPI package and the website chat surface; returns a typed envelope.
-            <div style="margin-top:8px;"><span class="tag green">Local</span> <span class="tag blue">scbe-agent-bus</span> <span class="tag">Typed envelope</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Dispatch a task -->
-    <div class="section">
-      <h2>Run a Task</h2>
-      <div class="dispatch">
-        <label for="d-task">Task</label>
-        <select id="d-task">
-          <option value="research">Research — deep web research with AI summary</option>
-          <option value="ask">Ask — answer a question with web context</option>
-          <option value="monitor">Monitor — quick-read multiple sites</option>
-          <option value="scrape">Scrape — extract structured page data</option>
-          <option value="web_search">Web Search — search and summarize public web results</option>
-          <option value="coding">Coding — run the agentic coding benchmark smoke</option>
-          <option value="system_build">System Build — run the fast repo build smoke</option>
-          <option value="agentic_ladder">Agentic ladder — Levels 0–1 + optional 6 (query = max level: 1 fast, 6 includes CLI/GeoSeal pytest)</option>
-          <option value="pair_benchmark">Pair Benchmark — compare solo vs paired coding workflow</option>
-          <option value="poly_coding_seed">Poly Coding Seed — rebuild external poly-coded training seed records</option>
-          <option value="agent_bus">Agent Bus — dispatch one SCBE bus event (query = task text or JSON event)</option>
-        </select>
-        <label for="d-query">Query or URLs</label>
-        <input id="d-query" placeholder="e.g. URLs, research query, or ladder max level: 1 (default depth) or 6 (adds CLI/GeoSeal tests)">
-        <button onclick="dispatchTask()">Run Agent</button>
-        <p id="d-status" style="font-size:0.8rem;color:#8b949e;margin-top:8px;"></p>
-        <div class="recipe-row" aria-label="Task recipes">
-          <button type="button" onclick="setRecipe('research','SCBE hyperbolic geometry AI governance')">Research demo</button>
-          <button type="button" onclick="setRecipe('monitor','https://aethermoore.com/SCBE-AETHERMOORE/,https://github.com/issdandavis/SCBE-AETHERMOORE,https://news.ycombinator.com,https://arxiv.org/list/cs.AI/recent')">Monitor demo</button>
-          <button type="button" onclick="setRecipe('ask','What changed in the latest SCBE agent bus result?')">Ask demo</button>
-          <button type="button" onclick="setRecipe('scrape','https://aethermoore.com/SCBE-AETHERMOORE/agents.html')">Scrape demo</button>
-          <button type="button" onclick="setRecipe('web_search','multi-agent coding harness web search')">Web search demo</button>
-          <button type="button" onclick="setRecipe('coding','Run SCBE agentic coding readiness smoke')">Coding smoke</button>
-          <button type="button" onclick="setRecipe('system_build','Run SCBE repo entrypoint and build smoke')">Build smoke</button>
-          <button type="button" onclick="setRecipe('agentic_ladder','1')">Ladder (levels 0–1)</button>
-          <button type="button" onclick="setRecipe('agentic_ladder','6')">Ladder through L6 (CLI/GeoSeal)</button>
-          <button type="button" onclick="setRecipe('pair_benchmark','Run dual-agent pair benchmark')">Pair benchmark</button>
-          <button type="button" onclick="setRecipe('poly_coding_seed','Regenerate external poly coding seed corpus')">Poly seed</button>
-          <button type="button" onclick="setRecipe('agent_bus','Summarize the latest SCBE governance posture in three sentences')">Agent bus demo</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Quality harness -->
-    <div class="section">
-      <h2>Quality Harness</h2>
-      <div class="grid">
-        <div class="card">
-          <h2>What is measured now</h2>
-          <div class="body small-note">
-            The page reads the same JSON the agents publish: task freshness, checked sources, accepted findings, confidence spread, source outcomes, errors, and output hashes. This makes weak runs visible instead of hiding them behind a clean-looking summary.
-          </div>
-        </div>
-        <div class="card">
-          <h2>Known limits</h2>
-          <div class="body small-note">
-            GitHub Actions can be delayed, scraped sites can block bots, free LLM providers can fail, and the current public page shows latest results only. Historical run comparison needs a retained run archive before it can be shown honestly.
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Latest results -->
-    <div class="section">
-      <h2>Latest Results</h2>
-      <div id="results" class="results-area">
-        <div class="empty">Loading agent data...</div>
-      </div>
-    </div>
-
-    <!-- How it works -->
-    <div class="section">
-      <h2>How It Works</h2>
-      <div class="card">
-        <div class="body">
-          <ol style="padding-left:1.2rem;line-height:2;">
-            <li><strong>You submit a task</strong> — the button above triggers a GitHub Actions workflow</li>
-            <li><strong>The Agent Router picks it up</strong> — launches headless Chromium in CI</li>
-            <li><strong>DuckDuckGo search</strong> — finds relevant URLs (free, no API key)</li>
-            <li><strong>Playwright scrapes</strong> — reads the actual pages, extracts text and structure</li>
-            <li><strong>Qwen 72B thinks</strong> — HuggingFace free tier processes the context</li>
-            <li><strong>Results publish here</strong> — committed to GitHub Pages automatically</li>
-          </ol>
-          <p style="margin-top:12px;color:#8b949e;">The heavy agent run still happens on GitHub Actions. A small Vercel bridge can queue runs and read status when configured; otherwise this page falls back to the manual GitHub workflow. The SCBE governance pipeline gates every action through the <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/specs/SCBE_CANONICAL_CONSTANTS.md">14-layer security pipeline</a>.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    var DATA_BASE = (location.pathname.replace(/\/[^/]*$/, '') || '.') + '/static/agent-data';
-    var DEFAULT_AGENT_API_BASE = 'https://scbe-agent-bridge-vercel.vercel.app';
-    var AGENT_API_BASE = window.AGENT_API_BASE || localStorage.getItem('scbeAgentApiBase') || detectAgentApiBase() || DEFAULT_AGENT_API_BASE;
-    var AGENT_DISPATCH_SECRET = window.AGENT_DISPATCH_SECRET || localStorage.getItem('scbeAgentDispatchSecret') || '';
-
-    async function dispatchTask() {
-      var task = document.getElementById('d-task').value;
-      var query = document.getElementById('d-query').value;
-      if (!query) { alert('Enter a query or URL'); return; }
-      var status = document.getElementById('d-status');
-      if (AGENT_API_BASE) {
-        status.textContent = 'Queueing through Vercel bridge...';
-        try {
-          var resp = await fetch(AGENT_API_BASE + '/api/agent/dispatch', {
-            method: 'POST',
-            headers: dispatchHeaders(),
-            body: JSON.stringify({ task: task, query: query, publish: 'true' })
-          });
-          var data = await resp.json();
-          if (!resp.ok || !data.ok) throw new Error(data.error || 'dispatch failed');
-          status.textContent = 'Queued. Refreshing status...';
-          loadAgentStatus();
+      async function dispatchTask() {
+        var task = document.getElementById('d-task').value;
+        var query = document.getElementById('d-query').value;
+        if (!query) {
+          alert('Enter a query or URL');
           return;
-        } catch (e) {
-          status.textContent = 'Vercel bridge unavailable: ' + (e.message || e) + '. Opening GitHub Actions fallback.';
         }
-      } else {
-        status.textContent = 'Vercel bridge not configured. Opening GitHub Actions fallback.';
-      }
-      var url = 'https://github.com/issdandavis/SCBE-AETHERMOORE/actions/workflows/agent-router.yml';
-      window.open(url, '_blank');
-    }
-
-    function detectAgentApiBase() {
-      if (location.hostname.endsWith('.vercel.app')) return location.origin;
-      return '';
-    }
-
-    function dispatchHeaders() {
-      var headers = { 'Content-Type': 'application/json' };
-      if (AGENT_DISPATCH_SECRET) headers['X-Agent-Dispatch-Secret'] = AGENT_DISPATCH_SECRET;
-      return headers;
-    }
-
-    async function loadAgentStatus() {
-      if (!AGENT_API_BASE) return;
-      var status = document.getElementById('d-status');
-      try {
-        var resp = await fetch(AGENT_API_BASE + '/api/agent/status?limit=5&' + Date.now());
-        var data = await resp.json();
-        if (!resp.ok || !data.ok) throw new Error(data.error || 'status unavailable');
-        var latest = data.latest || {};
-        status.textContent = 'Bridge online. Active runs: ' + data.active_count
-          + '. Latest: ' + (latest.status || '?') + '/' + (latest.conclusion || 'pending') + '.';
-      } catch (e) {
-        status.textContent = 'Bridge status unavailable: ' + (e.message || e);
-      }
-    }
-
-    async function loadResults() {
-      var container = document.getElementById('results');
-      try {
-        var resp = await fetch(DATA_BASE + '/index.json?' + Date.now());
-        if (!resp.ok) throw new Error('No data');
-        var index = await resp.json();
-        var tasks = Object.keys(index.tasks || {});
-        if (!tasks.length) {
-          container.innerHTML = '<div class="empty">No results yet. Run a task above or wait for the 6-hour schedule.</div>';
-          return;
-        }
-
-        var html = '';
-        for (var i = 0; i < tasks.length; i++) {
-          var task = tasks[i];
-          var info = index.tasks[task];
-          html += '<div class="card" id="task-' + task + '">';
-          html += '<a class="json-link" href="' + DATA_BASE + '/' + esc(info.file || '') + '" target="_blank">JSON</a>';
-          html += '<h2>' + task.charAt(0).toUpperCase() + task.slice(1) + '</h2>';
-          html += '<div class="meta">Updated: ' + (info.updated || '?') + '</div>';
-          html += '<div class="body" id="body-' + task + '">Loading...</div>';
-          html += '</div>';
-        }
-        container.innerHTML = html;
-
-        for (var i = 0; i < tasks.length; i++) {
-          loadTaskData(tasks[i], index.tasks[tasks[i]].file);
-        }
-      } catch (e) {
-        container.innerHTML = '<div class="empty">No results published yet. The Agent Router runs every 6 hours, or dispatch one now.</div>';
-      }
-    }
-
-    async function loadTaskData(task, file) {
-      var body = document.getElementById('body-' + task);
-      if (!body) return;
-      try {
-        var resp = await fetch(DATA_BASE + '/' + file + '?' + Date.now());
-        var data = await resp.json();
-        var hash = await digestText(JSON.stringify(data));
-        var receipt = renderReceipt(task, file, data, hash);
-
-        if (task === 'monitor' && data.sites) {
-          body.innerHTML = receipt + data.sites.map(function(s) {
-            return '<div class="site-item"><div>'
-              + '<div class="site-title">' + esc(s.title || '?') + '</div>'
-              + '<div class="site-stats">'
-              + '<span class="tag">' + (s.word_count || 0) + ' words</span>'
-              + '<span class="tag">' + (s.link_count || 0) + ' links</span>'
-              + '</div>'
-              + '<div class="site-preview">' + esc((s.text_preview || '').substring(0, 150)) + '</div>'
-              + '</div></div>';
-          }).join('');
-
-        } else if (task === 'research') {
-          var h = receipt + renderResearchScorecard(data) + '<p>' + esc(data.summary || '') + '</p>';
-          if (data.findings) {
-            h += data.findings.slice(0, 5).map(function(f) {
-              return '<div class="finding">'
-                + '<span class="confidence">' + Math.round((f.confidence || 0) * 100) + '%</span>'
-                + '<a href="' + esc(f.source_url || '') + '" target="_blank">' + esc((f.title || '').substring(0, 70)) + '</a>'
-                + '<div class="site-preview">' + esc((f.relevant_text || '').substring(0, 200)) + '</div>'
-                + '</div>';
-            }).join('');
+        var status = document.getElementById('d-status');
+        if (AGENT_API_BASE) {
+          status.textContent = 'Queueing through Vercel bridge...';
+          try {
+            var resp = await fetch(AGENT_API_BASE + '/api/agent/dispatch', {
+              method: 'POST',
+              headers: dispatchHeaders(),
+              body: JSON.stringify({ task: task, query: query, publish: 'true' }),
+            });
+            var data = await resp.json();
+            if (!resp.ok || !data.ok) throw new Error(data.error || 'dispatch failed');
+            status.textContent = 'Queued. Refreshing status...';
+            loadAgentStatus();
+            return;
+          } catch (e) {
+            status.textContent =
+              'Vercel bridge unavailable: ' +
+              (e.message || e) +
+              '. Opening GitHub Actions fallback.';
           }
-          h += renderSourceOutcomes(data.source_outcomes || []);
-          body.innerHTML = h;
-
-        } else if (task === 'ask') {
-          body.innerHTML = receipt + '<p>' + esc(data.answer || data.summary || '') + '</p>'
-            + '<div style="margin-top:8px;">'
-            + '<span class="tag blue">' + esc(data.model || data.provider || '?') + '</span>'
-            + '<span class="tag">' + (data.sources || []).length + ' sources</span>'
-            + '</div>';
-
         } else {
-          body.innerHTML = receipt + '<pre style="white-space:pre-wrap;font-size:0.8rem;color:#8b949e;">'
-            + esc(JSON.stringify(data, null, 2).substring(0, 600)) + '</pre>';
+          status.textContent = 'Vercel bridge not configured. Opening GitHub Actions fallback.';
         }
-      } catch (e) {
-        body.innerHTML = '<div class="empty">Could not load data: ' + esc(e.message || e) + '</div>';
+        var url =
+          'https://github.com/issdandavis/SCBE-AETHERMOORE/actions/workflows/agent-router.yml';
+        window.open(url, '_blank');
       }
-    }
 
-    function setRecipe(task, query) {
-      document.getElementById('d-task').value = task;
-      document.getElementById('d-query').value = query;
-      document.getElementById('d-status').textContent = 'Recipe loaded. Click Run Agent to use the Vercel bridge when available, or the GitHub fallback.';
-    }
-
-    // Plain-language entry from the starter cards. Pre-fills the dispatch
-    // form, scrolls to it, and gives a friendly status message that does NOT
-    // assume the visitor knows what "dispatch" or "Vercel bridge" mean.
-    function trySample(task, query) {
-      setRecipe(task, query);
-      document.getElementById('d-status').textContent = "Ready — click 'Run Agent' below to start.";
-      var dispatchSection = document.querySelector('.dispatch');
-      if (dispatchSection) dispatchSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      var btn = dispatchSection && dispatchSection.querySelector('button');
-      if (btn) {
-        btn.style.transition = 'box-shadow 200ms ease';
-        btn.style.boxShadow = '0 0 0 4px rgba(63, 185, 113, 0.35)';
-        setTimeout(function () { btn.style.boxShadow = ''; }, 1600);
+      function detectAgentApiBase() {
+        if (location.hostname.endsWith('.vercel.app')) return location.origin;
+        return '';
       }
-    }
 
-    function renderReceipt(task, file, data, hash) {
-      var errors = Array.isArray(data.errors) ? data.errors.length : 0;
-      var sourceCount = data.sources_checked || (data.sites ? data.sites.length : (data.sources || []).length);
-      return '<div class="receipt-grid">'
-        + receiptCell('Task', task)
-        + receiptCell('Result file', file || '?')
-        + receiptCell('Sources checked', sourceCount || 0)
-        + receiptCell('Errors', errors)
-        + receiptCell('Output hash', hash.substring(0, 16))
-        + '</div>';
-    }
+      function dispatchHeaders() {
+        var headers = { 'Content-Type': 'application/json' };
+        if (AGENT_DISPATCH_SECRET) headers['X-Agent-Dispatch-Secret'] = AGENT_DISPATCH_SECRET;
+        return headers;
+      }
 
-    function receiptCell(label, value) {
-      return '<div class="receipt"><div class="label">' + esc(label) + '</div><div class="value">' + esc(String(value)) + '</div></div>';
-    }
+      async function loadAgentStatus() {
+        if (!AGENT_API_BASE) return;
+        var status = document.getElementById('d-status');
+        try {
+          var resp = await fetch(AGENT_API_BASE + '/api/agent/status?limit=5&' + Date.now());
+          var data = await resp.json();
+          if (!resp.ok || !data.ok) throw new Error(data.error || 'status unavailable');
+          var latest = data.latest || {};
+          status.textContent =
+            'Bridge online. Active runs: ' +
+            data.active_count +
+            '. Latest: ' +
+            (latest.status || '?') +
+            '/' +
+            (latest.conclusion || 'pending') +
+            '.';
+        } catch (e) {
+          status.textContent = 'Bridge status unavailable: ' + (e.message || e);
+        }
+      }
 
-    function renderResearchScorecard(data) {
-      var outcomes = data.source_outcomes || [];
-      var matched = outcomes.filter(function(o) { return String(o.status || '').indexOf('matched') === 0; }).length;
-      var checked = data.sources_checked || outcomes.length || 0;
-      var confidences = (data.findings || []).map(function(f) { return Number(f.confidence || 0); });
-      var spread = confidences.length ? (Math.max.apply(null, confidences) - Math.min.apply(null, confidences)) : 0;
-      var errors = (data.errors || []).length;
-      return '<div class="scorecard">'
-        + '<span class="tag green">' + matched + '/' + checked + ' accepted</span>'
-        + '<span class="tag">' + (data.total_words_read || 0).toLocaleString() + ' words</span>'
-        + '<span class="tag blue">' + Math.round(spread * 1000) / 10 + '% confidence spread</span>'
-        + '<span class="tag' + (errors ? '' : ' green') + '">' + errors + ' errors</span>'
-        + '</div>';
-    }
+      async function loadResults() {
+        var container = document.getElementById('results');
+        try {
+          var resp = await fetch(DATA_BASE + '/index.json?' + Date.now());
+          if (!resp.ok) throw new Error('No data');
+          var index = await resp.json();
+          var tasks = Object.keys(index.tasks || {});
+          if (!tasks.length) {
+            container.innerHTML =
+              '<div class="empty">No results yet. Run a task above or wait for the 6-hour schedule.</div>';
+            return;
+          }
 
-    function renderSourceOutcomes(outcomes) {
-      if (!outcomes.length) return '';
-      return '<div class="source-outcomes"><div class="meta">Source outcomes</div>'
-        + outcomes.map(function(o) {
-          var status = esc(o.status || 'unknown');
-          return '<div class="outcome">'
-            + '<span class="badge ' + status + '">' + status.replace(/_/g, ' ') + '</span>'
-            + '<a class="outcome-title" href="' + esc(o.url || '#') + '" target="_blank">' + esc(o.title || o.url || '?') + '</a>'
-            + '<span class="outcome-score">' + Math.round(Number(o.score || 0) * 100) + '%</span>'
-            + '</div>';
-        }).join('')
-        + '</div>';
-    }
+          var html = '';
+          for (var i = 0; i < tasks.length; i++) {
+            var task = tasks[i];
+            var info = index.tasks[task];
+            html += '<div class="card" id="task-' + task + '">';
+            html +=
+              '<a class="json-link" href="' +
+              DATA_BASE +
+              '/' +
+              esc(info.file || '') +
+              '" target="_blank">JSON</a>';
+            html += '<h2>' + task.charAt(0).toUpperCase() + task.slice(1) + '</h2>';
+            html += '<div class="meta">Updated: ' + (info.updated || '?') + '</div>';
+            html += '<div class="body" id="body-' + task + '">Loading...</div>';
+            html += '</div>';
+          }
+          container.innerHTML = html;
 
-    async function digestText(text) {
-      if (!window.crypto || !window.crypto.subtle) return 'hash-unavailable';
-      var bytes = new TextEncoder().encode(text);
-      var digest = await window.crypto.subtle.digest('SHA-256', bytes);
-      return Array.from(new Uint8Array(digest)).map(function(b) {
-        return b.toString(16).padStart(2, '0');
-      }).join('');
-    }
+          for (var i = 0; i < tasks.length; i++) {
+            loadTaskData(tasks[i], index.tasks[tasks[i]].file);
+          }
+        } catch (e) {
+          container.innerHTML =
+            '<div class="empty">No results published yet. The Agent Router runs every 6 hours, or dispatch one now.</div>';
+        }
+      }
 
-    function esc(s) {
-      var d = document.createElement('div');
-      d.textContent = s || '';
-      return d.innerHTML;
-    }
+      async function loadTaskData(task, file) {
+        var body = document.getElementById('body-' + task);
+        if (!body) return;
+        try {
+          var resp = await fetch(DATA_BASE + '/' + file + '?' + Date.now());
+          var data = await resp.json();
+          var hash = await digestText(JSON.stringify(data));
+          var receipt = renderReceipt(task, file, data, hash);
 
-    loadResults();
-    loadAgentStatus();
-    setInterval(loadResults, 300000);
-    setInterval(loadAgentStatus, 120000);
+          if (task === 'monitor' && data.sites) {
+            body.innerHTML =
+              receipt +
+              data.sites
+                .map(function (s) {
+                  return (
+                    '<div class="site-item"><div>' +
+                    '<div class="site-title">' +
+                    esc(s.title || '?') +
+                    '</div>' +
+                    '<div class="site-stats">' +
+                    '<span class="tag">' +
+                    (s.word_count || 0) +
+                    ' words</span>' +
+                    '<span class="tag">' +
+                    (s.link_count || 0) +
+                    ' links</span>' +
+                    '</div>' +
+                    '<div class="site-preview">' +
+                    esc((s.text_preview || '').substring(0, 150)) +
+                    '</div>' +
+                    '</div></div>'
+                  );
+                })
+                .join('');
+          } else if (task === 'research') {
+            var h =
+              receipt + renderResearchScorecard(data) + '<p>' + esc(data.summary || '') + '</p>';
+            if (data.findings) {
+              h += data.findings
+                .slice(0, 5)
+                .map(function (f) {
+                  return (
+                    '<div class="finding">' +
+                    '<span class="confidence">' +
+                    Math.round((f.confidence || 0) * 100) +
+                    '%</span>' +
+                    '<a href="' +
+                    esc(f.source_url || '') +
+                    '" target="_blank">' +
+                    esc((f.title || '').substring(0, 70)) +
+                    '</a>' +
+                    '<div class="site-preview">' +
+                    esc((f.relevant_text || '').substring(0, 200)) +
+                    '</div>' +
+                    '</div>'
+                  );
+                })
+                .join('');
+            }
+            h += renderSourceOutcomes(data.source_outcomes || []);
+            body.innerHTML = h;
+          } else if (task === 'ask') {
+            body.innerHTML =
+              receipt +
+              '<p>' +
+              esc(data.answer || data.summary || '') +
+              '</p>' +
+              '<div style="margin-top:8px;">' +
+              '<span class="tag blue">' +
+              esc(data.model || data.provider || '?') +
+              '</span>' +
+              '<span class="tag">' +
+              (data.sources || []).length +
+              ' sources</span>' +
+              '</div>';
+          } else {
+            body.innerHTML =
+              receipt +
+              '<pre style="white-space:pre-wrap;font-size:0.8rem;color:#8b949e;">' +
+              esc(JSON.stringify(data, null, 2).substring(0, 600)) +
+              '</pre>';
+          }
+        } catch (e) {
+          body.innerHTML =
+            '<div class="empty">Could not load data: ' + esc(e.message || e) + '</div>';
+        }
+      }
 
-    // Polly chat (and other deep-links) can route visitors here with the
-    // dispatch form pre-filled via ?task=...&query=... — same effect as
-    // clicking a starter card. Keeps non-tech visitors one click away from
-    // running an agent without typing anything.
-    (function prefillFromUrl() {
-      try {
-        var params = new URLSearchParams(location.search);
-        var task = (params.get('task') || '').trim();
-        var query = (params.get('query') || '').trim();
-        if (!task) return;
-        var taskSelect = document.getElementById('d-task');
-        var validTasks = Array.prototype.map.call(
-          taskSelect.options,
-          function (opt) { return opt.value; }
+      function setRecipe(task, query) {
+        document.getElementById('d-task').value = task;
+        document.getElementById('d-query').value = query;
+        document.getElementById('d-status').textContent =
+          'Recipe loaded. Click Queue / open workflow to use the Vercel bridge when available, or the GitHub fallback.';
+      }
+
+      // Plain-language entry from the starter cards. Pre-fills the dispatch
+      // form, scrolls to it, and gives a friendly status message that does NOT
+      // assume the visitor knows what "dispatch" or "Vercel bridge" mean.
+      function trySample(task, query) {
+        setRecipe(task, query);
+        document.getElementById('d-status').textContent =
+          "Ready — click 'Queue / open workflow' below to start.";
+        var dispatchSection = document.querySelector('.dispatch');
+        if (dispatchSection)
+          dispatchSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        var btn = dispatchSection && dispatchSection.querySelector('button');
+        if (btn) {
+          btn.style.transition = 'box-shadow 200ms ease';
+          btn.style.boxShadow = '0 0 0 4px rgba(63, 185, 113, 0.35)';
+          setTimeout(function () {
+            btn.style.boxShadow = '';
+          }, 1600);
+        }
+      }
+
+      function renderReceipt(task, file, data, hash) {
+        var errors = Array.isArray(data.errors) ? data.errors.length : 0;
+        var sourceCount =
+          data.sources_checked || (data.sites ? data.sites.length : (data.sources || []).length);
+        return (
+          '<div class="receipt-grid">' +
+          receiptCell('Task', task) +
+          receiptCell('Result file', file || '?') +
+          receiptCell('Sources checked', sourceCount || 0) +
+          receiptCell('Errors', errors) +
+          receiptCell('Output hash', hash.substring(0, 16)) +
+          '</div>'
         );
-        if (validTasks.indexOf(task) === -1) return;
-        trySample(task, query);
-      } catch (_e) { /* never break the page on prefill */ }
-    })();
-  </script>
+      }
 
-  <script src="static/polly-sidebar-agent.js"></script>
-<a href="https://aethermoore.com/SCBE-AETHERMOORE/hire.html" target="_self" aria-label="Hire Issac" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: #17c6cf; color: #06121a; padding: 12px 20px; border-radius: 999px; font-family: Inter, system-ui, -apple-system, sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.01em; text-decoration: none; box-shadow: 0 4px 14px rgba(0,0,0,0.35); border: 1px solid #1ddae4; transition: transform 0.15s ease, box-shadow 0.15s ease;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 18px rgba(0,0,0,0.45)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 14px rgba(0,0,0,0.35)';">Hire Issac</a>
+      function receiptCell(label, value) {
+        return (
+          '<div class="receipt"><div class="label">' +
+          esc(label) +
+          '</div><div class="value">' +
+          esc(String(value)) +
+          '</div></div>'
+        );
+      }
+
+      function renderResearchScorecard(data) {
+        var outcomes = data.source_outcomes || [];
+        var matched = outcomes.filter(function (o) {
+          return String(o.status || '').indexOf('matched') === 0;
+        }).length;
+        var checked = data.sources_checked || outcomes.length || 0;
+        var confidences = (data.findings || []).map(function (f) {
+          return Number(f.confidence || 0);
+        });
+        var spread = confidences.length
+          ? Math.max.apply(null, confidences) - Math.min.apply(null, confidences)
+          : 0;
+        var errors = (data.errors || []).length;
+        return (
+          '<div class="scorecard">' +
+          '<span class="tag green">' +
+          matched +
+          '/' +
+          checked +
+          ' accepted</span>' +
+          '<span class="tag">' +
+          (data.total_words_read || 0).toLocaleString() +
+          ' words</span>' +
+          '<span class="tag blue">' +
+          Math.round(spread * 1000) / 10 +
+          '% confidence spread</span>' +
+          '<span class="tag' +
+          (errors ? '' : ' green') +
+          '">' +
+          errors +
+          ' errors</span>' +
+          '</div>'
+        );
+      }
+
+      function renderSourceOutcomes(outcomes) {
+        if (!outcomes.length) return '';
+        return (
+          '<div class="source-outcomes"><div class="meta">Source outcomes</div>' +
+          outcomes
+            .map(function (o) {
+              var status = esc(o.status || 'unknown');
+              return (
+                '<div class="outcome">' +
+                '<span class="badge ' +
+                status +
+                '">' +
+                status.replace(/_/g, ' ') +
+                '</span>' +
+                '<a class="outcome-title" href="' +
+                esc(o.url || '#') +
+                '" target="_blank">' +
+                esc(o.title || o.url || '?') +
+                '</a>' +
+                '<span class="outcome-score">' +
+                Math.round(Number(o.score || 0) * 100) +
+                '%</span>' +
+                '</div>'
+              );
+            })
+            .join('') +
+          '</div>'
+        );
+      }
+
+      async function digestText(text) {
+        if (!window.crypto || !window.crypto.subtle) return 'hash-unavailable';
+        var bytes = new TextEncoder().encode(text);
+        var digest = await window.crypto.subtle.digest('SHA-256', bytes);
+        return Array.from(new Uint8Array(digest))
+          .map(function (b) {
+            return b.toString(16).padStart(2, '0');
+          })
+          .join('');
+      }
+
+      function esc(s) {
+        var d = document.createElement('div');
+        d.textContent = s || '';
+        return d.innerHTML;
+      }
+
+      loadResults();
+      loadAgentStatus();
+      setInterval(loadResults, 300000);
+      setInterval(loadAgentStatus, 120000);
+
+      // Polly chat (and other deep-links) can route visitors here with the
+      // dispatch form pre-filled via ?task=...&query=... — same effect as
+      // clicking a starter card. Keeps non-tech visitors one step away from
+      // running an agent without typing anything.
+      (function prefillFromUrl() {
+        try {
+          var params = new URLSearchParams(location.search);
+          var task = (params.get('task') || '').trim();
+          var query = (params.get('query') || '').trim();
+          if (!task) return;
+          var taskSelect = document.getElementById('d-task');
+          var validTasks = Array.prototype.map.call(taskSelect.options, function (opt) {
+            return opt.value;
+          });
+          if (validTasks.indexOf(task) === -1) return;
+          trySample(task, query);
+        } catch (_e) {
+          /* never break the page on prefill */
+        }
+      })();
+    </script>
+
+    <script src="static/polly-sidebar-agent.js"></script>
+    <a
+      href="https://aethermoore.com/SCBE-AETHERMOORE/hire.html"
+      target="_self"
+      aria-label="Hire Issac"
+      style="
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        background: #17c6cf;
+        color: #06121a;
+        padding: 12px 20px;
+        border-radius: 999px;
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          sans-serif;
+        font-weight: 700;
+        font-size: 14px;
+        letter-spacing: 0.01em;
+        text-decoration: none;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+        border: 1px solid #1ddae4;
+        transition:
+          transform 0.15s ease,
+          box-shadow 0.15s ease;
+      "
+      onmouseover="
+        this.style.transform = 'translateY(-1px)';
+        this.style.boxShadow = '0 6px 18px rgba(0,0,0,0.45)';
+      "
+      onmouseout="
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = '0 4px 14px rgba(0,0,0,0.35)';
+      "
+      >Hire Issac</a
+    >
   </body>
 </html>

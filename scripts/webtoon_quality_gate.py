@@ -69,13 +69,16 @@ DEFAULT_STYLE_BIBLE = {
 
 DEFAULT_CHARACTER_ANCHORS = {
     "marcus": "Asian-American man early 30s, short dark messy hair, lean desk-worker build, rumpled dress shirt",
-    "polly_raven": "large raven twice normal size, glossy black-violet feathers, polished obsidian eyes, graduation cap monocle bowtie",
-    "polly_human": "young woman with glossy black feather-hair, wings folded on back, obsidian eyes, slightly too-long fingers",
+    "polly_raven": "large raven twice normal size, glossy black-violet feathers, polished obsidian eyes, "
+    "graduation cap monocle bowtie",
+    "polly_human": "young woman with glossy black feather-hair, wings folded on back, obsidian eyes, "
+    "slightly too-long fingers",
     "senna": "woman, controlled composure, lower register presence, weary but precise, governor bearing",
     "alexander": "teenager face but grandfather patience, calm steady ageless quality, gentle but firm",
     "bram": "large man, deep gravelly presence, sparse words, maintenance worker hands, no-nonsense",
     "izack": "robed figure, silhouette, pipe smoke, surrounded by dimensional readouts, unreachable depth",
-    "patrol_creature": "many-legged patrol creature, quiet purposeful gait, bridge-scale silhouette, non-human infrastructure fauna",
+    "patrol_creature": "many-legged patrol creature, quiet purposeful gait, bridge-scale silhouette, "
+    "non-human infrastructure fauna",
 }
 
 ENVIRONMENT_TO_ARC_LOCK = {

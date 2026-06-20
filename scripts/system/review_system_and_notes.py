@@ -20,7 +20,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_RUN_ROOT = REPO_ROOT / "artifacts" / "system_review"
 DEFAULT_ROOTS = (
@@ -29,8 +28,21 @@ DEFAULT_ROOTS = (
     "scripts",
     "docs/specs",
     "docs/research",
+    "docs/ops",
+    "notes",
+    "skills",
+)
+DEFAULT_NOTE_ROOTS = (
+    "docs",
+    "notes",
+    "skills",
 )
 DEFAULT_ANCHORS = (
+    "CANONICAL_SYSTEM_STATE.md",
+    "docs/CANONICAL_SYSTEM_STATE.md",
+    "docs/STATE_OF_SYSTEM.md",
+    "docs/ops/STATE_OF_SYSTEM.md",
+    "docs/ops/SYSTEM_STATUS.md",
     "docs/specs/KERNEL_MATH_COMPLETE.md",
     "docs/specs/SYSTEM_BLUEPRINT_v2_CURRENT.md",
     "docs/specs/STATE_MANIFOLD_21D_PRODUCT_METRIC.md",
@@ -154,7 +166,20 @@ def extract_markdown_fields(path: Path) -> NoteSummary:
             break
 
     rel_path = str(path.relative_to(REPO_ROOT)).replace("\\", "/")
-    lane = "specs" if rel_path.startswith("docs/specs/") else "research"
+    if rel_path.startswith("docs/specs/"):
+        lane = "specs"
+    elif rel_path.startswith("docs/research/"):
+        lane = "research"
+    elif rel_path.startswith("docs/ops/"):
+        lane = "ops"
+    elif rel_path.startswith("notes/"):
+        lane = "notes"
+    elif rel_path.startswith("skills/"):
+        lane = "skills"
+    elif rel_path.startswith("docs/"):
+        lane = "docs"
+    else:
+        lane = "other"
     source_ref_count = len(set(SOURCE_REF_RE.findall(text)))
     stat = path.stat()
     modified_utc = datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -171,15 +196,20 @@ def extract_markdown_fields(path: Path) -> NoteSummary:
     )
 
 
-def collect_note_summaries() -> list[NoteSummary]:
+def collect_note_summaries(note_roots: Iterable[str] = DEFAULT_NOTE_ROOTS) -> list[NoteSummary]:
     notes: list[NoteSummary] = []
-    for lane in ("docs/specs", "docs/research"):
-        root = REPO_ROOT / lane
+    seen: set[Path] = set()
+    for rel_root in note_roots:
+        root = REPO_ROOT / rel_root
         if not root.exists():
             continue
         for path in root.rglob("*.md"):
             if should_skip(path):
                 continue
+            resolved = path.resolve()
+            if resolved in seen:
+                continue
+            seen.add(resolved)
             notes.append(extract_markdown_fields(path))
     notes.sort(key=lambda item: item.path)
     return notes
@@ -218,8 +248,9 @@ def recent_file_rows(roots: Iterable[str], limit: int) -> list[dict[str, object]
 
 
 def lane_status_counts(notes: Iterable[NoteSummary]) -> dict[str, dict[str, int]]:
-    counts: dict[str, Counter[str]] = {"specs": Counter(), "research": Counter()}
+    counts: dict[str, Counter[str]] = {}
     for note in notes:
+        counts.setdefault(note.lane, Counter())
         counts[note.lane][note.status or "<missing>"] += 1
     return {lane: dict(sorted(counter.items())) for lane, counter in counts.items()}
 
@@ -245,9 +276,7 @@ def write_outputs(
 
     missing_status = [note.path for note in notes if not note.status]
     missing_title = [note.path for note in notes if not note.title]
-    specs_without_source_refs = [
-        note.path for note in notes if note.lane == "specs" and note.source_ref_count == 0
-    ]
+    specs_without_source_refs = [note.path for note in notes if note.lane == "specs" and note.source_ref_count == 0]
 
     payload = {
         "generated_utc": utc_now(),
@@ -274,17 +303,11 @@ def write_outputs(
         ]
         for item in root_summaries
     ]
-    anchor_rows = [
-        [str(row["exists"]), row["path"], str(row["bytes"])]
-        for row in anchors
-    ]
-    recent_md_rows = [
-        [row["modified_utc"], row["path"], str(row["bytes"])]
-        for row in recent_rows
-    ]
+    anchor_rows = [[str(row["exists"]), row["path"], str(row["bytes"])] for row in anchors]
+    recent_md_rows = [[row["modified_utc"], row["path"], str(row["bytes"])] for row in recent_rows]
 
-    spec_count = sum(1 for note in notes if note.lane == "specs")
-    research_count = sum(1 for note in notes if note.lane == "research")
+    lane_counts = Counter(note.lane for note in notes)
+    lane_count_lines = "\n".join(f"- {lane}: {count}" for lane, count in sorted(lane_counts.items()))
 
     md = f"""# System and Notes Review
 
@@ -293,8 +316,8 @@ Generated: {utc_now()}
 ## Scope
 
 - Live system roots reviewed: {", ".join(item.root for item in root_summaries)}
-- Specs notes reviewed: {spec_count}
-- Research notes reviewed: {research_count}
+- Notes/docs reviewed by lane:
+{lane_count_lines}
 
 ## Root Summary
 

@@ -548,25 +548,34 @@ class EngineerAgent(Agent):
         return {"error": f"Unknown task type: {task_type}"}
 
     async def _generate_code(self, spec: str, language: str) -> Dict[str, Any]:
-        """Generate code from specification."""
-        # Placeholder - real implementation would use local LLM
+        """Return a code skeleton for the given spec.
+
+        Demo skeleton. The CoderAgent in this module is the agent-orchestration
+        shape, not a wired code generator — there is no LLM connected here.
+        Callers asking for real codegen go through the geoseal/polly route
+        (see ``scripts/geoseal_cli.py`` and ``src/coding_spine/polly_client.py``).
+        """
         return {
-            "code": f"# Generated {language} code for: {spec}\n# TODO: Implement",
-            "explanation": f"Code skeleton generated for '{spec}' in {language}",
+            "code": f"# {language} skeleton for: {spec}\n",
+            "explanation": f"Skeleton generated for '{spec}' in {language} (demo agent — no LLM connected).",
             "language": language,
         }
 
     async def _run_tests(self, code: str, test_cases: List[Dict]) -> Dict[str, Any]:
-        """Run tests on code."""
+        """Return a synthetic pass result for each declared test case.
+
+        Demo skeleton. Real test execution happens in the project's pytest /
+        vitest suites; this method only models the agent-orchestration shape.
+        """
         results = []
         all_passed = True
 
         for test in test_cases:
-            # Placeholder test execution
+            # Synthetic pass — the orchestration layer does not execute code.
             result = {
                 "test_name": test.get("name", "unnamed"),
-                "passed": True,  # Would actually run the test
-                "output": "Test executed",
+                "passed": True,
+                "output": "Test executed (skeleton — no real run).",
             }
             results.append(result)
 

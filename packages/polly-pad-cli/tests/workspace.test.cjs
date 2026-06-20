@@ -189,7 +189,30 @@ test('polly snapshot creates snapshot file', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Test 9: polly audit verify validates receipt chain
+// Test 9: polly ask can force free/local-only routing before template fallback
+// ---------------------------------------------------------------------------
+test('polly ask respects POLLY_DISABLE_PAID_APIS fallback', () => {
+  const dir = mktemp();
+  try {
+    run(dir, ['init', 'FreeOnlyAskTest']);
+    const result = run(dir, ['ask', 'make a short checklist', '--json'], {
+      POLLY_DISABLE_TERMINAL_ROUTER: '1',
+      POLLY_DISABLE_OLLAMA: '1',
+      POLLY_DISABLE_PAID_APIS: '1',
+      ANTHROPIC_API_KEY: '',
+      OPENAI_API_KEY: '',
+    });
+    assert.strictEqual(result.status, 0, 'ask should succeed\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.strictEqual(payload.model_used, 'template');
+    assert.strictEqual(payload.source, 'fallback');
+  } finally {
+    cleanup(dir);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Test 10: polly audit verify validates receipt chain
 // ---------------------------------------------------------------------------
 test('polly audit verify validates receipt chain', () => {
   const dir = mktemp();
@@ -221,7 +244,7 @@ test('polly audit verify validates receipt chain', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Test 10: polly audit verify fails on tampered receipt
+// Test 11: polly audit verify fails on tampered receipt
 // ---------------------------------------------------------------------------
 test('polly audit verify fails on tampered receipt', () => {
   const dir = mktemp();
@@ -634,6 +657,129 @@ test('polly terminal router ignores attacker-controlled current git repository',
     const argv = JSON.parse(fs.readFileSync(argvPath, 'utf8'));
     assert.strictEqual(argv[0], path.resolve(__dirname, '..', '..', '..', 'scripts', 'system', 'terminal_ai_router.py'));
     assert.notStrictEqual(argv[0], path.join(evilRouterDir, 'terminal_ai_router.py'));
+  } finally {
+    cleanup(dir);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Test 27: polly ps list discovers PowerShell scripts from POLLY_PS_ROOT
+// ---------------------------------------------------------------------------
+test('polly ps list discovers PowerShell scripts from POLLY_PS_ROOT', () => {
+  const dir = mktemp();
+  try {
+    const scriptDir = path.join(dir, 'scripts', 'system');
+    fs.mkdirSync(scriptDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(scriptDir, 'hello.ps1'),
+      'param([string]$Name = "world", [switch]$Loud)\nWrite-Output "hello $Name"\n',
+      'utf8'
+    );
+
+    const result = run(dir, ['ps', 'list', '--json'], { POLLY_PS_ROOT: dir });
+    assert.strictEqual(result.status, 0, 'ps list should exit 0\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.strictEqual(payload.schema_version, 'polly_powershell_surface_v1');
+    assert.strictEqual(payload.count, 1);
+    assert.strictEqual(payload.scripts[0].path, 'scripts/system/hello.ps1');
+    assert.deepStrictEqual(
+      payload.scripts[0].params.map((param) => param.name),
+      ['Name', 'Loud']
+    );
+  } finally {
+    cleanup(dir);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Test 27: polly ps inspect emits hash and parameter metadata
+// ---------------------------------------------------------------------------
+test('polly ps inspect emits hash and parameter metadata', () => {
+  const dir = mktemp();
+  try {
+    run(dir, ['init', 'PsInspectTest']);
+    const scriptDir = path.join(dir, 'tools');
+    fs.mkdirSync(scriptDir, { recursive: true });
+    fs.writeFileSync(path.join(scriptDir, 'nav.ps1'), '# Navigate\nparam([string]$Target)\nWrite-Output $Target\n', 'utf8');
+
+    const result = run(dir, ['ps', 'inspect', 'nav', '--json'], { POLLY_PS_ROOT: dir });
+    assert.strictEqual(result.status, 0, 'ps inspect should exit 0\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.strictEqual(payload.name, 'nav');
+    assert.strictEqual(payload.path, 'tools/nav.ps1');
+    assert.match(payload.sha256, /^[a-f0-9]{64}$/);
+    assert.strictEqual(payload.params[0].name, 'Target');
+
+    const auditResult = run(dir, ['audit', 'list', '--json'], { POLLY_PS_ROOT: dir });
+    const events = JSON.parse(auditResult.stdout);
+    assert.ok(events.some((event) => event.action === 'ps.inspect'));
+  } finally {
+    cleanup(dir);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Test 28: polly ps run is dry-run by default and renders named params
+// ---------------------------------------------------------------------------
+test('polly ps run is dry-run by default and renders named params', () => {
+  const dir = mktemp();
+  try {
+    run(dir, ['init', 'PsRunDryTest']);
+    fs.writeFileSync(path.join(dir, 'echo.ps1'), 'param([string]$Text)\nWrite-Output $Text\n', 'utf8');
+
+    const result = run(dir, ['ps', 'run', 'echo', '--params', '{"Text":"hello"}', '--json'], { POLLY_PS_ROOT: dir });
+    assert.strictEqual(result.status, 0, 'ps run dry-run should exit 0\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.strictEqual(payload.schema_version, 'polly_powershell_run_v1');
+    assert.strictEqual(payload.dry_run, true);
+    assert.strictEqual(payload.script, 'echo.ps1');
+    assert.ok(payload.args.includes('-Text'));
+    assert.ok(payload.args.includes('hello'));
+
+    const auditResult = run(dir, ['audit', 'list', '--json'], { POLLY_PS_ROOT: dir });
+    const events = JSON.parse(auditResult.stdout);
+    assert.ok(events.some((event) => event.action === 'ps.run.requested'));
+  } finally {
+    cleanup(dir);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Test 29: polly next emits a deterministic operator packet
+// ---------------------------------------------------------------------------
+test('polly next emits a deterministic operator packet', () => {
+  const dir = mktemp();
+  try {
+    run(dir, ['init', 'NextPacketTest']);
+    run(dir, ['task', 'add', 'wire the benchmark dashboard']);
+    const result = run(dir, ['next', '--json']);
+    assert.strictEqual(result.status, 0, 'next should exit 0\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.strictEqual(payload.schema_version, 'polly_operator_packet_v1');
+    assert.strictEqual(payload.pad.name, 'NextPacketTest');
+    assert.strictEqual(payload.pad.pending_count, 1);
+    assert.strictEqual(payload.next_task.id, 'task-001');
+    assert.strictEqual(payload.next_task.text, 'wire the benchmark dashboard');
+    assert.strictEqual(payload.audit.ok, true);
+    assert.ok(payload.suggested_commands.some((cmd) => cmd.includes('polly task done task-001')));
+  } finally {
+    cleanup(dir);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Test 30: polly next handles an empty workspace
+// ---------------------------------------------------------------------------
+test('polly next handles an empty workspace', () => {
+  const dir = mktemp();
+  try {
+    run(dir, ['init', 'EmptyNextTest']);
+    const result = run(dir, ['next', '--json']);
+    assert.strictEqual(result.status, 0, 'next should exit 0\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.strictEqual(payload.next_task, null);
+    assert.strictEqual(payload.pad.pending_count, 0);
+    assert.ok(payload.suggested_commands.some((cmd) => cmd.includes('polly task add')));
   } finally {
     cleanup(dir);
   }

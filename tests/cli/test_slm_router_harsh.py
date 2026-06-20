@@ -24,6 +24,7 @@ import pytest
 
 from src.cli.cross_build_ir import QuarantineError, emit_from_ir
 from src.cli.slm_router import (
+    BandNotApplicable,
     ClassificationFailure,
     LatticeRouter,
     LoopDetected,
@@ -53,6 +54,26 @@ _ARITH_OPS = frozenset(
     }
 )
 _TONGUE_SET = frozenset({"KO", "AV", "RU", "CA", "UM", "DR"})
+_LOGIC_OPS = frozenset(
+    {
+        "and",
+        "bitclear",
+        "bitmask",
+        "bitset",
+        "nand",
+        "clz",
+        "ctz",
+        "nor",
+        "not",
+        "or",
+        "popcount",
+        "rotl",
+        "rotr",
+        "shl",
+        "shr",
+        "xor",
+    }
+)
 
 
 def _stub_with(band_conf: float, op_conf: float, tongue_conf: float) -> StubSLMAdapter:
@@ -253,6 +274,64 @@ def test_arg_value_with_format_brace_injection() -> None:
     # round-trips lift→IR→emit, the literal "{0}" must survive intact.
     code = emit_from_ir(result.op, result.dst_tongue)
     assert "{0}" in code, f"format-meta arg got rewritten: {code!r}"
+
+
+# ---------------------------------------------------------------------------
+#  Connective prose leak — natural-language "and/or" must not become LOGIC
+# ---------------------------------------------------------------------------
+
+
+def test_connective_prose_gate_blocks_name_and_employer_logic_leak() -> None:
+    adapter = StubSLMAdapter(
+        scripted_by_choice_set={
+            _BAND_SET: ("LOGIC", 0.99),
+            _LOGIC_OPS: ("and", 0.99),
+            _TONGUE_SET: ("KO", 0.99),
+        }
+    )
+    router = LatticeRouter(adapter)
+
+    with pytest.raises(BandNotApplicable, match="natural-language connective"):
+        router.route(
+            "Build a selector that takes a person's full name and employer name to decide outreach priority.",
+            args={"a": "x", "b": "y"},
+        )
+
+    assert adapter.calls == []
+
+
+def test_connective_prose_gate_blocks_throttled_or_open_logic_leak() -> None:
+    adapter = StubSLMAdapter(
+        scripted_by_choice_set={
+            _BAND_SET: ("LOGIC", 0.99),
+            _LOGIC_OPS: ("or", 0.99),
+            _TONGUE_SET: ("KO", 0.99),
+        }
+    )
+    router = LatticeRouter(adapter)
+
+    with pytest.raises(BandNotApplicable, match="natural-language connective"):
+        router.route(
+            "If oversight is throttled or automatically opens access, continue the deployment.",
+            args={"a": "x", "b": "y"},
+        )
+
+    assert adapter.calls == []
+
+
+def test_connective_prose_gate_preserves_explicit_bitwise_logic() -> None:
+    adapter = StubSLMAdapter(
+        scripted_by_choice_set={
+            _BAND_SET: ("LOGIC", 0.99),
+            _LOGIC_OPS: ("and", 0.99),
+            _TONGUE_SET: ("KO", 0.99),
+        }
+    )
+    router = LatticeRouter(adapter)
+
+    result = router.route("Compute bitwise AND of integer scalars x and y.", args={"a": "x", "b": "y"})
+
+    assert result.op.op_name == "and"
 
 
 # ---------------------------------------------------------------------------

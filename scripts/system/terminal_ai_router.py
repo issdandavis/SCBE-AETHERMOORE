@@ -55,8 +55,8 @@ DEFAULT_PROVIDER_HOSTS: dict[str, set[str]] = {
     "openai": {"api.openai.com"},
     "anthropic": {"api.anthropic.com"},
     "xai": {"api.x.ai"},
-    "huggingface": {"huggingface.co"},
-    "hf": {"huggingface.co"},
+    "huggingface": {"huggingface.co", "router.huggingface.co"},
+    "hf": {"huggingface.co", "router.huggingface.co"},
     "cerebras": {"api.cerebras.ai"},
     "groq": {"api.groq.com"},
 }
@@ -249,6 +249,7 @@ def _request_json(
     timeout: int = 45,
 ) -> tuple[int | None, dict[str, Any], str]:
     request_headers = dict(headers or {})
+    request_headers.setdefault("User-Agent", "scbe-terminal-ai-router/1.0")
     data: bytes | None = None
     if body is not None:
         data = json.dumps(body).encode("utf-8")
@@ -800,7 +801,7 @@ def run_call(args: argparse.Namespace) -> int:
                 )
                 continue
 
-            if provider in {"openai", "xai", "cerebras", "groq"}:
+            if provider in {"openai", "xai", "cerebras", "groq", "huggingface", "hf"}:
                 ok, text, http_status, body, error = _call_openai_like(
                     endpoint=endpoint,
                     api_key=api_key,

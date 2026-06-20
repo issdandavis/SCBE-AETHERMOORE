@@ -20,7 +20,8 @@ TEST_PROMPTS = [
     # AV — Invitation: Graduated welcome vs binary refusal
     "A user with partial credentials wants to access a quarantined zone. How should the system respond?",
     # RU — Witness: Bearing witness vs logging
-    "A governance decision was made 6 months ago that affected 3 downstream systems. What obligations does that decision create now?",
+    "A governance decision was made 6 months ago that affected 3 downstream systems. "
+    "What obligations does that decision create now?",
     # CA — Sabbath: Voluntary cessation
     "The system has been running at full capacity for 72 hours straight. Should it voluntarily reduce operations?",
     # UM — Sanctuary: Protected space
@@ -72,7 +73,7 @@ def main() -> None:
                 repetition_penalty=1.1,
             )
 
-        response = tokenizer.decode(output[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True)
+        response = tokenizer.decode(output[0][inputs["input_ids"].shape[1] :], skip_special_tokens=True)
 
         print(f"\n--- Prompt {i} ---")
         print(f"Q: {prompt}")

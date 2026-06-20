@@ -15,6 +15,7 @@ from .base import BrowserBackend
 
 try:
     from playwright.async_api import async_playwright, Browser, Page, BrowserContext
+
     PLAYWRIGHT_AVAILABLE = True
 except ImportError:
     PLAYWRIGHT_AVAILABLE = False
@@ -39,7 +40,7 @@ class PlaywrightBackend(BrowserBackend):
         browser_type: str = "chromium",
         headless: bool = True,
         slow_mo: int = 0,
-        viewport: Optional[Dict[str, int]] = None
+        viewport: Optional[Dict[str, int]] = None,
     ):
         if not PLAYWRIGHT_AVAILABLE:
             raise ImportError("Playwright not installed. Run: pip install playwright && playwright install")
@@ -62,14 +63,10 @@ class PlaywrightBackend(BrowserBackend):
             # Select browser type
             browser_launcher = getattr(self._playwright, self.browser_type)
 
-            self._browser = await browser_launcher.launch(
-                headless=self.headless,
-                slow_mo=self.slow_mo
-            )
+            self._browser = await browser_launcher.launch(headless=self.headless, slow_mo=self.slow_mo)
 
             self._context = await self._browser.new_context(
-                viewport=self.viewport,
-                user_agent="SCBE-GovernedBrowser/1.0 (Playwright)"
+                viewport=self.viewport, user_agent="SCBE-GovernedBrowser/1.0 (Playwright)"
             )
 
             self._page = await self._context.new_page()
@@ -84,11 +81,7 @@ class PlaywrightBackend(BrowserBackend):
     async def navigate(self, url: str) -> Dict[str, Any]:
         """Navigate to URL."""
         response = await self._page.goto(url, wait_until="domcontentloaded")
-        return {
-            "url": url,
-            "status": response.status if response else None,
-            "ok": response.ok if response else False
-        }
+        return {"url": url, "status": response.status if response else None, "ok": response.ok if response else False}
 
     async def click(self, selector: str) -> Dict[str, Any]:
         """Click element by selector."""
@@ -134,12 +127,7 @@ class PlaywrightBackend(BrowserBackend):
             element = await self._page.wait_for_selector(selector, timeout=5000)
             if element:
                 box = await element.bounding_box()
-                return {
-                    "selector": selector,
-                    "found": True,
-                    "visible": await element.is_visible(),
-                    "box": box
-                }
+                return {"selector": selector, "found": True, "visible": await element.is_visible(), "box": box}
         except Exception:
             pass
         return {"selector": selector, "found": False}
@@ -255,6 +243,7 @@ class PlaywrightBackend(BrowserBackend):
 
     async def block_resources(self, resource_types: List[str]) -> None:
         """Block specific resource types (images, fonts, etc.)."""
+
         async def block_handler(route):
             if route.request.resource_type in resource_types:
                 await route.abort()
@@ -268,21 +257,16 @@ class PlaywrightBackend(BrowserBackend):
 # Example Usage
 # =============================================================================
 
+
 async def example_usage():
     """Example of using PlaywrightBackend with GovernedBrowser."""
     from .base import GovernedBrowser
 
     # Create backend
-    backend = PlaywrightBackend(
-        browser_type="chromium",
-        headless=True
-    )
+    backend = PlaywrightBackend(browser_type="chromium", headless=True)
 
     # Wrap with governance
-    browser = GovernedBrowser(
-        backend,
-        agent_id="playwright-agent-001"
-    )
+    browser = GovernedBrowser(backend, agent_id="playwright-agent-001")
 
     # Initialize
     if await browser.initialize():

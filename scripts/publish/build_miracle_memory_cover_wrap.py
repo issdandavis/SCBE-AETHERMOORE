@@ -23,7 +23,6 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = REPO_ROOT / "artifacts" / "book" / "kdp" / "miracle-memory"
 OUT_PDF = OUT_DIR / "miracle-memory-cover-wrap.pdf"
@@ -122,14 +121,20 @@ def draw_lamp_glyph(c: canvas.Canvas, cx_in: float, cy_in: float, size_in: float
     p2 = c.beginPath()
     p2.moveTo(flame_cx, flame_cy - s * 0.05)
     p2.curveTo(
-        flame_cx + s * 0.2, flame_cy + s * 0.1,
-        flame_cx + s * 0.05, flame_cy + s * 0.35,
-        flame_cx, flame_cy + s * 0.42,
+        flame_cx + s * 0.2,
+        flame_cy + s * 0.1,
+        flame_cx + s * 0.05,
+        flame_cy + s * 0.35,
+        flame_cx,
+        flame_cy + s * 0.42,
     )
     p2.curveTo(
-        flame_cx - s * 0.1, flame_cy + s * 0.32,
-        flame_cx - s * 0.15, flame_cy + s * 0.1,
-        flame_cx, flame_cy - s * 0.05,
+        flame_cx - s * 0.1,
+        flame_cy + s * 0.32,
+        flame_cx - s * 0.15,
+        flame_cy + s * 0.1,
+        flame_cx,
+        flame_cy - s * 0.05,
     )
     p2.close()
     c.drawPath(p2, fill=1, stroke=0)
@@ -207,6 +212,7 @@ def draw_wrapped(
 # ---------------------------------------------------------------------------
 # Sections
 # ---------------------------------------------------------------------------
+
 
 def draw_front_cover(c: canvas.Canvas, regular: str, bold: str, italic: str) -> None:
     center_x = FRONT_LEFT + TRIM_W / 2

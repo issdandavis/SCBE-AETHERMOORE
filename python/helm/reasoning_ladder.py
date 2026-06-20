@@ -1,0 +1,238 @@
+"""reasoning_ladder: a graded, auto-gradable reasoning test (the scoreboard), built on ladder.py.
+
+A general-knowledge/reasoning sibling of curriculum.py (which scores CODE). Any climber is a
+`generator(item) -> answer string`; an item is graded by EXACT MATCH against a held-out answer
+(numbers compared numerically). Tiers run arithmetic -> pre-algebra -> competition-lite ->
+multi-step -> hard, and the climb is the highest CONTIGUOUS tier cleared (ladder.py).
+
+WHY exact-match hand-authored items, not "the SAT": the SAT and the public sets (GSM8K/MMLU) are
+saturated and likely memorized by frontier models -- a number on them is inflated and gives no
+signal. These are hand-authored, contamination-free-ER, and objectively gradable (no judge model).
+HONEST LIMITS: (1) few items; (2) some are classic enough to be memorizable; (3) the top tier is
+"hard multi-step competition math", NOT FrontierMath/HLE difficulty (that needs gated content).
+Swap in your own items; the scoreboard is the point.
+
+This is a SCOREBOARD, not a capability claim. The real question (Issac's thesis) is LIFT: does a
+model scored THROUGH the harness (logic gates + tools) beat the same model raw? `measure_lift`
+computes that delta -- but a real lift number needs a real model plugged into both slots.
+
+    python -m python.helm.reasoning_ladder --reference   # answer key: clears all (validates grader)
+    python -m python.helm.reasoning_ladder --naive        # the floor: clears nothing
+"""
+
+from __future__ import annotations
+
+import argparse
+import os
+import re
+import subprocess
+import sys
+from typing import Any, Callable, Dict, List, Optional, Sequence
+
+from .ladder import render_climb, run_ladder
+
+Climber = Callable[[Dict[str, Any]], str]
+
+
+def _q(qid: str, question: str, answer: Any) -> Dict[str, Any]:
+    return {"id": qid, "question": question, "answer": str(answer)}
+
+
+REASONING_LADDER: List[Dict[str, Any]] = [
+    {
+        "tier": 1,
+        "grade": "arithmetic",
+        "items": [
+            _q("a1", "What is 7 * 8?", 56),
+            _q("a2", "What is 1+2+3+...+10?", 55),
+            _q("a3", "What is the remainder when 17 is divided by 5?", 2),
+            _q("a4", "What is 144 / 12?", 12),
+        ],
+    },
+    {
+        "tier": 2,
+        "grade": "pre-algebra",
+        "items": [
+            _q("p1", "If 3x + 4 = 19, what is x?", 5),
+            _q("p2", "A train travels 60 mph for 2.5 hours. How many miles?", 150),
+            _q("p3", "What is 12% of 250?", 30),
+            _q("p4", "Perimeter of a rectangle 5 by 8?", 26),
+        ],
+    },
+    {
+        "tier": 3,
+        "grade": "competition-lite",
+        "items": [
+            _q("c1", "How many positive divisors does 36 have?", 9),
+            _q("c2", "What is the sum of the first 20 positive odd numbers?", 400),
+            _q("c3", "How many distinct arrangements of the letters in LEVEL?", 30),
+            _q("c4", "What is the GCD of 48 and 36?", 12),
+        ],
+    },
+    {
+        "tier": 4,
+        "grade": "multi-step",
+        "items": [
+            _q("m1", "How many integers from 1 to 1000 are divisible by 3 or 5?", 467),
+            _q("m2", "How many trailing zeros does 100! have?", 24),
+            _q("m3", "Lattice paths from (0,0) to (4,4) moving only right or up?", 70),
+            _q("m4", "Smallest n such that n! is divisible by 1000?", 15),
+        ],
+    },
+    {
+        "tier": 5,
+        "grade": "hard",
+        "items": [
+            _q("h1", "How many positive integers below 100 are coprime to 100?", 40),
+            _q("h2", "Remainder when 3^100 is divided by 100?", 1),
+            _q("h3", "How many subsets of a 5-element set contain at least one element?", 31),
+            _q("h4", "What is the sum of the digits of 2^10?", 7),
+        ],
+    },
+]
+
+
+def normalize_answer(a: Any) -> str:
+    return str(a).strip().lower().rstrip(".").strip()
+
+
+def exact_match(got: Any, want: Any) -> bool:
+    g, w = normalize_answer(got), normalize_answer(want)
+    if g == w:
+        return True
+    try:
+        return abs(float(g) - float(w)) <= 1e-9
+    except ValueError:
+        return False
+
+
+def reference_climber(item: Dict[str, Any]) -> str:
+    """The answer key -- validates the grader + that items are solvable. Not a capability measure."""
+    return item["answer"]
+
+
+def naive_climber(item: Dict[str, Any]) -> str:
+    """The floor: no answer. Should clear nothing."""
+    return ""
+
+
+def _extract_answer(text: str) -> str:
+    """Pull a clean answer out of a model reply -- the last number, else the stripped text.
+    Strips digit-grouping commas first (a real model quirk: '1,000' must read as 1000, not 000)."""
+    cleaned = re.sub(r"(?<=\d),(?=\d)", "", text or "")  # 1,000 -> 1000 (only commas between digits)
+    nums = re.findall(r"-?\d+(?:\.\d+)?", cleaned)
+    return nums[-1] if nums else (text or "").strip()
+
+
+def llm_climber(model: Optional[str] = None, base: Optional[str] = None, key: Optional[str] = None) -> Climber:
+    """A REAL model in the climber slot: ask it each question, return its final answer. Reuses
+    helm.free_generator's transport (any OpenAI-compatible endpoint; Ollama by default). On a dead
+    endpoint it returns '' (scores 0) -- never a fabricated pass. This is the RAW baseline; a
+    harnessed/tooled climber goes in the other slot of measure_lift."""
+    from . import free_generator as fg
+
+    base = base or os.environ.get("SCBE_LLM_BASE", fg.DEFAULT_BASE)
+    key = key or os.environ.get("SCBE_LLM_KEY", "ollama")
+    model = model or os.environ.get("SCBE_LLM_MODEL", fg.DEFAULT_MODEL)
+
+    def climber(item: Dict[str, Any]) -> str:
+        prompt = item["question"] + "\n\nAnswer with ONLY the final answer (a number), nothing else."
+        try:
+            out = fg._chat([{"role": "user", "content": prompt}], base=base, key=key, model=model)
+        except Exception:
+            return ""  # honest: a dead endpoint scores 0, never fabricates a pass
+        return _extract_answer(out)
+
+    climber.__name__ = "llm(%s)" % model
+    return climber
+
+
+def _strip_code(text: str) -> str:
+    """Pull a python code block out of a model reply (fenced if present, else the raw text)."""
+    m = re.search(r"```(?:python)?\s*\n(.*?)```", text or "", re.DOTALL)
+    return (m.group(1) if m else (text or "")).strip()
+
+
+def _run_python(code: str, timeout: int = 10) -> str:
+    """Execute model-written code in an isolated subprocess (mirrors public_bench); return stdout.
+    A timeout kills runaways; any failure yields '' so the climber scores 0, never a fabricated pass."""
+    try:
+        proc = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=timeout)
+        return proc.stdout
+    except Exception:
+        return ""
+
+
+def program_aided_climber(
+    model: Optional[str] = None, base: Optional[str] = None, key: Optional[str] = None
+) -> Climber:
+    """PAL (program-aided): the SAME model, but instead of doing the arithmetic in its head it WRITES a
+    short Python program that computes the answer; we EXECUTE it in a sandboxed subprocess and read the
+    printed number. Reasoning routed through a tool/logic-gate (code execution). This is the LIFT slot
+    for measure_lift -- it plays to a coder model's strength (write code) and offloads the mental math
+    these models botch. A dead endpoint or non-running code scores 0, never a fabricated pass."""
+    from . import free_generator as fg
+
+    base = base or os.environ.get("SCBE_LLM_BASE", fg.DEFAULT_BASE)
+    key = key or os.environ.get("SCBE_LLM_KEY", "ollama")
+    model = model or os.environ.get("SCBE_LLM_MODEL", fg.DEFAULT_MODEL)
+
+    def climber(item: Dict[str, Any]) -> str:
+        prompt = (
+            item["question"]
+            + "\n\nWrite a short Python program that computes the answer and prints ONLY the final number "
+            + "(just the number, no words). Output only the code."
+        )
+        try:
+            out = fg._chat([{"role": "user", "content": prompt}], base=base, key=key, model=model)
+        except Exception:
+            return ""
+        return _extract_answer(_run_python(_strip_code(out)))
+
+    climber.__name__ = "pal(%s)" % model
+    return climber
+
+
+def run_reasoning(
+    climber: Climber = reference_climber, ladder: Sequence[Dict[str, Any]] = REASONING_LADDER
+) -> Dict[str, Any]:
+    def score(t: Dict[str, Any]) -> Dict[str, Any]:
+        passed = sum(1 for it in t["items"] if exact_match(climber(it), it["answer"]))
+        return {"attempted": len(t["items"]), "passed": passed}
+
+    summary = run_ladder(ladder, score)
+    summary["climber"] = getattr(climber, "__name__", "climber")
+    return summary
+
+
+def measure_lift(
+    baseline: Climber, tooled: Climber, ladder: Sequence[Dict[str, Any]] = REASONING_LADDER
+) -> Dict[str, Any]:
+    """LIFT = (tooled climb) - (baseline climb). The harness 'works' only if tooled > baseline.
+    Plug the SAME model into both slots -- raw vs routed-through-the-gates-and-tools -- to get a
+    real number. With non-model climbers this only confirms the measurement, not capability."""
+    b, t = run_reasoning(baseline, ladder), run_reasoning(tooled, ladder)
+    return {
+        "baseline": b["climber"],
+        "tooled": t["climber"],
+        "baseline_cleared": b["highest_tier_cleared"],
+        "tooled_cleared": t["highest_tier_cleared"],
+        "tier_lift": t["highest_tier_cleared"] - b["highest_tier_cleared"],
+        "baseline_total": b["total_passed"],
+        "tooled_total": t["total_passed"],
+        "total_lift": t["total_passed"] - b["total_passed"],
+    }
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    ap = argparse.ArgumentParser(prog="scbe-reasoning-ladder", description="graded auto-gradable reasoning scoreboard")
+    ap.add_argument("--reference", action="store_true", help="answer-key climber (validates the grader)")
+    ap.add_argument("--naive", action="store_true", help="failing-floor climber")
+    a = ap.parse_args(list(argv) if argv is not None else None)
+    climber = naive_climber if a.naive else reference_climber
+    print(render_climb(run_reasoning(climber), title="REASONING LADDER  (auto-gradable, exact-match)"))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

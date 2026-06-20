@@ -1,0 +1,29 @@
+# CodeRabbit configuration.
+# Docs: https://docs.coderabbit.ai/guides/configure-coderabbit
+#
+# We work primarily in draft PRs (Claude/Codex agents open everything as draft
+# until tests pass). The default behavior is to SKIP review on drafts, which
+# leaves "Review skipped — Draft detected" comments on every push and means
+# the actual review never lands until the PR is marked ready. Override that.
+
+language: en-US
+early_access: false
+tone_instructions: "Be direct and concise. Flag real defects; skip nitpicks on formatting and style that black or ruff already cover."
+
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: true
+  auto_review:
+    enabled: true
+    # Review drafts. The default is false, which was silently skipping every
+    # review on this repo since we open PRs in draft state.
+    drafts: true
+    base_branches:
+      - main
+
+chat:
+  auto_reply: true

@@ -1,0 +1,25 @@
+{
+  "tongue": "RU",
+  "name": "Runethic",
+  "role": "Policy/Binding (the Ancient Tongue -- temporal anchoring, oaths; VSOT structure)",
+  "source": "Spiralverse 'Six Sacred Tongues' wordlist (Issac, canonical)",
+  "particles": {
+    "ar": "ancient / eternal aspect",
+    "syn": "together / bound",
+    "nuu": "temporal anchor (now-anchored)"
+  },
+  "words": {
+    "gol": "bind / hold",
+    "thular": "spiral-patterns",
+    "vel'ar": "guard-ancient",
+    "med'ar": "wisdom-ancient",
+    "syn'ar": "together-strong",
+    "vel'ora": "guard-present",
+    "vel'ael": "guard-eternal",
+    "med'ora": "wisdom-present",
+    "med'ael": "wisdom-eternal",
+    "thul'ora": "spiral-present",
+    "thul'ar": "spiral-ancient",
+    "thul'ael": "spiral-eternal"
+  }
+}

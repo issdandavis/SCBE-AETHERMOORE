@@ -14,7 +14,6 @@ from typing import Any, Iterable, Sequence
 
 from scripts import list_obsidian_vaults as vaults
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_EVIDENCE_DIR = REPO_ROOT / "artifacts" / "page_evidence"
 DEFAULT_OUTPUT_ROOT = REPO_ROOT / "training-data" / "research_bridge"
@@ -209,7 +208,8 @@ def _build_arxiv_record(
     )
     response = "\n".join(response_lines)
     return {
-        "instruction": "Capture the citable metadata and abstract signal from this arXiv evidence snapshot without inventing claims.",
+        "instruction": "Capture the citable metadata and abstract signal "
+        "from this arXiv evidence snapshot without inventing claims.",
         "response": response,
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
@@ -264,7 +264,8 @@ def _build_note_record(
         ]
     )
     return {
-        "instruction": "Preserve the note's research claims, evidence hooks, and follow-up actions in a source-grounded memory record.",
+        "instruction": "Preserve the note's research claims, evidence hooks, "
+        "and follow-up actions in a source-grounded memory record.",
         "response": response,
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},

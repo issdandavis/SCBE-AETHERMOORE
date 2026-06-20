@@ -13,7 +13,6 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 ARTIFACT_DIR = REPO_ROOT / "artifacts" / "dispatch_spine"
 DB_PATH = ARTIFACT_DIR / "dispatch.db"
@@ -112,8 +111,7 @@ def connect_db() -> sqlite3.Connection:
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
-    conn.execute(
-        """
+    conn.execute("""
         CREATE TABLE IF NOT EXISTS tasks (
             task_id TEXT PRIMARY KEY,
             title TEXT NOT NULL,
@@ -136,10 +134,8 @@ def connect_db() -> sqlite3.Connection:
             result_summary TEXT,
             failure_reason TEXT
         )
-        """
-    )
-    conn.execute(
-        """
+        """)
+    conn.execute("""
         CREATE TABLE IF NOT EXISTS task_events (
             event_id INTEGER PRIMARY KEY AUTOINCREMENT,
             task_id TEXT NOT NULL,
@@ -149,8 +145,7 @@ def connect_db() -> sqlite3.Connection:
             created_at TEXT NOT NULL,
             FOREIGN KEY(task_id) REFERENCES tasks(task_id)
         )
-        """
-    )
+        """)
     return conn
 
 
@@ -312,13 +307,11 @@ def command_claim(args: argparse.Namespace) -> dict[str, Any]:
     worker_capabilities = set(args.capability or [])
     conn = connect_db()
     conn.execute("BEGIN IMMEDIATE")
-    rows = conn.execute(
-        """
+    rows = conn.execute("""
         SELECT * FROM tasks
         WHERE status = 'queued'
         ORDER BY priority DESC, created_at ASC
-        """
-    ).fetchall()
+        """).fetchall()
 
     selected: sqlite3.Row | None = None
     for row in rows:
@@ -415,9 +408,7 @@ def command_fail(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def command_release_stale(args: argparse.Namespace) -> dict[str, Any]:
-    threshold = (
-        datetime.now(timezone.utc) - timedelta(minutes=args.max_age_minutes)
-    ).strftime("%Y-%m-%dT%H:%M:%SZ")
+    threshold = (datetime.now(timezone.utc) - timedelta(minutes=args.max_age_minutes)).strftime("%Y-%m-%dT%H:%M:%SZ")
     conn = connect_db()
     rows = conn.execute(
         """
@@ -452,9 +443,7 @@ def command_status(args: argparse.Namespace) -> dict[str, Any]:
     conn = connect_db()
     counts = {
         row["status"]: row["count"]
-        for row in conn.execute(
-            "SELECT status, COUNT(*) AS count FROM tasks GROUP BY status"
-        ).fetchall()
+        for row in conn.execute("SELECT status, COUNT(*) AS count FROM tasks GROUP BY status").fetchall()
     }
     for state in TASK_STATES:
         counts.setdefault(state, 0)

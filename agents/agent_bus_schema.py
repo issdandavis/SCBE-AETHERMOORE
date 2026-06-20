@@ -11,9 +11,14 @@ Versioning rule (semver-ish):
   - MINOR bump = additive field. Old readers warn but proceed.
   - PATCH bump = doc-only. No validation impact.
 
-Today's events are all `1.0.0`. As we add fields (e.g., `cost_usd`, signed
-trace_id, etc.) we'll bump MINOR. If we ever rename or remove a required
-field we'll bump MAJOR and ship a migration.
+Version history:
+  - 1.0.0 — initial event shape.
+  - 1.1.0 — additive `cost_usd` field (USD-equivalent per call, see
+    agent_bus_cost). No migration needed: 1.0.0 events stay valid because
+    the field is optional and required fields are unchanged.
+
+If we ever rename or remove a required field we'll bump MAJOR and ship a
+migration.
 """
 
 from __future__ import annotations
@@ -26,15 +31,15 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 logger = logging.getLogger("scbe.agent_bus.schema")
 
-CURRENT_SCHEMA_VERSION = "1.0.0"
+CURRENT_SCHEMA_VERSION = "1.1.0"
 
 # Required top-level fields for v1 events. The signing/audit fields are added
 # by the signer at log time — they're checked separately.
 V1_REQUIRED_FIELDS = ("task_type", "query", "timestamp", "success")
 
 # Migration registry. Maps "from_version" -> callable(record) -> migrated record.
-# Empty for now. When v1.1.0 lands we register an entry here so v1.0.0 events
-# round-trip cleanly into the new shape.
+# Empty: only MAJOR bumps need migrations. 1.0.0 → 1.1.0 was additive
+# (cost_usd is optional), so 1.0.0 events validate as-is.
 MIGRATIONS: Dict[str, Callable[[Dict[str, Any]], Dict[str, Any]]] = {}
 
 

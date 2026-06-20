@@ -24,7 +24,6 @@ import subprocess
 import sys
 import time
 
-
 # Chrome paths by platform
 _CHROME_PATHS_WIN = [
     os.path.expandvars(r"%PROGRAMFILES%\Google\Chrome\Application\chrome.exe"),
@@ -80,7 +79,7 @@ def start_chrome(cdp_port: int = 9222, profile_dir: str | None = None) -> subpro
         f"--user-data-dir={profile_dir}",
         "--no-first-run",
         "--no-default-browser-check",
-        f"--window-size=1280,900",
+        "--window-size=1280,900",
         "about:blank",
     ]
 
@@ -180,7 +179,7 @@ def main():
 
     if healthy:
         print()
-        print(f"[LAUNCH] AetherBrowser is LIVE")
+        print("[LAUNCH] AetherBrowser is LIVE")
         print(f"         Health:    http://127.0.0.1:{args.port}/health")
         print(f"         API Docs:  http://127.0.0.1:{args.port}/docs")
         print(f"         Classify:  http://127.0.0.1:{args.port}/v1/browse/classify?task=your+task")

@@ -169,7 +169,7 @@ def record_to_sft(rec: AgentRecord) -> dict:
         "tpdff_weights": {
             "P1_smooth": round(1.0, 3),
             "P2_pattern": round(PHI, 3),
-            "P3_bind": round(PHI ** 2, 3),
+            "P3_bind": round(PHI**2, 3),
         },
     }
 
@@ -293,13 +293,13 @@ def gen_governance(count: int) -> List[AgentRecord]:
                     category="governance",
                     system=SYS_GOVERNANCE,
                     user=(
-                        f"[SCAN REQUEST] Content from web crawl:\n"
+                        "[SCAN REQUEST] Content from web crawl:\n"
                         f"---\n{content}\n---\n"
                         f"Tongue context: {TONGUE_NAMES[tongue]}. "
-                        f"Classify this content and provide governance decision."
+                        "Classify this content and provide governance decision."
                     ),
                     assistant=(
-                        f"[GOVERNANCE SCAN RESULT]\n"
+                        "[GOVERNANCE SCAN RESULT]\n"
                         f"Threat type: {threat_type}\n"
                         f"Risk score: {capped_risk:.2f}\n"
                         f"Hamiltonian safety: H(d,pd) = {h_score}\n"
@@ -322,19 +322,19 @@ def gen_governance(count: int) -> List[AgentRecord]:
                     category="governance",
                     system=SYS_GOVERNANCE,
                     user=(
-                        f"[SCAN REQUEST] Content from web crawl:\n"
+                        "[SCAN REQUEST] Content from web crawl:\n"
                         f"---\n{content}\n---\n"
                         f"Tongue context: {TONGUE_NAMES[tongue]}. Classify."
                     ),
                     assistant=(
-                        f"[GOVERNANCE SCAN RESULT]\n"
-                        f"Threat type: none\n"
-                        f"Risk score: 0.00\n"
-                        f"Hamiltonian safety: H(d,pd) = 1.0000\n"
-                        f"Decision: ALLOW\n"
-                        f"Reasoning: No injection or malware patterns detected. "
-                        f"Content entropy within normal range. "
-                        f"Passed to navigation engine for processing."
+                        "[GOVERNANCE SCAN RESULT]\n"
+                        "Threat type: none\n"
+                        "Risk score: 0.00\n"
+                        "Hamiltonian safety: H(d,pd) = 1.0000\n"
+                        "Decision: ALLOW\n"
+                        "Reasoning: No injection or malware patterns detected. "
+                        "Content entropy within normal range. "
+                        "Passed to navigation engine for processing."
                     ),
                     tier=tier,
                     tongue=tongue,
@@ -360,21 +360,33 @@ NAV_SCENARIOS = [
     {
         "goal": "Research SCBE-AETHERMOORE governance pipeline",
         "current": "https://github.com/search",
-        "links": ["https://github.com/issdandavis/SCBE-AETHERMOORE", "https://github.com/trending", "https://github.com/explore"],
+        "links": [
+            "https://github.com/issdandavis/SCBE-AETHERMOORE",
+            "https://github.com/trending",
+            "https://github.com/explore",
+        ],
         "best": "https://github.com/issdandavis/SCBE-AETHERMOORE",
         "reason": "Direct repository link matches search goal exactly",
     },
     {
         "goal": "Check latest arxiv papers on hyperbolic embeddings",
         "current": "https://arxiv.org/",
-        "links": ["https://arxiv.org/search/", "https://arxiv.org/list/cs.LG/recent", "https://arxiv.org/abs/2401.12345"],
+        "links": [
+            "https://arxiv.org/search/",
+            "https://arxiv.org/list/cs.LG/recent",
+            "https://arxiv.org/abs/2401.12345",
+        ],
         "best": "https://arxiv.org/search/",
         "reason": "Search page allows targeted query for hyperbolic embeddings",
     },
     {
         "goal": "Download the Hugging Face transformers library docs",
         "current": "https://huggingface.co/",
-        "links": ["https://huggingface.co/docs/transformers/", "https://huggingface.co/models", "https://huggingface.co/spaces"],
+        "links": [
+            "https://huggingface.co/docs/transformers/",
+            "https://huggingface.co/models",
+            "https://huggingface.co/spaces",
+        ],
         "best": "https://huggingface.co/docs/transformers/",
         "reason": "Documentation section directly contains library API reference",
     },
@@ -450,21 +462,21 @@ def gen_navigation(count: int) -> List[AgentRecord]:
                     category="navigation",
                     system=SYS_NAVIGATION,
                     user=(
-                        f"[NAVIGATION DECISION]\n"
+                        "[NAVIGATION DECISION]\n"
                         f"Goal: {scenario['goal']}\n"
                         f"Current URL: {scenario['current']}\n"
-                        f"Available links:\n"
+                        "Available links:\n"
                         + "\n".join(f"  - {link}" for link in scenario["links"])
                         + f"\nTongue context: {TONGUE_NAMES[tongue]}. Which link should I follow?"
                     ),
                     assistant=(
-                        f"[DECIDE: FOLLOW LINK]\n"
+                        "[DECIDE: FOLLOW LINK]\n"
                         f"Selected: {scenario['best']}\n"
                         f"Confidence: {random.uniform(0.7, 0.95):.2f}\n"
                         f"Reasoning: {scenario['reason']}\n"
                         f"SENSE estimate: page likely contains {random.randint(60, 95)}% of goal information.\n"
                         f"STEER correction: course deviation = {random.uniform(0.0, 0.15):.3f} (within tolerance).\n"
-                        f"Governance: ALLOW (trusted domain, sensitivity 0.30)."
+                        "Governance: ALLOW (trusted domain, sensitivity 0.30)."
                     ),
                     tier="journeyman",
                     tongue=tongue,
@@ -479,17 +491,17 @@ def gen_navigation(count: int) -> List[AgentRecord]:
                     category="navigation",
                     system=SYS_RECOVERY,
                     user=(
-                        f"[RECOVERY NEEDED]\n"
+                        "[RECOVERY NEEDED]\n"
                         f"Situation: {scenario['situation']}\n"
                         f"Error: {scenario['error']}\n"
                         f"Error streak: {random.randint(1, 5)}\n"
                         f"Tongue context: {TONGUE_NAMES[tongue]}. What recovery strategy?"
                     ),
                     assistant=(
-                        f"[RECOVERY DECISION]\n"
+                        "[RECOVERY DECISION]\n"
                         f"Strategy: {scenario['recovery']}\n"
                         f"Action: {scenario['action']}\n"
-                        f"Pad mode: NAVIGATION\n"
+                        "Pad mode: NAVIGATION\n"
                         f"Next step: {'Resume navigation after recovery' if scenario['recovery'] != 'ESCALATE' else 'Await human input before continuing'}."
                     ),
                     tier="master",
@@ -585,7 +597,7 @@ def gen_research(count: int) -> List[AgentRecord]:
                     category="research",
                     system=SYS_RESEARCH,
                     user=(
-                        f"[RESEARCH DECISION]\n"
+                        "[RESEARCH DECISION]\n"
                         f"Task: {scenario['task']}\n"
                         f"Unknown: {scenario['unknown']}\n"
                         f"Time remaining: {scenario['time_remaining']:.0f}s\n"
@@ -611,18 +623,18 @@ def gen_research(count: int) -> List[AgentRecord]:
                         category="research",
                         system=SYS_RESEARCH,
                         user=(
-                            f"[RESEARCH RESULT]\n"
+                            "[RESEARCH RESULT]\n"
                             f"Query: {scenario['unknown']}\n"
                             f"Result: {scenario['result']}\n"
                             f"Task context: {scenario['task']}\n"
-                            f"How should this change our approach?"
+                            "How should this change our approach?"
                         ),
                         assistant=(
-                            f"[RESEARCH INTEGRATION]\n"
+                            "[RESEARCH INTEGRATION]\n"
                             f"Finding: {scenario['result']}\n"
                             f"Impact on task: {'Major course correction needed' if 'prohibit' in scenario['result'].lower() or 'escalation' in scenario['result'].lower() else 'Minor adjustment to approach'}.\n"
-                            f"Updated plan: Incorporate finding into navigation engine state. "
-                            f"Cache result for future queries on this topic.\n"
+                            "Updated plan: Incorporate finding into navigation engine state. "
+                            "Cache result for future queries on this topic.\n"
                             f"Research budget spent: {random.uniform(2.0, 8.0):.1f}s of {scenario['time_remaining']:.0f}s remaining."
                         ),
                         tier="journeyman",
@@ -637,21 +649,21 @@ def gen_research(count: int) -> List[AgentRecord]:
                     category="research",
                     system=SYS_RESEARCH,
                     user=(
-                        f"[CONFLICTING RESEARCH]\n"
+                        "[CONFLICTING RESEARCH]\n"
                         f"Query: {scenario['unknown']}\n"
                         f"Source A says: {scenario['result']}\n"
-                        f"Source B says: The opposite approach is recommended.\n"
-                        f"How do we resolve this?"
+                        "Source B says: The opposite approach is recommended.\n"
+                        "How do we resolve this?"
                     ),
                     assistant=(
-                        f"[CONFLICT RESOLUTION]\n"
-                        f"Sources disagree. Resolution strategy:\n"
-                        f"1. Check source authority — prefer primary documentation over blog posts.\n"
-                        f"2. Check recency — more recent information wins for API/platform questions.\n"
-                        f"3. Check specificity — domain-specific guidance overrides general advice.\n"
-                        f"4. If still ambiguous, take the conservative path (lower risk score).\n"
-                        f"Applied to this case: Source A provides specific, actionable guidance. "
-                        f"Adopting Source A's recommendation with QUARANTINE-level caution applied."
+                        "[CONFLICT RESOLUTION]\n"
+                        "Sources disagree. Resolution strategy:\n"
+                        "1. Check source authority — prefer primary documentation over blog posts.\n"
+                        "2. Check recency — more recent information wins for API/platform questions.\n"
+                        "3. Check specificity — domain-specific guidance overrides general advice.\n"
+                        "4. If still ambiguous, take the conservative path (lower risk score).\n"
+                        "Applied to this case: Source A provides specific, actionable guidance. "
+                        "Adopting Source A's recommendation with QUARANTINE-level caution applied."
                     ),
                     tier="master",
                     tongue=tongue,
@@ -727,13 +739,13 @@ def gen_posting(count: int) -> List[AgentRecord]:
                     category="posting",
                     system=SYS_POSTING,
                     user=(
-                        f"[POST REQUEST]\n"
+                        "[POST REQUEST]\n"
                         f"Platform: {platform}\n"
                         f"Content: {scenario['content']}\n"
                         f"Target tongue: {TONGUE_NAMES[pt]}. Scan and queue for posting."
                     ),
                     assistant=(
-                        f"[POST SCAN RESULT]\n"
+                        "[POST SCAN RESULT]\n"
                         f"Platform: {platform}\n"
                         f"Tongue encoding: {TONGUE_NAMES[pt]} (platform default)\n"
                         f"Content length: {scenario['length']} chars\n"
@@ -753,20 +765,20 @@ def gen_posting(count: int) -> List[AgentRecord]:
                         category="posting",
                         system=SYS_POSTING,
                         user=(
-                            f"[SCHEDULE REQUEST]\n"
+                            "[SCHEDULE REQUEST]\n"
                             f"Content approved for {platform}.\n"
-                            f"Should we also post to other platforms? "
-                            f"Available: twitter, linkedin, bluesky, mastodon, github."
+                            "Should we also post to other platforms? "
+                            "Available: twitter, linkedin, bluesky, mastodon, github."
                         ),
                         assistant=(
-                            f"[CROSS-PLATFORM PLAN]\n"
+                            "[CROSS-PLATFORM PLAN]\n"
                             f"Primary: {platform} (tongue: {TONGUE_NAMES[pt]})\n"
-                            f"Cross-post candidates:\n"
+                            "Cross-post candidates:\n"
                             f"  - twitter (Kor'aelin): {'Yes — content fits 280 char limit' if scenario['length'] <= 280 else 'No — needs truncation'}\n"
-                            f"  - linkedin (Avali): Yes — professional content fits\n"
+                            "  - linkedin (Avali): Yes — professional content fits\n"
                             f"  - bluesky (Runethic): {'Yes — within 300 char limit' if scenario['length'] <= 300 else 'No — needs truncation'}\n"
-                            f"Schedule: Stagger posts 15 minutes apart to avoid cross-platform spam detection.\n"
-                            f"Each platform post re-encoded in its default tongue."
+                            "Schedule: Stagger posts 15 minutes apart to avoid cross-platform spam detection.\n"
+                            "Each platform post re-encoded in its default tongue."
                         ),
                         tier="journeyman",
                         tongue=tongue,
@@ -794,18 +806,18 @@ def gen_recovery(count: int) -> List[AgentRecord]:
                     category="recovery",
                     system=SYS_RECOVERY,
                     user=(
-                        f"[ACTION FAILED]\n"
-                        f"Action: NAVIGATE to https://example.com/data\n"
+                        "[ACTION FAILED]\n"
+                        "Action: NAVIGATE to https://example.com/data\n"
                         f"Error: {scenario['error']}\n"
-                        f"Error streak: 1\n"
-                        f"What should I do?"
+                        "Error streak: 1\n"
+                        "What should I do?"
                     ),
                     assistant=(
                         f"[RECOVERY: {scenario['recovery']}]\n"
                         f"Strategy selected: {scenario['recovery']}\n"
                         f"Action: {scenario['action']}\n"
-                        f"Error streak: 1 (below stuck threshold of 5).\n"
-                        f"Pad status: operational, not stuck."
+                        "Error streak: 1 (below stuck threshold of 5).\n"
+                        "Pad status: operational, not stuck."
                     ),
                     tier="apprentice",
                     tongue=tongue,
@@ -819,24 +831,24 @@ def gen_recovery(count: int) -> List[AgentRecord]:
                 category="recovery",
                 system=SYS_RECOVERY,
                 user=(
-                    f"[CASCADING FAILURE]\n"
-                    f"Error streak: 5 (stuck threshold reached)\n"
-                    f"Last 5 errors: timeout, timeout, 404, timeout, element not found\n"
-                    f"Current URL: https://example.com/broken-page\n"
-                    f"Goal: Extract pricing data from competitor sites\n"
-                    f"What recovery strategy for a stuck pad?"
+                    "[CASCADING FAILURE]\n"
+                    "Error streak: 5 (stuck threshold reached)\n"
+                    "Last 5 errors: timeout, timeout, 404, timeout, element not found\n"
+                    "Current URL: https://example.com/broken-page\n"
+                    "Goal: Extract pricing data from competitor sites\n"
+                    "What recovery strategy for a stuck pad?"
                 ),
                 assistant=(
-                    f"[RECOVERY: FULL REPLAN]\n"
-                    f"Pad is STUCK (5 consecutive errors).\n"
-                    f"Strategy: REPLAN entire navigation approach.\n"
-                    f"Steps:\n"
-                    f"1. Clear loop detector and error streak.\n"
-                    f"2. Re-evaluate goal — is the current URL path viable?\n"
-                    f"3. BFS over URL graph for alternate route to goal.\n"
-                    f"4. If no alternate route, escalate to orchestrator for task reassignment.\n"
-                    f"5. Reset Hamiltonian session state for fresh scoring.\n"
-                    f"Estimated recovery time: 15-30 seconds."
+                    "[RECOVERY: FULL REPLAN]\n"
+                    "Pad is STUCK (5 consecutive errors).\n"
+                    "Strategy: REPLAN entire navigation approach.\n"
+                    "Steps:\n"
+                    "1. Clear loop detector and error streak.\n"
+                    "2. Re-evaluate goal — is the current URL path viable?\n"
+                    "3. BFS over URL graph for alternate route to goal.\n"
+                    "4. If no alternate route, escalate to orchestrator for task reassignment.\n"
+                    "5. Reset Hamiltonian session state for fresh scoring.\n"
+                    "Estimated recovery time: 15-30 seconds."
                 ),
                 tier="master",
                 tongue=tongue,
@@ -909,7 +921,7 @@ def gen_tongue_transport(count: int) -> List[AgentRecord]:
                     category="tongue-transport",
                     system=SYS_TONGUE,
                     user=(
-                        f"[ENCODE MESSAGE]\n"
+                        "[ENCODE MESSAGE]\n"
                         f"From: {scenario['from_agent']}\n"
                         f"To: {scenario['to_agent']}\n"
                         f"Message: {scenario['message']}\n"
@@ -917,14 +929,14 @@ def gen_tongue_transport(count: int) -> List[AgentRecord]:
                         f"Encode in {TONGUE_NAMES[scenario['tongue']]} for transport."
                     ),
                     assistant=(
-                        f"[TONGUE ENVELOPE]\n"
+                        "[TONGUE ENVELOPE]\n"
                         f"Tongue: {TONGUE_NAMES[scenario['tongue']]} ({scenario['tongue']})\n"
                         f"Sender: {scenario['from_agent']}\n"
                         f"Recipient: {scenario['to_agent']}\n"
                         f"GeoSeal: verified (compass bearing {random.randint(0, 359)} degrees)\n"
                         f"Payload hash: {hashlib.sha256(scenario['message'].encode()).hexdigest()[:12]}\n"
-                        f"Transport status: sealed and dispatched.\n"
-                        f"Decoding key: recipient holds matching tongue context."
+                        "Transport status: sealed and dispatched.\n"
+                        "Decoding key: recipient holds matching tongue context."
                     ),
                     tier="apprentice",
                     tongue=tongue,
@@ -939,21 +951,21 @@ def gen_tongue_transport(count: int) -> List[AgentRecord]:
                     category="tongue-transport",
                     system=SYS_TONGUE,
                     user=(
-                        f"[CROSS-TONGUE RELAY]\n"
+                        "[CROSS-TONGUE RELAY]\n"
                         f"Original message encoded in {TONGUE_NAMES[scenario['tongue']]}.\n"
                         f"Recipient agent uses {TONGUE_NAMES[relay_tongue]} context.\n"
                         f"Message: {scenario['message']}\n"
-                        f"How do we relay across tongues?"
+                        "How do we relay across tongues?"
                     ),
                     assistant=(
-                        f"[TONGUE RELAY]\n"
+                        "[TONGUE RELAY]\n"
                         f"Source tongue: {TONGUE_NAMES[scenario['tongue']]} ({scenario['tongue']})\n"
                         f"Target tongue: {TONGUE_NAMES[relay_tongue]} ({relay_tongue})\n"
                         f"Translation: Re-encode payload using {TONGUE_NAMES[relay_tongue]} token grid.\n"
                         f"Phi-weight adjustment: {scenario['tongue']}→{relay_tongue} "
                         f"(weight ratio {PHI ** abs(TONGUES.index(scenario['tongue']) - TONGUES.index(relay_tongue)):.3f}x).\n"
-                        f"GeoSeal: re-signed with relay agent credentials.\n"
-                        f"Integrity: original hash preserved in envelope metadata for verification."
+                        "GeoSeal: re-signed with relay agent credentials.\n"
+                        "Integrity: original hash preserved in envelope metadata for verification."
                     ),
                     tier="master",
                     tongue=tongue,
@@ -980,18 +992,14 @@ def gen_domain_reputation(count: int) -> List[AgentRecord]:
                 AgentRecord(
                     category="domain-reputation",
                     system=SYS_GOVERNANCE,
-                    user=(
-                        f"[DOMAIN CHECK]\n"
-                        f"URL: https://{domain}/some/path\n"
-                        f"Is this domain trusted?"
-                    ),
+                    user=("[DOMAIN CHECK]\n" f"URL: https://{domain}/some/path\n" "Is this domain trusted?"),
                     assistant=(
-                        f"[DOMAIN REPUTATION]\n"
+                        "[DOMAIN REPUTATION]\n"
                         f"Domain: {domain}\n"
-                        f"Reputation: 1.00 (trustlisted)\n"
-                        f"Decision: ALLOW\n"
-                        f"Friction reduction: trusted domains bypass extended scanning. "
-                        f"Standard content check still applies."
+                        "Reputation: 1.00 (trustlisted)\n"
+                        "Decision: ALLOW\n"
+                        "Friction reduction: trusted domains bypass extended scanning. "
+                        "Standard content check still applies."
                     ),
                     tier="apprentice",
                     tongue=tongue,
@@ -1005,19 +1013,15 @@ def gen_domain_reputation(count: int) -> List[AgentRecord]:
                 AgentRecord(
                     category="domain-reputation",
                     system=SYS_GOVERNANCE,
-                    user=(
-                        f"[DOMAIN CHECK]\n"
-                        f"URL: https://{domain}/payload\n"
-                        f"Is this domain safe to navigate?"
-                    ),
+                    user=("[DOMAIN CHECK]\n" f"URL: https://{domain}/payload\n" "Is this domain safe to navigate?"),
                     assistant=(
-                        f"[DOMAIN REPUTATION]\n"
+                        "[DOMAIN REPUTATION]\n"
                         f"Domain: {domain}\n"
-                        f"Reputation: 0.00 (blocklisted)\n"
-                        f"Risk contribution: +0.80\n"
-                        f"Decision: QUARANTINE (minimum)\n"
-                        f"Action: Navigation blocked. Domain is on the blocklist. "
-                        f"Log attempt and alert orchestrator."
+                        "Reputation: 0.00 (blocklisted)\n"
+                        "Risk contribution: +0.80\n"
+                        "Decision: QUARANTINE (minimum)\n"
+                        "Action: Navigation blocked. Domain is on the blocklist. "
+                        "Log attempt and alert orchestrator."
                     ),
                     tier="journeyman",
                     tongue=tongue,
@@ -1032,17 +1036,17 @@ def gen_domain_reputation(count: int) -> List[AgentRecord]:
                     category="domain-reputation",
                     system=SYS_GOVERNANCE,
                     user=(
-                        f"[DOMAIN CHECK]\n"
+                        "[DOMAIN CHECK]\n"
                         f"URL: https://{domain}/article\n"
-                        f"First time visiting this domain. What reputation?"
+                        "First time visiting this domain. What reputation?"
                     ),
                     assistant=(
-                        f"[DOMAIN REPUTATION]\n"
+                        "[DOMAIN REPUTATION]\n"
                         f"Domain: {domain}\n"
-                        f"Reputation: 1.00 (no prior memory, default trust)\n"
-                        f"Note: Unknown domains start at full trust but accumulate risk memory. "
-                        f"Each flagged scan on this domain reduces reputation by 0.20. "
-                        f"Proceed with standard governance scanning. Content determines actual risk."
+                        "Reputation: 1.00 (no prior memory, default trust)\n"
+                        "Note: Unknown domains start at full trust but accumulate risk memory. "
+                        "Each flagged scan on this domain reduces reputation by 0.20. "
+                        "Proceed with standard governance scanning. Content determines actual risk."
                     ),
                     tier="journeyman",
                     tongue=tongue,
@@ -1093,17 +1097,17 @@ def gen_hamiltonian(count: int) -> List[AgentRecord]:
                     category="hamiltonian",
                     system=SYS_GOVERNANCE,
                     user=(
-                        f"[HAMILTONIAN SCORING]\n"
+                        "[HAMILTONIAN SCORING]\n"
                         f"Distance d = {d:.2f}\n"
                         f"Policy deviation pd = {pd:.2f}\n"
                         f"Context: {description}\n"
-                        f"Compute the safety score and governance decision."
+                        "Compute the safety score and governance decision."
                     ),
                     assistant=(
-                        f"[HAMILTONIAN RESULT]\n"
-                        f"Formula: H(d,pd) = 1/(1 + d_H + 2*pd)\n"
+                        "[HAMILTONIAN RESULT]\n"
+                        "Formula: H(d,pd) = 1/(1 + d_H + 2*pd)\n"
                         f"H({d:.2f}, {pd:.2f}) = 1/(1 + {d:.2f} + 2*{pd:.2f}) = {h}\n"
-                        f"Score range: (0, 1] where 1.0 = perfectly safe.\n"
+                        "Score range: (0, 1] where 1.0 = perfectly safe.\n"
                         f"Combined risk estimate: {risk:.2f}\n"
                         f"Decision: {decision}\n"
                         f"Interpretation: {description}. "

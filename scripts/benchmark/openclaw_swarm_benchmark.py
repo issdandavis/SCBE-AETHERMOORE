@@ -38,7 +38,9 @@ PUBLIC_BENCHMARK_TARGETS = (
         "name": "Terminal-Bench",
         "url": "https://terminalbench.lol/",
         "what_it_tests": "End-to-end terminal work in sandboxed environments with observable command/file outcomes.",
-        "scbe_gap": "Needs a terminal task adapter that runs the router inside a sandbox and grades final files/results.",
+        "scbe_gap": (
+            "Needs a terminal task adapter that runs the router inside a sandbox and grades final files/results."
+        ),
     },
     {
         "name": "Vexp SWE-bench harness",
@@ -75,13 +77,21 @@ HEXAGONAL_CONSENSUS_FACES = (
 QUALITY_FLAG_REPAIR_RULES = {
     "decision_missing_or_ambiguous": {
         "weakness": "ambiguous_lane_decision",
-        "why_we_lose": "Agent benchmarks need machine-graded final states; ambiguous decisions cannot be routed safely.",
-        "patch_direction": "Tighten output contracts or post-parse decisions so every lane resolves to one exact decision.",
+        "why_we_lose": (
+            "Agent benchmarks need machine-graded final states; ambiguous decisions cannot be routed safely."
+        ),
+        "patch_direction": (
+            "Tighten output contracts or post-parse decisions so every lane resolves to one exact decision."
+        ),
     },
     "path_not_found": {
         "weakness": "nonexistent_file_reference",
-        "why_we_lose": "Applicable patches require real files; public coding benchmarks reject changes aimed at missing paths.",
-        "patch_direction": "Filter file mentions against repo inventory and force needs-human/defer when a target file is absent.",
+        "why_we_lose": (
+            "Applicable patches require real files; public coding benchmarks reject changes aimed at missing paths."
+        ),
+        "patch_direction": (
+            "Filter file mentions against repo inventory and force needs-human/defer when a target file is absent."
+        ),
     },
     "placeholder_diff_index": {
         "weakness": "placeholder_patch_metadata",
@@ -95,18 +105,33 @@ QUALITY_FLAG_REPAIR_RULES = {
     },
     "verification_mutates_git_state": {
         "weakness": "unsafe_verification_command",
-        "why_we_lose": "Benchmark verification must be reproducible and non-mutating unless the harness explicitly applies a patch.",
+        "why_we_lose": (
+            "Benchmark verification must be reproducible and non-mutating unless the harness explicitly applies a "
+            "patch."
+        ),
         "patch_direction": "Whitelist test/read-only verification verbs and reject git add/commit/push in lane output.",
     },
     "lane_failed": {
         "weakness": "model_lane_runtime_failure",
-        "why_we_lose": "A multi-agent benchmark cannot depend on a lane that fails silently; public harnesses need every lane failure to become an isolated, reproducible repair target.",
-        "patch_direction": "Record the failed lane, model, surface, and task; rerun the failed adapter alone with narrower context or a stronger guard model.",
+        "why_we_lose": (
+            "A multi-agent benchmark cannot depend on a lane that fails silently; public harnesses need every lane "
+            "failure to become an isolated, reproducible repair target."
+        ),
+        "patch_direction": (
+            "Record the failed lane, model, surface, and task; rerun the failed adapter alone with narrower context "
+            "or a stronger guard model."
+        ),
     },
     "blacklisted_path": {
         "weakness": "blacklisted_path_reference",
-        "why_we_lose": "A safe coding harness must block proposals that reach into forbidden or operator-only paths before they can become patches.",
-        "patch_direction": "Keep blacklisted paths blocked, but route the lane to an evidence/defer contract with the nearest allowed implementation path.",
+        "why_we_lose": (
+            "A safe coding harness must block proposals that reach into forbidden or operator-only paths before they "
+            "can become patches."
+        ),
+        "patch_direction": (
+            "Keep blacklisted paths blocked, but route the lane to an evidence/defer contract with the nearest "
+            "allowed implementation path."
+        ),
     },
 }
 
@@ -258,7 +283,10 @@ OLLAMA_CLOUD_CASES = (
         timeout=45,
         max_workers=1,
         constraint_mode="relaxed",
-        focus_paths="scripts/system/scbe_swarm_router.py,scripts/system/openclaw_swarm.py,tests/test_openclaw_swarm.py,scripts/benchmark/openclaw_swarm_benchmark.py",
+        focus_paths=(
+            "scripts/system/scbe_swarm_router.py,scripts/system/openclaw_swarm.py,tests/test_openclaw_swarm.py,"
+            "scripts/benchmark/openclaw_swarm_benchmark.py"
+        ),
     ),
     BenchmarkCase(
         case_id="cloud_opencode_codex",
@@ -269,7 +297,10 @@ OLLAMA_CLOUD_CASES = (
         constraint_mode="relaxed",
         allow_ollama_cloud=True,
         prefer_ollama_cloud=True,
-        focus_paths="scripts/system/scbe_swarm_router.py,scripts/system/openclaw_swarm.py,tests/test_openclaw_swarm.py,scripts/benchmark/openclaw_swarm_benchmark.py",
+        focus_paths=(
+            "scripts/system/scbe_swarm_router.py,scripts/system/openclaw_swarm.py,tests/test_openclaw_swarm.py,"
+            "scripts/benchmark/openclaw_swarm_benchmark.py"
+        ),
     ),
 )
 
@@ -332,7 +363,10 @@ ROLE_CASES = (
         constraint_mode="strict",
         allow_ollama_cloud=True,
         prefer_ollama_cloud=True,
-        focus_paths="scripts/system/openclaw_swarm.py,scripts/system/scbe_swarm_router.py,tests/test_openclaw_swarm.py,docs/research/DARPA_AGENTIC_SYSTEM_ALIGNMENT_2026-05-10.md",
+        focus_paths=(
+            "scripts/system/openclaw_swarm.py,scripts/system/scbe_swarm_router.py,tests/test_openclaw_swarm.py,"
+            "docs/research/DARPA_AGENTIC_SYSTEM_ALIGNMENT_2026-05-10.md"
+        ),
     ),
 )
 
@@ -639,7 +673,10 @@ def build_quality_vector(item: dict[str, Any]) -> dict[str, Any]:
         "dimensions": dimensions,
         "weights": weights,
         "quality_flag_total": flag_total,
-        "note": "Measures how well the case passed: evidence quality, traceability, actionability, patch readiness, efficiency, and gate shape.",
+        "note": (
+            "Measures how well the case passed: evidence quality, traceability, actionability, patch readiness, "
+            "efficiency, and gate shape."
+        ),
     }
 
 
@@ -669,7 +706,10 @@ def summarize_quality_vectors(results: list[dict[str, Any]]) -> dict[str, Any]:
         "average_quality_score": round(sum(float(vector["quality_score"]) for vector in vectors) / len(vectors), 2),
         "pass_depth_counts": depth_counts,
         "dimension_averages": {key: round(value / len(vectors), 2) for key, value in sorted(dimension_totals.items())},
-        "interpretation": "Use this to compare successful runs by quality, not just pass/fail. A green run with low traceability or patch_readiness is a thin pass.",
+        "interpretation": (
+            "Use this to compare successful runs by quality, not just pass/fail. A green run with low traceability or "
+            "patch_readiness is a thin pass."
+        ),
     }
 
 
@@ -803,7 +843,10 @@ def build_kaggle_winner_loop(report: dict[str, Any]) -> dict[str, Any]:
         },
         "web_search": {
             "status": "not_embedded",
-            "note": "Use repo-captured research/context files as inputs for now; direct web search is intentionally outside this harness loop.",
+            "note": (
+                "Use repo-captured research/context files as inputs for now; direct web search is intentionally "
+                "outside this harness loop."
+            ),
         },
     }
 
@@ -1048,7 +1091,10 @@ def run_self_cli_functional_case(
             "mean_applicability_score": score["points"],
             "requirements": {
                 "execution": "generated TypeScript must pass scripts/run_typescript_debug_scenario.cjs",
-                "compiler_trace": "each generated artifact should carry semantic packet, target-language hash, tongue route, and GeoSeal trace",
+                "compiler_trace": (
+                    "each generated artifact should carry semantic packet, target-language hash, tongue route, and "
+                    "GeoSeal trace"
+                ),
                 "system_boundary": "only SCBE task pack, SCBE evaluator, Ollama models, and local harness are used",
             },
         },
@@ -1079,7 +1125,10 @@ def run_self_cli_functional_case(
         allowed_paths="scripts/,config/eval/,artifacts/",
         output_contract="cross-lingual-compiler-artifact",
         constraint_mode="strict",
-        focus_paths="config/eval/scbe_productivity_eval_tasks.v1.json,scripts/eval/functional_coding_agent_benchmark.py,scripts/run_typescript_debug_scenario.cjs",
+        focus_paths=(
+            "config/eval/scbe_productivity_eval_tasks.v1.json,scripts/eval/functional_coding_agent_benchmark.py,"
+            "scripts/run_typescript_debug_scenario.cjs"
+        ),
     )
     return {
         "case": asdict(case),
@@ -1182,7 +1231,10 @@ def build_trust_ladder_report(report: dict[str, Any]) -> dict[str, Any]:
         "betrayal_count": betrayal_count,
         "state": state,
         "events": events,
-        "note": "This is benchmark-route trust, not human trust. Runtime failure and unhandled flags decay the ladder; clean promotable or correctly-blocked rows accrue it.",
+        "note": (
+            "This is benchmark-route trust, not human trust. Runtime failure and unhandled flags decay the ladder; "
+            "clean promotable or correctly-blocked rows accrue it."
+        ),
     }
 
 
@@ -1259,7 +1311,10 @@ def build_weakness_loop(report: dict[str, Any]) -> dict[str, Any]:
             {
                 "weakness": "model_invented_evidence_symbols",
                 "observed": f"{flag_counts['evidence_symbol_not_found']} evidence symbol misses",
-                "why_we_lose": "External coding agents win by grounding generation in repo retrieval and execution; our weak local lanes still infer declarations from prompt text.",
+                "why_we_lose": (
+                    "External coding agents win by grounding generation in repo retrieval and execution; our weak "
+                    "local lanes still infer declarations from prompt text."
+                ),
                 "patch_direction": "Add deterministic local symbol inventory to helper evidence before model routing.",
                 "rerun": "python scripts/benchmark/openclaw_swarm_benchmark.py --mode semantic",
             }
@@ -1270,7 +1325,9 @@ def build_weakness_loop(report: dict[str, Any]) -> dict[str, Any]:
                 "weakness": "patch_targets_fake_or_stale_symbols",
                 "observed": f"{flag_counts['symbol_not_found']} patch symbol misses",
                 "why_we_lose": "Public coding benchmarks reward applicable patches, not plausible diffs.",
-                "patch_direction": "Require symbol inventory and context extraction before any builder lane can be promotable.",
+                "patch_direction": (
+                    "Require symbol inventory and context extraction before any builder lane can be promotable."
+                ),
                 "rerun": "python scripts/benchmark/openclaw_swarm_benchmark.py --mode roles",
             }
         )
@@ -1279,7 +1336,9 @@ def build_weakness_loop(report: dict[str, Any]) -> dict[str, Any]:
             {
                 "weakness": "lane_scope_leakage",
                 "observed": f"{flag_counts['path_outside_lane']} out-of-lane path mentions",
-                "why_we_lose": "Terminal agents fail when they touch broad or unrelated surfaces instead of the task sandbox.",
+                "why_we_lose": (
+                    "Terminal agents fail when they touch broad or unrelated surfaces instead of the task sandbox."
+                ),
                 "patch_direction": "Tighten file hints and role prompts around explicit focus paths and allowed roots.",
                 "rerun": "python scripts/benchmark/openclaw_swarm_benchmark.py --mode roles",
             }
@@ -1309,7 +1368,9 @@ def build_weakness_loop(report: dict[str, Any]) -> dict[str, Any]:
                 "weakness": f"unmapped_quality_flag:{flag}",
                 "observed": f"{count} occurrences",
                 "why_we_lose": "A benchmark loop is only useful when every blocker maps to a repair action.",
-                "patch_direction": "Add a specific correction rule or suppress the flag only if the validator is too strict.",
+                "patch_direction": (
+                    "Add a specific correction rule or suppress the flag only if the validator is too strict."
+                ),
                 "rerun": "python scripts/benchmark/openclaw_swarm_benchmark.py --mode semantic",
             }
         )
@@ -1318,14 +1379,20 @@ def build_weakness_loop(report: dict[str, Any]) -> dict[str, Any]:
             {
                 "weakness": "no_internal_blocker_detected",
                 "observed": "No quality flags in this run.",
-                "why_we_lose": "Internal cleanliness is not public benchmark success; we still need patch-apply and task-completion scores.",
+                "why_we_lose": (
+                    "Internal cleanliness is not public benchmark success; we still need patch-apply and "
+                    "task-completion scores."
+                ),
                 "patch_direction": "Run a real safe_apply benchmark on held-out repo tasks and record pass/fail.",
                 "rerun": "python scripts/benchmark/openclaw_swarm_benchmark.py --mode full",
             }
         )
     return {
         "schema": "scbe_benchmark_patch_rerun_loop_v1",
-        "claim_boundary": "Internal harness score only. Do not present as SWE-bench, Terminal-Bench, or public leaderboard performance.",
+        "claim_boundary": (
+            "Internal harness score only. Do not present as SWE-bench, Terminal-Bench, or public leaderboard "
+            "performance."
+        ),
         "public_benchmark_targets": list(PUBLIC_BENCHMARK_TARGETS),
         "quality_flag_counts": flag_counts,
         "weaknesses": weaknesses,
@@ -1349,7 +1416,10 @@ def build_geometric_consensus(report: dict[str, Any]) -> dict[str, Any]:
             "fixed_declaration_keys": list(FIXED_DECLARATION_KEYS),
             "declaration_coverage": 0.0,
             "role_states": {},
-            "note": "Consensus is advisory only. Production scoring is based on artifacts, patch readiness, traceability, and verification.",
+            "note": (
+                "Consensus is advisory only. Production scoring is based on artifacts, patch readiness, traceability, "
+                "and verification."
+            ),
         }
     total_keys = len(rows) * len(FIXED_DECLARATION_KEYS)
     present_keys = sum(1 for row in rows for key in FIXED_DECLARATION_KEYS if key in row)
@@ -1448,7 +1518,10 @@ def build_geometric_consensus(report: dict[str, Any]) -> dict[str, Any]:
         "declaration_coverage": coverage,
         "role_states": role_states,
         "contract_counts": contract_counts,
-        "note": "Consensus is advisory only. It must not block production by itself; code is judged by produced artifacts, patch readiness, traceability, and safe_apply/smoke verification.",
+        "note": (
+            "Consensus is advisory only. It must not block production by itself; code is judged by produced "
+            "artifacts, patch readiness, traceability, and safe_apply/smoke verification."
+        ),
     }
 
 
@@ -1481,7 +1554,8 @@ def build_markdown(report: dict[str, Any]) -> str:
         "",
         "## Cases",
         "",
-        "| Case | Persona | Exit | Seconds | Score | Quality | Depth | Promotable | Blocked | Failed | Mean Applicability | Next Action |",
+        "| Case | Persona | Exit | Seconds | Score | Quality | Depth | Promotable | Blocked "
+        "| Failed | Mean Applicability | Next Action |",
         "|---|---|---:|---:|---:|---:|---|---:|---:|---:|---:|---|",
     ]
     for item in report["cases"]:
@@ -1490,7 +1564,8 @@ def build_markdown(report: dict[str, Any]) -> str:
         assurance = routing.get("assurance_packet") or {}
         quality = item.get("quality_vector") or build_quality_vector(item)
         lines.append(
-            "| {case} | `{persona}` | {exit_code} | {seconds} | {score}/100 | {quality}/100 | `{depth}` | {promotable} | {blocked} | {failed} | {mean_app} | `{next_action}` |".format(
+            "| {case} | `{persona}` | {exit_code} | {seconds} | {score}/100 | {quality}/100 "
+            "| `{depth}` | {promotable} | {blocked} | {failed} | {mean_app} | `{next_action}` |".format(
                 case=item["case"]["case_id"],
                 persona=item["case"].get("persona", ""),
                 exit_code=item["exit_code"],
@@ -1595,7 +1670,8 @@ def build_markdown(report: dict[str, Any]) -> str:
                 when = row.get("when") or {}
                 why = row.get("why") or {}
                 lines.append(
-                    "| {task} | `{persona}` / `{agents}` | `{contract}` -> `{state}` | `{focus}` | `{seconds}s`, exit `{exit_code}` | flags `{flags}`, next `{next_action}` |".format(
+                    "| {task} | `{persona}` / `{agents}` | `{contract}` -> `{state}` | `{focus}` "
+                    "| `{seconds}s`, exit `{exit_code}` | flags `{flags}`, next `{next_action}` |".format(
                         task=row.get("task_id"),
                         persona=who.get("persona"),
                         agents=who.get("agents"),
@@ -1718,9 +1794,13 @@ def build_markdown(report: dict[str, Any]) -> str:
             "",
             "## Interpretation",
             "",
-            "This benchmark scores the orchestration contract: agent catalog resolution, local/cloud model routing, promotion/blocked counts, and routing recommendations. It does not claim the generated code is correct unless a lane is promotable and then passes `scripts/agents/safe_apply.py` with a smoke command.",
+            "This benchmark scores the orchestration contract: agent catalog resolution, local/cloud "
+            "model routing, promotion/blocked counts, and routing recommendations. It does not claim "
+            "the generated code is correct unless a lane is promotable and then passes "
+            "`scripts/agents/safe_apply.py` with a smoke command.",
             "",
-            "A run with zero promotable lanes can still be a useful pass when the router correctly blocks confident but non-applicable proposals before patch application.",
+            "A run with zero promotable lanes can still be a useful pass when the router correctly "
+            "blocks confident but non-applicable proposals before patch application.",
         ]
     )
     return "\n".join(lines) + "\n"

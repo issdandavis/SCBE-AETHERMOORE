@@ -25,9 +25,8 @@ Usage:
 
 from __future__ import annotations
 
-import asyncio
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger("scbe.agents.remote_display")
@@ -36,10 +35,10 @@ try:
     from playwright.async_api import (
         async_playwright,
         Browser,
-        BrowserContext,
         Page,
         Playwright,
     )
+
     _PW_AVAILABLE = True
 except ImportError:
     _PW_AVAILABLE = False
@@ -109,8 +108,7 @@ class RemoteDisplayManager:
         """
         if not _PW_AVAILABLE:
             raise RuntimeError(
-                "playwright is not installed. "
-                "Run: pip install playwright && python -m playwright install chromium"
+                "playwright is not installed. " "Run: pip install playwright && python -m playwright install chromium"
             )
         self._pw = await async_playwright().start()
         self._user_data_dir = user_data_dir
@@ -126,9 +124,7 @@ class RemoteDisplayManager:
             self._browser = ctx.browser
             # Store the default context but don't use it for displays
         else:
-            self._browser = await self._pw.chromium.launch(
-                headless=headless, **kwargs
-            )
+            self._browser = await self._pw.chromium.launch(headless=headless, **kwargs)
 
         logger.info("RemoteDisplayManager launched (headless=%s)", headless)
 
@@ -450,14 +446,9 @@ class RemoteDisplayManager:
     def _get_display(self, name: str) -> DisplayHandle:
         handle = self._displays.get(name)
         if not handle:
-            raise ValueError(
-                f"Display '{name}' not found. "
-                f"Available: {list(self._displays.keys())}"
-            )
+            raise ValueError(f"Display '{name}' not found. " f"Available: {list(self._displays.keys())}")
         return handle
 
     def _require_browser(self) -> None:
         if self._browser is None:
-            raise RuntimeError(
-                "RemoteDisplayManager not launched — call await mgr.launch() first"
-            )
+            raise RuntimeError("RemoteDisplayManager not launched — call await mgr.launch() first")

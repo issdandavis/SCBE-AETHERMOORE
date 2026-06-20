@@ -241,7 +241,8 @@ _ROUTE_PATTERNS: List[tuple[str, str, str]] = [
         "https://github.com/issdandavis/SCBE-AETHERMOORE/issues.",
     ),
     (
-        r"\b(hyperbolic|poincar[eé]|geodesic|manifold|curvature|geometry|pipeline|layer|axiom|harmonic|scbe|governance)\b",
+        r"\b(hyperbolic|poincar[eé]|geodesic|manifold|curvature|geometry"
+        r"|pipeline|layer|axiom|harmonic|scbe|governance)\b",
         "science",
         "SCBE uses a 14-layer harmonic pipeline built on Poincaré ball geometry. "
         "Adversarial intent scales exponentially in hyperbolic space, making attacks computationally "
@@ -291,10 +292,10 @@ def _deterministic_route(message: str) -> tuple[str, str]:
             return route, response
     return (
         "general",
-        f"I'm Polly, the SCBE-AETHERMOORE assistant. I can answer questions about the "
-        f"14-layer governance pipeline, Sacred Tongues tokenizer, training data, lore, "
-        f"pricing, and setup. What would you like to know?\n\n"
-        f"(Tip: add a GEMINI_API_KEY on the server to unlock deep reasoning mode.)",
+        "I'm Polly, the SCBE-AETHERMOORE assistant. I can answer questions about the "
+        "14-layer governance pipeline, Sacred Tongues tokenizer, training data, lore, "
+        "pricing, and setup. What would you like to know?\n\n"
+        "(Tip: add a GEMINI_API_KEY on the server to unlock deep reasoning mode.)",
     )
 
 

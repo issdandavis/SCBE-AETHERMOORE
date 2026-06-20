@@ -7,6 +7,24 @@ const test = require('node:test');
 
 const CLI = path.resolve(__dirname, '..', 'bin', 'scbe.js');
 
+// Single source of truth for the registered evidence lanes. Update this set when
+// a lane is intentionally added/removed; the count + presence assertions below
+// then fail LOUDLY (naming the missing/extra lane) instead of silently drifting.
+const EXPECTED_LANES = [
+  'hard-agentic',
+  'research',
+  'rubix-browser',
+  'arc-agi2',
+  'arc-style-grid',
+  'swe-local',
+  'cli-competitive',
+  'kaggle-api',
+  'compound-decompose',
+  'hydra-jobsite',
+  'providers',
+  'longform',
+];
+
 function runCli(args, options = {}) {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-cli-bench-'));
   const env = {
@@ -39,16 +57,38 @@ test('bench list emits registered evidence lanes as JSON', () => {
   assert.ok(payload.lanes.some((lane) => lane.id === 'rubix-browser'));
   assert.ok(payload.lanes.some((lane) => lane.id === 'arc-agi2'));
   assert.ok(payload.lanes.some((lane) => lane.id === 'arc-style-grid'));
+  assert.ok(payload.lanes.some((lane) => lane.id === 'longform'));
   assert.ok(payload.lanes.some((lane) => lane.id === 'swe-local'));
   assert.ok(payload.lanes.some((lane) => lane.id === 'cli-competitive'));
 });
 
-test('bench list has 8 lanes', () => {
+test('bench list registers exactly the expected lane set', () => {
   const result = runCli(['bench', 'list', '--json']);
   assert.equal(result.status, 0, result.stderr);
   const payload = JSON.parse(result.stdout);
-  assert.equal(payload.lanes.length, 8);
-  assert.ok(payload.lanes.some((lane) => lane.id === 'providers'));
+  const ids = payload.lanes.map((lane) => lane.id);
+  // Every expected lane is present (names the gap on failure)...
+  for (const id of EXPECTED_LANES) {
+    assert.ok(ids.includes(id), `missing registered lane: ${id}`);
+  }
+  // ...and no unexpected lane crept in (names the extra on failure).
+  for (const id of ids) {
+    assert.ok(EXPECTED_LANES.includes(id), `unexpected lane registered: ${id}`);
+  }
+  assert.equal(payload.lanes.length, EXPECTED_LANES.length);
+});
+
+test('bench compound-decompose forwards JSON flag', () => {
+  const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-compound-json-'));
+  const result = runCli(['bench', 'compound-decompose', '--out-dir', outDir, '--json'], {
+    timeout: 90_000,
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schema_version, 'scbe_compound_decomposition_recomposition_v1');
+  assert.equal(payload.summary.decision, 'PASS');
+  assert.equal(payload.summary.case_count, 30);
 });
 
 test('bench list plain text shows artifact status', () => {
@@ -72,7 +112,7 @@ test('bench latest with no args returns all lanes', () => {
   assert.equal(result.status, 0, result.stderr);
   const payload = JSON.parse(result.stdout);
   assert.equal(payload.schema_version, 'scbe_bench_latest_v1');
-  assert.equal(payload.lanes.length, 8);
+  assert.equal(payload.lanes.length, EXPECTED_LANES.length);
 });
 
 test('bench prove emits claim-safe proof packet with overclaim check', () => {
@@ -88,11 +128,11 @@ test('bench prove emits claim-safe proof packet with overclaim check', () => {
   assert.equal(payload.lanes[0].id, 'rubix-browser');
 });
 
-test('bench prove all-lanes proof packet has 8 lanes', () => {
+test('bench prove all-lanes proof packet covers every lane', () => {
   const result = runCli(['bench', 'prove', '--json']);
   assert.equal(result.status, 0, result.stderr);
   const payload = JSON.parse(result.stdout);
-  assert.equal(payload.lanes.length, 8);
+  assert.equal(payload.lanes.length, EXPECTED_LANES.length);
 });
 
 test('bench prove can write a portable proof packet', () => {
@@ -113,7 +153,7 @@ test('bench index emits public artifact catalog with commit hash', () => {
   assert.equal(payload.schema_version, 'scbe_bench_index_v1');
   assert.ok(typeof payload.commit === 'string');
   assert.ok(typeof payload.evidence_ready === 'number');
-  assert.equal(payload.evidence_total, 8);
+  assert.equal(payload.evidence_total, EXPECTED_LANES.length);
   assert.match(payload.proof_rule, /claim/);
   assert.ok(payload.lanes.every((l) => typeof l.claim_boundary === 'string'));
 });
@@ -133,6 +173,31 @@ test('bench index plain text shows commit and lane status', () => {
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /SCBE bench index/);
   assert.match(result.stdout, /evidence:/);
+});
+
+test('bench dashboard emits website-ready JSON summary', () => {
+  const result = runCli(['bench', 'dashboard', '--json']);
+  assert.equal(result.status, 0, result.stderr);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schema_version, 'scbe_bench_dashboard_v1');
+  assert.equal(payload.evidence_total, EXPECTED_LANES.length);
+  assert.ok(payload.summary.website_claim_boundary.includes('command'));
+  assert.ok(payload.lanes.every((lane) => typeof lane.claim_boundary === 'string'));
+  assert.ok(
+    payload.lanes.every((lane) => ['evidence-ready', 'missing-artifact'].includes(lane.status))
+  );
+});
+
+test('bench dashboard can write HTML artifact', () => {
+  const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-bench-dashboard-'));
+  const outPath = path.join(outDir, 'dashboard.html');
+  const result = runCli(['bench', 'dashboard', '--write', outPath]);
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /wrote /);
+  const html = fs.readFileSync(outPath, 'utf8');
+  assert.match(html, /SCBE Benchmark Evidence Dashboard/);
+  assert.match(html, /Proof rule/);
+  assert.match(html, /<table>/);
 });
 
 test('bench unknown lane exits with code 2', () => {

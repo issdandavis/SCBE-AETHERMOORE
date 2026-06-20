@@ -27,7 +27,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUT_DIR = REPO_ROOT / "artifacts" / "code_slice_geometry"
 
@@ -128,19 +127,11 @@ def infer_goal_axes(goal: str) -> dict[str, float]:
     terms = tokenize(goal)
     return {
         "search": 1.0 if terms & {"research", "search", "source", "ground"} else 0.35,
-        "edit": (
-            1.0
-            if terms & {"code", "build", "fix", "implement", "stitch", "slice"}
-            else 0.45
-        ),
+        "edit": (1.0 if terms & {"code", "build", "fix", "implement", "stitch", "slice"} else 0.45),
         "test": 1.0 if terms & {"test", "verify", "benchmark", "confirm"} else 0.55,
         "build": 1.0 if terms & {"build", "harness", "system", "matrix"} else 0.45,
-        "train": (
-            1.0 if terms & {"training", "train", "dataset", "sft", "model"} else 0.35
-        ),
-        "dispatch": (
-            1.0 if terms & {"agent", "agentic", "tool", "calling", "compute"} else 0.50
-        ),
+        "train": (1.0 if terms & {"training", "train", "dataset", "sft", "model"} else 0.35),
+        "dispatch": (1.0 if terms & {"agent", "agentic", "tool", "calling", "compute"} else 0.50),
     }
 
 
@@ -180,11 +171,7 @@ def hyperbolic_projection(
     attempt_pressure = min(1.0, math.log1p(max(0, attempt_count)) / 3.0)
     gap_score = min(
         1.0,
-        0.34 * goal_weight
-        + 0.18 * compute_weight
-        + 0.18 * status_weight
-        + 0.20 * attempt_pressure
-        + 0.10 * gap_seed,
+        0.34 * goal_weight + 0.18 * compute_weight + 0.18 * status_weight + 0.20 * attempt_pressure + 0.10 * gap_seed,
     )
     radius = math.tanh(gap_score * 1.85)
     radius = min(radius, 0.97)
@@ -198,9 +185,7 @@ def low_dim_slot_for(lens: str, phase: str) -> str:
     return f"{lens}::{phase}::function|module|test"
 
 
-def build_command_structure(
-    slice_id: str, phase: str, lens: str, paths: list[str], tools: list[str]
-) -> dict[str, Any]:
+def build_command_structure(slice_id: str, phase: str, lens: str, paths: list[str], tools: list[str]) -> dict[str, Any]:
     return {
         "schema_version": "scbe_code_slice_command_v1",
         "slice_id": slice_id,
@@ -209,7 +194,8 @@ def build_command_structure(
         "allowed_paths": paths,
         "tool_chain": tools,
         "commands": {
-            "claim": f"python scripts/system/advanced_ai_dispatch.py claim --worker-id code-slice-{slice_id} --capability code.patch",
+            "claim": f"python scripts/system/advanced_ai_dispatch.py claim "
+            f"--worker-id code-slice-{slice_id} --capability code.patch",
             "search": f"rg -n \"{phase}|{lens}|TODO|FIXME\" {' '.join(paths)} -S",
             "verify": (
                 "npm run typecheck"
@@ -229,9 +215,7 @@ def build_command_structure(
     }
 
 
-def build_slices(
-    goal: str, attempts: int, status: str, lenses: list[str] | None = None
-) -> list[CodeSlice]:
+def build_slices(goal: str, attempts: int, status: str, lenses: list[str] | None = None) -> list[CodeSlice]:
     if status not in STATUS_FACTORS:
         raise ValueError(f"status must be one of {sorted(STATUS_FACTORS)}")
     axes = infer_goal_axes(goal)
@@ -248,9 +232,7 @@ def build_slices(
             lens_meta = LANGUAGE_LENSES[lens]
             compute_lane = choose_compute(phase, lens)
             slice_id = stable_id(goal, phase, lens, str(attempts), status)
-            gap_seed = (phase_index / len(DESIRED_FLOW)) * (
-                0.8 if lens != "binary" else 1.0
-            )
+            gap_seed = (phase_index / len(DESIRED_FLOW)) * (0.8 if lens != "binary" else 1.0)
             gap_score, radius, expansion = hyperbolic_projection(
                 goal_weight=axes[tool_axis],
                 compute_weight=COMPUTE_FACTORS[compute_lane],
@@ -259,9 +241,7 @@ def build_slices(
                 gap_seed=gap_seed,
             )
             paths = list(lens_meta["targets"])
-            command_structure = build_command_structure(
-                slice_id, phase, lens, paths, tools
-            )
+            command_structure = build_command_structure(slice_id, phase, lens, paths, tools)
             training_marker = {
                 "record_type": "code_slice_geometry",
                 "input_goal": goal,
@@ -301,9 +281,7 @@ def build_slices(
     return slices
 
 
-def build_report(
-    goal: str, attempts: int, status: str, lenses: list[str] | None = None
-) -> dict[str, Any]:
+def build_report(goal: str, attempts: int, status: str, lenses: list[str] | None = None) -> dict[str, Any]:
     slices = build_slices(goal, attempts, status, lenses)
     return {
         "schema_version": "scbe_code_slice_geometry_v1",
@@ -320,19 +298,20 @@ def build_report(
         "interpretation": {
             "highest_dimension": "goal intent, desired effect, current/proposed trajectory",
             "lowest_dimension": "function/module/test/transport slots and binary hashes",
-            "spaghettification": "expand the goal into many phase/lens slices, then compress each slice into a bounded command packet",
-            "code_slice_rule": "when a language lens is missing, fill the structural gap with shared IR or binary transport metadata before generating code",
+            "spaghettification": (
+                "expand the goal into many phase/lens slices, " "then compress each slice into a bounded command packet"
+            ),
+            "code_slice_rule": (
+                "when a language lens is missing, fill the structural gap "
+                "with shared IR or binary transport metadata before generating code"
+            ),
         },
         "coverage": {
             "slice_count": len(slices),
             "phases": DESIRED_FLOW,
             "lenses": sorted({row.lens for row in slices}),
-            "max_expansion_factor": max(
-                (row.expansion_factor for row in slices), default=0
-            ),
-            "high_gap_slices": [
-                row.slice_id for row in slices if row.gap_score >= 0.75
-            ],
+            "max_expansion_factor": max((row.expansion_factor for row in slices), default=0),
+            "high_gap_slices": [row.slice_id for row in slices if row.gap_score >= 0.75],
         },
         "slices": [asdict(row) for row in slices],
     }
@@ -341,9 +320,7 @@ def build_report(
 def write_outputs(report: dict[str, Any], out_dir: Path) -> dict[str, str]:
     out_dir.mkdir(parents=True, exist_ok=True)
     json_path = out_dir / "latest_code_slice_geometry.json"
-    json_path.write_text(
-        json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    json_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     csv_path = out_dir / "latest_code_slice_matrix.csv"
     with csv_path.open("w", encoding="utf-8", newline="") as handle:
@@ -365,12 +342,7 @@ def write_outputs(report: dict[str, Any], out_dir: Path) -> dict[str, str]:
         writer.writeheader()
         for row in report["slices"]:
             writer.writerow(
-                {
-                    field: (
-                        ";".join(row[field]) if field == "target_paths" else row[field]
-                    )
-                    for field in fields
-                }
+                {field: (";".join(row[field]) if field == "target_paths" else row[field]) for field in fields}
             )
 
     packets_path = out_dir / "latest_command_packets.jsonl"

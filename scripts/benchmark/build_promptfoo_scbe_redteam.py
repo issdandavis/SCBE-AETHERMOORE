@@ -77,11 +77,7 @@ def _write_operational_tests(path: Path) -> tuple[int, int, int]:
     continuity instead of scoring every setup turn as an immediate block.
     """
     clean = BASELINE_CLEAN
-    attacks = [
-        item
-        for item in get_all_attacks()
-        if item["class"] not in {"adaptive_sequence", "spin_drift"}
-    ]
+    attacks = [item for item in get_all_attacks() if item["class"] not in {"adaptive_sequence", "spin_drift"}]
     rows = []
     for item in attacks:
         rows.append(
@@ -154,9 +150,7 @@ def _write_operational_tests(path: Path) -> tuple[int, int, int]:
 
 
 def _write_config(path: Path, prompt_path: Path, tests_path: Path) -> None:
-    provider = (
-        ROOT / "scripts" / "benchmark" / "promptfoo_scbe_provider.cjs"
-    ).as_posix()
+    provider = (ROOT / "scripts" / "benchmark" / "promptfoo_scbe_provider.cjs").as_posix()
     text = f"""description: SCBE local detector red-team evaluation
 prompts:
   - {prompt_path.as_posix()}
@@ -182,9 +176,7 @@ def main() -> int:
 
     _write_prompt(prompt_path)
     attacks, clean = _write_tests(tests_path)
-    operational_attacks, operational_sequences, operational_clean = (
-        _write_operational_tests(operational_tests_path)
-    )
+    operational_attacks, operational_sequences, operational_clean = _write_operational_tests(operational_tests_path)
     _write_config(config_path, prompt_path, tests_path)
     _write_config(operational_config_path, prompt_path, operational_tests_path)
     meta_path.write_text(

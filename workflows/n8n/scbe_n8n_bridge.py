@@ -4,6 +4,8 @@ SCBE n8n Bridge — FastAPI service connecting n8n workflows to SCBE Web Agent
 
 Endpoints:
   POST /v1/governance/scan        — Semantic antivirus scan
+  POST /v1/govern/check           — L12 harmonic wall: single command → tier+score
+  POST /v1/govern/batch           — L12 harmonic wall: list of commands in one call
   GET  /v1/automations/health     — Self-hosted automation hub health
   GET  /v1/automations/rules      — List local automation rules
   POST /v1/automations/rules      — Register local automation rule
@@ -67,6 +69,19 @@ except ImportError:
     print("pip install fastapi uvicorn  # required for n8n bridge")
     raise
 
+try:
+    from scripts.benchmark.scbe_governance_core import (
+        semantic_distance as _gov_d_H,
+        danger_drift as _gov_pd,
+        harmonic_score as _gov_score,
+        risk_tier as _gov_tier,
+        atomic_role_for_command as _gov_role,
+    )
+
+    _GOV_CORE_AVAILABLE = True
+except Exception:
+    _GOV_CORE_AVAILABLE = False
+
 from symphonic_cipher.scbe_aethermoore.concept_blocks.web_agent import (
     SemanticAntivirus,
     ContentBuffer,
@@ -96,6 +111,7 @@ app = FastAPI(
 
 # CORS — allow the mobile app (Capacitor webview) and local dev
 from starlette.middleware.cors import CORSMiddleware
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -114,11 +130,7 @@ for plat in Platform:
     _buffer.register_publisher(PlatformPublisher(plat))
 
 # API key validation
-_API_KEYS = set(
-    k.strip()
-    for k in os.environ.get("SCBE_API_KEYS", "scbe-dev-key,test-key").split(",")
-    if k.strip()
-)
+_API_KEYS = set(k.strip() for k in os.environ.get("SCBE_API_KEYS", "scbe-dev-key,test-key").split(",") if k.strip())
 _BROWSER_SERVICE_URL = os.environ.get(
     "SCBE_BROWSER_SERVICE_URL",
     "http://127.0.0.1:8011",
@@ -152,13 +164,9 @@ _ANTHROPIC_DEFAULT_MODEL = os.environ.get(
 ).strip()
 _XAI_DEFAULT_MODEL = os.environ.get("SCBE_XAI_MODEL", "grok-beta").strip()
 _HF_DEFAULT_MODEL = os.environ.get("SCBE_HF_MODEL", "Qwen/Qwen2.5-7B-Instruct").strip()
-_HF_DATASET_REPO_RE = re.compile(
-    r"^[A-Za-z0-9][A-Za-z0-9._-]{0,95}/[A-Za-z0-9][A-Za-z0-9._-]{0,95}$"
-)
+_HF_DATASET_REPO_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,95}/[A-Za-z0-9][A-Za-z0-9._-]{0,95}$")
 _HF_ALLOWED_DATASET_REPOS = {
-    repo.strip().lower()
-    for repo in os.environ.get("SCBE_HF_ALLOWED_DATASET_REPOS", "").split(",")
-    if repo.strip()
+    repo.strip().lower() for repo in os.environ.get("SCBE_HF_ALLOWED_DATASET_REPOS", "").split(",") if repo.strip()
 }
 _HF_COMMIT_MESSAGE_MAX_LEN = 120
 _AUTOMATION_RULES_PATH = Path(
@@ -198,9 +206,7 @@ _SECRET_PREFIX_FRAGMENTS = (
     "shpat_",
     "AKIA",
 )
-_PUBLIC_SECRET_RE = re.compile(
-    r"(?:" + "|".join(_SECRET_PREFIX_FRAGMENTS) + r")[A-Za-z0-9_\-]{8,}"
-)
+_PUBLIC_SECRET_RE = re.compile(r"(?:" + "|".join(_SECRET_PREFIX_FRAGMENTS) + r")[A-Za-z0-9_\-]{8,}")
 
 
 def _redact_public_text(value: Any) -> str:
@@ -236,10 +242,32 @@ def _check_key(api_key: Optional[str] = None):
 #  Request/response models
 # ---------------------------------------------------------------------------
 
+
 class ScanRequest(BaseModel):
     content: str
     platforms: Optional[List[str]] = None
     scan_mode: str = "full"
+
+
+class GoverCheckRequest(BaseModel):
+    command: str = Field(..., description="Shell command or agent action to score")
+    context: Optional[str] = Field(None, description="Optional surrounding context")
+    agent_id: Optional[str] = Field(None, description="Optional agent identifier for audit log")
+
+
+class GoverCheckResponse(BaseModel):
+    tier: str
+    score: float
+    d_H: float
+    pd: float
+    role: str
+    command: str
+    agent_id: Optional[str]
+
+
+class GoverBatchRequest(BaseModel):
+    commands: List[str] = Field(..., description="List of commands to score")
+    agent_id: Optional[str] = Field(None)
 
 
 class TongueEncodeRequest(BaseModel):
@@ -278,6 +306,7 @@ class TelemetryRequest(BaseModel):
 
 class TrainingIngestRequest(BaseModel):
     """Game event forwarded from n8n for training data collection."""
+
     event_type: str
     context: str = ""
     outcome: str = ""
@@ -287,6 +316,7 @@ class TrainingIngestRequest(BaseModel):
 
 class N8nBrowseAction(BaseModel):
     """Compact action payload expected by browser integration endpoint."""
+
     action: str
     target: str
     value: Optional[str] = None
@@ -296,6 +326,7 @@ class N8nBrowseAction(BaseModel):
 
 class N8nBrowseRequest(BaseModel):
     """Bridge request used by n8n workflows for Playwright browsing."""
+
     actions: List[N8nBrowseAction]
     session_id: Optional[str] = None
     dry_run: bool = False
@@ -306,6 +337,7 @@ class N8nBrowseRequest(BaseModel):
 
 class CouncilRequest(BaseModel):
     """AI Round Table — fan out a query to multiple LLMs with governance."""
+
     query: str
     system: Optional[str] = None
     providers: List[str] = ["anthropic", "openai", "xai"]
@@ -317,6 +349,7 @@ class CouncilRequest(BaseModel):
 
 class LLMDispatchRequest(BaseModel):
     """Unified provider dispatch for OpenAI, Anthropic, xAI, and HF router."""
+
     provider: str
     model: Optional[str] = None
     messages: List[Dict[str, Any]] = []
@@ -399,6 +432,7 @@ class CodeExecRequest(BaseModel):
 #  Endpoints
 # ---------------------------------------------------------------------------
 
+
 @app.get("/health")
 async def health():
     return {
@@ -477,10 +511,7 @@ def _extract_openai_style_response(resp: Dict[str, Any]) -> Dict[str, Any]:
     message = choices[0].get("message", {}) or {}
     content = message.get("content", "")
     if isinstance(content, list):
-        content = "\n".join(
-            str(block.get("text", "")) if isinstance(block, dict) else str(block)
-            for block in content
-        )
+        content = "\n".join(str(block.get("text", "")) if isinstance(block, dict) else str(block) for block in content)
     return {
         "text": content or "",
         "tool_calls": message.get("tool_calls", []) or [],
@@ -593,6 +624,7 @@ def _send_zapier_event(event_payload: Dict[str, Any]) -> Dict[str, Any]:
         return {"status": "skipped", "reason": "missing_hook_url"}
     # SSRF protection: only allow known webhook domains
     from urllib.parse import urlparse
+
     parsed = urlparse(hook_url)
     _ALLOWED_WEBHOOK_HOSTS = {
         "hooks.zapier.com",
@@ -703,15 +735,60 @@ async def llm_dispatch(req: LLMDispatchRequest, x_api_key: Optional[str] = Heade
 
 # Map app seat IDs → provider + base_url + key + default model
 _ARENA_PROVIDERS = {
-    "groq":          {"base_url": "https://api.groq.com/openai/v1/chat/completions",          "key_fn": lambda: _GROQ_API_KEY,         "model": "llama-3.3-70b-versatile", "style": "openai"},
-    "cerebras":      {"base_url": "https://api.cerebras.ai/v1/chat/completions",               "key_fn": lambda: _CEREBRAS_API_KEY,     "model": "llama3.1-8b",             "style": "openai"},
-    "google_ai":     {"base_url": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", "key_fn": lambda: _GOOGLE_AI_KEY, "model": "gemini-2.5-flash", "style": "openai"},
-    "claude":        {"base_url": None,                                                        "key_fn": lambda: _ANTHROPIC_API_KEY,    "model": _ANTHROPIC_DEFAULT_MODEL,  "style": "anthropic"},
-    "xai":           {"base_url": "https://api.x.ai/v1/chat/completions",                      "key_fn": lambda: _XAI_API_KEY,          "model": "grok-3-mini-fast",        "style": "openai"},
-    "openrouter":    {"base_url": "https://openrouter.ai/api/v1/chat/completions",             "key_fn": lambda: _OPENROUTER_API_KEY,   "model": "moonshotai/kimi-k2",      "style": "openai"},
-    "github_models": {"base_url": "https://models.inference.ai.azure.com/chat/completions",    "key_fn": lambda: _GITHUB_MODELS_TOKEN,  "model": "gpt-4o-mini",             "style": "openai"},
-    "huggingface":   {"base_url": "https://router.huggingface.co/v1/chat/completions",         "key_fn": lambda: _HF_ROUTER_TOKEN,      "model": _HF_DEFAULT_MODEL,         "style": "openai"},
-    "ollama":        {"base_url": "http://127.0.0.1:11434/v1/chat/completions",                "key_fn": lambda: "ollama",              "model": "llama3.2",                "style": "openai"},
+    "groq": {
+        "base_url": "https://api.groq.com/openai/v1/chat/completions",
+        "key_fn": lambda: _GROQ_API_KEY,
+        "model": "llama-3.3-70b-versatile",
+        "style": "openai",
+    },
+    "cerebras": {
+        "base_url": "https://api.cerebras.ai/v1/chat/completions",
+        "key_fn": lambda: _CEREBRAS_API_KEY,
+        "model": "llama3.1-8b",
+        "style": "openai",
+    },
+    "google_ai": {
+        "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+        "key_fn": lambda: _GOOGLE_AI_KEY,
+        "model": "gemini-2.5-flash",
+        "style": "openai",
+    },
+    "claude": {
+        "base_url": None,
+        "key_fn": lambda: _ANTHROPIC_API_KEY,
+        "model": _ANTHROPIC_DEFAULT_MODEL,
+        "style": "anthropic",
+    },
+    "xai": {
+        "base_url": "https://api.x.ai/v1/chat/completions",
+        "key_fn": lambda: _XAI_API_KEY,
+        "model": "grok-3-mini-fast",
+        "style": "openai",
+    },
+    "openrouter": {
+        "base_url": "https://openrouter.ai/api/v1/chat/completions",
+        "key_fn": lambda: _OPENROUTER_API_KEY,
+        "model": "moonshotai/kimi-k2",
+        "style": "openai",
+    },
+    "github_models": {
+        "base_url": "https://models.inference.ai.azure.com/chat/completions",
+        "key_fn": lambda: _GITHUB_MODELS_TOKEN,
+        "model": "gpt-4o-mini",
+        "style": "openai",
+    },
+    "huggingface": {
+        "base_url": "https://router.huggingface.co/v1/chat/completions",
+        "key_fn": lambda: _HF_ROUTER_TOKEN,
+        "model": _HF_DEFAULT_MODEL,
+        "style": "openai",
+    },
+    "ollama": {
+        "base_url": "http://127.0.0.1:11434/v1/chat/completions",
+        "key_fn": lambda: "ollama",
+        "model": "llama3.2",
+        "style": "openai",
+    },
 }
 
 
@@ -850,12 +927,14 @@ async def execute_code(req: CodeExecRequest):
             "scripts": {"test": "node index.js"},
         }
 
-    payload = json.dumps({
-        "files": files,
-        "packageJson": pkg,
-        "runCommand": run_command,
-        "runTimeoutMs": timeout * 1000,
-    }).encode("utf-8")
+    payload = json.dumps(
+        {
+            "files": files,
+            "packageJson": pkg,
+            "runCommand": run_command,
+            "runTimeoutMs": timeout * 1000,
+        }
+    ).encode("utf-8")
 
     url = f"{_KERNEL_RUNNER_URL}/api/run"
     http_req = urllib_request.Request(
@@ -1056,11 +1135,66 @@ async def governance_scan(req: ScanRequest, x_api_key: Optional[str] = Header(No
     return profile.to_dict()
 
 
+@app.post("/v1/govern/check", response_model=GoverCheckResponse)
+async def govern_check(req: GoverCheckRequest, x_api_key: Optional[str] = Header(None)):
+    """L12 harmonic wall score for a single command or agent action.
+
+    Returns tier (ALLOW / QUARANTINE / DENY), score ∈ (0,1], and the
+    component distances so callers can log full governance provenance.
+    No API key required in dev mode (SCBE_API_KEYS not set); required in prod.
+    """
+    if _API_KEYS - {"scbe-dev-key", "test-key"}:
+        _check_key(x_api_key)
+    if not _GOV_CORE_AVAILABLE:
+        raise HTTPException(status_code=503, detail="scbe_governance_core not importable")
+    d_H = _gov_d_H(req.command)
+    pd = _gov_pd(req.command)
+    score = _gov_score(d_H, pd)
+    tier = _gov_tier(score)
+    role, _ = _gov_role(req.command)
+    return GoverCheckResponse(
+        tier=tier,
+        score=round(score, 4),
+        d_H=round(d_H, 4),
+        pd=round(pd, 4),
+        role=role,
+        command=req.command,
+        agent_id=req.agent_id,
+    )
+
+
+@app.post("/v1/govern/batch")
+async def govern_batch(req: GoverBatchRequest, x_api_key: Optional[str] = Header(None)):
+    """Score a list of commands in one call. Returns list in same order."""
+    if _API_KEYS - {"scbe-dev-key", "test-key"}:
+        _check_key(x_api_key)
+    if not _GOV_CORE_AVAILABLE:
+        raise HTTPException(status_code=503, detail="scbe_governance_core not importable")
+    results = []
+    for cmd in req.commands:
+        d_H = _gov_d_H(cmd)
+        pd = _gov_pd(cmd)
+        score = _gov_score(d_H, pd)
+        role, _ = _gov_role(cmd)
+        results.append(
+            {
+                "command": cmd,
+                "tier": _gov_tier(score),
+                "score": round(score, 4),
+                "d_H": round(d_H, 4),
+                "pd": round(pd, 4),
+                "role": role,
+            }
+        )
+    return {"results": results, "agent_id": req.agent_id, "count": len(results)}
+
+
 @app.post("/v1/tongue/encode")
 async def tongue_encode(req: TongueEncodeRequest, x_api_key: Optional[str] = Header(None)):
     _check_key(x_api_key)
     try:
         from symphonic_cipher.scbe_aethermoore.concept_blocks.web_agent.tongue_transport import TongueTransport
+
         transport = TongueTransport()
         if req.seal and req.context:
             env = transport.seal(req.text, tongue=req.tongue, context=req.context)
@@ -1091,6 +1225,7 @@ async def buffer_post(req: BufferPostRequest, x_api_key: Optional[str] = Header(
     if req.tongue_encode:
         try:
             from symphonic_cipher.scbe_aethermoore.concept_blocks.web_agent.tongue_transport import TongueTransport
+
             transport = TongueTransport()
             tongue = req.tongue or "KO"
             env = transport.encode(text, tongue=tongue)
@@ -1116,10 +1251,7 @@ async def buffer_post(req: BufferPostRequest, x_api_key: Optional[str] = Header(
     results = []
     if not req.schedule_at:
         publish_results = _buffer.publish_due()
-        results = [
-            {"platform": r.platform.value, "success": r.success, "url": r.post_url}
-            for r in publish_results
-        ]
+        results = [{"platform": r.platform.value, "success": r.success, "url": r.post_url} for r in publish_results]
 
     return {
         "post_id": post.post_id,
@@ -1162,8 +1294,7 @@ async def n8n_browse_proxy(req: N8nBrowseRequest, x_api_key: Optional[str] = Hea
     """Proxy n8n browse payloads to Playwright browser service."""
     _check_key(x_api_key)
     serialized_actions = [
-        action.model_dump() if hasattr(action, "model_dump") else action.dict()
-        for action in req.actions
+        action.model_dump() if hasattr(action, "model_dump") else action.dict() for action in req.actions
     ]
     payload = {
         "actions": serialized_actions,
@@ -1241,13 +1372,19 @@ def _dispatch_single_provider(provider: str, prompt: str, system_prompt: str, ma
             temperature=0.3,
         )
         if p == "openai":
-            raw = _dispatch_openai_compatible(req, "https://api.openai.com/v1/chat/completions", _OPENAI_API_KEY, _OPENAI_DEFAULT_MODEL)
+            raw = _dispatch_openai_compatible(
+                req, "https://api.openai.com/v1/chat/completions", _OPENAI_API_KEY, _OPENAI_DEFAULT_MODEL
+            )
             return {"provider": p, "text": _extract_openai_style_response(raw).get("text", ""), "status": "ok"}
         elif p == "xai":
-            raw = _dispatch_openai_compatible(req, "https://api.x.ai/v1/chat/completions", _XAI_API_KEY, _XAI_DEFAULT_MODEL)
+            raw = _dispatch_openai_compatible(
+                req, "https://api.x.ai/v1/chat/completions", _XAI_API_KEY, _XAI_DEFAULT_MODEL
+            )
             return {"provider": p, "text": _extract_openai_style_response(raw).get("text", ""), "status": "ok"}
         elif p == "huggingface":
-            raw = _dispatch_openai_compatible(req, "https://router.huggingface.co/v1/chat/completions", _HF_ROUTER_TOKEN, _HF_DEFAULT_MODEL)
+            raw = _dispatch_openai_compatible(
+                req, "https://router.huggingface.co/v1/chat/completions", _HF_ROUTER_TOKEN, _HF_DEFAULT_MODEL
+            )
             return {"provider": p, "text": _extract_openai_style_response(raw).get("text", ""), "status": "ok"}
         elif p == "anthropic":
             raw = _dispatch_anthropic(req)
@@ -1338,8 +1475,7 @@ async def council_deliberate(req: CouncilRequest, x_api_key: Optional[str] = Hea
         synthesis = all_texts[-1] if all_texts else ""
     elif req.strategy == "debate":
         synthesis = "\n\n---\n\n".join(
-            f"[{r.get('provider', '?')}]: {r.get('text', '')}"
-            for r in responses if r.get("text")
+            f"[{r.get('provider', '?')}]: {r.get('text', '')}" for r in responses if r.get("text")
         )
     else:  # consensus
         synthesis = " | ".join(all_texts) if len(all_texts) <= 2 else all_texts[0] if all_texts else ""
@@ -1504,11 +1640,9 @@ async def training_status(x_api_key: Optional[str] = Header(None)):
 #  Hyperbolic Lattice 2.5D Workflow Route
 # ---------------------------------------------------------------------------
 
+
 def _notion_token() -> str:
-    token = (
-        os.environ.get("NOTION_TOKEN", "").strip()
-        or os.environ.get("NOTION_API_KEY", "").strip()
-    )
+    token = os.environ.get("NOTION_TOKEN", "").strip() or os.environ.get("NOTION_API_KEY", "").strip()
     return token
 
 
@@ -1911,8 +2045,10 @@ async def workflow_lattice25d(
 #  ChoiceScript Branching Workflow Engine
 # ---------------------------------------------------------------------------
 
+
 class BranchExploreRequest(BaseModel):
     """Execute a branching scene graph with multi-path exploration."""
+
     graph_name: str = "research_pipeline"
     topic: str = ""
     strategy: str = "all_paths"
@@ -1925,6 +2061,7 @@ class BranchExploreRequest(BaseModel):
 
 class BranchActionRequest(BaseModel):
     """Single scene action callback from n8n branching workflow."""
+
     scene: str
     action: str
     params: Dict[str, Any] = {}
@@ -1950,6 +2087,7 @@ async def workflow_branch_explore(req: BranchExploreRequest, x_api_key: Optional
     except ImportError:
         # Fallback: direct import from same directory
         import importlib.util
+
         spec = importlib.util.spec_from_file_location(
             "choicescript_branching_engine",
             os.path.join(os.path.dirname(__file__), "choicescript_branching_engine.py"),
@@ -1971,7 +2109,9 @@ async def workflow_branch_explore(req: BranchExploreRequest, x_api_key: Optional
 
     builder = graph_builders.get(req.graph_name)
     if not builder:
-        raise HTTPException(status_code=400, detail=f"Unknown graph: {req.graph_name}. Available: {list(graph_builders.keys())}")
+        raise HTTPException(
+            status_code=400, detail=f"Unknown graph: {req.graph_name}. Available: {list(graph_builders.keys())}"
+        )
 
     graph = builder()
     engine = BranchingEngine(
@@ -1996,11 +2136,15 @@ async def workflow_branch_explore(req: BranchExploreRequest, x_api_key: Optional
         "total_scenes": result.total_scenes,
         "coverage": round(result.coverage, 3),
         "paths_explored": len(result.paths),
-        "best_path": {
-            "scenes": result.best_path.scenes_visited,
-            "score": result.best_path.score,
-            "actions": len(result.best_path.actions_taken),
-        } if result.best_path else None,
+        "best_path": (
+            {
+                "scenes": result.best_path.scenes_visited,
+                "score": result.best_path.score,
+                "actions": len(result.best_path.actions_taken),
+            }
+            if result.best_path
+            else None
+        ),
         "all_paths": [
             {
                 "id": p.path_id,
@@ -2117,14 +2261,16 @@ async def list_agents(x_api_key: Optional[str] = Header(None)):
     agents = []
     for slug, meta in _AGENT_PERSONAS.items():
         seat = _first_available_seat(meta["preferred_seats"])
-        agents.append({
-            "id": slug,
-            "name": meta["name"],
-            "role": meta["role"],
-            "available": seat is not None,
-            "seat": seat,
-            "preferred_seats": meta["preferred_seats"],
-        })
+        agents.append(
+            {
+                "id": slug,
+                "name": meta["name"],
+                "role": meta["role"],
+                "available": seat is not None,
+                "seat": seat,
+                "preferred_seats": meta["preferred_seats"],
+            }
+        )
     return {"agents": agents}
 
 
@@ -2140,12 +2286,14 @@ async def bus_events(limit: int = 50, x_api_key: Optional[str] = Header(None)):
         ts = ev.get("ts") or ev.get("timestamp") or ""
         verdict = ev.get("verdict") or ev.get("governance_verdict") or "ALLOW"
         summary = ev.get("summary") or ev.get("text") or ev.get("post_url") or ""
-        normalized.append({
-            "ts": ts,
-            "verdict": verdict,
-            "summary": summary,
-            "raw": ev,
-        })
+        normalized.append(
+            {
+                "ts": ts,
+                "verdict": verdict,
+                "summary": summary,
+                "raw": ev,
+            }
+        )
     return {"events": normalized, "count": len(normalized)}
 
 
@@ -2181,7 +2329,10 @@ async def agents_dispatch(req: AgentDispatchRequest, x_api_key: Optional[str] = 
 
     seat = req.seat or _first_available_seat(persona["preferred_seats"])
     if not seat:
-        raise HTTPException(503, "No free-tier seat is configured. Set GROQ_API_KEY, OPENROUTER_API_KEY, GOOGLE_AI_KEY, GITHUB_MODELS_TOKEN, HF_TOKEN, or run ollama.")
+        raise HTTPException(
+            503,
+            "No free-tier seat is configured. Set GROQ_API_KEY, OPENROUTER_API_KEY, GOOGLE_AI_KEY, GITHUB_MODELS_TOKEN, HF_TOKEN, or run ollama.",
+        )
     cfg = _ARENA_PROVIDERS[seat]
 
     messages: List[Dict[str, Any]] = [{"role": "system", "content": persona["system"]}]
@@ -2233,6 +2384,7 @@ async def agents_dispatch(req: AgentDispatchRequest, x_api_key: Optional[str] = 
 #  processes.
 # ---------------------------------------------------------------------------
 
+
 def _taskmgr_or_503():
     if _taskmgr_core is None:
         raise HTTPException(503, "tools.taskmgr_core unavailable (psutil not installed)")
@@ -2241,6 +2393,7 @@ def _taskmgr_or_503():
 
 def _jsonable(obj: Any) -> Any:
     import dataclasses as _dc
+
     if _dc.is_dataclass(obj):
         return _dc.asdict(obj)
     if isinstance(obj, list):

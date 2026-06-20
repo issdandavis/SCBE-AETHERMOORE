@@ -29,8 +29,7 @@ logger = logging.getLogger(__name__)
 
 _BASE_URL = "https://www.reddit.com"
 _SEARCH_TEMPLATE = (
-    _BASE_URL + "/r/{subreddit}/search.json"
-    "?q={query}&restrict_sr=1&sort=relevance&t=all&limit={limit}"
+    _BASE_URL + "/r/{subreddit}/search.json" "?q={query}&restrict_sr=1&sort=relevance&t=all&limit={limit}"
 )
 _BY_ID_TEMPLATE = _BASE_URL + "/by_id/t3_{post_id}.json"
 _HEALTH_URL = _BASE_URL + "/.json?limit=1"
@@ -68,9 +67,7 @@ class RedditSource(SourceAdapter):
     def __init__(self, config: Optional[Dict[str, Any]] = None) -> None:
         super().__init__(source_type=SourceType.REDDIT, config=config or {})
 
-        self._subreddits: List[str] = list(
-            self.config.get("subreddits", _DEFAULT_SUBREDDITS)
-        )
+        self._subreddits: List[str] = list(self.config.get("subreddits", _DEFAULT_SUBREDDITS))
         self._limit: int = int(self.config.get("limit", _DEFAULT_LIMIT))
         self._timeout: int = int(self.config.get("timeout", _DEFAULT_TIMEOUT))
         self._user_agent: str = self.config.get("user_agent", _USER_AGENT)
@@ -102,11 +99,7 @@ class RedditSource(SourceAdapter):
             if data is None:
                 continue
 
-            children = (
-                data.get("data", {}).get("children", [])
-                if isinstance(data, dict)
-                else []
-            )
+            children = data.get("data", {}).get("children", []) if isinstance(data, dict) else []
             for child in children:
                 post = child.get("data", {})
                 result = self._post_to_result(post, sub)
@@ -129,11 +122,7 @@ class RedditSource(SourceAdapter):
         if data is None:
             return None
 
-        children = (
-            data.get("data", {}).get("children", [])
-            if isinstance(data, dict)
-            else []
-        )
+        children = data.get("data", {}).get("children", []) if isinstance(data, dict) else []
         if not children:
             return None
 
@@ -173,9 +162,7 @@ class RedditSource(SourceAdapter):
             return None
 
     @staticmethod
-    def _post_to_result(
-        post: Dict[str, Any], subreddit: str
-    ) -> Optional[IngestionResult]:
+    def _post_to_result(post: Dict[str, Any], subreddit: str) -> Optional[IngestionResult]:
         """Convert a Reddit post JSON object to an ``IngestionResult``."""
         title = post.get("title", "")
         if not title:
@@ -193,9 +180,7 @@ class RedditSource(SourceAdapter):
         timestamp = ""
         if created_utc:
             try:
-                timestamp = datetime.fromtimestamp(
-                    float(created_utc), tz=timezone.utc
-                ).isoformat()
+                timestamp = datetime.fromtimestamp(float(created_utc), tz=timezone.utc).isoformat()
             except (ValueError, OSError, OverflowError):
                 pass
 

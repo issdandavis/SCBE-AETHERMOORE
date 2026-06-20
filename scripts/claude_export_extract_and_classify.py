@@ -14,6 +14,7 @@ Usage:
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 # -------------------------------------------------------------------
@@ -40,43 +41,151 @@ TONGUE_KEYWORDS = {
     "KO": ["kor'aelin", "korath", "intent", "will", "drive", "purpose", "motivation", "desire", "command"],
     "AV": ["avali", "avion", "context", "awareness", "wisdom", "knowledge", "perception", "observation", "sanskrit"],
     "RU": ["runethic", "runik", "binding", "contract", "governance", "constraint", "rule", "law", "russian"],
-    "CA": ["cassisivadan", "caleth", "implementation", "code", "compute", "construct", "execute", "function", "chinese"],
+    "CA": [
+        "cassisivadan",
+        "caleth",
+        "implementation",
+        "code",
+        "compute",
+        "construct",
+        "execute",
+        "function",
+        "chinese",
+    ],
     "UM": ["umbroth", "umbral", "security", "shadow", "protect", "guard", "shield", "defense", "japanese"],
     "DR": ["draumric", "drath", "structure", "framework", "architecture", "foundation", "pattern", "german"],
 }
 
 CONLANG_MARKERS = [
-    "tongue", "tongues", "sacred tongue", "conlang", "constructed language",
-    "kor'aelin", "avali", "runethic", "cassisivadan", "umbroth", "draumric",
-    "korath", "avion", "runik", "caleth", "umbral", "drath",
-    "mal'kythric", "sacred particle", "cursed particle",
-    "token grid", "phi-weight", "phi-scale", "semantic token",
-    "language system", "six languages", "six tongues",
-    "linguistic", "morpheme", "phoneme", "grammar",
-    "translation", "encode", "decode", "cipher",
+    "tongue",
+    "tongues",
+    "sacred tongue",
+    "conlang",
+    "constructed language",
+    "kor'aelin",
+    "avali",
+    "runethic",
+    "cassisivadan",
+    "umbroth",
+    "draumric",
+    "korath",
+    "avion",
+    "runik",
+    "caleth",
+    "umbral",
+    "drath",
+    "mal'kythric",
+    "sacred particle",
+    "cursed particle",
+    "token grid",
+    "phi-weight",
+    "phi-scale",
+    "semantic token",
+    "language system",
+    "six languages",
+    "six tongues",
+    "linguistic",
+    "morpheme",
+    "phoneme",
+    "grammar",
+    "translation",
+    "encode",
+    "decode",
+    "cipher",
 ]
 
 FICTION_MARKERS = [
-    "avalon", "pollyoneth", "spiralverse", "aethermoor", "izack", "aria",
-    "zara", "clayborn", "grey", "everweave", "chapter", "novel", "story",
-    "narrative", "character", "quest", "magic", "spire", "realm",
-    "fantasy", "dimensional", "odyssey", "raven", "codex", "lore",
-    "guild", "ritual", "world-building", "worldbuilding",
-    "ame", "elven", "demon", "dragon", "sundering",
+    "avalon",
+    "pollyoneth",
+    "spiralverse",
+    "aethermoor",
+    "izack",
+    "aria",
+    "zara",
+    "clayborn",
+    "grey",
+    "everweave",
+    "chapter",
+    "novel",
+    "story",
+    "narrative",
+    "character",
+    "quest",
+    "magic",
+    "spire",
+    "realm",
+    "fantasy",
+    "dimensional",
+    "odyssey",
+    "raven",
+    "codex",
+    "lore",
+    "guild",
+    "ritual",
+    "world-building",
+    "worldbuilding",
+    "ame",
+    "elven",
+    "demon",
+    "dragon",
+    "sundering",
 ]
 
 TECHNICAL_MARKERS = [
-    "poincare", "hyperbolic", "harmonic wall", "governance", "axiom",
-    "unitarity", "locality", "causality", "symmetry", "composition",
-    "14-layer", "pipeline", "hamiltonian", "mobius", "spectral",
-    "coherence", "breathing", "quantum", "post-quantum", "pqc",
-    "ml-kem", "ml-dsa", "dilithium", "kyber", "patent", "claim",
-    "layer 1", "layer 2", "layer 3", "layer 4", "layer 5",
-    "layer 6", "layer 7", "layer 8", "layer 9", "layer 10",
-    "layer 11", "layer 12", "layer 13", "layer 14",
-    "scbe", "aethermoore", "sacred egg", "geoseal",
-    "trust vector", "risk decision", "allow", "quarantine", "escalate", "deny",
-    "polyhedral", "quasicrystal", "lattice", "friction",
+    "poincare",
+    "hyperbolic",
+    "harmonic wall",
+    "governance",
+    "axiom",
+    "unitarity",
+    "locality",
+    "causality",
+    "symmetry",
+    "composition",
+    "14-layer",
+    "pipeline",
+    "hamiltonian",
+    "mobius",
+    "spectral",
+    "coherence",
+    "breathing",
+    "quantum",
+    "post-quantum",
+    "pqc",
+    "ml-kem",
+    "ml-dsa",
+    "dilithium",
+    "kyber",
+    "patent",
+    "claim",
+    "layer 1",
+    "layer 2",
+    "layer 3",
+    "layer 4",
+    "layer 5",
+    "layer 6",
+    "layer 7",
+    "layer 8",
+    "layer 9",
+    "layer 10",
+    "layer 11",
+    "layer 12",
+    "layer 13",
+    "layer 14",
+    "scbe",
+    "aethermoore",
+    "sacred egg",
+    "geoseal",
+    "trust vector",
+    "risk decision",
+    "allow",
+    "quarantine",
+    "escalate",
+    "deny",
+    "polyhedral",
+    "quasicrystal",
+    "lattice",
+    "friction",
 ]
 
 
@@ -129,24 +238,44 @@ def estimate_difficulty(text: str, category: str = "meta") -> float:
 
     # Count cross-domain bridges (connecting lore to math, code to theory, etc.)
     bridge_pairs = [
-        ("tongue", "harmonic"), ("lore", "axiom"), ("narrative", "geometry"),
-        ("character", "pipeline"), ("magic", "crypto"), ("story", "security"),
-        ("conlang", "embedding"), ("fiction", "math"), ("ritual", "protocol"),
-        ("spell", "algorithm"), ("realm", "layer"), ("guild", "governance"),
+        ("tongue", "harmonic"),
+        ("lore", "axiom"),
+        ("narrative", "geometry"),
+        ("character", "pipeline"),
+        ("magic", "crypto"),
+        ("story", "security"),
+        ("conlang", "embedding"),
+        ("fiction", "math"),
+        ("ritual", "protocol"),
+        ("spell", "algorithm"),
+        ("realm", "layer"),
+        ("guild", "governance"),
     ]
     bridges = sum(1 for a, b in bridge_pairs if a in lower and b in lower)
 
     # Count application verbs (doing, not describing)
     apply_verbs = [
-        "implement", "build", "design", "compute", "derive", "prove",
-        "construct", "synthesize", "integrate", "validate", "enforce",
-        "translate", "convert", "transform", "map", "route",
+        "implement",
+        "build",
+        "design",
+        "compute",
+        "derive",
+        "prove",
+        "construct",
+        "synthesize",
+        "integrate",
+        "validate",
+        "enforce",
+        "translate",
+        "convert",
+        "transform",
+        "map",
+        "route",
     ]
     applications = sum(1 for v in apply_verbs if v in lower)
 
     # Multi-tongue activation (using multiple tongues = harder)
-    tongue_hits = sum(1 for kw_list in TONGUE_KEYWORDS.values()
-                      for kw in kw_list if kw in lower)
+    tongue_hits = sum(1 for kw_list in TONGUE_KEYWORDS.values() for kw in kw_list if kw in lower)
 
     # Base difficulty by category
     base = {"fiction": 0.2, "conlang": 0.4, "technical": 0.5, "meta": 0.1}.get(category, 0.1)
@@ -191,11 +320,13 @@ def extract():
                 sender = msg.get("sender", "unknown")
                 msg_time = msg.get("created_at", "")
                 if text.strip():
-                    messages.append({
-                        "role": "assistant" if sender == "assistant" else "user",
-                        "content": text,
-                        "timestamp": msg_time,
-                    })
+                    messages.append(
+                        {
+                            "role": "assistant" if sender == "assistant" else "user",
+                            "content": text,
+                            "timestamp": msg_time,
+                        }
+                    )
                     total_chars += len(text)
 
             if not messages:
@@ -222,19 +353,21 @@ def extract():
             # Combine text for scoring (first 10 messages)
             all_text = (name or "") + " " + " ".join(m["content"] for m in messages[:10])
 
-            index.append({
-                "file": conv_file.name,
-                "id": conv_id,
-                "title": name or "Untitled",
-                "created": created,
-                "message_count": len(messages),
-                "total_chars": total_chars,
-                "first_user_preview": first_user,
-                "first_assistant_preview": first_asst,
-                "fiction_score": score_text(all_text, FICTION_MARKERS),
-                "technical_score": score_text(all_text, TECHNICAL_MARKERS),
-                "conlang_score": score_text(all_text, CONLANG_MARKERS),
-            })
+            index.append(
+                {
+                    "file": conv_file.name,
+                    "id": conv_id,
+                    "title": name or "Untitled",
+                    "created": created,
+                    "message_count": len(messages),
+                    "total_chars": total_chars,
+                    "first_user_preview": first_user,
+                    "first_assistant_preview": first_asst,
+                    "fiction_score": score_text(all_text, FICTION_MARKERS),
+                    "technical_score": score_text(all_text, TECHNICAL_MARKERS),
+                    "conlang_score": score_text(all_text, CONLANG_MARKERS),
+                }
+            )
 
             if conv_count % 100 == 0:
                 print(f"  ... processed {conv_count} conversations")
@@ -247,11 +380,17 @@ def extract():
     print(f"Index: {INDEX_FILE}")
 
     # Category distribution
-    fiction = sum(1 for e in index if e["fiction_score"] > e["technical_score"] and e["fiction_score"] > e["conlang_score"])
-    technical = sum(1 for e in index if e["technical_score"] > e["fiction_score"] and e["technical_score"] > e["conlang_score"])
-    conlang = sum(1 for e in index if e["conlang_score"] > e["fiction_score"] and e["conlang_score"] > e["technical_score"])
+    fiction = sum(
+        1 for e in index if e["fiction_score"] > e["technical_score"] and e["fiction_score"] > e["conlang_score"]
+    )
+    technical = sum(
+        1 for e in index if e["technical_score"] > e["fiction_score"] and e["technical_score"] > e["conlang_score"]
+    )
+    conlang = sum(
+        1 for e in index if e["conlang_score"] > e["fiction_score"] and e["conlang_score"] > e["technical_score"]
+    )
     mixed = len(index) - fiction - technical - conlang
-    print(f"\nPreliminary keyword classification:")
+    print("\nPreliminary keyword classification:")
     print(f"  Fiction/Lore: {fiction}")
     print(f"  Technical/SCBE: {technical}")
     print(f"  Conlang/Tongues: {conlang}")
@@ -305,7 +444,7 @@ def classify():
         cat = e["category"]
         cats[cat] = cats.get(cat, 0) + 1
 
-    print(f"\nClassification results:")
+    print("\nClassification results:")
     for cat, count in sorted(cats.items(), key=lambda x: -x[1]):
         print(f"  {cat}: {count}")
     print(f"\nSaved: {CLASSIFIED_FILE}")
@@ -391,7 +530,9 @@ def convert():
             if category == "fiction":
                 system_content += "You are discussing Spiralverse lore, worldbuilding, and creative writing."
             elif category == "conlang":
-                system_content += "You are discussing the Six Sacred Tongues constructed language system and its applications."
+                system_content += (
+                    "You are discussing the Six Sacred Tongues constructed language system and its applications."
+                )
             elif category == "technical":
                 system_content += "You are discussing SCBE technical architecture, hyperbolic geometry, and AI safety."
             else:
@@ -436,13 +577,18 @@ def convert():
             total += 1
             i = j + 1
 
-    print(f"\nSFT conversion complete:")
+    print("\nSFT conversion complete:")
     print(f"  Total records: {total}")
     for cat, count in sorted(counts.items(), key=lambda x: -x[1]):
         print(f"  {cat}: {count}")
-    print(f"\nOutput files:")
-    for name, path in [("fiction", SFT_FICTION), ("technical", SFT_TECHNICAL),
-                        ("conlang", SFT_CONLANG), ("meta", SFT_META), ("combined", SFT_COMBINED)]:
+    print("\nOutput files:")
+    for name, path in [
+        ("fiction", SFT_FICTION),
+        ("technical", SFT_TECHNICAL),
+        ("conlang", SFT_CONLANG),
+        ("meta", SFT_META),
+        ("combined", SFT_COMBINED),
+    ]:
         if path.exists():
             size = path.stat().st_size / 1024 / 1024
             print(f"  {name}: {path.name} ({size:.1f} MB)")

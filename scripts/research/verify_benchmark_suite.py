@@ -11,7 +11,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 BENCHMARK_DIR = REPO_ROOT / "artifacts" / "benchmark"
 RESEARCH_DIR = REPO_ROOT / "artifacts" / "research"
@@ -204,28 +203,36 @@ def build_markdown(report: dict[str, Any]) -> str:
         lines.append("|---|---:|---:|---:|---:|---:|---:|")
         for metric, data in bench["aggregate"]["metrics"].items():
             lines.append(
-                f"| `{metric}` | {data['baseline']} | {data['mean']} | {data['std']} | {data['min']} | {data['max']} | {data['delta_vs_baseline']} |"
+                f"| `{metric}` | {data['baseline']} | {data['mean']} | {data['std']} "
+                f"| {data['min']} | {data['max']} | {data['delta_vs_baseline']} |"
             )
         lines.append("")
     lines.append("## Conclusions")
     lines.append("")
     lines.append(
-        "1. All four benchmark scripts were deterministic over five reruns; the repeated outputs matched the saved baseline artifacts exactly."
+        "1. All four benchmark scripts were deterministic over five reruns; "
+        "the repeated outputs matched the saved baseline artifacts exactly."
     )
     lines.append(
-        "2. `hyperbolic_helix_test.py` reproduced the same architecture tradeoff every time: flat retrieval wins recall, helix wins separation."
+        "2. `hyperbolic_helix_test.py` reproduced the same architecture tradeoff every time: "
+        "flat retrieval wins recall, helix wins separation."
     )
     lines.append(
-        "3. `semantic_vs_stub_comparison.py` reproduced the current reality that the semantic L3 path does not yet beat the stub on this exact detection logic."
+        "3. `semantic_vs_stub_comparison.py` reproduced the current reality that the semantic L3 path "
+        "does not yet beat the stub on this exact detection logic."
     )
     lines.append(
-        "4. `unified_triangulation.py` reproduced the null-space / remainder result, but it did not beat the simpler gate on detection-quality."
+        "4. `unified_triangulation.py` reproduced the null-space / remainder result, "
+        "but it did not beat the simpler gate on detection-quality."
     )
     lines.append(
-        "5. `null_space_ablation.py` reproduced the sharper finding: null space is a boost feature that can close the last 14.3% of misses, but it explodes held-out false positives when used as a universal gate."
+        "5. `null_space_ablation.py` reproduced the sharper finding: null space is a boost feature "
+        "that can close the last 14.3% of misses, but it explodes held-out false positives "
+        "when used as a universal gate."
     )
     lines.append(
-        "6. The reliable claim is reproducibility of the measurements, not automatic promotion of every experimental idea."
+        "6. The reliable claim is reproducibility of the measurements, "
+        "not automatic promotion of every experimental idea."
     )
     lines.append("")
     return "\n".join(lines) + "\n"
@@ -365,7 +372,9 @@ def build_html(report: dict[str, Any]) -> str:
     <div class="eyebrow">Five-run verification</div>
     <h1>Benchmark claims rerun, compared, and stress-checked for repeatability.</h1>
     <p class="lead">
-      This page is the reproducibility layer for the current SCBE benchmark claims. Each benchmark was rerun five times under the same code and corpus, then compared against the previously saved artifact. The goal here is not hype. The goal is to separate repeatable findings from one-off excitement.
+      This page is the reproducibility layer for the current SCBE benchmark claims. Each benchmark was rerun \
+five times under the same code and corpus, then compared against the previously saved artifact. The goal \
+here is not hype. The goal is to separate repeatable findings from one-off excitement.
     </p>
     <div class="bar">
       <div class="chip">Repeats: {report['repeats']}</div>
@@ -379,22 +388,29 @@ def build_html(report: dict[str, Any]) -> str:
       <div class="panel">
         <h2>Hyperbolic helix</h2>
         <div class="metric">{hs['helix_separation']['mean']:.4f}</div>
-        <p>Mean helix separation across five reruns. This exactly reproduced the saved baseline and remained {helix_gain:.1f}% above the flat baseline on the same benchmark.</p>
+        <p>Mean helix separation across five reruns. This exactly reproduced the saved baseline \
+and remained {helix_gain:.1f}% above the flat baseline on the same benchmark.</p>
       </div>
       <div class="panel">
         <h2>Null-space ablation</h2>
-        <div class="metric">{format_pct(ns['e4_detection_rate']['mean'])} → {format_pct(ns['null_detection_rate']['mean'])}</div>
-        <p>Null space closes the missed attacks in the ablation, but it also drives held-out false positives from {format_pct(ns['e4_holdout_fp_rate']['mean'])} to {format_pct(ns['null_holdout_fp_rate']['mean'])}. That makes it a secondary feature, not a universal gate.</p>
+        <div class="metric">{format_pct(ns['e4_detection_rate']['mean'])} → \
+{format_pct(ns['null_detection_rate']['mean'])}</div>
+        <p>Null space closes the missed attacks in the ablation, but it also drives held-out false positives \
+from {format_pct(ns['e4_holdout_fp_rate']['mean'])} to {format_pct(ns['null_holdout_fp_rate']['mean'])}. \
+That makes it a secondary feature, not a universal gate.</p>
       </div>
       <div class="panel">
         <h2>Unified triangulation</h2>
         <div class="metric">{format_pct(us['detection_rate']['mean'])}</div>
-        <p>Mean attack detection rate over five reruns. The script was stable, but this unified stack still underperformed the simpler high-precision gate.</p>
+        <p>Mean attack detection rate over five reruns. The script was stable, but this unified stack \
+still underperformed the simpler high-precision gate.</p>
       </div>
       <div class="panel">
         <h2>Scientific verdict</h2>
         <div class="metric">5 / 5</div>
-        <p>All benchmark scripts reproduced exactly across five reruns. The reproducibility is strong. The promotion decision is still selective: helix separation survives, null-space helps only in the uncertain zone, and the simpler gate remains the cleanest detector.</p>
+        <p>All benchmark scripts reproduced exactly across five reruns. The reproducibility is strong. \
+The promotion decision is still selective: helix separation survives, null-space helps only in the \
+uncertain zone, and the simpler gate remains the cleanest detector.</p>
       </div>
     </div>
 
@@ -405,7 +421,8 @@ def build_html(report: dict[str, Any]) -> str:
         <tr><td>1</td><td>Loaded the prior artifact for each benchmark as the baseline snapshot.</td></tr>
         <tr><td>2</td><td>Reran each benchmark script five times under the same code and corpus.</td></tr>
         <tr><td>3</td><td>Captured top-level metrics after every run and computed mean, std, min, and max.</td></tr>
-        <tr><td>4</td><td>Compared repeated values against the baseline artifact rather than a memory of earlier claims.</td></tr>
+        <tr><td>4</td><td>Compared repeated values against the baseline artifact rather than a memory \
+of earlier claims.</td></tr>
         <tr><td>5</td><td>Ran a deterministic adversarial regression lane as a control test.</td></tr>
       </table>
     </div>
@@ -497,7 +514,11 @@ def build_html(report: dict[str, Any]) -> str:
     </div>
 
     <div class="note">
-      The most important result here is reproducibility. The measurements repeated exactly across five reruns. The strongest geometric claim that survived this check is the helix separation advantage. The strongest practical warning that survived this check is that null-space should be routed only into the uncertain zone, because the universal-gate version buys perfect attack catch at the cost of perfect held-out false positives.
+      The most important result here is reproducibility. The measurements repeated exactly across five \
+reruns. The strongest geometric claim that survived this check is the helix separation advantage. The \
+strongest practical warning that survived this check is that null-space should be routed only into the \
+uncertain zone, because the universal-gate version buys perfect attack catch at the cost of perfect \
+held-out false positives.
     </div>
   </div>
 </body>

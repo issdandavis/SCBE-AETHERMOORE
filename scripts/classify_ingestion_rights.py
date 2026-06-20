@@ -19,7 +19,9 @@ from python.scbe.ingestion_rights import (  # noqa: E402
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Classify ingestion rights for a source artifact using the SCBE source registry.")
+    parser = argparse.ArgumentParser(
+        description="Classify ingestion rights for a source artifact using the SCBE source registry."
+    )
     parser.add_argument("--registry", type=Path, default=DEFAULT_SOURCE_REGISTRY_PATH)
     parser.add_argument("--list-sources", action="store_true")
     parser.add_argument("--source-id")

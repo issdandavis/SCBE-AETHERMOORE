@@ -119,7 +119,7 @@ Use this lane when the task is about document authority, note consolidation, rep
 - `START_HERE.md`
 - `CANONICAL_SYSTEM_STATE.md`
 - `docs/README_INDEX.md`
-- `docs/CLEANUP_NOTES.md`
+- `docs/archive/cleanup_notes.md`
 - `docs/REPO_SURFACE_MAP.md`
 - `docs/ops/DOCUMENT_MANAGEMENT_OPERATING_MODEL.md`
 - `skills/scbe-document-management/SKILL.md`

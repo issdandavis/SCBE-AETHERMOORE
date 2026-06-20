@@ -62,6 +62,7 @@ SACRED_DATASETS = [
 # DATA LOADING
 # ============================================================
 
+
 def load_sft_texts(file_list: list[str]) -> list[str]:
     """Load SFT datasets and extract plain text for tokenizer training."""
     texts: list[str] = []
@@ -162,6 +163,7 @@ class SacredTongueDataset(TorchDataset):
 # ============================================================
 # APPROACH 1: VOCAB REPLACEMENT
 # ============================================================
+
 
 def train_vocab_replacement(texts: list[str]) -> None:
     """Replace Qwen tokenizer entirely with Sacred Tongues."""
@@ -268,6 +270,7 @@ def train_vocab_replacement(texts: list[str]) -> None:
 # APPROACH 2: BRIDGE LAYER
 # ============================================================
 
+
 def train_bridge(texts: list[str]) -> None:
     """Train a bridge layer: Sacred Tongues → Qwen embedding space."""
     print("\n" + "=" * 70)
@@ -315,14 +318,17 @@ def train_bridge(texts: list[str]) -> None:
 
     # Apply LoRA to transformer layers (bridge is fully trainable)
     base_model = prepare_model_for_kbit_training(base_model, use_gradient_checkpointing=True)
-    base_model = get_peft_model(base_model, LoraConfig(
-        r=8,  # Smaller r — bridge carries most adaptation load
-        lora_alpha=16,
-        lora_dropout=0.05,
-        bias="none",
-        task_type="CAUSAL_LM",
-        target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
-    ))
+    base_model = get_peft_model(
+        base_model,
+        LoraConfig(
+            r=8,  # Smaller r — bridge carries most adaptation load
+            lora_alpha=16,
+            lora_dropout=0.05,
+            bias="none",
+            task_type="CAUSAL_LM",
+            target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
+        ),
+    )
 
     # Count params
     bridge_params = sum(p.numel() for p in bridge.parameters())
@@ -338,10 +344,13 @@ def train_bridge(texts: list[str]) -> None:
     loader = DataLoader(dataset, batch_size=2, shuffle=True, num_workers=0)
 
     # Optimizer — bridge (full LR) + LoRA (lower LR)
-    optimizer = torch.optim.AdamW([
-        {"params": bridge.parameters(), "lr": 1e-3},
-        {"params": [p for p in base_model.parameters() if p.requires_grad], "lr": 2e-4},
-    ], weight_decay=0.01)
+    optimizer = torch.optim.AdamW(
+        [
+            {"params": bridge.parameters(), "lr": 1e-3},
+            {"params": [p for p in base_model.parameters() if p.requires_grad], "lr": 2e-4},
+        ],
+        weight_decay=0.01,
+    )
 
     # Training loop
     bridged.train()
@@ -395,6 +404,7 @@ def train_bridge(texts: list[str]) -> None:
 # ============================================================
 # MAIN
 # ============================================================
+
 
 def main():
     parser = argparse.ArgumentParser(description="Sacred Tongues tokenizer training")

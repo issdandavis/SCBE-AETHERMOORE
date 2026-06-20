@@ -1,8 +1,10 @@
 """Run YouTube metadata sync and Apollo review as one local workflow.
 
 Usage:
-    python scripts/apollo/youtube_sync_and_review.py preview --input artifacts/apollo/video_reviews/youtube_title_tag_updates_2026-03-26.json
-    python scripts/apollo/youtube_sync_and_review.py apply --input artifacts/apollo/video_reviews/youtube_title_tag_updates_2026-03-26.json
+    python scripts/apollo/youtube_sync_and_review.py preview \\
+        --input artifacts/apollo/video_reviews/youtube_title_tag_updates_2026-03-26.json
+    python scripts/apollo/youtube_sync_and_review.py apply \\
+        --input artifacts/apollo/video_reviews/youtube_title_tag_updates_2026-03-26.json
 """
 
 from __future__ import annotations
@@ -11,7 +13,6 @@ import argparse
 import subprocess
 import sys
 from pathlib import Path
-
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 SYNC_SCRIPT = ROOT / "scripts" / "apollo" / "youtube_metadata_sync.py"

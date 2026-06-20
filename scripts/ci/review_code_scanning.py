@@ -13,6 +13,7 @@ Usage:
 
 This is a READ-ONLY review tool. It does not modify any files.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -22,7 +23,6 @@ import sys
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
-
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 
@@ -85,8 +85,16 @@ def fetch_alerts(state: str = "open") -> list[Alert]:
     page = 1
     while True:
         result = subprocess.run(
-            ["gh", "api", f"repos/issdandavis/SCBE-AETHERMOORE/code-scanning/alerts?state={state}&per_page=100&page={page}"],
-            capture_output=True, text=True, timeout=30, encoding="utf-8", errors="replace",
+            [
+                "gh",
+                "api",
+                f"repos/issdandavis/SCBE-AETHERMOORE/code-scanning/alerts?state={state}&per_page=100&page={page}",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            encoding="utf-8",
+            errors="replace",
         )
         if result.returncode != 0:
             break
@@ -95,16 +103,18 @@ def fetch_alerts(state: str = "open") -> list[Alert]:
             break
         for d in data:
             loc = d.get("most_recent_instance", {}).get("location", {})
-            alerts.append(Alert(
-                number=d["number"],
-                state=d["state"],
-                rule_id=d["rule"]["id"],
-                severity=d.get("rule", {}).get("security_severity_level") or "none",
-                file_path=loc.get("path", "unknown"),
-                line=loc.get("start_line", 0),
-                message=d.get("most_recent_instance", {}).get("message", {}).get("text", "")[:150],
-                dismissed_reason=d.get("dismissed_reason", "") or "",
-            ))
+            alerts.append(
+                Alert(
+                    number=d["number"],
+                    state=d["state"],
+                    rule_id=d["rule"]["id"],
+                    severity=d.get("rule", {}).get("security_severity_level") or "none",
+                    file_path=loc.get("path", "unknown"),
+                    line=loc.get("start_line", 0),
+                    message=d.get("most_recent_instance", {}).get("message", {}).get("text", "")[:150],
+                    dismissed_reason=d.get("dismissed_reason", "") or "",
+                )
+            )
         page += 1
     return alerts
 
@@ -143,7 +153,7 @@ def check_if_fixed(alert: Alert) -> bool:
 
     if alert.rule_id == "py/empty-except":
         # Check nearby lines for bare except with only pass
-        region = "\n".join(lines[max(0, alert.line - 3):alert.line + 3])
+        region = "\n".join(lines[max(0, alert.line - 3) : alert.line + 3])
         return "except:" not in region or "# " in region
 
     if alert.rule_id == "py/unused-global-variable":
@@ -189,7 +199,10 @@ def build_report(alerts: list[Alert], verify: bool = False) -> ReviewReport:
 
 
 def print_summary(report: ReviewReport):
-    print(f"CodeQL: {report.total_open} open | {len(report.auto_fixable)} auto-fixable | {len(report.needs_review)} needs review | {len(report.stale)} stale")
+    print(
+        f"CodeQL: {report.total_open} open | {len(report.auto_fixable)} auto-fixable "
+        f"| {len(report.needs_review)} needs review | {len(report.stale)} stale"
+    )
     if report.already_fixed:
         print(f"  ({len(report.already_fixed)} already fixed in code, waiting for re-scan)")
 
@@ -199,7 +212,7 @@ def print_full_report(report: ReviewReport):
     print(f"  CODE SCANNING REVIEW — {report.total_open} Open Alerts")
     print(f"{'='*70}")
 
-    print(f"\n  Severity breakdown:")
+    print("\n  Severity breakdown:")
     for sev in ["critical", "high", "medium", "low", "none"]:
         count = report.by_severity.get(sev, 0)
         if count:
@@ -215,7 +228,7 @@ def print_full_report(report: ReviewReport):
         if fix_hint:
             print(f"      Fix: {fix_hint}")
 
-    print(f"\n  Top files by alert count:")
+    print("\n  Top files by alert count:")
     for fpath, alerts in sorted(report.by_file.items(), key=lambda x: -len(x[1]))[:15]:
         exists = "  " if file_exists(fpath) else " [DELETED]"
         print(f"    {len(alerts):>3}  {fpath}{exists}")
@@ -232,7 +245,7 @@ def print_full_report(report: ReviewReport):
 
     # Actionable summary
     print(f"\n{'='*70}")
-    print(f"  ACTION ITEMS")
+    print("  ACTION ITEMS")
     print(f"{'='*70}")
     print(f"  Auto-fixable:  {len(report.auto_fixable):>3} (can be fixed by scripts/CI)")
     print(f"  Needs review:  {len(report.needs_review):>3} (human judgment needed)")

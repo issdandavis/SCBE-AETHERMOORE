@@ -89,6 +89,46 @@
       "dest": "/api/agent/products.js"
     },
     {
+      "src": "^/atomic-lab/?$",
+      "dest": "/api/agent/atomic-lab-page.js"
+    },
+    {
+      "src": "^/ai-chemistry-set/?$",
+      "dest": "/api/agent/ai-chemistry-set-page.js"
+    },
+    {
+      "src": "^/ai-materials-bench/?$",
+      "dest": "/api/agent/ai-materials-bench-page.js"
+    },
+    {
+      "src": "^/ai-waves-lab/?$",
+      "dest": "/api/agent/ai-waves-lab-page.js"
+    },
+    {
+      "src": "^/geoseal-hermes/?$",
+      "dest": "/api/agent/geoseal-hermes-page.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/atomic-lab\\.html$",
+      "dest": "/api/agent/atomic-lab-page.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/ai-chemistry-set\\.html$",
+      "dest": "/api/agent/ai-chemistry-set-page.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/ai-materials-bench\\.html$",
+      "dest": "/api/agent/ai-materials-bench-page.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/ai-waves-lab\\.html$",
+      "dest": "/api/agent/ai-waves-lab-page.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/geoseal-hermes\\.html$",
+      "dest": "/api/agent/geoseal-hermes-page.js"
+    },
+    {
       "src": "^/SCBE-AETHERMOORE/products\\.html$",
       "dest": "/api/agent/products.js"
     },

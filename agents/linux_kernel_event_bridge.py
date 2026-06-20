@@ -98,24 +98,30 @@ def map_falco_event_to_kernel_event(event: dict[str, Any], *, host_default: str 
     evt_type = _to_str(_pick(fields, "evt.type", "event.type", default=event.get("evt_type", ""))).lower()
     operation = _map_evt_type_to_operation(evt_type)
 
-    host = _to_str(
-        _pick(
-            fields,
-            "host.name",
-            "k8s.node.name",
-            default=event.get("hostname", host_default),
+    host = (
+        _to_str(
+            _pick(
+                fields,
+                "host.name",
+                "k8s.node.name",
+                default=event.get("hostname", host_default),
+            )
         )
-    ) or host_default
+        or host_default
+    )
     pid = _to_int(_pick(fields, "proc.pid", "process.pid", "evt.pid", default=event.get("pid", 0)))
-    process_name = _to_str(
-        _pick(
-            fields,
-            "proc.name",
-            "process.name",
-            "evt.arg.procname",
-            default=event.get("process_name", "unknown"),
-        )
-    ).lower() or "unknown"
+    process_name = (
+        _to_str(
+            _pick(
+                fields,
+                "proc.name",
+                "process.name",
+                "evt.arg.procname",
+                default=event.get("process_name", "unknown"),
+            )
+        ).lower()
+        or "unknown"
+    )
     parent_process = _to_str(
         _pick(fields, "proc.pname", "process.parent.name", "proc.aname[1]", default=event.get("parent_process", ""))
     ).lower()
@@ -154,15 +160,18 @@ def map_falco_event_to_kernel_event(event: dict[str, Any], *, host_default: str 
         default=False,
     )
 
-    hash_sha256 = _to_str(
-        _pick(
-            fields,
-            "file.sha256",
-            "proc.hash.sha256",
-            "scbe.sha256",
-            default=event.get("hash_sha256", ""),
+    hash_sha256 = (
+        _to_str(
+            _pick(
+                fields,
+                "file.sha256",
+                "proc.hash.sha256",
+                "scbe.sha256",
+                default=event.get("hash_sha256", ""),
+            )
         )
-    ) or None
+        or None
+    )
 
     geometry_norm = _to_float(
         _pick(
@@ -246,4 +255,3 @@ class LinuxKernelAntivirusBridge:
         if not isinstance(payload, dict):
             raise ValueError("falco line must be a JSON object")
         return self.evaluate_falco_event(payload, host_default=host_default)
-

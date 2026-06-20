@@ -63,18 +63,15 @@ for t in TONGUES:
     sv = state_vectors(runs[t])[WARMUP:]
     norms = [vec_norm(v) for v in sv]
     # Geometric mean of successive ratios -> empirical |lambda|
-    ratios = [norms[i + 1] / norms[i] for i in range(len(norms) - 1)
-              if norms[i] > 1e-12]
+    ratios = [norms[i + 1] / norms[i] for i in range(len(norms) - 1) if norms[i] > 1e-12]
     log_mean = statistics.mean(math.log(r) for r in ratios if r > 0)
     lam = math.exp(log_mean)
     lambdas[t] = lam
     lang = TONGUE_LANG[t]
-    print(f"  {t} -> {lang:10s}  |lambda| = {lam:.6f}   "
-          f"||state|| mean {statistics.mean(norms):.4f}")
+    print(f"  {t} -> {lang:10s}  |lambda| = {lam:.6f}   " f"||state|| mean {statistics.mean(norms):.4f}")
 
-lam_dev = max(abs(l - 1.0) for l in lambdas.values())
-print(f"  max deviation from 1.0: {lam_dev:.6f}  "
-      f"({'NEUTRALLY STABLE' if lam_dev < 0.01 else 'DRIFTING'})")
+lam_dev = max(abs(val - 1.0) for val in lambdas.values())
+print(f"  max deviation from 1.0: {lam_dev:.6f}  " f"({'NEUTRALLY STABLE' if lam_dev < 0.01 else 'DRIFTING'})")
 
 # --- 2) Trit-collision: +1/+1 write-write coincidences only ---
 #
@@ -86,6 +83,7 @@ print(f"  max deviation from 1.0: {lam_dev:.6f}  "
 print("\n=== 2) TRIT COLLISION (only +1/+1 = write-write is dangerous) ===")
 EPS = 0.25  # zero-band; outside it the tongue is acting
 
+
 def polarity(x):
     if x > EPS:
         return +1
@@ -93,15 +91,16 @@ def polarity(x):
         return -1
     return 0
 
+
 pols = {t: [polarity(v) for v in runs[t][WARMUP:]] for t in TONGUES}
 N_steps = len(next(iter(pols.values())))
 
-ww_total = 0   # write-write (dangerous)
-wr_total = 0   # write-read  (safe)
-wn_total = 0   # write-negate (cancel)
+ww_total = 0  # write-write (dangerous)
+wr_total = 0  # write-read  (safe)
+wn_total = 0  # write-negate (cancel)
 ww_pairs = {}
 for ai, a in enumerate(TONGUES):
-    for b in TONGUES[ai + 1:]:
+    for b in TONGUES[ai + 1 :]:
         ww = wr = wn = 0
         for pa, pb in zip(pols[a], pols[b]):
             if pa == 1 and pb == 1:
@@ -124,8 +123,7 @@ if ww_pairs:
     worst = max(ww_pairs.items(), key=lambda kv: kv[1])
     print(f"  worst pair           : {worst[0]} -> {worst[1]} ww-collisions")
 print(f"  ww-rate per pair-step: {ww_total / (15 * N_steps):.4f}")
-print(f"  conflict check       : "
-      f"{'PASS (no ww-collisions)' if ww_total == 0 else 'CONFLICTS PRESENT'}")
+print("  conflict check       : " f"{'PASS (no ww-collisions)' if ww_total == 0 else 'CONFLICTS PRESENT'}")
 
 # --- 3) Phase-angle distribution at end of run ---
 print("\n=== 3) PHASE-ANGLE (final angles spread by golden angle) ===")
@@ -135,13 +133,13 @@ for t in TONGUES:
     x, y = sv[-1]
     final_angles[t] = math.atan2(y, x) % (2 * math.pi)
 ordered = sorted(final_angles.values())
-gaps = [(ordered[(i + 1) % 6] - ordered[i]) % (2 * math.pi)
-        for i in range(6)]
-print(f"  final angles (rad): "
-      f"{[f'{a:.3f}' for a in ordered]}")
+gaps = [(ordered[(i + 1) % 6] - ordered[i]) % (2 * math.pi) for i in range(6)]
+print("  final angles (rad): " f"{[f'{a:.3f}' for a in ordered]}")
 print(f"  gaps (rad)        : {[f'{g:.3f}' for g in gaps]}")
-print(f"  gap stdev         : {statistics.stdev(gaps):.4f}  "
-      f"({'EVENLY SPREAD' if statistics.stdev(gaps) < 0.5 else 'CLUSTERED'})")
+print(
+    f"  gap stdev         : {statistics.stdev(gaps):.4f}  "
+    f"({'EVENLY SPREAD' if statistics.stdev(gaps) < 0.5 else 'CLUSTERED'})"
+)
 
 # --- Summary ---
 print("\n=== SUMMARY ===")

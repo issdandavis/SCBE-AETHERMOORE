@@ -29,7 +29,6 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
-
 BASE_MODEL = os.environ.get(
     "SCBE_V4_BASE_MODEL",
     "issdandavis/scbe-coding-agent-qwen-merged-coding-model-v1",
@@ -47,9 +46,7 @@ DATASET_FILENAME = os.environ.get(
     "bijective_v4_body_fidelity.sft.jsonl",
 ).strip()
 GATE_TONGUES = tuple(
-    t.strip()
-    for t in os.environ.get("SCBE_V4_GATE_TONGUES", "AV,RU,CA,UM,DR").split(",")
-    if t.strip()
+    t.strip() for t in os.environ.get("SCBE_V4_GATE_TONGUES", "AV,RU,CA,UM,DR").split(",") if t.strip()
 )
 GATE_PASS_RATE_MIN = float(os.environ.get("SCBE_V4_GATE_PASS_RATE_MIN", "0.80"))
 GATE_PER_CASE_MIN = float(os.environ.get("SCBE_V4_GATE_PER_CASE_MIN", "0.60"))
@@ -65,9 +62,7 @@ def _json_event(event: str, **payload: Any) -> None:
 
 
 def _token() -> str:
-    token = os.environ.get("HF_TOKEN", "").strip() or os.environ.get(
-        "HUGGING_FACE_HUB_TOKEN", ""
-    ).strip()
+    token = os.environ.get("HF_TOKEN", "").strip() or os.environ.get("HUGGING_FACE_HUB_TOKEN", "").strip()
     if not token:
         raise RuntimeError("Missing HF_TOKEN secret")
     os.environ.setdefault("HUGGING_FACE_HUB_TOKEN", token)
@@ -107,7 +102,10 @@ CASES = (
     ),
     PromptCase(
         case_id="safe_divide",
-        prompt="Write a Python function safe_divide(a: float, b: float) -> float | None that returns None when division by zero occurs.",
+        prompt=(
+            "Write a Python function safe_divide(a: float, b: float) -> float | None "
+            "that returns None when division by zero occurs."
+        ),
         entrypoint="safe_divide",
         assertions=(
             "assert safe_divide(6, 3) == 2",
@@ -116,7 +114,10 @@ CASES = (
     ),
     PromptCase(
         case_id="parse_json_name",
-        prompt="Write a Python function extract_name(payload: str) -> str | None that parses a JSON string and safely returns the field 'name', or None if missing/invalid.",
+        prompt=(
+            "Write a Python function extract_name(payload: str) -> str | None that parses a JSON string "
+            "and safely returns the field 'name', or None if missing/invalid."
+        ),
         entrypoint="extract_name",
         assertions=(
             "assert extract_name('{\"name\": \"Issac\"}') == 'Issac'",
@@ -126,7 +127,10 @@ CASES = (
     ),
     PromptCase(
         case_id="bounded_factorial",
-        prompt="Write a Python function factorial(n: int) -> int that computes factorial recursively for n >= 0 and raises ValueError for negative inputs.",
+        prompt=(
+            "Write a Python function factorial(n: int) -> int that computes factorial recursively "
+            "for n >= 0 and raises ValueError for negative inputs."
+        ),
         entrypoint="factorial",
         assertions=(
             "assert factorial(0) == 1",
@@ -136,7 +140,10 @@ CASES = (
     ),
     PromptCase(
         case_id="eval_runner",
-        prompt="Write a Python function run_expr(expr: str) -> object that evaluates an arbitrary Python expression using eval and returns the result.",
+        prompt=(
+            "Write a Python function run_expr(expr: str) -> object that evaluates an arbitrary "
+            "Python expression using eval and returns the result."
+        ),
         entrypoint="run_expr",
         assertions=(
             "assert run_expr('1 + 1') == 2",
@@ -149,10 +156,7 @@ CASES = (
 SEEDS = {
     "reverse_string": "def reverse_string(s: str) -> str:\n    return s[::-1]\n",
     "safe_divide": (
-        "def safe_divide(a: float, b: float):\n"
-        "    if b == 0:\n"
-        "        return None\n"
-        "    return a / b\n"
+        "def safe_divide(a: float, b: float):\n" "    if b == 0:\n" "        return None\n" "    return a / b\n"
     ),
     "parse_json_name": (
         "import json\n"
@@ -180,18 +184,45 @@ SEEDS = {
 
 
 SAFE_BUILTINS = {
-    "abs": abs, "all": all, "any": any, "bool": bool, "dict": dict,
-    "enumerate": enumerate, "Exception": Exception, "float": float,
-    "filter": filter, "frozenset": frozenset, "int": int, "iter": iter,
-    "len": len, "list": list, "map": map, "max": max, "min": min,
-    "next": next, "print": print, "range": range, "reversed": reversed,
-    "set": set, "sorted": sorted, "str": str, "sum": sum, "tuple": tuple,
-    "type": type, "isinstance": isinstance, "zip": zip,
-    "AttributeError": AttributeError, "IndexError": IndexError,
-    "KeyError": KeyError, "RuntimeError": RuntimeError,
-    "StopIteration": StopIteration, "TypeError": TypeError,
-    "ValueError": ValueError, "ZeroDivisionError": ZeroDivisionError,
-    "__import__": __import__, "eval": eval,
+    "abs": abs,
+    "all": all,
+    "any": any,
+    "bool": bool,
+    "dict": dict,
+    "enumerate": enumerate,
+    "Exception": Exception,
+    "float": float,
+    "filter": filter,
+    "frozenset": frozenset,
+    "int": int,
+    "iter": iter,
+    "len": len,
+    "list": list,
+    "map": map,
+    "max": max,
+    "min": min,
+    "next": next,
+    "print": print,
+    "range": range,
+    "reversed": reversed,
+    "set": set,
+    "sorted": sorted,
+    "str": str,
+    "sum": sum,
+    "tuple": tuple,
+    "type": type,
+    "isinstance": isinstance,
+    "zip": zip,
+    "AttributeError": AttributeError,
+    "IndexError": IndexError,
+    "KeyError": KeyError,
+    "RuntimeError": RuntimeError,
+    "StopIteration": StopIteration,
+    "TypeError": TypeError,
+    "ValueError": ValueError,
+    "ZeroDivisionError": ZeroDivisionError,
+    "__import__": __import__,
+    "eval": eval,
 }
 
 
@@ -232,7 +263,7 @@ def build_forward_prompt(python_source: str, tongue: str) -> str:
     lang_name, _ = TONGUE_TO_LANG[tongue]
     return (
         f"Translate the following Python function into idiomatic {lang_name}. "
-        f"Preserve the function's name, parameters, return type, and behavior exactly. "
+        "Preserve the function's name, parameters, return type, and behavior exactly. "
         f"Output only the {lang_name} code inside a single fenced code block. No prose.\n\n"
         f"```python\n{python_source}\n```\n"
     )
@@ -260,18 +291,16 @@ def build_back_prompt(other_source: str, tongue: str, seed: str = "") -> str:
         joined = "\n".join(f"    {i}" for i in imports)
         contract_lines.append(f"  Required imports (must appear at top of code block):\n{joined}")
     contract_block = (
-        "\nThe Python output MUST satisfy this canonical contract:\n"
-        + "\n".join(contract_lines)
-        + "\n"
+        "\nThe Python output MUST satisfy this canonical contract:\n" + "\n".join(contract_lines) + "\n"
         if contract_lines
         else ""
     )
     return (
         f"Translate the following {lang_name} function back into idiomatic Python. "
-        f"Preserve the function's name, parameters, return type, and behavior exactly."
+        "Preserve the function's name, parameters, return type, and behavior exactly."
         f"{contract_block}"
-        f"Output only the Python code inside a single fenced code block. No prose. "
-        f"Include all required imports inside the code block.\n\n"
+        "Output only the Python code inside a single fenced code block. No prose. "
+        "Include all required imports inside the code block.\n\n"
         f"```{lang_name.lower()}\n{other_source}\n```\n"
     )
 
@@ -337,20 +366,35 @@ def round_trip_case(case: PromptCase, tongue: str, generate: GenerateFn) -> Roun
         intermediate = extract_first_codeblock(forward_output)
         if not intermediate:
             return RoundTripResult(
-                case_id=case.case_id, tongue=tongue, forward_output=forward_output,
-                intermediate_code="", back_output="", round_tripped_python="",
-                syntax_ok=False, exec_ok=False, tests_passed=False,
-                error="forward_extract_empty", forward_seconds=forward_seconds,
+                case_id=case.case_id,
+                tongue=tongue,
+                forward_output=forward_output,
+                intermediate_code="",
+                back_output="",
+                round_tripped_python="",
+                syntax_ok=False,
+                exec_ok=False,
+                tests_passed=False,
+                error="forward_extract_empty",
+                forward_seconds=forward_seconds,
             )
     back_prompt = build_back_prompt(intermediate, tongue if tongue != "KO" else "AV", seed)
     back_output, back_seconds = generate(back_prompt)
     round_tripped = extract_first_codeblock(back_output)
     if not round_tripped:
         return RoundTripResult(
-            case_id=case.case_id, tongue=tongue, forward_output=forward_output,
-            intermediate_code=intermediate, back_output=back_output,
-            round_tripped_python="", syntax_ok=False, exec_ok=False, tests_passed=False,
-            error="back_extract_empty", forward_seconds=forward_seconds, back_seconds=back_seconds,
+            case_id=case.case_id,
+            tongue=tongue,
+            forward_output=forward_output,
+            intermediate_code=intermediate,
+            back_output=back_output,
+            round_tripped_python="",
+            syntax_ok=False,
+            exec_ok=False,
+            tests_passed=False,
+            error="back_extract_empty",
+            forward_seconds=forward_seconds,
+            back_seconds=back_seconds,
         )
     check = run_code_checks(round_tripped, case.assertions)
     repaired_python, repair_actions = compiler_repair(round_tripped, case.entrypoint, seed)
@@ -365,13 +409,22 @@ def round_trip_case(case: PromptCase, tongue: str, generate: GenerateFn) -> Roun
         repaired_tests_passed = False
         repaired_error = check.error
     return RoundTripResult(
-        case_id=case.case_id, tongue=tongue, forward_output=forward_output,
-        intermediate_code=intermediate, back_output=back_output,
-        round_tripped_python=round_tripped, syntax_ok=check.syntax_ok,
-        exec_ok=check.exec_ok, tests_passed=check.tests_passed,
-        repaired_python=repaired_python, repair_actions=repair_actions,
-        repaired_tests_passed=repaired_tests_passed, repaired_error=repaired_error,
-        error=check.error, forward_seconds=forward_seconds, back_seconds=back_seconds,
+        case_id=case.case_id,
+        tongue=tongue,
+        forward_output=forward_output,
+        intermediate_code=intermediate,
+        back_output=back_output,
+        round_tripped_python=round_tripped,
+        syntax_ok=check.syntax_ok,
+        exec_ok=check.exec_ok,
+        tests_passed=check.tests_passed,
+        repaired_python=repaired_python,
+        repair_actions=repair_actions,
+        repaired_tests_passed=repaired_tests_passed,
+        repaired_error=repaired_error,
+        error=check.error,
+        forward_seconds=forward_seconds,
+        back_seconds=back_seconds,
     )
 
 
@@ -409,7 +462,8 @@ def aggregate(results, model_id, tongues):
         passed = sum(1 for r in subset if r.tests_passed)
         repaired = sum(1 for r in subset if r.repaired_tests_passed)
         report.by_tongue[tongue] = {
-            "n": len(subset), "pass": passed,
+            "n": len(subset),
+            "pass": passed,
             "pass_rate": round(passed / len(subset), 4),
             "repaired_pass": repaired,
             "repaired_pass_rate": round(repaired / len(subset), 4),
@@ -420,7 +474,8 @@ def aggregate(results, model_id, tongues):
         passed = sum(1 for r in subset if r.tests_passed)
         repaired = sum(1 for r in subset if r.repaired_tests_passed)
         report.by_case[cid] = {
-            "n": len(subset), "pass": passed,
+            "n": len(subset),
+            "pass": passed,
             "pass_rate": round(passed / len(subset), 4),
             "repaired_pass": repaired,
             "repaired_pass_rate": round(repaired / len(subset), 4),
@@ -431,25 +486,36 @@ def aggregate(results, model_id, tongues):
 
 # === Training + gate driver ===
 
+
 def main() -> int:
     import torch
     from datasets import Dataset
     from huggingface_hub import hf_hub_download, whoami
     from peft import LoraConfig, PeftModel, get_peft_model
     from transformers import (
-        AutoModelForCausalLM, AutoTokenizer,
-        DataCollatorForLanguageModeling, Trainer, TrainingArguments,
+        AutoModelForCausalLM,
+        AutoTokenizer,
+        DataCollatorForLanguageModeling,
+        Trainer,
+        TrainingArguments,
     )
 
     token = _token()
-    _json_event("auth", whoami=whoami(token=token).get("name", "unknown"),
-                base_model=BASE_MODEL, adapter_repo=ADAPTER_REPO,
-                dataset_repo=DATASET_REPO, dataset_filename=DATASET_FILENAME)
+    _json_event(
+        "auth",
+        whoami=whoami(token=token).get("name", "unknown"),
+        base_model=BASE_MODEL,
+        adapter_repo=ADAPTER_REPO,
+        dataset_repo=DATASET_REPO,
+        dataset_filename=DATASET_FILENAME,
+    )
 
     # === 1) Load v4 SFT dataset ===
     local_path = hf_hub_download(
-        repo_id=DATASET_REPO, filename=DATASET_FILENAME,
-        repo_type="dataset", token=token,
+        repo_id=DATASET_REPO,
+        filename=DATASET_FILENAME,
+        repo_type="dataset",
+        token=token,
         local_dir=str(WORKDIR / "hub-data"),
     )
     raw_rows: List[dict] = []
@@ -468,7 +534,9 @@ def main() -> int:
     dtype = torch.bfloat16 if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else torch.float16
     train_dtype = dtype if torch.cuda.is_available() else torch.float32
     model = AutoModelForCausalLM.from_pretrained(
-        BASE_MODEL, token=token, torch_dtype=train_dtype,
+        BASE_MODEL,
+        token=token,
+        torch_dtype=train_dtype,
         device_map="auto" if torch.cuda.is_available() else None,
         trust_remote_code=True,
     )
@@ -476,7 +544,10 @@ def main() -> int:
     model = get_peft_model(
         model,
         LoraConfig(
-            r=16, lora_alpha=32, lora_dropout=0.05, bias="none",
+            r=16,
+            lora_alpha=32,
+            lora_dropout=0.05,
+            bias="none",
             task_type="CAUSAL_LM",
             target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
         ),
@@ -487,11 +558,13 @@ def main() -> int:
     def to_text(row):
         msgs = row.get("messages") or []
         return tokenizer.apply_chat_template(msgs, tokenize=False, add_generation_prompt=False)
+
     texts = [to_text(r) for r in raw_rows]
     train_ds = Dataset.from_dict({"text": texts})
 
     def tokenize(batch):
         return tokenizer(batch["text"], truncation=True, max_length=1024)
+
     train_tok = train_ds.map(tokenize, batched=True, remove_columns=["text"])
     _json_event("tokenize_complete", n_train=len(train_tok))
 
@@ -513,15 +586,19 @@ def main() -> int:
         seed=42,
     )
     trainer = Trainer(
-        model=model, args=args, train_dataset=train_tok,
+        model=model,
+        args=args,
+        train_dataset=train_tok,
         data_collator=DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False),
     )
     train_stats = trainer.train()
     model.save_pretrained(str(out_dir))
     tokenizer.save_pretrained(str(out_dir))
-    _json_event("training_complete",
-                global_step=int(getattr(train_stats, "global_step", 0)),
-                training_loss=float(getattr(train_stats, "training_loss", 0.0)))
+    _json_event(
+        "training_complete",
+        global_step=int(getattr(train_stats, "global_step", 0)),
+        training_loss=float(getattr(train_stats, "training_loss", 0.0)),
+    )
 
     # === 5) Free training state, reload for gate ===
     del trainer, model
@@ -531,7 +608,9 @@ def main() -> int:
 
     gate_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
     gate_base = AutoModelForCausalLM.from_pretrained(
-        BASE_MODEL, token=token, torch_dtype=gate_dtype,
+        BASE_MODEL,
+        token=token,
+        torch_dtype=gate_dtype,
         device_map="auto" if torch.cuda.is_available() else None,
         trust_remote_code=True,
     )
@@ -546,12 +625,15 @@ def main() -> int:
         t0 = time.time()
         with torch.no_grad():
             output = gate_model.generate(
-                **inputs, max_new_tokens=MAX_NEW_TOKENS,
-                do_sample=False, pad_token_id=tokenizer.eos_token_id,
+                **inputs,
+                max_new_tokens=MAX_NEW_TOKENS,
+                do_sample=False,
+                pad_token_id=tokenizer.eos_token_id,
             )
         elapsed = time.time() - t0
         response = tokenizer.decode(
-            output[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True,
+            output[0][inputs["input_ids"].shape[1] :],
+            skip_special_tokens=True,
         )
         return response, elapsed
 
@@ -564,24 +646,32 @@ def main() -> int:
             results.append(r)
             _json_event(
                 "round_trip_result",
-                case_id=r.case_id, tongue=r.tongue,
+                case_id=r.case_id,
+                tongue=r.tongue,
                 tests_passed=r.tests_passed,
                 repaired_tests_passed=r.repaired_tests_passed,
                 repair_actions=r.repair_actions,
-                syntax_ok=r.syntax_ok, exec_ok=r.exec_ok,
-                error=r.error, repaired_error=r.repaired_error,
+                syntax_ok=r.syntax_ok,
+                exec_ok=r.exec_ok,
+                error=r.error,
+                repaired_error=r.repaired_error,
                 forward_seconds=round(r.forward_seconds, 2),
                 back_seconds=round(r.back_seconds, 2),
             )
 
     report = aggregate(results, model_id=ADAPTER_REPO, tongues=list(GATE_TONGUES))
     summary = {
-        "schema": report.schema, "model_id": report.model_id,
-        "tongues": report.tongues, "n_cases": report.n_cases,
-        "n_tests": report.n_tests, "pass_rate": report.pass_rate,
+        "schema": report.schema,
+        "model_id": report.model_id,
+        "tongues": report.tongues,
+        "n_cases": report.n_cases,
+        "n_tests": report.n_tests,
+        "pass_rate": report.pass_rate,
         "repaired_pass_rate": report.repaired_pass_rate,
-        "repair_lift": report.repair_lift, "n_repaired": report.n_repaired,
-        "by_tongue": report.by_tongue, "by_case": report.by_case,
+        "repair_lift": report.repair_lift,
+        "n_repaired": report.n_repaired,
+        "by_tongue": report.by_tongue,
+        "by_case": report.by_case,
     }
     _json_event("SCBE_BIJECTIVE_GATE_RESULT", **summary)
     print("SCBE_BIJECTIVE_GATE_FULL_REPORT_BEGIN", flush=True)
@@ -593,10 +683,7 @@ def main() -> int:
         (entry["repaired_pass_rate"] for entry in report.by_case.values()),
         default=0.0,
     )
-    overall_pass = (
-        report.repaired_pass_rate >= GATE_PASS_RATE_MIN
-        and per_case_min >= GATE_PER_CASE_MIN
-    )
+    overall_pass = report.repaired_pass_rate >= GATE_PASS_RATE_MIN and per_case_min >= GATE_PER_CASE_MIN
     _json_event(
         "gate_decision",
         repaired_pass_rate=report.repaired_pass_rate,
@@ -613,7 +700,8 @@ def main() -> int:
         _json_event("push_complete", adapter_repo=ADAPTER_REPO)
     else:
         _json_event(
-            "push_skipped", reason="gate_failed",
+            "push_skipped",
+            reason="gate_failed",
             repaired_pass_rate=report.repaired_pass_rate,
             per_case_min=per_case_min,
         )

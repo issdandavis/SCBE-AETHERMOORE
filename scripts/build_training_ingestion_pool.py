@@ -11,7 +11,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_OUTPUT = REPO_ROOT / "training" / "sft_records" / "sft_ingestion_pool.jsonl"
 DEFAULT_DOC_OUTPUT = REPO_ROOT / "training" / "ingest" / "doc_chunks.jsonl"

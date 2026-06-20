@@ -18,7 +18,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
@@ -26,9 +25,7 @@ if str(REPO_ROOT) not in sys.path:
 from src.crypto.sacred_tongue_payload_bijection import prove_dict  # noqa: E402
 
 DEFAULT_OUT_DIR = REPO_ROOT / "artifacts" / "free_compute_agent_array"
-CAPABILITY_REGISTRY = (
-    REPO_ROOT / "config" / "system" / "advanced_ai_dispatch_capabilities.json"
-)
+CAPABILITY_REGISTRY = REPO_ROOT / "config" / "system" / "advanced_ai_dispatch_capabilities.json"
 HOST_COMPUTE_ROUTES = REPO_ROOT / "config" / "system" / "host_compute_routes.json"
 
 SENSITIVE_PATH_MARKERS = (
@@ -274,9 +271,7 @@ def build_acceptance(lane: str, verify_command: str) -> list[str]:
     ]
 
 
-def build_training_signal(
-    goal: str, lane: str, state: str, target_paths: list[str]
-) -> dict[str, Any]:
+def build_training_signal(goal: str, lane: str, state: str, target_paths: list[str]) -> dict[str, Any]:
     return {
         "record_type": "agentic_quest_marker",
         "input_command": goal,
@@ -296,10 +291,7 @@ def build_training_signal(
 def build_packets(goal: str, workers: int) -> list[WorkPacket]:
     if workers < 1:
         raise ValueError("--workers must be at least 1")
-    selected = [
-        DEFAULT_WORKSTREAMS[index % len(DEFAULT_WORKSTREAMS)]
-        for index in range(workers)
-    ]
+    selected = [DEFAULT_WORKSTREAMS[index % len(DEFAULT_WORKSTREAMS)] for index in range(workers)]
     packets: list[WorkPacket] = []
     goal_slug = safe_slug(goal)
     for index, stream in enumerate(selected, start=1):
@@ -357,9 +349,7 @@ def build_packets(goal: str, workers: int) -> list[WorkPacket]:
                 claim_command=claim_command,
                 verify_command=verify_command,
                 acceptance=build_acceptance(lane, verify_command),
-                training_signal=build_training_signal(
-                    goal, lane, str(stream["quest_state"]), target_paths
-                ),
+                training_signal=build_training_signal(goal, lane, str(stream["quest_state"]), target_paths),
             )
         )
     return packets
@@ -382,9 +372,7 @@ def dispatch_payload(packet: WorkPacket) -> dict[str, Any]:
 
 def enqueue_command(packet: WorkPacket) -> str:
     deps = " ".join(f"--dependency {shell_quote(dep)}" for dep in packet.dependencies)
-    payload = json.dumps(
-        dispatch_payload(packet), sort_keys=True, separators=(",", ":")
-    )
+    payload = json.dumps(dispatch_payload(packet), sort_keys=True, separators=(",", ":"))
     return (
         "python scripts/system/advanced_ai_dispatch.py enqueue "
         f"--title {shell_quote(packet.title)} "
@@ -415,25 +403,19 @@ def plan_summary(goal: str, workers: int, packets: list[WorkPacket]) -> dict[str
         "capability_registry_found": bool(capabilities),
         "host_compute_routes_found": bool(host_routes),
         "host_compute_connected": (
-            host_routes.get("summary", {})
-            if isinstance(host_routes.get("summary"), dict)
-            else {}
+            host_routes.get("summary", {}) if isinstance(host_routes.get("summary"), dict) else {}
         ),
         "packets": [asdict(packet) for packet in packets],
     }
 
 
-def write_outputs(
-    goal: str, workers: int, out_dir: Path, packets: list[WorkPacket]
-) -> dict[str, str]:
+def write_outputs(goal: str, workers: int, out_dir: Path, packets: list[WorkPacket]) -> dict[str, str]:
     out_dir.mkdir(parents=True, exist_ok=True)
     plan = plan_summary(goal, workers, packets)
     plan["sacred_tongue_bijection"] = prove_dict(plan)
 
     plan_path = out_dir / "latest_plan.json"
-    plan_path.write_text(
-        json.dumps(plan, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    plan_path.write_text(json.dumps(plan, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     jsonl_path = out_dir / "latest_task_queue.jsonl"
     with jsonl_path.open("w", encoding="utf-8") as handle:
@@ -546,33 +528,23 @@ def check_plan(packets: list[WorkPacket]) -> dict[str, Any]:
             problems.append(f"duplicate task_id: {packet.task_id}")
         seen_ids.add(packet.task_id)
         if packet.compute_target not in COMPUTE_TARGETS:
-            problems.append(
-                f"unknown compute target for {packet.task_id}: {packet.compute_target}"
-            )
+            problems.append(f"unknown compute target for {packet.task_id}: {packet.compute_target}")
         if packet.remote_ok and packet.risk == "high":
             problems.append(f"high-risk packet marked remote_ok: {packet.task_id}")
         if not packet.target_paths:
             problems.append(f"missing target paths: {packet.task_id}")
         for dependency in packet.dependencies:
             if dependency not in seen_ids and packet.lane != "integration_review":
-                problems.append(
-                    f"dependency not emitted before packet {packet.task_id}: {dependency}"
-                )
+                problems.append(f"dependency not emitted before packet {packet.task_id}: {dependency}")
     return {"ok": not problems, "problems": problems, "packet_count": len(packets)}
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--goal", required=True, help="Project goal to split into agent work packets."
-    )
-    parser.add_argument(
-        "--workers", type=int, default=10, help="Number of agent packets to create."
-    )
+    parser.add_argument("--goal", required=True, help="Project goal to split into agent work packets.")
+    parser.add_argument("--workers", type=int, default=10, help="Number of agent packets to create.")
     parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
-    parser.add_argument(
-        "--check", action="store_true", help="Only validate the generated plan."
-    )
+    parser.add_argument("--check", action="store_true", help="Only validate the generated plan.")
     return parser
 
 

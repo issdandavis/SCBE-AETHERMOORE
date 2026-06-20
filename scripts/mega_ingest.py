@@ -1170,7 +1170,7 @@ def main():
     # ================================================================
     # SOURCE BREAKDOWN
     # ================================================================
-    print(f"\nSOURCE BREAKDOWN:")
+    print("\nSOURCE BREAKDOWN:")
     for name, recs in sorted(sources.items(), key=lambda x: -len(x[1])):
         print(f"  {name:.<35} {len(recs):>6} records")
 
@@ -1178,7 +1178,7 @@ def main():
     # EXPORT
     # ================================================================
     if args.ingest:
-        print(f"\nEXPORTING...")
+        print("\nEXPORTING...")
         output_path = ROOT / "training-data" / "mega_ingest_sft.jsonl"
         output_path.parent.mkdir(parents=True, exist_ok=True)
         with open(output_path, "w", encoding="utf-8") as f:
@@ -1204,7 +1204,7 @@ def main():
 
         # Tetris embedding
         if args.tetris or args.push_hf:
-            print(f"\nTETRIS EMBEDDING...")
+            print("\nTETRIS EMBEDDING...")
             os.environ["TOKENIZERS_PARALLELISM"] = "false"
             from src.kernel.tetris_embedder import TetrisEmbedder
 
@@ -1236,7 +1236,7 @@ def main():
             print(f"  Output: {tetris_out.name} ({tetris_mb:.1f}MB)")
 
             if args.push_hf:
-                print(f"\nPUSHING TO HUGGINGFACE...")
+                print("\nPUSHING TO HUGGINGFACE...")
                 from tetris_training_pipeline import push_to_hf, load_hf_token
 
                 hf_token = load_hf_token()
@@ -1249,8 +1249,8 @@ def main():
                 else:
                     print("  SKIP: No HF token found")
     else:
-        print(f"\n  DRY RUN — use --ingest to write output")
-        print(f"  Grok drop zone: training/intake/grok/ (place export there)")
+        print("\n  DRY RUN — use --ingest to write output")
+        print("  Grok drop zone: training/intake/grok/ (place export there)")
 
     elapsed = time.time() - t_total
     print(f"\n{'='*70}")

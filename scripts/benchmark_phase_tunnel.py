@@ -297,10 +297,12 @@ def run_correctness_benchmarks() -> dict:
     print(f"  All 4 outcomes:         {results['all_four_outcomes']}")
     print(f"  Policy=False reflects:  {results['policy_false_always_reflects']}")
     print(
-        f"  Maturity ordering:      {results['maturity_ordering_correct']}/{results['maturity_ordering_tested']} ({100*results['maturity_ordering_correct']/results['maturity_ordering_tested']:.1f}%)"
+        f"  Maturity ordering:      {results['maturity_ordering_correct']}/{results['maturity_ordering_tested']} "
+        f"({100*results['maturity_ordering_correct']/results['maturity_ordering_tested']:.1f}%)"
     )
     print(
-        f"  RED harder than GREEN:  {results['red_harder_than_green']}/{results['red_green_tested']} ({100*results['red_harder_than_green']/results['red_green_tested']:.1f}%)"
+        f"  RED harder than GREEN:  {results['red_harder_than_green']}/{results['red_green_tested']} "
+        f"({100*results['red_harder_than_green']/results['red_green_tested']:.1f}%)"
     )
     print(f"  Violations:             {len(results['violations'])}")
 
@@ -328,18 +330,18 @@ def run_correctness_benchmarks() -> dict:
         c = tp["max_T_conditions"]
         print(f"    Best conditions: d_H={c['d_H']}, zone={c['zone']}, scars={c['n_scars']}")
         print(f"      T={c['T']}, outcome={c['outcome']}, trust={c['trust']}, resonance={c['resonance']}")
-    print(f"    Parameter tuning (lower beta = lower geometric barrier):")
+    print("    Parameter tuning (lower beta = lower geometric barrier):")
     for k, v in tp["tuned_parameter_search"].items():
         print(f"      {k}: T={v['T']}, outcome={v['outcome']}")
 
     if not tp["tunnel_reached"]:
-        print(f"\n    FINDING: TUNNEL outcome is NOT reachable with default parameters.")
-        print(f"    The trust ceiling (log1p(maturity)/20) and geometric barrier")
-        print(f"    combine to cap T below 0.5 even at optimal conditions.")
+        print("\n    FINDING: TUNNEL outcome is NOT reachable with default parameters.")
+        print("    The trust ceiling (log1p(maturity)/20) and geometric barrier")
+        print("    combine to cap T below 0.5 even at optimal conditions.")
         print(f"    With beta=0.1, T reaches {tp['tuned_parameter_search'].get('beta=0.1', {}).get('T', 'N/A')}.")
-        print(f"    This means the system currently operates in 3-outcome mode:")
-        print(f"    REFLECT / COLLAPSE / ATTENUATE. TUNNEL requires parameter tuning")
-        print(f"    or lowering the threshold from 0.5.")
+        print("    This means the system currently operates in 3-outcome mode:")
+        print("    REFLECT / COLLAPSE / ATTENUATE. TUNNEL requires parameter tuning")
+        print("    or lowering the threshold from 0.5.")
 
     return results
 
@@ -617,7 +619,8 @@ def run_comparison_benchmarks() -> dict:
 
     print("\n  Comparison table:")
     print(
-        f"  {'System':<16} {'FPR':>8} {'FNR':>8} {'Prec':>8} {'Recall':>8} {'F1':>8} {'Levels':>8} {'us/op':>8} {'ops/s':>10}"
+        f"  {'System':<16} {'FPR':>8} {'FNR':>8} {'Prec':>8} {'Recall':>8} "
+        f"{'F1':>8} {'Levels':>8} {'us/op':>8} {'ops/s':>10}"
     )
     print(f"  {'-'*16} {'-'*8} {'-'*8} {'-'*8} {'-'*8} {'-'*8} {'-'*8} {'-'*8} {'-'*10}")
     for name in ["binary", "linear", "harmonic_wall", "phase_tunnel"]:
@@ -631,17 +634,17 @@ def run_comparison_benchmarks() -> dict:
     # Strict mode
     if "strict_mode" in comparison["phase_tunnel"]:
         sm = comparison["phase_tunnel"]["strict_mode"]
-        print(f"\n  Phase tunnel STRICT mode (ATTENUATE = blocked, only TUNNEL = allow):")
+        print("\n  Phase tunnel STRICT mode (ATTENUATE = blocked, only TUNNEL = allow):")
         print(
             f"    FPR={sm['false_positive_rate']:.4f}  FNR={sm['false_negative_rate']:.4f}  "
             f"Prec={sm['precision']:.4f}  Recall={sm['recall']:.4f}"
         )
 
-    print(f"\n  Legitimate ops saved by phase tunnel (would have been blocked):")
+    print("\n  Legitimate ops saved by phase tunnel (would have been blocked):")
     for k, v in phase_tunnel_saves.items():
         print(f"    {k}: {v}")
 
-    print(f"\n  Adversarial ops that slipped through:")
+    print("\n  Adversarial ops that slipped through:")
     for k, v in adversarial_slips.items():
         print(f"    {k}: {v}")
 
@@ -902,7 +905,8 @@ def run_browser_benchmarks() -> dict:
             zr = results["by_zone"][z]
             t = zr["total"]
             print(
-                f"    {z}:  binary={zr['binary_useful']}/{t}  harmonic={zr['harmonic_useful']}/{t}  phase_tunnel={zr['pt_useful']}/{t}"
+                f"    {z}:  binary={zr['binary_useful']}/{t}  "
+                f"harmonic={zr['harmonic_useful']}/{t}  phase_tunnel={zr['pt_useful']}/{t}"
             )
 
     print("\n  Phase-read value (RED zone preview without commit):")
@@ -910,16 +914,20 @@ def run_browser_benchmarks() -> dict:
     if pr["total_phase_reads"] > 0:
         print(f"    Total phase-read attempts: {pr['total_phase_reads']}")
         print(
-            f"    Binary allowed:            {pr['binary_allowed']} ({100*pr['binary_allowed']/pr['total_phase_reads']:.0f}%)"
+            f"    Binary allowed:            {pr['binary_allowed']} "
+            f"({100*pr['binary_allowed']/pr['total_phase_reads']:.0f}%)"
         )
         print(
-            f"    Harmonic wall allowed:     {pr['harmonic_allowed']} ({100*pr['harmonic_allowed']/pr['total_phase_reads']:.0f}%)"
+            f"    Harmonic wall allowed:     {pr['harmonic_allowed']} "
+            f"({100*pr['harmonic_allowed']/pr['total_phase_reads']:.0f}%)"
         )
         print(
-            f"    Phase tunnel allowed:      {pr['phase_tunnel_allowed']} ({100*pr['phase_tunnel_allowed']/pr['total_phase_reads']:.0f}%)"
+            f"    Phase tunnel allowed:      {pr['phase_tunnel_allowed']} "
+            f"({100*pr['phase_tunnel_allowed']/pr['total_phase_reads']:.0f}%)"
         )
         print(
-            f"    -> Phase tunnel provides {pr['phase_tunnel_allowed'] - pr['binary_allowed']} MORE preview opportunities than binary"
+            f"    -> Phase tunnel provides {pr['phase_tunnel_allowed'] - pr['binary_allowed']} "
+            f"MORE preview opportunities than binary"
         )
 
     return results
@@ -992,13 +1000,14 @@ def run_maturity_benchmarks() -> dict:
                 fmat = kernel.factorial_maturity
                 fmat_str = f"{fmat:.0f}" if fmat < 1e6 else f"{fmat:.2e}"
                 print(
-                    f"  {label:<28} {zone:<8} {d_H:<6.1f} {mean_t:<10.4f} {100*tunnel_pct:<10.1f} {100*commit_pct:<10.1f} {fmat_str:<14}"
+                    f"  {label:<28} {zone:<8} {d_H:<6.1f} {mean_t:<10.4f} "
+                    f"{100*tunnel_pct:<10.1f} {100*commit_pct:<10.1f} {fmat_str:<14}"
                 )
 
             results["tiers"][str(n_scars)]["zones"][zone] = zone_results
 
     # Davis Formula comparison: show how factorial context scaling relates
-    print(f"\n  Davis Formula comparison (S = t / (i * C! * (1+d))):")
+    print("\n  Davis Formula comparison (S = t / (i * C! * (1+d))):")
     print(f"  {'Scars':<8} {'factorial':<14} {'Davis S(t=10,i=1,C=scars,d=0)':<36} {'Trust factor':<14}")
     print(f"  {'-'*8} {'-'*14} {'-'*36} {'-'*14}")
 
@@ -1143,10 +1152,10 @@ def run_performance_benchmarks() -> dict:
         slowdown = fastest_ops / r["ops_per_second"] if r["ops_per_second"] > 0 else float("inf")
         print(f"  {name:<24} {r['us_per_op']:>10.2f} {r['ops_per_second']:>14,} {slowdown:>10.1f}x")
 
-    print(f"\n  HONEST NOTE: Phase tunnel is slower than simple thresholds.")
-    print(f"  The tradeoff is granularity (4 outcomes, continuous T, kernel trust)")
+    print("\n  HONEST NOTE: Phase tunnel is slower than simple thresholds.")
+    print("  The tradeoff is granularity (4 outcomes, continuous T, kernel trust)")
     print(f"  vs speed. At {results['phase_tunnel']['ops_per_second']:,} ops/sec, it's fast enough for")
-    print(f"  browser navigation (human latency is ~200ms, we need <1ms).")
+    print("  browser navigation (human latency is ~200ms, we need <1ms).")
 
     pt_us = results["phase_tunnel"]["us_per_op"]
     if pt_us < 1000:
@@ -1196,45 +1205,45 @@ def main():
     perf = all_results["performance"]
     browser = all_results["browser_application"]
 
-    print(f"\n  CORRECTNESS:")
+    print("\n  CORRECTNESS:")
     print(f"    T in [0,1]:            {corr['t_in_range']}/{corr['total_samples']} PASS")
     print(f"    Amplitude invariant:   {corr['amplitude_invariant']}/{corr['total_samples']} PASS")
     print(f"    All 4 outcomes:        {'PASS' if corr['all_four_outcomes'] else 'FAIL'}")
     print(f"    Policy=False reflects: {'PASS' if corr['policy_false_always_reflects'] else 'FAIL'}")
 
-    print(f"\n  COMPARISON (F1 scores):")
+    print("\n  COMPARISON (F1 scores):")
     for name in ["binary", "linear", "harmonic_wall", "phase_tunnel"]:
         print(f"    {name:<16}: F1={comp[name]['f1_score']:.4f}")
 
-    print(f"\n  BROWSER APPLICATION:")
+    print("\n  BROWSER APPLICATION:")
     for sys_name, info in browser["user_info_access"].items():
         total = info["got_info"] + info["blocked"]
         pct = 100 * info["got_info"] / total if total > 0 else 0
         print(f"    {sys_name:<16}: {pct:.0f}% useful info access")
 
-    print(f"\n  PERFORMANCE:")
+    print("\n  PERFORMANCE:")
     for name in ["binary_threshold", "harmonic_wall", "phase_tunnel"]:
         r = perf[name]
         print(f"    {name:<24}: {r['ops_per_second']:>12,} ops/sec  ({r['us_per_op']:.1f} us/op)")
 
-    print(f"\n  STRENGTHS (honest):")
-    print(f"    + 4 outcomes vs 2: ATTENUATE allows partial info access")
-    print(f"    + Kernel trust: experienced agents get deeper access")
-    print(f"    + Phase-read: preview dangerous content without committing")
-    print(f"    + Continuous T: no cliff-edge decisions")
+    print("\n  STRENGTHS (honest):")
+    print("    + 4 outcomes vs 2: ATTENUATE allows partial info access")
+    print("    + Kernel trust: experienced agents get deeper access")
+    print("    + Phase-read: preview dangerous content without committing")
+    print("    + Continuous T: no cliff-edge decisions")
 
-    print(f"\n  WEAKNESSES (honest):")
+    print("\n  WEAKNESSES (honest):")
     pt_us = perf["phase_tunnel"]["us_per_op"]
     b_us = perf["binary_threshold"]["us_per_op"]
     slowdown = pt_us / b_us if b_us > 0 else float("inf")
     print(f"    - {slowdown:.0f}x slower than binary threshold")
-    print(f"    - Requires kernel state (stateful, not stateless)")
-    print(f"    - Phase alignment is an extra parameter to manage")
+    print("    - Requires kernel state (stateful, not stateless)")
+    print("    - Phase alignment is an extra parameter to manage")
     pt_fnr = comp["phase_tunnel"]["false_negative_rate"]
     b_fnr = comp["binary"]["false_negative_rate"]
     if pt_fnr > b_fnr:
         print(f"    - Higher FNR than binary ({pt_fnr:.4f} vs {b_fnr:.4f}): more adversarial ops slip through")
-        print(f"      (tradeoff: this is because we ATTENUATE instead of DENY, giving partial access)")
+        print("      (tradeoff: this is because we ATTENUATE instead of DENY, giving partial access)")
 
     # Write JSON
     output_path = PROJECT_ROOT / "artifacts" / "benchmarks" / "phase_tunnel_benchmark.json"

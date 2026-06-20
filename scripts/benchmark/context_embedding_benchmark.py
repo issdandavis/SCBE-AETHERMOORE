@@ -263,9 +263,7 @@ class MethodResult:
 def benchmark_method(name, embed_fn, dist_fn, corpus, queries, dim_count):
     """Run a full benchmark for one embedding method."""
     # Embed all corpus
-    start = time.perf_counter()
     embeddings = [embed_fn(text) for text in corpus]
-    _embed_time = (time.perf_counter() - start) * 1000
 
     # Compute bytes
     if isinstance(embeddings[0], tuple):
@@ -361,7 +359,8 @@ def run_benchmark():
     print("-" * 80)
     for r in results:
         print(
-            f"{r.name:<30} {r.dimensions:>5} {r.bytes_per_segment:>6} {r.compression_ratio:>5}x {r.top3_recall:>5.0%} {r.top5_recall:>5.0%} {r.semantic_separation:>7.2f} {r.avg_retrieval_ms:>7.3f}"
+            f"{r.name:<30} {r.dimensions:>5} {r.bytes_per_segment:>6} {r.compression_ratio:>5}x "
+            f"{r.top3_recall:>5.0%} {r.top5_recall:>5.0%} {r.semantic_separation:>7.2f} {r.avg_retrieval_ms:>7.3f}"
         )
     print("=" * 80)
 
@@ -386,7 +385,8 @@ def run_benchmark():
         )
         for r in results:
             f.write(
-                f"{r.name},{r.dimensions},{r.bytes_per_segment},{r.compression_ratio},{r.top3_recall},{r.top5_recall},{r.semantic_separation},{r.avg_retrieval_ms}\n"
+                f"{r.name},{r.dimensions},{r.bytes_per_segment},{r.compression_ratio},"
+                f"{r.top3_recall},{r.top5_recall},{r.semantic_separation},{r.avg_retrieval_ms}\n"
             )
     print(f"\nCSV saved: {csv_path}")
 

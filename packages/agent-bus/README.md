@@ -34,6 +34,12 @@ console.log(result.ok, result.result);
 scbe-agent-bus serve --port 8787
 scbe-agent-bus ui --base-url http://127.0.0.1:8787
 scbe-agent-bus send --task "review changed files" --task-type review --json
+scbe-agent-bus tools audit --json
+scbe-agent-bus compass plan --task "write a YouTube script and review upload metadata" --json
+scbe-agent-bus compass models --json
+scbe-agent-bus compass board --task "cross-language compiler with Pazaak checks" --json
+scbe-agent-bus pipeline run --intent "verify then publish release notes" --governed-state --session-id release --json
+scbe-agent-bus pipeline state --session-id release --json
 scbe-agent-bus health --base-url http://127.0.0.1:8787 --json
 scbe-agent-bus workspace new --hint customer-smoke --json
 scbe-agent-bus workspace ingest --workspace-root <path> --source-path <file> --json
@@ -88,6 +94,158 @@ Flags: `--task`, `--task-type` (`coding|review|research|governance|training|gene
 `--operation-command`, `--series-id`, `--json`.
 
 Non-local providers require `SCBE_API_KEY` — see `upgrade`.
+
+---
+
+## Patent-Aligned Harness Checks
+
+The tool registry is the agentic harness surface. Use `tools audit` after adding
+or changing tools:
+
+```bash
+SCBE_BUS_TOOLS=./tools.json scbe-agent-bus tools audit --json
+```
+
+The audit reports:
+
+- total tool count,
+- patent-facing surface counts,
+- missing descriptions,
+- required live environment variables,
+- and whether any tool is structurally invalid.
+
+Current surfaces include hyperbolic governance, bijective transport, runtime
+persistence, tamper detection, research evidence, video lattice, agent harness,
+and atomic tokenizer readiness.
+
+## SCBE Compass CLI Front Door
+
+Compass is the SCBE-native task-routing front end for the CLI. Hermes is only a
+compatibility/example alias. Compass does not bypass the bus or call paid
+providers directly; it classifies the task into a formation, names the right bus
+tools, lists adapter slots, and shows local/free-tier/paid model lanes with their
+real cost boundaries.
+
+```bash
+scbe-agent-bus compass plan \
+  --task "cross-language compile this operation and prepare YouTube notes" \
+  --json
+
+scbe-agent-bus compass models --json
+scbe-agent-bus compass tree --json
+scbe-agent-bus compass board --task "cross-language compiler with Pazaak checks" --json
+```
+
+Core formations:
+
+- `forge`: cross-language compiler, binary/hex transport, tokenizer checks.
+- `scribe`: writing/manuscript/article review and packaging.
+- `broadcast`: YouTube/video upload preparation, review, and unlisted release.
+- `council`: local/free-tier/paid model routing with cost and privacy gates.
+- `scout`: research and evidence-gathering tools.
+- `field`: general governed execution.
+
+The adapter rule is simple: anything another agent CLI, model provider, compiler,
+or publishing system can do can become a Compass adapter only if it has a
+deterministic tool boundary, governance metadata, receipt output, and benchmark
+coverage.
+
+Compass hierarchy is sourced from the local Obsidian notes:
+
+- `notes/sphere-grid/Agentic Sphere Grid.md`: six tongue domains, four tiers,
+  hodge combos, and agent archetypes.
+- `notes/round-table/2026-05-01-night-agentic-public-ai-and-runtime-routing.md`:
+  dense/sparse/anchor/octree context packing.
+- `notes/theory/ai-mind-map.md`: thought-to-action gate sequence.
+
+Every Compass route carries:
+
+- `command_path`: hierarchical address such as `CA.forge.compiler` or
+  `AV.broadcast.youtube`.
+- `formation`: forge, scribe, broadcast, council, scout, or field.
+- `octree_context`: dense local, compressed sparse, heavily compressed anchor,
+  and octree retrieval surfaces.
+- `adapter_slots`: where outside systems can plug in after governance wrapping.
+- `board_rules`: source-anchored Pazaak, go-board, octree, and chessboard
+  mechanics with schemas and command examples.
+
+Board mechanics are backed by real repo files, not abstract labels:
+
+- Pazaak: `scripts/system/agentic_pazaak_board.py`,
+  `config/eval/agentic_pazaak_cards.v1.json`, and
+  `tests/system/test_agentic_pazaak_board.py`.
+- Go-board legality: `src/coding_board/pipeline.py`,
+  `src/coding_board/probe.py`, and `tests/coding_board/test_coding_board.py`.
+- Octree sectors: `src/crypto/octree.py`, `src/ai_brain/quasi-space.ts`,
+  `hydra/octree_sphere_grid.py`, and `src/kernel/context_grid.py`.
+- Chessboard packets: `scripts/system/chessboard_dev_stack.py` and
+  `workflows/momentum/chessboard_dev_stack_train.json`.
+
+Model lane wording is deliberately strict:
+
+- `offline`: no model call.
+- `local-free-after-install`: no provider bill after install, but uses local
+  hardware, electricity, and installed model capacity.
+- `remote-free-tier-limited`: provider-hosted free tier with quotas/rate limits.
+- `paid-remote`: requires explicit budget approval.
+
+The default plan is `local_only` with `budget_cents: 0`. Public YouTube publishing,
+remote provider calls with private text, and arbitrary cross-language translation
+outside the Tier 1 `LatticeOp` compiler are blocked until an explicit higher gate
+approves them.
+
+## Agentic OS Benchmark
+
+Run the local benchmark after build:
+
+```bash
+npm run build
+npm run benchmark:agentic-os
+```
+
+It validates the current agentic OS surfaces:
+
+- tool registry audit and patent-facing surface coverage,
+- Compass planning for compiler, writing/YouTube, and model-provider tasks,
+- source-anchored Pazaak/go-board/octree/chessboard mechanics,
+- semantic binary/hex bridge round trips,
+- GeoSeal cross-build Tier 1 IR cases,
+- governed pipeline state initialization.
+
+Reports are written to `docs/benchmarks/agentic_os_cli_benchmark.json` and
+`docs/benchmarks/agentic_os_cli_benchmark.md`.
+
+## Governed Pipeline State
+
+The GeoSeal pipeline can run with a durable trajectory gate:
+
+```bash
+scbe-agent-bus pipeline run \
+  --intent "verify changed files before publishing" \
+  --governed-state \
+  --session-id release-lane \
+  --json
+```
+
+The state starts conservatively with `observe`, `read`, and `verify` as reachable
+move classes. Higher-risk moves only become reachable after prerequisite moves
+are accepted:
+
+- `write` after recent observe/read/verify/write evidence,
+- `network` after verify evidence,
+- `deploy` after verify plus network evidence,
+- destructive moves remain unreachable through this gate.
+
+Inspect or initialize a lane:
+
+```bash
+scbe-agent-bus pipeline state --session-id release-lane --json
+scbe-agent-bus pipeline state --session-id release-lane --init --json
+```
+
+This aligns the CLI with the patent-facing runtime persistence and trajectory
+governance story: compiled intent, policy decision, reachable move class,
+durable state, and execution result stay tied together.
 
 ---
 

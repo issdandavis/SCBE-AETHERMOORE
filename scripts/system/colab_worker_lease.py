@@ -352,7 +352,8 @@ def open_auth_bootstrap(notebook_query: str, profile_dir: Path, browser_executab
         "notebook": notebook,
         "profile_dir": str(profile_dir),
         "browser_executable": str(executable),
-        "next_action": "Sign in once in the opened browser window, close that window, then rerun the worker with --connect-runtime.",
+        "next_action": "Sign in once in the opened browser window, close that window, "
+        "then rerun the worker with --connect-runtime.",
     }
 
 

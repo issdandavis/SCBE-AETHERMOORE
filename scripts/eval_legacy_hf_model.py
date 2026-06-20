@@ -15,7 +15,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Iterable
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_EVAL_PATH = PROJECT_ROOT / "training-data" / "evals" / "compliance_evals.jsonl"
 DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "artifacts" / "model_evals"

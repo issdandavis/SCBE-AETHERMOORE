@@ -133,10 +133,10 @@ async function runAudioFilter(filter) {
 }
 
 function inspectMoovPlacement(filePath) {
-  const stat = fs.statSync(filePath);
-  const chunkSize = Math.min(stat.size, 4 * 1024 * 1024);
   const fd = fs.openSync(filePath, 'r');
   try {
+    const stat = fs.fstatSync(fd);
+    const chunkSize = Math.min(stat.size, 4 * 1024 * 1024);
     const buffer = Buffer.alloc(chunkSize);
     fs.readSync(fd, buffer, 0, chunkSize, 0);
     const text = buffer.toString('latin1');
@@ -197,7 +197,7 @@ function normalizeWords(text) {
   return (
     String(text || '')
       .toLowerCase()
-      .replace(/[`*_~#>\[\]()[\]{}]/g, ' ')
+      .replace(/[`*_~#>\[\](){}]/g, ' ')
       .match(/[a-z0-9']+/g) || []
   );
 }

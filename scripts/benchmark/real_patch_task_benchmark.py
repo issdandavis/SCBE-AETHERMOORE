@@ -27,6 +27,8 @@ from typing import Any, Callable
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUT = REPO_ROOT / "artifacts" / "benchmarks" / "real_patch_tasks"
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 # Model IDs mirror the squad routing in packages/cli/bin/scbe.js and CLAUDE.md.
 PROVIDERS: dict[str, dict[str, str]] = {
@@ -275,12 +277,7 @@ def test_code_lane_and_default_lane():
 
 
 def _utc_now() -> str:
-    return (
-        datetime.now(timezone.utc)
-        .replace(microsecond=0)
-        .isoformat()
-        .replace("+00:00", "Z")
-    )
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _sha256_text(text: str) -> str:
@@ -301,8 +298,7 @@ def _write_fixture(root: Path, task: PatchTask) -> dict[str, str]:
         path.write_text(content, encoding="utf-8")
     (root / "src" / "__init__.py").write_text("", encoding="utf-8")
     manifest = {
-        relative: _sha256_text((root / relative).read_text(encoding="utf-8"))
-        for relative in sorted(task.files)
+        relative: _sha256_text((root / relative).read_text(encoding="utf-8")) for relative in sorted(task.files)
     }
     _write_json(
         root / "challenge_task.json",
@@ -330,17 +326,13 @@ def _run_tests(root: Path) -> tuple[bool, str, str]:
     return proc.returncode == 0, proc.stdout, proc.stderr
 
 
-def _changed_files(
-    root: Path, task: PatchTask, before: dict[str, str]
-) -> tuple[list[str], str]:
+def _changed_files(root: Path, task: PatchTask, before: dict[str, str]) -> tuple[list[str], str]:
     changed = []
     patch_parts = []
     for relative in sorted(task.files):
         before_text = task.files[relative]
         after_path = root / relative
-        after_text = (
-            after_path.read_text(encoding="utf-8") if after_path.exists() else ""
-        )
+        after_text = after_path.read_text(encoding="utf-8") if after_path.exists() else ""
         digest = _sha256_text(after_text)
         if digest != before[relative]:
             changed.append(relative)
@@ -432,9 +424,7 @@ def _call_agent(prompt: str, *, provider: str = "cerebras", timeout: int = 90) -
         raise ValueError(f"unknown provider {provider!r}; choices: {list(PROVIDERS)}")
     api_key = os.environ.get(cfg["env_var"])
     if not api_key:
-        raise RuntimeError(
-            f"{cfg['env_var']} is not set; export it before running with --provider {provider}"
-        )
+        raise RuntimeError(f"{cfg['env_var']} is not set; export it before running with --provider {provider}")
     client = openai.OpenAI(base_url=cfg["base_url"], api_key=api_key, timeout=timeout)
     resp = client.chat.completions.create(
         model=cfg["model"],
@@ -454,9 +444,7 @@ def _call_agent(prompt: str, *, provider: str = "cerebras", timeout: int = 90) -
     return resp.choices[0].message.content or ""
 
 
-def agent_repair(
-    root: Path, task: PatchTask, *, provider: str = "cerebras"
-) -> dict[str, Any]:
+def agent_repair(root: Path, task: PatchTask, *, provider: str = "cerebras") -> dict[str, Any]:
     """Call a live AI model to repair the task's broken source file.
 
     Returns metadata about the call (provider, model, timing, raw response head).
@@ -493,9 +481,7 @@ def agent_repair(
         }
 
 
-def _make_agent_repair_fn(
-    provider: str, meta_out: list[dict[str, Any]]
-) -> Callable[[Path, PatchTask], None]:
+def _make_agent_repair_fn(provider: str, meta_out: list[dict[str, Any]]) -> Callable[[Path, PatchTask], None]:
     """Return a repair callable that appends agent metadata to meta_out."""
 
     def _repair(root: Path, task: PatchTask) -> None:
@@ -599,6 +585,13 @@ def route_task(text: str) -> str:
     raise ValueError(f"no SCBE repair registered for {task.task_id}")
 
 
+def schematic_repair(root: Path, task: PatchTask) -> None:
+    """Template-first repair lane selected by task evidence, not task_id."""
+    from scripts.benchmark.code_schematic_repair import repair_with_schematic
+
+    repair_with_schematic(root, task)
+
+
 def score_result(result: LaneResult) -> dict[str, Any]:
     checks = {
         "tests_passed": result.tests_passed,
@@ -648,34 +641,42 @@ def build_report(
         )
         for task in TASKS
     ]
+    schematic_results = [
+        run_lane(
+            task,
+            lane="prime_schematic_repair",
+            root=work_dir / "schematic" / task.task_id,
+            repair=schematic_repair,
+        )
+        for task in TASKS
+    ]
     baseline_scores = [score_result(result) for result in baseline_results]
     scbe_scores = [score_result(result) for result in scbe_results]
-    baseline_passes = sum(
-        1 for item in baseline_scores if item["checks"]["tests_passed"]
-    )
+    schematic_scores = [score_result(result) for result in schematic_results]
+    baseline_passes = sum(1 for item in baseline_scores if item["checks"]["tests_passed"])
     scbe_passes = sum(
-        1
-        for item in scbe_scores
-        if item["checks"]["tests_passed"] and item["checks"]["edit_scope_clean"]
+        1 for item in scbe_scores if item["checks"]["tests_passed"] and item["checks"]["edit_scope_clean"]
+    )
+    schematic_passes = sum(
+        1 for item in schematic_scores if item["checks"]["tests_passed"] and item["checks"]["edit_scope_clean"]
     )
     task_count = len(TASKS)
     summary = {
         "decision": (
             "PASS"
-            if scbe_passes == task_count and baseline_passes < task_count
+            if (scbe_passes == task_count and schematic_passes == task_count and baseline_passes < task_count)
             else "HOLD"
         ),
         "task_count": task_count,
         "baseline_test_passes": baseline_passes,
         "scbe_test_passes": scbe_passes,
-        "baseline_avg": round(
-            sum(item["score"] for item in baseline_scores) / task_count, 4
-        ),
+        "schematic_test_passes": schematic_passes,
+        "baseline_avg": round(sum(item["score"] for item in baseline_scores) / task_count, 4),
         "scbe_avg": round(sum(item["score"] for item in scbe_scores) / task_count, 4),
-        "scbe_wins": sum(
-            1
-            for base, scbe in zip(baseline_scores, scbe_scores)
-            if scbe["score"] > base["score"]
+        "schematic_avg": round(sum(item["score"] for item in schematic_scores) / task_count, 4),
+        "scbe_wins": sum(1 for base, scbe in zip(baseline_scores, scbe_scores) if scbe["score"] > base["score"]),
+        "schematic_wins": sum(
+            1 for base, schematic in zip(baseline_scores, schematic_scores) if schematic["score"] > base["score"]
         ),
     }
 
@@ -699,12 +700,14 @@ def build_report(
     claim_boundary: list[str] = [
         "This proves the challenge harness can run issue-to-edit-to-test tasks with receipts.",
         "The SCBE lane is a deterministic repair harness for seeded fixtures (reference upper bound).",
+        "The prime-schematic lane is template-first repair selected from task evidence, not open-ended generation.",
         "The next escalation is attaching live coding agents to the same task manifest.",
     ]
 
     raw_results: dict[str, Any] = {
         "baseline": [asdict(result) for result in baseline_results],
         "scbe": [asdict(result) for result in scbe_results],
+        "schematic": [asdict(result) for result in schematic_results],
     }
 
     report: dict[str, Any] = {
@@ -723,6 +726,7 @@ def build_report(
         },
         "baseline_scores": baseline_scores,
         "scbe_scores": scbe_scores,
+        "schematic_scores": schematic_scores,
         "raw_results": raw_results,
         "claim_boundary": claim_boundary,
     }
@@ -730,29 +734,18 @@ def build_report(
     # Attach agent lane results when a live provider was used
     if agent_provider is not None:
         agent_passes = sum(
-            1
-            for item in agent_scores
-            if item["checks"]["tests_passed"] and item["checks"]["edit_scope_clean"]
+            1 for item in agent_scores if item["checks"]["tests_passed"] and item["checks"]["edit_scope_clean"]
         )
         agent_summary: dict[str, Any] = {
             "provider": agent_provider,
             "model": PROVIDERS.get(agent_provider, {}).get("model", "unknown"),
             "agent_test_passes": agent_passes,
-            "agent_avg": round(
-                sum(item["score"] for item in agent_scores) / task_count, 4
-            ),
-            "agent_wins": sum(
-                1
-                for base, ag in zip(baseline_scores, agent_scores)
-                if ag["score"] > base["score"]
-            ),
+            "agent_avg": round(sum(item["score"] for item in agent_scores) / task_count, 4),
+            "agent_wins": sum(1 for base, ag in zip(baseline_scores, agent_scores) if ag["score"] > base["score"]),
         }
         report["agent_summary"] = agent_summary
         report["agent_scores"] = agent_scores
-        report["agent_meta"] = [
-            {"task_id": task.task_id, **meta}
-            for task, meta in zip(TASKS, agent_metas)
-        ]
+        report["agent_meta"] = [{"task_id": task.task_id, **meta} for task, meta in zip(TASKS, agent_metas)]
         raw_results["agent"] = [asdict(r) for r in agent_results]
         claim_boundary.append(
             f"Agent lane provider={agent_provider} model={agent_summary['model']}; "
@@ -784,6 +777,8 @@ def _render_markdown(report: dict[str, Any]) -> str:
         "|---|---:|---:|",
         f"| Direct no-repair baseline | `{summary['baseline_avg']}` | "
         f"`{summary['baseline_test_passes']} / {summary['task_count']}` |",
+        f"| Prime-schematic repair | `{summary['schematic_avg']}` | "
+        f"`{summary['schematic_test_passes']} / {summary['task_count']}` |",
         f"| SCBE repair harness | `{summary['scbe_avg']}` | "
         f"`{summary['scbe_test_passes']} / {summary['task_count']}` |",
     ]
@@ -796,6 +791,7 @@ def _render_markdown(report: dict[str, Any]) -> str:
     lines.extend(
         [
             "",
+            f"- Prime-schematic wins: `{summary['schematic_wins']} / {summary['task_count']}`",
             f"- SCBE wins: `{summary['scbe_wins']} / {summary['task_count']}`",
             "",
             "## Per-Task Scores",
@@ -803,23 +799,32 @@ def _render_markdown(report: dict[str, Any]) -> str:
         ]
     )
     if agent_summary:
-        lines.extend(["| Task | Baseline | SCBE | Agent |", "|---|---:|---:|---:|"])
+        lines.extend(
+            [
+                "| Task | Baseline | Schematic | SCBE | Agent |",
+                "|---|---:|---:|---:|---:|",
+            ]
+        )
         baseline_by_id = {item["task_id"]: item for item in report["baseline_scores"]}
+        schematic_by_id = {item["task_id"]: item for item in report["schematic_scores"]}
         agent_by_id = {item["task_id"]: item for item in report["agent_scores"]}
         for item in report["scbe_scores"]:
             task_id = item["task_id"]
             ag = agent_by_id.get(task_id, {})
             lines.append(
                 f"| `{task_id}` | `{baseline_by_id[task_id]['score']}` "
-                f"| `{item['score']}` | `{ag.get('score', 'n/a')}` |"
+                f"| `{schematic_by_id[task_id]['score']}` | `{item['score']}` "
+                f"| `{ag.get('score', 'n/a')}` |"
             )
     else:
-        lines.extend(["| Task | Baseline | SCBE |", "|---|---:|---:|"])
+        lines.extend(["| Task | Baseline | Schematic | SCBE |", "|---|---:|---:|---:|"])
         baseline_by_id = {item["task_id"]: item for item in report["baseline_scores"]}
+        schematic_by_id = {item["task_id"]: item for item in report["schematic_scores"]}
         for item in report["scbe_scores"]:
             task_id = item["task_id"]
             lines.append(
-                f"| `{task_id}` | `{baseline_by_id[task_id]['score']}` | `{item['score']}` |"
+                f"| `{task_id}` | `{baseline_by_id[task_id]['score']}` "
+                f"| `{schematic_by_id[task_id]['score']}` | `{item['score']}` |"
             )
     lines.extend(
         [
@@ -850,9 +855,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
     agent_provider = None if args.provider == "none" else args.provider
-    report = build_report(
-        out_dir=args.out_dir, run_id=args.run_id or None, agent_provider=agent_provider
-    )
+    report = build_report(out_dir=args.out_dir, run_id=args.run_id or None, agent_provider=agent_provider)
     if args.json:
         print(json.dumps(report, indent=2, ensure_ascii=True))
     else:
@@ -861,13 +864,13 @@ def main(argv: list[str] | None = None) -> int:
             "real patch task benchmark: "
             f"decision={summary['decision']} "
             f"baseline={summary['baseline_test_passes']}/{summary['task_count']} "
+            f"schematic={summary['schematic_test_passes']}/{summary['task_count']} "
             f"scbe={summary['scbe_test_passes']}/{summary['task_count']}"
         )
         if "agent_summary" in report:
             ag = report["agent_summary"]
             print(
-                f"agent ({ag['provider']}/{ag['model']}): "
-                f"{ag['agent_test_passes']}/{summary['task_count']} passes"
+                f"agent ({ag['provider']}/{ag['model']}): " f"{ag['agent_test_passes']}/{summary['task_count']} passes"
             )
         print(f"report={args.out_dir / report['run_id'] / 'report.json'}")
     return 0 if report["summary"]["decision"] == "PASS" else 1
