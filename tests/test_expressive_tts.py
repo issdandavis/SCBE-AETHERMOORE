@@ -73,9 +73,10 @@ def test_inflection_notation_changes_the_voice():
     assert _raw(pitched) != _raw(plain)
     assert _raw(emph) != _raw(plain)
     # the L14 audio axis distinguishes the inflected clips (different observables, not identical audio)
-    assert analyze_wav(plain, max_samples=2048).spectral_centroid_hz != analyze_wav(
-        fast, max_samples=2048
-    ).spectral_centroid_hz
+    assert (
+        analyze_wav(plain, max_samples=2048).spectral_centroid_hz
+        != analyze_wav(fast, max_samples=2048).spectral_centroid_hz
+    )
 
 
 def test_expressive_output_is_a_governed_sealed_port_tool():
