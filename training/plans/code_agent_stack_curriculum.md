@@ -118,6 +118,19 @@ Artifacts:
 The first held-out eval is `python.helm.pitfall_eval.eval_problems()` because it
 has verified headroom for the pitfall classes the corpus teaches.
 
+If another lane generates a larger verified headroom pool, do not fork the
+notebook. Point the same staged notebook at it with:
+
+```text
+EVAL_JSONL=/content/path/to/headroom_eval.jsonl
+```
+
+The JSONL must use the normal problem shape:
+
+```json
+{"task_id":"...", "text":"...", "test_list":["assert ...", "assert ..."]}
+```
+
 Report all three numbers:
 
 - newly solved
