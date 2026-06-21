@@ -62,12 +62,25 @@ _READ_JS = r"""
     const editable = tag === 'textarea' || tag === 'select' ||
       (tag === 'input' && !['button', 'submit', 'checkbox', 'radio', 'hidden'].includes(typ)) ||
       e.getAttribute('contenteditable') === 'true';
-    elements.push({ ref, tag, role: e.getAttribute('role') || (editable ? 'input' : tag), name: name(e), editable });
+    const bb = e.getBoundingClientRect();
+    elements.push({
+      ref, tag, role: e.getAttribute('role') || (editable ? 'input' : tag), name: name(e), editable,
+      x: Math.round(bb.x), y: Math.round(bb.y), w: Math.round(bb.width), h: Math.round(bb.height)
+    });
   });
   const headings = [...document.querySelectorAll('h1,h2,h3')].filter(vis)
     .map(h => (h.innerText || '').replace(/\s+/g, ' ').trim()).filter(Boolean).slice(0, 12);
   const text = (document.body ? document.body.innerText : '').replace(/\s+/g, ' ').trim().slice(0, 1200);
-  return { url: location.href, title: document.title, elements, headings, text };
+  return {
+    url: location.href, title: document.title,
+    viewport: { w: window.innerWidth, h: window.innerHeight },
+    scroll: { x: Math.round(window.scrollX), y: Math.round(window.scrollY) },
+    document: {
+      w: Math.round(document.documentElement.scrollWidth),
+      h: Math.round(document.documentElement.scrollHeight)
+    },
+    elements, headings, text
+  };
 }
 """
 
@@ -76,7 +89,7 @@ _READ_JS = r"""
 class Move:
     """One legal move on the page's control surface. The model selects by `ref`/`kind`, never a selector."""
 
-    kind: str  # click | type | scroll | navigate | back | read
+    kind: str  # click | type | hover | submit | move_camera | scroll | navigate | back | read
     ref: Optional[str] = None
     label: str = ""
     value: Optional[str] = None
@@ -98,10 +111,10 @@ class EphemeralFeed:
     def consume(self) -> Dict[str, Any]:
         if self._spent:
             raise RuntimeError("ephemeral feed already consumed (and deleted)")
-        data = json.loads(open(self.path, encoding="utf-8").read())
-        os.remove(self.path)  # ingested -> gone; no over-cache
-        self._spent = True
-        return data
+        raw = open(self.path, encoding="utf-8").read()
+        os.remove(self.path)  # ingested -> gone, and spent, BEFORE the parse -- so a malformed-JSON parse
+        self._spent = True  # error can't leave the file cached or the feed re-consumable (exactly once)
+        return json.loads(raw)
 
     @property
     def cached(self) -> bool:
@@ -174,7 +187,26 @@ class AIBrowser:
         elif move.kind == "type":
             page.fill("[data-aibref='%s']" % move.ref, move.value or "", timeout=8000)
         elif move.kind == "scroll":
-            page.mouse.wheel(0, 800)
+            try:
+                delta = int(move.value)
+            except (TypeError, ValueError):
+                delta = 800  # default: one screen down; negative value scrolls up
+            page.mouse.wheel(0, delta)
+        elif move.kind == "move_camera":
+            # scroll a target into view -- the SC2 camera move. By ref (an element) or "x,y" doc coords.
+            if move.ref:
+                page.eval_on_selector(
+                    "[data-aibref='%s']" % move.ref, "e => e.scrollIntoView({block: 'center', inline: 'center'})"
+                )
+            elif move.value:
+                xy = [int(v) for v in str(move.value).split(",")]
+                page.evaluate("([x, y]) => window.scrollTo(x, y)", xy)
+        elif move.kind == "hover":
+            page.hover("[data-aibref='%s']" % move.ref, timeout=8000)
+        elif move.kind == "submit":
+            # press a key on whatever is FOCUSED (default Enter) -- survives a re-render that detaches the
+            # ref'd element (real sites swap inputs out after typing; a focus-based submit doesn't break).
+            page.keyboard.press(move.value or "Enter")
         elif move.kind == "back":
             page.go_back(wait_until="domcontentloaded")
         elif move.kind == "navigate":
