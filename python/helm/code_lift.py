@@ -190,6 +190,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     ap.add_argument("--trained", default=None, help="ollama model id for the TRAINED slot (e.g. vtc-qwen15)")
     ap.add_argument("--corpus", default=None, help="training corpus jsonl; its task_ids are excluded from eval")
     ap.add_argument("--limit", type=int, default=300, help="pull this many MBPP problems before excluding train ids")
+    ap.add_argument(
+        "--pitfall-eval",
+        action="store_true",
+        help="use python.helm.pitfall_eval's held-out headroom eval instead of broad MBPP",
+    )
     ap.add_argument("--recovery", action="store_true", help="also run the repair-loop recovery measurement")
     ap.add_argument("--rounds", type=int, default=3, help="repair rounds per problem (with --recovery)")
     a = ap.parse_args(list(argv) if argv is not None else None)
@@ -205,9 +210,19 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         from .free_generator import make_generator
         from .vtc_split import load_corpus, split_by_task_id
 
-        records = load_corpus(a.corpus)
-        eval_problems = split_by_task_id(records, pb.pull_mbpp(limit=a.limit))["eval_problems"]
-        print("held-out: %d problems (excluded %d trained task_ids)" % (len(eval_problems), len(records)))
+        if a.pitfall_eval:
+            from .pitfall_eval import eval_problems as pitfall_eval_problems
+
+            eval_problems = pitfall_eval_problems()
+            print("held-out pitfall eval: %d problems (headroom ruler)" % len(eval_problems))
+        else:
+            if not a.corpus:
+                raise ValueError(
+                    "--corpus is required for MBPP held-out eval; use --pitfall-eval for the headroom eval"
+                )
+            records = load_corpus(a.corpus)
+            eval_problems = split_by_task_id(records, pb.pull_mbpp(limit=a.limit))["eval_problems"]
+            print("held-out MBPP: %d problems (excluded %d train records)" % (len(eval_problems), len(records)))
         rep = measure_code_lift(make_generator(model=a.base), make_generator(model=a.trained), eval_problems)
         print(render(rep))
         if a.recovery:
