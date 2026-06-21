@@ -107,6 +107,7 @@ CELLS = [
         "# 1) generators with no input deps first (tongue -> sft/, codebase -> training-data/ parent), then\n"
         "#    optional ones. Each best-effort: a failing generator is skipped, never fatal.\n"
         "for script in ['scripts/generate_tongue_curriculum_sft.py', 'scripts/codebase_to_sft.py',\n"
+        "               'scripts/build_chemistry_codebase_sft.py',  # chem from chem code+docs+notes (self-contained)\n"
         "               'scripts/generate_collegiate_curriculum_sft.py', 'scripts/build_chemistry_primary_sft.py']:\n"
         "    if os.path.exists(script):\n"
         "        run(script)\n"
