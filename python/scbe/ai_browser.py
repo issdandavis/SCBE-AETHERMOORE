@@ -74,6 +74,11 @@ _READ_JS = r"""
   return {
     url: location.href, title: document.title,
     viewport: { w: window.innerWidth, h: window.innerHeight },
+    scroll: { x: Math.round(window.scrollX), y: Math.round(window.scrollY) },
+    document: {
+      w: Math.round(document.documentElement.scrollWidth),
+      h: Math.round(document.documentElement.scrollHeight)
+    },
     elements, headings, text
   };
 }
@@ -84,7 +89,7 @@ _READ_JS = r"""
 class Move:
     """One legal move on the page's control surface. The model selects by `ref`/`kind`, never a selector."""
 
-    kind: str  # click | type | hover | submit | scroll | navigate | back | read
+    kind: str  # click | type | hover | submit | move_camera | scroll | navigate | back | read
     ref: Optional[str] = None
     label: str = ""
     value: Optional[str] = None
@@ -187,6 +192,15 @@ class AIBrowser:
             except (TypeError, ValueError):
                 delta = 800  # default: one screen down; negative value scrolls up
             page.mouse.wheel(0, delta)
+        elif move.kind == "move_camera":
+            # scroll a target into view -- the SC2 camera move. By ref (an element) or "x,y" doc coords.
+            if move.ref:
+                page.eval_on_selector(
+                    "[data-aibref='%s']" % move.ref, "e => e.scrollIntoView({block: 'center', inline: 'center'})"
+                )
+            elif move.value:
+                xy = [int(v) for v in str(move.value).split(",")]
+                page.evaluate("([x, y]) => window.scrollTo(x, y)", xy)
         elif move.kind == "hover":
             page.hover("[data-aibref='%s']" % move.ref, timeout=8000)
         elif move.kind == "submit":
