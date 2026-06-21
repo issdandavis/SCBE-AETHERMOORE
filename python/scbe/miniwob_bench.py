@@ -52,13 +52,24 @@ def serve(port: int = 8099):
 
 
 def observe(br: AIBrowser, page) -> Dict[str, Any]:
-    """The agent's view of the task: the #query instruction + the bounded element feed."""
+    """The agent's view of the task: the #query instruction + the bounded element feed (with the current
+    value of each text input, so a deterministic layer can tell when a field is already filled)."""
     q = page.evaluate("() => { const e = document.querySelector('#query'); return e ? e.innerText.trim() : ''; }")
     feed = br.read(page)
-    els = [
-        {"ref": e["ref"], "tag": e["tag"], "name": (e.get("name") or "")[:40], "editable": bool(e.get("editable"))}
-        for e in feed["elements"]
-    ]
+    els = []
+    for e in feed["elements"]:
+        item = {
+            "ref": e["ref"],
+            "tag": e["tag"],
+            "name": (e.get("name") or "")[:40],
+            "editable": bool(e.get("editable")),
+        }
+        if item["editable"]:
+            try:
+                item["value"] = page.eval_on_selector("[data-aibref='%s']" % e["ref"], "el => el.value || ''")
+            except Exception:
+                item["value"] = ""
+        els.append(item)
     return {"instruction": q, "elements": els}
 
 
@@ -110,7 +121,7 @@ class LLMPolicy:
         prompt = (
             "You drive a web page to satisfy an instruction. Pick exactly ONE next action.\n\n"
             'Instruction: "%s"\n\nInteractive elements (ref tag name):\n%s\n\n'
-            'Reply with ONLY one JSON object, no prose. One of:\n'
+            "Reply with ONLY one JSON object, no prose. One of:\n"
             '{"action":"click","ref":"rN"}  to click an element\n'
             '{"action":"type","ref":"rN","value":"text"}  to type into a text input\n'
             '{"action":"submit"}  to press Enter\n' % (obs["instruction"], listing or "  (none)")
@@ -120,6 +131,39 @@ class LLMPolicy:
         except Exception:
             return None
         return _parse_action(resp, obs)
+
+
+class HybridPolicy:
+    """qwen-where-it's-reliable + a DETERMINISTIC substitution for the transitions it fumbles. The LLM
+    recognizes targets and types; the 'focus the input' and 'submit once filled' transitions -- which a
+    small model botches -- are issued deterministically instead. (Issac's 'lateral transition of
+    submission': keep the model on what it nails, substitute the transition steps.)"""
+
+    def __init__(self, llm: "LLMPolicy"):
+        self.llm = llm
+        self.name = "hybrid(" + llm.name + ")"
+
+    def act(self, obs: Dict[str, Any]) -> Optional[Move]:
+        ql = obs["instruction"].lower()
+        # transition 1: 'focus the input' is deterministic -- the small model fumbles it, so just do it.
+        if "focus" in ql and not any((e.get("value") or "") for e in obs["elements"] if e["editable"]):
+            inp = next((e for e in obs["elements"] if e["editable"]), None)
+            if inp:
+                return Move("click", ref=inp["ref"])
+        # transition 2: submit once a field is filled (the 'lateral transition of submission').
+        needs_submit = ("submit" in ql) or ("press enter" in ql) or ("and press" in ql)
+        filled = any((e.get("value") or "") for e in obs["elements"] if e["editable"])
+        if needs_submit and filled:
+            btn = next(
+                (
+                    e
+                    for e in obs["elements"]
+                    if e["tag"] == "button" and any(w in e["name"].lower() for w in ("submit", "ok", "done", "go"))
+                ),
+                None,
+            )
+            return Move("click", ref=btn["ref"]) if btn else Move("submit")
+        return self.llm.act(obs)
 
 
 def _parse_action(text: str, obs: Dict[str, Any]) -> Optional[Move]:
