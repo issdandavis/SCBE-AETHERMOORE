@@ -84,7 +84,7 @@ _READ_JS = r"""
 class Move:
     """One legal move on the page's control surface. The model selects by `ref`/`kind`, never a selector."""
 
-    kind: str  # click | type | scroll | navigate | back | read
+    kind: str  # click | type | hover | submit | scroll | navigate | back | read
     ref: Optional[str] = None
     label: str = ""
     value: Optional[str] = None
@@ -187,6 +187,12 @@ class AIBrowser:
             except (TypeError, ValueError):
                 delta = 800  # default: one screen down; negative value scrolls up
             page.mouse.wheel(0, delta)
+        elif move.kind == "hover":
+            page.hover("[data-aibref='%s']" % move.ref, timeout=8000)
+        elif move.kind == "submit":
+            # press a key on whatever is FOCUSED (default Enter) -- survives a re-render that detaches the
+            # ref'd element (real sites swap inputs out after typing; a focus-based submit doesn't break).
+            page.keyboard.press(move.value or "Enter")
         elif move.kind == "back":
             page.go_back(wait_until="domcontentloaded")
         elif move.kind == "navigate":

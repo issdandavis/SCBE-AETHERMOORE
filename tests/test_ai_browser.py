@@ -84,3 +84,26 @@ def test_unknown_move_rejected(browser):
     page = browser.open(FIXTURE)
     with pytest.raises(ValueError):
         browser.act(page, Move("teleport"))
+
+
+def test_submit_acts_on_focus_survives_rerender(browser):
+    # submit presses Enter on whatever is FOCUSED -- no ref, so a re-render that detaches the input can't
+    # break it (the real-world failure Wikipedia exposed)
+    page = browser.open(
+        "data:text/html,<input onkeydown=\"if(event.key==='Enter')"
+        "document.getElementById('o').innerText='SUBMITTED'\"><p id=o>idle</p>"
+    )
+    inp = next(e for e in browser.read(page)["elements"] if e["editable"])
+    browser.act(page, Move("type", ref=inp["ref"], value="x"))  # type focuses the input
+    browser.act(page, Move("submit"))  # Enter on focus
+    assert "SUBMITTED" in browser.read(page)["text"]
+
+
+def test_hover_move_fires_mouseover_without_click(browser):
+    page = browser.open(
+        "data:text/html,<button onmouseover=\"document.getElementById('o').innerText='HOVERED'\">b</button>"
+        "<p id=o>idle</p>"
+    )
+    btn = next(e for e in browser.read(page)["elements"] if e["tag"] == "button")
+    browser.act(page, Move("hover", ref=btn["ref"]))
+    assert "HOVERED" in browser.read(page)["text"]
