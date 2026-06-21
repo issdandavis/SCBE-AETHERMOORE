@@ -246,7 +246,29 @@ def test_energy_is_flat_as_history_grows_not_linear():
     assert e_small.irreversible_bits_erased == e_big.irreversible_bits_erased  # FLAT, not linear
     assert e_small.irreversible_joules == e_big.irreversible_joules
     assert e_big.energy_is_sublinear is True  # 1 rewrite << 500 records
-    assert e_big.naive_linear_bits > e_big.irreversible_bits_erased  # the linear ceiling is far higher
+    # for THIS depth-1 root conflict, n*bits exceeds the single re-decide -- but that is NOT a universal
+    # ceiling (a deep cascade can exceed n*bits; see the next test).
+    assert e_big.naive_linear_bits > e_big.irreversible_bits_erased
+
+
+def test_naive_linear_bits_is_not_a_universal_ceiling():
+    # the audit's overclaim fix: naive_linear_bits (= n*bits, every record re-decided ONCE) is NOT an upper
+    # bound. A depth-2 cascade re-decides the SAME node twice; on a 2-record history that drives
+    # irreversible_bits_erased UP TO naive_linear_bits (a deeper cascade would EXCEED it) -- not "far higher".
+    recs = [DecisionRecord(0, "in0", ALLOW, route="r"), DecisionRecord(1, "in1", DENY, route="r")]
+
+    def two_step(rs, idx):
+        d = rs[idx].decision
+        if d == ALLOW:
+            return ESCALATE
+        if d == ESCALATE:
+            return DENY
+        return None
+
+    e = energy_of_solve(recs, two_step)
+    assert e.rewrites == 2 and e.history_len == 2  # the same node re-decided twice
+    assert e.irreversible_bits_erased == e.naive_linear_bits  # EQUAL -> not a ceiling, not "far higher"
+    assert e.energy_is_sublinear is False  # 2 rewrites not < 2 records
 
 
 def test_reversible_solve_erases_nothing_and_unwinds_losslessly():
