@@ -37,6 +37,17 @@ def test_never_delete_still_fires_inside(tmp_path):
     assert r["decision"] == "REFUSED" and "destructive" in r["result"]
 
 
+def test_run_command_uses_allowlisted_argv_not_shell_chaining(tmp_path):
+    desk = AetherDesk.open(tmp_path / "ws")
+    ok = desk.act("run_command", {"command": "python --version"}, confirm="task")
+    assert ok["decision"] == "ALLOWED"
+    assert "Python" in ok["result"]
+
+    chained = desk.act("run_command", {"command": "echo hello; echo smuggled"}, confirm="task")
+    assert chained["decision"] == "REFUSED"
+    assert "chaining" in chained["result"]
+
+
 def test_guarded_actions_need_confirm(tmp_path):
     desk = AetherDesk.open(tmp_path / "ws")
     assert desk.act("write_file", {"path": "x.txt", "content": "y"})["decision"] == "NEEDS_CONFIRM"
