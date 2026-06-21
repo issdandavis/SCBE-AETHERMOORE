@@ -76,3 +76,24 @@ def test_reproducible():
     a = h.run_staged(h._ref_problems(), h._ref_generator(), h._ref_repair())
     b = h.run_staged(h._ref_problems(), h._ref_generator(), h._ref_repair())
     assert [r["category"] for r in a] == [r["category"] for r in b]
+
+
+# ---- the stronger-face gate (wedge #1+#2+#3 composition) --------------------------------------------------
+def test_gate_catches_overfit_and_converts_it_to_a_retry():
+    # overfit: passes PUBLIC, fails the shadow self-check -> the gate forces a retry that the repair fixes
+    gen = lambda p, i: "def f(*a):\n    return %s" % p["public"][0].split("==", 1)[1].strip()  # noqa: E731
+    without = h.run_problem(PROB | {"shadow": ["assert f(9,9)==18"]}, gen, h._ref_repair(), gate=None)
+    withg = h.run_problem(PROB | {"shadow": ["assert f(9,9)==18"]}, gen, h._ref_repair(), gate=h._ref_shadow_gate())
+    assert without["category"] == srs.PUBLIC_PASS_HIDDEN_FAIL  # no gate -> shipped wrong, no retry
+    assert withg["category"] == srs.FIX_SOLVED and withg.get("caught_by_gate") is True  # gate -> caught -> fixed
+
+
+def test_compare_gate_reduces_residual_and_gains_lift():
+    cmp = h.compare_gate(h._ref_problems(), h._ref_generator(), h._ref_repair(), h._ref_shadow_gate())
+    assert cmp["residual_reduction"] > 0  # the stronger face shrinks the overfit no-retry bucket
+    assert cmp["lift_gain"] > 0  # ...and converts it into recovered solves
+
+
+def test_gate_leaves_first_try_solves_untouched():
+    rec = h.run_problem(PROB, lambda p, i: p["good"], h._ref_repair(), gate=h._ref_shadow_gate())
+    assert rec["category"] == srs.SOLVED_FIRST_TRY  # the gate only acts on public-pass/hidden-fail
