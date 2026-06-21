@@ -81,16 +81,25 @@ def test_energy_ledger_reversible_is_free_erase_pays():
 
 
 def test_energy_compare_forward_pays_reversible_recovers():
-    # the load-bearing result: same end state both ways, but force-erase pays the Landauer floor for the
-    # whole 64-bit scratch while uncomputing pays exactly zero -- the energy difference is the recovery
-    for x in (0, 1, 42, 1234567, 2**50 + 9):
+    # honest: force-erase pays the Landauer floor for the INFORMATION actually erased -- the bit_length of
+    # h(x), NOT a flat 64 -- while uncomputing pays exactly zero. The difference is the recovery.
+    for x in (1, 42, 1234567, 2**50 + 9):
         e = energy_compare(x)
+        bits = (splitmix64(x) & MASK).bit_length()
         assert e["same_result"] is True  # scratch=0, out=h(x) reached identically both ways
-        assert e["forward_only_bits_erased"] == REG_BITS  # force-clear erases the full register
-        assert e["reversible_bits_erased"] == 0  # uncomputation erases nothing
-        assert e["reversible_joules"] == 0.0  # ...so it is thermodynamically free
-        assert e["forward_only_joules"] > 0.0  # ...while the dissipating path pays heat
-        assert e["energy_recovered_joules"] == e["forward_only_joules"]  # all of it recovered
+        assert 0 < e["forward_only_bits_erased"] == bits <= REG_BITS  # the info content of h(x), not flat 64
+        assert e["reversible_bits_erased"] == 0 and e["reversible_joules"] == 0.0  # uncompute erases nothing
+        assert e["forward_only_joules"] > 0.0  # the dissipating path pays heat
+        assert e["energy_recovered_joules"] == e["forward_only_joules"]  # all the erasure energy recovered
+
+
+def test_energy_compare_zero_is_a_fixed_point_erasing_nothing():
+    # honest degenerate case: splitmix64(0)==0, so the scratch holds 0 after compute -- force-clearing a zero
+    # register erases NO information (0 bits, 0 J). Both paths are free; there is nothing to recover.
+    e = energy_compare(0)
+    assert e["same_result"] is True
+    assert e["forward_only_bits_erased"] == 0 and e["forward_only_joules"] == 0.0
+    assert e["energy_recovered_joules"] == 0.0
 
 
 def test_demo_all_true():

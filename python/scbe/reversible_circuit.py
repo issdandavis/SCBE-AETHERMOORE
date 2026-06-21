@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from typing import Callable, Dict, List, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 from .elastic_bijective_hash import splitmix64
 
@@ -27,11 +27,17 @@ Reg = Dict[str, int]
 
 # Landauer's principle: erasing ONE bit of information dissipates at least k*T*ln2 of energy as heat, and
 # THAT dissipation is the forward arrow. A reversible (bijective) gate erases nothing -> thermodynamically
-# free. So the energy bill of a computation == the bits it irreversibly ERASES, and UNCOMPUTING instead of
-# erasing pays it back to ~0. These constants make the bill a real number of joules.
+# free. So the Landauer (ERASURE) component of the energy bill == the bits it irreversibly ERASES, and
+# UNCOMPUTING instead of erasing pays that component back to ~0. These constants make it a real number of J.
+#
+# HONEST SCOPE of the energy claim: reversible_joules==0 is the information-ERASURE (Landauer) floor ONLY.
+# It is NOT net-zero total energy: (1) Bennett -- the answer is kept in the `out` register, so clearing it for
+# the next computation costs the same bill (the cost is deferred into space, not eliminated); (2) real
+# gate-switching/dynamical energy (the splitmix64 mixing, the XORs) is not modeled and on any real device
+# dominates k*T*ln2 by orders of magnitude. This models the erasure floor, not a chip's power.
 K_BOLTZMANN = 1.380649e-23  # J/K (exact, SI)
 ROOM_T_K = 300.0  # K, ~room temperature
-REG_BITS = 64  # our registers are 64-bit; force-clearing one throws away this many information bits
+REG_BITS = 64  # register WIDTH; a force-clear erases AT MOST this many bits (actual = bit_length of the value)
 
 
 def landauer_joules(bits_erased: int, temperature_k: float = ROOM_T_K) -> float:
@@ -131,21 +137,26 @@ def run_metered(state: Reg, gates: List[Gate], ledger: EnergyLedger) -> Reg:
     return state
 
 
-def erase_register(state: Reg, reg: str, ledger: EnergyLedger, bits: int = REG_BITS) -> Reg:
+def erase_register(state: Reg, reg: str, ledger: EnergyLedger, bits: Optional[int] = None) -> Reg:
     """The one IRREVERSIBLE move: force `reg` to 0, throwing away the information it held. Charges the ledger
-    bits*k*T*ln2 -- the literal cost of the arrow. Compare UNCOMPUTING the register, which restores 0 for free
-    by running the bijective gates backward (run_metered over the inverses)."""
+    for the information ACTUALLY erased -- the bit_length of the prior value (0 when it was already 0, up to
+    REG_BITS), or `bits` if given explicitly. This is the cost of the arrow; UNCOMPUTING restores 0 for free
+    by running the bijective gates backward (run_metered over the inverses). NOTE: clearing a known-zero
+    register costs 0 -- erasing information you don't have is free."""
     r = dict(state)
+    erased = state[reg].bit_length() if bits is None else bits
     r[reg] = 0
-    ledger.erase("erase %s" % reg, bits)
+    ledger.erase("erase %s" % reg, erased)
     return r
 
 
 def energy_compare(x: int) -> Dict[str, object]:
     """The whole point in one number. Compute h(x), copy it out, then CLEAN the scratch two ways:
-      (1) forward-only -> FORCE-ERASE the scratch (irreversible): pays REG_BITS*k*T*ln2.
+      (1) forward-only -> FORCE-ERASE the scratch (irreversible): pays bit_length(h(x))*k*T*ln2 (up to REG_BITS;
+          0 in the degenerate x=0 case where h(0)=0 -- erasing a zero register erases nothing).
       (2) reversible   -> UNCOMPUTE the scratch (run the gates backward): pays ~0.
-    Both end identical (scratch=0, out=h(x)); the energy difference is exactly what reversibility recovers."""
+    Both end identical (scratch=0, out=h(x)); the difference is the ERASURE (Landauer) energy reversibility
+    recovers -- NOT total energy (the answer stays in `out`, Bennett; gate-switching is not modeled)."""
     compute = [hash_into("scratch", "x")]
     expected = splitmix64(x) & MASK
 
@@ -214,7 +225,7 @@ def main() -> int:
         "  ...output keeps the answer h(x), input preserved        : %s, %s"
         % (d["uncompute_keeps_answer"], d["input_preserved"])
     )
-    print("  => computed a result and erased NOTHING (no Landauer cost, no garbage qubit).\n")
+    print("  => computed a result while erasing nothing reclaimable (the Landauer ERASURE floor is 0).\n")
 
     e = d["_energy"]
     print("LANDAUER ENERGY LEDGER -- energy IS the arrow; reversibility recovers it")
@@ -228,9 +239,11 @@ def main() -> int:
         % (e["reversible_joules"], e["reversible_bits_erased"])
     )
     print(
-        "  => reversibility recovered %.3e J at T=300K; over 1e9 such ops that is %.3e J of avoided heat."
+        "  => reversibility recovered %.3e J of ERASURE energy at T=300K (over 1e9 ops, %.3e J)."
         % (e["energy_recovered_joules"], e["energy_recovered_joules"] * 1e9)
     )
+    print("  honest: the Landauer FLOOR only -- the answer stays in `out` (Bennett, deferred), gate-switching")
+    print("          energy is not modeled, and a real chip dissipates orders of magnitude more. Not net-zero.")
     return 0
 
 
