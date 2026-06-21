@@ -62,6 +62,12 @@ def test_adversarial_opponent_rejects_a_plausible_but_wrong_solution_forever():
     assert out["won"] is False and out["solution"] is None
 
 
+def test_empty_oracle_cannot_certify_a_win():
+    # the vacuous-pass hole the adversarial review found: an EMPTY StaticOpponent must never certify code
+    out = play_until_won("add", scripted(["def add(a, b):\n    return 0  # anything"]), StaticOpponent([]), max_moves=3)
+    assert out["won"] is False and out["solution"] is None
+
+
 def test_illegal_destructive_move_is_refused_not_run():
     # a destructive candidate is not a legal move -> refused, recorded, never executed; the game continues
     out = play_until_won(
