@@ -62,8 +62,10 @@ class MarsProfile:
     sweep over config/offline_bundle_profiles.json, docs/specs/GEOSEAL_MARS_MISSION_COMPASS_v1.md, and
     docs/research/mars_nested_drone_architecture_spec.md found those are vision/qualitative with NO numeric
     DTN parameters; the only documented numbers come from demo/mars-communication.html and the existing
-    mars_dtn_sim. HONEST GAP: link loss / duplicate / reorder / contact-window rates are in NO doc, so the
-    scenarios keep mars_dtn_sim's sim defaults for those (flagged in DOC_SOURCES below)."""
+    mars_dtn_sim. The gaps those docs DON'T cover are filled with NASA-PUBLISHED Mars-relay figures (cited
+    in NASA_SOURCES). HONEST GAP remaining: a single packet LOSS-RATE % has no clean published value --
+    NASA handles loss via DTN CUSTODY transfer, not a stated rate -- so the sim keeps drop_prob a default
+    and models custody (retransmit)."""
 
     owlt_typical_s: float = 14 * 60  # demo/mars-communication.html: 14 min one-way light delay
     owlt_min_s: float = 182  # mars_dtn_sim (NASA): closest approach (~3.0 min)
@@ -71,6 +73,19 @@ class MarsProfile:
     handshake_round_trips: int = 3  # demo: TLS needs 3 round trips before it can encrypt
     squad_handshake_minutes: float = 0.0  # demo: SCBE pre-synchronized vocabulary -> 0 round trips
     presync_codebook: str = "6 tongues x 256 tokens"  # demo: the pre-shared vocabulary that removes handshake
+    # --- NASA-published Mars-relay figures (fill the doc gaps; each cited authoritatively in NASA_SOURCES) ---
+    uhf_relay_typical_kbps_min: int = 8  # Electra typical operational coded floor (Phoenix used 8/32/128 kbps)
+    uhf_relay_typical_kbps_max: int = 256  # Electra typical operational coded ceiling
+    uhf_relay_max_kbps: int = 2048  # Electra UHF proximity-link maximum (2.048 Mbps, uncoded)
+    relay_pass_minutes: float = 8.0  # an orbiter is above the rover's horizon ~6-9 min per overpass
+    relay_data_per_pass_mbit_min: int = 100  # 100-250 Mbit returned to the orbiter per ~8-min pass
+    relay_data_per_pass_mbit_max: int = 250
+    relay_passes_per_sol: int = 2  # typical 1-2/sol (orbiters fly 2-4/sol, 1-3 used for relay)
+    conjunction_blackout_days: float = 14.0  # solar-conjunction command moratorium (~2 weeks)
+    conjunction_period_years: float = 2.0  # Mars solar conjunction recurs ~every 2 years
+    owlt_min_minutes_nasa: float = 4.0  # NASA Goddard canonical: ~4 min one-way at closest approach (~35M mi)
+    owlt_max_minutes_nasa: float = 24.0  # NASA Goddard canonical: ~24 min one-way at greatest distance (~250M mi)
+    dtn_demonstrated_bundles: int = 34_000_000  # NASA PACE (2024): >34M bundles, 100% success via custody transfer
 
 
 MARS = MarsProfile()
@@ -78,7 +93,33 @@ DOC_SOURCES = {
     "owlt_typical_s": "demo/mars-communication.html (14 min OWLT)",
     "owlt_min_s / owlt_max_s": "research/comms_sim/mars_dtn_sim.py (NASA 182/1342 s)",
     "handshake_round_trips / squad_handshake": "demo/mars-communication.html (42 min 3-RT vs 0 min pre-sync)",
-    "loss / dup / reorder / contact_gap rates": "NOT IN ANY DOC -> mars_dtn_sim sim defaults (honest gap)",
+    "loss-rate %": "NO clean published figure -> NASA uses DTN custody transfer, not a rate; sim default",
+}
+
+# NASA-published Mars-relay figures (authoritative primary sources; verifier authoritative=true). These fill
+# the numeric gaps Issac's own docs do not cover -- cited so the figures can be audited back to NASA/JPL.
+NASA_SOURCES = {
+    "uhf_relay_typical_kbps / uhf_relay_max_kbps": (
+        "https://discovery.larc.nasa.gov/PDF_FILES/28Mars_Relay_Description.pdf "
+        "(NASA/JPL 'Mars Relay Description', Sec 5.2 MRO Electra link spec, Table 5.2-1: "
+        "symbol rates 1..2048 ksps, 2.048 Mbps max; typical coded 8-256 kbps)"
+    ),
+    "relay_pass_minutes / relay_data_per_pass_mbit / relay_passes_per_sol": (
+        "https://mars.nasa.gov/mars2020/spacecraft/rover/communications/ "
+        "(NASA Mars 2020: orbiter overhead ~8 min/pass, 100-250 Mbit/pass; ~2 passes/sol)"
+    ),
+    "conjunction_blackout_days / conjunction_period_years": (
+        "https://science.nasa.gov/blog/hunkering-down-for-solar-conjunction/ "
+        "(NASA: ~2-week command moratorium, every ~2 years)"
+    ),
+    "owlt_min_minutes_nasa / owlt_max_minutes_nasa": (
+        "https://www.nasa.gov/centers-and-facilities/goddard/space-communications-7-things-you-need-to-know/ "
+        "(NASA Goddard: one-way ~4 min closest / ~24 min farthest; 8-48 min round trip)"
+    ),
+    "dtn_demonstrated_bundles": (
+        "https://www.nasa.gov/communicating-with-missions/delay-disruption-tolerant-networking/ "
+        "(NASA PACE 2024: >34M bundles, 100% success; store-and-forward + custody transfer + retransmit)"
+    ),
 }
 
 
@@ -147,6 +188,10 @@ SCENARIOS: List[Tuple[str, Dict[str, Any], bool]] = [
     ("mars_far_delay+reorder", {"reorder": True}, True),
     ("duplicate_bundles", {"dup_prob": 0.4}, True),
     ("loss_WITH_custody", {"drop_prob": 0.4, "retransmit": True}, True),
+    # NASA solar-conjunction blackout (~2 wk every ~2 yr): a SEVERE store-carry-forward outage. DTN custody
+    # (NASA PACE: 34M bundles, 100% success) carries the squad's decisions through and the far end still
+    # converges once the link returns -- the autonomy-under-blackout case the conjunction figure motivates.
+    ("solar_conjunction_blackout(custody)", {"drop_prob": 0.6, "retransmit": True}, True),
     ("permanent_loss_NO_custody", {"drop_prob": 0.5, "retransmit": False}, False),
 ]
 
@@ -176,6 +221,29 @@ def main() -> int:
     print(
         "  grounded Mars OWLT: %.0f min [demo/mars-communication.html]; NASA range %.0f-%.0f s [mars_dtn_sim]"
         % (MARS.owlt_typical_s / 60, MARS.owlt_min_s, MARS.owlt_max_s)
+    )
+    print(
+        "  NASA relay [cited]: %d-%d kbps typ (%.3f Mbps max), ~%.0f min/pass x%d/sol (%d-%d Mbit/pass);"
+        % (
+            MARS.uhf_relay_typical_kbps_min,
+            MARS.uhf_relay_typical_kbps_max,
+            MARS.uhf_relay_max_kbps / 1000.0,
+            MARS.relay_pass_minutes,
+            MARS.relay_passes_per_sol,
+            MARS.relay_data_per_pass_mbit_min,
+            MARS.relay_data_per_pass_mbit_max,
+        )
+    )
+    print(
+        "             OWLT ~%.0f-%.0f min one-way; conjunction blackout ~%.0f d every ~%.0f yr; "
+        "DTN %s bundles @100%% [PACE]"
+        % (
+            MARS.owlt_min_minutes_nasa,
+            MARS.owlt_max_minutes_nasa,
+            MARS.conjunction_blackout_days,
+            MARS.conjunction_period_years,
+            "{:,}".format(MARS.dtn_demonstrated_bundles),
+        )
     )
     print(
         "  time-to-first-decision: pre-synced squad=%.0f min vs round-trip protocol=%.0f min [demo handshake]\n"
