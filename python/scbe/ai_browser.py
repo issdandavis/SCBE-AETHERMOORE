@@ -174,7 +174,11 @@ class AIBrowser:
         elif move.kind == "type":
             page.fill("[data-aibref='%s']" % move.ref, move.value or "", timeout=8000)
         elif move.kind == "scroll":
-            page.mouse.wheel(0, 800)
+            try:
+                delta = int(move.value)
+            except (TypeError, ValueError):
+                delta = 800  # default: one screen down; negative value scrolls up
+            page.mouse.wheel(0, delta)
         elif move.kind == "back":
             page.go_back(wait_until="domcontentloaded")
         elif move.kind == "navigate":
