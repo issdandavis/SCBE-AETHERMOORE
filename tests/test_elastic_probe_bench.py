@@ -7,7 +7,7 @@ average reported by _bench_at hides the worst case.
 
 from __future__ import annotations
 
-from python.helm.elastic_probe_bench import distribution, lookup_probe_lengths, run
+from python.helm.elastic_probe_bench import compare, distribution, lookup_probe_lengths, run
 
 
 def test_is_deterministic_same_seed_same_distribution():
@@ -34,6 +34,16 @@ def test_p50_stays_small_even_at_high_load():
     hi = distribution(bits=14, load=0.99, seed=7)
     assert hi["p50"] <= 3
     assert hi["p99"] > hi["p50"]  # the distribution is heavy-tailed, not flat
+
+
+def test_double_hashing_tames_the_tail_vs_linear_probing():
+    # the comparative "why double-hashing" claim: at high load the linear-probe baseline's primary clustering
+    # makes its tail MUCH worse than the coprime-stride double-hash map's, at the same load.
+    c = compare(bits=14, loads=(0.99,), seed=7)
+    row = c["rows"][0]
+    assert row["linear_probe"]["max"] > row["double_hash"]["max"] * 2  # linear tail far heavier
+    assert row["linear_probe"]["mean"] > row["double_hash"]["mean"]  # ...and a worse average too
+    assert row["linear_tail_penalty"] > 2.0  # reported as a multiple
 
 
 def test_run_structure():
