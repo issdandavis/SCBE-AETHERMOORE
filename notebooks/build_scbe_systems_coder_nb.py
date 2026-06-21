@@ -210,7 +210,7 @@ CELLS = [
         "from unsloth import FastLanguageModel\n"
         "from datasets import Dataset\n"
         "BASE_MODEL = 'Qwen/Qwen2.5-Coder-7B-Instruct'\n"
-        "MAX_SEQ_LENGTH = 4096\n"
+        "MAX_SEQ_LENGTH = 2048  # 7B 4-bit QLoRA fits a 16GB T4 at 2048 under unsloth; raise on L4/A100\n"
         "model, tokenizer = FastLanguageModel.from_pretrained(\n"
         "    model_name=BASE_MODEL, max_seq_length=MAX_SEQ_LENGTH, dtype=None, load_in_4bit=True)\n"
         "model = FastLanguageModel.get_peft_model(\n"
