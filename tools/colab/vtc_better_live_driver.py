@@ -97,6 +97,25 @@ def extract_result(text: str) -> str | None:
     return "\n".join(dict.fromkeys(hits))
 
 
+def ensure_runtime_connected(page, log: Path, timeout_s: int = 600) -> bool:
+    deadline = time.time() + timeout_s
+    clicked = False
+    while time.time() < deadline:
+        text = body_text(page)
+        if "RAM" in text and "Connect" not in text[:1200]:
+            write_log(log, "runtime appears connected")
+            return True
+        if not clicked or "Connect" in text[:1600]:
+            if click_first(page, ["Connect"], timeout=5000):
+                write_log(log, "clicked Connect")
+                clicked = True
+        click_first(page, ["Run anyway", "Yes", "OK"], timeout=1000)
+        time.sleep(10)
+    write_log(log, "BLOCKED: runtime did not connect before timeout")
+    page.screenshot(path=str(log.with_suffix(".connect-timeout.png")), full_page=False)
+    return False
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--port", type=int, default=9222)
@@ -139,6 +158,9 @@ def main() -> int:
 
         write_log(log, f"ready title={page.title()!r} url={page.url}")
         page.screenshot(path=str(log.with_suffix(".before.png")), full_page=False)
+
+        if not ensure_runtime_connected(page, log):
+            return 7
 
         if click_first(page, ["Run all"], timeout=5000):
             write_log(log, "clicked visible Run all")
