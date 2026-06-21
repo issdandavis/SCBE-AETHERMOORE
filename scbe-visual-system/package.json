@@ -20,17 +20,17 @@
     "test:serial": "vitest run --maxWorkers=1"
   },
   "dependencies": {
-    "@google/genai": "^2.8.0",
-    "lucide-react": "^1.20.0",
+    "@google/genai": "^2.9.0",
+    "lucide-react": "^1.21.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   },
   "devDependencies": {
-    "@types/node": "^25.9.3",
+    "@types/node": "^26.0.0",
     "@vitejs/plugin-react": "^6.0.2",
     "@vitest/coverage-v8": "^4.1.9",
     "concurrently": "^10.0.3",
-    "electron": "^42.4.0",
+    "electron": "^42.4.1",
     "electron-builder": "^26.15.3",
     "jsdom": "^29.1.1",
     "typescript": "~6.0.3",
