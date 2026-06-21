@@ -152,6 +152,55 @@ class MapView:
             "h": int(self.tiling.ch),
         }
 
+    def minimap(self) -> Dict[str, Any]:
+        """The MINIMAP channel: a low-detail whole-page overview -- per-occupied-cell counts + element
+        kinds + fog state + the cursor. Sparse and cheap (the persistent overview, like SC2's minimap),
+        NOT the detail. Pairs with screen() the way feature_minimap pairs with feature_screen."""
+        cells = {}
+        for cell, els in self.by_cell.items():
+            cells[self.tiling.label(cell)] = {
+                "n": len(els),
+                "seen": self.fog.visible(cell),
+                "kinds": sorted({(e.get("role") or e.get("tag") or "") for e in els}),
+            }
+        return {
+            "cols": self.tiling.cols,
+            "rows": self.tiling.rows,
+            "cursor": self.tiling.label(self.cursor),
+            "occupied": cells,
+            "revealed": self.fog.panorama(),
+        }
+
+    def screen(self) -> Dict[str, Any]:
+        """The SCREEN channel: the high-detail local view at the cursor -- the focus image cell + its
+        elements + the neighbor triangle-reaches as text (what look() returns, named as the screen)."""
+        v = self.look()
+        return {"cursor": v["cursor"], "focus": v["focus"], "context": v["context"]}
+
+    def available_actions(self) -> List[str]:
+        """SC2's available_actions: the legal actions THIS frame. Only on-board pans; hover/activate/type
+        only when the focus cell actually has a (editable) element. Legal-moves-only governance."""
+        acts = ["read"]
+        for d, (dx, dy) in _DIRS.items():
+            c, r = self.cursor[0] + dx, self.cursor[1] + dy
+            if 0 <= c < self.tiling.cols and 0 <= r < self.tiling.rows:
+                acts.append("pan:" + d)
+        els = self.elements_in(self.cursor)
+        if els:
+            acts += ["hover", "activate"]
+            if any(e.get("editable") for e in els):
+                acts.append("type")
+        return acts
+
+    def observe(self) -> Dict[str, Any]:
+        """The SC2-style observation: minimap (overview) + screen (detail) + available_actions (legal now).
+        One call gives the model both channels and exactly the moves it may make this frame."""
+        return {
+            "minimap": self.minimap(),
+            "screen": self.screen(),
+            "available_actions": self.available_actions(),
+        }
+
     def hover(self, browser: AIBrowser, page: Any) -> Dict[str, Any]:
         """Hover the focused element -- hover, NOT click, and independent of scroll (StarCraft cursor)."""
         els = self.elements_in(self.cursor)

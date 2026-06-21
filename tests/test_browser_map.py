@@ -64,6 +64,36 @@ def test_pan_rejects_bad_direction():
         mv.pan("UP-LEFT")
 
 
+# SC2-style observation: minimap (overview) + screen (detail) + available_actions (legal this frame)
+OBS_FEED = {
+    "viewport": {"w": 900, "h": 900},
+    "elements": [
+        {"ref": "r0", "x": 20, "y": 20, "w": 60, "h": 60, "name": "Login", "editable": False, "role": "button"},
+        {"ref": "r1", "x": 220, "y": 220, "w": 60, "h": 60, "name": "search", "editable": True, "role": "input"},
+    ],
+}
+
+
+def test_available_actions_reflects_edges_and_editability():
+    mv = MapView(OBS_FEED, cols=9, rows=9)  # cursor starts at A1 (top-left corner, non-editable button)
+    a = mv.available_actions()
+    assert set(a) == {"read", "pan:S", "pan:E", "hover", "activate"}  # no off-board N/W, no type
+    mv.cursor = (2, 2)  # the editable input cell (interior)
+    b = mv.available_actions()
+    assert {"pan:N", "pan:S", "pan:E", "pan:W", "hover", "activate", "type"} <= set(b)
+
+
+def test_minimap_overview_and_screen_detail():
+    mv = MapView(OBS_FEED, cols=9, rows=9)
+    obs = mv.observe()
+    assert set(obs) == {"minimap", "screen", "available_actions"}
+    mm = obs["minimap"]
+    assert mm["cursor"] == "A1" and mm["revealed"] == ["A1"]  # minimap = sparse overview + fog
+    assert mm["occupied"]["A1"] == {"n": 1, "seen": True, "kinds": ["button"]}
+    assert mm["occupied"]["C3"]["seen"] is False  # not visited yet -> fogged in the overview
+    assert [e["name"] for e in obs["screen"]["focus"]["elements"]] == ["Login"]  # screen = local detail
+
+
 # --- browser-backed: hover fires onmouseover WITHOUT a click ---
 pytest.importorskip("playwright")
 from python.scbe.ai_browser import AIBrowser  # noqa: E402
