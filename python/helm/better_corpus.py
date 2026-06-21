@@ -89,6 +89,57 @@ PITFALLS: List[Dict[str, Any]] = [
         "fix": "def make_adders():\n    return [lambda i=i: i for i in range(3)]",
         "tests": ["assert [f() for f in make_adders()] == [0, 1, 2]"],
     },
+    {
+        "name": "list_multiplication_shared_rows",
+        "prompt": "Write make_grid(rows, cols) returning a rows x cols grid of 0s where setting grid[0][0]=1 "
+        "changes ONLY grid[0][0].",
+        "buggy": "def make_grid(rows, cols):\n    return [[0] * cols] * rows",
+        "fix": "def make_grid(rows, cols):\n    return [[0] * cols for _ in range(rows)]",
+        "tests": ["g = make_grid(2, 2)\ng[0][0] = 1\nassert g == [[1, 0], [0, 0]]"],
+    },
+    {
+        "name": "sort_returns_none",
+        "prompt": "Write sorted_copy(xs) returning a NEW sorted list of xs WITHOUT modifying xs.",
+        "buggy": "def sorted_copy(xs):\n    return xs.sort()",
+        "fix": "def sorted_copy(xs):\n    return sorted(xs)",
+        "tests": ["assert sorted_copy([3, 1, 2]) == [1, 2, 3]", "a = [3, 1, 2]\nsorted_copy(a)\nassert a == [3, 1, 2]"],
+    },
+    {
+        "name": "dedup_loses_order",
+        "prompt": "Write dedup(xs) returning xs with duplicates removed, PRESERVING first-seen order.",
+        "buggy": "def dedup(xs):\n    return list(set(xs))",
+        "fix": "def dedup(xs):\n    return list(dict.fromkeys(xs))",
+        "tests": ["assert dedup([3, 1, 3, 2, 1]) == [3, 1, 2]"],
+    },
+    {
+        "name": "string_immutable_inplace",
+        "prompt": "Write set_first(s, c) returning s with its first character replaced by c (s is non-empty).",
+        "buggy": "def set_first(s, c):\n    s[0] = c\n    return s",
+        "fix": "def set_first(s, c):\n    return c + s[1:]",
+        "tests": ["assert set_first('cat', 'b') == 'bat'"],
+    },
+    {
+        "name": "shallow_copy_nested",
+        "prompt": "Write copy_grid(g) returning an INDEPENDENT copy of the 2D list g (mutating the copy must "
+        "not change g).",
+        "buggy": "def copy_grid(g):\n    return g[:]",
+        "fix": "def copy_grid(g):\n    return [row[:] for row in g]",
+        "tests": ["g = [[1, 2], [3, 4]]\nc = copy_grid(g)\nc[0][0] = 9\nassert g == [[1, 2], [3, 4]]"],
+    },
+    {
+        "name": "chained_comparison_misuse",
+        "prompt": "Write in_range(x) returning True iff 1 <= x <= 10.",
+        "buggy": "def in_range(x):\n    return 1 <= x <= 10 == True",
+        "fix": "def in_range(x):\n    return 1 <= x <= 10",
+        "tests": ["assert in_range(5) == True", "assert in_range(11) == False"],
+    },
+    {
+        "name": "recursion_missing_base_case",
+        "prompt": "Write factorial(n) returning n! for n >= 0 (factorial(0) == 1).",
+        "buggy": "def factorial(n):\n    return n * factorial(n - 1)",
+        "fix": "def factorial(n):\n    if n <= 1:\n        return 1\n    return n * factorial(n - 1)",
+        "tests": ["assert factorial(0) == 1", "assert factorial(5) == 120"],
+    },
 ]
 
 
