@@ -195,6 +195,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         action="store_true",
         help="use python.helm.pitfall_eval's held-out headroom eval instead of broad MBPP",
     )
+    ap.add_argument(
+        "--eval-jsonl",
+        default=None,
+        help="evaluate on a jsonl of problems (e.g. a base_failure_filter headroom set); overrides --pitfall-eval",
+    )
     ap.add_argument("--recovery", action="store_true", help="also run the repair-loop recovery measurement")
     ap.add_argument("--rounds", type=int, default=3, help="repair rounds per problem (with --recovery)")
     a = ap.parse_args(list(argv) if argv is not None else None)
@@ -210,7 +215,15 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         from .free_generator import make_generator
         from .vtc_split import load_corpus, split_by_task_id
 
-        if a.pitfall_eval:
+        if a.eval_jsonl:
+            import json as _json
+            from pathlib import Path as _Path
+
+            eval_problems = [
+                _json.loads(ln) for ln in _Path(a.eval_jsonl).read_text(encoding="utf-8").splitlines() if ln.strip()
+            ]
+            print("held-out eval from %s: %d problems" % (a.eval_jsonl, len(eval_problems)))
+        elif a.pitfall_eval:
             from .pitfall_eval import eval_problems as pitfall_eval_problems
 
             eval_problems = pitfall_eval_problems()
