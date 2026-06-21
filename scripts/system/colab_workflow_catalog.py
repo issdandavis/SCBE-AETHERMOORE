@@ -67,6 +67,19 @@ NOTEBOOKS: list[dict[str, Any]] = [
         "across Python, JavaScript, Rust, Mathematica, Haskell, and Markdown.",
     },
     {
+        "name": "stack-agent-staged",
+        "aliases": [
+            "stack-agent",
+            "code-agent",
+            "multi-compiler-agent",
+            "vtc-stack",
+        ],
+        "path": "notebooks/vtc_stack_agent_staged_colab.ipynb",
+        "category": "training",
+        "summary": "Staged stack-agent LoRA lane: builds verified repair records, gates the corpus, "
+        "trains gently, and optionally measures held-out pitfall lift.",
+    },
+    {
         "name": "aethermoor-finetune",
         "aliases": ["aethermoor", "aethermoor-finetune", "game-finetune"],
         "path": "notebooks/colab_aethermoor_finetune.ipynb",
