@@ -23,6 +23,7 @@ coding_board (#2568), coding_board_gates (#2570) and geometric_router shape prim
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Sequence, Tuple
 
@@ -31,7 +32,18 @@ import numpy as np
 from .coding_board import Board, SolveResult, solve
 from .coding_board_gates import CHECK, TRANSFORM, gate_names
 from .geometric_router import poincare_distance, to_ball
-from .squad_puzzle import DOMINO, I_TROMINO, L_TROMINO, SQUARE, T_TETRO, Cell, Piece, coverable_cells, holes
+from .squad_puzzle import (
+    DOMINO,
+    I_TROMINO,
+    L_TROMINO,
+    SQUARE,
+    T_TETRO,
+    Cell,
+    Piece,
+    Region,
+    coverable_cells,
+    holes,
+)
 
 
 @dataclass(frozen=True)
@@ -109,18 +121,46 @@ class SquadResult:
     pairs: List[Tuple[str, Optional[str], float]]  # the geometric buddy teams
     coverage: Dict[str, str]  # region -> team
     roster: Dict[str, str] = field(default_factory=dict)  # role -> its legal-operation sub-alphabet size
+    gate: Optional["CoverageGate"] = None  # the geometric coverage pre-check (None when not computed)
+    rejected: bool = False  # True when require_coverage refused the board for a coverage gap (no solve run)
 
 
-def solve_with_squad(board: Board, roles: Optional[List[Role]] = None) -> SquadResult:
+def board_region(board: Board) -> "Region":
+    """A deterministic geometric layout for a board: pack its operators row-major into a near-square grid,
+    one cell per operator. Gives the coverage gate a SHAPE to reach over when the board has no spatial info."""
+    n = len(board.operators)
+    if n == 0:
+        return frozenset()
+    w = math.ceil(math.sqrt(n))
+    return frozenset(((i // w), (i % w)) for i in range(n))
+
+
+def solve_with_squad(
+    board: Board,
+    roles: Optional[List[Role]] = None,
+    region: "Optional[Region]" = None,
+    require_coverage: bool = False,
+) -> SquadResult:
     """Run the squad over the board: pair roles geometrically, assign region coverage, RECON the targets,
     then solve the CSP (CODER fills, CHECK runs the energy/CBJ jump-back). The solve is coding_board.solve;
-    the squad layer is the coordination + coverage around it."""
+    the squad layer is the coordination + coverage around it.
+
+    The geometric coverage GATE runs first: it checks the squad's role-pieces can reach every cell of the
+    board's layout (`region`, or a packed default). The gate is always ATTACHED to the result; when
+    `require_coverage` is set, a board with a coverage gap is REJECTED before any solve (governance: don't
+    attempt work the squad-as-composed cannot cover). HONEST: coverage is necessary, not sufficient -- it
+    does not promise the CSP is solvable, only that no board cell is unreachable by the roster's shapes."""
     roles = roles or SQUAD
     pairs = geometric_pairs(roles)
     coverage = cover_regions(board, pairs)
     targets = [op.id for op in board.operators if op.fixed is None]  # RECON: the unknowns
-    res: SolveResult = solve(board)  # CODER fills; CHECK's repair = the CBJ jumps inside the solve
     roster = {r.name: ("%d ops" % len(r.legal_operations())) for r in roles}
+    reg = region if region is not None else board_region(board)
+    gate = coverage_gate(roles, reg)
+    if require_coverage and not gate.covered:
+        # the squad's pieces leave a hole on this board's layout -> reject up front, do not solve
+        return SquadResult(False, {}, 0, [], targets, pairs, coverage, roster, gate, rejected=True)
+    res: SolveResult = solve(board)  # CODER fills; CHECK's repair = the CBJ jumps inside the solve
     return SquadResult(
         solved=res.solved,
         assignment=res.assignment,
@@ -130,6 +170,7 @@ def solve_with_squad(board: Board, roles: Optional[List[Role]] = None) -> SquadR
         pairs=pairs,
         coverage=coverage,
         roster=roster,
+        gate=gate,
     )
 
 
