@@ -218,6 +218,53 @@ def earliest_repair_point(
     return min(v.earliest_index for v in viols)
 
 
+# ---------------------------------------------------------------------------
+# MINIMAL UNSAT CORE (the crisp explanation a SAT solver's get_core() gives -- in pure Python, zero deps).
+# A violation's `involved` is a SUFFICIENT conflict set, but not always minimal: a route contradiction names
+# EVERY record on the route. minimal_core shrinks it (deletion-based / QuickXplain) to the smallest subset
+# that still triggers the same constraint -- e.g. one ALLOW + one DENY. Keeps the auditability moat: it is a
+# few lines you can read, not an opaque solver core.
+#
+# IMPORTANT, and the reason we keep BOTH: a minimal core may legitimately DROP the earliest record (it can
+# keep a later ALLOW over the first one), so it is the wrong thing for the jump-back. The repair target stays
+# `earliest_repair_point` over the FULL conflict (the root cause); the minimal core is for the EXPLANATION.
+# ---------------------------------------------------------------------------
+def minimal_core(records: List[DecisionRecord], constraint: Constraint, violation: Violation) -> List[int]:
+    """The minimal subset of `violation.involved` that still triggers `constraint` (run on that sub-history).
+    Deletion-based: drop a record; if the constraint still fires without it, it was non-essential. Deterministic
+    (scans in sorted index order). Returns record indices into `records` -- a crisp, auditable explanation."""
+    core = sorted(violation.involved)
+    i = 0
+    while i < len(core):
+        trial = core[:i] + core[i + 1 :]
+        sub = [records[j] for j in trial]
+        if trial and constraint(sub):  # still inconsistent without records[core[i]] -> it was non-essential
+            core = trial  # do not advance: re-test the record now sitting at position i
+        else:
+            i += 1
+    return core
+
+
+def minimal_cores(
+    records: List[DecisionRecord], constraints: Optional[List[Constraint]] = None
+) -> List[Dict[str, Any]]:
+    """For every current violation: its minimal core (the crisp explanation) AND the jump-back target (the
+    earliest of the FULL conflict -- the root cause, which the minimal core may not contain). The honest
+    pairing -- minimal for showing the user, full-earliest for the repair."""
+    out: List[Dict[str, Any]] = []
+    for c in constraints or DEFAULT_CONSTRAINTS:
+        for v in c(records):
+            out.append(
+                {
+                    "rule": v.rule,
+                    "full_conflict": sorted(v.involved),
+                    "minimal_core": minimal_core(records, c, v),
+                    "jumpback_target": v.earliest_index,  # root cause = earliest of the FULL conflict
+                }
+            )
+    return out
+
+
 # a repair policy: given the records and the jump-back index, return a NEW decision for that record
 # (or None to give up on that node). The module supplies the mechanism; the policy is the caller's.
 RepairPolicy = Callable[[List[DecisionRecord], int], Optional[str]]

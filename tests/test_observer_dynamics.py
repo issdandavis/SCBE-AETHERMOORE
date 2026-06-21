@@ -20,8 +20,13 @@ from python.scbe.observer_dynamics import (
     decision_bits,
     earliest_repair_point,
     energy_of_solve,
+    escalation_must_be_resolved,
     is_admissible,
     markovian_committed_conflicts,
+    minimal_core,
+    minimal_cores,
+    no_contradictory_route_decisions,
+    no_post_refusal_success,
     resolve_by_jumpback,
     resolve_by_jumpback_metered,
     resolve_by_jumpback_reversible,
@@ -32,6 +37,44 @@ from python.scbe.observer_dynamics import (
 
 def _r(seq, decision, route=None, input_id=None, **meta):
     return DecisionRecord(seq=seq, input_id=input_id or ("i%d" % seq), decision=decision, route=route, meta=meta)
+
+
+# ---- minimal unsat core: crisp explanation, but the jump-back keeps the root --------------------
+def test_minimal_core_shrinks_a_route_contradiction_to_a_pair():
+    # the full conflict names every record on the route; the minimal core is one ALLOW + one DENY
+    recs = [_r(0, ALLOW, route="r"), _r(1, ALLOW, route="x"), _r(2, ALLOW, route="r"), _r(3, DENY, route="r")]
+    v = no_contradictory_route_decisions(recs)[0]
+    assert sorted(v.involved) == [0, 2, 3]  # full conflict = all three on route r
+    core = minimal_core(recs, no_contradictory_route_decisions, v)
+    assert len(core) == 2  # minimal: a single contradicting pair
+    decisions = {recs[i].decision for i in core}
+    assert decisions == {ALLOW, DENY}  # the pair really is an ALLOW and a DENY
+
+
+def test_minimal_core_is_already_minimal_for_small_conflicts():
+    # an unresolved escalation is a 1-record conflict; a post-refusal-success is a 2-record conflict
+    esc = [_r(0, ESCALATE, input_id="a")]
+    v = escalation_must_be_resolved(esc)[0]
+    assert minimal_core(esc, escalation_must_be_resolved, v) == [0]
+
+    pr = [_r(0, REFUSED, input_id="x"), _r(1, ALLOW, input_id="x")]
+    v2 = no_post_refusal_success(pr)[0]
+    assert sorted(minimal_core(pr, no_post_refusal_success, v2)) == [0, 1]
+
+
+def test_minimal_core_may_drop_the_root_but_jumpback_keeps_it():
+    # the honest, load-bearing property: a minimal core can drop the EARLIEST record, so it is the WRONG
+    # thing for the repair target. minimal_cores pairs the crisp core with the FULL-conflict earliest (root).
+    recs = [_r(0, ALLOW, route="r"), _r(2, ALLOW, route="r"), _r(5, DENY, route="r")]
+    mc = minimal_cores(recs)[0]
+    assert mc["jumpback_target"] == 0  # root cause = earliest of the FULL conflict
+    assert 0 not in mc["minimal_core"]  # ...which the minimal core legitimately dropped
+    assert mc["full_conflict"] == [0, 1, 2]  # indices into recs (positions), all three
+
+
+def test_minimal_cores_empty_when_admissible():
+    clean = [_r(0, ALLOW, route="r"), _r(1, ALLOW, route="r")]
+    assert minimal_cores(clean) == []
 
 
 # ---- the future-dependent gap is real -----------------------------------------------------------
