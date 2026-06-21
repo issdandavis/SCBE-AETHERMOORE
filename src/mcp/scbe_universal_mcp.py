@@ -92,6 +92,17 @@ def _build_port() -> UniversalPort:
                 port.register_backend("audio", make_audio_backend(os.environ.get("SCBE_WHISPER_MODEL", "tiny")))
         except Exception:  # wiring audio must never break the server
             pass
+    # opt-in LOCAL vision: set SCBE_VISION=1 to wire OCR (Windows built-in / tesseract / easyocr) into the
+    # visual modality. Default off, so visual stays an honest NEEDS_BACKEND and the self-test holds.
+    if os.environ.get("SCBE_VISION") == "1":
+        try:
+            from python.scbe.vision_backend import available as _vision_available
+            from python.scbe.vision_backend import make_visual_backend
+
+            if _vision_available():
+                port.register_backend("visual", make_visual_backend())
+        except Exception:  # wiring vision must never break the server
+            pass
     return port
 
 
