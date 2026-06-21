@@ -9,6 +9,9 @@ transports (in-process API, MCP, HTTP). This module builds ONLY that missing lay
     * routing            -> reused from process_router (Policy gate, triage_rules / triage_model)
     * governance + seal  -> reused from desktop_access.ActionRegistry (allowlist + destructive screen +
                             forward-chained sealed audit) -- every tool call goes through invoke()
+    * verify + escalate  -> reused from code_factory (QC cross-check; a manager redoes a station on QC
+                            failure). The execute path reports `verified` honestly -- judge has no real
+                            verifier, so it returns decision=UNVERIFIED, never a silent ship.
     * the tools          -> reused (desktop actions; register more via register_tool / tool_action)
 
 Modality adapters are PLUGGABLE and HONEST. text is identity. agentic is a structured {tool,args} direct
@@ -105,11 +108,13 @@ class UniversalPort:
         registry: Optional[ActionRegistry] = None,
         policy: Optional[Policy] = None,
         ask: Optional[Callable[[str], str]] = None,
+        manager: Optional[Callable[[str], str]] = None,
         router: Optional[Callable[..., str]] = None,
     ) -> None:
         self.registry = registry or default_registry()  # governed tools + sealed audit (reused)
         self.policy = policy or Policy()  # permission floor (reused)
-        self.ask = ask  # optional model for triage/execute; None -> route only, never fabricate
+        self.ask = ask  # optional station model for triage/execute; None -> route only, never fabricate
+        self.manager = manager  # optional STRONGER model, summoned ONLY when QC fails (verify+escalate)
         self.router = router or triage_rules
         self.adapters: Dict[str, Adapter] = {}
         self.backends: Dict[str, Callable[[Any], str]] = {}  # wired STT / vision, by modality
@@ -196,11 +201,37 @@ class UniversalPort:
         if self.ask is None:
             out["decision"] = "ROUTED"  # named the backend; execution is the backend's job (no model wired)
             return out
-        from .process_router import EXECUTORS, _route_judge  # lazy: only when executing through a model
-
-        out["decision"] = "OK"
-        out["result"] = EXECUTORS.get(route, _route_judge)(norm.text, self.ask)
+        result, verified, escalated, has_verifier = self._execute_verified(route, norm.text)
+        out.update(
+            result=result,
+            verified=verified,  # the trust-without-reading signal: a REAL verifier passed (not just well-formed)
+            escalated=escalated,
+            has_verifier=has_verifier,
+            decision=("OK" if verified else "UNVERIFIED"),
+        )
         return out
+
+    def _execute_verified(self, route: str, text: str):
+        """Run the routed backend, then VERIFY + ESCALATE so a wrong result is never shipped silently.
+
+        Reuses code_factory.verify (classify=exact sieve; compute=differential cross-check executed-vs-direct;
+        judge=no real verifier). If a real-verifier route fails QC and a manager is wired, the stronger model
+        redoes just that station. Returns (result, verified, escalated, has_verifier). judge always comes back
+        has_verifier=False -> decision UNVERIFIED: an honest 'no trust guarantee', not a silent ship."""
+        from .code_factory import verify as _qc
+        from .process_router import EXECUTORS, _route_judge
+
+        ex = EXECUTORS.get(route, _route_judge)
+        result = ex(text, self.ask)
+        has_verifier = route in ("compute", "classify")
+        verified = bool(_qc(route, text, result, self.ask)) if has_verifier else False
+        escalated = False
+        if has_verifier and not verified and self.manager is not None:
+            redo = ex(text, self.manager)  # EXCEPTION -> summon the capable model for just this station
+            escalated = True
+            if _qc(route, text, redo, self.manager):
+                result, verified = redo, True
+        return result, verified, escalated, has_verifier
 
     # ---- MULTI-PORT: one registry, many transports ----
     def call(self, tool: str, args: Optional[Dict[str, Any]] = None, confirm: Optional[str] = None) -> Dict[str, Any]:
