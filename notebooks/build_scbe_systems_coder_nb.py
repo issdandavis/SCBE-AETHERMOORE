@@ -14,7 +14,7 @@ on the union and measures base-vs-trained on a held-out slice. What it trains on
     each best-effort, a failing generator is skipped, never fatal.
 
 Every record is normalized to the chat {messages} shape regardless of the generator's native format, then
-QLoRA-trained on Qwen2.5-Coder-7B (4-bit, fits a T4). Eval: held-out perplexity with the LoRA adapter
+QLoRA-trained on Qwen2.5-Coder-3B (4-bit, trains on a T4). Eval: held-out perplexity with the LoRA adapter
 DISABLED (base) vs ENABLED (trained) -- a lower trained perplexity is a real, honest signal that the model
 fits Issac's systems better, on data it never trained on. Plus sample generations to eyeball.
 
@@ -46,7 +46,7 @@ def code(text: str) -> dict:
 CELLS = [
     md(
         "# SCBE Systems Coder — QLoRA on Issac's coding systems\n\n"
-        "Trains `Qwen2.5-Coder-7B-Instruct` (4-bit QLoRA, fits a T4) to code in **your** systems, not\n"
+        "Trains `Qwen2.5-Coder-3B-Instruct` (4-bit QLoRA, trains on a T4) to code in **your** systems, not\n"
         "generic Python. The training corpus is **generated from this repo at run time** so it always\n"
         "exists and always matches the current code:\n\n"
         "- **Six Tongues → primary languages** + encoding mechanics (tongue curriculum)\n"
@@ -206,12 +206,12 @@ CELLS = [
         "print('train records:', len(train_recs), ' held-out eval:', len(eval_recs))\n"
         "print('sample:', json.dumps(train_recs[0])[:400])"
     ),
-    md("## 3. Load Qwen2.5-Coder-7B (4-bit) + LoRA"),
+    md("## 3. Load Qwen2.5-Coder-3B (4-bit) + LoRA"),
     code(
         "from unsloth import FastLanguageModel\n"
         "from datasets import Dataset\n"
-        "BASE_MODEL = 'Qwen/Qwen2.5-Coder-7B-Instruct'\n"
-        "MAX_SEQ_LENGTH = 2048  # 7B 4-bit QLoRA fits a 16GB T4 at 2048 under unsloth; raise on L4/A100\n"
+        "BASE_MODEL = 'Qwen/Qwen2.5-Coder-3B-Instruct'  # 3B QLoRA TRAINS on a 16GB T4; 7B OOM'd the T4 at\n"
+        "MAX_SEQ_LENGTH = 2048                           # the training step (grads+optim state). 7B needs L4/A100.\n"
         "model, tokenizer = FastLanguageModel.from_pretrained(\n"
         "    model_name=BASE_MODEL, max_seq_length=MAX_SEQ_LENGTH, dtype=None, load_in_4bit=True)\n"
         "model = FastLanguageModel.get_peft_model(\n"
