@@ -15,6 +15,7 @@ from python.scbe.coding_squad import (
     ROLE_PIECES,
     SQUAD,
     Role,
+    board_region,
     coverage_gate,
     cover_regions,
     demo,
@@ -222,6 +223,43 @@ def test_coverage_gate_is_necessary_not_sufficient():
     gate = coverage_gate(optimizer_only, mutilated)
     assert gate.covered and gate.holes == ()  # no reach gap...
     # ...but reachability does not promise a tiling (the parity wall is checked by squad_puzzle.assemble)
+
+
+# ---- the gate wired into solve_with_squad (governance pre-check before the solve) -----------------
+def _three_op_board():
+    # 3 operators -> board_region packs them into an L-tromino (cells (0,0),(0,1),(1,0)); a 2x2 frame can't
+    # fit it, so a clone roster of ARCHITECT(frame) cannot cover this board.
+    ops = [Operator("o%d" % i, gate_names(TRANSFORM), region="r") for i in range(3)]
+    return Board(ops, [region_must_agree])
+
+
+def test_board_region_packs_operators_into_a_grid():
+    assert board_region(_three_op_board()) == frozenset({(0, 0), (0, 1), (1, 0)})  # L-tromino for n=3, w=2
+
+
+def test_solve_with_squad_attaches_the_coverage_gate():
+    board = _three_op_board()
+    res = solve_with_squad(board)  # default SQUAD, require_coverage off
+    assert res.gate is not None and res.gate.covered  # the differentiated roster reaches the whole layout
+    assert res.solved and not res.rejected  # and it still solves the CSP
+
+
+def test_require_coverage_rejects_a_clone_roster_before_solving():
+    board = _three_op_board()
+    clone = [SQUAD[0]] * 5  # all ARCHITECT (the 2x2 frame) -> cannot reach a 3-cell L layout
+    res = solve_with_squad(board, roles=clone, require_coverage=True)
+    assert res.rejected and not res.solved  # rejected BEFORE the solve for a coverage gap
+    assert res.gate is not None and not res.gate.covered and len(res.gate.holes) == 3
+    assert res.assignment == {}  # no solve was attempted
+
+
+def test_clone_roster_without_require_coverage_still_solves_but_flags_the_gap():
+    # default behaviour is FLAG, not reject: the gap is reported on the gate, but the CSP still solves
+    board = _three_op_board()
+    clone = [SQUAD[0]] * 5
+    res = solve_with_squad(board, roles=clone)  # require_coverage defaults False
+    assert not res.rejected and res.solved  # solved despite the geometric gap (gate is a diagnostic here)
+    assert res.gate is not None and not res.gate.covered  # ...but the gap is flagged for the caller
 
 
 def test_triangulation_demo_all_true():
