@@ -12,17 +12,21 @@ import numpy as np
 from python.scbe.coding_board import Board, Operator, region_must_agree
 from python.scbe.coding_board_gates import CHECK, TRANSFORM, gate_names
 from python.scbe.coding_squad import (
+    ROLE_PIECES,
     SQUAD,
     Role,
+    coverage_gate,
     cover_regions,
     demo,
     geometric_pairs,
     robust_triangulate,
     squad_basis,
     squad_coverage,
+    squad_pieces,
     solve_with_squad,
     triangulate,
 )
+from python.scbe.squad_puzzle import rect
 
 
 # ---- roles carry goals + role-scoped sub-alphabets (the Polly-Pad loadout) ---------------------
@@ -185,6 +189,39 @@ def test_robust_triangulate_needs_a_two_member_margin_to_identify():
     readings[1] += 50.0
     _robust, dropped = robust_triangulate(roles, readings)
     assert dropped is None  # cannot isolate a bad bearing without the 2-member margin
+
+
+# ---- role -> piece binding + the coverage gate (the squad tiles a board with its shapes) ----------
+def test_each_role_carries_a_distinct_piece():
+    pieces = {name: p.name for name, p in ROLE_PIECES.items()}
+    assert set(pieces) == {r.name for r in SQUAD}  # every role has a piece
+    assert len(set(pieces.values())) == len(pieces)  # all distinct shapes (a differentiated squad)
+
+
+def test_squad_pieces_maps_the_roster_in_order():
+    pieces = squad_pieces(SQUAD)
+    assert [p.name for p in pieces] == [ROLE_PIECES[r.name].name for r in SQUAD]
+
+
+def test_coverage_gate_differentiated_covers_clone_leaves_a_gap():
+    # a 2x2 block + a 1-wide arm: the differentiated role-pieces reach every cell; a clone roster of the 2x2
+    # frame cannot reach the 1-wide arm -> a coverage gap (the rigorous, geometric form of cover_regions).
+    board = frozenset(rect(2, 2)) | {(0, 2), (0, 3)}
+    diff = coverage_gate(SQUAD, board)
+    clone = coverage_gate([SQUAD[0]] * 5, board)  # all ARCHITECT (the 2x2 SQUARE)
+    assert diff.covered and diff.holes == () and diff.reachable == diff.total == 6
+    assert not clone.covered  # the frame cannot reach the 1-wide seam
+    assert clone.holes == ((0, 2), (0, 3)) and clone.reachable == 4
+
+
+def test_coverage_gate_is_necessary_not_sufficient():
+    # honesty: "covered" means every cell is REACHABLE by some piece, NOT that an exact tiling exists. The
+    # mutilated chessboard is fully reachable by a domino (no holes) yet untileable by dominoes (parity).
+    mutilated = frozenset(c for c in rect(4, 4) if c not in {(0, 0), (3, 3)})
+    optimizer_only = [r for r in SQUAD if r.name == "OPTIMIZER"] * 7  # OPTIMIZER carries the domino
+    gate = coverage_gate(optimizer_only, mutilated)
+    assert gate.covered and gate.holes == ()  # no reach gap...
+    # ...but reachability does not promise a tiling (the parity wall is checked by squad_puzzle.assemble)
 
 
 def test_triangulation_demo_all_true():

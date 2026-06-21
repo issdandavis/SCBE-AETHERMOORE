@@ -31,6 +31,7 @@ import numpy as np
 from .coding_board import Board, SolveResult, solve
 from .coding_board_gates import CHECK, TRANSFORM, gate_names
 from .geometric_router import poincare_distance, to_ball
+from .squad_puzzle import DOMINO, I_TROMINO, L_TROMINO, SQUARE, T_TETRO, Cell, Piece, coverable_cells, holes
 
 
 @dataclass(frozen=True)
@@ -239,6 +240,48 @@ def robust_triangulate(roles: List[Role], readings: Sequence[float]) -> Tuple[Tr
     return base, None
 
 
+# ---------------------------------------------------------------------------
+# ROLE -> PIECE binding + the COVERAGE GATE. Each differentiated role carries a distinct geometric PIECE
+# (squad_puzzle), so the squad literally COVERS a board with its shapes. This makes cover_regions rigorous:
+# the gate reports the cells NO role-piece can reach (the coverage gap / blind spots) BEFORE a solve is
+# attempted -- the governance form of "absence is information". A clone roster (one shape) leaves gaps a
+# differentiated roster covers. HONEST: reachability is NECESSARY, not sufficient -- a gap-free board can
+# still be untileable (parity); the gate flags structural gaps, it does not promise a solve.
+# ---------------------------------------------------------------------------
+ROLE_PIECES: Dict[str, Piece] = {
+    "ARCHITECT": SQUARE,  # the 2x2 frame -- big footprint, no thin reach
+    "RECON": I_TROMINO,  # the long scout
+    "CODER": T_TETRO,  # the worker
+    "CHECK": L_TROMINO,  # the bent checker
+    "OPTIMIZER": DOMINO,  # the tightener -- reaches 1-wide seams the frame cannot
+}
+
+
+def squad_pieces(roles: List[Role]) -> List[Piece]:
+    """The geometric piece each role carries (its non-standard value). Unknown roles fall back to a domino."""
+    return [ROLE_PIECES.get(r.name, DOMINO) for r in roles]
+
+
+@dataclass
+class CoverageGate:
+    covered: bool  # every board cell is reachable by SOME role-piece (no holes)
+    holes: Tuple[Cell, ...]  # cells no role-piece can reach -- the coverage gap (the blind spots)
+    reachable: int  # how many board cells the role-squad's shapes can reach
+    total: int  # board cell count
+
+
+def coverage_gate(roles: List[Role], region) -> CoverageGate:
+    """Can the differentiated role-squad COVER this board with its shapes? Reports the holes (cells no role-
+    piece can reach) -- the rigorous form of cover_regions and a governance pre-check: a board with holes for
+    the current roster has a structural blind spot (recompose the squad, or reject the board). Necessary, not
+    sufficient: no holes does not guarantee an exact tiling (parity can still block it)."""
+    pieces = squad_pieces(roles)
+    h = holes(region, pieces)
+    return CoverageGate(
+        covered=(len(h) == 0), holes=h, reachable=len(coverable_cells(region, pieces)), total=len(region)
+    )
+
+
 def demo() -> Dict[str, object]:
     cov = squad_coverage(SQUAD)  # 5 differentiated roles in 6-D tongue space
 
@@ -257,6 +300,13 @@ def demo() -> Dict[str, object]:
     tri = triangulate(SQUAD, readings)
     recovered = np.allclose(B @ np.array(tri.target_estimate), readings, atol=1e-9)
 
+    # the role-squad COVERS a board with its differentiated pieces; a clone roster leaves a coverage gap
+    from .squad_puzzle import rect
+
+    board = frozenset(rect(2, 2)) | {(0, 2), (0, 3)}  # a 2x2 block + a 1-wide arm of 2 cells
+    diff_gate = coverage_gate(SQUAD, board)
+    clone_gate = coverage_gate([SQUAD[0]] * 5, board)  # all ARCHITECT (the 2x2 frame) -> cannot reach the arm
+
     return {
         "squad_resolves_5_of_6_one_blind_tongue": (
             cov.rank == 5 and not cov.full_rank and len(cov.blind_directions) == 1
@@ -264,8 +314,11 @@ def demo() -> Dict[str, object]:
         "sixth_role_closes_the_blind_spot": cov6.full_rank,
         "clone_squad_collapses_to_rank_1_blind_in_5": (cov_clone.rank == 1 and len(cov_clone.blind_directions) == 5),
         "differentiated_squad_localizes_in_span": recovered and tri.reading_residual < 1e-9,
+        "role_squad_covers_the_board_no_holes": diff_gate.covered,
+        "clone_roster_leaves_a_coverage_gap": (not clone_gate.covered) and len(clone_gate.holes) == 2,
         "_cov": cov,
         "_cov_clone": cov_clone,
+        "_clone_gate": clone_gate,
     }
 
 
@@ -289,6 +342,17 @@ def main() -> int:
         % d["differentiated_squad_localizes_in_span"]
     )
     print("  => a diverse squad triangulates what a squad of clones cannot. Coverage = rank; blind = null space.")
+    cg = d["_clone_gate"]
+    print("  --- role -> piece coverage gate (the squad tiles a board with its shapes) ---")
+    print(
+        "  role-squad's differentiated pieces cover the board (no holes)   : %s"
+        % d["role_squad_covers_the_board_no_holes"]
+    )
+    print(
+        "  clone roster (all ARCHITECT/2x2) leaves a coverage gap at %s : %s"
+        % (cg.holes, d["clone_roster_leaves_a_coverage_gap"])
+    )
+    print("  => holes = the cells no role-piece can reach (governance pre-check; necessary, not sufficient).")
     return 0
 
 
