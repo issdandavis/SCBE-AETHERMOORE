@@ -1,0 +1,261 @@
+"""Builder for notebooks/vtc_retry_loop_colab.ipynb -- staged retry-loop training and eval.
+
+This is the next experiment after the already-run better-corpus notebook. It trains the model on a mixed
+retry-loop supplement:
+
+  bad -> fail -> self fix -> pass
+  bad -> fail -> fix attempt -> fail -> teacher correction
+
+Then it evaluates base-vs-trained with staged categories, so the result says whether the model actually
+learned to use failure feedback instead of only memorizing final answers.
+
+    python notebooks/build_vtc_retry_loop_nb.py
+"""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+
+def md(*lines: str) -> dict:
+    return {"cell_type": "markdown", "metadata": {}, "source": [x if x.endswith("\n") else x + "\n" for x in lines]}
+
+
+def code(*lines: str) -> dict:
+    return {
+        "cell_type": "code",
+        "metadata": {},
+        "execution_count": None,
+        "outputs": [],
+        "source": [x if x.endswith("\n") else x + "\n" for x in lines],
+    }
+
+
+CELLS = [
+    md(
+        "# VTC STAGED RETRY-LOOP Training -- qwen2.5-coder-1.5B, Colab T4",
+        "",
+        "Do not rerun the old `vtc_better_colab` here. This notebook tests the next hypothesis: train the model",
+        "on the full retry loop, not only final answers.",
+        "",
+        "Training supplement shape:",
+        "",
+        "- `bad -> FAIL -> self fix -> PASS`",
+        "- `bad -> FAIL -> fix attempt -> FAIL -> teacher correction`",
+        "",
+        "Evaluation emits the staged buckets directly:",
+        "",
+        "- `SOLVED_FIRST_TRY`",
+        "- `SOLVE_FAILED_FIX_ATTEMPT_SOLVED`",
+        "- `SOLVE_FAILED_FIX_ATTEMPT_FAILED`",
+        "- `PUBLIC_PASS_HIDDEN_FAIL_NO_RETRY`",
+        "",
+        "The metric that matters is `repair_conversion`: among first-failed problems where a retry happened,",
+        "how many did the retry actually recover?",
+    ),
+    md("## 1. Install"),
+    code(
+        "!pip install -q -U peft bitsandbytes accelerate datasets 'transformers>=4.44'",
+        "import torch",
+        "print('CUDA available:', torch.cuda.is_available())",
+    ),
+    md("## 2. Repo + base corpus upload"),
+    code(
+        "import os, sys, json",
+        "!git clone --depth 1 https://github.com/issdandavis/SCBE-AETHERMOORE.git scbe || true",
+        "sys.path.insert(0, '/content/scbe')",
+        "CORPUS_PATH = '/content/vtc_mbpp_refined.jsonl'",
+        "if not os.path.exists(CORPUS_PATH):",
+        "    from google.colab import files",
+        "    up = files.upload(); CORPUS_PATH = '/content/' + next(iter(up))",
+        "os.environ['SCBE_VTC_CORPUS'] = CORPUS_PATH",
+        "print('corpus:', CORPUS_PATH)",
+    ),
+    md("## 3. Config"),
+    code(
+        "BASE_MODEL = 'Qwen/Qwen2.5-Coder-1.5B-Instruct'",
+        "OUT = '/content/vtc-retry-loop-run'",
+        "TRAIN_SFT = '/content/train.retry_mix.sft.jsonl'",
+        "RETRY_ONLY = '/content/train.retry_only.jsonl'",
+        "BASELINE_JSONL = '/content/vtc_staged_base.jsonl'",
+        "TRAINED_JSONL = '/content/vtc_staged_trained.jsonl'",
+        "PUBLIC_K = 1",
+        "EVAL_LIMIT = 40",
+        "SELF_REPAIR_LIMIT = 80",
+        "TEACHER_BAILOUT_LIMIT = 80",
+        "MAXLEN = 2048",
+        "EPOCHS = 2",
+        "MAX_NEW_TOKENS = 512",
+    ),
+    md("## 4. Honest split + inject retry-loop supplement after the split"),
+    code(
+        "from pathlib import Path",
+        "from python.helm import public_bench as pb",
+        "from python.helm.vtc_split import load_corpus, split_by_task_id, write_train_sft",
+        "from python.helm.self_repair_corpus import verified_pool_from_vtc, synthesize_retry_mix, write_jsonl",
+        "from python.helm.retry_corpus_validate import validate as validate_retry, render as render_retry",
+        "",
+        "records = load_corpus(CORPUS_PATH)",
+        "problems = pb.pull_mbpp()",
+        "split = split_by_task_id(records, problems, public_k=PUBLIC_K)",
+        "eval_problems = split['eval_problems'][:EVAL_LIMIT] if EVAL_LIMIT else split['eval_problems']",
+        "assert not (split['train_ids'] & {p['task_id'] for p in eval_problems}), 'train/eval LEAK'",
+        "",
+        "# Build the retry supplement ONLY from train records. Held-out eval task_ids stay untouched.",
+        "pool = verified_pool_from_vtc(split['train_records'])",
+        "retry_mix = synthesize_retry_mix(pool, self_limit=SELF_REPAIR_LIMIT, teacher_limit=TEACHER_BAILOUT_LIMIT)",
+        "retry_records = retry_mix['records']",
+        "write_jsonl(RETRY_ONLY, retry_records)",
+        "train_records = list(split['train_records']) + retry_records",
+        "write_train_sft(train_records, TRAIN_SFT)",
+        "",
+        "print('base train records:', len(split['train_records']))",
+        "print('retry supplement:', retry_mix['self_records'], 'self-repair +', retry_mix['teacher_bailouts'], 'teacher-bailout')",
+        "print('final train records:', len(train_records), ' held-out eval:', len(eval_problems))",
+        "print(render_retry(validate_retry(retry_records)))",
+    ),
+    md("## 5. Load 4-bit model + LoRA adapter"),
+    code(
+        "import re",
+        "from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig",
+        "from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training",
+        "",
+        "bnb = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type='nf4',",
+        "                        bnb_4bit_compute_dtype=torch.bfloat16, bnb_4bit_use_double_quant=True)",
+        "tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL)",
+        "if tokenizer.pad_token is None: tokenizer.pad_token = tokenizer.eos_token",
+        "model = AutoModelForCausalLM.from_pretrained(BASE_MODEL, quantization_config=bnb, device_map='auto')",
+        "model = prepare_model_for_kbit_training(model)",
+        "model = get_peft_model(model, LoraConfig(r=16, lora_alpha=32, lora_dropout=0,",
+        "    target_modules=['q_proj','k_proj','v_proj','o_proj','gate_proj','up_proj','down_proj'],",
+        "    bias='none', task_type='CAUSAL_LM'))",
+        "model.print_trainable_parameters()",
+        "",
+        "def extract_code(text):",
+        "    blocks = re.findall(r'```(?:python)?\\s*(.*?)```', text or '', re.S)",
+        "    if blocks: return max(blocks, key=len).strip()",
+        "    body = re.sub(r'^\\s*```(?:python)?\\s*', '', (text or '').strip())",
+        "    lines = body.splitlines()",
+        "    for i, ln in enumerate(lines):",
+        "        if ln.lstrip().startswith(('def ', 'import ', 'from ', 'class ', '@')):",
+        "            return '\\n'.join(lines[i:]).strip()",
+        "    return body.strip()",
+        "",
+        "def _gen(prompt):",
+        "    text = tokenizer.apply_chat_template([{'role':'user','content':prompt}], tokenize=False, add_generation_prompt=True)",
+        "    enc = tokenizer(text, return_tensors='pt').to(model.device)",
+        "    out = model.generate(**enc, max_new_tokens=MAX_NEW_TOKENS, do_sample=False, pad_token_id=tokenizer.eos_token_id)",
+        "    return tokenizer.decode(out[0][enc['input_ids'].shape[1]:], skip_special_tokens=True)",
+    ),
+    md("## 6. Train on base corpus + retry supplement"),
+    code(
+        "from datasets import load_dataset",
+        "from transformers import Trainer, TrainingArguments, DataCollatorForLanguageModeling",
+        "train_ds = load_dataset('json', data_files=TRAIN_SFT, split='train')",
+        "def tok(ex):",
+        "    text = tokenizer.apply_chat_template(ex['messages'], tokenize=False, add_generation_prompt=False)",
+        "    return tokenizer(text, truncation=True, max_length=MAXLEN)",
+        "train_tok = train_ds.map(tok, remove_columns=train_ds.column_names)",
+        "args = TrainingArguments(output_dir=OUT, per_device_train_batch_size=2, gradient_accumulation_steps=8,",
+        "    num_train_epochs=EPOCHS, learning_rate=2e-4, warmup_ratio=0.05, lr_scheduler_type='cosine',",
+        "    logging_steps=10, bf16=True, optim='paged_adamw_8bit', report_to='none', save_strategy='no')",
+        "Trainer(model=model, args=args, train_dataset=train_tok,",
+        "        data_collator=DataCollatorForLanguageModeling(tokenizer, mlm=False)).train()",
+    ),
+    md("## 7. Staged retry-loop eval: base vs trained"),
+    code(
+        "from python.helm import public_bench as _pb",
+        "from python.helm import staged_retry_score as srs",
+        "",
+        "def make_prompt(problem):",
+        "    public = '\\n'.join(list(problem.get('test_list', []))[:PUBLIC_K])",
+        "    return ((problem.get('prompt') or problem.get('text') or '').strip()",
+        "            + '\\n\\nWrite a complete Python solution. It must make this example pass:\\n'",
+        "            + public + '\\nReturn ONLY the code.')",
+        "",
+        "def make_repair_prompt(problem, code, fail_msg):",
+        "    public = '\\n'.join(list(problem.get('test_list', []))[:PUBLIC_K])",
+        "    return ((problem.get('prompt') or problem.get('text') or '').strip()",
+        "            + '\\n\\nYour previous code failed this visible check:\\n' + public",
+        "            + '\\nFailure feedback:\\n' + str(fail_msg)",
+        "            + '\\n\\nPrevious code:\\n```python\\n' + code + '\\n```'",
+        "            + '\\n\\nRepair it. Return ONLY corrected Python code.')",
+        "",
+        "def verify(code, p):",
+        "    tests = list(p.get('test_list', []))",
+        "    return _pb._verify(code, tests[:PUBLIC_K], tests[PUBLIC_K:], p.get('test_imports', []))",
+        "",
+        "def fail_text(v):",
+        "    return v.get('error') or v.get('public_error') or v.get('stderr') or 'visible test failed'",
+        "",
+        "def run_staged_model(eval_problems):",
+        "    out = []",
+        "    for p in eval_problems:",
+        "        code1 = extract_code(_gen(make_prompt(p)))",
+        "        v1 = verify(code1, p)",
+        "        rec = {",
+        "            'task_id': p.get('task_id'),",
+        "            'first_try_public_pass': bool(v1.get('public_passed')),",
+        "            'first_try_hidden_pass': bool(v1.get('hidden_passed')),",
+        "            'retried': False,",
+        "            'retry_hidden_pass': False,",
+        "        }",
+        "        if rec['first_try_public_pass'] and rec['first_try_hidden_pass']:",
+        "            rec['category'] = srs.SOLVED_FIRST_TRY",
+        "        elif rec['first_try_public_pass'] and not rec['first_try_hidden_pass']:",
+        "            rec['category'] = srs.PUBLIC_PASS_HIDDEN_FAIL",
+        "        else:",
+        "            code2 = extract_code(_gen(make_repair_prompt(p, code1, fail_text(v1))))",
+        "            v2 = verify(code2, p)",
+        "            rec['retried'] = True",
+        "            rec['retry_hidden_pass'] = bool(v2.get('public_passed') and v2.get('hidden_passed'))",
+        "            rec['category'] = srs.FIX_SOLVED if rec['retry_hidden_pass'] else srs.FIX_FAILED",
+        "        out.append(rec)",
+        "    return out",
+        "",
+        "model.eval()",
+        "print('Evaluating BASE staged retry loop (adapter disabled)...')",
+        "with model.disable_adapter():",
+        "    base_records = run_staged_model(eval_problems)",
+        "print('Evaluating TRAINED staged retry loop (adapter enabled)...')",
+        "trained_records = run_staged_model(eval_problems)",
+        "",
+        "Path(BASELINE_JSONL).write_text('\\n'.join(json.dumps(r) for r in base_records) + '\\n', encoding='utf-8')",
+        "Path(TRAINED_JSONL).write_text('\\n'.join(json.dumps(r) for r in trained_records) + '\\n', encoding='utf-8')",
+        "base_score = srs.score(base_records)",
+        "trained_score = srs.score(trained_records)",
+        "delta = srs.delta(base_records, trained_records)",
+        "print('\\nBASE')",
+        "print(srs.render(base_score))",
+        "print('\\nTRAINED')",
+        "print(srs.render(trained_score, delta))",
+        "print('\\njsonl:', BASELINE_JSONL, TRAINED_JSONL)",
+    ),
+    md(
+        "## Read this number first",
+        "",
+        "`repair_conversion` is the practical answer. If it stays near zero, the model still is not using",
+        "failure feedback well. If it rises without a regression spike, the retry-loop data helped.",
+    ),
+]
+
+
+def build() -> dict:
+    return {
+        "cells": CELLS,
+        "metadata": {
+            "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
+            "language_info": {"name": "python"},
+            "accelerator": "GPU",
+            "colab": {"provenance": [], "gpuType": "T4"},
+        },
+        "nbformat": 4,
+        "nbformat_minor": 5,
+    }
+
+
+if __name__ == "__main__":
+    out = Path(__file__).with_name("vtc_retry_loop_colab.ipynb")
+    out.write_text(json.dumps(build(), indent=1, ensure_ascii=False), encoding="utf-8")
+    print("wrote", out, "with", len(CELLS), "cells")
