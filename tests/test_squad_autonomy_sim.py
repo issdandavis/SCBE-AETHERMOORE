@@ -45,3 +45,19 @@ def test_seeded_run_is_reproducible():
     a = [x["converged"] for x in sa.run_suite(seed=7)]
     b = [x["converged"] for x in sa.run_suite(seed=7)]
     assert a == b
+
+
+# ---- grounded in Issac's Mars docs ------------------------------------------------------------
+def test_mars_profile_matches_the_documented_numbers():
+    # demo/mars-communication.html: 14 min OWLT, 3-round-trip handshake, 0 pre-synced; mars_dtn_sim: 182/1342 s
+    assert sa.MARS.owlt_typical_s == 14 * 60
+    assert sa.MARS.owlt_min_s == 182 and sa.MARS.owlt_max_s == 1342
+    assert sa.MARS.handshake_round_trips == 3 and sa.MARS.squad_handshake_minutes == 0.0
+    # the honest gap is recorded, not hidden
+    assert "NOT IN ANY DOC" in sa.DOC_SOURCES["loss / dup / reorder / contact_gap rates"]
+
+
+def test_documented_autonomy_payoff_zero_vs_42_min():
+    # the demo's documented handshake: pre-synchronized squad starts at 0; a round-trip protocol at 3x14=42
+    assert sa.time_to_first_decision_min(pre_synchronized=True) == 0.0
+    assert sa.time_to_first_decision_min(pre_synchronized=False) == 42.0
