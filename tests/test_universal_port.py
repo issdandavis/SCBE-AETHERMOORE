@@ -99,3 +99,40 @@ def test_one_registry_reachable_over_every_transport():
 def test_no_adapter_for_unknown_modality():
     out = _port().handle(Envelope("smell", "..."))
     assert out["decision"] == "NO_ADAPTER"
+
+
+# ---- verify + escalate: never ship a wrong result silently -------------------------------------
+def _compute_ask(code_out: str, direct_out: str):
+    """A scripted station/manager: returns a code block for the 'write a program' prompt, a direct
+    number for the cross-check prompt. Lets us drive the QC cross-check deterministically (no model)."""
+
+    def ask(prompt):
+        if "Write a short Python program" in prompt:
+            return "```python\nprint(%s)\n```" % code_out
+        return direct_out  # the differential 'answer with only the number' branch
+
+    return ask
+
+
+def test_judge_comes_back_honest_unverified():
+    # judge has no real verifier -> the port must NOT claim a trust guarantee
+    p = UniversalPort(ask=lambda _p: "paris")
+    out = p.handle(Envelope(TEXT, "What is the capital of France?"))
+    assert out["route"] == "judge" and out["decision"] == "UNVERIFIED"
+    assert out["verified"] is False and out["has_verifier"] is False and "paris" in out["result"]
+
+
+def test_compute_cross_check_verifies_without_escalation():
+    # station's executed answer (6) agrees with its direct answer (6) -> verified, no manager needed
+    p = UniversalPort(ask=_compute_ask("6", "6"))
+    out = p.handle(Envelope(TEXT, "What is the sum of 2 and 4?"))
+    assert out["route"] == "compute" and out["decision"] == "OK"
+    assert out["verified"] is True and out["escalated"] is False and out["result"] == "6"
+
+
+def test_compute_qc_failure_escalates_to_manager():
+    # station ships 5 but its own cross-check says 6 -> QC fails -> manager redoes it and verifies
+    p = UniversalPort(ask=_compute_ask("5", "6"), manager=_compute_ask("6", "6"))
+    out = p.handle(Envelope(TEXT, "What is the sum of 2 and 4?"))
+    assert out["decision"] == "OK" and out["verified"] is True
+    assert out["escalated"] is True and out["result"] == "6"  # the manager's verified answer shipped
