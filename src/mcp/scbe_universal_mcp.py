@@ -81,6 +81,17 @@ def _build_port() -> UniversalPort:
             params={"n": "string"},
         )
     )
+    # opt-in LOCAL audio: set SCBE_WHISPER=1 to wire faster-whisper into the audio modality (lazy: the
+    # model loads on first clip). Default off, so audio stays an honest NEEDS_BACKEND and the self-test holds.
+    if os.environ.get("SCBE_WHISPER") == "1":
+        try:
+            from python.scbe.whisper_backend import available as _whisper_available
+            from python.scbe.whisper_backend import make_audio_backend
+
+            if _whisper_available():
+                port.register_backend("audio", make_audio_backend(os.environ.get("SCBE_WHISPER_MODEL", "tiny")))
+        except Exception:  # wiring audio must never break the server
+            pass
     return port
 
 
@@ -97,9 +108,13 @@ def _parse_content(content: str) -> Any:
 
 @mcp.tool(annotations=_READONLY)
 def universal_handle(modality: str, content: str) -> str:
-    """Normalize + gate + route an input of any modality. Returns a JSON result dict."""
+    """Normalize + gate + route an input of any modality. Returns a JSON result dict. A wired backend
+    (e.g. whisper) that chokes on malformed input yields an honest ERROR, never an unhandled crash."""
     env = Envelope(modality=modality, content=_parse_content(content))
-    return json.dumps(PORT.handle(env), default=str)
+    try:
+        return json.dumps(PORT.handle(env), default=str)
+    except Exception as exc:
+        return json.dumps({"decision": "ERROR", "modality": modality, "error": str(exc)[:300]}, default=str)
 
 
 @mcp.tool(annotations=_READONLY)
