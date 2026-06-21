@@ -13,6 +13,10 @@ requires-python = ">=3.11"
 dependencies = [
     "numpy>=1.24",
     "jsonschema>=4.0",
+    # security floor: exclude the pydantic-settings symlink-traversal advisory (Dependabot #308; first
+    # patched 2.14.2). Transitive today and already pinned in requirements-lock.txt, but constrained here
+    # so the manifest itself can never resolve the vulnerable range.
+    "pydantic-settings>=2.14.2",
 ]
 authors = [
     {name = "Issac Daniel Davis", email = "issdandavis@users.noreply.github.com"},
