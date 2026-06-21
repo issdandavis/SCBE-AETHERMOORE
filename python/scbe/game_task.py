@@ -1,8 +1,8 @@
 """game_task: a coding task IS a game -- and the function does not finish until the game is WON.
 
 The frame (Issac's): map a coding task onto a game.
-  * the RULES are the legal moves -- GOVERNANCE. You can only make allowed moves (a destructive move is
-    refused, never run -- reuses the never-delete screen).
+  * the RULES are the legal moves. The legal-move screen refuses LISTED destructive tokens (best-effort,
+    reuses the never-delete regex) -- but it is NOT a sandbox (see HONEST LIMITS).
   * your MOVES are the AI's real sub-functions / tool calls -- play your STRENGTHS, route the rest.
   * the OPPONENT is the TASK ITSELF, pushing back. You WIN -- and only then does the runner return --
     when the opponent is defeated, i.e. the task is execution-verified DONE.
@@ -21,6 +21,17 @@ Two kinds of opponent -- depends on the game:
 Every move is SHA-256 sealed into a golf scorecard (reuses [[analog-solve-library-lane]]'s golf.GolfCard)
 -- a replayable game record. Sits on golf (hole=win=verified), run_step, and level_slice (the file-level
 slice is one instance of this). See GAME_SHAPES: the game you pick IS the strength-routing decision.
+
+HONEST LIMITS (an adversarial review 2026-06-20 found these -- don't overclaim):
+  * "done" is only as strong as the OPPONENT. The structural binding (return <- is_defeated()) is sound,
+    but the opponent IS the verifier: a WEAK or EMPTY StaticOpponent certifies semantically-wrong code as
+    a win (empty checks are now rejected; prefer AdversarialOpponent, which probes for counterexamples).
+  * candidate code is RUN to verify it -- only ever in the system's sandboxed SUBPROCESS verifier
+    (public_bench._verify), NEVER an in-process exec (the review caught and we removed that). The
+    legal-move screen is a best-effort TOKEN regex, not a semantic sandbox: an obfuscated name
+    (getattr(os, 'rem'+'ove')) or a non-token side effect (open(path, 'w') truncation) can slip it. So
+    game_task is for GOVERNED candidate sources; truly untrusted code needs real isolation (a container /
+    the isolated shelf machine), not a regex.
 
     out = play_until_won("add", scripted(["def add(a,b): return a-b", "def add(a,b): return a+b"]),
                          StaticOpponent(["assert add(2, 3) == 5"]))
@@ -56,21 +67,9 @@ def _illegal(candidate: Optional[str]) -> Optional[str]:
     return None
 
 
-def _load_fn(code: str, name: str) -> Optional[Callable[..., Any]]:
-    """Execute a candidate and return its named function -- screened first, so a destructive candidate is
-    never run (defense in depth alongside _illegal)."""
-    if _illegal(code):
-        return None
-    ns: Dict[str, Any] = {}
-    try:
-        exec(code, ns)  # noqa: S102 -- candidate is screened; controlled differential-testing surface
-    except Exception:
-        return None
-    fn = ns.get(name)
-    return fn if callable(fn) else None
-
-
 # --- the opponent = the task, pushing back ----------------------------------------------------------
+# NB: candidate code is verified by RUNNING it -- only ever in public_bench._verify's sandboxed
+# subprocess, never an in-process exec (an adversarial review found that hole and we removed it).
 
 
 class StaticOpponent:
@@ -87,6 +86,9 @@ class StaticOpponent:
         if _illegal(candidate):
             self._clean = False
             return "no legal candidate"
+        if not self.checks:  # an empty oracle cannot certify a win (the vacuous-pass hole the review found)
+            self._clean = False
+            return "no checks -- an empty oracle cannot certify a win"
         v = pb._verify(candidate, [], self.checks, self.imports)
         self._clean = bool(v["hidden_passed"])
         return None if self._clean else "failed the fixed checks"
@@ -96,9 +98,11 @@ class StaticOpponent:
 
 
 class AdversarialOpponent:
-    """The task fights back. Each turn it generates inputs and looks for ONE where the candidate disagrees
-    with a reference (differential testing) or crashes. Defeated only after a full clean sweep -- it could
-    not find a single break. `gen_input(i)` returns the i-th probe input; `reference(x)` is the oracle."""
+    """The task fights back. Each turn it builds differential checks -- assert fn(x) == reference(x) over a
+    sweep of probe inputs -- and runs the candidate against them in the system's sandboxed SUBPROCESS
+    verifier (no in-process exec of model code). Defeated only when the candidate matches the reference on
+    EVERY probe. reference + inputs are computed in-process from TRUSTED functions you supply; only the
+    candidate runs, in the subprocess. `gen_input(i)` -> the i-th probe; `reference(x)` -> the oracle."""
 
     def __init__(
         self,
@@ -113,21 +117,27 @@ class AdversarialOpponent:
         self.rounds = rounds
         self._won = False
 
-    def attack(self, candidate: Optional[str]) -> Optional[str]:
-        self._won = False
-        fn = _load_fn(candidate or "", self.fn)
-        if fn is None:
-            return "candidate did not define a legal %s" % self.fn
+    def _checks(self) -> List[str]:
+        out: List[str] = []
         for i in range(self.rounds):
             x = self.gen(i)
-            try:
-                got, exp = fn(x), self.reference(x)
-            except Exception as exc:  # noqa: BLE001 -- a crash is the opponent finding a break
-                return "crash on %r: %s: %s" % (x, type(exc).__name__, exc)
-            if got != exp:
-                return "counterexample %r: got %r, expected %r" % (x, got, exp)
-        self._won = True  # a full sweep with no break = the adversary is defeated
-        return None
+            out.append("assert %s(%r) == %r" % (self.fn, x, self.reference(x)))
+        return out
+
+    def attack(self, candidate: Optional[str]) -> Optional[str]:
+        from python.helm import public_bench as pb
+
+        self._won = False
+        if _illegal(candidate):
+            return "no legal candidate"
+        checks = self._checks()
+        self._won = bool(pb._verify(candidate, [], checks, [])["hidden_passed"])
+        if self._won:
+            return None
+        from python.helm.free_generator import _diagnose
+
+        diag = _diagnose(candidate, checks, [])
+        return ("counterexample: " + " | ".join(str(d) for d in diag))[:160] if diag else "failed differential test"
 
     def is_defeated(self) -> bool:
         return self._won
