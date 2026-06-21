@@ -13,7 +13,21 @@ import pytest
 
 pytest.importorskip("playwright")
 
-from python.scbe.ai_browser import AIBrowser, Move  # noqa: E402
+from python.scbe.ai_browser import AIBrowser, EphemeralFeed, Move  # noqa: E402
+
+
+def test_ephemeral_consume_is_exactly_once_even_on_malformed_json(tmp_path):
+    # the file must be deleted + the feed spent BEFORE the parse, so a bad-JSON parse error can neither
+    # leave the file cached (no over-cache) nor let a second consume() re-try (exactly once)
+    p = tmp_path / "bad.json"
+    p.write_text("{ not valid json", encoding="utf-8")
+    ef = EphemeralFeed(str(p))
+    with pytest.raises(Exception):  # noqa: B017 -- malformed -> json parse error
+        ef.consume()
+    assert not p.exists()  # deleted despite the parse failure (no over-cache)
+    with pytest.raises(RuntimeError):  # spent -> 'already consumed', not a second parse attempt
+        ef.consume()
+
 
 FIXTURE = (
     "data:text/html,"

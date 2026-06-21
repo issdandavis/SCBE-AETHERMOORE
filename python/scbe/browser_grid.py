@@ -44,8 +44,8 @@ def cell_label(col: int, row: int) -> str:
 def _cell_of(e: Dict[str, Any], vw: int, vh: int, cols: int, rows: int):
     cx = e.get("x", 0) + e.get("w", 0) / 2.0
     cy = e.get("y", 0) + e.get("h", 0) / 2.0
-    if cx < 0 or cy < 0 or cx > vw or cy > vh:
-        return None  # off the current viewport (scrolled out of view)
+    if cx < 0 or cy < 0 or cx >= vw or cy >= vh:
+        return None  # off the current viewport; [0, vw) x [0, vh) so the exact right/bottom edge is OFF
     col = min(cols - 1, max(0, int(cx / vw * cols)))
     row = min(rows - 1, max(0, int(cy / vh * rows)))
     return col, row

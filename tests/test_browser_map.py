@@ -64,6 +64,13 @@ def test_pan_rejects_bad_direction():
         mv.pan("UP-LEFT")
 
 
+def test_focus_lean_consumes_the_triangle_quadrant():
+    # the diamond/triangle layer is load-bearing: look() surfaces the focus element's quadrant as `lean`
+    mv = MapView(SYNTHETIC)  # cursor starts on the 'top-left' element
+    lean = mv.look()["focus"]["lean"]
+    assert lean in ("EN", "ES", "WN", "WS")  # a real quadrant -> the triangle is actually consumed, not dead
+
+
 # SC2-style observation: minimap (overview) + screen (detail) + available_actions (legal this frame)
 OBS_FEED = {
     "viewport": {"w": 900, "h": 900},

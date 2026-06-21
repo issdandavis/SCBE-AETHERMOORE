@@ -1,13 +1,15 @@
 """browser_map: a StarCraft-style LAYERED map viewer over a website.
 
-browser_grid was one flat layer of boxes. Real pages aren't perfect boxes, so this lays TWO overlapping
-layers (Issac's "layers of grids / stars that brick into triangles and squares and overlap"):
+browser_grid was one flat layer of boxes. Real pages aren't perfect boxes, so this lays TWO layers
+(Issac's "layers of grids / triangles and squares"):
 
-  * SQUARE layer  -- the cell you ARE in. This is the IMAGE cell: the focused region, looked at as pixels.
-  * DIAMOND layer -- offset by half a cell so each diamond sits on a square CORNER and reaches, with four
-    triangular points, into the four squares meeting at that corner. A point therefore belongs to ONE
-    square (its image) AND one diamond whose triangles "intersect with the cells next to it" -- those
-    neighbors are read as TEXT. So you SEE the cell you're in and READ the triangle-reaches around it.
+  * SQUARE layer (load-bearing) -- the cell you ARE in is the IMAGE cell (the focused region, looked at as
+    pixels), and its four N/S/E/W square neighbors are the TEXT reaches around it. The square grid drives
+    everything: cursor movement, neighbor selection, and element placement.
+  * DIAMOND/TRIANGLE layer (a position hint) -- locate() also reports the half-offset diamond CORNER a
+    point sits on and the triangle QUADRANT within it (e.g. 'ES'). look() surfaces that quadrant as the
+    focus element's `lean` (which corner of its cell it sits in). It is a finer hint -- it does NOT pick
+    the neighbors; the square grid does. So you SEE the cell you're in and READ its four square neighbors.
 
 Over that sits a FOG OF WAR: every cell the cursor visits is revealed and STAYS revealed -- a persistent
 render assembled from where the cursor has travelled, exactly like a StarCraft minimap. The MapCursor pans
@@ -52,7 +54,8 @@ class MapTiling:
         return cell_label(cell[0], cell[1])
 
     def neighbors(self, cell: Tuple[int, int]) -> Dict[str, Tuple[int, int]]:
-        """The four squares the diamond's triangle-points reach into (clamped to the board)."""
+        """The four square N/S/E/W neighbors of `cell` (clamped to the board) -- the text reaches around the
+        focus cell. Square-grid driven (the diamond/triangle layer does not pick these)."""
         out = {}
         for d, (dx, dy) in _DIRS.items():
             c, r = cell[0] + dx, cell[1] + dy
@@ -122,10 +125,17 @@ class MapView:
         return self.look()
 
     def look(self) -> Dict[str, Any]:
-        """Hybrid view at the cursor: the focus cell as an IMAGE region + its elements; the neighbor cells
-        (the triangle reaches) as TEXT; plus the fog-revealed panorama so far."""
+        """Hybrid view at the cursor: the focus cell as an IMAGE region + its elements (with the focus
+        element's diamond/triangle QUADRANT as `lean`); the four square N/S/E/W neighbor cells as TEXT;
+        plus the fog-revealed panorama."""
         focus_els = self.elements_in(self.cursor)
         region = self._region(self.cursor)
+        # consume the diamond/triangle layer: which corner-quadrant of its cell the focused element sits in
+        lean = None
+        if focus_els:
+            e0 = focus_els[0]
+            loc = self.tiling.locate(e0.get("x", 0) + e0.get("w", 0) / 2.0, e0.get("y", 0) + e0.get("h", 0) / 2.0)
+            lean = loc["triangle"] if loc else None
         context = {}
         for d, ncell in self.tiling.neighbors(self.cursor).items():
             names = [e.get("name") or e.get("tag", "") for e in self.elements_in(ncell)]
@@ -135,11 +145,12 @@ class MapView:
             "focus": {  # the cell you are IN -- looked at as an image region
                 "cell": self.tiling.label(self.cursor),
                 "image_region": region,  # bbox in page px to crop for the vision channel
+                "lean": lean,  # the diamond/triangle quadrant the focus element sits in (e.g. 'ES')
                 "elements": [
                     {"ref": e["ref"], "name": e.get("name"), "editable": e.get("editable")} for e in focus_els
                 ],
             },
-            "context": context,  # the triangle-reaches into neighbors, as text
+            "context": context,  # the four square N/S/E/W neighbor reaches, as text
             "revealed": self.fog.panorama(),  # persistent render from where the cursor has been
         }
 

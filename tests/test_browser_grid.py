@@ -39,6 +39,14 @@ def test_cell_label_is_spreadsheet_coordinate():
     assert cell_label(27, 9) == "AB10"
 
 
+def test_exact_right_edge_pixel_is_off():
+    # viewport is [0, vw) x [0, vh): a center exactly at cx==vw is OFF-screen, not the last column
+    edge = {"viewport": {"w": 1000, "h": 800}, "elements": [{"ref": "r0", "x": 1000, "y": 400, "w": 0, "h": 0}]}
+    assert grid_map(edge)["by_ref"]["r0"] == "off"
+    inside = {"viewport": {"w": 1000, "h": 800}, "elements": [{"ref": "r0", "x": 999, "y": 400, "w": 0, "h": 0}]}
+    assert grid_map(inside)["by_ref"]["r0"] != "off"  # one pixel inside is on-grid
+
+
 def test_grid_map_pure_on_synthetic_feed():
     feed = {
         "viewport": {"w": 900, "h": 900},

@@ -111,10 +111,10 @@ class EphemeralFeed:
     def consume(self) -> Dict[str, Any]:
         if self._spent:
             raise RuntimeError("ephemeral feed already consumed (and deleted)")
-        data = json.loads(open(self.path, encoding="utf-8").read())
-        os.remove(self.path)  # ingested -> gone; no over-cache
-        self._spent = True
-        return data
+        raw = open(self.path, encoding="utf-8").read()
+        os.remove(self.path)  # ingested -> gone, and spent, BEFORE the parse -- so a malformed-JSON parse
+        self._spent = True  # error can't leave the file cached or the feed re-consumable (exactly once)
+        return json.loads(raw)
 
     @property
     def cached(self) -> bool:
