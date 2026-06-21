@@ -31,6 +31,34 @@ def test_binary_hex_trit_projections_round_trip_bit_exact() -> None:
     assert bits_to_bytes(bytes_to_bits(payload)) == payload
 
 
+def test_byte_projections_round_trip_over_fuzzed_payloads_both_trit_bases() -> None:
+    # strengthen the fixed-payload round-trip with a domain fuzz (cross_check). The above only exercises the
+    # default balanced=True trit base on one 256-byte payload; this fuzzes RANDOM payloads through the trit
+    # projection in BOTH bases (the unbalanced base had no round-trip test) and the bit projection. A future
+    # break shrinks to the minimal failing payload. Audited: no divergence -> the bijections are locked.
+    from python.scbe.cross_check import agree, shrink_list
+
+    def payload(rng):
+        return bytes(rng.getrandbits(8) for _ in range(rng.randint(0, 12)))
+
+    for balanced in (True, False):
+        cc = agree(
+            lambda b, bal=balanced: trits_to_bytes(bytes_to_trits(b, balanced=bal), balanced=bal),
+            lambda b: b,
+            payload,
+            n=2000,
+            seed=4,
+            shrinker=shrink_list,
+        )
+        assert cc.agreed, "trit round-trip (balanced=%s) fails at %r" % (
+            balanced,
+            cc.divergence and cc.divergence.input,
+        )
+
+    bits = agree(lambda b: bits_to_bytes(bytes_to_bits(b)), lambda b: b, payload, n=2000, seed=5)
+    assert bits.agreed, "bit round-trip fails at %r" % (bits.divergence and bits.divergence.input)
+
+
 def test_trit_projection_rejects_invalid_unused_base3_cells() -> None:
     # Six raw ternary 2s represent 728, outside byte range.
     with pytest.raises(BitSpineError, match="invalid byte trit cell"):
