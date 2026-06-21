@@ -8,7 +8,15 @@ with a concrete, reproducible witness -- the instrument that would have caught t
 
 from __future__ import annotations
 
-from python.scbe.cross_check import agree, demo
+from python.scbe.cross_check import (
+    _buggy_root_from_min_core,
+    _gen_history,
+    agree,
+    demo,
+    shrink,
+    shrink_list,
+)
+from python.scbe.observer_dynamics import earliest_repair_point
 
 
 def _ints(rng):
@@ -56,5 +64,23 @@ def test_observer_contract_fixed_agrees_buggy_is_caught():
     d = demo()
     assert d["fixed_surface_agrees"] is True  # the #2592 fix holds across the fuzz
     assert d["buggy_surface_is_caught"] is True  # the pre-fix min-of-core bug is detected
+    assert d["buggy_witness_is_minimal"] is True  # ...and the witness was delta-debugged to <=3 records
     w = d["_buggy"].divergence
     assert w is not None and w.left != w.right  # a concrete witness: canonical root vs the dropped root
+
+
+def test_shrink_reduces_to_the_minimal_diverging_sublist():
+    # left and right agree unless the input list contains 0; delta-debugging reduces a long diverging list
+    # to the single poison element that actually drives the disagreement.
+    minimal = shrink(lambda xs: 1 if 0 in xs else 0, lambda xs: 0, [5, 0, 3, 7, 0, 9], shrink_list)
+    assert minimal == [0]
+
+
+def test_agree_with_shrinker_yields_a_minimal_diverging_witness():
+    cc = agree(earliest_repair_point, _buggy_root_from_min_core, _gen_history, n=3000, seed=1, shrinker=shrink_list)
+    assert not cc.agreed
+    w = cc.divergence
+    assert len(w.input) <= 3  # the random ~6-record witness shrank to a minimal diagnosable history
+    # the MINIMAL witness still diverges, and no single-record drop reduces it further (locally minimal)
+    assert earliest_repair_point(w.input) != _buggy_root_from_min_core(w.input)
+    assert all(earliest_repair_point(c) == _buggy_root_from_min_core(c) or len(c) == 0 for c in shrink_list(w.input))
