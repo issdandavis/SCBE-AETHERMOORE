@@ -38,6 +38,24 @@ def test_synthesized_record_validates_as_self_repair_success():
     assert rcv.analyze_record(rec)["category"] == rcv.SELF_REPAIR_SUCCESS
 
 
+def test_teacher_bailout_record_waits_until_second_failure():
+    rec = src.make_teacher_bailout_record(
+        "Add two numbers.\n%s" % ASSERT,
+        GOOD,
+        "def add(a,b): return a-b",
+        "flip +/-",
+        "AssertionError",
+        "def add(a,b): return None",
+        "return -> return None",
+        "AssertionError",
+        task_id=2,
+    )
+    analysis = rcv.analyze_record(rec)
+    assert analysis["category"] == rcv.TEACHER_BAILOUT
+    assert sum(1 for m in rec["messages"] if m["role"] == "assistant") == 2
+    assert rec["messages"][-1]["role"] == "teacher"
+
+
 def test_extract_example_and_pool_from_vtc_shape():
     vtc = [
         {
@@ -63,6 +81,22 @@ def test_synthesize_only_emits_verified_trajectories():
     assert len(recs) == 1
     # every emitted record is a real self-repair success (bad fails, good passes, validated)
     assert all(rcv.analyze_record(r)["category"] == rcv.SELF_REPAIR_SUCCESS for r in recs)
+
+
+def test_synthesize_teacher_bailouts_emits_verified_two_failure_shape():
+    pool = [("Add.\n%s" % ASSERT, GOOD, ASSERT, 1)]
+    recs = src.synthesize_teacher_bailouts(pool)
+    assert len(recs) == 1
+    assert all(rcv.analyze_record(r)["category"] == rcv.TEACHER_BAILOUT for r in recs)
+
+
+def test_synthesize_retry_mix_contains_success_and_bailout():
+    pool = [("Add.\n%s" % ASSERT, GOOD, ASSERT, i) for i in range(3)]
+    mix = src.synthesize_retry_mix(pool, self_limit=2, teacher_limit=2)
+    assert mix["self_records"] == 2
+    assert mix["teacher_bailouts"] == 2
+    assert mix["validation"]["counts"][rcv.SELF_REPAIR_SUCCESS] == 2
+    assert mix["validation"]["counts"][rcv.TEACHER_BAILOUT] == 2
 
 
 def test_augment_raises_self_ratio_above_the_warning_threshold():
