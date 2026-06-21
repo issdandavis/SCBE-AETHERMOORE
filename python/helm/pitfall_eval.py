@@ -57,7 +57,7 @@ EVAL: List[Dict[str, Any]] = [
         "prompt": "Write ratio(a, b) returning a divided by b as a real number (may be fractional).",
         "ref": "def ratio(a, b):\n    return a / b",
         "naive": "def ratio(a, b):\n    return a // b",
-        "tests": ["assert ratio(3, 2) == 1.5"],
+        "tests": ["assert ratio(3, 2) == 1.5", "assert ratio(5, 4) == 1.25"],
     },
     {
         "name": "modify_iter_drop_negatives",

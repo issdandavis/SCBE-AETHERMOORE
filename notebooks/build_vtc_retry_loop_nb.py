@@ -6,8 +6,8 @@ retry-loop supplement:
   bad -> fail -> self fix -> pass
   bad -> fail -> fix attempt -> fail -> teacher correction
 
-Then it evaluates base-vs-trained with staged categories, so the result says whether the model actually
-learned to use failure feedback instead of only memorizing final answers.
+Then it evaluates base-vs-trained with staged categories on the pitfall headroom eval by default, so the
+result says whether the model actually learned to use failure feedback on the classes the corpus teaches.
 
     python notebooks/build_vtc_retry_loop_nb.py
 """
@@ -43,6 +43,9 @@ CELLS = [
         "",
         "- `bad -> FAIL -> self fix -> PASS`",
         "- `bad -> FAIL -> fix attempt -> FAIL -> teacher correction`",
+        "",
+        "Evaluation defaults to `EVAL_SUITE = 'pitfall'`, the held-out headroom eval. MBPP is still available",
+        "as `EVAL_SUITE = 'mbpp'`, but MBPP is the low-headroom ruler that already hid the effect.",
         "",
         "Evaluation emits the staged buckets directly:",
         "",
@@ -81,7 +84,8 @@ CELLS = [
         "BASELINE_JSONL = '/content/vtc_staged_base.jsonl'",
         "TRAINED_JSONL = '/content/vtc_staged_trained.jsonl'",
         "PUBLIC_K = 1",
-        "EVAL_LIMIT = 40",
+        "EVAL_SUITE = 'pitfall'  # 'pitfall' = headroom eval; 'mbpp' = old broad low-headroom ruler",
+        "EVAL_LIMIT = 0          # 0/None = all selected eval problems; pitfall has 10",
         "SELF_REPAIR_LIMIT = 80",
         "TEACHER_BAILOUT_LIMIT = 80",
         "MAXLEN = 2048",
@@ -91,7 +95,7 @@ CELLS = [
     md("## 4. Honest split + inject retry-loop supplement after the split"),
     code(
         "from pathlib import Path",
-        "from python.helm import public_bench as pb",
+        "from python.helm import pitfall_eval, public_bench as pb",
         "from python.helm.vtc_split import load_corpus, split_by_task_id, write_train_sft",
         "from python.helm.self_repair_corpus import verified_pool_from_vtc, synthesize_retry_mix, write_jsonl",
         "from python.helm.retry_corpus_validate import validate as validate_retry, render as render_retry",
@@ -99,8 +103,16 @@ CELLS = [
         "records = load_corpus(CORPUS_PATH)",
         "problems = pb.pull_mbpp()",
         "split = split_by_task_id(records, problems, public_k=PUBLIC_K)",
-        "eval_problems = split['eval_problems'][:EVAL_LIMIT] if EVAL_LIMIT else split['eval_problems']",
+        "if EVAL_SUITE == 'pitfall':",
+        "    eval_problems = pitfall_eval.eval_problems()",
+        "elif EVAL_SUITE == 'mbpp':",
+        "    eval_problems = split['eval_problems']",
+        "else:",
+        "    raise ValueError('unknown EVAL_SUITE: %r' % EVAL_SUITE)",
+        "eval_problems = [p for p in eval_problems if len(p.get('test_list', [])) > PUBLIC_K]",
+        "eval_problems = eval_problems[:EVAL_LIMIT] if EVAL_LIMIT else eval_problems",
         "assert not (split['train_ids'] & {p['task_id'] for p in eval_problems}), 'train/eval LEAK'",
+        "assert eval_problems, 'empty eval set'",
         "",
         "# Build the retry supplement ONLY from train records. Held-out eval task_ids stay untouched.",
         "pool = verified_pool_from_vtc(split['train_records'])",
@@ -112,6 +124,7 @@ CELLS = [
         "",
         "print('base train records:', len(split['train_records']))",
         "print('retry supplement:', retry_mix['self_records'], 'self-repair +', retry_mix['teacher_bailouts'], 'teacher-bailout')",
+        "print('eval suite:', EVAL_SUITE)",
         "print('final train records:', len(train_records), ' held-out eval:', len(eval_problems))",
         "print(render_retry(validate_retry(retry_records)))",
     ),
