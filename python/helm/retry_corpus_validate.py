@@ -90,8 +90,8 @@ def analyze_record(rec: Dict[str, Any]) -> Dict[str, Any]:
         if role == "user" and not seen_problem:
             seen_problem = True
             continue
-        if role == "teacher" or _hits(text, TEACHER_MARKERS):
-            teacher_turn = True
+        if role != "system" and (role == "teacher" or _hits(text, TEACHER_MARKERS)):
+            teacher_turn = True  # skip the system boilerplate (it often says "correct solution")
         if role in ("tool", "user", "system", "ipython") and _hits(text, FAIL_MARKERS):
             fail_signals += 1
         if role in ("tool", "user", "system", "ipython") and _hits(text, PASS_MARKERS) and len(assistant_turns) >= 2:
