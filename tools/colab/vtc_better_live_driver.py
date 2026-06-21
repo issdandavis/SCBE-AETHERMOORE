@@ -101,6 +101,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--port", type=int, default=9222)
     parser.add_argument("--upload", required=True)
+    parser.add_argument("--notebook-url", default=TARGET)
     parser.add_argument("--log", default=r"C:\Users\issda\AppData\Local\Temp\vtc_better_live_driver.log")
     parser.add_argument("--timeout-min", type=int, default=180)
     args = parser.parse_args()
@@ -121,9 +122,10 @@ def main() -> int:
         page = find_colab_page(browser)
         write_log(log, f"attached title={page.title()!r} url={page.url}")
 
-        if "vtc_better_colab.ipynb" not in page.url:
+        target = args.notebook_url
+        if "vtc_better_colab.ipynb" not in page.url or "feat/vtc-better-colab-runnable" not in page.url:
             write_log(log, "navigating to vtc_better_colab")
-            page.goto(TARGET, wait_until="domcontentloaded", timeout=60000)
+            page.goto(target, wait_until="domcontentloaded", timeout=60000)
             page.wait_for_timeout(5000)
         if "vtc_better_colab.ipynb" not in page.url:
             write_log(log, f"BLOCKED: target navigation did not stick; url={page.url}")
