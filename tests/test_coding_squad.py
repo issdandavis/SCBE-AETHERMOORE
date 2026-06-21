@@ -262,6 +262,41 @@ def test_clone_roster_without_require_coverage_still_solves_but_flags_the_gap():
     assert res.gate is not None and not res.gate.covered  # ...but the gap is flagged for the caller
 
 
+# ---- the Landauer energy ledger wired into the solve (the bijective-time arc meets the squad) -----
+def test_clean_forward_only_solve_pays_zero_landauer_energy():
+    # no CBJ jump-backs -> nothing erased -> 0 J. The honest Landauer point: the cost is in the erasures.
+    board = Board([Operator("o0", gate_names(TRANSFORM)), Operator("o1", gate_names(TRANSFORM))], [])
+    res = solve_with_squad(board)
+    assert res.solved and res.jumps == []
+    assert res.squad_energy is not None
+    assert res.squad_energy.overwrites == 0 and res.squad_energy.irreversible_joules == 0.0
+
+
+def test_backtracking_solve_charges_the_cbj_redecisions_at_the_landauer_floor():
+    # op0 (domain A,B -> 1 bit) is the CBJ jump-back target; one re-decision pays one Landauer quantum, and
+    # the -1 dead-end sentinel is NOT a real re-decision (excluded from the charge).
+    board = Board(
+        [
+            Operator("o0", ("A", "B"), region="r"),
+            Operator("o1", ("B",), region="r", fixed="B"),
+            Operator("o2", ("A",), region="r"),
+        ],
+        [region_must_agree],
+    )
+    res = solve_with_squad(board)
+    assert -1 in res.jumps  # the solver hit a dead end (sentinel present)
+    e = res.squad_energy
+    assert e.overwrites == 1 and e.bits_erased == 1  # only the valid jump (op0), decision_bits(2) == 1
+    assert e.irreversible_joules > 0.0  # the dissipating (overwrite) solve pays the floor
+    assert e.reversible_joules == 0.0  # logging the jumps as an undo-tape would erase nothing (Bennett)
+
+
+def test_rejected_board_meters_no_energy_no_solve_ran():
+    # require_coverage rejects before solving -> no CBJ re-decisions happened -> squad_energy stays None
+    res = solve_with_squad(_three_op_board(), roles=[SQUAD[0]] * 5, require_coverage=True)
+    assert res.rejected and res.squad_energy is None
+
+
 def test_triangulation_demo_all_true():
     d = demo()
     assert all(v for k, v in d.items() if not k.startswith("_"))
