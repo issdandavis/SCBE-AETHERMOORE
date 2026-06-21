@@ -21,10 +21,13 @@ from typing import Any, Callable, List, Optional
 
 @dataclass
 class Divergence:
-    """A concrete witness: the input both implementations were run on, and what each produced."""
+    """A concrete witness: the input both implementations were run on, and what each produced. When a
+    `shrinker` is supplied to agree(), `input` is the MINIMAL diverging input (delta-debugged), not the raw
+    random one -- far more diagnosable."""
 
     index: int  # which sample (0-based) first diverged
-    input_repr: str  # repr of the input -- reproducible
+    input: Any  # the actual (possibly shrunk) input object -- reproducible, directly re-runnable
+    input_repr: str  # repr of the input -- for display
     left: Any  # left(input) result (or "raised: <Type>")
     right: Any  # right(input) result (or "raised: <Type>")
 
@@ -44,6 +47,39 @@ def _eval(fn: Callable[[Any], Any], x: Any) -> Any:
         return "raised: %s" % type(exc).__name__
 
 
+def _diverges(left: Callable, right: Callable, x: Any, key: Callable) -> bool:
+    return _eval(lambda v=x: key(left(v)), x) != _eval(lambda v=x: key(right(v)), x)
+
+
+def shrink_list(xs: Any) -> Any:
+    """A generic shrinker for sequence inputs: each candidate drops one element. (Good for lists/histories.)"""
+    for i in range(len(xs)):
+        yield xs[:i] + xs[i + 1 :]
+
+
+def shrink(
+    left: Callable[[Any], Any],
+    right: Callable[[Any], Any],
+    witness: Any,
+    shrinker: Callable[[Any], Any],
+    key: Callable[[Any], Any] = lambda v: v,
+) -> Any:
+    """Greedily minimize a diverging input (delta-debugging): repeatedly replace it with the first smaller
+    candidate from shrinker(current) that STILL diverges, until none does. Returns a LOCALLY-minimal witness
+    (no single shrink step reduces it further) -- not guaranteed globally minimal, but far more diagnosable.
+    A random 6-record divergence reduces to the 2-3 records that actually drive the disagreement."""
+    current = witness
+    changed = True
+    while changed:
+        changed = False
+        for cand in shrinker(current):
+            if _diverges(left, right, cand, key):
+                current = cand
+                changed = True
+                break  # restart shrinking from the smaller candidate
+    return current
+
+
 def agree(
     left: Callable[[Any], Any],
     right: Callable[[Any], Any],
@@ -51,17 +87,20 @@ def agree(
     n: int = 1000,
     seed: int = 0,
     key: Callable[[Any], Any] = lambda v: v,
+    shrinker: Optional[Callable[[Any], Any]] = None,
 ) -> CrossCheck:
     """Fuzz n seeded inputs from `gen` and compare key(left(x)) vs key(right(x)). Return the FIRST divergence
     (a reproducible witness) or agreement over the whole sample. `gen(rng)` builds one input from a seeded
-    Random; `key` normalizes outputs (default identity). Determinism: same (gen, n, seed) -> same result."""
+    Random; `key` normalizes outputs (default identity). If `shrinker` is given, the witness is delta-debugged
+    to a locally-minimal input before reporting. Determinism: same (gen, n, seed) -> same result."""
     rng = random.Random(seed)
     for i in range(n):
         x = gen(rng)
-        lo = _eval(lambda v=x: key(left(v)), x)
-        ro = _eval(lambda v=x: key(right(v)), x)
-        if lo != ro:
-            return CrossCheck(agreed=False, samples=i + 1, divergence=Divergence(i, repr(x), lo, ro))
+        if _diverges(left, right, x, key):
+            w = shrink(left, right, x, shrinker, key) if shrinker is not None else x
+            lw = _eval(lambda v=w: key(left(v)), w)
+            rw = _eval(lambda v=w: key(right(v)), w)
+            return CrossCheck(agreed=False, samples=i + 1, divergence=Divergence(i, w, repr(w), lw, rw))
     return CrossCheck(agreed=True, samples=n, divergence=None)
 
 
@@ -99,11 +138,12 @@ def demo() -> dict:
 
     # the FIXED surface agrees with the canonical target across a fuzz of random histories
     fixed = agree(earliest_repair_point, earliest_repair_point_from_assumption_core, _gen_history, n=3000, seed=1)
-    # the BUGGY (min-of-core) surface diverges -- the harness returns a concrete witness
-    buggy = agree(earliest_repair_point, _buggy_root_from_min_core, _gen_history, n=3000, seed=1)
+    # the BUGGY (min-of-core) surface diverges -- with a shrinker, the witness is delta-debugged to minimal
+    buggy = agree(earliest_repair_point, _buggy_root_from_min_core, _gen_history, n=3000, seed=1, shrinker=shrink_list)
     return {
         "fixed_surface_agrees": fixed.agreed,
         "buggy_surface_is_caught": (not buggy.agreed) and buggy.divergence is not None,
+        "buggy_witness_is_minimal": buggy.divergence is not None and len(buggy.divergence.input) <= 3,
         "_fixed": fixed,
         "_buggy": buggy,
     }
@@ -117,10 +157,10 @@ def main() -> int:
     print("  FIXED assumption-core surface agrees over %d fuzzed histories : %s" % (f.samples, f.agreed))
     if b.divergence:
         w = b.divergence
-        print("  BUGGY min-of-core surface CAUGHT at sample %d                 : True" % w.index)
-        print("    witness input : %s" % w.input_repr)
+        print("  BUGGY min-of-core surface CAUGHT at sample %d (shrunk to %d records):" % (w.index, len(w.input)))
+        print("    minimal witness : %s" % [(r.decision, r.route) for r in w.input])
         print("    canonical=%s  vs  buggy=%s  (the dropped root)" % (w.left, w.right))
-    print("  => a differential harness turns a silent cross-lane divergence into a reproducible witness.")
+    print("  => the harness turns a silent divergence into a MINIMAL, reproducible witness (delta-debugged).")
     return 0
 
 
