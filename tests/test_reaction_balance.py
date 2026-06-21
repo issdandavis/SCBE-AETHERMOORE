@@ -117,3 +117,24 @@ def test_underdetermined_reaction_says_so():
     # C + O2 -> CO + CO2 mixes two independent oxidations (nullity 2).
     with pytest.raises(BalanceError, match="underdetermined: it mixes 2 independent reactions"):
         balance(["C", "O2"], ["CO", "CO2"])
+
+
+def test_is_conserved_deltas_keys_are_deterministically_ordered():
+    # determinism guard: deltas is built over a set-union whose iteration order is PYTHONHASHSEED-dependent.
+    # sorted() makes the element keys reproducible, so a direct caller that reads/serializes deltas order-
+    # sensitively (a log, a repr, list(deltas)) is hashseed-independent.
+    ok, deltas = is_conserved([(1, "C6H12O6"), (1, "O2")], [(1, "CO2"), (1, "H2O")])
+    assert not ok  # unbalanced as written -> non-empty deltas across several elements
+    element_keys = [k for k in deltas if k != "charge"]
+    assert element_keys == sorted(element_keys)  # sorted order, not the (hashseed-varying) set-union order
+
+
+def test_reaction_packet_hash_is_stable_independent_of_dict_order():
+    # the receipt path's determinism is independent of any dict insertion order: canonical_json sorts keys
+    # before hashing, so the packet content hash is reproducible (what replay / Merkle-anchoring relies on).
+    from python.scbe.reaction_state import sha256_value
+
+    pkt = balance_reaction_packet(["C6H12O6", "O2"], ["CO2", "H2O"])
+    d = pkt.unsigned_dict()
+    reordered = {k: d[k] for k in reversed(list(d))}  # same content, opposite key order
+    assert sha256_value(d) == sha256_value(reordered)  # canonicalized -> identical hash

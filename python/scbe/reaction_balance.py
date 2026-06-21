@@ -205,7 +205,10 @@ def is_conserved(
         for el, k in comp.items():
             right[el] += coeff * k
         rq += coeff * q
-    deltas = {el: right[el] - left[el] for el in set(left) | set(right) if right[el] - left[el] != 0}
+    # sorted(): set-union iteration order is PYTHONHASHSEED-dependent, so without it the deltas dict's key
+    # order leaks non-determinism to any caller that reads/serializes it order-sensitively. The receipt path
+    # is already safe (reaction_state.canonical_json sorts keys); this hardens DIRECT is_conserved callers.
+    deltas = {el: right[el] - left[el] for el in sorted(set(left) | set(right)) if right[el] - left[el] != 0}
     if lq != rq:
         deltas["charge"] = rq - lq
     return (not deltas), deltas
