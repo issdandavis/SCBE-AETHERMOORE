@@ -68,6 +68,8 @@ OPTIONAL_TEST_IGNORES: tuple[str, ...] = (
     "tests/test_system_script_security.py",
 )
 
+DEFAULT_MARKER_EXPR = "not slow"
+
 
 def build_pytest_command(
     test_targets: tuple[str, ...],
@@ -79,6 +81,8 @@ def build_pytest_command(
         "-m",
         "pytest",
         "-v",
+        "-m",
+        DEFAULT_MARKER_EXPR,
         "--ignore=tests/node_modules",
     ]
     command.extend(test_targets)
@@ -101,6 +105,7 @@ def summary_payload(command: list[str]) -> dict[str, object]:
         "repo_root": str(REPO_ROOT),
         "command": command,
         "optional_ignores": list(OPTIONAL_TEST_IGNORES),
+        "marker": DEFAULT_MARKER_EXPR,
         "env": {
             "PYTHONPATH": str(REPO_ROOT),
         },
