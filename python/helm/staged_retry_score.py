@@ -68,18 +68,50 @@ def _norm(value: Any) -> str:
     return str(value).strip().upper().replace(" ", "_").replace("-", "_")
 
 
-def classify(rec: Dict[str, Any]) -> str:
-    """Return one of CATEGORIES, or UNCLASSIFIED. Prefers an explicit category field; else derives from the
-    raw first-try / retry signals."""
-    explicit = _get(rec, *_CATEGORY_FIELDS)
+def classify(rec: Dict[str, Any], category_field: Optional[str] = None) -> str:
+    """Return one of CATEGORIES, or UNCLASSIFIED. Prefers an explicit category field (the caller can name it
+    via category_field if it is not one of the defaults); else derives from the raw first-try / retry signals.
+    A value that is one of the four stage names is matched even when nested under an unexpected key."""
+    fields = (category_field,) + _CATEGORY_FIELDS if category_field else _CATEGORY_FIELDS
+    explicit = _get(rec, *fields)
     if explicit is not None:
         norm = _norm(explicit)
         if norm in CATEGORIES:
             return norm
-    first_hidden = _get(rec, "first_try_hidden_pass", "first_hidden_pass", "first_hidden", "first_try.hidden_pass")
-    first_public = _get(rec, "first_try_public_pass", "first_public_pass", "first_public", "first_try.public_pass")
-    retried = _get(rec, "retried", "fix_attempted", "retry_attempted", "retry.attempted")
-    retry_hidden = _get(rec, "retry_hidden_pass", "fix_hidden_pass", "retry.hidden_pass")
+    # broadened raw-signal aliases (covers solved/passed/correct booleans + nested blocks)
+    first_hidden = _get(
+        rec,
+        "first_try_hidden_pass",
+        "first_hidden_pass",
+        "first_hidden",
+        "first_try.hidden_pass",
+        "solved_first_try",
+        "first_solved",
+        "solved",
+        "passed",
+        "correct",
+        "first_try.hidden",
+    )
+    first_public = _get(
+        rec,
+        "first_try_public_pass",
+        "first_public_pass",
+        "first_public",
+        "first_try.public_pass",
+        "public_pass",
+        "first_try.public",
+    )
+    retried = _get(rec, "retried", "fix_attempted", "retry_attempted", "retry.attempted", "did_retry", "fix.attempted")
+    retry_hidden = _get(
+        rec,
+        "retry_hidden_pass",
+        "fix_hidden_pass",
+        "retry.hidden_pass",
+        "fix_solved",
+        "retry_solved",
+        "retry.hidden",
+        "fix.hidden_pass",
+    )
     if first_hidden is None:
         return UNCLASSIFIED
     if first_hidden:
@@ -91,15 +123,15 @@ def classify(rec: Dict[str, Any]) -> str:
     return UNCLASSIFIED  # first-try failed, no public pass, no retry -> not one of the four; do not force-fit
 
 
-def _counts(records: Sequence[Dict[str, Any]]) -> Dict[str, int]:
+def _counts(records: Sequence[Dict[str, Any]], category_field: Optional[str] = None) -> Dict[str, int]:
     out = {c: 0 for c in CATEGORIES + [UNCLASSIFIED]}
     for r in records:
-        out[classify(r)] += 1
+        out[classify(r, category_field)] += 1
     return out
 
 
-def score(records: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
-    c = _counts(records)
+def score(records: Sequence[Dict[str, Any]], category_field: Optional[str] = None) -> Dict[str, Any]:
+    c = _counts(records, category_field)
     total = sum(c.values())
     solved = c[SOLVED_FIRST_TRY] + c[FIX_SOLVED]
     fix_total = c[FIX_SOLVED] + c[FIX_FAILED]
@@ -113,20 +145,41 @@ def score(records: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
     }
 
 
-def _key(rec: Dict[str, Any]) -> Optional[Any]:
-    return _get(rec, *_KEY_FIELDS)
+def _key(rec: Dict[str, Any], key_field: Optional[str] = None) -> Optional[Any]:
+    fields = (key_field,) + _KEY_FIELDS if key_field else _KEY_FIELDS
+    return _get(rec, *fields)
 
 
-def delta(baseline: Sequence[Dict[str, Any]], candidate: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
+def diagnose(records: Sequence[Dict[str, Any]], category_field: Optional[str] = None, n: int = 3) -> List[Dict]:
+    """Self-diagnosis: for the first n records that DON'T classify, report their real structure so the user
+    can see which field to map (top-level keys + one level of nested-dict keys). This is what makes the tool
+    'just work' on an unknown schema -- run it and it tells you exactly what it could not read."""
+    out = []
+    for r in records:
+        if classify(r, category_field) != UNCLASSIFIED:
+            continue
+        nested = {k: sorted(v.keys()) for k, v in r.items() if isinstance(v, dict)}
+        out.append({"top_level_keys": sorted(r.keys()), "nested_keys": nested})
+        if len(out) >= n:
+            break
+    return out
+
+
+def delta(
+    baseline: Sequence[Dict[str, Any]],
+    candidate: Sequence[Dict[str, Any]],
+    category_field: Optional[str] = None,
+    key_field: Optional[str] = None,
+) -> Dict[str, Any]:
     """Per-problem transitions baseline -> candidate (the fair-baseline comparison). Reproduces the manual
     'newly repaired / regression' call and adds the full transition list + per-category count deltas."""
-    b = {_key(r): r for r in baseline if _key(r) is not None}
-    c = {_key(r): r for r in candidate if _key(r) is not None}
+    b = {_key(r, key_field): r for r in baseline if _key(r, key_field) is not None}
+    c = {_key(r, key_field): r for r in candidate if _key(r, key_field) is not None}
     common = sorted(set(b) & set(c), key=str)
     transitions: List[Tuple[Any, str, str]] = []
     newly_solved, regressed, newly_repaired = [], [], []
     for k in common:
-        bc, cc = classify(b[k]), classify(c[k])
+        bc, cc = classify(b[k], category_field), classify(c[k], category_field)
         if bc != cc:
             transitions.append((k, bc, cc))
         if cc in _SOLVED and bc not in _SOLVED:
@@ -135,7 +188,7 @@ def delta(baseline: Sequence[Dict[str, Any]], candidate: Sequence[Dict[str, Any]
             regressed.append(k)
         if bc == FIX_FAILED and cc == FIX_SOLVED:
             newly_repaired.append(k)
-    bcnt, ccnt = _counts(baseline), _counts(candidate)
+    bcnt, ccnt = _counts(baseline, category_field), _counts(candidate, category_field)
     return {
         "compared": len(common),
         "only_in_baseline": sorted(set(b) - set(c), key=str),
@@ -194,11 +247,22 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     ap = argparse.ArgumentParser(description="score a staged retry-loop eval jsonl (+ optional baseline delta)")
     ap.add_argument("run", help="candidate run jsonl (one staged record per problem)")
     ap.add_argument("--baseline", default=None, help="baseline run jsonl for the fair per-category delta")
+    ap.add_argument("--category-field", default=None, help="name of your explicit stage/category field, if non-default")
+    ap.add_argument("--key-field", default=None, help="name of your per-problem id field, if non-default")
     a = ap.parse_args(argv)
     cand = load_jsonl(a.run)
-    s = score(cand)
-    d = delta(load_jsonl(a.baseline), cand) if a.baseline else None
+    s = score(cand, a.category_field)
+    d = delta(load_jsonl(a.baseline), cand, a.category_field, a.key_field) if a.baseline else None
     print(render(s, d))
+    if s["unclassified"]:  # self-diagnose so an unknown schema is actionable, not a silent zero
+        print(
+            "\nDIAGNOSTIC -- %d record(s) did not classify. Sample structure(s) below; map a field with"
+            " --category-field, or rename to a documented alias:" % s["unclassified"]
+        )
+        for sample in diagnose(cand, a.category_field):
+            print("  top-level keys: %s" % sample["top_level_keys"])
+            for blk, keys in sample["nested_keys"].items():
+                print("    %s.{%s}" % (blk, ", ".join(keys)))
     return 0
 
 

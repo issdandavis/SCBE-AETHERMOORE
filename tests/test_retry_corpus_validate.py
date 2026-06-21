@@ -84,6 +84,29 @@ def test_mixed_corpus_does_not_warn_and_counts_self_repair():
     assert v["teacher_dependence_warning"] is False
 
 
+def test_sharegpt_format_is_understood():
+    # ShareGPT shape (conversations + from/value) must classify, not fall to MALFORMED
+    rec = {
+        "conversations": [
+            {"from": "human", "value": "Write a function ..."},
+            {"from": "gpt", "value": "def f(): return 0"},
+            {"from": "human", "value": "AssertionError: failed"},
+            {"from": "gpt", "value": "retry: def f(): return 1"},
+            {"from": "human", "value": "All tests passed"},
+        ]
+    }
+    a = rcv.analyze_record(rec)
+    assert a["category"] == rcv.SELF_REPAIR_SUCCESS and a["assistant_attempts"] == 2
+
+
+def test_diagnose_reports_unknown_message_schema():
+    weird = [{"turns": [{"speaker": "x", "text": "hi"}], "meta": {}}]  # unrecognized -> MALFORMED + diagnosed
+    v = rcv.validate(weird)
+    assert v["counts"][rcv.MALFORMED] == 1
+    diag = rcv.diagnose(weird)
+    assert diag and "turns" in diag[0]["record_keys"]
+
+
 def test_load_jsonl_roundtrip(tmp_path):
     import json
 

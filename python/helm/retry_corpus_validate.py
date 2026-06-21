@@ -44,14 +44,25 @@ TEACHER_MARKERS = ("teacher correction", "reference solution", "correct solution
 _TEACHER_BAILOUT_WARN = 0.8  # above this fraction the corpus is teaching teacher-dependence
 
 
+# role aliases so ShareGPT ({"from":"human"/"gpt","value":...}) and OpenAI ({"role","content"}) both work
+_ROLE_MAP = {"human": "user", "gpt": "assistant", "model": "assistant", "bot": "assistant", "observation": "tool"}
+
+
 def _content(m: Any) -> str:
     if isinstance(m, dict):
-        return str(m.get("content", "")).lower()
+        return str(m.get("content", m.get("value", m.get("text", "")))).lower()
     return str(m).lower()
 
 
 def _role(m: Any) -> str:
-    return str(m.get("role", "")).lower() if isinstance(m, dict) else ""
+    if not isinstance(m, dict):
+        return ""
+    raw = str(m.get("role", m.get("from", m.get("speaker", "")))).lower()
+    return _ROLE_MAP.get(raw, raw)
+
+
+def _messages(rec: Dict[str, Any]) -> List[Any]:
+    return rec.get("messages") or rec.get("conversations") or rec.get("conversation") or []
 
 
 def _hits(text: str, markers: Sequence[str]) -> bool:
@@ -66,7 +77,7 @@ def _meta_says_teacher(meta: Dict[str, Any]) -> bool:
 
 
 def analyze_record(rec: Dict[str, Any]) -> Dict[str, Any]:
-    messages = rec.get("messages") or []
+    messages = _messages(rec)
     meta = rec.get("meta") or {}
     assistant_turns = [m for m in messages if _role(m) == "assistant"]
     # tool-fails: failure markers in any message after the first user (the problem statement)
@@ -141,6 +152,28 @@ def validate(records: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
     }
 
 
+def diagnose(records: Sequence[Dict[str, Any]], n: int = 3) -> List[Dict[str, Any]]:
+    """Self-diagnosis: for the first n MALFORMED records, report the real structure (record keys, the message
+    role sequence as detected, and a sample message's keys) so a ShareGPT/other schema is actionable rather
+    than a silent wall of MALFORMED."""
+    out = []
+    for r in records:
+        if analyze_record(r)["category"] != MALFORMED:
+            continue
+        msgs = _messages(r)
+        sample_msg_keys = sorted(msgs[0].keys()) if msgs and isinstance(msgs[0], dict) else []
+        out.append(
+            {
+                "record_keys": sorted(r.keys()),
+                "detected_roles": [_role(m) for m in msgs],
+                "sample_message_keys": sample_msg_keys,
+            }
+        )
+        if len(out) >= n:
+            break
+    return out
+
+
 def load_jsonl(path: str) -> List[Dict[str, Any]]:
     out = []
     for line in Path(path).read_text(encoding="utf-8").splitlines():
@@ -175,7 +208,17 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     ap = argparse.ArgumentParser(description="validate a retry-teacher SFT corpus + measure teacher-dependence")
     ap.add_argument("corpus", help="the SFT corpus jsonl (messages + meta records)")
     a = ap.parse_args(argv)
-    print(render(validate(load_jsonl(a.corpus))))
+    records = load_jsonl(a.corpus)
+    v = validate(records)
+    print(render(v))
+    if v["counts"][MALFORMED]:  # self-diagnose so an unknown message schema is actionable
+        print(
+            "\nDIAGNOSTIC -- %d malformed record(s). Detected structure(s) below (ShareGPT human/gpt is "
+            "auto-mapped; if roles read blank, the schema is unrecognized):" % v["counts"][MALFORMED]
+        )
+        for s in diagnose(records):
+            print("  record keys: %s" % s["record_keys"])
+            print("    detected roles: %s ; message keys: %s" % (s["detected_roles"], s["sample_message_keys"]))
     return 0
 
 
