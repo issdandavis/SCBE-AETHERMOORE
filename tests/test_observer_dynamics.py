@@ -19,6 +19,7 @@ from python.scbe.observer_dynamics import (
     DecisionRecord,
     decision_bits,
     earliest_repair_point,
+    earliest_repair_point_from_assumption_core,
     energy_of_solve,
     escalation_must_be_resolved,
     is_admissible,
@@ -31,6 +32,7 @@ from python.scbe.observer_dynamics import (
     resolve_by_jumpback_metered,
     resolve_by_jumpback_reversible,
     retroactive_consistency_gap,
+    solve_under_record_assumptions,
     unwind,
 )
 
@@ -75,6 +77,45 @@ def test_minimal_core_may_drop_the_root_but_jumpback_keeps_it():
 def test_minimal_cores_empty_when_admissible():
     clean = [_r(0, ALLOW, route="r"), _r(1, ALLOW, route="r")]
     assert minimal_cores(clean) == []
+
+
+# ---- SAT-style assumption/core surface: repair target keeps the ROOT (the bug a naive get_core hits) ------
+def test_assumption_core_repair_target_matches_cbj_root_with_a_redundant_earlier_record():
+    # the exact case a min(core)-based target gets WRONG: ALLOW@0, ALLOW@2, DENY@3 on route r. The minimized
+    # core drops record 0, but the repair target must stay the ROOT 0 (earliest of the FULL conflict).
+    recs = [_r(0, ALLOW, route="r"), _r(1, ALLOW, route="x"), _r(2, ALLOW, route="r"), _r(3, DENY, route="r")]
+    sol = solve_under_record_assumptions(recs)
+    assert not sol.satisfiable
+    assert earliest_repair_point(recs) == 0  # the true CBJ root
+    assert earliest_repair_point_from_assumption_core(recs) == 0  # ...the SAT surface AGREES (not 2)
+    core = sol.cores[0].core
+    assert 0 not in core  # the minimal core legitimately drops the root...
+    assert sol.cores[0].earliest_index == 0  # ...but earliest_index keeps it (min of the FULL conflict)
+
+
+def test_assumption_solve_admissible_history_is_satisfiable():
+    clean = [_r(0, ALLOW, route="r"), _r(1, ALLOW, route="r")]
+    sol = solve_under_record_assumptions(clean)
+    assert sol.satisfiable and sol.cores == [] and sol.earliest_repair_index is None
+
+
+def test_assumption_core_is_the_minimal_contradicting_pair():
+    recs = [_r(0, ALLOW, route="r"), _r(2, ALLOW, route="r"), _r(5, DENY, route="r")]
+    core = solve_under_record_assumptions(recs).cores[0].core
+    assert len(core) == 2  # the deletion-minimized core is a single ALLOW+DENY pair
+    assert {recs[i].decision for i in core} == {ALLOW, DENY}
+
+
+def test_assumption_surface_agrees_with_earliest_repair_point_across_cases():
+    # the surface must never disagree with the canonical CBJ target -- across several conflict shapes
+    cases = [
+        [_r(0, ALLOW, route="r"), _r(1, DENY, route="r")],  # simple pair, root survives
+        [_r(0, ALLOW, route="r"), _r(2, ALLOW, route="r"), _r(3, DENY, route="r")],  # redundant earlier ALLOW
+        [_r(0, ESCALATE, input_id="a"), _r(1, ALLOW, route="r")],  # unresolved escalation
+        [_r(0, REFUSED, input_id="x"), _r(1, ALLOW, input_id="x")],  # post-refusal success
+    ]
+    for recs in cases:
+        assert earliest_repair_point_from_assumption_core(recs) == earliest_repair_point(recs)
 
 
 # ---- the future-dependent gap is real -----------------------------------------------------------
