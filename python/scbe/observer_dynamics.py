@@ -265,6 +265,66 @@ def minimal_cores(
     return out
 
 
+# ---------------------------------------------------------------------------
+# SAT-STYLE ASSUMPTION/CORE SURFACE: the solve-under-assumptions -> unsat-core contract a CP-SAT/PySAT backend
+# exposes, but dependency-free and auditable. Record indices are the assumptions; each violation yields a
+# deletion-minimized core (reusing minimal_core). A real CDCL/CP-SAT engine can swap in behind THIS surface
+# later -- but it is not warranted now: measured, CP-SAT is 50-450x slower here and finds the same core
+# (research/sat_comparison/observer_sat_compare.py). The point of having the surface is the seam, not the dep.
+# ---------------------------------------------------------------------------
+@dataclass
+class AssumptionCore:
+    """A SAT-style explanation for one inconsistency. `assumptions` is the original conflict set; `core` is the
+    deletion-minimized sufficient subset (a crisp pair, via minimal_core)."""
+
+    violation: Violation
+    assumptions: List[int]
+    core: List[int]
+
+    @property
+    def earliest_index(self) -> int:
+        # the REPAIR target is the ROOT = earliest of the FULL conflict, NOT min(core). Minimization may
+        # legitimately drop the earliest record (keep a later ALLOW over the first), so reading the minimized
+        # core here would jump back to the wrong node. `core` is for the explanation; this is for the repair.
+        return min(self.violation.involved)
+
+
+@dataclass
+class AssumptionSolve:
+    """Whole-history result in the SAT contract: satisfiable == admissible, else one core per violation."""
+
+    satisfiable: bool
+    cores: List[AssumptionCore]
+
+    @property
+    def earliest_repair_index(self) -> Optional[int]:
+        if not self.cores:
+            return None
+        return min(c.earliest_index for c in self.cores)  # equals earliest_repair_point (the root)
+
+
+def solve_under_record_assumptions(
+    records: List[DecisionRecord], constraints: Optional[List[Constraint]] = None
+) -> AssumptionSolve:
+    """Solve the observer CSP and return SAT-style unsat cores over record assumptions. satisfiable=True means
+    the whole history is admissible; otherwise one minimized AssumptionCore per violation. The explanation
+    surface a CP-SAT backend would give -- dependency-free, with the repair target kept at the full-conflict
+    root (so it agrees with earliest_repair_point, not the minimized-core earliest)."""
+    cores: List[AssumptionCore] = []
+    for c in constraints or DEFAULT_CONSTRAINTS:
+        for v in c(records):
+            cores.append(AssumptionCore(violation=v, assumptions=sorted(v.involved), core=minimal_core(records, c, v)))
+    return AssumptionSolve(satisfiable=not cores, cores=cores)
+
+
+def earliest_repair_point_from_assumption_core(
+    records: List[DecisionRecord], constraints: Optional[List[Constraint]] = None
+) -> Optional[int]:
+    """The CBJ jump-back target through the SAT-style core surface. Equals earliest_repair_point (the root) --
+    including when a minimized core drops the earliest record (it derives the target from the full conflict)."""
+    return solve_under_record_assumptions(records, constraints).earliest_repair_index
+
+
 # a repair policy: given the records and the jump-back index, return a NEW decision for that record
 # (or None to give up on that node). The module supplies the mechanism; the policy is the caller's.
 RepairPolicy = Callable[[List[DecisionRecord], int], Optional[str]]
