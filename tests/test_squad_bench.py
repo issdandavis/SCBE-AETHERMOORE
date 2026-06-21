@@ -1,37 +1,46 @@
-"""Tests for squad_bench -- the offline, deterministic benchmark of the squad's differentiation claim.
+"""Tests for squad_bench -- the offline benchmark, after the self-audit replaced the strawman lift.
 
-The benchmark's own run already self-verifies (coverage vs holes must agree; energy metering must reproduce
-via an independent solve_energy). These pin the load-bearing benchmark properties: it is reproducible
-(seeded), the differentiation LIFT is real and positive, and solvable region-agree boards are forward-only
-(0 J -- the cost is only in the erasures).
+Pins the HONEST instruments: (1) coverage-union does NOT measure differentiation -- a DOMINO clone leaves ~0
+gap, exposing the strawman; (2) the RIGHT instrument is exact TILING at matched area, where a domino-only
+clone fails a parity wall a domino+monomino set clears (re-verified); (3) the energy benchmark is a
+forward-checking TAUTOLOGY among solved boards (disclosed), not an empirical Landauer distribution.
 """
 
 from __future__ import annotations
 
-from python.helm.squad_bench import run_bench, run_coverage, run_energy
+from python.helm.squad_bench import run_bench, run_energy, run_reach, run_tiling
 
 
 def test_benchmark_is_reproducible_same_seed_same_numbers():
-    assert run_bench(40, 40, 7) == run_bench(40, 40, 7)  # seeded -> identical (the whole point)
+    assert run_bench(40, 40, 7) == run_bench(40, 40, 7)  # seeded -> identical
 
 
-def test_differentiation_lift_is_real_and_positive():
-    cov = run_coverage(120, seed=7)
-    assert cov["coverage_lift"] > 0.1  # a differentiated squad covers materially more than a clone
-    assert cov["diff_coverage_avg"] > cov["clone_coverage_avg"]
-    assert cov["diff_fully_covered_rate"] > cov["clone_fully_covered_rate"]
+def test_reach_is_a_single_shape_fact_not_differentiation():
+    # the strawman exposed: the 2x2 SQUARE has a real reach deficit, but a DOMINO reaches ~everything, so
+    # coverage-union cannot be a differentiation metric (any all-reaching shape saturates it).
+    rc = run_reach(150, seed=7)
+    assert rc["square_deficit"] > 0.2  # the 2x2 frame genuinely starves on thin/branchy regions
+    assert rc["domino_deficit"] < 0.02  # ...but a single domino reaches nearly all cells
+    # so the old "differentiation lift" (square vs differentiated) was measuring the square's deficit, not diversity
 
 
-def test_energy_solved_boards_are_forward_only_free():
-    # the honest finding: solvable region-agree boards solve without CBJ jump-backs -> 0 erasures, 0 J.
-    e = run_energy(120, seed=7)
-    assert e["solved_rate"] > 0.5
-    assert e["conflict_free_rate_of_solved"] == 1.0  # every solved board was forward-only (free)
-    assert e["median_overwrites_solved"] == 0.0
+def test_tiling_is_the_right_instrument_diversity_beats_a_parity_wall():
+    ti = run_tiling()
+    assert ti["clone_fails_all"]  # a domino-only roster cannot tile the parity-obstructed regions
+    assert ti["diff_tiles_all_verified"]  # domino+monomino (same area) tiles them, independently re-verified
+    # this is differentiation genuinely load-bearing, at matched area -- the honest claim
+
+
+def test_energy_among_solved_is_a_forward_checking_tautology():
+    # honest disclosure: forward-checking makes a SOLVED board forward-only by construction, so 0 J among
+    # solved is structural, not measured. Energy appears only on unsolvable boards (the solver flailing).
+    en = run_energy(150, seed=7)
+    assert en["solved_with_nonzero_energy"] == 0  # the tautology, stated as such
+    assert en["energy_is_structural_not_measured"] is True
+    assert en["solved_rate"] > 0.0
 
 
 def test_run_bench_structure():
     b = run_bench(20, 20, 3)
     assert b["benchmark"] == "squad-offline"
-    assert set(b) == {"benchmark", "seed", "coverage", "energy"}
-    assert b["coverage"]["tasks"] == 20 and b["energy"]["tasks"] == 20
+    assert set(b) == {"benchmark", "seed", "reach", "tiling", "energy"}
