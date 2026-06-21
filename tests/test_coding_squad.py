@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from python.scbe.coding_board import Board, Operator, region_must_agree
+from python.scbe.coding_board import Board, Operator, all_distinct_in_region, region_must_agree
 from python.scbe.coding_board_gates import CHECK, TRANSFORM, gate_names
 from python.scbe.coding_squad import (
     ROLE_PIECES,
@@ -300,3 +300,30 @@ def test_rejected_board_meters_no_energy_no_solve_ran():
 def test_triangulation_demo_all_true():
     d = demo()
     assert all(v for k, v in d.items() if not k.startswith("_"))
+
+
+# ---- edge cases the audit caught: empty board, sub-piece layout, raw energy over-count ------------
+def test_empty_board_does_not_crash_and_is_trivially_covered():
+    # board_region([]) is empty; the gate must short-circuit (not run reach math on an empty region)
+    res = solve_with_squad(Board([], []))
+    assert res.gate is not None and res.gate.covered and res.gate.holes == ()
+    assert not res.rejected  # an empty board is not a coverage gap
+
+
+def test_single_operator_board_is_not_falsely_rejected_by_require_coverage():
+    # a 1-cell layout is below the gate's resolution (no >=2-cell role-piece fits) but is trivially solvable;
+    # the gate must NOT reject it. (Before the fix this rejected with holes=((0,0),).)
+    board = Board([Operator("o0", gate_names(TRANSFORM))], [])
+    res = solve_with_squad(board, require_coverage=True)
+    assert res.gate.covered and not res.rejected  # not a structural blind spot
+    assert res.solved  # ...and it solves, as it does without require_coverage
+
+
+def test_squad_energy_overwrites_is_a_raw_backjump_event_count_not_conflict_depth():
+    # honest semantics: solve_energy bills the RAW coding_board jump list (oscillation revisits + step-backs),
+    # so overwrites is an UPPER BOUND on distinct re-decisions, not the observer's guarded conflict depth.
+    board = Board([Operator("o%d" % i, ("X", "Y", "Z"), region="r") for i in range(4)], [all_distinct_in_region])
+    res = solve_with_squad(board)
+    valid = [j for j in res.jumps if 0 <= j < len(board.operators)]
+    assert res.squad_energy.overwrites == len(valid)  # counts every valid backjump event
+    assert res.squad_energy.overwrites > len(set(valid))  # ...which exceeds the distinct operators re-decided
