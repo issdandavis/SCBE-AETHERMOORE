@@ -19,8 +19,14 @@ import squad_autonomy_sim as sa  # noqa: E402
 
 def test_squad_converges_under_dtn_chaos_but_not_permanent_loss():
     results = {s["scenario"]: s for s in sa.run_suite()}
-    for name in ("instant_link", "mars_far_delay+reorder", "duplicate_bundles", "loss_WITH_custody"):
-        assert results[name]["converged"] is True, name  # delay/reorder/dup/custody-loss all converge
+    for name in (
+        "instant_link",
+        "mars_far_delay+reorder",
+        "duplicate_bundles",
+        "loss_WITH_custody",
+        "solar_conjunction_blackout(custody)",  # NASA-grounded severe outage; custody carries it through
+    ):
+        assert results[name]["converged"] is True, name  # delay/reorder/dup/custody/conjunction all converge
     assert results["permanent_loss_NO_custody"]["converged"] is False  # honest counter-case
 
 
@@ -53,11 +59,35 @@ def test_mars_profile_matches_the_documented_numbers():
     assert sa.MARS.owlt_typical_s == 14 * 60
     assert sa.MARS.owlt_min_s == 182 and sa.MARS.owlt_max_s == 1342
     assert sa.MARS.handshake_round_trips == 3 and sa.MARS.squad_handshake_minutes == 0.0
-    # the honest gap is recorded, not hidden
-    assert "NOT IN ANY DOC" in sa.DOC_SOURCES["loss / dup / reorder / contact_gap rates"]
+    # the honest gap is recorded, not hidden: loss-rate has no published figure -> custody, not a rate
+    assert "NO clean published figure" in sa.DOC_SOURCES["loss-rate %"]
 
 
 def test_documented_autonomy_payoff_zero_vs_42_min():
     # the demo's documented handshake: pre-synchronized squad starts at 0; a round-trip protocol at 3x14=42
     assert sa.time_to_first_decision_min(pre_synchronized=True) == 0.0
     assert sa.time_to_first_decision_min(pre_synchronized=False) == 42.0
+
+
+# ---- grounded in NASA-published Mars-relay figures (each carries a source URL in NASA_SOURCES) ------------
+def test_nasa_relay_figures_match_published_values():
+    # NASA/JPL Electra spec: 2.048 Mbps max, typical coded 8-256 kbps
+    assert sa.MARS.uhf_relay_max_kbps == 2048
+    assert sa.MARS.uhf_relay_typical_kbps_min == 8 and sa.MARS.uhf_relay_typical_kbps_max == 256
+    # NASA Mars 2020: ~8 min/pass, 100-250 Mbit/pass, ~2 passes/sol
+    assert sa.MARS.relay_pass_minutes == 8.0 and sa.MARS.relay_passes_per_sol == 2
+    assert (sa.MARS.relay_data_per_pass_mbit_min, sa.MARS.relay_data_per_pass_mbit_max) == (100, 250)
+    # NASA solar conjunction: ~2 weeks every ~2 years
+    assert sa.MARS.conjunction_blackout_days == 14.0 and sa.MARS.conjunction_period_years == 2.0
+    # NASA Goddard canonical OWLT: ~4-24 min one-way
+    assert sa.MARS.owlt_min_minutes_nasa == 4.0 and sa.MARS.owlt_max_minutes_nasa == 24.0
+    # NASA PACE 2024 DTN custody demonstration
+    assert sa.MARS.dtn_demonstrated_bundles == 34_000_000
+
+
+def test_every_nasa_figure_carries_a_nasa_source_url():
+    # no fabricated figure: every NASA_SOURCES entry cites a nasa.gov URL so it can be audited back to NASA
+    assert sa.NASA_SOURCES, "NASA_SOURCES must be populated"
+    for key, src in sa.NASA_SOURCES.items():
+        assert "nasa.gov" in src, key
+        assert "http" in src, key
