@@ -37,6 +37,19 @@ def test_unclassified_when_schema_unrecognized():
     assert srs.classify({"task_id": 9}) == srs.UNCLASSIFIED  # no category, no signals -> not force-fit
 
 
+def test_broadened_aliases_and_custom_category_field():
+    assert srs.classify({"solved": True}) == srs.SOLVED_FIRST_TRY  # bare 'solved' boolean
+    # a non-default category field name the caller points at
+    assert srs.classify({"my_stage": "SOLVED_FIRST_TRY"}, category_field="my_stage") == srs.SOLVED_FIRST_TRY
+
+
+def test_diagnose_reports_unknown_schema():
+    weird = [{"problem": 1, "result_block": {"final": "ok"}}]  # nothing classify can read
+    diag = srs.diagnose(weird)
+    assert diag and "problem" in diag[0]["top_level_keys"]
+    assert diag[0]["nested_keys"]["result_block"] == ["final"]
+
+
 def _cat(cat, i):
     return {"task_id": i, "category": cat}
 
