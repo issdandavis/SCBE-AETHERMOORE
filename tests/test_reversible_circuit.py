@@ -16,9 +16,13 @@ sys.path.insert(0, str(ROOT))
 from python.scbe.elastic_bijective_hash import splitmix64  # noqa: E402
 from python.scbe.reversible_circuit import (  # noqa: E402
     MASK,
+    REG_BITS,
+    EnergyLedger,
     bennett_uncompute,
     demo,
+    energy_compare,
     hash_into,
+    landauer_joules,
     run,
     unrun,
     xor_into,
@@ -60,6 +64,35 @@ def test_without_uncompute_the_scratch_is_dirty_the_arrow():
     assert s["scratch"] != 0  # left dirty -- no free lunch unless you uncompute
 
 
+def test_landauer_floor_is_the_known_constant():
+    # one bit erased at 300K costs k*T*ln2 ~= 2.87e-21 J -- the textbook Landauer floor
+    j = landauer_joules(1, 300.0)
+    assert abs(j - 2.8e-21) < 0.2e-21  # ~2.87e-21 J
+    assert landauer_joules(0) == 0.0  # erasing nothing costs nothing
+    assert landauer_joules(64) == 64 * landauer_joules(1)  # linear in bits erased
+
+
+def test_energy_ledger_reversible_is_free_erase_pays():
+    led = EnergyLedger()
+    led.reversible("gate a").reversible("gate b")
+    assert led.bits_erased == 0 and led.joules() == 0.0  # bijective gates: free
+    led.erase("reset reg", REG_BITS)
+    assert led.bits_erased == REG_BITS and led.joules() > 0.0  # the irreversible step pays
+
+
+def test_energy_compare_forward_pays_reversible_recovers():
+    # the load-bearing result: same end state both ways, but force-erase pays the Landauer floor for the
+    # whole 64-bit scratch while uncomputing pays exactly zero -- the energy difference is the recovery
+    for x in (0, 1, 42, 1234567, 2**50 + 9):
+        e = energy_compare(x)
+        assert e["same_result"] is True  # scratch=0, out=h(x) reached identically both ways
+        assert e["forward_only_bits_erased"] == REG_BITS  # force-clear erases the full register
+        assert e["reversible_bits_erased"] == 0  # uncomputation erases nothing
+        assert e["reversible_joules"] == 0.0  # ...so it is thermodynamically free
+        assert e["forward_only_joules"] > 0.0  # ...while the dissipating path pays heat
+        assert e["energy_recovered_joules"] == e["forward_only_joules"]  # all of it recovered
+
+
 def test_demo_all_true():
     d = demo()
-    assert all(d.values())
+    assert all(v for k, v in d.items() if not k.startswith("_"))  # skip the _energy detail dict
