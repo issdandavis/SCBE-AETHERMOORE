@@ -8,7 +8,9 @@ that can be carried by reaction packets or benchmark reports.
 
 from __future__ import annotations
 
+import array
 import math
+import wave
 from dataclasses import asdict, dataclass, field
 from typing import Any, Literal
 
@@ -264,3 +266,55 @@ def generate_decaying_sine(
         * math.sin(2.0 * math.pi * frequency_hz * index / sample_rate_hz)
         for index in range(sample_count)
     ]
+
+
+def read_wav(path: str, *, max_samples: int = 4096) -> tuple[list[float], float]:
+    """Decode a PCM WAV to a mono float signal in [-1, 1] + its (effective) sample rate. Stdlib only
+    ($0, no ffmpeg). Block-averages down to <= max_samples so the naive O(n^2) DFT stays cheap on a real
+    clip (a cheap anti-alias + decimate). Handles 8/16/32-bit PCM."""
+    with wave.open(str(path), "rb") as handle:
+        channels = handle.getnchannels()
+        width = handle.getsampwidth()
+        rate = float(handle.getframerate())
+        raw = handle.readframes(handle.getnframes())
+    if width == 2:
+        samples: Any = array.array("h")
+        samples.frombytes(raw)
+        scale = 32768.0
+    elif width == 4:
+        samples = array.array("i")
+        samples.frombytes(raw)
+        scale = 2147483648.0
+    elif width == 1:
+        samples = [byte - 128 for byte in raw]  # WAV 8-bit is unsigned, centered at 128
+        scale = 128.0
+    else:
+        raise ValueError("unsupported WAV sample width: %d bytes" % width)
+    mono = [
+        sum(samples[i + c] for c in range(channels)) / (channels * scale)
+        for i in range(0, len(samples) - channels + 1, channels)
+    ]
+    if not mono:
+        raise ValueError("WAV decoded to an empty signal")
+    if len(mono) > max_samples:
+        block = len(mono) // max_samples
+        mono = [sum(mono[i : i + block]) / block for i in range(0, block * max_samples, block)]
+        rate = rate / block
+    return mono, rate
+
+
+def analyze_wav(
+    path: str,
+    *,
+    model: AudioFieldModel | None = None,
+    max_samples: int = 4096,
+    high_frequency_cutoff_ratio: float = 0.5,
+) -> AudioFieldObservables:
+    """Run the audio-axis (L14) analysis on a REAL audio file -- the whisper input / TTS output clips the
+    universal port produces -- not just synthetic sines. Decodes the WAV ($0, stdlib) then reuses the
+    existing analyze_audio_field, so every acoustic observable (centroid, bandwidth, stability, modal
+    count, decay, field-coupling proxy) is now available for real captured/synthesized audio."""
+    signal, rate = read_wav(path, max_samples=max_samples)
+    return analyze_audio_field(
+        signal, sample_rate_hz=rate, model=model, high_frequency_cutoff_ratio=high_frequency_cutoff_ratio
+    )
