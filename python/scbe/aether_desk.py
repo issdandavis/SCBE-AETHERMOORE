@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import copy
 import os
+import shlex
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -114,10 +115,14 @@ class AetherDesk:
 
         def run_command(p):
             cmd = str(p.get("command", "")).strip()
-            head = cmd.split()[0] if cmd else ""
+            try:
+                argv = shlex.split(cmd, posix=os.name != "nt")
+            except ValueError as exc:
+                return "invalid command syntax: %s" % exc
+            head = argv[0] if argv else ""
             if head not in _ALLOWED_CMDS:
                 return "command %r not on the workspace allowlist" % head
-            r = subprocess.run(cmd, shell=True, cwd=self.root, capture_output=True, text=True, timeout=60)
+            r = subprocess.run(argv, shell=False, cwd=self.root, capture_output=True, text=True, timeout=60)
             return ((r.stdout or "") + (r.stderr or "")).strip()[:4000] or "(no output, rc=%d)" % r.returncode
 
         def run_test(p):
