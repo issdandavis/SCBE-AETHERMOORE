@@ -143,26 +143,45 @@ class HybridPolicy:
         self.llm = llm
         self.name = "hybrid(" + llm.name + ")"
 
+    @staticmethod
+    def _submit(els: List[Dict[str, Any]]) -> Move:
+        btn = next(
+            (
+                e
+                for e in els
+                if e["tag"] == "button"
+                and any(w in e["name"].lower() for w in ("submit", "login", "log in", "sign", "ok", "done", "go"))
+            ),
+            None,
+        )
+        return Move("click", ref=btn["ref"]) if btn else Move("submit")
+
     def act(self, obs: Dict[str, Any]) -> Optional[Move]:
-        ql = obs["instruction"].lower()
+        q = obs["instruction"]
+        ql = q.lower()
+        els = obs["elements"]
+        inputs = [e for e in els if e["editable"]]
+        pairs = re.findall(r'(\w+)\s+(?:is\s+)?"([^"]+)"', q)  # (label, value) e.g. username "briana"
+
+        # transition 0: MULTI-FIELD form (login etc.) -- fill each field in ORDER with its parsed value,
+        # then submit. The small model can't reliably fill two fields + submit; this is pure mechanism.
+        if len(pairs) >= 2 and len(inputs) >= 2:
+            values = [v for (_, v) in pairs]
+            for i, inp in enumerate(inputs):
+                if i < len(values) and (inp.get("value") or "") != values[i]:
+                    return Move("type", ref=inp["ref"], value=values[i])
+            return self._submit(els)
+
         # transition 1: 'focus the input' is deterministic -- the small model fumbles it, so just do it.
-        if "focus" in ql and not any((e.get("value") or "") for e in obs["elements"] if e["editable"]):
-            inp = next((e for e in obs["elements"] if e["editable"]), None)
-            if inp:
-                return Move("click", ref=inp["ref"])
+        if "focus" in ql and not any((e.get("value") or "") for e in inputs):
+            if inputs:
+                return Move("click", ref=inputs[0]["ref"])
+
         # transition 2: submit once a field is filled (the 'lateral transition of submission').
-        needs_submit = ("submit" in ql) or ("press enter" in ql) or ("and press" in ql)
-        filled = any((e.get("value") or "") for e in obs["elements"] if e["editable"])
-        if needs_submit and filled:
-            btn = next(
-                (
-                    e
-                    for e in obs["elements"]
-                    if e["tag"] == "button" and any(w in e["name"].lower() for w in ("submit", "ok", "done", "go"))
-                ),
-                None,
-            )
-            return Move("click", ref=btn["ref"]) if btn else Move("submit")
+        needs_submit = any(w in ql for w in ("submit", "press enter", "and press", "login", "log in", "sign in"))
+        if needs_submit and any((e.get("value") or "") for e in inputs):
+            return self._submit(els)
+
         return self.llm.act(obs)
 
 
