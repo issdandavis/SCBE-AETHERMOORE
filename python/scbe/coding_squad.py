@@ -29,9 +29,11 @@ from typing import Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 
-from .coding_board import Board, SolveResult, solve
+from .coding_board import Board, Operator, SolveResult, region_must_agree, solve
 from .coding_board_gates import CHECK, TRANSFORM, gate_names
 from .geometric_router import poincare_distance, to_ball
+from .observer_dynamics import decision_bits
+from .reversible_circuit import ROOM_T_K, EnergyLedger
 from .squad_puzzle import (
     DOMINO,
     I_TROMINO,
@@ -123,6 +125,36 @@ class SquadResult:
     roster: Dict[str, str] = field(default_factory=dict)  # role -> its legal-operation sub-alphabet size
     gate: Optional["CoverageGate"] = None  # the geometric coverage pre-check (None when not computed)
     rejected: bool = False  # True when require_coverage refused the board for a coverage gap (no solve run)
+    squad_energy: Optional["SquadEnergy"] = None  # Landauer cost of the solve's CBJ re-decisions (None if none)
+
+
+@dataclass
+class SquadEnergy:
+    """The thermodynamic cost of a squad solve, by Landauer's principle (the bijective-time/reversible arc
+    meeting the squad). Each CBJ jump-back is an irreversible RE-DECISION that overwrites an operator's
+    assignment, erasing decision_bits(domain) bits; a conflict-free (forward-only) solve pays 0. Metered the
+    same way as observer_dynamics.resolve_by_jumpback_metered -- the two CBJ solvers share one ledger."""
+
+    overwrites: int  # CBJ jump-backs the solve committed (irreversible re-decisions; -1 dead-ends excluded)
+    bits_erased: int  # sum of decision_bits(operator domain) over those re-decisions
+    irreversible_joules: float  # the Landauer FLOOR the dissipating (overwrite) solve pays (a lower bound)
+    reversible_joules: float  # 0.0 -- logging the jumps (an undo-tape) erases nothing during the solve (Bennett)
+
+
+def solve_energy(board: Board, jumps: List[int], temperature_k: float = ROOM_T_K) -> SquadEnergy:
+    """Meter a solve's CBJ jump-backs with the Landauer ledger. Each valid jump overwrites that operator's
+    decision (erasing log2(domain) bits); -1 dead-end sentinels are not real re-decisions and are skipped.
+    The reversible alternative (log the jumps as an undo-tape) erases nothing -- it defers the cost to space."""
+    valid = [j for j in jumps if 0 <= j < len(board.operators)]
+    ledger = EnergyLedger(temperature_k=temperature_k)
+    for j in valid:
+        ledger.erase("re-decide op[%d]" % j, decision_bits(len(board.operators[j].domain)))
+    return SquadEnergy(
+        overwrites=len(valid),
+        bits_erased=ledger.bits_erased,
+        irreversible_joules=ledger.joules(),
+        reversible_joules=0.0,
+    )
 
 
 def board_region(board: Board) -> "Region":
@@ -171,6 +203,7 @@ def solve_with_squad(
         coverage=coverage,
         roster=roster,
         gate=gate,
+        squad_energy=solve_energy(board, res.jumps),  # the Landauer cost of this solve's CBJ re-decisions
     )
 
 
@@ -348,6 +381,22 @@ def demo() -> Dict[str, object]:
     diff_gate = coverage_gate(SQUAD, board)
     clone_gate = coverage_gate([SQUAD[0]] * 5, board)  # all ARCHITECT (the 2x2 frame) -> cannot reach the arm
 
+    # the bijective-time Landauer ledger meets the squad solve: a clean (forward-only) solve pays 0 J; a solve
+    # that CBJ-jumps-back pays the Landauer floor for each irreversible re-decision (the arrow's heat)
+    clean_e = solve_with_squad(
+        Board([Operator("a", gate_names(TRANSFORM)), Operator("b", gate_names(TRANSFORM))], [])
+    ).squad_energy
+    conflict_e = solve_with_squad(
+        Board(
+            [
+                Operator("a", ("A", "B"), region="r"),
+                Operator("b", ("B",), region="r", fixed="B"),
+                Operator("c", ("A",), region="r"),
+            ],
+            [region_must_agree],
+        )
+    ).squad_energy
+
     return {
         "squad_resolves_5_of_6_one_blind_tongue": (
             cov.rank == 5 and not cov.full_rank and len(cov.blind_directions) == 1
@@ -357,9 +406,13 @@ def demo() -> Dict[str, object]:
         "differentiated_squad_localizes_in_span": recovered and tri.reading_residual < 1e-9,
         "role_squad_covers_the_board_no_holes": diff_gate.covered,
         "clone_roster_leaves_a_coverage_gap": (not clone_gate.covered) and len(clone_gate.holes) == 2,
+        "clean_solve_is_energy_free": clean_e.overwrites == 0 and clean_e.irreversible_joules == 0.0,
+        "backtracking_solve_pays_landauer": conflict_e.overwrites >= 1 and conflict_e.irreversible_joules > 0.0,
         "_cov": cov,
         "_cov_clone": cov_clone,
         "_clone_gate": clone_gate,
+        "_clean_e": clean_e,
+        "_conflict_e": conflict_e,
     }
 
 
@@ -394,6 +447,16 @@ def main() -> int:
         % (cg.holes, d["clone_roster_leaves_a_coverage_gap"])
     )
     print("  => holes = the cells no role-piece can reach (governance pre-check; necessary, not sufficient).")
+    ce, qe = d["_clean_e"], d["_conflict_e"]
+    print("  --- the Landauer ledger meets the squad solve (energy = the CBJ re-decisions) ---")
+    print(
+        "  clean forward-only solve: %d re-decision(s) -> %.3e J (erases nothing, free)"
+        % (ce.overwrites, ce.irreversible_joules)
+    )
+    print(
+        "  backtracking solve: %d CBJ re-decision(s) -> %.3e J (the arrow's heat; reversible undo-tape = 0 J)"
+        % (qe.overwrites, qe.irreversible_joules)
+    )
     return 0
 
 
