@@ -16,7 +16,6 @@ from python.scbe.dice import (  # noqa: E402
     bench,
     is_valid_side,
     replay,
-    roll,
     roll_legal,
     route,
     zero_packet,
