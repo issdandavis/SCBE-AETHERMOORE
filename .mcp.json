@@ -36,33 +36,29 @@
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PAT}"
       }
     },
-    "scbe-orchestrator": {
+    "scbe-verify": {
       "type": "stdio",
       "command": "python",
       "args": [
-        "mcp/orchestrator.py"
+        "src/mcp/scbe_verify_mcp.py"
       ],
-      "env": {
-        "SWARM_DRY_RUN": "1"
-      }
-    },
-    "youtube-studio": {
-      "type": "stdio",
-      "command": "youtube-studio-mcp",
-      "args": [],
       "env": {}
     },
-    "notion-sweep": {
+    "scbe-govern": {
       "type": "stdio",
       "command": "python",
       "args": [
-        "mcp/notion_server.py"
+        "src/mcp/scbe_govern_mcp.py"
       ],
-      "env": {
-        "NOTION_API_KEY": "${NOTION_API_KEY}",
-        "NOTION_TOKEN": "${NOTION_TOKEN}",
-        "NOTION_MCP_TOKEN": "${NOTION_MCP_TOKEN}"
-      }
+      "env": {}
+    },
+    "scbe-context": {
+      "type": "stdio",
+      "command": "python",
+      "args": [
+        "src/mcp/context_broker_mcp.py"
+      ],
+      "env": {}
     },
     "kaggle": {
       "type": "stdio",
