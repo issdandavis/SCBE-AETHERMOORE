@@ -140,6 +140,57 @@ PITFALLS: List[Dict[str, Any]] = [
         "fix": "def factorial(n):\n    if n <= 1:\n        return 1\n    return n * factorial(n - 1)",
         "tests": ["assert factorial(0) == 1", "assert factorial(5) == 120"],
     },
+    # Harder ALGORITHMIC tier: these are capability bugs (DP, edge cases, invariants), not syntax the
+    # base already knows. Modeled on the recorded failure cluster (coin-change DP, rotate-left modulo). A
+    # strong coder base can recite "mutable default arg"; these are where it actually slips.
+    {
+        "name": "coin_change_max_greedy_fails",
+        "prompt": "Write max_coins(coins, amount): the MAXIMUM number of coins summing to exactly amount, "
+        "or -1 if impossible.",
+        "buggy": "def max_coins(coins, amount):\n    coins = sorted(coins)\n    n = 0\n    for c in coins:\n"
+        "        while amount >= c:\n            amount -= c\n            n += 1\n    return n if amount == 0 else -1",
+        "fix": "def max_coins(coins, amount):\n    dp = [-1] * (amount + 1)\n    dp[0] = 0\n"
+        "    for a in range(1, amount + 1):\n        for c in coins:\n            if c <= a and dp[a - c] != -1:\n"
+        "                dp[a] = max(dp[a], dp[a - c] + 1)\n    return dp[amount]",
+        "tests": ["assert max_coins([3, 5], 11) == 3", "assert max_coins([2], 3) == -1"],
+    },
+    {
+        "name": "rotate_left_no_modulo",
+        "prompt": "Write rotate_left(s, k) returning s rotated left by k positions (k may exceed len(s)).",
+        "buggy": "def rotate_left(s, k):\n    return s[k:] + s[:k]",
+        "fix": "def rotate_left(s, k):\n    if not s:\n        return s\n    k %= len(s)\n    return s[k:] + s[:k]",
+        "tests": [
+            "assert rotate_left('abcd', 1) == 'bcda'",
+            "assert rotate_left('abcd', 5) == 'bcda'",
+            "assert rotate_left('', 3) == ''",
+        ],
+    },
+    {
+        "name": "balanced_parens_no_underflow_check",
+        "prompt": "Write balanced(s) returning True iff the parentheses in s (chars ( and ) only) are balanced.",
+        "buggy": "def balanced(s):\n    depth = 0\n    for c in s:\n        if c == '(':\n            depth += 1\n"
+        "        else:\n            depth -= 1\n    return depth == 0",
+        "fix": "def balanced(s):\n    depth = 0\n    for c in s:\n        if c == '(':\n            depth += 1\n"
+        "        else:\n            depth -= 1\n            if depth < 0:\n                return False\n"
+        "    return depth == 0",
+        "tests": [
+            "assert balanced('(())') == True",
+            "assert balanced(')(') == False",
+            "assert balanced('(()') == False",
+        ],
+    },
+    {
+        "name": "two_sum_reuses_one_element",
+        "prompt": "Write two_sum(nums, target) returning indices [i, j] with i<j of two DISTINCT elements "
+        "summing to target, else [].",
+        "buggy": "def two_sum(nums, target):\n    for i in range(len(nums)):\n"
+        "        for j in range(i, len(nums)):\n            if nums[i] + nums[j] == target:\n"
+        "                return [i, j]\n    return []",
+        "fix": "def two_sum(nums, target):\n    for i in range(len(nums)):\n"
+        "        for j in range(i + 1, len(nums)):\n            if nums[i] + nums[j] == target:\n"
+        "                return [i, j]\n    return []",
+        "tests": ["assert two_sum([3, 2, 4], 6) == [1, 2]", "assert two_sum([3, 1], 6) == []"],
+    },
 ]
 
 
