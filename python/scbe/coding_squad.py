@@ -44,7 +44,6 @@ from .squad_puzzle import (
     Piece,
     Region,
     coverable_cells,
-    holes,
 )
 
 
@@ -131,11 +130,15 @@ class SquadResult:
 @dataclass
 class SquadEnergy:
     """The thermodynamic cost of a squad solve, by Landauer's principle (the bijective-time/reversible arc
-    meeting the squad). Each CBJ jump-back is an irreversible RE-DECISION that overwrites an operator's
-    assignment, erasing decision_bits(domain) bits; a conflict-free (forward-only) solve pays 0. Metered the
-    same way as observer_dynamics.resolve_by_jumpback_metered -- the two CBJ solvers share one ledger."""
+    meeting the squad). Each CBJ jump-back is an irreversible RE-DECISION that erases decision_bits(domain)
+    bits; a conflict-free (forward-only) solve pays 0. It REUSES observer_dynamics' EnergyLedger / decision_bits
+    / units, but it meters the RAW coding_board.solve jump list -- which (unlike resolve_by_jumpback_metered,
+    whose hook has an oscillation guard + a no-op skip) re-appends a backjump on every dead end and oscillation
+    revisit. So `overwrites` is a backjump-EVENT count and an UPPER BOUND on the distinct re-decisions, NOT the
+    observer's guarded conflict depth; each event is still a genuine erasure, so the joules are honest energy
+    for the dissipating solver (it really did pay for the wasted re-decisions)."""
 
-    overwrites: int  # CBJ jump-backs the solve committed (irreversible re-decisions; -1 dead-ends excluded)
+    overwrites: int  # raw valid backjump events (-1 dead-ends excluded); upper bound on DISTINCT re-decisions
     bits_erased: int  # sum of decision_bits(operator domain) over those re-decisions
     irreversible_joules: float  # the Landauer FLOOR the dissipating (overwrite) solve pays (a lower bound)
     reversible_joules: float  # 0.0 -- logging the jumps (an undo-tape) erases nothing during the solve (Bennett)
@@ -348,12 +351,21 @@ def coverage_gate(roles: List[Role], region) -> CoverageGate:
     """Can the differentiated role-squad COVER this board with its shapes? Reports the holes (cells no role-
     piece can reach) -- the rigorous form of cover_regions and a governance pre-check: a board with holes for
     the current roster has a structural blind spot (recompose the squad, or reject the board). Necessary, not
-    sufficient: no holes does not guarantee an exact tiling (parity can still block it)."""
+    sufficient: no holes does not guarantee an exact tiling (parity can still block it).
+
+    A layout of fewer than 2 cells (an empty board, or a single 1-cell operator) is BELOW the gate's
+    resolution -- a single unit of work has no SHAPE for a polyomino reach-check to assess, and a 1-op board
+    is trivially solvable. The gate must not reject work it cannot meaningfully assess, so such layouts return
+    covered=True (a degenerate-size fact, not a governance blind spot), which also avoids running the reach
+    math on an empty region. A >=2-cell layout IS assessed normally -- so a clone roster that genuinely cannot
+    cover a 3-cell board still reports the gap."""
+    region = frozenset(region)
+    if len(region) < 2:
+        return CoverageGate(covered=True, holes=(), reachable=len(region), total=len(region))
     pieces = squad_pieces(roles)
-    h = holes(region, pieces)
-    return CoverageGate(
-        covered=(len(h) == 0), holes=h, reachable=len(coverable_cells(region, pieces)), total=len(region)
-    )
+    reach = coverable_cells(region, pieces)
+    h = tuple(sorted(set(region) - reach))
+    return CoverageGate(covered=(len(h) == 0), holes=h, reachable=len(reach), total=len(region))
 
 
 def demo() -> Dict[str, object]:
