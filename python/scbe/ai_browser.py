@@ -62,12 +62,20 @@ _READ_JS = r"""
     const editable = tag === 'textarea' || tag === 'select' ||
       (tag === 'input' && !['button', 'submit', 'checkbox', 'radio', 'hidden'].includes(typ)) ||
       e.getAttribute('contenteditable') === 'true';
-    elements.push({ ref, tag, role: e.getAttribute('role') || (editable ? 'input' : tag), name: name(e), editable });
+    const bb = e.getBoundingClientRect();
+    elements.push({
+      ref, tag, role: e.getAttribute('role') || (editable ? 'input' : tag), name: name(e), editable,
+      x: Math.round(bb.x), y: Math.round(bb.y), w: Math.round(bb.width), h: Math.round(bb.height)
+    });
   });
   const headings = [...document.querySelectorAll('h1,h2,h3')].filter(vis)
     .map(h => (h.innerText || '').replace(/\s+/g, ' ').trim()).filter(Boolean).slice(0, 12);
   const text = (document.body ? document.body.innerText : '').replace(/\s+/g, ' ').trim().slice(0, 1200);
-  return { url: location.href, title: document.title, elements, headings, text };
+  return {
+    url: location.href, title: document.title,
+    viewport: { w: window.innerWidth, h: window.innerHeight },
+    elements, headings, text
+  };
 }
 """
 
