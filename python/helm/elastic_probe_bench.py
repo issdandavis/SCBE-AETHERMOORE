@@ -30,11 +30,20 @@ def _percentile(sorted_xs: List[int], p: float) -> int:
     return sorted_xs[min(len(sorted_xs) - 1, int(p * len(sorted_xs)))]
 
 
-def lookup_probe_lengths(bits: int, load: float, seed: int) -> List[int]:
-    """Fill a 2**bits-slot map to `load`, then measure the probe count of EACH key's lookup (its displacement
-    from the base slot). Deterministic keys. Asserts every key is found (a probe-length only means anything
-    on a successful lookup)."""
-    h = BijectiveDoubleHashMap(bits=bits, seed=seed)
+class LinearProbeMap(BijectiveDoubleHashMap):
+    """A linear-probe BASELINE (stride fixed at 1 -> primary clustering) for the bench ONLY -- not a shipped
+    data structure. Same scrambled base, but consecutive probes, so it shows the tail that double-hashing's
+    coprime stride avoids."""
+
+    def _stride(self, ki: Any) -> int:
+        return 1
+
+
+def lookup_probe_lengths(bits: int, load: float, seed: int, map_factory: Any = BijectiveDoubleHashMap) -> List[int]:
+    """Fill a 2**bits-slot map (of `map_factory`) to `load`, then measure the probe count of EACH key's lookup
+    (its displacement from the base slot). Deterministic keys. Asserts every key is found (a probe-length only
+    means anything on a successful lookup)."""
+    h = map_factory(bits=bits, seed=seed)
     n = int(h.size * load)
     rng = random.Random(seed)
     keys = ["k%d-%d" % (i, rng.getrandbits(40)) for i in range(n)]
@@ -48,8 +57,8 @@ def lookup_probe_lengths(bits: int, load: float, seed: int) -> List[int]:
     return lengths
 
 
-def distribution(bits: int, load: float, seed: int) -> Dict[str, Any]:
-    lengths = sorted(lookup_probe_lengths(bits, load, seed))
+def distribution(bits: int, load: float, seed: int, map_factory: Any = BijectiveDoubleHashMap) -> Dict[str, Any]:
+    lengths = sorted(lookup_probe_lengths(bits, load, seed, map_factory))
     n = len(lengths)
     mean = sum(lengths) / n if n else 0.0
     mx = lengths[-1] if lengths else 0
@@ -68,6 +77,55 @@ def distribution(bits: int, load: float, seed: int) -> Dict[str, Any]:
 
 def run(bits: int = 14, loads: Sequence[float] = (0.5, 0.9, 0.99, 0.999), seed: int = 7) -> Dict[str, Any]:
     return {"bits": bits, "seed": seed, "rows": [distribution(bits, ld, seed) for ld in loads]}
+
+
+def compare(bits: int = 14, loads: Sequence[float] = (0.9, 0.99), seed: int = 7) -> Dict[str, Any]:
+    """Why double-hashing: the double-hash map vs a linear-probe baseline, same loads. Both have heavy tails
+    under load, but linear probing's PRIMARY CLUSTERING (consecutive probes) makes its tail dramatically worse
+    -- the coprime stride is what buys the better tail. Reports the linear-over-double max ratio."""
+    rows = []
+    for ld in loads:
+        dh = distribution(bits, ld, seed, BijectiveDoubleHashMap)
+        lp = distribution(bits, ld, seed, LinearProbeMap)
+        rows.append(
+            {
+                "load": ld,
+                "double_hash": dh,
+                "linear_probe": lp,
+                "linear_tail_penalty": round(lp["max"] / dh["max"], 1) if dh["max"] else 0.0,
+            }
+        )
+    return {"bits": bits, "seed": seed, "rows": rows}
+
+
+def render_compare(summary: Dict[str, Any]) -> str:
+    lines = [
+        "WHY DOUBLE-HASHING (2^%d slots, seed=%d) -- double-hash vs linear-probe TAIL"
+        % (summary["bits"], summary["seed"]),
+        "",
+        "  %7s | %-22s | %-22s | %s"
+        % ("load", "double-hash mean/p99/max", "linear mean/p99/max", "linear max penalty"),
+        "  %s" % ("-" * 78),
+    ]
+    for r in summary["rows"]:
+        dh, lp = r["double_hash"], r["linear_probe"]
+        lines.append(
+            "  %6.1f%% | %6.1f / %5d / %6d   | %6.1f / %5d / %6d   | %5.1fx worse"
+            % (
+                r["load"] * 100,
+                dh["mean"],
+                dh["p99"],
+                dh["max"],
+                lp["mean"],
+                lp["p99"],
+                lp["max"],
+                r["linear_tail_penalty"],
+            )
+        )
+    lines.append("")
+    lines.append("  => both tails grow under load, but linear probing's clustering is multiples worse: the")
+    lines.append("     coprime double-hash stride is what scatters probes and tames the worst case (measured).")
+    return "\n".join(lines)
 
 
 def render(summary: Dict[str, Any]) -> str:
@@ -95,6 +153,8 @@ def main(argv: Sequence[str] = None) -> int:
     ap.add_argument("--seed", type=int, default=7)
     a = ap.parse_args(argv)
     print(render(run(bits=a.bits, seed=a.seed)))
+    print()
+    print(render_compare(compare(bits=a.bits, seed=a.seed)))
     return 0
 
 
