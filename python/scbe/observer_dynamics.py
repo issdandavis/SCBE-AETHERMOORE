@@ -468,15 +468,17 @@ def unwind(records: List[DecisionRecord], undo: List[Tuple[int, str]]) -> List[D
 
 @dataclass
 class SolveEnergy:
-    rewrites: int  # number of irreversible re-decisions the CBJ solve made == conflict depth
+    rewrites: int  # irreversible re-decisions the CBJ solve made (a deep cascade can re-decide one node many
+    # times, so this can EXCEED history_len -- it is conflict DEPTH, not a per-record count)
     history_len: int  # number of records in the history
     bits_per_decision: int  # decision_bits(domain_size) -- honest small-domain info content
     irreversible_bits_erased: int  # rewrites * bits_per_decision
     irreversible_joules: float  # the Landauer FLOOR the dissipating (overwrite) solve pays (lower bound)
     reversible_joules: float  # 0.0 -- the reversible (undo-log) solve erases nothing during the solve
     reversible_undo_log_entries: int  # the SPACE paid instead (== rewrites): Bennett space-for-energy
-    naive_linear_bits: int  # cost if EVERY record were re-decided (linear in history) -- the ceiling
-    energy_is_sublinear: bool  # rewrites < history_len: the solve paid for conflict depth, not length
+    naive_linear_bits: int  # cost if every record were re-decided ONCE (= n*bits); NOT an upper bound -- a deep
+    # CBJ cascade re-deciding one node repeatedly can make irreversible_bits_erased EXCEED this
+    energy_is_sublinear: bool  # rewrites < history_len: the solve paid for conflict depth below length (not always)
 
 
 def energy_of_solve(

@@ -12,8 +12,9 @@ The differentiation claim carries over, now geometric and provable by execution:
     the assembly possible -- the geometric echo of "a clone squad is rank-deficient and cannot triangulate".
   * a cell NO piece can reach is a HOLE -- an ANALOGOUS blind spot to the triangulation null space (the
     "absence is information" gap). Honest difference: a hole is region-dependent REACH, not the squad-only
-    null space, so a single covering clone has zero holes; and a hole-free target can still be untileable
-    (a parity obstruction, deeper than any single uncoverable cell).
+    null space, so a single covering clone has zero holes; and a hole-free target can still be untileable for
+    reasons beyond a single uncoverable cell -- a colour-PARITY obstruction (the mutilated chessboard), OR a
+    piece that simply has no legal placement at all (e.g. a 1x5 bar in a 3-wide region).
 
 HONEST: this is polyomino EXACT COVER with a small deterministic Algorithm-X-style solver (most-constrained
 cell, backtracking). The "value" of a member is its piece shape + allowed orientations (1=fixed, 4=rotations,
@@ -119,7 +120,8 @@ def coverable_cells(region: Region, pieces: Sequence[Piece]) -> Region:
 def holes(region: Region, pieces: Sequence[Piece]) -> Tuple[Cell, ...]:
     """The region cells NO piece can cover -- an analogous blind spot (unreachable cells, the 'absence is
     information' gap). A non-empty holes set means no exact tiling can exist (something is structurally
-    uncoverable); but the converse fails -- a hole-free region can still be untileable (parity)."""
+    uncoverable); but the converse fails -- a hole-free region can still be untileable for other reasons
+    (a colour-parity obstruction, or a piece with no legal placement anywhere)."""
     return tuple(sorted(set(region) - coverable_cells(region, pieces)))
 
 
