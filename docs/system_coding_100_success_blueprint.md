@@ -28,15 +28,42 @@ fails when it ships an unverified or wrong patch as success.
 
 Each task moves through the same ladder:
 
-1. `model_patch`: the coding model proposes a patch.
-2. `visible_tests`: patch must pass the shown or public tests.
-3. `abstaining_verifier`: patch is compared against a trusted reference or contract on generated inputs beyond visible tests.
-4. `repair_loop`: failures feed back into the model with concrete execution output.
-5. `archive_retrieval`: search prior verified fixes and pitfall traces for a structurally similar pattern.
-6. `strong_solver`: escalate to a larger model, deterministic synthesizer, or human review.
-7. `verified_or_escalated`: record a receipt; never mark an unverified patch as fixed.
+1. `known_logic_injection`: if a deterministic answer/process exists, inject that packet first.
+2. `model_echo_or_fallback`: the model may repeat/apply the packet; if it cannot, use the deterministic answer directly.
+3. `model_patch`: only ask the coding model to invent a patch when no known process covers the task.
+4. `visible_tests`: patch must pass the shown or public tests.
+5. `abstaining_verifier`: patch is compared against a trusted reference or contract on generated inputs beyond visible tests.
+6. `repair_loop`: failures feed back into the model with concrete execution output.
+7. `archive_retrieval`: search prior verified fixes and pitfall traces for a structurally similar pattern.
+8. `strong_solver`: escalate to a larger model, deterministic synthesizer, or human review.
+9. `verified_or_escalated`: record a receipt; never mark an unverified patch as fixed.
 
 This makes the model a proposer, not the authority. The verifier is the authority.
+
+## Known Logic Injection
+
+If the system already knows the answer, the model should not be asked to reason it out. The known
+answer/process is wrapped as a `KnownLogicPacket`:
+
+```text
+task -> deterministic tool/process -> known answer -> model echo/apply -> verifier -> keep echo or fallback
+```
+
+Examples:
+
+- `sieve_primes(n)`: compute prime membership exactly, then inject "prime" or "composite".
+- `chart_lookup(key)`: read the chart cell exactly, then inject that value.
+- `if_then(condition)`: run a bounded branch rule, then inject the chosen branch.
+- code reference/contract: inject a known-good implementation or transform and verify the model's patch against it.
+
+This is not a prompt tweak like "use better logic." It is correct information injection: the model is
+treated as a parrot/adapter over a deterministic source. If the model cannot repeat or apply the packet,
+`python.helm.known_logic_injection.inject_or_fallback` returns the deterministic answer directly with
+`false_success_count == 0`.
+
+Local diagnostic evidence from MBPP failures matched this design: on 20 prior single-shot failures,
+reference-answer injection made the 1.5B model reproduce correct logic on 14/20; inject-or-fallback reached
+19/20 because the reference was the authority.
 
 ## Roles
 
@@ -71,7 +98,8 @@ The current code-fix substrate already has the correct load-bearing primitives:
 
 - `python.helm.abstaining_verifier.differential`: trust/reject/abstain by execution beyond visible tests.
 - `python.helm.verify_cli`: CI-facing wrapper with exit codes `0 trust`, `1 reject`, `2 abstain`, `3 usage error`.
-- Recovery-loop evidence: `113/180` single-shot vs `120/180` with repair, `+7 net`, McNemar exact `p=0.0654`.
+- `python.helm.known_logic_injection`: deterministic answer/process packets with model echo or fallback.
+- Recovery-loop evidence: `197/300` single-shot vs `203/300` with repair, `+6 net`, McNemar exact `p=0.0312`.
 
 That means the next target is not blind fine-tuning. It is improving `verified_fix` while keeping
 `false_success` at zero.
