@@ -1,0 +1,11 @@
+checkpoint_dir: checkpoints/system_coder
+repair:
+  max_tries: 3
+  arrow_hint: true
+scoring:
+  correctness_bar: 0.85
+  false_success_weight: 100
+  solve_weight: 1
+escalation:
+  next_model: manual
+  allow_external_call: false
