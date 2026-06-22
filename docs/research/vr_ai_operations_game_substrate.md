@@ -241,4 +241,3 @@ Start with a playable spatial operations simulator.
 Use it to train, test, and operate AI agents through constrained actions.
 Keep real-world robotics as a later adapter behind safety gates.
 ```
-

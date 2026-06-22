@@ -267,4 +267,3 @@ def self_test() -> bool:
         and transition_penalty("Small Stellated Dodecahedron", "Great Stellated Dodecahedron") == 12.0
         and jailbreak_demo()["decision"] == "DENY"
     )
-

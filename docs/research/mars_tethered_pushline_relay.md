@@ -297,4 +297,3 @@ This is not yet a flight design. It is a plausible subsystem concept that needs:
 - Mars analog deployment trials.
 
 The right next step is not a claim. It is a scaled mechanical and communications prototype.
-
