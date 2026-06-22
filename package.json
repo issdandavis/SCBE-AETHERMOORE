@@ -187,6 +187,7 @@
     "aetherdesk:failuremap": "python scripts/aetherdesk_tile_actions.py failuremap",
     "aetherdesk:hostcheck": "python scripts/aetherdesk_tile_actions.py hostcheck",
     "aetherdesk:pazaak": "python scripts/system/agentic_pazaak_board.py",
+    "aetherdesk:mahss-game-gym": "python scripts/system/mahss_game_gym.py --game all",
     "benchmark:kaggle:roundtrip:build": "python scripts/benchmarks/scbe_bijective_round_trip/build_kaggle_assets.py",
     "benchmark:kaggle:roundtrip:ollama-smoke": "python scripts/benchmarks/scbe_bijective_round_trip/run_ollama_submission.py --model openclaw:latest --limit 8 --max-tokens 512",
     "benchmark:kaggle:roundtrip:ollama-scaffold": "python scripts/benchmarks/scbe_bijective_round_trip/run_ollama_submission.py --model openclaw:latest --limit 8 --max-tokens 512 --structural-scaffold --out-dir artifacts/benchmarks/scbe_bijective_round_trip/ollama_runs/openclaw_latest_scaffold",
