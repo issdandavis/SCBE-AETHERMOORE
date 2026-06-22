@@ -98,8 +98,7 @@ def _repair_arrow(domain: str, attempt_no: int, check: Dict[str, Any]) -> str:
     return (
         "\n\nREPAIR ARROW %d:\n"
         "Your previous candidate did not verify (%s). Keep the same function signature, use the %s-domain hint, "
-        "fix the boundary case, and return ONLY complete Python code.%s"
-        % (attempt_no, reason, domain, detail)
+        "fix the boundary case, and return ONLY complete Python code.%s" % (attempt_no, reason, domain, detail)
     )
 
 
