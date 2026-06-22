@@ -133,6 +133,7 @@
     "writing:package:all": "python scripts/package_products.py --product all",
     "release:workcell": "python scripts/system/build_workcell_download.py",
     "release:blackbox": "python scripts/system/build_black_box_download.py",
+    "release:surface-audit": "python scripts/system/release_surface_audit.py",
     "blackbox:prove": "python scripts/system/prove_black_box_value.py",
     "blackbox:report": "python scripts/system/scbe_black_box.py --no-fail-on-high",
     "video:verify": "node scripts/video/verify.js",
