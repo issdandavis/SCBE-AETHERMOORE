@@ -12,18 +12,24 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional
 
 try:
-    from . import query_dispatch, domain_router
+    from . import query_dispatch, domain_router, calc
 except ImportError:  # run as a script
-    import query_dispatch, domain_router
+    import query_dispatch, domain_router, calc
 
 
 def agent_solve(task: str, ask=None, tests: Optional[List[str]] = None,
                 reference: Optional[str] = None) -> Dict[str, Any]:
-    # 1. deterministic dispatch (rung 0/1) -- a tool answers the question directly, no model
+    # 1. deterministic dispatch (rung 0/1) -- a named tool answers the question directly, no model
     hit = query_dispatch.dispatch(task)
     if hit is not None:
         return {"status": "VERIFIED_FIX", "via": "dispatch:" + hit["tool"],
                 "answer": hit["answer"], "deterministic": True, "false_success_count": 0}
+
+    # 1b. the fancy calculator -- hard arithmetic / estimation offloaded to a deterministic tool
+    c = calc.try_calc(task)
+    if c is not None:
+        return {"status": "VERIFIED_FIX", "via": "calc:" + c["how"],
+                "answer": c["answer"], "deterministic": True, "false_success_count": 0}
 
     # 2. verifiable code task -> router (model + tools + reference fallback + verify)
     if tests and ask is not None:
@@ -44,7 +50,12 @@ if __name__ == "__main__":
     assert r2["answer"] == "MCMXCIV", r2
     r3 = agent_solve("100 c to f")
     assert r3["answer"] == 212.0, r3
+    # the fancy calculator rung: hard arithmetic offloaded, no model
+    r4 = agent_solve("what is 37 to the power of 12")
+    assert r4["answer"] == 37 ** 12 and r4["via"].startswith("calc"), r4
+    r5 = agent_solve("estimate 123456 times 789012")
+    assert r5["answer"] == 97000000000, r5
     # no source + no task -> escalate (never a fake win)
-    r4 = agent_solve("write a function that balances a red-black tree")
-    assert r4["status"] == "ESCALATE", r4
-    print("agent_solve self-test: PASS (dispatch-first -> deterministic answers; novel -> ESCALATE)")
+    r6 = agent_solve("write a function that balances a red-black tree")
+    assert r6["status"] == "ESCALATE", r6
+    print("agent_solve self-test: PASS (dispatch -> calc -> router; novel -> ESCALATE)")
