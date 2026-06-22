@@ -7,6 +7,7 @@ from python.helm.known_logic_injection import (
     inject_or_fallback,
     prime_membership_packet,
     render_injection_prompt,
+    run_known_pipeline,
     run_known_tool,
     sieve_primes,
 )
@@ -74,3 +75,23 @@ def test_if_then_packet_is_exact_process_injection():
 
     assert packet.answer == "ALLOW"
     assert "If tests_pass is true" in packet.process
+
+
+def test_nested_pipeline_feeds_tool_answer_into_if_then_gate():
+    packets = run_known_pipeline(
+        [
+            {"tool": "prime_membership", "payload": {"n": 97}},
+            {
+                "tool": "if_then",
+                "payload": {
+                    "condition": {"$eq": ["$prev.answer", "prime"]},
+                    "when_true": "ALLOW",
+                    "when_false": "DENY",
+                    "label": "prime_gate",
+                },
+            },
+        ]
+    )
+
+    assert [p.answer for p in packets] == ["prime", "ALLOW"]
+    assert packets[1].source == "tool:if_then"

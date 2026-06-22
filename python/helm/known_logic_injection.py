@@ -186,13 +186,93 @@ def run_known_tool(name: str, payload: Mapping[str, Any]) -> KnownLogicPacket:
     raise ValueError("unknown known-logic tool: %s" % name)
 
 
+def _field_from_packet(packet: KnownLogicPacket, path: str) -> Any:
+    if path == "answer":
+        return packet.answer
+    if path == "source":
+        return packet.source
+    if path.startswith("metadata."):
+        current: Any = packet.metadata
+        for part in path.split(".")[1:]:
+            if not isinstance(current, Mapping) or part not in current:
+                raise KeyError("packet %s has no field %s" % (packet.packet_id, path))
+            current = current[part]
+        return current
+    raise KeyError("unsupported packet field reference: %s" % path)
+
+
+def _resolve_ref(value: Any, packets: Sequence[KnownLogicPacket]) -> Any:
+    if isinstance(value, str):
+        if value.startswith("$prev."):
+            if not packets:
+                raise ValueError("%s requires a previous packet" % value)
+            return _field_from_packet(packets[-1], value[len("$prev.") :])
+        if value.startswith("$step."):
+            parts = value.split(".", 2)
+            if len(parts) != 3:
+                raise ValueError("bad step reference: %s" % value)
+            index = int(parts[1])
+            if index < 0 or index >= len(packets):
+                raise IndexError("step reference out of range: %s" % value)
+            return _field_from_packet(packets[index], parts[2])
+        return value
+    if isinstance(value, Mapping):
+        if "$eq" in value:
+            left, right = value["$eq"]
+            return _resolve_ref(left, packets) == _resolve_ref(right, packets)
+        return {str(k): _resolve_ref(v, packets) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_resolve_ref(v, packets) for v in value]
+    return value
+
+
+def run_known_pipeline(steps: Sequence[Mapping[str, Any]]) -> List[KnownLogicPacket]:
+    """Run nested deterministic commands, passing packet fields forward by reference.
+
+    References supported inside a step payload:
+
+    * `$prev.answer`
+    * `$prev.metadata.<key>`
+    * `$step.<index>.answer`
+    * `{"$eq": [left, right]}`
+
+    Example: compute prime membership, then route with an if/then gate whose
+    condition is `{"$eq": ["$prev.answer", "prime"]}`.
+    """
+
+    packets: List[KnownLogicPacket] = []
+    for index, raw in enumerate(steps):
+        if "tool" not in raw:
+            raise KeyError("pipeline step %d missing tool" % index)
+        payload = _resolve_ref(raw.get("payload") or {}, packets)
+        if not isinstance(payload, Mapping):
+            raise TypeError("pipeline step %d payload must resolve to a mapping" % index)
+        packets.append(run_known_tool(str(raw["tool"]), payload))
+    return packets
+
+
 def _demo() -> Dict[str, Any]:
     packet = run_known_tool("prime_membership", {"n": 97})
+    pipeline = run_known_pipeline(
+        [
+            {"tool": "prime_membership", "payload": {"n": 97}},
+            {
+                "tool": "if_then",
+                "payload": {
+                    "condition": {"$eq": ["$prev.answer", "prime"]},
+                    "when_true": "ALLOW",
+                    "when_false": "DENY",
+                    "label": "prime_gate",
+                },
+            },
+        ]
+    )
     good = inject_or_fallback(packet, "prime")
     bad = inject_or_fallback(packet, "composite")
     return {
         "packet": asdict(packet),
         "prompt": packet.to_prompt(),
+        "nested_pipeline": [asdict(p) for p in pipeline],
         "model_repeats": good,
         "model_fumbles": bad,
     }

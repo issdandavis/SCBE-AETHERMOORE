@@ -54,6 +54,8 @@ Examples:
 - `sieve_primes(n)`: compute prime membership exactly, then inject "prime" or "composite".
 - `chart_lookup(key)`: read the chart cell exactly, then inject that value.
 - `if_then(condition)`: run a bounded branch rule, then inject the chosen branch.
+- `run_known_pipeline([...])`: nest deterministic commands; for example, compute `prime_membership(97)` and feed
+  `$prev.answer == "prime"` into an `if_then` gate.
 - code reference/contract: inject a known-good implementation or transform and verify the model's patch against it.
 
 This is not a prompt tweak like "use better logic." It is correct information injection: the model is
