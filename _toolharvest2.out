@@ -1,0 +1,3 @@
+harvesting WITH few-shot from qwen2.5-coder:1.5b over 8 MBPP...
+LIVE (few-shot): attempted=8 verified=7 with_tool_use=8
+sample roles: ['system', 'user', 'assistant', 'user', 'assistant'] tools: ['run_code']
