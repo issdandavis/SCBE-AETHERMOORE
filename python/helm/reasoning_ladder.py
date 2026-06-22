@@ -23,7 +23,6 @@ computes that delta -- but a real lift number needs a real model plugged into bo
 from __future__ import annotations
 
 import argparse
-import os
 import re
 import subprocess
 import sys
@@ -131,19 +130,17 @@ def llm_climber(model: Optional[str] = None, base: Optional[str] = None, key: Op
     harnessed/tooled climber goes in the other slot of measure_lift."""
     from . import free_generator as fg
 
-    base = base or os.environ.get("SCBE_LLM_BASE", fg.DEFAULT_BASE)
-    key = key or os.environ.get("SCBE_LLM_KEY", "ollama")
-    model = model or os.environ.get("SCBE_LLM_MODEL", fg.DEFAULT_MODEL)
+    config = fg.resolve_llm_config(base=base, key=key, model=model)
 
     def climber(item: Dict[str, Any]) -> str:
         prompt = item["question"] + "\n\nAnswer with ONLY the final answer (a number), nothing else."
         try:
-            out = fg._chat([{"role": "user", "content": prompt}], base=base, key=key, model=model)
+            out = fg.chat_with_config([{"role": "user", "content": prompt}], config)
         except Exception:
             return ""  # honest: a dead endpoint scores 0, never fabricates a pass
         return _extract_answer(out)
 
-    climber.__name__ = "llm(%s)" % model
+    climber.__name__ = "llm(%s)" % config.model
     return climber
 
 
@@ -173,9 +170,7 @@ def program_aided_climber(
     these models botch. A dead endpoint or non-running code scores 0, never a fabricated pass."""
     from . import free_generator as fg
 
-    base = base or os.environ.get("SCBE_LLM_BASE", fg.DEFAULT_BASE)
-    key = key or os.environ.get("SCBE_LLM_KEY", "ollama")
-    model = model or os.environ.get("SCBE_LLM_MODEL", fg.DEFAULT_MODEL)
+    config = fg.resolve_llm_config(base=base, key=key, model=model)
 
     def climber(item: Dict[str, Any]) -> str:
         prompt = (
@@ -184,12 +179,12 @@ def program_aided_climber(
             + "(just the number, no words). Output only the code."
         )
         try:
-            out = fg._chat([{"role": "user", "content": prompt}], base=base, key=key, model=model)
+            out = fg.chat_with_config([{"role": "user", "content": prompt}], config)
         except Exception:
             return ""
         return _extract_answer(_run_python(_strip_code(out)))
 
-    climber.__name__ = "pal(%s)" % model
+    climber.__name__ = "pal(%s)" % config.model
     return climber
 
 
@@ -197,8 +192,21 @@ def run_reasoning(
     climber: Climber = reference_climber, ladder: Sequence[Dict[str, Any]] = REASONING_LADDER
 ) -> Dict[str, Any]:
     def score(t: Dict[str, Any]) -> Dict[str, Any]:
-        passed = sum(1 for it in t["items"] if exact_match(climber(it), it["answer"]))
-        return {"attempted": len(t["items"]), "passed": passed}
+        rows = []
+        for it in t["items"]:
+            got = climber(it)
+            ok = exact_match(got, it["answer"])
+            rows.append(
+                {
+                    "id": it["id"],
+                    "question": it["question"],
+                    "expected": it["answer"],
+                    "got": str(got),
+                    "correct": ok,
+                }
+            )
+        passed = sum(1 for row in rows if row["correct"])
+        return {"attempted": len(t["items"]), "passed": passed, "extra": {"items": rows}}
 
     summary = run_ladder(ladder, score)
     summary["climber"] = getattr(climber, "__name__", "climber")
@@ -212,6 +220,10 @@ def measure_lift(
     Plug the SAME model into both slots -- raw vs routed-through-the-gates-and-tools -- to get a
     real number. With non-model climbers this only confirms the measurement, not capability."""
     b, t = run_reasoning(baseline, ladder), run_reasoning(tooled, ladder)
+
+    def misses(summary: Dict[str, Any]) -> List[str]:
+        return [row["id"] for tier in summary["tiers"] for row in tier.get("items", []) if not row["correct"]]
+
     return {
         "baseline": b["climber"],
         "tooled": t["climber"],
@@ -221,6 +233,8 @@ def measure_lift(
         "baseline_total": b["total_passed"],
         "tooled_total": t["total_passed"],
         "total_lift": t["total_passed"] - b["total_passed"],
+        "baseline_misses": misses(b),
+        "tooled_misses": misses(t),
     }
 
 
