@@ -456,7 +456,11 @@ describe('AetherDesk server — Playwright Vision boundary', () => {
     const { status, body } = await fetchJson(`${baseUrl}/api/browser/action`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ action: 'goto', session_id: 'main', url: 'file:///C:/Windows/win.ini' }),
+      body: JSON.stringify({
+        action: 'goto',
+        session_id: 'main',
+        url: 'file:///C:/Windows/win.ini',
+      }),
     });
     expect(status).toBe(400);
     expect(body.ok).toBe(false);
@@ -508,9 +512,9 @@ describe('AetherDesk server — transcript, email, notebook apps', () => {
     expect(() => aetherdesk.validateEmailDraft({ to: 'bad', subject: 'x', body: 'y' })).toThrow(
       /email address/i
     );
-    expect(aetherdesk.createEmailDraft({ to: 'test@example.com', subject: 'Saved', body: 'Body' }).status).toBe(
-      'draft_only_not_sent'
-    );
+    expect(
+      aetherdesk.createEmailDraft({ to: 'test@example.com', subject: 'Saved', body: 'Body' }).status
+    ).toBe('draft_only_not_sent');
   });
 
   it('POST /api/email/draft writes a draft artifact and never reports sent', async () => {
