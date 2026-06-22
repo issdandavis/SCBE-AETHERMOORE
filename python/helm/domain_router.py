@@ -9,6 +9,7 @@ Success is VERIFIED only; false_success_count stays 0 (the system_coding contrac
 from __future__ import annotations
 import re, subprocess, sys, ast
 from typing import Optional, List, Dict, Any
+from . import det_tools
 
 _DOMAIN_KW = [
     ("number_theory", ("prime", "divisor", "factor", "gcd", "lcm", "perfect", "fibonacci")),
@@ -61,6 +62,9 @@ def solve_routed(prompt: str, public_tests: List[str], hidden_tests: List[str], 
     """ask: prompt->str. Returns a VERIFIED-or-ESCALATE record; false_success_count always 0."""
     domain = detect_domain(prompt)
     hint = _HINT.get(domain, "")
+    _tools = det_tools.BY_DOMAIN.get(domain, [])
+    if _tools:
+        hint = (hint + " Verified tools you may call: " + ", ".join(_tools) + ".").strip()
     full = prompt.strip() + ("\n\nHINT (use these, do not reimplement): " + hint if hint else "") \
         + "\n\nWrite a complete Python solution. It must pass:\n" + "\n".join(public_tests) + "\nReturn ONLY code."
     code = _extract(ask(full))
