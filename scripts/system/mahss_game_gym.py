@@ -15,7 +15,6 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Iterable
 
-
 DEFAULT_PACMAN_BOARD = """
 #########
 #A..V...#
@@ -129,7 +128,9 @@ class WorldTick:
     receipt: dict[str, Any]
 
 
-def _parse_board(board: str) -> tuple[list[list[str]], tuple[int, int], set[tuple[int, int]], dict[tuple[int, int], str]]:
+def _parse_board(
+    board: str,
+) -> tuple[list[list[str]], tuple[int, int], set[tuple[int, int]], dict[tuple[int, int], str]]:
     rows = [list(line.rstrip()) for line in board.strip().splitlines() if line.strip()]
     if not rows:
         raise ValueError("empty board")
@@ -268,11 +269,38 @@ def _score_lock(piece: TetrisPiece, slot: TetrisSlot, available: set[str]) -> Te
 def default_tetris_pieces() -> list[TetrisPiece]:
     return [
         TetrisPiece("receiver_model", "receive", "parse request into state", (0.95, 0.55, 0.85), 0.08, ("parsed",)),
-        TetrisPiece("router_model", "route", "select backend/tool lane", (0.80, 0.90, 0.85), 0.16, ("route",), ("parsed",)),
-        TetrisPiece("tool_executor", "execute", "run bounded tool action", (0.65, 0.75, 0.82), 0.24, ("artifact",), ("route",)),
-        TetrisPiece("verifier_model", "verify", "score result and catch drift", (0.70, 0.98, 0.92), 0.10, ("verified",), ("artifact",)),
-        TetrisPiece("manager_model", "exception", "handle jam/escalation only", (0.55, 0.92, 0.98), 0.38, ("manager_decision",), ("verified",)),
-        TetrisPiece("unsafe_direct_llm", "execute", "model tries to do everything directly", (0.30, 0.20, 0.25), 0.88, ("artifact",)),
+        TetrisPiece(
+            "router_model", "route", "select backend/tool lane", (0.80, 0.90, 0.85), 0.16, ("route",), ("parsed",)
+        ),
+        TetrisPiece(
+            "tool_executor", "execute", "run bounded tool action", (0.65, 0.75, 0.82), 0.24, ("artifact",), ("route",)
+        ),
+        TetrisPiece(
+            "verifier_model",
+            "verify",
+            "score result and catch drift",
+            (0.70, 0.98, 0.92),
+            0.10,
+            ("verified",),
+            ("artifact",),
+        ),
+        TetrisPiece(
+            "manager_model",
+            "exception",
+            "handle jam/escalation only",
+            (0.55, 0.92, 0.98),
+            0.38,
+            ("manager_decision",),
+            ("verified",),
+        ),
+        TetrisPiece(
+            "unsafe_direct_llm",
+            "execute",
+            "model tries to do everything directly",
+            (0.30, 0.20, 0.25),
+            0.88,
+            ("artifact",),
+        ),
     ]
 
 
@@ -397,7 +425,11 @@ def _default_world() -> tuple[dict[str, Any], list[WorldActor], list[WorldAction
             "pytest",
             ("green_tests",),
             0.10,
-            {"workspace": {"tests_green": True}, "quests": {"verify": "done", "ship": "open"}, "events": ["verifier marked tests green"]},
+            {
+                "workspace": {"tests_green": True},
+                "quests": {"verify": "done", "ship": "open"},
+                "events": ["verifier marked tests green"],
+            },
         ),
         WorldAction(
             "write_shipping_receipt",
@@ -407,7 +439,11 @@ def _default_world() -> tuple[dict[str, Any], list[WorldActor], list[WorldAction
             "receipt_writer",
             ("receipt",),
             0.04,
-            {"workspace": {"receipt_written": True}, "quests": {"ship": "done"}, "events": ["scribe wrote final receipt"]},
+            {
+                "workspace": {"receipt_written": True},
+                "quests": {"ship": "done"},
+                "events": ["scribe wrote final receipt"],
+            },
         ),
     ]
     return state, actors, actions
@@ -582,7 +618,10 @@ def simulate_world(*, max_ticks: int = 8) -> dict[str, Any]:
     return {
         "schema": "scbe_mahss_world_loop_v1",
         "game": "world",
-        "analogy": "NPC workflow engine: actors perceive world state, propose actions, policy resolves effects, receipts update memory.",
+        "analogy": (
+            "NPC workflow engine: actors perceive world state, propose actions, "
+            "policy resolves effects, receipts update memory."
+        ),
         "loop": [
             "world_state",
             "actor_observation",

@@ -1,6 +1,5 @@
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 L13_DOCS = [
     REPO_ROOT / "docs" / "specs" / "BIJECTIVE_TAMPER_L13.md",

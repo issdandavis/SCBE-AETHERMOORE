@@ -18,7 +18,6 @@ import shutil
 from pathlib import Path
 from typing import Any
 
-
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CORPUS = ROOT / "training-data" / "sft" / "vtc_mbpp_refined.jsonl"
 DEFAULT_MANIFEST = ROOT / "training-data" / "sft" / "vtc_mbpp_refined.manifest.json"
@@ -38,7 +37,9 @@ def _count_jsonl(path: Path) -> int:
         return sum(1 for line in f if line.strip())
 
 
-def pack(corpus: Path = DEFAULT_CORPUS, manifest: Path = DEFAULT_MANIFEST, out_dir: Path = DEFAULT_OUT) -> dict[str, Any]:
+def pack(
+    corpus: Path = DEFAULT_CORPUS, manifest: Path = DEFAULT_MANIFEST, out_dir: Path = DEFAULT_OUT
+) -> dict[str, Any]:
     if not corpus.exists():
         raise FileNotFoundError(f"missing VTC corpus: {corpus}")
     if not manifest.exists():
@@ -66,7 +67,10 @@ def pack(corpus: Path = DEFAULT_CORPUS, manifest: Path = DEFAULT_MANIFEST, out_d
         "sha256": digest,
         "source_manifest": upstream_manifest,
         "kaggle_dataset_id": kaggle_metadata["id"],
-        "notebook_hint": "Add this dataset to notebooks/vtc_lift_qwen15_colab.ipynb; Kaggle mounts it under /kaggle/input/vtc-mbpp-refined/.",
+        "notebook_hint": (
+            "Add this dataset to notebooks/vtc_lift_qwen15_colab.ipynb; "
+            "Kaggle mounts it under /kaggle/input/vtc-mbpp-refined/."
+        ),
     }
     (out_dir / "dataset-metadata.json").write_text(json.dumps(kaggle_metadata, indent=2), encoding="utf-8")
     (out_dir / "vtc_kaggle_manifest.json").write_text(json.dumps(dataset_manifest, indent=2), encoding="utf-8")
