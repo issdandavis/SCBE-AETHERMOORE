@@ -1,0 +1,308 @@
+{
+  "title": "Mars Long Horizon Drone Source Manifest",
+  "created_at": "2026-06-20",
+  "repo_commit": "9566654c6",
+  "sources": [
+    {
+      "id": "chat_current_mars_long_horizon_notes",
+      "path_or_url": "conversation://current-turn/2026-06-20-mars-long-horizon-drone-notes",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "current_turn_user_paste",
+      "notes": "User-pasted notes covering nested micro/meso/macro Mars drones, physical diorama, medical dual-use, VTC, tri-binary phase analogy, and hyperbolic authorization."
+    },
+    {
+      "id": "mars_mission_compass_spec",
+      "path_or_url": "docs/specs/GEOSEAL_MARS_MISSION_COMPASS_v1.md",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:17E9DC3F837EDFEDC582D3160512FF027B9866A8F33F61F254C4EFF2573AEBAD"
+    },
+    {
+      "id": "mars_mission_compass_impl",
+      "path_or_url": "src/geoseal_mission_compass.py",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:8AA086E60B41873B8D6C7195EEBECF243248273371380B69EAC2A412C8245C48"
+    },
+    {
+      "id": "mars_47step_sim",
+      "path_or_url": "scripts/sim_mars_47step.py",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:6A1518A58AA8A21B43CAE3DD200CEC582E1E78E24847318D0233B608E6D9ECD2"
+    },
+    {
+      "id": "drone_autonomy_patterns",
+      "path_or_url": "docs/research/drone_autonomy_training_patterns_2026-05-02.md",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:420BA30BFF0F80174DA5423E56E0D5D3D87ECB5BA5A5910E41203BD474BE02EE"
+    },
+    {
+      "id": "drone_core",
+      "path_or_url": "src/fleet/polly-pads/drone-core.ts",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:C557D97DC10C4FB9D7C975FE77F570B2DE54333C45F11BCDCFE7188E35779A32"
+    },
+    {
+      "id": "drone_navigation_mode",
+      "path_or_url": "src/fleet/polly-pads/modes/navigation.ts",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:F3F4EBC2B5658853D3125C60E5E8F61A929423CD737454195939F3B597CE7A0D"
+    },
+    {
+      "id": "godot_companion_ai",
+      "path_or_url": "game/godot/scripts/companion/companion_ai.gd",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:13A5E1E9CEA0D82EE236DCAFF1EB15C7D32BC174E71A1280F223E3DFA46826ED"
+    },
+    {
+      "id": "godot_scbe_client",
+      "path_or_url": "game/godot/scripts/scbe/scbe_client.gd",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:59522535EBF7BD3668722A5B0BEDFBCABCB94A0B74413E5B9651C2409C0F3D07"
+    },
+    {
+      "id": "aethermoor_spiral_engine",
+      "path_or_url": "src/spiralverse/aethermoor_spiral_engine.py",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:D90B3FC2E287B248099D74B319C8AD105645792568CED07B84227C55FE5101DD"
+    },
+    {
+      "id": "spatial_engine",
+      "path_or_url": "examples/spatial_engine.py",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:B4FDB0FF880E5E3B8A9B596B4BC39B465A93704BFF398CC08EA1FD911856642F"
+    },
+    {
+      "id": "pathfinding_harness_evidence",
+      "path_or_url": "packages/agent-bus/docs/PATHFINDING_HARNESS_EVIDENCE.md",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:F2A5ADBA04EACE4DEAA97D7F4F4AF56DB10FCB92FAAC3D276CBC9AFDD3FCFDB9"
+    },
+    {
+      "id": "move_family",
+      "path_or_url": "src/neurogolf/move_family.py",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:081CD3222EBCA4ED30B070B32381B1875D91ABD2745664141E7017ADDC48FD1E"
+    },
+    {
+      "id": "m4_squad_contract",
+      "path_or_url": "docs/specs/MASTER_ARCHITECTURE_CONTRACT_21D_M4_SQUAD.md",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:4CFAD09F52B50B24DC113734C407CC20C4C725565A47B415B164A99DDDD3DC5A"
+    },
+    {
+      "id": "agent_workspace_formation",
+      "path_or_url": "docs/specs/AGENT_BUS_WORKSPACE_FORMATION.md",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:F8961E0A2FBCD2599E3CB900AE6568F2DE5426AD85D687816DD4539D35C23F49"
+    },
+    {
+      "id": "fleet_governance_gate",
+      "path_or_url": "docs/specs/SCBE_FLEET_GOVERNANCE_GATE.md",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:72FBAF14D3242864A9C747401C131ED43969B58329E8C89D9FD3BC39CBB55FE7"
+    },
+    {
+      "id": "swarm_formation_runtime",
+      "path_or_url": "src/ai_brain/swarm-formation.ts",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:1D5C017CBEE42FC39816E402A6973B5E48641194402E4CA72BA01A789387DE5E"
+    },
+    {
+      "id": "polly_pad_squad",
+      "path_or_url": "src/fleet/polly-pads/squad.ts",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:8DE61D2A2ADEDFB60144CB1CB7AA07D960BC07FB6DC71CE263B7F635587E4628"
+    },
+    {
+      "id": "mission_coordinator",
+      "path_or_url": "src/fleet/polly-pads/mission-coordinator.ts",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:0842BDD7CC6FD84B4A8268D785864D2EA09757250F39881079D68A3C779984C1"
+    },
+    {
+      "id": "fleet_scenarios",
+      "path_or_url": "examples/fleet-scenarios.json",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:7055C4B0F160C284C519BD51C2AA859888FB91AB18E881D443BDD4CA11DCCB4E"
+    },
+    {
+      "id": "sacred_tongues_flight",
+      "path_or_url": "src/fleet/drone-fleet/sacredTonguesFlight.ts",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:0781DEEF8EE9FDA60475487BB1C15073F349E347F903D1EEB7376F43B8047C6B"
+    },
+    {
+      "id": "gravitational_braking",
+      "path_or_url": "src/fleet/drone-fleet/gravitationalBraking.ts",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:647CF511BAF1DAD15CB6B323EE00AE27211F6DC130331CCA4196C5BE4E84FB24"
+    },
+    {
+      "id": "dimensional_lifting_flight_security",
+      "path_or_url": "src/fleet/drone-fleet/dimensionalLifting.ts",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:AFF44246EE1E8D4A3218C857DDF000199E3983F8E581006ABE40DA55A687044F"
+    },
+    {
+      "id": "skill_formations_reference",
+      "path_or_url": "external/codex-skills-live/scbe-github-sweep-sorter/references/formations.md",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:68038B320C7EF79FD4DEF4569AFEEF4FB10492166398F1A56F631DF750594F8B"
+    },
+    {
+      "id": "obsidian_gacha_squad",
+      "path_or_url": "C:/Users/issda/Avalon Files (consolidated)/01-Projects/Izack Realmforge/Game Design/Gacha Squad System Design.md",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:3B1C4EF07C88F434EE0E39E5CE942CB55FFF6AF2D990191F2A71FF522D98167A"
+    },
+    {
+      "id": "obsidian_endless_sky_research",
+      "path_or_url": "C:/Users/issda/Avalon Files (consolidated)/02-Areas/AI Workspace/AI Workspace/Context Room/122 - Endless Sky Integration Research.md",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:4DAC8E04510B85E59B8F1B37CAA8DA56CB3D5048CE24CB63A754A1BBF9B6C5E9"
+    },
+    {
+      "id": "obsidian_hydra_formation_runtime",
+      "path_or_url": "C:/Users/issda/Avalon Files (consolidated)/02-Areas/experiments/2026-04-09-hydra-formation-to-runtime-mapping.md",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:7E09C296B9FA945BBDC6F30022E65AC2551AA93B1BBA50AA62F8ADE2C26A437E"
+    },
+    {
+      "id": "github_issdandavis_endless_sky",
+      "path_or_url": "https://github.com/issdandavis/endless-sky",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "github_public_archive"
+    },
+    {
+      "id": "materials_research_readme",
+      "path_or_url": "research/materials/README.md",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:73BFDF0EE9ACC3B06C5E5604F06EC26A46266D03CA2356D5301814B67C341C80"
+    },
+    {
+      "id": "materials_source_inventory",
+      "path_or_url": "research/materials/source-inventory.md",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:E8618D280D7639DE01553023C3EC641CA2864BDCF72D438ADB8E3033779C203A"
+    },
+    {
+      "id": "materials_product_map",
+      "path_or_url": "research/materials/product-map.md",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:BEECF0BD9BDECEFCC0F98D518F552876BE3748446331570673199916BFFA19F0"
+    },
+    {
+      "id": "waves_research_brief",
+      "path_or_url": "research/materials/waves/research_brief.md",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:062D1836DCA24762A6B10CD7EC46725A54D73A73FF8ABDEB4DCF82FA3F130567"
+    },
+    {
+      "id": "sacred_egg_crp_puf_harness_spec",
+      "path_or_url": "docs/specs/SACRED_EGG_CRP_PUF_HARNESS.md",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:BA2AC487B98BD908CC344AB9B0E1F4BFE3A9D49922B829B6287A4CD78D881DBB"
+    },
+    {
+      "id": "aetherfab_puf_negative_result",
+      "path_or_url": "docs/specs/AETHERFAB_PUF_NEGATIVE_RESULT.md",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:DAFB233AE2D60170BC0AC3B4EDBD1A9672574301C1451DC0300BF18D5D524912"
+    },
+    {
+      "id": "puf_measurement_analysis",
+      "path_or_url": "scripts/experiments/puf_measurement_analysis.py",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:E663C22BABACA1E835F96F8226A189DEDE7D1B76B4CB8C8F8EE885CC9AE4EB51"
+    },
+    {
+      "id": "sacred_egg_crp_puf_analysis",
+      "path_or_url": "scripts/experiments/sacred_egg_crp_puf_analysis.py",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:6575B3DCDCF998FADBCD5062DBFB11A7C0D1FBD12B5EFE33C5D7911E914BFE8F"
+    },
+    {
+      "id": "space_systems_topic",
+      "path_or_url": "docs/research/topics/space-systems.html",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:C8EE7FFCF5F23D0DE8925D761DED50C4DAE9908342B45DF13ED466321FB1B7EA"
+    },
+    {
+      "id": "space_life_support_animals",
+      "path_or_url": "docs/research/space_life_support_animals_husbandry_energy_2026-06-17.md",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:BEA112B996584EAA4E3C67BE3A502A1599745F3276C7C08363D192FAB45BF482"
+    },
+    {
+      "id": "space_chemistry_systems",
+      "path_or_url": "docs/research/chemistry_cli_space_systems_2026-05-31.md",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:57BA3221E40FA70819F51044590EA7FD22FC245FF4C145BFACABB0049FB7DEA4"
+    },
+    {
+      "id": "mtef_research_compendium",
+      "path_or_url": "docs/research/mtef_research_compendium_2026-06-17.md",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:36289B9949B2EB43C952BE5FBF6836B6CF13AC9C0C03EB80FA1E3D70F0DF9017"
+    },
+    {
+      "id": "geoseed_orbital_model_note",
+      "path_or_url": "docs/research/geoseed_orbital_model.md",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:C0671D511D35E4E1F237A49DF512DA4F24D5D73779A596FA3E1F9C471800F498"
+    },
+    {
+      "id": "mtef_readme",
+      "path_or_url": "research/mtef-cell/README.md",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:62BC59FCA7E974E946D595A2BD10717A795CFC5074760A440EF151B358EB50AB"
+    },
+    {
+      "id": "mtef_space_use_case",
+      "path_or_url": "research/mtef-cell/docs/space-use-case.md",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:26CF844F80BF5048F5244EF8EE73E6DE83556499CFE06BA8A95272A4375D9937"
+    },
+    {
+      "id": "spaceflight_protocols",
+      "path_or_url": "src/scbe_spaceflight.py",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:DAEBD3835284E9EB14DD7F5B7D7E3A9D80B9224FE9CF8F3F4A8B585CC28DBBEF"
+    },
+    {
+      "id": "geoseed_orbital_model_impl",
+      "path_or_url": "src/geoseed/orbital_model.py",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:DF21693E451A84562A71AA17A94DBB7DC7AD33DF08432B4E53506DBA60A7562C"
+    },
+    {
+      "id": "flight_dynamics",
+      "path_or_url": "src/crypto/flight_dynamics.py",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:E3B4A822C18E03D0812078CBC4F3C3101CDB309975B861517EAEB54B8E1597B8"
+    },
+    {
+      "id": "orbital_mechanics",
+      "path_or_url": "src/physics_sim/orbital.py",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:DF4275D3A09A5904872526BD4C8640F439600BBF5595631B98CE5A20C2E66003"
+    },
+    {
+      "id": "vacuum_acoustics",
+      "path_or_url": "src/harmonic/vacuumAcoustics.ts",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:ECCC81BFDEA6011033D60848C21B2FB4040E2ABB1224C6C45F11FF3558131645"
+    },
+    {
+      "id": "vr_ai_operations_game_substrate",
+      "path_or_url": "docs/research/vr_ai_operations_game_substrate.md",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "sha256:7D866E2BEB971438D8FFF33A72315BEC8A6B316B4BEC7037C871AEDD3E1C5FF8"
+    },
+    {
+      "id": "verified_trajectory",
+      "path_or_url": "python/helm/verified_trajectory.py",
+      "retrieved_at": "2026-06-20",
+      "hash_or_commit": "repo_commit:9566654c6"
+    }
+  ]
+}

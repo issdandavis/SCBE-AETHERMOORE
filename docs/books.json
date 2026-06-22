@@ -67,7 +67,9 @@
       "subtitle": "Book One",
       "author": "Issac Daniel Davis",
       "status": "Live",
-      "theme": "protocol-fantasy",
+      "theme": "sci-fi-isekai-litrpg",
+      "positioning": "The code IS the magic system.",
+      "word_count_note": "22 chapters, 70,000+ words",
       "page": "books/six-tongues-protocol.html",
       "cover": "static/books/six-tongues-cover.jpg",
       "direct_ebook": {
@@ -110,10 +112,14 @@
         {
           "label": "Paperback",
           "url": "https://www.amazon.com/dp/B0GSW8CLC6"
+        },
+        {
+          "label": "Audio on YouTube",
+          "url": "https://www.youtube.com/@id8461"
         }
       ],
       "reader_fit": [
-        "Readers who want language, systems, and code folded into fantasy.",
+        "Readers who want sci-fi, isekai, and LitRPG where code is the magic system.",
         "People following the Sacred Tongues and SCBE worldbuilding layer.",
         "Builders who want story as a training surface, not just lore."
       ],

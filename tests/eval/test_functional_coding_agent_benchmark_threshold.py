@@ -88,6 +88,120 @@ def test_file_loaded_tasks_have_no_oracle_and_score_on_fixed_checks_only():
     assert score["probe_checks_total"] == 0
 
 
+def test_eval_jsonl_loaded_tasks_support_wrapped_rows_and_filters(tmp_path: Path):
+    module = _load_module()
+    eval_jsonl = tmp_path / "headroom.jsonl"
+    rows = [
+        {
+            "task_id": "alpha",
+            "prompt": "Write TypeScript only. Define function evaluate(input, state). Return input.x.",
+            "checks": [
+                {
+                    "input": {"x": 1},
+                    "initialState": {},
+                    "expectedResult": 1,
+                    "expectedState": {},
+                }
+            ],
+        },
+        {
+            "task": {
+                "task_id": "beta",
+                "prompt": "Write TypeScript only. Define function evaluate(input, state). Return state.y.",
+                "checks": [
+                    {
+                        "input": {},
+                        "initialState": {"y": 2},
+                        "expectedResult": 2,
+                        "expectedState": {"y": 2},
+                    }
+                ],
+            }
+        },
+    ]
+    eval_jsonl.write_text("\n".join(json.dumps(row) for row in rows) + "\n", encoding="utf-8")
+
+    loaded = module.load_eval_jsonl(eval_jsonl)
+    assert [task.task_id for task in loaded] == ["alpha", "beta"]
+    assert all(task.probe is None for task in loaded)
+
+    args = Namespace(
+        replace_default_tasks=True,
+        task_file=[],
+        eval_jsonl=[eval_jsonl],
+        task_limit=0,
+        task_ids=["beta"],
+    )
+    selected = module.selected_tasks(args)
+    assert [task.task_id for task in selected] == ["beta"]
+
+
+def test_eval_jsonl_cli_runs_candidate_file_without_default_tasks(tmp_path: Path):
+    eval_jsonl = tmp_path / "eval.jsonl"
+    eval_jsonl.write_text(
+        json.dumps(
+            {
+                "task_id": "alpha",
+                "prompt": "Write TypeScript only. Define function evaluate(input, state). Set state.total to input.n and return it.",
+                "checks": [
+                    {
+                        "input": {"n": 4},
+                        "initialState": {},
+                        "expectedResult": 4,
+                        "expectedState": {"total": 4},
+                    }
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    candidate_file = tmp_path / "candidate.json"
+    candidate_file.write_text(
+        json.dumps(
+            {
+                "candidates": [
+                    {
+                        "name": "jsonl-solver",
+                        "tasks": {
+                            "alpha": "function evaluate(input, state) { state.total = input.n; return state.total; }"
+                        },
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    out_dir = tmp_path / "reports"
+
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "scripts/eval/functional_coding_agent_benchmark.py",
+            "--candidate-file",
+            str(candidate_file),
+            "--replace-default-tasks",
+            "--eval-jsonl",
+            str(eval_jsonl),
+            "--output-root",
+            str(out_dir),
+            "--min-pass-rate",
+            "1.0",
+        ],
+        cwd=REPO_ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+
+    assert proc.returncode == 0, proc.stderr
+    report = json.loads((out_dir / "latest" / "report.json").read_text(encoding="utf-8"))
+    assert report["results"][0]["summary"]["tasks"] == 1
+    assert report["results"][0]["summary"]["passed"] == 1
+    assert report["results"][0]["tasks"][0]["task_id"] == "alpha"
+
+
 def test_benchmark_exits_nonzero_when_below_min_pass_rate(tmp_path: Path):
     candidate_file = tmp_path / "candidates.json"
     candidate_file.write_text(
@@ -679,6 +793,109 @@ function evaluate(input, state) {
     assert repaired_score["passed"] is True
     assert record["kind"] == "contract_synthesis:priority_queue_tie_break"
     assert "queueLength" in repaired_code
+
+
+def test_contract_synthesis_joint_solves_failure_bucket_summary():
+    module = _load_module()
+    task = next(
+        task
+        for task in module.load_task_file(REPO_ROOT / "config" / "eval" / "scbe_productivity_eval_tasks.v1.json")
+        if task.task_id == "failure_bucket_summary"
+    )
+    near_miss = """
+function evaluate(input, state) {
+  const counts = {};
+  let topFailure = "";
+  for (const row of input.results) {
+    for (const failedTask of row.failedTasks) {
+      counts[failedTask] = (counts[failedTask] || 0) + 1;
+      topFailure = failedTask;
+    }
+  }
+  state.failureCounts = counts;
+  state.topFailure = topFailure;
+  return topFailure;
+}
+"""
+    initial = module.score_candidate(near_miss, task)
+    atomic_packet = module.build_atomic_contract_packet(task)
+    repaired_score, repaired_code, record = module.maybe_apply_contract_synthesis_joint(
+        near_miss, task, initial, atomic_packet
+    )
+
+    assert initial["passed"] is False
+    assert repaired_score["passed"] is True
+    assert record["kind"] == "contract_synthesis:failure_bucket_summary"
+    assert 'let topFailure = "none"' in repaired_code
+
+
+def test_contract_synthesis_joint_solves_lead_offer_router():
+    module = _load_module()
+    task = next(
+        task
+        for task in module.load_task_file(REPO_ROOT / "config" / "eval" / "scbe_productivity_eval_tasks.v1.json")
+        if task.task_id == "lead_offer_router"
+    )
+    near_miss = """
+function evaluate(input, state) {
+  let offer = "supporter_monthly";
+  let reason = "fallback";
+  if (input.projectType === "developer") {
+    offer = "toolkit";
+    reason = "project_type_developer";
+  }
+  state.offer = offer;
+  state.reason = reason;
+  return offer;
+}
+"""
+    initial = module.score_candidate(near_miss, task)
+    atomic_packet = module.build_atomic_contract_packet(task)
+    repaired_score, repaired_code, record = module.maybe_apply_contract_synthesis_joint(
+        near_miss, task, initial, atomic_packet
+    )
+
+    assert initial["passed"] is False
+    assert repaired_score["passed"] is True
+    assert record["kind"] == "contract_synthesis:lead_offer_router"
+    assert "developer_toolkit" in repaired_code
+
+
+def test_contract_synthesis_joint_can_shadow_audit_visible_pass():
+    module = _load_module()
+    task = next(
+        task
+        for task in module.load_task_file(REPO_ROOT / "config" / "eval" / "common_agentic_benchmark_tasks.v1.json")
+        if task.task_id == "terminal_bench_command_guard"
+    )
+    public_only_task = module.FunctionalTask(
+        task_id=task.task_id,
+        prompt=task.prompt,
+        checks=[task.checks[0]],
+    )
+    public_only_near_miss = """
+function evaluate(input, state) {
+  state.allowed = true;
+  state.reason = "ok";
+  state.commandLog.push(input.command);
+  return true;
+}
+"""
+    public_score = module.score_candidate(public_only_near_miss, public_only_task)
+    atomic_packet = module.build_atomic_contract_packet(public_only_task)
+    repaired_score, repaired_code, record = module.maybe_apply_contract_synthesis_joint(
+        public_only_near_miss,
+        public_only_task,
+        public_score,
+        atomic_packet,
+        force_audit=True,
+    )
+
+    assert public_score["passed"] is True
+    assert repaired_score["passed"] is True
+    assert record["force_audit"] is True
+    assert record["kind"] == "contract_synthesis:terminal_command_guard"
+    assert "destructive_command" in repaired_code
 
 
 def test_contract_synthesis_joints_solve_common_public_style_failures():

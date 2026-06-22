@@ -20,7 +20,7 @@ _LABELS = ["unit", "prime", "prime-power", "composite"]
 
 
 def _proposer_with_reply(monkeypatch, reply):
-    monkeypatch.setattr(om, "_chat", lambda *a, **k: reply)
+    monkeypatch.setattr(om, "chat_with_config", lambda *a, **k: reply)
     return om.model_proposer("base", "key", "model")
 
 
@@ -57,7 +57,13 @@ def test_endpoint_failure_raises_not_returns(monkeypatch):
     def boom(*a, **k):
         raise OSError("connection refused")
 
-    monkeypatch.setattr(om, "_chat", boom)
+    monkeypatch.setattr(om, "chat_with_config", boom)
     p = om.model_proposer("base", "key", "model")
     with pytest.raises(ConnectionError):
         p("ctx", _LABELS)
+
+
+def test_module_docstring_frames_offload_as_tool_rescue_not_model_lift():
+    text = (om.__doc__ or "").lower()
+    assert "tool-rescue completion rate" in text
+    assert "model-capability lift claim" in text

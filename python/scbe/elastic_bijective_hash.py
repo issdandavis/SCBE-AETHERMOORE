@@ -1,17 +1,17 @@
 """
-Elastic Bijective Hash (EBH)
-============================
+Bijective Double Hash Map
+=========================
 
-A reversible, lossless hash inspired by Andrew Krapivin's elastic hashing
-(2024/25 — overturning Yao's 1985 "a full table must be slow" conjecture).
+A reversible, lossless open-addressing map inspired by the invariant pattern
+around Krapivin/Farach-Colton/Kuszmaul-style hashing work.
 
 THE FIREBREAK (non-greedy placement)
 ------------------------------------
 Linear probing greedily grabs the next slot, welding clusters into the
-"full parking lot" jam. EBH gives every key its own odd-stride orbit
-(double hashing) so probes scatter across the whole table — clusters
-can't merge. That is the elastic firebreak idea, and it keeps lookups
-fast where greedy probing collapses.
+"full parking lot" jam. This map gives every key its own odd-stride orbit
+(double hashing) so probes scatter across the whole table. This keeps lookups
+fast where greedy probing collapses. It does not implement or prove the
+elastic/funnel bounds from arXiv:2501.02305.
 
 BIJECTIVE (lossless round-trip, reversible scramble)
 ----------------------------------------------------
@@ -29,7 +29,8 @@ lane already in the project.
 
 from __future__ import annotations
 
-from typing import Any, Iterator, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Any, Iterable, Iterator, List, Optional, Tuple
 
 MODULE_SCOPE_NOTE = (
     "Historical module name retained for compatibility. The canonical class is "
@@ -163,6 +164,66 @@ class BijectiveDoubleHashMap:
         return self.total_probes / max(1, self.count)
 
 
+@dataclass(frozen=True)
+class ProbeTailRecord:
+    load: float
+    inserted: int
+    avg_insert_probes: float
+    max_insert_probes: int
+    avg_lookup_probes: float
+    max_lookup_probes: int
+    round_trip_ok: bool
+
+
+def benchmark_probe_tails(
+    *,
+    bits: int = 14,
+    loads: Iterable[float] = (0.50, 0.90, 0.99),
+    seed: int = 42,
+) -> list[ProbeTailRecord]:
+    """Measure double-hash probe tails without claiming elastic/funnel bounds."""
+    import random
+
+    records: list[ProbeTailRecord] = []
+    rng = random.Random(seed)
+    for load in loads:
+        if not 0 < load < 1:
+            raise ValueError("loads must be between 0 and 1")
+        h = BijectiveDoubleHashMap(bits=bits, seed=seed)
+        n = int(h.size * load)
+        keys = [f"k-{i}-{rng.getrandbits(48)}" for i in range(n)]
+        insert_probes: list[int] = []
+        lookup_probes: list[int] = []
+
+        for i, key in enumerate(keys):
+            before = h.total_probes
+            h.put(key, i)
+            insert_probes.append(h.total_probes - before)
+
+        round_trip_ok = True
+        for i, key in enumerate(keys):
+            before = h.total_probes
+            got = h.get(key)
+            lookup_probes.append(h.total_probes - before)
+            if got != i:
+                round_trip_ok = False
+
+        round_trip_ok = round_trip_ok and sorted(v for _, v in h.items()) == list(range(n))
+        records.append(
+            ProbeTailRecord(
+                load=load,
+                inserted=n,
+                avg_insert_probes=sum(insert_probes) / max(1, len(insert_probes)),
+                max_insert_probes=max(insert_probes, default=0),
+                avg_lookup_probes=sum(lookup_probes) / max(1, len(lookup_probes)),
+                max_lookup_probes=max(lookup_probes, default=0),
+                round_trip_ok=round_trip_ok,
+            )
+        )
+
+    return records
+
+
 # Honest name (per research brief docs/research/elastic_hashing_*): this class
 # is a reversible splitmix64 DOUBLE-HASH map, not the paper's Elastic Hashing.
 # `ElasticBijectiveHash` is kept as a back-compat alias below.
@@ -178,19 +239,8 @@ def encode_key_with_tongue(key: bytes, tongue: str = "KO") -> str:
 
 
 def _bench_at(bits: int, load: float) -> Tuple[float, float, bool]:
-    import random
-
-    h = BijectiveDoubleHashMap(bits=bits, seed=42)
-    n = int(h.size * load)
-    keys = [f"k-{i}-{random.getrandbits(48)}" for i in range(n)]
-    for i, k in enumerate(keys):
-        h.put(k, i)
-    ins = h.total_probes / n
-    h.total_probes = 0
-    ok = all(h.get(k) == i for i, k in enumerate(keys))
-    look = h.total_probes / n
-    lossless = sorted(v for _, v in h.items()) == list(range(n))
-    return ins, look, (ok and lossless)
+    record = benchmark_probe_tails(bits=bits, loads=(load,), seed=42)[0]
+    return record.avg_insert_probes, record.avg_lookup_probes, record.round_trip_ok
 
 
 def _demo() -> None:

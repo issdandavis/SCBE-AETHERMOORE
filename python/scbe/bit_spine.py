@@ -186,6 +186,213 @@ def binary_increment_machine() -> BinaryTuringMachine:
     )
 
 
+@dataclass(frozen=True, slots=True)
+class RelationshipStep:
+    """One SCBE relationship-token instruction over an 8-bit state surface."""
+
+    relation: str
+    args: tuple[str, ...]
+
+
+@dataclass(slots=True)
+class RelationshipMachine:
+    """Tiny 8-bit VM whose primitive is a verified relationship transition.
+
+    This intentionally sits above binary opcodes. It is a teaching bridge from
+    ``State + Instruction -> New State`` into SCBE's preferred shape:
+    ``State + Relationship + Transformation + Verification``.
+    """
+
+    memory: bytearray
+    registers: dict[str, int]
+
+    @classmethod
+    def from_bytes(cls, memory: bytes = b"") -> "RelationshipMachine":
+        mem = bytearray(256)
+        mem[: min(256, len(memory))] = memory[:256]
+        return cls(memory=mem, registers={"A": 0, "B": 0, "C": 0, "D": 0})
+
+    def state_bytes(self) -> bytes:
+        regs = bytes(self.registers[name] & 0xFF for name in ("A", "B", "C", "D"))
+        return regs + bytes(self.memory)
+
+    def state_digest(self) -> str:
+        return hashlib.sha256(self.state_bytes()).hexdigest()
+
+    def read(self, address: int, register: str) -> None:
+        _check_register(register)
+        self.registers[register] = self.memory[_addr(address)]
+
+    def transform(self, op: str, target: str, value: str | None = None) -> None:
+        _check_register(target)
+        op = op.lower()
+        current = self.registers[target]
+        operand = 0 if value is None else self.resolve(value)
+        if op == "copy":
+            result = operand
+        elif op == "inc":
+            result = current + 1
+        elif op == "dec":
+            result = current - 1
+        elif op == "add":
+            result = current + operand
+        elif op == "sub":
+            result = current - operand
+        elif op == "xor":
+            result = current ^ operand
+        elif op == "and":
+            result = current & operand
+        elif op == "or":
+            result = current | operand
+        elif op == "not":
+            result = ~current
+        else:
+            raise BitSpineError(f"unknown relationship transform: {op}")
+        self.registers[target] = result & 0xFF
+
+    def write(self, register: str, address: int) -> None:
+        _check_register(register)
+        self.memory[_addr(address)] = self.registers[register] & 0xFF
+
+    def verify(self, left: str, op: str, right: str) -> bool:
+        lhs = self.resolve(left)
+        rhs = self.resolve(right)
+        if op == "eq":
+            return lhs == rhs
+        if op == "neq":
+            return lhs != rhs
+        if op == "lt":
+            return lhs < rhs
+        if op == "lte":
+            return lhs <= rhs
+        if op == "gt":
+            return lhs > rhs
+        if op == "gte":
+            return lhs >= rhs
+        raise BitSpineError(f"unknown relationship verifier: {op}")
+
+    def resolve(self, term: str) -> int:
+        compact = term.strip()
+        upper = compact.upper()
+        if upper in self.registers:
+            return self.registers[upper]
+        if compact.lower().startswith("mem[") and compact.endswith("]"):
+            return self.memory[_addr(_parse_int(compact[4:-1]))]
+        return _parse_int(compact) & 0xFF
+
+
+def _addr(value: int) -> int:
+    if value < 0 or value > 0xFF:
+        raise BitSpineError(f"8-bit memory address out of range: {value}")
+    return value
+
+
+def _check_register(register: str) -> None:
+    if register not in {"A", "B", "C", "D"}:
+        raise BitSpineError(f"unknown 8-bit register: {register}")
+
+
+def _parse_int(value: str) -> int:
+    text = str(value).strip()
+    if not text:
+        raise BitSpineError("empty integer term")
+    try:
+        return int(text, 0)
+    except ValueError as exc:
+        raise BitSpineError(f"invalid integer term: {value!r}") from exc
+
+
+def parse_relationship_program(source: str) -> list[RelationshipStep]:
+    """Parse semicolon/newline separated relationship-token instructions.
+
+    Grammar:
+      - ``read <addr> <reg>``
+      - ``transform <op> <reg> [value|reg|mem[n]]``
+      - ``write <reg> <addr>``
+      - ``verify <left> <eq|neq|lt|lte|gt|gte> <right>``
+    """
+
+    steps: list[RelationshipStep] = []
+    for raw in str(source).replace(";", "\n").splitlines():
+        line = raw.split("#", 1)[0].strip()
+        if not line:
+            continue
+        parts = tuple(line.split())
+        relation = parts[0].lower()
+        args = parts[1:]
+        if relation == "read" and len(args) == 2:
+            steps.append(RelationshipStep(relation, args))
+        elif relation == "transform" and len(args) in (2, 3):
+            steps.append(RelationshipStep(relation, args))
+        elif relation == "write" and len(args) == 2:
+            steps.append(RelationshipStep(relation, args))
+        elif relation == "verify" and len(args) == 3:
+            steps.append(RelationshipStep(relation, args))
+        else:
+            raise BitSpineError(f"invalid relationship instruction: {line!r}")
+    return steps
+
+
+def run_relationship_program(
+    source: str,
+    *,
+    memory: bytes = b"",
+    max_steps: int = 10_000,
+) -> dict:
+    """Run SCBE relationship tokens and return an auditable transition receipt."""
+
+    steps = parse_relationship_program(source)
+    if len(steps) > max_steps:
+        raise BitSpineError("relationship program exceeded max_steps")
+    machine = RelationshipMachine.from_bytes(memory)
+    trace = []
+    verified = True
+    for index, step in enumerate(steps):
+        before = machine.state_digest()
+        check: bool | None = None
+        if step.relation == "read":
+            machine.read(_parse_int(step.args[0]), step.args[1].upper())
+        elif step.relation == "transform":
+            value = step.args[2].upper() if len(step.args) == 3 and step.args[2].upper() in machine.registers else (
+                step.args[2] if len(step.args) == 3 else None
+            )
+            machine.transform(step.args[0], step.args[1].upper(), value)
+        elif step.relation == "write":
+            machine.write(step.args[0].upper(), _parse_int(step.args[1]))
+        elif step.relation == "verify":
+            left = step.args[0].upper() if step.args[0].upper() in machine.registers else step.args[0]
+            right = step.args[2].upper() if step.args[2].upper() in machine.registers else step.args[2]
+            check = machine.verify(left, step.args[1].lower(), right)
+            verified = verified and check
+        else:  # pragma: no cover - parser prevents this.
+            raise BitSpineError(f"unknown relationship token: {step.relation}")
+        after = machine.state_digest()
+        trace.append(
+            {
+                "step": index,
+                "relationship": step.relation,
+                "args": list(step.args),
+                "before_sha256": before,
+                "after_sha256": after,
+                "verified": check,
+            }
+        )
+
+    nonzero_memory = {
+        str(index): value for index, value in enumerate(machine.memory) if value
+    }
+    return {
+        "schema": "scbe_relationship_vm_receipt_v1",
+        "model": "8-bit relationship-token VM",
+        "registers": dict(machine.registers),
+        "memory_nonzero": nonzero_memory,
+        "verified": verified,
+        "steps": len(steps),
+        "trace": trace,
+        "state_sha256": machine.state_digest(),
+    }
+
+
 def bytes_to_bits(data: bytes) -> str:
     return "".join(f"{byte:08b}" for byte in data)
 
@@ -331,6 +538,23 @@ def run_ops(
 ) -> bytes:
     """Execute the finite-safe form of the 3-bit Turing-complete op tape."""
 
+    return run_ops_receipt(
+        opcodes,
+        input_bytes=input_bytes,
+        tape_size=tape_size,
+        max_steps=max_steps,
+    )["output"]
+
+
+def run_ops_receipt(
+    opcodes: Sequence[int],
+    *,
+    input_bytes: bytes = b"",
+    tape_size: int = 30_000,
+    max_steps: int = 1_000_000,
+) -> dict:
+    """Execute opcodes and return output plus finite-machine state."""
+
     jumps = build_loop_map(opcodes)
     tape = bytearray(tape_size)
     ptr = 0
@@ -365,7 +589,15 @@ def run_ops(
         elif op == SpineOp.LOOP_END and tape[ptr] != 0:
             pc = jumps[pc]
         pc += 1
-    return bytes(out)
+    output = bytes(out)
+    return {
+        "ptr": ptr,
+        "steps": steps,
+        "tape": {index: value for index, value in enumerate(tape) if value},
+        "output": output,
+        "output_bytes": list(output),
+        "output_text": output.decode("utf-8", errors="replace"),
+    }
 
 
 def run_bf(source: str, **kwargs) -> bytes:
@@ -385,10 +617,15 @@ __all__ = [
     "hex_to_bytes",
     "binary_increment_machine",
     "tape_to_bits",
+    "RelationshipMachine",
+    "RelationshipStep",
+    "parse_relationship_program",
+    "run_relationship_program",
     "bf_to_ops",
     "ops_to_bf",
     "pack_ops",
     "unpack_ops",
     "run_ops",
+    "run_ops_receipt",
     "run_bf",
 ]

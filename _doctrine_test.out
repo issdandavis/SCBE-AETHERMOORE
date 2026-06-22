@@ -1,0 +1,4 @@
+held-out: 17 | few-shot k=2
+BEING      solved 1/17 (6%)
+BECOMING   solved 2/17 (12%)
+DOCTRINE TEST: becoming - being = +1  (>0 supports train-on-becoming)

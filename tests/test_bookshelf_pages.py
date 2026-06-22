@@ -45,6 +45,7 @@ def test_bookshelf_catalog_matches_current_kdp_statuses() -> None:
     assert books["miracle-memory"]["direct_ebook"]["target_price_usd"] == "3.99"
 
     six_formats = {fmt["name"]: fmt for fmt in books["six-tongues-protocol"]["formats"]}
+    six_links = {link["label"]: link for link in books["six-tongues-protocol"]["links"]}
     assert six_formats["Kindle eBook"]["status"] == "Live"
     assert six_formats["Kindle eBook"]["price_usd"] == "4.99"
     assert six_formats["Kindle eBook"]["asin"] == "B0GSSFQD9G"
@@ -57,6 +58,10 @@ def test_bookshelf_catalog_matches_current_kdp_statuses() -> None:
     assert six_formats["Hardcover"]["status"] == "Draft"
     assert six_formats["Hardcover"]["last_modified"] == "2026-03-18"
     assert six_formats["Hardcover"]["available"] is False
+    assert books["six-tongues-protocol"]["theme"] == "sci-fi-isekai-litrpg"
+    assert books["six-tongues-protocol"]["positioning"] == "The code IS the magic system."
+    assert books["six-tongues-protocol"]["word_count_note"] == "22 chapters, 70,000+ words"
+    assert six_links["Audio on YouTube"]["url"] == "https://www.youtube.com/@id8461"
     assert books["six-tongues-protocol"]["direct_ebook"]["status"] == "not offered while KDP Select"
     assert books["six-tongues-protocol"]["direct_ebook"]["target_price_usd"] == "2.99"
 
@@ -78,6 +83,10 @@ def test_bookshelf_hub_links_each_book_page_and_process_lane() -> None:
     assert "May 13, 2026 update" in page
     assert "submitted March 16, 2026" in page
     assert "draft, last modified March 18, 2026" in page
+    assert "Sci-fi, isekai, and LitRPG where the code is the magic system" in page
+    assert "Audio on YouTube" in page
+    assert "chapters 1-8 narrated" in page
+    assert "https://www.youtube.com/@id8461" in page
 
 
 def test_six_tongues_page_uses_live_amazon_asins() -> None:
@@ -88,6 +97,11 @@ def test_six_tongues_page_uses_live_amazon_asins() -> None:
     assert "https://www.amazon.com/dp/B0GSW8CLC6" in page
     assert "ASIN B0GSSFQD9G" in page
     assert "ASIN B0GSW8CLC6" in page
+    assert "The code IS the magic system" in page
+    assert "Marcus Chen, a systems architect, wakes up inside Aethermoor" in page
+    assert "22 chapters, 70,000+ words" in page
+    assert "Chapters 1-8 are narrated on YouTube" in page
+    assert "https://www.youtube.com/@id8461" in page
     assert "enrolled in KDP Select" in page
     assert "Submitted March 16, 2026" in page
     assert "Submitted March 17, 2026" in page

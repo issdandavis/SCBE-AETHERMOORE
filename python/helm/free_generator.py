@@ -24,10 +24,38 @@ import re
 import subprocess
 import sys
 import urllib.request
+from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Sequence
 
 DEFAULT_BASE = "http://localhost:11434/v1"  # Ollama's OpenAI-compatible endpoint
 DEFAULT_MODEL = "qwen2.5-coder:7b"
+DEFAULT_KEY = "ollama"
+
+
+@dataclass(frozen=True)
+class LLMConfig:
+    """Resolved OpenAI-compatible chat endpoint config.
+
+    Centralizes the env/default contract used by the ladder, router, token board,
+    and offload probes so those surfaces do not drift independently.
+    """
+
+    base: str
+    key: str
+    model: str
+
+
+def resolve_llm_config(
+    *,
+    base: Optional[str] = None,
+    key: Optional[str] = None,
+    model: Optional[str] = None,
+) -> LLMConfig:
+    return LLMConfig(
+        base=base or os.environ.get("SCBE_LLM_BASE", DEFAULT_BASE),
+        key=key or os.environ.get("SCBE_LLM_KEY", DEFAULT_KEY),
+        model=model or os.environ.get("SCBE_LLM_MODEL", DEFAULT_MODEL),
+    )
 
 
 def _chat(messages, *, base: str, key: str, model: str, timeout: int = 120) -> str:
@@ -42,6 +70,10 @@ def _chat(messages, *, base: str, key: str, model: str, timeout: int = 120) -> s
     with urllib.request.urlopen(req, timeout=timeout) as r:  # noqa: S310 - user-configured LLM endpoint
         data = json.loads(r.read().decode("utf-8"))
     return data["choices"][0]["message"]["content"]
+
+
+def chat_with_config(messages, config: LLMConfig, *, timeout: int = 120) -> str:
+    return _chat(messages, base=config.base, key=config.key, model=config.model, timeout=timeout)
 
 
 def strip_to_code(text: str) -> str:
@@ -69,9 +101,7 @@ def make_generator(
     public_k: int = 1,
 ) -> Callable[[Dict[str, Any]], str]:
     """Build a generator(problem) -> source backed by a free OpenAI-compatible model."""
-    base = base or os.environ.get("SCBE_LLM_BASE", DEFAULT_BASE)
-    key = key or os.environ.get("SCBE_LLM_KEY", "ollama")
-    model = model or os.environ.get("SCBE_LLM_MODEL", DEFAULT_MODEL)
+    config = resolve_llm_config(base=base, key=key, model=model)
 
     def generator(problem: Dict[str, Any]) -> str:
         public = "\n".join(list(problem.get("test_list", []))[:public_k])
@@ -82,11 +112,11 @@ def make_generator(
             + "\nReturn ONLY the code."
         )
         try:
-            return strip_to_code(_chat([{"role": "user", "content": prompt}], base=base, key=key, model=model))
+            return strip_to_code(chat_with_config([{"role": "user", "content": prompt}], config))
         except Exception as exc:  # fail closed: emit code that FAILS the tests, never confident-wrong code
             return f"# generation failed ({type(exc).__name__}: {exc})\ndef _failed(*a, **k):\n    return None\n"
 
-    generator.__name__ = "free_llm(%s)" % model
+    generator.__name__ = "free_llm(%s)" % config.model
     return generator
 
 
@@ -160,10 +190,8 @@ def make_repair_generator(
     coming back). When the model REGENERATES an approach it already tried, that is its stuck prior --
     so the next round escalates from "fix this" to "you are stuck, solve it a STRUCTURALLY DIFFERENT
     way", which attacks the prior-override wall instead of bouncing off it."""
-    base = base or os.environ.get("SCBE_LLM_BASE", DEFAULT_BASE)
-    key = key or os.environ.get("SCBE_LLM_KEY", "ollama")
-    model = model or os.environ.get("SCBE_LLM_MODEL", DEFAULT_MODEL)
-    first = make_generator(base=base, key=key, model=model, public_k=public_k)
+    config = resolve_llm_config(base=base, key=key, model=model)
+    first = make_generator(base=config.base, key=config.key, model=config.model, public_k=public_k)
 
     def generator(problem: Dict[str, Any]) -> str:
         from . import public_bench as pb  # lazy import avoids any cycle
@@ -200,7 +228,7 @@ def make_repair_generator(
                     + "\nFix the function so every check passes. Return ONLY corrected Python code."
                 )
             try:
-                code = strip_to_code(_chat([{"role": "user", "content": prompt}], base=base, key=key, model=model))
+                code = strip_to_code(chat_with_config([{"role": "user", "content": prompt}], config))
             except Exception:
                 break
             n = _norm_code(code)
@@ -208,5 +236,5 @@ def make_repair_generator(
             seen.add(n)
         return code
 
-    generator.__name__ = "repair_llm(%s,r=%d)" % (model, rounds)
+    generator.__name__ = "repair_llm(%s,r=%d)" % (config.model, rounds)
     return generator
