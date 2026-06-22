@@ -1,0 +1,60 @@
+{
+  "title": "Mars Long Horizon Drone Decision Record",
+  "created_at": "2026-06-20",
+  "decisions": [
+    {
+      "id": "DR-001",
+      "decision": "Treat the user's pasted notes as design intent and local repo files as implementation evidence.",
+      "reason": "The full external chat history is not directly accessible, but the current-turn paste contains valuable architecture notes."
+    },
+    {
+      "id": "DR-002",
+      "decision": "Use a game-world loop as the shared abstraction for NPCs, agents, and drones.",
+      "reason": "Existing Godot scripts, MAHSS game gym, training pipeline, and user direction all point to actor-state-action-receipt semantics."
+    },
+    {
+      "id": "DR-003",
+      "decision": "Start hyperbolic authorization with a small Poincare distance helper, not a large policy framework.",
+      "reason": "A tested primitive can be reused by VTC, Mars gym receipts, and later governance gates without blocking the scenario build."
+    },
+    {
+      "id": "DR-004",
+      "decision": "Separate medical dual-use as a safety-gated simulation/proposal lane.",
+      "reason": "The nested micro-drone notes are important, but medical behavior has higher safety and regulatory risk than a Mars/game simulation."
+    },
+    {
+      "id": "DR-005",
+      "decision": "Treat clone-trooper-style documents as formation and role doctrine for software/flight simulation, not as weapons automation.",
+      "reason": "The useful engineering content is command hierarchy, squad roles, mission phases, coherence, consensus, and safety-gated movement."
+    },
+    {
+      "id": "DR-006",
+      "decision": "Use Endless Sky as an external game-data substrate candidate for mission, faction, route, and fleet-formation mechanics.",
+      "reason": "The user's GitHub fork and local research note identify data-driven space exploration, NPC AI, and formation assets that map directly onto MAHSS game-gym needs."
+    },
+    {
+      "id": "DR-007",
+      "decision": "Treat materials docs as a hardware-identity and science-adapter evidence cluster, not proof of flight hardware.",
+      "reason": "The local materials bench, waves lab, chemistry set, and M-TEF docs are valuable for simulation constraints and research tasks, but they do not establish built or certified spacecraft components."
+    },
+    {
+      "id": "DR-008",
+      "decision": "Use the AetherFab seeded-topology negative result as a guardrail for PUF claims.",
+      "reason": "The repo records that deterministic seeded topology alone is not a standalone PUF at realistic manufacturing tolerances; future work should route through challenge-response physical measurement and entropy/separation checks."
+    },
+    {
+      "id": "DR-009",
+      "decision": "Treat space docs as mission-simulation and evidence-adapter lanes, not NASA endorsement or flight-readiness claims.",
+      "reason": "The local space systems docs include useful orbital, flight, chemistry, M-TEF, life-support, and protocol concepts, but several of them explicitly define research scaffolds and claim boundaries."
+    }
+  ],
+  "next_build_candidates": [
+    "scripts/system/mahss_game_gym.py mars scenario",
+    "config/mission_formations_v1.json controller table",
+    "python/scbe/poincare.py helper with tests",
+    "scripts/system/nested_drone_orchestrator.py prototype",
+    "Godot event mirror for Mars game ticks",
+    "scripts/system/materials_identity_gym.py synthetic CRP-PUF board",
+    "scripts/system/space_mission_gym.py orbital and flight constraint board"
+  ]
+}
