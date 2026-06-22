@@ -124,3 +124,10 @@ def test_a_face_without_an_extension_op_raises_cleanly():
     assert unsupported, "expected at least one bundled face without the extension ops"
     with pytest.raises(ValueError, match="not implemented in"):
         P.emit(P.program_bytes("xor"), unsupported[0])
+
+
+def test_polyglot_module_docstring_does_not_overclaim_all_faces():
+    text = (P.__doc__ or "").lower()
+    assert "any registered language" not in text
+    assert "every one of the 18 language faces implements" not in text
+    assert "missing toolchains or missing dialect" in text

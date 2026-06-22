@@ -4,8 +4,9 @@ Polyglot stack-machine emitter — one core, every language face.
 
 The cube: the CENTER is the binary/trit core (bit_spine) + the CA 64-opcode
 table (ca_opcode_table). Each FACE is a programming language. This module emits
-a CA opcode program to compilable source in ANY registered language, so the
-same core program "compiles no matter what."
+a CA opcode program to source for registered dialects that implement the requested
+ops. Registered is not the same as fully verified: bundled dialects can be
+emit-only until a local toolchain proves them.
 
 Unlike tongue_isa (which bakes a field per language into every opcode), each
 language here is a pure DATA `Dialect` — a registry entry. Adding a language is
@@ -19,12 +20,13 @@ results -- they provably diverge on e.g. .5 rounding (Python half-to-even vs JS/
 which the harness surfaces as DISAGREE rather than hiding.
 
 Two op sets, kept distinct on purpose:
-  * SCALAR_OPS   (22) -- the UNIVERSAL core every one of the 18 language faces implements, and which
-                         the DNA bijection (bijective_dna) is built over.
-  * PORTABLE_OPS (35) -- the conformance-VERIFIED polyglot-emitter subset: every op below is proven
-                         identical across python/js/rust by polyglot_conformance (it ran them and they
-                         matched), not merely emitted. Implemented by the inline faces; emit raises a
-                         clean "not implemented in this face" for a bundled track that lacks an op.
+  * SCALAR_OPS   (22) -- the original cube/DNA core. It is the intended baseline for registered
+                         language faces; emit still checks each dialect and fails closed if a face is
+                         missing a template.
+  * PORTABLE_OPS (35) -- the conformance-checked polyglot-emitter subset for implemented dialects.
+                         Extension ops have been checked across the local executable backends
+                         (python/js/rust/c when available); missing toolchains or missing dialect
+                         templates are not counted as agreement.
 
 The simplest commands are the bit/byte primitives, and they map across languages the most cleanly --
 so the bitwise ops are the load-bearing extension:
@@ -58,8 +60,8 @@ BYTE_TO_NAME: Dict[int, str] = {b: e.name for b, e in OP_TABLE.items()}
 # --- op categories (language-agnostic) -----------------------------------
 BINOPS = {"add": "+", "sub": "-", "mul": "*", "div": "/"}
 CMPS = {"eq": "==", "neq": "!=", "lt": "<", "lte": "<=", "gt": ">", "gte": ">="}
-# The ORIGINAL universal core every one of the 18 language faces implements (and which the DNA-bijection
-# in bijective_dna is built over). pop a,b -> func2; pop a -> func1.
+# The ORIGINAL cube/DNA core (which the DNA-bijection in bijective_dna is built over).
+# A dialect is still checked at emit time; "in the core" does not bypass missing templates.
 _CORE_FUNC2 = {"pow", "min", "max", "mod"}
 _CORE_FUNC1 = {"neg", "abs", "sqrt", "floor", "ceil", "round", "inc", "dec"}
 # The VERIFIED-PORTABLE EXTENSION -- proven identical across python/js/rust by polyglot_conformance,
@@ -72,10 +74,10 @@ _EXT_FUNC1 = {"sign", "log", "exp", "isnan", "isinf", "isfinite", "not"}
 FUNC2 = _CORE_FUNC2 | _EXT_FUNC2
 FUNC1 = _CORE_FUNC1 | _EXT_FUNC1
 
-# SCALAR_OPS = the UNIVERSAL cube/DNA core (22): every face implements it, the bijection covers it.
+# SCALAR_OPS = the original cube/DNA core (22): the bijection covers it, and emit verifies dialect support.
 SCALAR_OPS = set(BINOPS) | set(CMPS) | _CORE_FUNC2 | _CORE_FUNC1
-# PORTABLE_OPS = the conformance-VERIFIED polyglot-emitter subset (35): emittable for any face that
-# implements the op (the inline python/js/c/rust faces do). This is the "more than 20" portable core.
+# PORTABLE_OPS = the conformance-checked polyglot-emitter subset (35): emittable for registered dialects
+# that implement the op, with agreement checked only on local executable backends.
 PORTABLE_OPS = set(BINOPS) | set(CMPS) | FUNC2 | FUNC1
 
 

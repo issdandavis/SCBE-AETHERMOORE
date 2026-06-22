@@ -1,0 +1,128 @@
+{
+  "schema_version": "scbe_rubix_contract_cube_template_v1",
+  "purpose": "Template for mapping known-answer benchmark tasks onto a custom Rubix action-gate surface.",
+  "standard_cube_lane": {
+    "state_format": "54 facelets in URFDLB order",
+    "move_alphabet": [
+      "U",
+      "U'",
+      "U2",
+      "R",
+      "R'",
+      "R2",
+      "F",
+      "F'",
+      "F2",
+      "D",
+      "D'",
+      "D2",
+      "L",
+      "L'",
+      "L2",
+      "B",
+      "B'",
+      "B2"
+    ],
+    "solver_policy": "use proven two-phase/Kociemba adapter; do not hand-roll group search"
+  },
+  "custom_cube_lane": {
+    "faces": {
+      "CONTRACT": "return shape, expected result, exact output contract",
+      "STATE": "required state mutations and state-field exactness",
+      "BRANCH": "decision priority, condition order, tie breaks",
+      "SYNTAX": "parse/runtime executable code gate",
+      "SAFETY": "denied paths, destructive commands, forbidden near-misses",
+      "EVIDENCE": "receipts, public/hidden split, property probes, final seal"
+    },
+    "layers": {
+      "OBSERVE": "read task and public checks",
+      "EXTRACT": "extract contract slots and visible invariants",
+      "PROPOSE": "choose candidate code or deterministic joint",
+      "EXECUTE": "run public checks",
+      "VERIFY": "run hidden/property/shadow audits",
+      "SEAL": "emit receipt only if all gates pass"
+    },
+    "moves": [
+      {
+        "move_id": "C_RETURN",
+        "face": "CONTRACT",
+        "layer": "EXTRACT",
+        "action": "extract expected return shape",
+        "required_when": ["missing_return_shape", "wrong_return_value"]
+      },
+      {
+        "move_id": "S_MUTATE",
+        "face": "STATE",
+        "layer": "EXTRACT",
+        "action": "bind required state mutations",
+        "required_when": ["missing_state_field", "state_mutation_mismatch"]
+      },
+      {
+        "move_id": "B_TABLE",
+        "face": "BRANCH",
+        "layer": "PROPOSE",
+        "action": "build explicit branch or tie-break table",
+        "required_when": ["branch_order_miss", "logic_or_contract_mismatch"]
+      },
+      {
+        "move_id": "X_PARSE",
+        "face": "SYNTAX",
+        "layer": "EXECUTE",
+        "action": "parse and run candidate in harness",
+        "required_when": ["runtime_or_syntax"]
+      },
+      {
+        "move_id": "G_DENY",
+        "face": "SAFETY",
+        "layer": "VERIFY",
+        "action": "reject denied face or forbidden near-miss",
+        "required_when": ["destructive_command", "forbidden_near_miss"]
+      },
+      {
+        "move_id": "E_SHADOW",
+        "face": "EVIDENCE",
+        "layer": "VERIFY",
+        "action": "run shadow contract audit even after visible public pass",
+        "required_when": ["public_pass", "hidden_unknown"]
+      },
+      {
+        "move_id": "E_HIDDEN",
+        "face": "EVIDENCE",
+        "layer": "VERIFY",
+        "action": "score hidden checks not shown to the model",
+        "required_when": ["public_pass"]
+      },
+      {
+        "move_id": "E_SEAL",
+        "face": "EVIDENCE",
+        "layer": "SEAL",
+        "action": "write final receipt hash",
+        "required_when": ["public_pass", "hidden_pass", "no_illegal_rotations"]
+      }
+    ]
+  },
+  "task_template": {
+    "task_id": "example_contract_task",
+    "public_checks": [],
+    "hidden_checks": [],
+    "initial_cube_state": {
+      "faces": {
+        "CONTRACT": "unknown",
+        "STATE": "unknown",
+        "BRANCH": "unknown",
+        "SYNTAX": "unknown",
+        "SAFETY": "allow",
+        "EVIDENCE": "unverified"
+      },
+      "layer": "OBSERVE"
+    },
+    "legal_rotations": ["C_RETURN", "S_MUTATE", "B_TABLE", "X_PARSE", "G_DENY", "E_SHADOW", "E_HIDDEN", "E_SEAL"],
+    "denied_rotations": [],
+    "solve_condition": {
+      "public_pass": true,
+      "hidden_pass": true,
+      "illegal_rotations": 0,
+      "receipt_required": true
+    }
+  }
+}

@@ -89,6 +89,24 @@ def test_spine_run_brainfuck_class_program() -> None:
     assert payload["output_hex"] == "41"
 
 
+def test_spine_relationship_vm_emits_verified_receipt() -> None:
+    result = run_scbe(
+        "spine",
+        "rel",
+        "read 0 A; transform add A 1; write A 1; verify mem[1] eq 0x42",
+        "--memory-hex",
+        "41",
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["schema"] == "scbe_relationship_vm_receipt_v1"
+    assert payload["verified"] is True
+    assert payload["registers"]["A"] == 0x42
+    assert payload["memory_nonzero"]["1"] == 0x42
+
+
 def test_templates_include_user_agent_and_geoseal_commands() -> None:
     result = run_scbe("templates", "--json")
 
