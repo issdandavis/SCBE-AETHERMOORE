@@ -7,43 +7,68 @@ cond()/if-then for simple chained queries."""
 from __future__ import annotations
 import re
 from typing import Any, Dict, Optional
+
 try:
     from . import det_tools as T
 except ImportError:  # run as a script
     import det_tools as T
 
+
+def _split_number_series(text: str):
+    parts = re.split(r"\s+(?:and|vs|with|by)\s+", text, maxsplit=1, flags=re.I)
+    if len(parts) != 2:
+        raise ValueError("expected two numeric series")
+    return T.extract_floats(parts[0]), T.extract_floats(parts[1])
+
+
 # (regex, tool_name, args-from-match) -- the input->tool map with simple I/O
 _RULES = [
-    (r"\bis\s+(\d+)\s+(?:a\s+)?prime\b",                 "is_prime",       lambda m: (int(m[1]),)),
-    (r"\b(\d+)\s*(?:st|nd|rd|th)\s+prime\b",             "nth_prime",      lambda m: (int(m[1]),)),
+    (r"\bis\s+(\d+)\s+(?:a\s+)?prime\b", "is_prime", lambda m: (int(m[1]),)),
+    (r"\b(\d+)\s*(?:st|nd|rd|th)\s+prime\b", "nth_prime", lambda m: (int(m[1]),)),
     (r"\bprimes?\s+(?:up\s*to|below|under|less than)\s+(\d+)", "primes_upto", lambda m: (int(m[1]),)),
     (r"\b(?:prime\s+)?factor(?:ize|s|ization)?\s+(?:of\s+)?(\d+)", "factorize", lambda m: (int(m[1]),)),
-    (r"\bdivisors?\s+of\s+(\d+)\b",                      "divisors",       lambda m: (int(m[1]),)),
-    (r"\bgcd\s+of\s+(\d+)\s+and\s+(\d+)",                "gcd",            lambda m: (int(m[1]), int(m[2]))),
-    (r"\blcm\s+of\s+(\d+)\s+and\s+(\d+)",                "lcm",            lambda m: (int(m[1]), int(m[2]))),
-    (r"\bis\s+(\d+)\s+(?:a\s+)?perfect\b",               "is_perfect",     lambda m: (int(m[1]),)),
-    (r"\b(\d+)\s*(?:st|nd|rd|th)?\s+fibonacci\b",        "nth_fibonacci",  lambda m: (int(m[1]),)),
-    (r"\bfactorial\s+of\s+(\d+)",                        "factorial",      lambda m: (int(m[1]),)),
-    (r"\b(\d+)\s+choose\s+(\d+)\b",                      "ncr",            lambda m: (int(m[1]), int(m[2]))),
-    (r"\bdigit\s+sum\s+of\s+(\d+)",                      "digit_sum",      lambda m: (int(m[1]),)),
-    (r"\broman\s+(?:numeral\s+)?(?:of|for)\s+(\d+)",     "int_to_roman",   lambda m: (int(m[1]),)),
-    (r"\b([IVXLCDM]+)\s+(?:in|to|as)\s+(?:a\s+)?(?:number|integer|arabic|decimal)", "roman_to_int", lambda m: (m[1].upper(),)),
-    (r"\bis\s+['\"]?(\w+)['\"]?\s+a\s+palindrome",       "is_palindrome",  lambda m: (m[1],)),
+    (r"\bdivisors?\s+of\s+(\d+)\b", "divisors", lambda m: (int(m[1]),)),
+    (r"\bgcd\s+of\s+(\d+)\s+and\s+(\d+)", "gcd", lambda m: (int(m[1]), int(m[2]))),
+    (r"\blcm\s+of\s+(\d+)\s+and\s+(\d+)", "lcm", lambda m: (int(m[1]), int(m[2]))),
+    (r"\bis\s+(\d+)\s+(?:a\s+)?perfect\b", "is_perfect", lambda m: (int(m[1]),)),
+    (r"\b(\d+)\s*(?:st|nd|rd|th)?\s+fibonacci\b", "nth_fibonacci", lambda m: (int(m[1]),)),
+    (r"\bfactorial\s+of\s+(\d+)", "factorial", lambda m: (int(m[1]),)),
+    (r"\b(\d+)\s+choose\s+(\d+)\b", "ncr", lambda m: (int(m[1]), int(m[2]))),
+    (r"\bdigit\s+sum\s+of\s+(\d+)", "digit_sum", lambda m: (int(m[1]),)),
+    (r"\broman\s+(?:numeral\s+)?(?:of|for)\s+(\d+)", "int_to_roman", lambda m: (int(m[1]),)),
+    (
+        r"\b([IVXLCDM]+)\s+(?:in|to|as)\s+(?:a\s+)?(?:number|integer|arabic|decimal)",
+        "roman_to_int",
+        lambda m: (m[1].upper(),),
+    ),
+    (r"\bis\s+['\"]?(\w+)['\"]?\s+a\s+palindrome", "is_palindrome", lambda m: (m[1],)),
     (r"\bvowels?\s+(?:count\s+)?(?:in|of)\s+['\"]?([\w ]+)['\"]?", "vowel_count", lambda m: (m[1].strip(),)),
-    (r"\bis\s+(\d{3,4})\s+a\s+leap\s+year",              "is_leap_year",   lambda m: (int(m[1]),)),
+    (r"\bis\s+(\d{3,4})\s+a\s+leap\s+year", "is_leap_year", lambda m: (int(m[1]),)),
     (r"\b(-?\d+(?:\.\d+)?)\s*(?:degrees?\s*)?c(?:elsius)?\s+(?:to|in)\s+f", "c_to_f", lambda m: (float(m[1]),)),
     (r"\b(-?\d+(?:\.\d+)?)\s*(?:degrees?\s*)?f(?:ahrenheit)?\s+(?:to|in)\s+c", "f_to_c", lambda m: (float(m[1]),)),
-    (r"\b(-?\d+(?:\.\d+)?)\s*km\s+(?:to|in)\s+miles?",   "km_to_miles",    lambda m: (float(m[1]),)),
-    (r"\b(-?\d+(?:\.\d+)?)\s*miles?\s+(?:to|in)\s+km",   "miles_to_km",    lambda m: (float(m[1]),)),
-    (r"\bbinary\s+(?:of|for)\s+(\d+)",                   "to_binary",      lambda m: (int(m[1]),)),
-    (r"\b(\d+)\s+(?:to|in)\s+binary",                    "to_binary",      lambda m: (int(m[1]),)),
-    (r"\bhex(?:adecimal)?\s+(?:of|for)\s+(\d+)",         "to_hex",         lambda m: (int(m[1]),)),
-    (r"\b(\d+)\s+(?:to|in)\s+hex(?:adecimal)?",          "to_hex",         lambda m: (int(m[1]),)),
-    (r"\b(\d+)\s+(?:to|in)\s+octal",                     "to_octal",       lambda m: (int(m[1]),)),
-    (r"\b(?:mean|average)\s+of\s+(.+)",                   "mean",           lambda m: (T.extract_numbers(m[1]),)),
-    (r"\bmedian\s+of\s+(.+)",                             "median",         lambda m: (T.extract_numbers(m[1]),)),
+    (r"\b(-?\d+(?:\.\d+)?)\s*km\s+(?:to|in)\s+miles?", "km_to_miles", lambda m: (float(m[1]),)),
+    (r"\b(-?\d+(?:\.\d+)?)\s*miles?\s+(?:to|in)\s+km", "miles_to_km", lambda m: (float(m[1]),)),
+    (r"\bbinary\s+(?:of|for)\s+(\d+)", "to_binary", lambda m: (int(m[1]),)),
+    (r"\b(\d+)\s+(?:to|in)\s+binary", "to_binary", lambda m: (int(m[1]),)),
+    (r"\bhex(?:adecimal)?\s+(?:of|for)\s+(\d+)", "to_hex", lambda m: (int(m[1]),)),
+    (r"\b(\d+)\s+(?:to|in)\s+hex(?:adecimal)?", "to_hex", lambda m: (int(m[1]),)),
+    (r"\b(\d+)\s+(?:to|in)\s+octal", "to_octal", lambda m: (int(m[1]),)),
+    (
+        r"\b(\d+(?:\.\d+)?)\s*(?:st|nd|rd|th)?\s+percentile\s+of\s+(.+)",
+        "percentile",
+        lambda m: (T.extract_floats(m[2]), float(m[1])),
+    ),
+    (r"\bpercentile\s+(\d+(?:\.\d+)?)\s+of\s+(.+)", "percentile", lambda m: (T.extract_floats(m[2]), float(m[1]))),
+    (
+        r"\bweighted\s+mean\s+of\s+(.+?)\s+(?:weights?|weighted by)\s+(.+)",
+        "weighted_mean",
+        lambda m: (T.extract_floats(m[1]), T.extract_floats(m[2])),
+    ),
+    (r"\bcorrelation\s+(?:of\s+)?(.+)", "correlation", lambda m: _split_number_series(m[1])),
+    (r"\b(?:mean|average)\s+of\s+(.+)", "mean", lambda m: (T.extract_floats(m[1]),)),
+    (r"\bmedian\s+of\s+(.+)", "median", lambda m: (T.extract_floats(m[1]),)),
     (r"\barea\s+of\s+(?:a\s+)?circle\s+(?:with\s+)?radius\s+(\d+(?:\.\d+)?)", "area_circle", lambda m: (float(m[1]),)),
-    (r"\bascii\s+(?:code\s+)?(?:of|for)\s+'?(\w)'?",      "char_code",      lambda m: (m[1],)),
+    (r"\bascii\s+(?:code\s+)?(?:of|for)\s+'?(\w)'?", "char_code", lambda m: (m[1],)),
 ]
 
 
@@ -87,6 +112,9 @@ if __name__ == "__main__":
         ("8 in octal", "10"),
         ("mean of 1 2 3 4", 2.5),
         ("median of 1 3 2", 2),
+        ("25th percentile of 10 20 30 40", 17.5),
+        ("weighted mean of 0 1 1 weights 3 1 1", 0.4),
+        ("correlation of 1 2 3 and 2 4 6", 1.0),
         ("area of a circle radius 2", 12.566371),
         ("ascii code of A", 65),
     ]
@@ -99,4 +127,6 @@ if __name__ == "__main__":
         else:
             print("MISS:", q, "-> got", got, "want", exp, "(tool=%s)" % (r and r.get("tool")))
     print("query_dispatch self-test: %d/%d routed straight to a tool, no model" % (ok, len(cases)))
-    print("falls through to model on a non-tool task:", dispatch("write a function that reverses a linked list") is None)
+    print(
+        "falls through to model on a non-tool task:", dispatch("write a function that reverses a linked list") is None
+    )
