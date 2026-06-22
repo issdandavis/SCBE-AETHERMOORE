@@ -29,6 +29,7 @@ except ImportError:  # pragma: no cover - script execution fallback
 DEFAULT_SPEC: Dict[str, Any] = {
     "checkpoint_dir": "checkpoints/system_coder",
     "repair": {"max_tries": 3, "arrow_hint": True},
+    "reference_bank": {"auto_bank": True, "require_fuzz": True},
     "scoring": {"correctness_bar": 0.85, "false_success_weight": 100, "solve_weight": 1},
     "escalation": {"allow_external_call": False, "next_model": "manual"},
 }
@@ -164,12 +165,12 @@ def _ask_factory(outputs: Sequence[str], prompts: List[str]) -> Callable[[str], 
 
 
 def _solver_from_via(via: str, tries: int) -> str:
-    if tries > 1:
-        return "repair"
     if via.startswith(("dispatch:", "calc:")):
         return "deterministic"
     if via.startswith("fallback:"):
         return "reference"
+    if tries > 1:
+        return "repair"
     if via.startswith("routed:"):
         return "model"
     return "escalate"
@@ -195,22 +196,27 @@ def _solve_agent_task(raw: Mapping[str, Any], index: int, spec: Mapping[str, Any
     bank_task_id = raw.get("bank_task_id") or raw.get("reference_task_id") or raw.get("task_id") or raw.get("id")
     outputs = _outputs(raw)
     max_tries = max(1, int((spec.get("repair") or {}).get("max_tries", 3)))
+    arrow_hint = bool((spec.get("repair") or {}).get("arrow_hint", True))
+    bank_spec = spec.get("reference_bank") or {}
+    auto_bank = bool(bank_spec.get("auto_bank", False))
+    auto_bank_require_fuzz = bool(bank_spec.get("require_fuzz", True))
     prompts: List[str] = []
     result: Dict[str, Any] = {}
-    tries = 0
     started = time.perf_counter()
 
-    for tries in range(1, max_tries + 1):
-        ask = _ask_factory(outputs[tries - 1 : tries], prompts)
-        result = agent_solve.agent_solve(
-            prompt,
-            ask=ask,
-            tests=tests or None,
-            reference=reference_text,
-            task_id=None if bank_task_id is None else str(bank_task_id),
-        )
-        if result.get("status") == VERIFIED_FIX:
-            break
+    ask = _ask_factory(outputs, prompts)
+    result = agent_solve.agent_solve(
+        prompt,
+        ask=ask,
+        tests=tests or None,
+        reference=reference_text,
+        task_id=None if bank_task_id is None else str(bank_task_id),
+        max_attempts=max_tries,
+        arrow_hint=arrow_hint,
+        auto_bank=auto_bank,
+        auto_bank_require_fuzz=auto_bank_require_fuzz,
+    )
+    tries = int(result.get("attempts") or len(prompts) or 1)
 
     elapsed_ms = round((time.perf_counter() - started) * 1000, 3)
     status = str(result.get("status") or ESCALATE)

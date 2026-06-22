@@ -15,6 +15,12 @@ Never inject an unverified reference. This is `inject_or_fallback` with a persis
 
 from __future__ import annotations
 import json, os, sys, subprocess
+from typing import Any, Dict, List, Optional
+
+try:
+    from .abstaining_verifier import differential
+except ImportError:  # run as a script
+    from abstaining_verifier import differential
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 POOL = os.path.join(HERE, "pitfall_headroom_pool.jsonl")
@@ -247,6 +253,105 @@ def load():
 
 def get(task_id):
     return load().get(task_id)
+
+
+def load_rows(path: Optional[str] = None) -> List[Dict[str, Any]]:
+    target = path or BANK
+    if not os.path.exists(target):
+        return []
+    rows = []
+    with open(target, encoding="utf-8") as f:
+        for line in f:
+            text = line.strip()
+            if text:
+                rows.append(json.loads(text))
+    return rows
+
+
+def put_verified(
+    task_id: str,
+    code: str,
+    tests: List[str],
+    *,
+    category: str = "auto",
+    source: str = "auto",
+    reference: Optional[str] = None,
+    require_fuzz: bool = True,
+    bank_path: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Append a verified reference to the bank, never from visible-test success alone.
+
+    The admission rule is:
+      1. candidate passes the supplied held-out/full tests in a subprocess;
+      2. if `require_fuzz` is true, a trusted reference must be supplied and the
+         abstaining verifier must return `trust`.
+
+    If fuzz cannot be run, the function returns a refusal receipt instead of
+    weakening the bank silently.
+    """
+
+    tid = str(task_id or "").strip()
+    if not tid:
+        return {"banked": False, "reason": "missing task_id", "hidden_passed": False, "fuzz_verdict": "not_run"}
+    candidate = str(code or "").strip()
+    if not candidate:
+        return {"banked": False, "reason": "missing code", "hidden_passed": False, "fuzz_verdict": "not_run"}
+    if not _passes(candidate, tests):
+        return {"banked": False, "reason": "candidate failed verification tests", "hidden_passed": False, "fuzz_verdict": "not_run"}
+
+    fuzz_report: Dict[str, Any] = {"verdict": "not_required", "reason": "require_fuzz is false"}
+    if require_fuzz:
+        if not reference:
+            return {
+                "banked": False,
+                "reason": "fuzz required but no trusted reference supplied",
+                "hidden_passed": True,
+                "fuzz_verdict": "unavailable",
+            }
+        fuzz_report = differential(candidate, reference, list(tests), n_fuzz=40)
+        if fuzz_report.get("verdict") != "trust":
+            return {
+                "banked": False,
+                "reason": "fuzz verifier did not trust candidate",
+                "hidden_passed": True,
+                "fuzz_verdict": fuzz_report.get("verdict"),
+                "fuzz_report": fuzz_report,
+            }
+
+    target = bank_path or BANK
+    rows = load_rows(target)
+    for row in rows:
+        if row.get("task_id") == tid and str(row.get("code") or "").strip() == candidate:
+            return {
+                "banked": True,
+                "already_present": True,
+                "task_id": tid,
+                "path": target,
+                "hidden_passed": True,
+                "fuzz_verdict": fuzz_report.get("verdict"),
+                "fuzz_report": fuzz_report,
+            }
+
+    record = {
+        "task_id": tid,
+        "code": candidate,
+        "category": category,
+        "source": source,
+        "verified_by": "hidden+fuzz" if require_fuzz else "hidden",
+        "fuzz_verdict": fuzz_report.get("verdict"),
+    }
+    os.makedirs(os.path.dirname(target), exist_ok=True)
+    with open(target, "a", encoding="utf-8") as f:
+        f.write(json.dumps(record, sort_keys=True) + "\n")
+    return {
+        "banked": True,
+        "already_present": False,
+        "task_id": tid,
+        "path": target,
+        "hidden_passed": True,
+        "fuzz_verdict": fuzz_report.get("verdict"),
+        "fuzz_report": fuzz_report,
+    }
 
 
 if __name__ == "__main__":

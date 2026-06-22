@@ -23,6 +23,16 @@ Each task closes through one of the verified rungs:
 
 The core invariant is `false_success_count == 0`.
 
+Two live-loop levers are enabled by the default spec:
+
+- `repair.arrow_hint`: a failed model candidate gets one or more `REPAIR ARROW`
+  prompts before the loop falls back to references or escalates.
+- `reference_bank.auto_bank`: a verified solve can be appended to the reference
+  bank for future deterministic reuse. Banking is refused unless the candidate
+  passes held-out/full tests; when a trusted reference is available and
+  `reference_bank.require_fuzz` is true, it must also pass the abstaining
+  verifier's fuzz differential.
+
 Task JSONL supports these shapes:
 
 ```json

@@ -27,6 +27,10 @@ def agent_solve(
     tests: Optional[List[str]] = None,
     reference: Optional[str] = None,
     task_id: Optional[str] = None,
+    max_attempts: int = 1,
+    arrow_hint: bool = True,
+    auto_bank: bool = False,
+    auto_bank_require_fuzz: bool = True,
 ) -> Dict[str, Any]:
     # 1. deterministic dispatch (rung 0/1) -- a named tool answers the question directly, no model
     hit = query_dispatch.dispatch(task)
@@ -54,7 +58,18 @@ def agent_solve(
     if tests and ask is not None:
         public = tests[:1]
         hidden = tests[1:] or tests
-        return domain_router.solve_routed(task, public, hidden, ask, reference=reference, task_id=task_id)
+        return domain_router.solve_routed(
+            task,
+            public,
+            hidden,
+            ask,
+            reference=reference,
+            task_id=task_id,
+            max_attempts=max_attempts,
+            arrow_hint=arrow_hint,
+            auto_bank=auto_bank,
+            auto_bank_require_fuzz=auto_bank_require_fuzz,
+        )
 
     # 3. nothing deterministic and nothing verifiable -> escalate honestly
     return {

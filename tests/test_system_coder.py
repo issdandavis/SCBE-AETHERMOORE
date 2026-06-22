@@ -31,6 +31,7 @@ def test_system_coder_receipts_include_reference_and_repair_paths(tmp_path):
     receipts = {r["id"]: r for r in report["receipts"]}
 
     assert receipts["median_bank"]["via"] == "fallback:reference_bank"
+    assert receipts["median_bank"]["tries"] == 1
     assert receipts["repair_add"]["solver"] == "repair"
     assert receipts["repair_add"]["tries"] == 2
     assert receipts["known_prime_gate"]["result"]["decision"]["answer"] == "ALLOW"
