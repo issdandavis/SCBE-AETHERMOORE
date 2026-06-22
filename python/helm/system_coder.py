@@ -259,7 +259,9 @@ def _solve_known_logic_task(raw: Mapping[str, Any], index: int, spec: Mapping[st
     return receipt
 
 
-def _solve_answer_stage_task(raw: Mapping[str, Any], index: int, spec: Mapping[str, Any], run_id: str) -> Dict[str, Any]:
+def _solve_answer_stage_task(
+    raw: Mapping[str, Any], index: int, spec: Mapping[str, Any], run_id: str
+) -> Dict[str, Any]:
     task_id = _task_id(raw, index)
     started = time.perf_counter()
     task = answer_stage.task_from_record(raw["task"])
@@ -366,7 +368,12 @@ def run_tasks(path: str, spec: Mapping[str, Any], run_id: Optional[str] = None) 
     rows = _read_jsonl(path)
     rid = run_id or time.strftime("run-%Y%m%d-%H%M%S")
     receipts = [solve_record(row, i, spec, rid) for i, row in enumerate(rows, 1)]
-    return {"run_id": rid, "summary": summarize(receipts), "receipts": receipts, "sft": [sft_record(r) for r in receipts]}
+    return {
+        "run_id": rid,
+        "summary": summarize(receipts),
+        "receipts": receipts,
+        "sft": [sft_record(r) for r in receipts],
+    }
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
