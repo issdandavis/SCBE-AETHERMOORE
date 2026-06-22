@@ -9,7 +9,10 @@ Success is VERIFIED only; false_success_count stays 0 (the system_coding contrac
 from __future__ import annotations
 import re, subprocess, sys, ast
 from typing import Optional, List, Dict, Any
-from . import det_tools
+try:
+    from . import det_tools
+except ImportError:  # run as a script
+    import det_tools
 
 _DOMAIN_KW = [
     ("number_theory", ("prime", "divisor", "factor", "gcd", "lcm", "perfect", "fibonacci")),
