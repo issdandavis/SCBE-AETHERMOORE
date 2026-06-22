@@ -108,7 +108,8 @@ const COMMAND_ALLOWLIST = Object.freeze({
     category: 'Tools',
     icon: 'atom',
     risk_tier: 'read-only',
-    description: 'Formula dimensional analysis demo: atoms, protons, neutrons, electrons, and molar mass for glucose.',
+    description:
+      'Formula dimensional analysis demo: atoms, protons, neutrons, electrons, and molar mass for glucose.',
   },
   token_lookup: {
     label: 'Token Lookup',
@@ -148,7 +149,8 @@ const COMMAND_ALLOWLIST = Object.freeze({
     category: 'System',
     icon: 'check',
     risk_tier: 'read-only',
-    description: 'Boot check: certify what THIS box can run (toolchains, models, cross-face faces) before acting.',
+    description:
+      'Boot check: certify what THIS box can run (toolchains, models, cross-face faces) before acting.',
   },
   coding_ladder: {
     label: 'Coding Ladder',
@@ -156,7 +158,8 @@ const COMMAND_ALLOWLIST = Object.freeze({
     category: 'Measure',
     icon: 'chart',
     risk_tier: 'read-only',
-    description: 'Graded coding ladder (elementary -> PhD+); answer-key climber validates it end to end.',
+    description:
+      'Graded coding ladder (elementary -> PhD+); answer-key climber validates it end to end.',
   },
   reasoning_ladder: {
     label: 'Reasoning Ladder',
@@ -164,7 +167,8 @@ const COMMAND_ALLOWLIST = Object.freeze({
     category: 'Measure',
     icon: 'chart',
     risk_tier: 'read-only',
-    description: 'Graded auto-gradable reasoning ladder (exact-match); answer-key climber validates the grader.',
+    description:
+      'Graded auto-gradable reasoning ladder (exact-match); answer-key climber validates the grader.',
   },
   stepwise: {
     label: 'Stepwise',
@@ -172,7 +176,8 @@ const COMMAND_ALLOWLIST = Object.freeze({
     category: 'Tools',
     icon: 'forge',
     risk_tier: 'read-only',
-    description: 'Guided step machine: calc in code, a misstep rewinds to before the bad step and retries.',
+    description:
+      'Guided step machine: calc in code, a misstep rewinds to before the bad step and retries.',
   },
   failure_map: {
     label: 'Failure Map',
@@ -180,7 +185,8 @@ const COMMAND_ALLOWLIST = Object.freeze({
     category: 'Measure',
     icon: 'chart',
     risk_tier: 'read-only',
-    description: 'Localize where a model drifts and map it across models (drift point, wall, universal-fail).',
+    description:
+      'Localize where a model drifts and map it across models (drift point, wall, universal-fail).',
   },
   pazaak_board: {
     label: 'Pazaak Board',
@@ -196,7 +202,8 @@ const COMMAND_ALLOWLIST = Object.freeze({
     category: 'Research',
     icon: 'game',
     risk_tier: 'read-only',
-    description: 'Pacman/Tetris-style closed-loop gym for routing free/local LLMs through tool stations.',
+    description:
+      'Pacman/Tetris-style closed-loop gym for routing free/local LLMs through tool stations.',
   },
 });
 
@@ -206,7 +213,13 @@ const SHELL_ALLOWLIST = Object.freeze({
   pwd: {
     label: 'Working Directory',
     shell: 'powershell',
-    args: ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', 'Get-Location | Select-Object -ExpandProperty Path'],
+    args: [
+      '-NoProfile',
+      '-ExecutionPolicy',
+      'Bypass',
+      '-Command',
+      'Get-Location | Select-Object -ExpandProperty Path',
+    ],
     risk_tier: 'read-only',
     description: 'Show the AetherDesk server working directory.',
   },
@@ -590,6 +603,24 @@ function runPowerShellCommand(command) {
     }, POWERSHELL_TIMEOUT_MS);
     child.stdout.on('data', (d) => stdoutChunks.push(d.toString('utf8')));
     child.stderr.on('data', (d) => stderrChunks.push(d.toString('utf8')));
+    child.on('error', (err) => {
+      clearTimeout(timer);
+      const finishedAt = new Date().toISOString();
+      const message = String(err && err.message ? err.message : err);
+      const receipt = buildPowerShellReceipt({
+        command: validation.command,
+        exitCode: 127,
+        stdoutTail: '',
+        stderrTail: tailBytes(message, MAX_OUTPUT_TAIL_BYTES),
+        startedAt,
+        finishedAt,
+        artifactPath: null,
+        blocked: false,
+      });
+      const filePath = writeReceipt(receipt);
+      receipt.artifact_path = path.relative(REPO_ROOT, filePath).replace(/\\/g, '/');
+      resolve({ ok: false, error: message, receipt });
+    });
     child.on('close', (code) => {
       clearTimeout(timer);
       const finishedAt = new Date().toISOString();
@@ -731,7 +762,11 @@ function extractYouTubeVideoId(target) {
 function normalizeTranscriptLanguages(raw) {
   const list = Array.isArray(raw) ? raw : String(raw || 'en').split(',');
   const languages = list
-    .map((v) => String(v || '').trim().toLowerCase())
+    .map((v) =>
+      String(v || '')
+        .trim()
+        .toLowerCase()
+    )
     .filter(Boolean)
     .filter((v) => /^[a-z]{2,3}(-[a-z0-9]{2,8})?$/i.test(v))
     .slice(0, 6);
@@ -744,7 +779,11 @@ function runYouTubeTranscript(target, languages) {
     try {
       videoId = extractYouTubeVideoId(target);
     } catch (err) {
-      return resolve({ ok: false, error: String(err && err.message ? err.message : err), status: 400 });
+      return resolve({
+        ok: false,
+        error: String(err && err.message ? err.message : err),
+        status: 400,
+      });
     }
 
     const startedAt = new Date().toISOString();
@@ -821,7 +860,8 @@ function runYouTubeTranscript(target, languages) {
 }
 
 function defaultPlaywrightExecutable() {
-  if (process.env.AETHERDESK_PLAYWRIGHT_EXECUTABLE) return process.env.AETHERDESK_PLAYWRIGHT_EXECUTABLE;
+  if (process.env.AETHERDESK_PLAYWRIGHT_EXECUTABLE)
+    return process.env.AETHERDESK_PLAYWRIGHT_EXECUTABLE;
   const edge = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
   if (process.platform === 'win32' && fs.existsSync(edge)) return edge;
   return null;
@@ -840,7 +880,11 @@ async function capturePlaywrightView(rawUrl) {
     const startedAt = Date.now();
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: PLAYWRIGHT_TIMEOUT_MS });
     const title = await page.title().catch(() => '');
-    const screenshot = await page.screenshot({ type: 'png', fullPage: false, timeout: PLAYWRIGHT_TIMEOUT_MS });
+    const screenshot = await page.screenshot({
+      type: 'png',
+      fullPage: false,
+      timeout: PLAYWRIGHT_TIMEOUT_MS,
+    });
     return {
       ok: true,
       schema: 'aetherdesk_playwright_view_v0',
@@ -859,7 +903,9 @@ async function capturePlaywrightView(rawUrl) {
 const browserSessions = new Map();
 
 function normalizeBrowserAction(rawAction) {
-  const action = String(rawAction || 'screenshot').trim().toLowerCase();
+  const action = String(rawAction || 'screenshot')
+    .trim()
+    .toLowerCase();
   if (!['goto', 'screenshot', 'text', 'aria', 'guide', 'click', 'type', 'close'].includes(action)) {
     throw new Error('unsupported browser action');
   }
@@ -902,7 +948,8 @@ async function browserGuidedMoves(page) {
       const name = el.getAttribute('name');
       if (name) return `${el.tagName.toLowerCase()}[name="${String(name).replace(/"/g, '\\"')}"]`;
       const aria = el.getAttribute('aria-label');
-      if (aria) return `${el.tagName.toLowerCase()}[aria-label="${String(aria).replace(/"/g, '\\"')}"]`;
+      if (aria)
+        return `${el.tagName.toLowerCase()}[aria-label="${String(aria).replace(/"/g, '\\"')}"]`;
       const parent = el.parentElement;
       if (!parent) return el.tagName.toLowerCase();
       const siblings = Array.from(parent.children).filter((x) => x.tagName === el.tagName);
@@ -910,20 +957,34 @@ async function browserGuidedMoves(page) {
       return `${el.tagName.toLowerCase()}:nth-of-type(${Math.max(1, idx)})`;
     }
     const nodes = Array.from(
-      document.querySelectorAll('a,button,input,textarea,select,[role="button"],[role="link"],[contenteditable="true"]')
+      document.querySelectorAll(
+        'a,button,input,textarea,select,[role="button"],[role="link"],[contenteditable="true"]'
+      )
     );
     return nodes
       .filter((el) => {
         const style = window.getComputedStyle(el);
         const rect = el.getBoundingClientRect();
-        return style.visibility !== 'hidden' && style.display !== 'none' && rect.width > 0 && rect.height > 0;
+        return (
+          style.visibility !== 'hidden' &&
+          style.display !== 'none' &&
+          rect.width > 0 &&
+          rect.height > 0
+        );
       })
       .slice(0, 60)
       .map((el, index) => {
-        const text = (el.innerText || el.value || el.getAttribute('aria-label') || el.getAttribute('title') || '').trim();
+        const text = (
+          el.innerText ||
+          el.value ||
+          el.getAttribute('aria-label') ||
+          el.getAttribute('title') ||
+          ''
+        ).trim();
         const tag = el.tagName.toLowerCase();
         const role = el.getAttribute('role') || tag;
-        const canType = ['input', 'textarea'].includes(tag) || el.getAttribute('contenteditable') === 'true';
+        const canType =
+          ['input', 'textarea'].includes(tag) || el.getAttribute('contenteditable') === 'true';
         return {
           index,
           role,
@@ -956,6 +1017,7 @@ async function getBrowserSession(sessionId) {
 async function browserAction(payload = {}) {
   const action = normalizeBrowserAction(payload.action);
   const sessionId = normalizeSessionId(payload.session_id);
+  const gotoUrl = action === 'goto' ? normalizePlaywrightUrl(payload.url) : null;
   if (action === 'close') {
     const existing = browserSessions.get(sessionId);
     if (existing) {
@@ -976,8 +1038,7 @@ async function browserAction(payload = {}) {
   const startedAt = Date.now();
 
   if (action === 'goto') {
-    const url = normalizePlaywrightUrl(payload.url);
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: PLAYWRIGHT_TIMEOUT_MS });
+    await page.goto(gotoUrl, { waitUntil: 'domcontentloaded', timeout: PLAYWRIGHT_TIMEOUT_MS });
   } else if (action === 'click') {
     await page.click(normalizeSelector(payload.selector), { timeout: PLAYWRIGHT_TIMEOUT_MS });
   } else if (action === 'type') {
@@ -987,7 +1048,13 @@ async function browserAction(payload = {}) {
   }
 
   const title = await page.title().catch(() => '');
-  const text = action === 'text' ? await page.locator('body').innerText({ timeout: PLAYWRIGHT_TIMEOUT_MS }).catch(() => '') : '';
+  const text =
+    action === 'text'
+      ? await page
+          .locator('body')
+          .innerText({ timeout: PLAYWRIGHT_TIMEOUT_MS })
+          .catch(() => '')
+      : '';
   const aria = action === 'aria' ? await browserAriaSnapshot(page) : '';
   const guide = action === 'guide' ? await browserGuidedMoves(page) : null;
   const screenshot =
@@ -1007,7 +1074,9 @@ async function browserAction(payload = {}) {
     text_tail: text ? tailBytes(text, MAX_OUTPUT_TAIL_BYTES) : '',
     aria_tail: aria ? tailBytes(aria, MAX_OUTPUT_TAIL_BYTES) : '',
     guide,
-    screenshot_data_url: screenshot ? `data:image/png;base64,${screenshot.toString('base64')}` : null,
+    screenshot_data_url: screenshot
+      ? `data:image/png;base64,${screenshot.toString('base64')}`
+      : null,
   };
 }
 
@@ -1075,7 +1144,10 @@ function notebookPath(id) {
 
 function saveNotebook(payload = {}) {
   const id = normalizeNotebookId(payload.id);
-  const title = String(payload.title || id).trim().slice(0, 180) || id;
+  const title =
+    String(payload.title || id)
+      .trim()
+      .slice(0, 180) || id;
   const body = String(payload.body || '');
   if (body.length > MAX_NOTEBOOK_CHARS) throw new Error('notebook exceeds length limit');
   ensureDir(NOTEBOOKS_DIR);
@@ -1180,7 +1252,10 @@ function buildApp() {
   });
 
   app.post('/api/youtube/transcript', async (req, res) => {
-    const result = await runYouTubeTranscript(req.body && req.body.target, req.body && req.body.languages);
+    const result = await runYouTubeTranscript(
+      req.body && req.body.target,
+      req.body && req.body.languages
+    );
     res.status(result.ok ? 200 : result.status || 400).json(result);
   });
 
@@ -1255,7 +1330,9 @@ function buildApp() {
   app.post('/api/shell/run', async (req, res) => {
     const id = String((req.body && req.body.id) || '');
     if (!Object.prototype.hasOwnProperty.call(SHELL_ALLOWLIST, id)) {
-      return res.status(400).json({ ok: false, error: 'shell profile not allowlisted', profile_id: id });
+      return res
+        .status(400)
+        .json({ ok: false, error: 'shell profile not allowlisted', profile_id: id });
     }
     const result = await runShellProfile(id);
     if (!result.ok) return res.status(500).json(result);
