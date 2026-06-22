@@ -14,6 +14,7 @@ from python.scbe.bit_spine import (
     bytes_to_trits,
     ops_to_bf,
     pack_ops,
+    run_relationship_program,
     run_bf,
     trits_to_bytes,
     unpack_ops,
@@ -74,3 +75,29 @@ def test_spine_program_hash_detects_tamper() -> None:
 
     with pytest.raises(BitSpineError, match="hash mismatch"):
         unpack_ops(bytes(blob))
+
+
+def test_relationship_vm_runs_verified_read_transform_write_flow() -> None:
+    receipt = run_relationship_program(
+        "read 0 A; transform add A 1; write A 1; verify mem[1] eq 0x42",
+        memory=b"A",
+    )
+
+    assert receipt["schema"] == "scbe_relationship_vm_receipt_v1"
+    assert receipt["verified"] is True
+    assert receipt["registers"]["A"] == 0x42
+    assert receipt["memory_nonzero"]["0"] == 0x41
+    assert receipt["memory_nonzero"]["1"] == 0x42
+    assert [step["relationship"] for step in receipt["trace"]] == [
+        "read",
+        "transform",
+        "write",
+        "verify",
+    ]
+
+
+def test_relationship_vm_failed_verify_is_reported_not_hidden() -> None:
+    receipt = run_relationship_program("transform copy A 3; verify A eq 4")
+
+    assert receipt["verified"] is False
+    assert receipt["trace"][-1]["verified"] is False

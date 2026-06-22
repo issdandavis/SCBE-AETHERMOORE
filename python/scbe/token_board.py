@@ -23,7 +23,6 @@ never reveals the answer, so the model still has to choose the right token among
 from __future__ import annotations
 
 import argparse
-import os
 from typing import Callable, Dict, List, Optional, Sequence
 
 from src import numtheory as nt
@@ -148,13 +147,11 @@ def make_ask(model: Optional[str] = None, base: Optional[str] = None, key: Optio
     wrong, never a fabricated pass."""
     from python.helm import free_generator as fg
 
-    base = base or os.environ.get("SCBE_LLM_BASE", fg.DEFAULT_BASE)
-    key = key or os.environ.get("SCBE_LLM_KEY", "ollama")
-    model = model or os.environ.get("SCBE_LLM_MODEL", fg.DEFAULT_MODEL)
+    config = fg.resolve_llm_config(base=base, key=key, model=model)
 
     def ask(prompt: str) -> str:
         try:
-            return fg._chat([{"role": "user", "content": prompt}], base=base, key=key, model=model)
+            return fg.chat_with_config([{"role": "user", "content": prompt}], config)
         except Exception:
             return ""
 
