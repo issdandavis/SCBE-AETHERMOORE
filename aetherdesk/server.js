@@ -22,11 +22,40 @@ const path = require('path');
 
 const REPO_ROOT = path.resolve(__dirname, '..');
 const RECEIPTS_DIR = path.join(REPO_ROOT, 'artifacts', 'aetherdesk_receipts');
+const EMAIL_DRAFTS_DIR = path.join(REPO_ROOT, 'artifacts', 'aetherdesk_email_drafts');
+const NOTEBOOKS_DIR = path.join(REPO_ROOT, 'artifacts', 'aetherdesk_notebooks');
 const PORT = Number(process.env.AETHERDESK_PORT || 5717);
 const HOST = '127.0.0.1';
 const MAX_OUTPUT_TAIL_BYTES = 8192;
 const COMMAND_TIMEOUT_MS = 10 * 60 * 1000;
 const SHELL_TIMEOUT_MS = 45 * 1000;
+const PLAYWRIGHT_TIMEOUT_MS = 15 * 1000;
+const POWERSHELL_TIMEOUT_MS = 45 * 1000;
+const TRANSCRIPT_TIMEOUT_MS = 45 * 1000;
+const MAX_TERMINAL_COMMAND_CHARS = 900;
+const MAX_EMAIL_FIELD_CHARS = 4000;
+const MAX_NOTEBOOK_CHARS = 200000;
+const YOUTUBE_VIDEO_ID_RE = /^[A-Za-z0-9_-]{11}$/;
+const BLOCKED_POWERSHELL_PATTERNS = Object.freeze([
+  /\bRemove-Item\b/i,
+  /\brm\b/i,
+  /\bdel\b/i,
+  /\berase\b/i,
+  /\brmdir\b/i,
+  /\bformat\b/i,
+  /\bdiskpart\b/i,
+  /\bshutdown\b/i,
+  /\brestart-computer\b/i,
+  /\bstop-computer\b/i,
+  /\bSet-ExecutionPolicy\b/i,
+  /\breg\s+(add|delete|import)\b/i,
+  /\bgit\s+(reset|clean|push)\b/i,
+  />\s*[^|]/,
+  />>/,
+  /\|\s*Out-File\b/i,
+  /\|\s*Set-Content\b/i,
+  /\|\s*Add-Content\b/i,
+]);
 
 // The allowlist is the security boundary. Every entry is a {npm, script}
 // reference resolved against package.json scripts. Frontend cannot pass a
@@ -113,6 +142,62 @@ const COMMAND_ALLOWLIST = Object.freeze({
     risk_tier: 'read-only',
     description: 'Show one code-song across proven-equal language faces.',
   },
+  host_check: {
+    label: 'Host Capability',
+    npmScript: 'aetherdesk:hostcheck',
+    category: 'System',
+    icon: 'check',
+    risk_tier: 'read-only',
+    description: 'Boot check: certify what THIS box can run (toolchains, models, cross-face faces) before acting.',
+  },
+  coding_ladder: {
+    label: 'Coding Ladder',
+    npmScript: 'aetherdesk:curriculum',
+    category: 'Measure',
+    icon: 'chart',
+    risk_tier: 'read-only',
+    description: 'Graded coding ladder (elementary -> PhD+); answer-key climber validates it end to end.',
+  },
+  reasoning_ladder: {
+    label: 'Reasoning Ladder',
+    npmScript: 'aetherdesk:reasoning',
+    category: 'Measure',
+    icon: 'chart',
+    risk_tier: 'read-only',
+    description: 'Graded auto-gradable reasoning ladder (exact-match); answer-key climber validates the grader.',
+  },
+  stepwise: {
+    label: 'Stepwise',
+    npmScript: 'aetherdesk:stepwise',
+    category: 'Tools',
+    icon: 'forge',
+    risk_tier: 'read-only',
+    description: 'Guided step machine: calc in code, a misstep rewinds to before the bad step and retries.',
+  },
+  failure_map: {
+    label: 'Failure Map',
+    npmScript: 'aetherdesk:failuremap',
+    category: 'Measure',
+    icon: 'chart',
+    risk_tier: 'read-only',
+    description: 'Localize where a model drifts and map it across models (drift point, wall, universal-fail).',
+  },
+  pazaak_board: {
+    label: 'Pazaak Board',
+    npmScript: 'aetherdesk:pazaak',
+    category: 'Tools',
+    icon: 'agent',
+    risk_tier: 'read-only',
+    description: 'Score task lanes (value/risk/verified) and recommend the next card move.',
+  },
+  mahss_game_gym: {
+    label: 'MAHSS Game Gym',
+    npmScript: 'aetherdesk:mahss-game-gym',
+    category: 'Research',
+    icon: 'game',
+    risk_tier: 'read-only',
+    description: 'Pacman/Tetris-style closed-loop gym for routing free/local LLMs through tool stations.',
+  },
 });
 
 // Shell profiles are real host commands, but still bounded. The UI can request
@@ -144,6 +229,31 @@ const SHELL_ALLOWLIST = Object.freeze({
     ],
     risk_tier: 'read-only',
     description: 'Verify that the PowerShell lane is callable.',
+  },
+  agent_shell_probe: {
+    label: 'Agent Shell Probe',
+    shell: 'python',
+    args: ['scripts/system/agent_shell.py', 'probe', '--model', 'qwen2.5-coder:3b'],
+    risk_tier: 'read-only',
+    description: 'List supervised Ollama launch integrations and the Agent Shell receipt root.',
+  },
+  agent_shell_codex_brief: {
+    label: 'Agent Shell Codex Brief',
+    shell: 'python',
+    args: [
+      'scripts/system/agent_shell.py',
+      'run',
+      'codex',
+      '--model',
+      'qwen2.5-coder:3b',
+      '--timeout',
+      '30',
+      '--readonly-worktree',
+      '--task',
+      'AetherDesk bounded handoff: inspect context only, propose one safe next improvement, do not edit files.',
+    ],
+    risk_tier: 'read-only-agent',
+    description: 'Launch Codex through the supervised Agent Shell with a no-edit proposal task.',
   },
 });
 
@@ -393,6 +503,130 @@ function runShellProfile(profileId) {
   });
 }
 
+function validatePowerShellCommand(command) {
+  const text = String(command || '').trim();
+  if (!text) return { ok: false, error: 'empty PowerShell command' };
+  if (text.length > MAX_TERMINAL_COMMAND_CHARS) {
+    return { ok: false, error: `PowerShell command too long (${text.length} chars)` };
+  }
+  for (const pattern of BLOCKED_POWERSHELL_PATTERNS) {
+    if (pattern.test(text)) {
+      return { ok: false, error: `PowerShell command blocked by safety pattern: ${pattern}` };
+    }
+  }
+  return { ok: true, command: text };
+}
+
+function buildPowerShellReceipt({
+  command,
+  exitCode,
+  stdoutTail,
+  stderrTail,
+  startedAt,
+  finishedAt,
+  artifactPath,
+  blocked,
+}) {
+  const commandStr = `powershell -NoProfile -ExecutionPolicy Bypass -Command ${command}`;
+  const result = exitCode === 0 ? 'pass' : 'fail';
+  return {
+    schema: 'aetherdesk_receipt_v0',
+    task_id: `${utcStamp()}_powershell`,
+    command_id: 'powershell:command',
+    command_label: blocked ? 'PowerShell blocked' : 'PowerShell command',
+    command: commandStr,
+    command_digest: sha256(Buffer.from(commandStr, 'utf8')),
+    risk_tier: blocked ? 'blocked' : 'bounded-host-read',
+    allowed_paths: [REPO_ROOT],
+    started_at: startedAt,
+    finished_at: finishedAt,
+    duration_ms: new Date(finishedAt).getTime() - new Date(startedAt).getTime(),
+    exit_code: exitCode,
+    result,
+    stdout_tail: stdoutTail,
+    stderr_tail: stderrTail,
+    artifact_path: artifactPath,
+  };
+}
+
+function runPowerShellCommand(command) {
+  return new Promise((resolve) => {
+    const startedAt = new Date().toISOString();
+    const validation = validatePowerShellCommand(command);
+    if (!validation.ok) {
+      const finishedAt = new Date().toISOString();
+      const receipt = buildPowerShellReceipt({
+        command: String(command || ''),
+        exitCode: 126,
+        stdoutTail: '',
+        stderrTail: validation.error,
+        startedAt,
+        finishedAt,
+        artifactPath: null,
+        blocked: true,
+      });
+      const filePath = writeReceipt(receipt);
+      receipt.artifact_path = path.relative(REPO_ROOT, filePath).replace(/\\/g, '/');
+      return resolve({ ok: false, error: validation.error, receipt });
+    }
+
+    const stdoutChunks = [];
+    const stderrChunks = [];
+    const child = spawn(
+      'powershell',
+      ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', validation.command],
+      {
+        cwd: REPO_ROOT,
+        env: process.env,
+        shell: false,
+      }
+    );
+    const timer = setTimeout(() => {
+      try {
+        child.kill('SIGTERM');
+      } catch (_err) {
+        /* swallow */
+      }
+    }, POWERSHELL_TIMEOUT_MS);
+    child.stdout.on('data', (d) => stdoutChunks.push(d.toString('utf8')));
+    child.stderr.on('data', (d) => stderrChunks.push(d.toString('utf8')));
+    child.on('close', (code) => {
+      clearTimeout(timer);
+      const finishedAt = new Date().toISOString();
+      const receipt = buildPowerShellReceipt({
+        command: validation.command,
+        exitCode: code,
+        stdoutTail: tailBytes(stdoutChunks.join(''), MAX_OUTPUT_TAIL_BYTES),
+        stderrTail: tailBytes(stderrChunks.join(''), MAX_OUTPUT_TAIL_BYTES),
+        startedAt,
+        finishedAt,
+        artifactPath: null,
+        blocked: false,
+      });
+      const filePath = writeReceipt(receipt);
+      receipt.artifact_path = path.relative(REPO_ROOT, filePath).replace(/\\/g, '/');
+      resolve({ ok: true, receipt });
+    });
+    child.on('error', (err) => {
+      clearTimeout(timer);
+      const finishedAt = new Date().toISOString();
+      const receipt = buildPowerShellReceipt({
+        command: validation.command,
+        exitCode: -1,
+        stdoutTail: '',
+        stderrTail: `[spawn error] ${String(err && err.message ? err.message : err)}`,
+        startedAt,
+        finishedAt,
+        artifactPath: null,
+        blocked: false,
+      });
+      const filePath = writeReceipt(receipt);
+      receipt.artifact_path = path.relative(REPO_ROOT, filePath).replace(/\\/g, '/');
+      resolve({ ok: true, receipt });
+    });
+  });
+}
+
 // Provider status checks — read-only. Never expose secret values, only
 // their presence as booleans. HTTP probes use a hard 1.5s timeout so a
 // single slow provider can't block the whole panel.
@@ -445,6 +679,338 @@ function probeEnv(envNames) {
   return { has_secret: Boolean(found), secret_env_var: found || null };
 }
 
+function normalizePlaywrightUrl(raw) {
+  const s = String(raw || '').trim();
+  if (!s) return 'https://example.com';
+  if (s === 'about:blank') return s;
+  const withScheme = /^[a-z][a-z0-9+.-]*:/i.test(s) ? s : `https://${s}`;
+  let parsed;
+  try {
+    parsed = new URL(withScheme);
+  } catch (_err) {
+    throw new Error('invalid URL');
+  }
+  if (!['http:', 'https:', 'about:'].includes(parsed.protocol)) {
+    throw new Error('only http, https, and about URLs are allowed');
+  }
+  if (parsed.username || parsed.password) {
+    throw new Error('URLs with embedded credentials are not allowed');
+  }
+  return parsed.toString();
+}
+
+function extractYouTubeVideoId(target) {
+  const raw = String(target || '').trim();
+  if (!raw) throw new Error('YouTube URL or video ID is required');
+  if (YOUTUBE_VIDEO_ID_RE.test(raw)) return raw;
+
+  let parsed;
+  try {
+    parsed = new URL(raw);
+  } catch (_err) {
+    throw new Error('invalid YouTube URL or video ID');
+  }
+
+  const host = parsed.hostname.toLowerCase();
+  const pathParts = parsed.pathname.split('/').filter(Boolean);
+  let candidate = '';
+  if (host === 'youtu.be' || host === 'www.youtu.be') {
+    candidate = pathParts[0] || '';
+  } else if (['youtube.com', 'www.youtube.com', 'm.youtube.com'].includes(host)) {
+    if (parsed.pathname === '/watch') {
+      candidate = parsed.searchParams.get('v') || '';
+    } else if (['shorts', 'live', 'embed'].includes(pathParts[0])) {
+      candidate = pathParts[1] || '';
+    }
+  }
+
+  if (YOUTUBE_VIDEO_ID_RE.test(candidate)) return candidate;
+  throw new Error('could not extract a YouTube video ID');
+}
+
+function normalizeTranscriptLanguages(raw) {
+  const list = Array.isArray(raw) ? raw : String(raw || 'en').split(',');
+  const languages = list
+    .map((v) => String(v || '').trim().toLowerCase())
+    .filter(Boolean)
+    .filter((v) => /^[a-z]{2,3}(-[a-z0-9]{2,8})?$/i.test(v))
+    .slice(0, 6);
+  return languages.length ? languages : ['en'];
+}
+
+function runYouTubeTranscript(target, languages) {
+  return new Promise((resolve) => {
+    let videoId;
+    try {
+      videoId = extractYouTubeVideoId(target);
+    } catch (err) {
+      return resolve({ ok: false, error: String(err && err.message ? err.message : err), status: 400 });
+    }
+
+    const startedAt = new Date().toISOString();
+    const args = ['scripts/system/youtube_transcript_pull.py', videoId, '--json'];
+    for (const lang of normalizeTranscriptLanguages(languages)) {
+      args.push('--language', lang);
+    }
+
+    const stdoutChunks = [];
+    const stderrChunks = [];
+    const child = spawn('python', args, {
+      cwd: REPO_ROOT,
+      env: process.env,
+      shell: false,
+    });
+    const timer = setTimeout(() => {
+      try {
+        child.kill('SIGTERM');
+      } catch (_err) {
+        /* swallow */
+      }
+    }, TRANSCRIPT_TIMEOUT_MS);
+
+    child.stdout.on('data', (d) => stdoutChunks.push(d.toString('utf8')));
+    child.stderr.on('data', (d) => stderrChunks.push(d.toString('utf8')));
+    child.on('close', (code) => {
+      clearTimeout(timer);
+      const finishedAt = new Date().toISOString();
+      const stdout = stdoutChunks.join('');
+      const stderr = stderrChunks.join('');
+      if (code !== 0) {
+        return resolve({
+          ok: false,
+          schema: 'aetherdesk_youtube_transcript_v0',
+          video_id: videoId,
+          exit_code: code,
+          error: tailBytes(stderr || stdout || 'transcript pull failed', MAX_OUTPUT_TAIL_BYTES),
+          duration_ms: new Date(finishedAt).getTime() - new Date(startedAt).getTime(),
+          status: 502,
+        });
+      }
+      try {
+        const payload = JSON.parse(stdout);
+        return resolve({
+          ok: true,
+          schema: 'aetherdesk_youtube_transcript_v0',
+          video_id: videoId,
+          fetched_at: finishedAt,
+          duration_ms: new Date(finishedAt).getTime() - new Date(startedAt).getTime(),
+          ...payload,
+          text: tailBytes(payload.text || '', 60000),
+        });
+      } catch (err) {
+        return resolve({
+          ok: false,
+          schema: 'aetherdesk_youtube_transcript_v0',
+          video_id: videoId,
+          error: `transcript JSON parse failed: ${String(err && err.message ? err.message : err)}`,
+          status: 502,
+        });
+      }
+    });
+    child.on('error', (err) => {
+      clearTimeout(timer);
+      resolve({
+        ok: false,
+        schema: 'aetherdesk_youtube_transcript_v0',
+        video_id: videoId,
+        error: `[spawn error] ${String(err && err.message ? err.message : err)}`,
+        status: 502,
+      });
+    });
+  });
+}
+
+function defaultPlaywrightExecutable() {
+  if (process.env.AETHERDESK_PLAYWRIGHT_EXECUTABLE) return process.env.AETHERDESK_PLAYWRIGHT_EXECUTABLE;
+  const edge = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
+  if (process.platform === 'win32' && fs.existsSync(edge)) return edge;
+  return null;
+}
+
+async function capturePlaywrightView(rawUrl) {
+  const url = normalizePlaywrightUrl(rawUrl);
+  const { chromium } = await import('playwright');
+  const executablePath = defaultPlaywrightExecutable();
+  const browser = await chromium.launch({
+    headless: true,
+    ...(executablePath ? { executablePath } : {}),
+  });
+  try {
+    const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+    const startedAt = Date.now();
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: PLAYWRIGHT_TIMEOUT_MS });
+    const title = await page.title().catch(() => '');
+    const screenshot = await page.screenshot({ type: 'png', fullPage: false, timeout: PLAYWRIGHT_TIMEOUT_MS });
+    return {
+      ok: true,
+      schema: 'aetherdesk_playwright_view_v0',
+      url: page.url(),
+      title,
+      captured_at: new Date().toISOString(),
+      duration_ms: Date.now() - startedAt,
+      viewport: { width: 1280, height: 720 },
+      screenshot_data_url: `data:image/png;base64,${screenshot.toString('base64')}`,
+    };
+  } finally {
+    await browser.close();
+  }
+}
+
+const browserSessions = new Map();
+
+function normalizeBrowserAction(rawAction) {
+  const action = String(rawAction || 'screenshot').trim().toLowerCase();
+  if (!['goto', 'screenshot', 'text', 'aria', 'guide', 'click', 'type', 'close'].includes(action)) {
+    throw new Error('unsupported browser action');
+  }
+  return action;
+}
+
+function normalizeSessionId(raw) {
+  const s = String(raw || 'main').trim() || 'main';
+  if (!/^[A-Za-z0-9_.-]{1,40}$/.test(s)) throw new Error('invalid browser session id');
+  return s;
+}
+
+function normalizeSelector(raw) {
+  const s = String(raw || '').trim();
+  if (!s) throw new Error('selector is required');
+  if (s.length > 220) throw new Error('selector too long');
+  return s;
+}
+
+async function browserAriaSnapshot(page) {
+  const body = page.locator('body');
+  if (typeof body.ariaSnapshot === 'function') {
+    return body.ariaSnapshot({ timeout: PLAYWRIGHT_TIMEOUT_MS }).catch(() => '');
+  }
+  return page
+    .locator('body')
+    .innerText({ timeout: PLAYWRIGHT_TIMEOUT_MS })
+    .then((text) => `- document: ${tailBytes(text, MAX_OUTPUT_TAIL_BYTES)}`)
+    .catch(() => '');
+}
+
+async function browserGuidedMoves(page) {
+  return page.evaluate(() => {
+    function cssEscapeLocal(value) {
+      if (window.CSS && typeof window.CSS.escape === 'function') return window.CSS.escape(value);
+      return String(value).replace(/[^A-Za-z0-9_-]/g, '\\$&');
+    }
+    function selectorFor(el) {
+      if (el.id) return `#${cssEscapeLocal(el.id)}`;
+      const name = el.getAttribute('name');
+      if (name) return `${el.tagName.toLowerCase()}[name="${String(name).replace(/"/g, '\\"')}"]`;
+      const aria = el.getAttribute('aria-label');
+      if (aria) return `${el.tagName.toLowerCase()}[aria-label="${String(aria).replace(/"/g, '\\"')}"]`;
+      const parent = el.parentElement;
+      if (!parent) return el.tagName.toLowerCase();
+      const siblings = Array.from(parent.children).filter((x) => x.tagName === el.tagName);
+      const idx = siblings.indexOf(el) + 1;
+      return `${el.tagName.toLowerCase()}:nth-of-type(${Math.max(1, idx)})`;
+    }
+    const nodes = Array.from(
+      document.querySelectorAll('a,button,input,textarea,select,[role="button"],[role="link"],[contenteditable="true"]')
+    );
+    return nodes
+      .filter((el) => {
+        const style = window.getComputedStyle(el);
+        const rect = el.getBoundingClientRect();
+        return style.visibility !== 'hidden' && style.display !== 'none' && rect.width > 0 && rect.height > 0;
+      })
+      .slice(0, 60)
+      .map((el, index) => {
+        const text = (el.innerText || el.value || el.getAttribute('aria-label') || el.getAttribute('title') || '').trim();
+        const tag = el.tagName.toLowerCase();
+        const role = el.getAttribute('role') || tag;
+        const canType = ['input', 'textarea'].includes(tag) || el.getAttribute('contenteditable') === 'true';
+        return {
+          index,
+          role,
+          tag,
+          label: text.slice(0, 120),
+          selector: selectorFor(el),
+          href: el.href || '',
+          disabled: Boolean(el.disabled || el.getAttribute('aria-disabled') === 'true'),
+          move: canType ? 'type' : 'click',
+        };
+      });
+  });
+}
+
+async function getBrowserSession(sessionId) {
+  const existing = browserSessions.get(sessionId);
+  if (existing) return existing;
+  const { chromium } = await import('playwright');
+  const executablePath = defaultPlaywrightExecutable();
+  const browser = await chromium.launch({
+    headless: true,
+    ...(executablePath ? { executablePath } : {}),
+  });
+  const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+  const session = { browser, page, id: sessionId, created_at: new Date().toISOString() };
+  browserSessions.set(sessionId, session);
+  return session;
+}
+
+async function browserAction(payload = {}) {
+  const action = normalizeBrowserAction(payload.action);
+  const sessionId = normalizeSessionId(payload.session_id);
+  if (action === 'close') {
+    const existing = browserSessions.get(sessionId);
+    if (existing) {
+      await existing.browser.close();
+      browserSessions.delete(sessionId);
+    }
+    return {
+      ok: true,
+      schema: 'aetherdesk_browser_action_v0',
+      session_id: sessionId,
+      action,
+      closed: Boolean(existing),
+    };
+  }
+
+  const session = await getBrowserSession(sessionId);
+  const { page } = session;
+  const startedAt = Date.now();
+
+  if (action === 'goto') {
+    const url = normalizePlaywrightUrl(payload.url);
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: PLAYWRIGHT_TIMEOUT_MS });
+  } else if (action === 'click') {
+    await page.click(normalizeSelector(payload.selector), { timeout: PLAYWRIGHT_TIMEOUT_MS });
+  } else if (action === 'type') {
+    await page.fill(normalizeSelector(payload.selector), String(payload.text || ''), {
+      timeout: PLAYWRIGHT_TIMEOUT_MS,
+    });
+  }
+
+  const title = await page.title().catch(() => '');
+  const text = action === 'text' ? await page.locator('body').innerText({ timeout: PLAYWRIGHT_TIMEOUT_MS }).catch(() => '') : '';
+  const aria = action === 'aria' ? await browserAriaSnapshot(page) : '';
+  const guide = action === 'guide' ? await browserGuidedMoves(page) : null;
+  const screenshot =
+    action === 'screenshot' || action === 'goto' || action === 'click' || action === 'type'
+      ? await page.screenshot({ type: 'png', fullPage: false, timeout: PLAYWRIGHT_TIMEOUT_MS })
+      : null;
+  return {
+    ok: true,
+    schema: 'aetherdesk_browser_action_v0',
+    session_id: sessionId,
+    action,
+    url: page.url(),
+    title,
+    captured_at: new Date().toISOString(),
+    duration_ms: Date.now() - startedAt,
+    viewport: { width: 1280, height: 720 },
+    text_tail: text ? tailBytes(text, MAX_OUTPUT_TAIL_BYTES) : '',
+    aria_tail: aria ? tailBytes(aria, MAX_OUTPUT_TAIL_BYTES) : '',
+    guide,
+    screenshot_data_url: screenshot ? `data:image/png;base64,${screenshot.toString('base64')}` : null,
+  };
+}
+
 async function checkAllProviders() {
   const results = await Promise.all(
     PROVIDER_DEFS.map(async (p) => {
@@ -460,6 +1026,97 @@ async function checkAllProviders() {
   return results;
 }
 
+function validateEmailDraft(payload = {}) {
+  const to = String(payload.to || '').trim();
+  const subject = String(payload.subject || '').trim();
+  const body = String(payload.body || '').trim();
+  if (!to) throw new Error('email draft requires a recipient');
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) throw new Error('recipient must be an email address');
+  if (!subject) throw new Error('email draft requires a subject');
+  if (!body) throw new Error('email draft requires a body');
+  if (to.length > 320 || subject.length > 300 || body.length > MAX_EMAIL_FIELD_CHARS) {
+    throw new Error('email draft exceeds length limits');
+  }
+  return { to, subject, body };
+}
+
+function createEmailDraft(payload = {}) {
+  const draft = validateEmailDraft(payload);
+  ensureDir(EMAIL_DRAFTS_DIR);
+  const savedAt = new Date().toISOString();
+  const id = `${utcStamp()}_${sha256(Buffer.from(`${draft.to}\n${draft.subject}\n${draft.body}`, 'utf8')).slice(0, 12)}`;
+  const record = {
+    schema: 'aetherdesk_email_draft_v0',
+    id,
+    saved_at: savedAt,
+    status: 'draft_only_not_sent',
+    to: draft.to,
+    subject: draft.subject,
+    body: draft.body,
+  };
+  const filePath = path.join(EMAIL_DRAFTS_DIR, `${id}.json`);
+  fs.writeFileSync(filePath, JSON.stringify(record, null, 2) + '\n', 'utf8');
+  return {
+    ok: true,
+    ...record,
+    artifact_path: path.relative(REPO_ROOT, filePath).replace(/\\/g, '/'),
+  };
+}
+
+function normalizeNotebookId(raw) {
+  const id = String(raw || 'default').trim() || 'default';
+  if (!/^[A-Za-z0-9_.-]{1,64}$/.test(id)) throw new Error('invalid notebook id');
+  return id;
+}
+
+function notebookPath(id) {
+  return path.join(NOTEBOOKS_DIR, `${normalizeNotebookId(id)}.json`);
+}
+
+function saveNotebook(payload = {}) {
+  const id = normalizeNotebookId(payload.id);
+  const title = String(payload.title || id).trim().slice(0, 180) || id;
+  const body = String(payload.body || '');
+  if (body.length > MAX_NOTEBOOK_CHARS) throw new Error('notebook exceeds length limit');
+  ensureDir(NOTEBOOKS_DIR);
+  const savedAt = new Date().toISOString();
+  const record = {
+    schema: 'aetherdesk_notebook_v0',
+    id,
+    title,
+    body,
+    saved_at: savedAt,
+  };
+  const filePath = notebookPath(id);
+  fs.writeFileSync(filePath, JSON.stringify(record, null, 2) + '\n', 'utf8');
+  return {
+    ok: true,
+    ...record,
+    artifact_path: path.relative(REPO_ROOT, filePath).replace(/\\/g, '/'),
+  };
+}
+
+function loadNotebook(id) {
+  const filePath = notebookPath(id);
+  if (!fs.existsSync(filePath)) {
+    return {
+      ok: true,
+      schema: 'aetherdesk_notebook_v0',
+      id: normalizeNotebookId(id),
+      title: normalizeNotebookId(id),
+      body: '',
+      saved_at: null,
+      artifact_path: null,
+    };
+  }
+  const record = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  return {
+    ok: true,
+    ...record,
+    artifact_path: path.relative(REPO_ROOT, filePath).replace(/\\/g, '/'),
+  };
+}
+
 function buildApp() {
   const app = express();
   app.use(express.json({ limit: '64kb' }));
@@ -467,6 +1124,10 @@ function buildApp() {
 
   app.get('/api/health', (_req, res) => {
     res.json({ ok: true, schema: 'aetherdesk_health_v0', port: PORT, host: HOST });
+  });
+
+  app.get('/favicon.ico', (_req, res) => {
+    res.status(204).end();
   });
 
   app.get('/api/providers', async (_req, res) => {
@@ -490,6 +1151,73 @@ function buildApp() {
       description: entry.description,
     }));
     res.json({ ok: true, schema: 'aetherdesk_commands_v0', commands: items });
+  });
+
+  app.post('/api/playwright/view', async (req, res) => {
+    try {
+      const result = await capturePlaywrightView(req.body && req.body.url);
+      res.json(result);
+    } catch (err) {
+      res.status(400).json({
+        ok: false,
+        schema: 'aetherdesk_playwright_view_v0',
+        error: String(err && err.message ? err.message : err),
+      });
+    }
+  });
+
+  app.post('/api/browser/action', async (req, res) => {
+    try {
+      const result = await browserAction(req.body || {});
+      res.json(result);
+    } catch (err) {
+      res.status(400).json({
+        ok: false,
+        schema: 'aetherdesk_browser_action_v0',
+        error: String(err && err.message ? err.message : err),
+      });
+    }
+  });
+
+  app.post('/api/youtube/transcript', async (req, res) => {
+    const result = await runYouTubeTranscript(req.body && req.body.target, req.body && req.body.languages);
+    res.status(result.ok ? 200 : result.status || 400).json(result);
+  });
+
+  app.post('/api/email/draft', (req, res) => {
+    try {
+      res.json(createEmailDraft(req.body || {}));
+    } catch (err) {
+      res.status(400).json({
+        ok: false,
+        schema: 'aetherdesk_email_draft_v0',
+        error: String(err && err.message ? err.message : err),
+      });
+    }
+  });
+
+  app.get('/api/notebook/:id', (req, res) => {
+    try {
+      res.json(loadNotebook(req.params.id));
+    } catch (err) {
+      res.status(400).json({
+        ok: false,
+        schema: 'aetherdesk_notebook_v0',
+        error: String(err && err.message ? err.message : err),
+      });
+    }
+  });
+
+  app.post('/api/notebook/:id', (req, res) => {
+    try {
+      res.json(saveNotebook({ ...(req.body || {}), id: req.params.id }));
+    } catch (err) {
+      res.status(400).json({
+        ok: false,
+        schema: 'aetherdesk_notebook_v0',
+        error: String(err && err.message ? err.message : err),
+      });
+    }
   });
 
   app.get('/api/shell/profiles', (_req, res) => {
@@ -534,6 +1262,11 @@ function buildApp() {
     res.json(result);
   });
 
+  app.post('/api/powershell/run', async (req, res) => {
+    const result = await runPowerShellCommand(req.body && req.body.command);
+    res.status(result.ok ? 200 : 400).json(result);
+  });
+
   return app;
 }
 
@@ -563,8 +1296,35 @@ module.exports = {
   writeReceipt,
   checkAllProviders,
   probeEnv,
+  normalizePlaywrightUrl,
+  extractYouTubeVideoId,
+  normalizeTranscriptLanguages,
+  normalizeBrowserAction,
+  normalizeSessionId,
+  normalizeSelector,
+  capturePlaywrightView,
+  browserAction,
+  validateEmailDraft,
+  createEmailDraft,
+  normalizeNotebookId,
+  saveNotebook,
+  loadNotebook,
+  validatePowerShellCommand,
   RECEIPTS_DIR,
+  EMAIL_DRAFTS_DIR,
+  NOTEBOOKS_DIR,
   HOST,
   PORT,
-  _private: { tailBytes, sha256, runCommand, runShellProfile, probeHttp },
+  _private: {
+    tailBytes,
+    sha256,
+    runCommand,
+    runShellProfile,
+    runPowerShellCommand,
+    runYouTubeTranscript,
+    probeHttp,
+    defaultPlaywrightExecutable,
+    browserAriaSnapshot,
+    browserGuidedMoves,
+  },
 };

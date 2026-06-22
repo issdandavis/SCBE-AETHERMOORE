@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AetherLand Desktop • SCBE-AETHERMOORE</title>
+  <style>
+    :root {
+      --bg: #071412; --bg-deep: #04100f; --paper: #0f1f1b; --paper2: #122a25;
+      --line: rgba(139, 255, 223, 0.18); --line-bright: rgba(143,255,211,0.35);
+      --text: #e7fff7; --muted: #9bc5ba; --mint: #8fffd3; --aqua: #6dd8ff; --gold: #ffd977;
+      --accent: #17c6cf;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: #020a09; color: var(--text);
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      overflow: hidden; height: 100vh;
+    }
+    #desktop {
+      position: relative; width: 100vw; height: 100vh;
+      background: 
+        radial-gradient(circle at 20% 25%, rgba(143,255,211,0.06) 0%, transparent 55%),
+        radial-gradient(circle at 75% 70%, rgba(109,216,255,0.05) 0%, transparent 50%),
+        linear-gradient(135deg, #04100f 0%, #071412 100%);
+      background-size: cover;
+    }
+    .desktop-icons {
+      position: absolute; top: 30px; left: 24px;
+      display: grid; grid-template-columns: repeat(1, 84px);
+      gap: 18px; z-index: 1;
+    }
+    .desktop-icon {
+      width: 76px; height: 88px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 6px;
+      cursor: pointer; border-radius: 10px; padding: 8px 6px;
+      transition: background 0.1s, transform 0.1s;
+      user-select: none;
+    }
+    .desktop-icon:hover { background: rgba(143,255,211,0.08); transform: translateY(-1px); }
+    .desktop-icon:active { transform: scale(0.96); }
+    .icon {
+      width: 52px; height: 52px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .icon.terminal { background: linear-gradient(145deg, #0f6fba, #0a4f7a); }
+    .icon.swarm { background: linear-gradient(145deg, #b07aff, #7c4fd1); }
+    .icon.receipts { background: linear-gradient(145deg, #ffd977, #d9a22e); color: #111; }
+    .icon.tongues { background: linear-gradient(145deg, #17c6cf, #0f8f96); }
+    .icon.map { background: linear-gradient(145deg, #2dd3a6, #158a6b); }
+    .icon-label {
+      font-size: 11px; text-align: center; line-height: 1.1;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+    }
+
+    /* Windows */
+    .window {
+      position: absolute; min-width: 320px; min-height: 220px;
+      background: var(--paper); border: 1px solid var(--line);
+      border-radius: 10px; box-shadow: 0 18px 60px rgba(0,0,0,0.55);
+      display: flex; flex-direction: column; overflow: hidden;
+      resize: both; z-index: 10;
+    }
+    .window.active { border-color: var(--line-bright); box-shadow: 0 22px 70px rgba(0,0,0,0.65); }
+    .titlebar {
+      height: 32px; background: #0a1a17; padding: 0 10px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 12px; font-weight: 600; cursor: move; user-select: none;
+      border-bottom: 1px solid var(--line);
+    }
+    .titlebar .title { display: flex; align-items: center; gap: 8px; }
+    .titlebar .controls { display: flex; gap: 4px; }
+    .titlebar .controls button {
+      width: 22px; height: 22px; border: none; background: transparent;
+      color: #8aa29a; font-size: 14px; line-height: 1; cursor: pointer; border-radius: 4px;
+    }
+    .titlebar .controls button:hover { background: rgba(255,255,255,0.08); }
+    .titlebar .controls .close:hover { background: #c43b3b; color: white; }
+    .window-body {
+      flex: 1; padding: 14px; overflow: auto; font-size: 14px;
+      background: var(--paper2);
+    }
+
+    /* Taskbar */
+    #taskbar {
+      position: absolute; bottom: 0; left: 0; right: 0; height: 46px;
+      background: rgba(4,16,15,0.92); border-top: 1px solid var(--line);
+      display: flex; align-items: center; padding: 0 12px; z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+    #start-btn {
+      background: linear-gradient(145deg, var(--mint), var(--aqua));
+      color: #04100f; font-weight: 700; border: none; padding: 6px 18px;
+      border-radius: 6px; cursor: pointer; font-size: 13px; margin-right: 12px;
+    }
+    .taskbar-item {
+      padding: 4px 14px; background: rgba(143,255,211,0.08);
+      border: 1px solid var(--line); border-radius: 6px; margin-right: 6px;
+      font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px;
+    }
+    .taskbar-item.active { background: rgba(143,255,211,0.18); border-color: var(--mint); }
+    #clock {
+      margin-left: auto; font-size: 12px; color: var(--muted);
+    }
+
+    /* App styles */
+    .terminal { font-family: ui-monospace, Consolas, monospace; background: #05120f; color: #8fffd3; padding: 12px; }
+    .terminal-input { background: transparent; border: none; color: inherit; width: 100%; outline: none; font-size: 13px; }
+    .receipt { font-size: 12px; background: #0a1a17; padding: 8px; border-radius: 6px; margin-bottom: 8px; border-left: 3px solid var(--mint); }
+    .agent { display: flex; gap: 10px; padding: 8px; background: #0a1a17; border-radius: 8px; margin-bottom: 6px; }
+    .tongue-bar { height: 18px; background: linear-gradient(90deg, #2dd3a6, #17c6cf, #b07aff, #ffd977, #ff9ec7, #a8c44a); background-size: 300% 100%; border-radius: 999px; margin: 6px 0; animation: flow 2.5s linear infinite; }
+    @keyframes flow { 0%{background-position:0 0} 100%{background-position:300% 0} }
+    button, .btn {
+      background: rgba(143,255,211,0.1); color: var(--mint); border: 1px solid var(--line-bright);
+      padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px;
+    }
+    button:hover { background: rgba(143,255,211,0.2); }
+    .muted { color: var(--muted); font-size: 12px; }
+    .status { font-size: 11px; padding: 1px 7px; border-radius: 999px; }
+    .allow { background: rgba(45,211,166,0.2); color: #2dd3a6; }
+    .escalate { background: rgba(255,217,119,0.2); color: #ffd977; }
+    .deny { background: rgba(255,110,110,0.2); color: #ff6e6e; }
+
+    .start-menu {
+      position: absolute; bottom: 50px; left: 12px; width: 280px;
+      background: var(--paper); border: 1px solid var(--line);
+      border-radius: 10px; box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      padding: 8px; display: none; z-index: 200;
+    }
+    .start-menu.open { display: block; }
+    .start-item {
+      padding: 8px 12px; border-radius: 6px; display: flex; gap: 10px; align-items: center;
+      cursor: pointer; font-size: 14px;
+    }
+    .start-item:hover { background: rgba(143,255,211,0.08); }
+  </style>
+</head>
+<body>
+  <div id="desktop">
+    <!-- Desktop Icons -->
+    <div class="desktop-icons">
+      <div class="desktop-icon" onclick="openApp('terminal')">
+        <div class="icon terminal">⌘</div>
+        <div class="icon-label">Governed<br>Terminal</div>
+      </div>
+      <div class="desktop-icon" onclick="openApp('swarm')">
+        <div class="icon swarm">🧠</div>
+        <div class="icon-label">Agent<br>Swarm</div>
+      </div>
+      <div class="desktop-icon" onclick="openApp('receipts')">
+        <div class="icon receipts">📜</div>
+        <div class="icon-label">Receipts</div>
+      </div>
+      <div class="desktop-icon" onclick="openApp('tongues')">
+        <div class="icon tongues">🌀</div>
+        <div class="icon-label">Tongue<br>Encoder</div>
+      </div>
+      <div class="desktop-icon" onclick="openApp('map')">
+        <div class="icon map">📐</div>
+        <div class="icon-label">Hyperbolic<br>Map</div>
+      </div>
+    </div>
+
+    <!-- Windows container -->
+    <div id="windows"></div>
+
+    <!-- Taskbar -->
+    <div id="taskbar">
+      <button id="start-btn" onclick="toggleStartMenu()">AetherLand</button>
+      <div id="task-items"></div>
+      <div id="clock"></div>
+    </div>
+
+    <!-- Start Menu -->
+    <div id="start-menu" class="start-menu">
+      <div class="start-item" onclick="openApp('terminal')">⌘ Governed Terminal</div>
+      <div class="start-item" onclick="openApp('swarm')">🧠 HYDRA Agent Swarm</div>
+      <div class="start-item" onclick="openApp('receipts')">📜 Receipt Archive</div>
+      <div class="start-item" onclick="openApp('tongues')">🌀 Sacred Tongues</div>
+      <div class="start-item" onclick="openApp('map')">📐 Hyperbolic Map</div>
+      <hr style="border:none;border-top:1px solid var(--line);margin:8px 0">
+      <div class="start-item" onclick="window.open('https://github.com/issdandavis/SCBE-AETHERMOORE','_blank')">GitHub</div>
+      <div class="start-item" onclick="window.open('https://aethermoore.com','_blank')">aethermoore.com</div>
+    </div>
+  </div>
+
+  <script>
+    // Simple window manager
+    let z = 10;
+    const openWindows = {};
+    const taskbarItems = document.getElementById('task-items');
+
+    function createWindow(id, title, iconHtml, contentHtml, width = 420, height = 300) {
+      if (openWindows[id]) {
+        focusWindow(id);
+        return;
+      }
+
+      const win = document.createElement('div');
+      win.className = 'window';
+      win.id = 'win-' + id;
+      win.style.width = width + 'px';
+      win.style.height = height + 'px';
+      win.style.left = (120 + Object.keys(openWindows).length * 28) + 'px';
+      win.style.top = (80 + Object.keys(openWindows).length * 24) + 'px';
+      win.innerHTML = `
+        <div class="titlebar">
+          <div class="title">${iconHtml} <span>${title}</span></div>
+          <div class="controls">
+            <button onclick="minimizeWindow('${id}')">–</button>
+            <button onclick="maximizeWindow('${id}')">□</button>
+            <button class="close" onclick="closeWindow('${id}')">✕</button>
+          </div>
+        </div>
+        <div class="window-body" id="body-${id}">
+          ${contentHtml}
+        </div>
+      `;
+
+      document.getElementById('windows').appendChild(win);
+      openWindows[id] = win;
+
+      // Dragging
+      const bar = win.querySelector('.titlebar');
+      let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+
+      bar.onmousedown = function(e) {
+        focusWindow(id);
+        e = e || window.event;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDrag;
+        document.onmousemove = elementDrag;
+      };
+
+      function elementDrag(e) {
+        e = e || window.event;
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        win.style.top = (win.offsetTop - pos2) + "px";
+        win.style.left = (win.offsetLeft - pos1) + "px";
+      }
+
+      function closeDrag() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+      }
+
+      win.addEventListener('mousedown', () => focusWindow(id));
+
+      // Add to taskbar
+      addTaskbarItem(id, title, iconHtml);
+      focusWindow(id);
+    }
+
+    function focusWindow(id) {
+      const win = document.getElementById('win-' + id);
+      if (!win) return;
+      z++;
+      win.style.zIndex = z;
+      document.querySelectorAll('.window').forEach(w => w.classList.remove('active'));
+      win.classList.add('active');
+
+      // highlight taskbar
+      document.querySelectorAll('.taskbar-item').forEach(t => t.classList.remove('active'));
+      const t = document.getElementById('task-' + id);
+      if (t) t.classList.add('active');
+    }
+
+    function addTaskbarItem(id, title, iconHtml) {
+      const existing = document.getElementById('task-' + id);
+      if (existing) return;
+
+      const item = document.createElement('div');
+      item.className = 'taskbar-item';
+      item.id = 'task-' + id;
+      item.innerHTML = `${iconHtml} <span>${title}</span>`;
+      item.onclick = () => {
+        const w = document.getElementById('win-' + id);
+        if (w.style.display === 'none') {
+          w.style.display = 'flex';
+        } else {
+          focusWindow(id);
+        }
+      };
+      taskbarItems.appendChild(item);
+    }
+
+    function closeWindow(id) {
+      const win = document.getElementById('win-' + id);
+      if (win) win.remove();
+      delete openWindows[id];
+      const t = document.getElementById('task-' + id);
+      if (t) t.remove();
+    }
+
+    function minimizeWindow(id) {
+      const win = document.getElementById('win-' + id);
+      if (win) win.style.display = 'none';
+    }
+
+    function maximizeWindow(id) {
+      const win = document.getElementById('win-' + id);
+      if (!win) return;
+      if (win.style.width === '98vw') {
+        win.style.width = '420px';
+        win.style.height = '300px';
+        win.style.left = '140px';
+        win.style.top = '90px';
+      } else {
+        win.style.left = '8px';
+        win.style.top = '8px';
+        win.style.width = '98vw';
+        win.style.height = 'calc(100vh - 54px)';
+      }
+    }
+
+    function toggleStartMenu() {
+      const menu = document.getElementById('start-menu');
+      menu.classList.toggle('open');
+    }
+
+    // Close start menu when clicking desktop
+    document.getElementById('desktop').addEventListener('click', (e) => {
+      if (e.target.id === 'desktop') {
+        document.getElementById('start-menu').classList.remove('open');
+      }
+    });
+
+    // ==================== APPS ====================
+
+    function openApp(type) {
+      document.getElementById('start-menu').classList.remove('open');
+
+      if (type === 'terminal') {
+        createWindow('terminal', 'Governed Terminal', '<span style="font-size:18px">⌘</span>', `
+          <div class="terminal" style="height:100%; display:flex; flex-direction:column">
+            <div id="term-output" style="flex:1; overflow:auto; white-space:pre-wrap; font-size:13px; margin-bottom:8px; line-height:1.35"></div>
+            <div style="display:flex; gap:6px; border-top:1px solid #23423a; padding-top:8px">
+              <span style="color:#2dd3a6">aether&gt;</span>
+              <input id="term-input" class="terminal-input" placeholder="Type a command (try: scan, agents, help)">
+            </div>
+          </div>
+        `, 520, 340);
+
+        setTimeout(() => {
+          const input = document.getElementById('term-input');
+          const output = document.getElementById('term-output');
+          if (!input || !output) return;
+
+          output.innerHTML = `<span style="color:#6a9488">Welcome to AetherLand Terminal v2.4 — all actions receipted.</span>\nType "help" for commands.\n\n`;
+
+          input.onkeydown = function(e) {
+            if (e.key === 'Enter') {
+              const cmd = input.value.trim();
+              if (!cmd) return;
+              output.innerHTML += `<span style="color:#ffd977">aether&gt; ${cmd}</span>\n`;
+              const result = runTerminalCommand(cmd);
+              output.innerHTML += result + '\n';
+              output.scrollTop = output.scrollHeight;
+              input.value = '';
+            }
+          };
+          input.focus();
+        }, 80);
+
+      } else if (type === 'swarm') {
+        createWindow('swarm', 'HYDRA Agent Swarm', '🧠', `
+          <div>
+            <div style="margin-bottom:12px">6 Sacred Tongues • 14 active agents</div>
+            <div id="swarm-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px"></div>
+            <div style="margin-top:16px">
+              <button onclick="runSwarmAction()">Dispatch Coordinated Task</button>
+              <span id="swarm-status" class="muted" style="margin-left:10px"></span>
+            </div>
+          </div>
+        `, 480, 320);
+
+        setTimeout(renderSwarm, 60);
+
+      } else if (type === 'receipts') {
+        createWindow('receipts', 'Receipt Archive', '📜', `
+          <div id="receipt-list" style="font-size:13px"></div>
+        `, 440, 380);
+
+        setTimeout(renderReceipts, 60);
+
+      } else if (type === 'tongues') {
+        createWindow('tongues', 'Sacred Tongues Encoder', '🌀', `
+          <div>
+            <textarea id="tongue-input" style="width:100%;height:92px;background:#05120f;color:#8fffd3;border:1px solid #23423a;border-radius:6px;padding:10px;font-size:13px" placeholder="Type something to analyze...">Deploy the new research agent with full context</textarea>
+            <button onclick="encodeTongues()" style="margin-top:8px">Encode → Tongues</button>
+            <div id="tongue-results" style="margin-top:16px"></div>
+          </div>
+        `, 460, 340);
+
+      } else if (type === 'map') {
+        createWindow('map', 'Hyperbolic Map', '📐', `
+          <div style="text-align:center">
+            <div style="margin:8px 0 16px;color:#8fffd3">Poincaré ball • 21D projection</div>
+            <canvas id="hyper-canvas" width="380" height="260" style="border:1px solid var(--line);background:#05120f;border-radius:8px"></canvas>
+            <div style="margin-top:10px">
+              <button onclick="perturbMap()">Perturb (increase drift)</button>
+              <button onclick="resetMap()">Reset</button>
+            </div>
+            <div id="map-info" class="muted" style="margin-top:10px;font-size:12px"></div>
+          </div>
+        `, 420, 340);
+
+        setTimeout(initHyperMap, 100);
+      }
+    }
+
+    // ===== Terminal Logic (real-ish SCBE simulation) =====
+    function runTerminalCommand(cmd) {
+      const lower = cmd.toLowerCase();
+      let score = 0.96;
+      let decision = 'ALLOW';
+      let color = '#2dd3a6';
+      let receipt = '';
+
+      if (lower.includes('delete') || lower.includes('drop') || lower.includes('rm -') || lower.includes('sudo') || lower.includes('ignore previous')) {
+        score = 0.31 + Math.random() * 0.15;
+        decision = 'ESCALATE';
+        color = '#ffd977';
+      }
+      if (lower.includes('drop table') || lower.includes('format') || lower.includes('shutdown') || lower.includes('hack')) {
+        score = 0.07 + Math.random() * 0.12;
+        decision = 'DENY';
+        color = '#ff6e6e';
+      }
+
+      const d = (1 - score) * 1.6;
+      const r = 2.4 + Math.random() * 1.1;
+      const cost = Math.pow(r, Math.pow(d * 1.4, 2)).toFixed(2);
+
+      receipt = `receipt-${Date.now().toString(36)}`;
+
+      return `<span style="color:${color}">[${decision}] score=${score.toFixed(4)}</span>  d*=${d.toFixed(2)}  cost≈${cost}\n` +
+             `→ receipt: ${receipt}\n` +
+             `→ logged to /aetherland/receipts/${receipt}.json`;
+    }
+
+    // ===== Swarm =====
+    let agents = [
+      {name: "KO-1", tongue: "KO", status: "idle"},
+      {name: "AV-3", tongue: "AV", status: "working"},
+      {name: "RU-2", tongue: "RU", status: "idle"},
+      {name: "CA-7", tongue: "CA", status: "working"},
+      {name: "UM-4", tongue: "UM", status: "idle"},
+      {name: "DR-9", tongue: "DR", status: "working"},
+    ];
+
+    function renderSwarm() {
+      const grid = document.getElementById('swarm-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      agents.forEach((a, i) => {
+        const el = document.createElement('div');
+        el.className = 'agent';
+        el.innerHTML = `
+          <div style="font-size:22px">${a.tongue}</div>
+          <div style="flex:1">
+            <div><strong>${a.name}</strong></div>
+            <div class="muted">${a.status}</div>
+          </div>
+        `;
+        grid.appendChild(el);
+      });
+    }
+
+    function runSwarmAction() {
+      const status = document.getElementById('swarm-status');
+      agents.forEach(a => a.status = Math.random() > 0.35 ? 'working' : 'idle');
+      renderSwarm();
+      status.textContent = 'Task dispatched • 4 agents active • receipt generated';
+      setTimeout(() => { if (status) status.textContent = ''; }, 2800);
+    }
+
+    // ===== Receipts =====
+    function renderReceipts() {
+      const container = document.getElementById('receipt-list');
+      if (!container) return;
+      const receipts = [
+        {id: 'rcpt-9f3k2', action: 'terminal:scbe-scan', decision: 'ALLOW', score: '0.981'},
+        {id: 'rcpt-2p1m9', action: 'browser:navigate /research', decision: 'ALLOW', score: '0.942'},
+        {id: 'rcpt-7x8q1', action: 'agent:dispatch ko+ca', decision: 'ESCALATE', score: '0.417'},
+        {id: 'rcpt-4b9n3', action: 'terminal:git push', decision: 'ALLOW', score: '0.997'},
+      ];
+      container.innerHTML = receipts.map(r => `
+        <div class="receipt">
+          <strong>${r.id}</strong><br>
+          ${r.action}<br>
+          <span class="status ${r.decision === 'ALLOW' ? 'allow' : 'escalate'}">${r.decision}</span> 
+          <span style="color:#6a9488">score=${r.score}</span>
+        </div>
+      `).join('');
+    }
+
+    // ===== Tongues Encoder =====
+    const TONGUES = ['KO','AV','RU','CA','UM','DR'];
+    function encodeTongues() {
+      const input = document.getElementById('tongue-input').value || '';
+      const container = document.getElementById('tongue-results');
+      if (!container) return;
+
+      const vals = TONGUES.map((t, i) => {
+        let v = Math.sin((input.length + i*3) * 0.7) * 0.5 + 0.5;
+        if (input.toLowerCase().includes('deploy') && t === 'KO') v += 0.35;
+        if (input.toLowerCase().includes('research') && (t === 'RU' || t === 'CA')) v += 0.28;
+        return Math.max(0.05, Math.min(0.99, v));
+      });
+
+      container.innerHTML = TONGUES.map((t, i) => `
+        <div style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;font-size:12px">
+            <span><strong>${t}</strong></span><span>${(vals[i]*100).toFixed(0)}%</span>
+          </div>
+          <div class="tongue-bar" style="width:${(vals[i]*100)}%"></div>
+        </div>
+      `).join('');
+    }
+
+    // ===== Hyperbolic Map (simple canvas) =====
+    let mapDrift = 0.3;
+    let hyperCanvas, ctx;
+
+    function initHyperMap() {
+      hyperCanvas = document.getElementById('hyper-canvas');
+      if (!hyperCanvas) return;
+      ctx = hyperCanvas.getContext('2d');
+      drawMap();
+      hyperCanvas.onclick = () => {
+        mapDrift = Math.min(0.95, mapDrift + 0.18);
+        drawMap();
+      };
+    }
+
+    function drawMap() {
+      if (!ctx) return;
+      ctx.clearRect(0,0,hyperCanvas.width, hyperCanvas.height);
+
+      const cx = hyperCanvas.width / 2;
+      const cy = hyperCanvas.height / 2;
+      const radius = 115;
+
+      // Ball
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI*2);
+      ctx.fillStyle = '#0a1a17';
+      ctx.fill();
+      ctx.strokeStyle = '#23423a';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Grid lines (hyperbolic feel)
+      ctx.strokeStyle = '#2a443f';
+      ctx.lineWidth = 1;
+      for (let i = -3; i <= 3; i++) {
+        ctx.beginPath();
+        ctx.arc(cx + i*18, cy, radius * 0.92, 0, Math.PI*2);
+        ctx.stroke();
+      }
+
+      // Points representing state
+      const points = [
+        {x: cx - 55, y: cy - 30, label: 'safe', size: 7},
+        {x: cx + 30, y: cy + 45, label: 'drift', size: 5 + mapDrift * 9},
+        {x: cx - 18, y: cy + 55, label: '', size: 4},
+        {x: cx + 65, y: cy - 40, label: 'escalate', size: 5 + mapDrift * 6},
+      ];
+
+      points.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+        ctx.fillStyle = p.label === 'drift' || p.label === 'escalate' ? '#ffd977' : '#8fffd3';
+        ctx.fill();
+      });
+
+      const info = document.getElementById('map-info');
+      if (info) info.innerHTML = `Drift radius: ${(mapDrift * 100).toFixed(0)}% — cost grows exponentially`;
+    }
+
+    function perturbMap() {
+      mapDrift = Math.min(0.96, mapDrift + 0.22);
+      drawMap();
+    }
+    function resetMap() {
+      mapDrift = 0.28;
+      drawMap();
+    }
+
+    // ===== Clock =====
+    function updateClock() {
+      const el = document.getElementById('clock');
+      if (!el) return;
+      const now = new Date();
+      el.textContent = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    }
+
+    // Boot
+    function bootDesktop() {
+      updateClock();
+      setInterval(updateClock, 30000);
+
+      // Easter egg: click desktop background 5 times to open terminal
+      let clicks = 0;
+      document.getElementById('desktop').addEventListener('click', function handler(e) {
+        if (e.target.id === 'desktop') {
+          clicks++;
+          if (clicks >= 5) {
+            clicks = 0;
+            openApp('terminal');
+          }
+          setTimeout(() => clicks = 0, 1200);
+        }
+      });
+
+      // Welcome toast-ish
+      setTimeout(() => {
+        const t = document.createElement('div');
+        t.style.cssText = 'position:absolute;bottom:70px;left:50%;transform:translateX(-50%);background:rgba(10,28,24,0.95);border:1px solid var(--line);padding:7px 16px;border-radius:999px;font-size:12px;color:#9bc5ba';
+        t.textContent = 'AetherLand v0.9 • all actions produce receipts';
+        document.getElementById('desktop').appendChild(t);
+        setTimeout(() => t.remove(), 2600);
+      }, 1400);
+
+      // Auto open terminal on first load (nice demo)
+      // setTimeout(() => openApp('terminal'), 900);
+    }
+
+    window.onload = bootDesktop;
+
+    // Keyboard support (global)
+    document.addEventListener('keydown', function(e) {
+      if (e.key === '?' && document.activeElement.tagName === 'BODY') {
+        e.preventDefault();
+        openApp('terminal');
+      }
+      if (e.key.toLowerCase() === 'r' && e.ctrlKey) {
+        e.preventDefault();
+        const rec = document.getElementById('win-receipts');
+        if (rec) closeWindow('receipts');
+        openApp('receipts');
+      }
+    });
+
+    console.log('%c[AetherLand Desktop] Ready. Type ? or click icons. All in browser — fully self-contained.', 'color:#6a9488');
+  </script>
+</body>
+</html>
