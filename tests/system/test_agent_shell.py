@@ -3,7 +3,6 @@ import json
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 MODULE_PATH = ROOT / "scripts" / "system" / "agent_shell.py"
 spec = importlib.util.spec_from_file_location("agent_shell", MODULE_PATH)

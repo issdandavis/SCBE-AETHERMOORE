@@ -13,7 +13,6 @@ import subprocess
 import time
 import json
 import psutil
-import os
 from pathlib import Path
 from itertools import product
 from datetime import datetime
@@ -21,16 +20,20 @@ from datetime import datetime
 GRID = list(product([2, 3, 4], [3, 4, 5, 6]))  # (cold_spot, gradient_abs)
 
 BASE_CMD = [
-    "python", "scripts/research/prime_fog_of_war_probe.py",
-    "--imaginary-paths-limit", "50000000",
+    "python",
+    "scripts/research/prime_fog_of_war_probe.py",
+    "--imaginary-paths-limit",
+    "50000000",
     "--field-scan",
 ]
 
 OUT_DIR = Path("artifacts/prime_fog_sweep")
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
+
 def mem_available_gb() -> float:
-    return psutil.virtual_memory().available / (1024 ** 3)
+    return psutil.virtual_memory().available / (1024**3)
+
 
 def run_profile(cold: int, gabs: int, limit_gb: float = 10.0, timeout_min: int = 60):
     profile = f"igct_c{cold}_g{gabs}"
@@ -44,13 +47,7 @@ def run_profile(cold: int, gabs: int, limit_gb: float = 10.0, timeout_min: int =
     print(f"\n=== Starting {profile} at {datetime.now().isoformat()} ===")
     print("Command:", " ".join(cmd))
 
-    proc = subprocess.Popen(
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        bufsize=1
-    )
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
 
     start = time.time()
     lines = []
@@ -90,6 +87,7 @@ def run_profile(cold: int, gabs: int, limit_gb: float = 10.0, timeout_min: int =
     print(f"=== Finished {profile} rc={rc} in {duration:.1f}s ===\n")
     time.sleep(8)  # breathing room
     return result
+
 
 if __name__ == "__main__":
     print("Thermal grid sweep driver")

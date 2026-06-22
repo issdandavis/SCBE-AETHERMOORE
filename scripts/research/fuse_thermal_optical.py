@@ -23,6 +23,7 @@ except ModuleNotFoundError:  # Direct execution from scripts/research.
         compute_log_transitions,
     )
 
+
 def fused_anchor_score(
     gaps: list[float],
     historical_gaps: list[float] | None = None,
@@ -65,6 +66,7 @@ def fused_anchor_score(
     fused = (1 - optical_weight) * thermal_score + optical_weight * optical_score
     return max(0.01, min(0.99, fused))
 
+
 # Example usage inside your probe
 if __name__ == "__main__":
     # Fake recent gaps (replace with real window from your probe)
@@ -72,7 +74,7 @@ if __name__ == "__main__":
     # Earlier history for retention lookup
     hist_gaps = [8, 10, 14, 12, 20, 18, 30, 24, 16, 36, 42, 50, 28, 18, 66] * 5
 
-    thermal = 0.62   # whatever your current model outputs for this window
+    thermal = 0.62  # whatever your current model outputs for this window
     fused = fused_anchor_score(recent_gaps, hist_gaps, thermal_score=thermal)
 
     print(f"Thermal only : {thermal:.4f}")
