@@ -1,9 +1,10 @@
-"""offload_measure: measure the auto-offload lift on a LIVE weak model.
+"""offload_measure: measure deterministic helper rescue on a LIVE weak model.
 
-The MEASURED quantity is narrow and honest: the RESCUE rate. The same model on the same task goes
+The measured quantity is narrow: the TOOL-RESCUE completion rate. The same model on the same task goes
 from "some numbers stuck at its ceiling" (allow_offload=False) to "those numbers completed via the
-oracle" (allow_offload=True). That stuck->rescued delta is the lift, and it is genuinely measured --
-the model really proposes, really exhausts its rewinds, and the oracle really takes over.
+deterministic task helper" (allow_offload=True). That stuck->rescued delta is genuinely measured --
+the model really proposes, really exhausts its rewinds, and the helper really takes over. It is not a
+model-capability lift claim; it is an environment/tool-rescue measurement.
 
 Correctness is a SEPARATE, INDEPENDENT cross-check -- NOT a re-run of the oracle's own rule. Each
 completed answer is compared against GROUND_TRUTH, a small hand-verified label table (independent of
@@ -22,7 +23,7 @@ from __future__ import annotations
 import os
 from typing import List
 
-from python.helm.free_generator import _chat
+from python.helm.free_generator import LLMConfig, chat_with_config, resolve_llm_config
 from python.scbe.sieve_calc import classify_number_task
 from python.scbe.stepwise import Proposer, run_stepwise
 
@@ -51,13 +52,15 @@ def model_proposer(base: str, key: str, model: str) -> Proposer:
     'prime-power' reply is NOT swallowed by the shorter 'prime' (a real bug a review caught: 'prime'
     is a substring of 'prime-power', so naive first-match mislabelled every correct prime-power answer
     as 'prime' and fabricated fake rescues). A transport failure is raised, never returned: a dead
-    endpoint must fail loud, not masquerade as a model ceiling that the oracle then 'rescues'.
+    endpoint must fail loud, not masquerade as a model ceiling that the helper then 'rescues'.
     """
+
+    config = LLMConfig(base=base, key=key, model=model)
 
     def p(ctx: str, options: List[str]) -> str:
         prompt = ctx + "\n\nReply with EXACTLY one of these labels and nothing else: " + ", ".join(options)
         try:
-            reply = _chat([{"role": "user", "content": prompt}], base=base, key=key, model=model)
+            reply = chat_with_config([{"role": "user", "content": prompt}], config)
         except Exception as exc:  # infra failure, NOT a model failure -> fail loud (never count as a lift)
             raise ConnectionError("LLM endpoint error: %s: %s" % (type(exc).__name__, exc)) from exc
         text = ((reply or "").strip().splitlines() or [""])[0].strip().strip(".'\"` ")
@@ -114,13 +117,15 @@ def measure(numbers: List[int], proposer: Proposer, ground_truth: dict = None, m
 
 
 def main(argv: object = None) -> int:
-    base = os.environ.get("SCBE_LLM_BASE", "http://localhost:11434/v1")
-    key = os.environ.get("SCBE_LLM_KEY", "ollama")
-    model = os.environ.get("SCBE_LLM_MODEL", "qwen2.5-coder:1.5b")
-    print("OFFLOAD_MEASURE  live model=%s  (baseline=no offload vs. auto-offload)\n" % model)
+    config = resolve_llm_config(
+        base=os.environ.get("SCBE_LLM_BASE", "http://localhost:11434/v1"),
+        key=os.environ.get("SCBE_LLM_KEY", "ollama"),
+        model=os.environ.get("SCBE_LLM_MODEL", "qwen2.5-coder:1.5b"),
+    )
+    print("OFFLOAD_MEASURE  live model=%s  (baseline=no offload vs. deterministic helper)\n" % config.model)
 
     try:
-        res = measure(DEFAULT_NUMBERS, model_proposer(base, key, model))
+        res = measure(DEFAULT_NUMBERS, model_proposer(config.base, config.key, config.model))
     except ConnectionError as exc:  # a dead endpoint must never read as a clean lift
         print("  [endpoint down] %s\n  -> NO measurement produced (a transport failure is not a result)" % exc)
         return 2
@@ -143,7 +148,7 @@ def main(argv: object = None) -> int:
         )
     n = len(res["rows"])
     print(
-        "\n  MEASURED lift: %d/%d stuck at the model's ceiling (offload off) -> %d rescued by the oracle (offload on)"
+        "\n  TOOL-RESCUE completion: %d/%d stuck at the model's ceiling (offload off) -> %d rescued by the helper (offload on)"
         % (res["baseline_stuck"], n, res["rescued"])
     )
     print(
@@ -153,7 +158,7 @@ def main(argv: object = None) -> int:
     if res["wrong"]:
         print("  [!] a completed answer disagreed with ground truth -- the classification rule is wrong, investigate")
     else:
-        print("  -> the stuck->rescued lift is real, and every verifiable answer matched independent ground truth")
+        print("  -> the stuck->rescued tool-rescue count is measured; every verifiable answer matched ground truth")
     return 0
 
 

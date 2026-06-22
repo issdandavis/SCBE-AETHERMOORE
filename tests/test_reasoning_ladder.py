@@ -31,6 +31,14 @@ def test_reference_clears_the_whole_ladder():
     s = run_reasoning(reference_climber)
     assert s["highest_tier_cleared"] == 5
     assert s["total_passed"] == s["total"] == 20
+    assert all(row["correct"] for tier in s["tiers"] for row in tier["items"])
+    assert s["tiers"][0]["items"][0] == {
+        "id": "a1",
+        "question": "What is 7 * 8?",
+        "expected": "56",
+        "got": "56",
+        "correct": True,
+    }
 
 
 def test_naive_floor_clears_nothing():
@@ -56,12 +64,24 @@ def test_climb_is_contiguous_from_the_bottom():
     s = run_reasoning(almost)
     assert s["highest_tier_cleared"] == 2
     assert s["total_passed"] == 19
+    failed = [row for tier in s["tiers"] for row in tier["items"] if not row["correct"]]
+    assert failed == [
+        {
+            "id": "c1",
+            "question": "How many positive divisors does 36 have?",
+            "expected": "9",
+            "got": "",
+            "correct": False,
+        }
+    ]
 
 
 def test_measure_lift_reports_the_delta():
     # MECHANISM CHECK ONLY (naive baseline vs reference tooled) -- not a capability claim
     r = measure_lift(naive_climber, reference_climber)
     assert r["tier_lift"] == 5 and r["total_lift"] == 20
+    assert r["baseline_misses"] == [it["id"] for tier in REASONING_LADDER for it in tier["items"]]
+    assert r["tooled_misses"] == []
 
 
 def test_llm_climber_extracts_the_answer_and_grades(monkeypatch):
