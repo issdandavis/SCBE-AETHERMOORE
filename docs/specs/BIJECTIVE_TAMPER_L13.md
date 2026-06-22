@@ -25,11 +25,11 @@ emits a tamper score in `[0, 1]` with a categorical kind:
 | `syntax` | 1.00 | DENY |
 | `input_invalid` | 1.00 | DENY |
 
-## What it catches
+## What it can signal
 
-The bijective compiler proved
+For supported Python inputs in the current regression suite, the bijective compiler gate checks
 `parse(decode(encode(src))) ≡ parse(src)` for legitimate code. When this
-identity FAILS in unexpected ways, that's a fingerprint of:
+identity FAILS in unexpected ways, the result is a useful static tamper signal:
 
 - **NFD/NFC normalization shifts** in literals — visible as `kind="nfc"`
   with `nfc_recovers_bytes=True`. Recoverable by pre-normalizing.
@@ -38,7 +38,7 @@ identity FAILS in unexpected ways, that's a fingerprint of:
 - **Outright corrupt bytes** — decoded source doesn't parse at all. Surfaces
   as `kind="syntax"`.
 
-## What it does NOT catch (sibling gates needed)
+## What it does NOT prove or catch (sibling gates needed)
 
 - **Homoglyph identifiers** (Cyrillic `а` vs Latin `a`). Each is a single
   valid codepoint that round-trips fine; the AST identifier strings just
@@ -88,9 +88,9 @@ the normal pipeline. The receipt + escalation are applied at every
 return path (calibration, immune, reflex, reroute, full evaluation) so
 audit always sees the signal regardless of which fast-path fires.
 
-**Monotonic guarantee:** `_escalate_decision(base, tamper)` only raises
-severity; a base DENY can never be downgraded to ALLOW by the tamper
-overlay.
+**Monotonic decision rule:** `_escalate_decision(base, tamper)` only raises
+severity in this implementation; a base DENY is not downgraded to ALLOW by the
+tamper overlay.
 
 **Receipt envelope** appended to `GateResult.signals`:
 ```
@@ -156,3 +156,7 @@ the same pattern as the bijective compiler gates — see
 2. Optionally a per-language tokenizer if not using the canonical Qwen one.
 
 The classification logic in `evaluate_code` is language-agnostic.
+
+Claim boundary: v1 results are Python-gate results. Do not describe them as
+universal source-code tamper detection until the target language has its own
+parser/canonicalizer and tests.
