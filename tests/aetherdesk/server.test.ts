@@ -188,6 +188,12 @@ describe('AetherDesk server — bounded PowerShell terminal', () => {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ command: 'Write-Output AETHERDESK_OK' }),
     });
+    if (status === 400 && body.receipt?.exit_code === 127) {
+      expect(body.ok).toBe(false);
+      expect(body.receipt.command_id).toBe('powershell:command');
+      expect(body.receipt.stderr_tail || body.error).toMatch(/powershell|ENOENT|not found/i);
+      return;
+    }
     expect(status).toBe(200);
     expect(body.ok).toBe(true);
     expect(body.receipt.command_id).toBe('powershell:command');
