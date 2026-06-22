@@ -305,6 +305,7 @@ tests/test_telemetry_advanced_math.json
 # Runtime state mutated by CLI/test runs (see scripts/system/repo_ordering.py)
 .scbe/cli-context.json
 sealed_blobs/
+checkpoints/
 
 # Stray plugin junk (saved command output, scratch dumps)
 .agents/plugins/i.txt
