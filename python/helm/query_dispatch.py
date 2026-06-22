@@ -40,6 +40,10 @@ _RULES = [
     (r"\bhex(?:adecimal)?\s+(?:of|for)\s+(\d+)",         "to_hex",         lambda m: (int(m[1]),)),
     (r"\b(\d+)\s+(?:to|in)\s+hex(?:adecimal)?",          "to_hex",         lambda m: (int(m[1]),)),
     (r"\b(\d+)\s+(?:to|in)\s+octal",                     "to_octal",       lambda m: (int(m[1]),)),
+    (r"\b(?:mean|average)\s+of\s+(.+)",                   "mean",           lambda m: (T.extract_numbers(m[1]),)),
+    (r"\bmedian\s+of\s+(.+)",                             "median",         lambda m: (T.extract_numbers(m[1]),)),
+    (r"\barea\s+of\s+(?:a\s+)?circle\s+(?:with\s+)?radius\s+(\d+(?:\.\d+)?)", "area_circle", lambda m: (float(m[1]),)),
+    (r"\bascii\s+(?:code\s+)?(?:of|for)\s+'?(\w)'?",      "char_code",      lambda m: (m[1],)),
 ]
 
 
@@ -81,6 +85,10 @@ if __name__ == "__main__":
         ("binary of 10", "1010"),
         ("255 to hex", "ff"),
         ("8 in octal", "10"),
+        ("mean of 1 2 3 4", 2.5),
+        ("median of 1 3 2", 2),
+        ("area of a circle radius 2", 12.566371),
+        ("ascii code of A", 65),
     ]
     ok = 0
     for q, exp in cases:

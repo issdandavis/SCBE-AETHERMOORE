@@ -6,6 +6,7 @@ from __future__ import annotations
 import math
 import re
 import calendar as _cal
+import statistics as _stats
 from datetime import date
 from collections import Counter
 from typing import Any, Dict, List
@@ -111,6 +112,31 @@ _EMAIL = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
 def is_valid_email(s: str) -> bool: return bool(_EMAIL.match(s.strip()))
 def extract_numbers(s: str) -> List[int]: return [int(x) for x in re.findall(r"-?\d+", s)]
 
+# ---------- statistics ----------
+def mean(xs: List[float]) -> float: return round(_stats.mean(xs), 6)
+def median(xs: List[float]) -> float: return _stats.median(xs)
+def mode(xs: List): return _stats.mode(xs)
+def stdev(xs: List[float]) -> float: return round(_stats.pstdev(xs), 6)
+def variance(xs: List[float]) -> float: return round(_stats.pvariance(xs), 6)
+def data_range(xs: List[float]): return max(xs) - min(xs)
+
+# ---------- geometry ----------
+def area_circle(r: float) -> float: return round(math.pi * r * r, 6)
+def area_rectangle(w: float, h: float) -> float: return w * h
+def area_triangle(b: float, h: float) -> float: return 0.5 * b * h
+def circumference(r: float) -> float: return round(2 * math.pi * r, 6)
+def hypotenuse(a: float, b: float) -> float: return round(math.hypot(a, b), 6)
+
+# ---------- matrix ----------
+def transpose(m: List[List]) -> List[List]: return [list(row) for row in zip(*m)]
+def matmul(a: List[List], b: List[List]) -> List[List]:
+    return [[sum(a[i][k]*b[k][j] for k in range(len(b))) for j in range(len(b[0]))] for i in range(len(a))]
+def identity(n: int) -> List[List[int]]: return [[1 if i == j else 0 for j in range(n)] for i in range(n)]
+
+# ---------- ascii / char ----------
+def char_code(c: str) -> int: return ord(c)
+def from_code(n: int) -> str: return chr(n)
+
 # ---------- lookup CHARTS ----------
 _ROMAN = [(1000,"M"),(900,"CM"),(500,"D"),(400,"CD"),(100,"C"),(90,"XC"),(50,"L"),
           (40,"XL"),(10,"X"),(9,"IX"),(5,"V"),(4,"IV"),(1,"I")]
@@ -140,6 +166,10 @@ BY_DOMAIN = {
     "conversion":    ["c_to_f","f_to_c","c_to_k","km_to_miles","miles_to_km","kg_to_lb","lb_to_kg","m_to_ft","ft_to_m"],
     "base":          ["to_binary","to_hex","to_octal","from_base"],
     "validate":      ["is_valid_email","extract_numbers"],
+    "statistics":    ["mean","median","mode","stdev","variance","data_range"],
+    "geometry":      ["area_circle","area_rectangle","area_triangle","circumference","hypotenuse"],
+    "matrix":        ["transpose","matmul","identity"],
+    "ascii":         ["char_code","from_code"],
     "chart":         ["int_to_roman","roman_to_int"],
 }
 
@@ -163,4 +193,11 @@ if __name__ == "__main__":
     assert to_binary(10) == "1010" and to_hex(255) == "ff" and to_octal(8) == "10" and from_base("ff",16) == 255
     assert is_valid_email("a@b.com") and not is_valid_email("a@b") and extract_numbers("got 3 of 10") == [3,10]
     assert int_to_roman(1994) == "MCMXCIV" and roman_to_int("MCMXCIV") == 1994
+    # statistics / geometry / matrix / ascii
+    assert mean([1,2,3,4]) == 2.5 and median([1,3,2]) == 2 and mode([1,1,2]) == 1 and data_range([1,9,3]) == 8
+    assert stdev([2,4,4,4,5,5,7,9]) == 2.0 and variance([2,4,4,4,5,5,7,9]) == 4.0
+    assert area_circle(1) == round(math.pi,6) and area_rectangle(3,4) == 12 and area_triangle(6,8) == 24.0
+    assert circumference(1) == round(2*math.pi,6) and hypotenuse(3,4) == 5.0
+    assert transpose([[1,2],[3,4]]) == [[1,3],[2,4]] and matmul([[1,2],[3,4]],[[5,6],[7,8]]) == [[19,22],[43,50]]
+    assert identity(2) == [[1,0],[0,1]] and char_code("A") == 65 and from_code(97) == "a"
     print("det_tools self-test: ALL PASS (%d tools across %d domains)" % (len(REGISTRY), len(BY_DOMAIN)))
