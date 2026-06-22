@@ -77,6 +77,12 @@ The JSONL input can contain a direct tool call, a nested pipeline, or a raw pack
 receipt-level decisions, summary metrics, and optional SFT records for teaching the agent to repeat/apply
 known packets.
 
+The summary is intentionally not just counts. It includes:
+
+- `weighted_echo_rate`: weighted mean of model echo success, so high-value records can matter more.
+- `*_length_percentiles`: p0/p50/p90/p100 over answer, prompt, process, and model-output lengths.
+- `correlations`: Pearson correlations between length/complexity signals and echo success.
+
 Local diagnostic evidence from MBPP failures matched this design: on 20 prior single-shot failures,
 reference-answer injection made the 1.5B model reproduce correct logic on 14/20; inject-or-fallback reached
 19/20 because the reference was the authority.

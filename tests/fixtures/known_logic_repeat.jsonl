@@ -1,3 +1,3 @@
 {"id":"echo-ok","tool":"prime_membership","payload":{"n":97},"model_output":"prime"}
-{"id":"echo-bad","tool":"prime_membership","payload":{"n":97},"model_output":"composite"}
+{"id":"echo-bad","tool":"prime_membership","payload":{"n":97},"model_output":"composite","weight":3}
 {"id":"nested","pipeline":[{"tool":"prime_membership","payload":{"n":97}},{"tool":"if_then","payload":{"condition":{"$eq":["$prev.answer","prime"]},"when_true":"ALLOW","when_false":"DENY","label":"prime_gate"}}],"model_output":"ALLOW"}

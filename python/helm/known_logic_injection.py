@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence
@@ -42,6 +43,57 @@ class KnownLogicPacket:
 
 def _normalize(value: str) -> str:
     return " ".join(str(value).strip().split())
+
+
+def percentile(values: Sequence[float], q: float) -> Optional[float]:
+    """Return the qth percentile using linear interpolation."""
+
+    if not values:
+        return None
+    if q < 0 or q > 100:
+        raise ValueError("percentile q must be between 0 and 100")
+    ordered = sorted(float(v) for v in values)
+    if len(ordered) == 1:
+        return round(ordered[0], 6)
+    pos = (len(ordered) - 1) * (q / 100.0)
+    lo = int(math.floor(pos))
+    hi = int(math.ceil(pos))
+    if lo == hi:
+        return round(ordered[lo], 6)
+    frac = pos - lo
+    return round(ordered[lo] + (ordered[hi] - ordered[lo]) * frac, 6)
+
+
+def weighted_mean(values: Sequence[float], weights: Sequence[float]) -> Optional[float]:
+    """Return sum(value*weight)/sum(weight), or None for no positive total weight."""
+
+    if len(values) != len(weights):
+        raise ValueError("values and weights must have the same length")
+    total_weight = sum(float(w) for w in weights)
+    if not values or total_weight <= 0:
+        return None
+    return round(sum(float(v) * float(w) for v, w in zip(values, weights)) / total_weight, 6)
+
+
+def pearson_correlation(xs: Sequence[float], ys: Sequence[float]) -> Optional[float]:
+    """Return Pearson correlation, or None when fewer than two points or zero variance."""
+
+    if len(xs) != len(ys):
+        raise ValueError("xs and ys must have the same length")
+    if len(xs) < 2:
+        return None
+    xvals = [float(x) for x in xs]
+    yvals = [float(y) for y in ys]
+    xmean = sum(xvals) / len(xvals)
+    ymean = sum(yvals) / len(yvals)
+    xdiff = [x - xmean for x in xvals]
+    ydiff = [y - ymean for y in yvals]
+    xvar = sum(d * d for d in xdiff)
+    yvar = sum(d * d for d in ydiff)
+    if xvar <= 0 or yvar <= 0:
+        return None
+    corr = sum(x * y for x, y in zip(xdiff, ydiff)) / math.sqrt(xvar * yvar)
+    return round(corr, 6)
 
 
 def exact_echo(candidate: str, packet: KnownLogicPacket) -> bool:
@@ -291,9 +343,19 @@ def evaluate_record(record: Mapping[str, Any]) -> Dict[str, Any]:
     decision = inject_or_fallback(packet, None if model_output is None else str(model_output))
     return {
         "id": str(record.get("id") or packet.packet_id),
+        "weight": float(record.get("weight", 1.0)),
         "packet": asdict(packet),
         "prompt": packet.to_prompt(),
         "decision": decision,
+    }
+
+
+def _length_percentiles(values: Sequence[float]) -> Dict[str, Optional[float]]:
+    return {
+        "p0": percentile(values, 0),
+        "p50": percentile(values, 50),
+        "p90": percentile(values, 90),
+        "p100": percentile(values, 100),
     }
 
 
@@ -303,6 +365,16 @@ def summarize_decisions(rows: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
     fallback = sum(1 for r in rows if r["decision"]["status"] == DETERMINISTIC_FALLBACK)
     false_success = sum(int(r["decision"].get("false_success_count", 0) or 0) for r in rows)
     closed = sum(1 for r in rows if r["decision"].get("closed") is True)
+    weights = [float(r.get("weight", 1.0) or 0.0) for r in rows]
+    echo_flags = [1.0 if r["decision"]["status"] == MODEL_ECHO_VERIFIED else 0.0 for r in rows]
+    packet_rows = [r for r in rows if "packet" in r]
+    answer_lengths = [
+        len(str(r["decision"].get("deterministic_answer") or r["decision"].get("answer") or "")) for r in rows
+    ]
+    prompt_lengths = [len(str(r.get("prompt") or "")) for r in packet_rows]
+    process_lengths = [len(str(r["packet"].get("process") or "")) for r in packet_rows]
+    model_output_lengths = [len(str(r["decision"].get("model_output") or "")) for r in rows]
+    packet_echo_flags = [1.0 if r["decision"]["status"] == MODEL_ECHO_VERIFIED else 0.0 for r in packet_rows]
     return {
         "attempted": attempted,
         "model_echo_verified": echo_verified,
@@ -310,6 +382,16 @@ def summarize_decisions(rows: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
         "false_success_count": false_success,
         "closure_rate": round(closed / attempted, 6) if attempted else 0.0,
         "echo_rate": round(echo_verified / attempted, 6) if attempted else 0.0,
+        "weighted_echo_rate": weighted_mean(echo_flags, weights),
+        "answer_length_percentiles": _length_percentiles(answer_lengths),
+        "prompt_length_percentiles": _length_percentiles(prompt_lengths),
+        "process_length_percentiles": _length_percentiles(process_lengths),
+        "model_output_length_percentiles": _length_percentiles(model_output_lengths),
+        "correlations": {
+            "model_output_length_vs_echo": pearson_correlation(model_output_lengths, echo_flags),
+            "prompt_length_vs_echo": pearson_correlation(prompt_lengths, packet_echo_flags),
+            "process_length_vs_echo": pearson_correlation(process_lengths, packet_echo_flags),
+        },
         "contract_passed": attempted == closed and false_success == 0,
     }
 

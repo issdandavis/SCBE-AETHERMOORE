@@ -10,8 +10,11 @@ from python.helm.known_logic_injection import (
     run_jsonl,
     run_known_pipeline,
     run_known_tool,
+    pearson_correlation,
+    percentile,
     summarize_decisions,
     to_sft_record,
+    weighted_mean,
     sieve_primes,
 )
 
@@ -106,7 +109,7 @@ def test_jsonl_runner_replays_records_and_scores_repeatability(tmp_path):
         "\n".join(
             [
                 '{"id":"echo-ok","tool":"prime_membership","payload":{"n":97},"model_output":"prime"}',
-                '{"id":"echo-bad","tool":"prime_membership","payload":{"n":97},"model_output":"composite"}',
+                '{"id":"echo-bad","tool":"prime_membership","payload":{"n":97},"model_output":"composite","weight":3}',
                 '{"id":"nested","pipeline":[{"tool":"prime_membership","payload":{"n":97}},'
                 '{"tool":"if_then","payload":{"condition":{"$eq":["$prev.answer","prime"]},'
                 '"when_true":"ALLOW","when_false":"DENY","label":"prime_gate"}}],"model_output":"ALLOW"}',
@@ -120,15 +123,17 @@ def test_jsonl_runner_replays_records_and_scores_repeatability(tmp_path):
     summary = summarize_decisions(rows)
 
     assert [r["decision"]["answer"] for r in rows] == ["prime", "prime", "ALLOW"]
-    assert summary == {
-        "attempted": 3,
-        "model_echo_verified": 2,
-        "deterministic_fallback": 1,
-        "false_success_count": 0,
-        "closure_rate": 1.0,
-        "echo_rate": 0.666667,
-        "contract_passed": True,
-    }
+    assert summary["attempted"] == 3
+    assert summary["model_echo_verified"] == 2
+    assert summary["deterministic_fallback"] == 1
+    assert summary["false_success_count"] == 0
+    assert summary["closure_rate"] == 1.0
+    assert summary["echo_rate"] == 0.666667
+    assert summary["weighted_echo_rate"] == 0.4
+    assert summary["answer_length_percentiles"]["p50"] == 5.0
+    assert summary["prompt_length_percentiles"]["p90"] is not None
+    assert "model_output_length_vs_echo" in summary["correlations"]
+    assert summary["contract_passed"] is True
 
 
 def test_known_logic_decision_can_be_emitted_as_sft_record():
@@ -155,3 +160,11 @@ def test_known_logic_decision_can_be_emitted_as_sft_record():
     assert sft["messages"][-1]["content"] == "prime"
     assert sft["meta"]["source"] == "known_logic_injection"
     assert sft["meta"]["false_success_count"] == 0
+
+
+def test_statistics_helpers_cover_percentile_weighted_mean_and_correlation():
+    assert percentile([10, 20, 30], 50) == 20.0
+    assert percentile([10, 20, 30, 40], 25) == 17.5
+    assert weighted_mean([0, 1, 1], [3, 1, 1]) == 0.4
+    assert pearson_correlation([1, 2, 3], [1, 2, 3]) == 1.0
+    assert pearson_correlation([1, 1, 1], [1, 2, 3]) is None
