@@ -1,0 +1,118 @@
+{
+  "schema": "scbe_release_surfaces_v1",
+  "updated": "2026-06-22",
+  "policy": {
+    "default_rule": "Ship one release object at a time. A surface is releasable only when its owner files, packaging script, workflow, and smoke gate are named here and pass.",
+    "do_not_ship_by_default": [
+      "artifacts/**",
+      "training/runs/**",
+      "external/**",
+      "archive/**",
+      "browser_profiles/**",
+      "config/connector_oauth/**",
+      ".env",
+      ".env.*"
+    ]
+  },
+  "surfaces": [
+    {
+      "id": "scbe_npm_sdk",
+      "repo": "SCBE-AETHERMOORE",
+      "status": "ship",
+      "role": "Public TypeScript SDK and GeoSeal CLI lane.",
+      "owner_files": ["package.json", "tsconfig.json"],
+      "required_paths": ["scripts/npm_pack_guard.js", "scripts/npm_consumer_smoke.mjs"],
+      "workflows": [".github/workflows/npm-publish.yml", ".github/workflows/ci.yml"],
+      "build_commands": ["npm run publish:prepare"],
+      "verification_commands": ["npm run publish:check:strict", "npm run publish:smoke:consumer"]
+    },
+    {
+      "id": "scbe_python_package",
+      "repo": "SCBE-AETHERMOORE",
+      "status": "ship",
+      "role": "Python runtime, operator CLI, and local verification package lane.",
+      "owner_files": ["pyproject.toml", "setup.py"],
+      "required_paths": ["scripts/pypi_build.py", "scripts/pypi_dist_guard.py"],
+      "workflows": [".github/workflows/pypi-publish.yml", ".github/workflows/ci.yml"],
+      "build_commands": ["npm run publish:pypi:build"],
+      "verification_commands": ["npm run publish:pypi:check"]
+    },
+    {
+      "id": "buyer_product_zips",
+      "repo": "SCBE-AETHERMOORE",
+      "status": "ship",
+      "role": "Downloadable buyer ZIPs: governance toolkit, training vault, and writing-process pack.",
+      "owner_files": ["scripts/package_products.py", "tests/test_package_products.py"],
+      "required_paths": ["deliverables/SCBE_Production_Pack/PACKAGE_INVENTORY.json"],
+      "workflows": [".github/workflows/ci.yml"],
+      "build_commands": ["npm run writing:package:all"],
+      "verification_commands": ["python -m pytest tests/test_package_products.py -q"]
+    },
+    {
+      "id": "workcell_download",
+      "repo": "SCBE-AETHERMOORE",
+      "status": "ship",
+      "role": "Self-contained Workcell CLI download with manifest, checksums, install scripts, and temp-install transcript.",
+      "owner_files": ["scripts/system/build_workcell_download.py", "packages/cli/package.json"],
+      "required_paths": ["docs/downloads/scbe-workcell-quickstart.md"],
+      "workflows": [".github/workflows/ci.yml"],
+      "build_commands": ["npm run release:workcell"],
+      "verification_commands": ["python scripts/system/build_workcell_download.py"]
+    },
+    {
+      "id": "black_box_download",
+      "repo": "SCBE-AETHERMOORE",
+      "status": "ship",
+      "role": "Local black-box workstation failure report download with sample output and verification transcript.",
+      "owner_files": ["scripts/system/build_black_box_download.py", "scripts/system/scbe_black_box.py"],
+      "required_paths": ["docs/downloads/scbe-black-box-quickstart.md"],
+      "workflows": [".github/workflows/ci.yml"],
+      "build_commands": ["npm run release:blackbox"],
+      "verification_commands": ["python scripts/system/build_black_box_download.py"]
+    },
+    {
+      "id": "docs_site",
+      "repo": "SCBE-AETHERMOORE",
+      "status": "ship",
+      "role": "Public proof, product explanation, book pages, and support surface.",
+      "owner_files": ["docs/index.html", "docs/books.html", "docs/support.html"],
+      "required_paths": ["docs/static/badges/stats-summary.json"],
+      "workflows": [".github/workflows/pages-deploy.yml", ".github/workflows/docs.yml"],
+      "build_commands": [],
+      "verification_commands": ["npm run docs:check"]
+    },
+    {
+      "id": "docker_api",
+      "repo": "SCBE-AETHERMOORE",
+      "status": "preview",
+      "role": "API/container deployment lane. Preview until a single blessed health/auth/action smoke is attached.",
+      "owner_files": ["Dockerfile.api", "docker-compose.api.yml"],
+      "required_paths": ["scripts/scbe_docker_status.mjs"],
+      "workflows": [".github/workflows/docker-remote-build.yml"],
+      "build_commands": ["npm run docker:remote:api"],
+      "verification_commands": ["npm run docker:doctor:api"]
+    },
+    {
+      "id": "training_eval",
+      "repo": "SCBE-AETHERMOORE",
+      "status": "internal",
+      "role": "Model-development and benchmark lane. Promote datasets only with manifest, train/eval split, and held-out eval.",
+      "owner_files": ["scripts/system/build_training_hub.py"],
+      "required_paths": ["scripts/eval/functional_coding_agent_benchmark.py"],
+      "workflows": [".github/workflows/public-agentic-benchmarks.yml"],
+      "build_commands": ["npm run training:hub"],
+      "verification_commands": ["npm run benchmark:coding-agents"]
+    },
+    {
+      "id": "aetherdesk_standalone",
+      "repo": "AetherDesk",
+      "status": "ship",
+      "role": "Standalone local AI desktop/browser-agent product. Release in the AetherDesk repo, not the old SCBE aetherdesk subtree.",
+      "owner_files": ["package.json", "aetherdesk/server.js", "react-desktop/src/main.jsx"],
+      "required_paths": ["extensions/playwright-sidebar-agent/manifest.json", "scripts/playwright-sidebar-agent.js"],
+      "workflows": [],
+      "build_commands": ["npm test", "npm run build:react"],
+      "verification_commands": ["npm test", "npm run build:react"]
+    }
+  ]
+}
