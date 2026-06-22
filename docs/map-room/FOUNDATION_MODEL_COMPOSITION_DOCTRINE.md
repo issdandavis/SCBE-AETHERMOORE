@@ -130,4 +130,3 @@ Raw benchmark lift is useful, but recovery lift is often the better test of comp
 ## Working Sentence
 
 The value is in the composition of the thing, not the shine it gives when light hits it.
-

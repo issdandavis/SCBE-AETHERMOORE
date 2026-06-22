@@ -156,7 +156,7 @@ This is the practical, desktop-usable bridge. The grid (with families + Fermat-6
 
 **Cycle status**: Short-form slice complete. Notes committed.
 
-This is excellent incremental execution. The AetherDesk Prime Grid is now the canonical human-facing + MCP-facing view of the prime transition manifold with optical depth. 
+This is excellent incremental execution. The AetherDesk Prime Grid is now the canonical human-facing + MCP-facing view of the prime transition manifold with optical depth.
 
 **Just delivered (user, 2026-06-20)**:
 - `AetherDesk/scripts/prime-grid.js`: added per-row `optical` (depth, mode, score, log_r, log_q, ultra_visible, sub_visible, retention_strength, retention_boost) + grid `optical_summary`.

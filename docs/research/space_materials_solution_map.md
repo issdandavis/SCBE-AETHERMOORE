@@ -355,4 +355,3 @@ Application:
 The strongest defensible statement is:
 
 > The existing SCBE space/materials work already defines a governed materials-and-mission evidence stack: chemistry/tool bridges, M-TEF micro-energy recovery, materials identity, nested Mars drones, and tethered relay infrastructure. The next useful step is a simulated materials-constrained Mars relay mission, not a flight claim.
-

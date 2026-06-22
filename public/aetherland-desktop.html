@@ -19,7 +19,7 @@
     }
     #desktop {
       position: relative; width: 100vw; height: 100vh;
-      background: 
+      background:
         radial-gradient(circle at 20% 25%, rgba(143,255,211,0.06) 0%, transparent 55%),
         radial-gradient(circle at 75% 70%, rgba(109,216,255,0.05) 0%, transparent 50%),
         linear-gradient(135deg, #04100f 0%, #071412 100%);
@@ -495,7 +495,7 @@
         <div class="receipt">
           <strong>${r.id}</strong><br>
           ${r.action}<br>
-          <span class="status ${r.decision === 'ALLOW' ? 'allow' : 'escalate'}">${r.decision}</span> 
+          <span class="status ${r.decision === 'ALLOW' ? 'allow' : 'escalate'}">${r.decision}</span>
           <span style="color:#6a9488">score=${r.score}</span>
         </div>
       `).join('');

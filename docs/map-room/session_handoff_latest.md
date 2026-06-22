@@ -67,7 +67,7 @@ Update this file at every long-form checkpoint.
 - Optical model is ready for integration and experimentation.
 
 **Next recommended action**:
-The user has now completed the "optical transition telemetry" short-form slice in AetherDesk (see below). 
+The user has now completed the "optical transition telemetry" short-form slice in AetherDesk (see below).
 
 Next clean slices (per user):
 - export-current-grid-slice for the fog probe (recommended to bridge JS <-> Python)

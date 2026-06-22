@@ -158,4 +158,3 @@ without increasing false accepts.
 ## Product Rule
 
 The model is allowed to think in lenses. The system must answer in verified programs.
-
