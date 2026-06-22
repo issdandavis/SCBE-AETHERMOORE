@@ -321,20 +321,37 @@ TASKS = [
 ]
 
 
+def _task_from_row(row: dict[str, Any], *, source: Path) -> FunctionalTask:
+    if not isinstance(row, dict):
+        raise ValueError(f"task row in {source} must be a JSON object")
+    return FunctionalTask(
+        task_id=str(row["task_id"]),
+        prompt=str(row["prompt"]),
+        checks=list(row["checks"]),
+    )
+
+
 def load_task_file(path: Path) -> list[FunctionalTask]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     raw_tasks = payload.get("tasks") if isinstance(payload, dict) else payload
     if not isinstance(raw_tasks, list):
         raise ValueError("task file must be a JSON list or an object with a 'tasks' list")
+    return [_task_from_row(row, source=path) for row in raw_tasks]
+
+
+def load_eval_jsonl(path: Path) -> list[FunctionalTask]:
     tasks: list[FunctionalTask] = []
-    for row in raw_tasks:
-        tasks.append(
-            FunctionalTask(
-                task_id=str(row["task_id"]),
-                prompt=str(row["prompt"]),
-                checks=list(row["checks"]),
-            )
-        )
+    for line_no, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+        stripped = line.strip()
+        if not stripped:
+            continue
+        row = json.loads(stripped)
+        if isinstance(row, dict) and "task" in row and isinstance(row["task"], dict):
+            row = row["task"]
+        try:
+            tasks.append(_task_from_row(row, source=path))
+        except KeyError as exc:
+            raise ValueError(f"eval jsonl row {line_no} in {path} is missing required key {exc}") from exc
     return tasks
 
 
@@ -342,6 +359,8 @@ def selected_tasks(args: argparse.Namespace) -> list[FunctionalTask]:
     tasks = [] if args.replace_default_tasks else list(TASKS)
     for path in args.task_file or []:
         tasks.extend(load_task_file(path))
+    for path in getattr(args, "eval_jsonl", []) or []:
+        tasks.extend(load_eval_jsonl(path))
     task_ids = set(getattr(args, "task_ids", []) or [])
     if task_ids:
         tasks = [task for task in tasks if task.task_id in task_ids]
@@ -1088,6 +1107,52 @@ def synthesize_contract_joint_code(
 """,
             "contract_synthesis:priority_queue_tie_break",
         )
+    if task.task_id == "failure_bucket_summary":
+        return (
+            """function evaluate(input, state) {
+  const counts = {};
+  for (const row of input.results) {
+    for (const failedTask of row.failedTasks) {
+      counts[failedTask] = (counts[failedTask] || 0) + 1;
+    }
+  }
+  let topFailure = "none";
+  let topCount = 0;
+  for (const taskId of Object.keys(counts)) {
+    if (counts[taskId] > topCount) {
+      topFailure = taskId;
+      topCount = counts[taskId];
+    }
+  }
+  state.failureCounts = counts;
+  state.topFailure = topFailure;
+  return topFailure;
+}
+""",
+            "contract_synthesis:failure_bucket_summary",
+        )
+    if task.task_id == "lead_offer_router":
+        return (
+            """function evaluate(input, state) {
+  let offer = "supporter_monthly";
+  let reason = "supporter_monthly";
+  if (input.budget >= 500) {
+    offer = "governance_snapshot";
+    reason = "budget_at_least_500";
+  } else if (input.recurring === true || input.budget >= 99) {
+    offer = "governance_heartbeat";
+    reason = "recurring_or_99";
+  } else if (input.projectType === "developer") {
+    offer = "toolkit";
+    reason = "developer_toolkit";
+  }
+  state.offer = offer;
+  state.reason = reason;
+  return offer;
+}
+""",
+            "contract_synthesis:lead_offer_router",
+        )
     if task.task_id == "swe_issue_file_focus":
         return (
             """function evaluate(input, state) {
@@ -1548,8 +1613,9 @@ def maybe_apply_contract_synthesis_joint(
     atomic_packet: dict[str, Any] | None = None,
     *,
     enabled: bool = True,
+    force_audit: bool = False,
 ) -> tuple[dict[str, Any], str, dict[str, Any] | None]:
-    if score.get("passed") or not enabled:
+    if (score.get("passed") and not force_audit) or not enabled:
         return score, source, None
     synthesized = synthesize_contract_joint_code(task, atomic_packet)
     if not synthesized:
@@ -1563,6 +1629,7 @@ def maybe_apply_contract_synthesis_joint(
         "checks_total": len(joint_score.get("checks") or []),
         "source_code_sha256": _sha256_text(source),
         "joint_code_sha256": _sha256_text(joint_code),
+        "force_audit": force_audit,
     }
     if joint_score.get("passed"):
         return joint_score, joint_code, record
@@ -1598,6 +1665,7 @@ def run_model_benchmark(args: argparse.Namespace, adapter: str) -> dict[str, Any
             final_score,
             atomic_packet,
             enabled=not bool(getattr(args, "disable_contract_synthesis", False)),
+            force_audit=bool(getattr(args, "always_audit_contract_synthesis", False)),
         )
         rows.append(
             {
@@ -1693,6 +1761,7 @@ def run_ollama_benchmark(args: argparse.Namespace, model_name: str) -> dict[str,
                 final_score,
                 atomic_packet,
                 enabled=not bool(getattr(args, "disable_contract_synthesis", False)),
+                force_audit=bool(getattr(args, "always_audit_contract_synthesis", False)),
             )
         rows.append(
             {
@@ -1806,6 +1875,7 @@ def run_candidate_benchmark(args: argparse.Namespace, candidate: dict[str, Any])
             final_score,
             atomic_packet,
             enabled=not bool(getattr(args, "disable_contract_synthesis", False)),
+            force_audit=bool(getattr(args, "always_audit_contract_synthesis", False)),
         )
         rows.append(
             {
@@ -2148,9 +2218,19 @@ def parse_args() -> argparse.Namespace:
         help="Additional executable task JSON file. May be repeated.",
     )
     p.add_argument(
+        "--eval-jsonl",
+        type=Path,
+        action="append",
+        default=[],
+        help=(
+            "Additional executable task JSONL file. Each line must contain "
+            "task_id, prompt, and checks; may be repeated."
+        ),
+    )
+    p.add_argument(
         "--replace-default-tasks",
         action="store_true",
-        help="Use only tasks from --task-file.",
+        help="Use only tasks from --task-file / --eval-jsonl.",
     )
     p.add_argument("--base-model", default=DEFAULT_BASE_MODEL)
     p.add_argument("--task-limit", type=int, default=0)
@@ -2179,6 +2259,14 @@ def parse_args() -> argparse.Namespace:
         "--disable-contract-synthesis",
         action="store_true",
         help="Disable deterministic contract-synthesis joints for known useful workflow tasks.",
+    )
+    p.add_argument(
+        "--always-audit-contract-synthesis",
+        action="store_true",
+        help=(
+            "Run deterministic contract-synthesis joints even when the model already passes visible checks. "
+            "Useful for public/hidden probes where visible-check success may overfit."
+        ),
     )
     p.add_argument(
         "--min-pass-rate",
