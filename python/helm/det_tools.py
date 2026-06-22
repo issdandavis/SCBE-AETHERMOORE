@@ -4,6 +4,9 @@ model calls them instead of reimplementing. Every tool is verified in __main__ o
 
 from __future__ import annotations
 import math
+import re
+import calendar as _cal
+from datetime import date
 from collections import Counter
 from typing import Any, Dict, List
 
@@ -79,6 +82,35 @@ def flatten(xss: List[List]) -> List: return [x for xs in xss for x in xs]
 def chunk(xs: List, n: int) -> List[List]: return [xs[i:i+n] for i in range(0, len(xs), n)]
 def dedup(xs: List) -> List: return list(dict.fromkeys(xs))
 
+# ---------- calendar / dates ----------
+def is_leap_year(y: int) -> bool: return _cal.isleap(y)
+def days_in_month(y: int, m: int) -> int: return _cal.monthrange(y, m)[1]
+def weekday_name(y: int, m: int, d: int) -> str: return _cal.day_name[date(y, m, d).weekday()]
+def days_between(y1: int, m1: int, d1: int, y2: int, m2: int, d2: int) -> int:
+    return abs((date(y2, m2, d2) - date(y1, m1, d1)).days)
+
+# ---------- unit conversions ----------
+def c_to_f(c: float) -> float: return round(c * 9/5 + 32, 4)
+def f_to_c(f: float) -> float: return round((f - 32) * 5/9, 4)
+def c_to_k(c: float) -> float: return round(c + 273.15, 4)
+def km_to_miles(km: float) -> float: return round(km * 0.621371, 4)
+def miles_to_km(mi: float) -> float: return round(mi / 0.621371, 4)
+def kg_to_lb(kg: float) -> float: return round(kg * 2.20462, 4)
+def lb_to_kg(lb: float) -> float: return round(lb / 2.20462, 4)
+def m_to_ft(m: float) -> float: return round(m * 3.28084, 4)
+def ft_to_m(ft: float) -> float: return round(ft / 3.28084, 4)
+
+# ---------- base conversions ----------
+def to_binary(n: int) -> str: return format(n, "b")
+def to_hex(n: int) -> str: return format(n, "x")
+def to_octal(n: int) -> str: return format(n, "o")
+def from_base(s: str, b: int) -> int: return int(s, b)
+
+# ---------- validation / patterns ----------
+_EMAIL = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
+def is_valid_email(s: str) -> bool: return bool(_EMAIL.match(s.strip()))
+def extract_numbers(s: str) -> List[int]: return [int(x) for x in re.findall(r"-?\d+", s)]
+
 # ---------- lookup CHARTS ----------
 _ROMAN = [(1000,"M"),(900,"CM"),(500,"D"),(400,"CD"),(100,"C"),(90,"XC"),(50,"L"),
           (40,"XL"),(10,"X"),(9,"IX"),(5,"V"),(4,"IV"),(1,"I")]
@@ -96,7 +128,6 @@ def roman_to_int(s: str) -> int:
 REGISTRY = {k: v for k, v in dict(globals()).items()
             if callable(v) and not k.startswith("_") and k not in ("annotations",)}
 
-# tools grouped by router domain
 BY_DOMAIN = {
     "number_theory": ["is_prime","primes_upto","nth_prime","factorize","divisors","gcd","lcm","is_perfect","nth_fibonacci"],
     "arithmetic":    ["digit_sum","factorial","ncr","npr"],
@@ -105,11 +136,14 @@ BY_DOMAIN = {
     "string":        ["is_palindrome","vowel_count","char_freq","reverse_words"],
     "search":        ["contains","index_of","find_all"],
     "list_array":    ["flatten","chunk","dedup"],
+    "calendar":      ["is_leap_year","days_in_month","weekday_name","days_between"],
+    "conversion":    ["c_to_f","f_to_c","c_to_k","km_to_miles","miles_to_km","kg_to_lb","lb_to_kg","m_to_ft","ft_to_m"],
+    "base":          ["to_binary","to_hex","to_octal","from_base"],
+    "validate":      ["is_valid_email","extract_numbers"],
     "chart":         ["int_to_roman","roman_to_int"],
 }
 
 if __name__ == "__main__":
-    # DETERMINISTIC self-test: every tool correct on known values
     assert is_prime(97) and not is_prime(91)
     assert nth_prime(10) == 29 and primes_upto(10) == [2,3,5,7]
     assert factorize(360) == [2,2,2,3,3,5] and divisors(12) == [1,2,3,4,6,12]
@@ -121,5 +155,12 @@ if __name__ == "__main__":
     assert is_palindrome("racecar") and vowel_count("hello world") == 3 and reverse_words("a b c") == "c b a"
     assert contains([1,2,3],2) and index_of([1,2,3],3) == 2 and find_all([1,0,1,0,1],1) == [0,2,4]
     assert flatten([[1,2],[3]]) == [1,2,3] and chunk([1,2,3,4,5],2) == [[1,2],[3,4],[5]] and dedup([1,1,2,3,3]) == [1,2,3]
+    # new domains
+    assert is_leap_year(2024) and not is_leap_year(2023) and days_in_month(2024,2) == 29
+    assert weekday_name(2024,1,1) == "Monday" and days_between(2024,1,1,2024,1,11) == 10
+    assert c_to_f(100) == 212.0 and f_to_c(32) == 0.0 and c_to_k(0) == 273.15
+    assert km_to_miles(1) == 0.6214 and miles_to_km(1) == 1.6093 and kg_to_lb(1) == 2.2046
+    assert to_binary(10) == "1010" and to_hex(255) == "ff" and to_octal(8) == "10" and from_base("ff",16) == 255
+    assert is_valid_email("a@b.com") and not is_valid_email("a@b") and extract_numbers("got 3 of 10") == [3,10]
     assert int_to_roman(1994) == "MCMXCIV" and roman_to_int("MCMXCIV") == 1994
     print("det_tools self-test: ALL PASS (%d tools across %d domains)" % (len(REGISTRY), len(BY_DOMAIN)))

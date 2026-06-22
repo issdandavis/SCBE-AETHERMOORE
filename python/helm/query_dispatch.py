@@ -30,6 +30,16 @@ _RULES = [
     (r"\b([IVXLCDM]+)\s+(?:in|to|as)\s+(?:a\s+)?(?:number|integer|arabic|decimal)", "roman_to_int", lambda m: (m[1].upper(),)),
     (r"\bis\s+['\"]?(\w+)['\"]?\s+a\s+palindrome",       "is_palindrome",  lambda m: (m[1],)),
     (r"\bvowels?\s+(?:count\s+)?(?:in|of)\s+['\"]?([\w ]+)['\"]?", "vowel_count", lambda m: (m[1].strip(),)),
+    (r"\bis\s+(\d{3,4})\s+a\s+leap\s+year",              "is_leap_year",   lambda m: (int(m[1]),)),
+    (r"\b(-?\d+(?:\.\d+)?)\s*(?:degrees?\s*)?c(?:elsius)?\s+(?:to|in)\s+f", "c_to_f", lambda m: (float(m[1]),)),
+    (r"\b(-?\d+(?:\.\d+)?)\s*(?:degrees?\s*)?f(?:ahrenheit)?\s+(?:to|in)\s+c", "f_to_c", lambda m: (float(m[1]),)),
+    (r"\b(-?\d+(?:\.\d+)?)\s*km\s+(?:to|in)\s+miles?",   "km_to_miles",    lambda m: (float(m[1]),)),
+    (r"\b(-?\d+(?:\.\d+)?)\s*miles?\s+(?:to|in)\s+km",   "miles_to_km",    lambda m: (float(m[1]),)),
+    (r"\bbinary\s+(?:of|for)\s+(\d+)",                   "to_binary",      lambda m: (int(m[1]),)),
+    (r"\b(\d+)\s+(?:to|in)\s+binary",                    "to_binary",      lambda m: (int(m[1]),)),
+    (r"\bhex(?:adecimal)?\s+(?:of|for)\s+(\d+)",         "to_hex",         lambda m: (int(m[1]),)),
+    (r"\b(\d+)\s+(?:to|in)\s+hex(?:adecimal)?",          "to_hex",         lambda m: (int(m[1]),)),
+    (r"\b(\d+)\s+(?:to|in)\s+octal",                     "to_octal",       lambda m: (int(m[1]),)),
 ]
 
 
@@ -64,6 +74,13 @@ if __name__ == "__main__":
         ("MCMXCIV to a number", 1994),
         ("is 'racecar' a palindrome", True),
         ("vowels in 'hello world'", 3),
+        ("is 2024 a leap year", True),
+        ("100 c to f", 212.0),
+        ("32 f to c", 0.0),
+        ("5 km to miles", 3.1069),
+        ("binary of 10", "1010"),
+        ("255 to hex", "ff"),
+        ("8 in octal", "10"),
     ]
     ok = 0
     for q, exp in cases:
