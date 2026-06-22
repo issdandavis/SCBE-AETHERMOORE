@@ -1,6 +1,7 @@
 # Ladder Baselines & Lift — reproducible record (2026-06-19)
 
 The thesis is **lift**: not a smarter model, the *same* model with its choices routed through logic-gates + tools. This is the first real measurement of that with a live local model. Machine-readable data: [`python/helm/ladder_baselines.json`](../python/helm/ladder_baselines.json).
+Current `measure_lift(...)` output also includes `baseline_misses` and `tooled_misses` item IDs, so a reported lift can be audited by the exact questions each arm missed rather than only by aggregate totals.
 
 ## System setup (to reproduce)
 

@@ -8,22 +8,22 @@ regressions green.
 **Tests:** `tests/governance/test_identifier_canonicality.py`,
 `tests/governance/test_identifier_canonicality_wireup.py`.
 **Sibling gate:** `bijective_tamper` (encoding-level tamper); this
-module catches the homoglyph attacks that bijective tamper explicitly
+module adds a static signal for the homoglyph attacks that bijective tamper explicitly
 documents as out of scope.
 **Feature flag:** `SCBE_ENABLE_IDENTIFIER_CANONICALITY_GATE=1` (env)
 OR `RuntimeGate(use_identifier_canonicality=True)`. Default OFF.
 
-## What it catches
+## What it can signal
 
-The bijective tamper signal proves
+For supported Python inputs, the bijective tamper signal checks
 `parse(decode(encode(src))) ≡ parse(src)` for clean code. But it does
-NOT catch homoglyph identifier attacks because each homoglyph codepoint
+not cover homoglyph identifier attacks because each homoglyph codepoint
 is a single valid Unicode character that round-trips fine. The AST sees
 them as DIFFERENT identifier strings, but a human reading the source
 can't tell `аpi_key` (Cyrillic а) from `api_key` (Latin a).
 
-This module fills that gap. It walks the AST, extracts every identifier,
-and classifies each:
+This module narrows that gap for Python. It walks the AST, extracts every
+identifier, and classifies each:
 
 | kind | score | trigger | L13 action |
 |------|-------|---------|------------|
@@ -39,7 +39,7 @@ Aggregate `score` and `kind` reflect the highest-severity finding;
 A `fingerprint` (SHA-256 of the sorted identifier set) is emitted for
 audit / replay-detection / allowlist use.
 
-## What it does NOT catch (out of scope)
+## What it does NOT prove or catch (out of scope)
 
 - **Logically-equivalent identifier renames** (e.g., `auth_token` vs
   `bearer_token`) — same semantics, different name.
@@ -153,6 +153,10 @@ follows the same pattern as bijective tamper / compiler gates — see
 `docs/specs/COMPILER_GATES_BY_LANGUAGE_TODO.md`. Each language needs
 an identifier-extraction function added to `_LANGUAGE_EXTRACTORS`. The
 classification logic in `_classify_identifier` is language-agnostic.
+
+Claim boundary: v1 results are Python-gate results. Do not describe them as
+universal identifier-tamper detection until the target language has its own
+identifier extractor and tests.
 
 ## Confusable table
 
