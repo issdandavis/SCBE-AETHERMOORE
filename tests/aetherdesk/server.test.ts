@@ -43,19 +43,30 @@ describe('AetherDesk server — health + introspection', () => {
     expect(status).toBe(200);
     expect(body.ok).toBe(true);
     expect(body.schema).toBe('aetherdesk_commands_v0');
-    const ids = body.commands.map((c: { id: string }) => c.id).sort();
-    expect(ids).toEqual([
+    const ids = body.commands.map((c: { id: string }) => c.id);
+    // the original spec commands must remain (containment, not exact -- the shell grows as tools wire in)
+    for (const core of [
+      'typecheck',
+      'ts_tests',
       'benchmark_cli',
-      'benchmark_coding_agents',
       'chemistry_lookup',
       'forge_demo',
-      'instrument_play',
-      'research_aether_lattice',
       'rosetta_demo',
-      'token_lookup',
-      'ts_tests',
-      'typecheck',
-    ]);
+    ]) {
+      expect(ids).toContain(core);
+    }
+    // the wired-in SCBE tools (step 1: tools into the shell)
+    for (const tool of [
+      'host_check',
+      'coding_ladder',
+      'reasoning_ladder',
+      'stepwise',
+      'failure_map',
+      'pazaak_board',
+      'mahss_game_gym',
+    ]) {
+      expect(ids).toContain(tool);
+    }
   });
 
   it('every command surface includes launcher metadata', async () => {
@@ -76,19 +87,14 @@ describe('AetherDesk server — allowlist enforcement (security boundary)', () =
   it('POST /api/run/<known> resolves to a known command id without spawning', async () => {
     // We don't actually invoke runCommand here (it spawns npm). We verify
     // that the allowlist export contains only the bounded launcher entries.
-    const ids = Object.keys(aetherdesk.COMMAND_ALLOWLIST).sort();
-    expect(ids).toEqual([
-      'benchmark_cli',
-      'benchmark_coding_agents',
-      'chemistry_lookup',
-      'forge_demo',
-      'instrument_play',
-      'research_aether_lattice',
-      'rosetta_demo',
-      'token_lookup',
-      'ts_tests',
-      'typecheck',
-    ]);
+    const ids = Object.keys(aetherdesk.COMMAND_ALLOWLIST);
+    // every entry is a bounded {npmScript} reference -- no raw shell strings (the security boundary)
+    for (const id of ids) {
+      expect(typeof aetherdesk.COMMAND_ALLOWLIST[id].npmScript).toBe('string');
+    }
+    for (const core of ['typecheck', 'forge_demo', 'host_check', 'coding_ladder']) {
+      expect(ids).toContain(core);
+    }
   });
 
   it('POST /api/run/<unknown> rejects with 400 and does not run anything', async () => {
@@ -122,7 +128,13 @@ describe('AetherDesk server — bounded shell profiles', () => {
     expect(body.ok).toBe(true);
     expect(body.schema).toBe('aetherdesk_shell_profiles_v0');
     const ids = body.profiles.map((p: { id: string }) => p.id).sort();
-    expect(ids).toEqual(['git_status', 'powershell_probe', 'pwd']);
+    expect(ids).toEqual([
+      'agent_shell_codex_brief',
+      'agent_shell_probe',
+      'git_status',
+      'powershell_probe',
+      'pwd',
+    ]);
     for (const p of body.profiles) {
       expect(typeof p.label).toBe('string');
       expect(typeof p.shell).toBe('string');
@@ -146,7 +158,55 @@ describe('AetherDesk server — bounded shell profiles', () => {
 
   it('shell allowlist export contains only bounded profiles', () => {
     const ids = Object.keys(aetherdesk.SHELL_ALLOWLIST).sort();
-    expect(ids).toEqual(['git_status', 'powershell_probe', 'pwd']);
+    expect(ids).toEqual([
+      'agent_shell_codex_brief',
+      'agent_shell_probe',
+      'git_status',
+      'powershell_probe',
+      'pwd',
+    ]);
+  });
+
+  it('read-only agent profile passes the Agent Shell worktree guard', () => {
+    const profile = aetherdesk.SHELL_ALLOWLIST.agent_shell_codex_brief;
+    expect(profile.args).toContain('--readonly-worktree');
+    expect(profile.risk_tier).toBe('read-only-agent');
+  });
+});
+
+describe('AetherDesk server — bounded PowerShell terminal', () => {
+  it('validates PowerShell text before execution', () => {
+    expect(aetherdesk.validatePowerShellCommand('Get-Location').ok).toBe(true);
+    expect(aetherdesk.validatePowerShellCommand('').ok).toBe(false);
+    expect(aetherdesk.validatePowerShellCommand('Remove-Item C:\\\\Temp -Recurse').ok).toBe(false);
+    expect(aetherdesk.validatePowerShellCommand('Get-ChildItem > out.txt').ok).toBe(false);
+  });
+
+  it('POST /api/powershell/run executes a harmless command and writes a receipt', async () => {
+    const { status, body } = await fetchJson(`${baseUrl}/api/powershell/run`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ command: 'Write-Output AETHERDESK_OK' }),
+    });
+    expect(status).toBe(200);
+    expect(body.ok).toBe(true);
+    expect(body.receipt.command_id).toBe('powershell:command');
+    expect(body.receipt.risk_tier).toBe('bounded-host-read');
+    expect(body.receipt.stdout_tail).toContain('AETHERDESK_OK');
+    expect(body.receipt.command_digest).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it('POST /api/powershell/run blocks destructive commands before execution', async () => {
+    const { status, body } = await fetchJson(`${baseUrl}/api/powershell/run`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ command: 'Remove-Item C:\\\\Users -Recurse -Force' }),
+    });
+    expect(status).toBe(400);
+    expect(body.ok).toBe(false);
+    expect(body.error).toMatch(/blocked/i);
+    expect(body.receipt.command_label).toBe('PowerShell blocked');
+    expect(body.receipt.exit_code).toBe(126);
   });
 });
 
@@ -352,6 +412,144 @@ describe('AetherDesk server — Provider Status (v0.1)', () => {
   });
 });
 
+describe('AetherDesk server — Playwright Vision boundary', () => {
+  it('normalizes Playwright URLs conservatively', () => {
+    expect(aetherdesk.normalizePlaywrightUrl('example.com')).toBe('https://example.com/');
+    expect(aetherdesk.normalizePlaywrightUrl('https://example.com/path')).toBe(
+      'https://example.com/path'
+    );
+    expect(aetherdesk.normalizePlaywrightUrl('about:blank')).toBe('about:blank');
+  });
+
+  it('rejects unsafe Playwright URL schemes and embedded credentials', () => {
+    expect(() => aetherdesk.normalizePlaywrightUrl('file:///C:/Windows/win.ini')).toThrow(
+      /only http/i
+    );
+    expect(() => aetherdesk.normalizePlaywrightUrl('https://user:pass@example.com')).toThrow(
+      /credentials/i
+    );
+  });
+
+  it('POST /api/playwright/view rejects unsafe URLs before launching a browser', async () => {
+    const { status, body } = await fetchJson(`${baseUrl}/api/playwright/view`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ url: 'file:///C:/Windows/win.ini' }),
+    });
+    expect(status).toBe(400);
+    expect(body.ok).toBe(false);
+    expect(body.error).toMatch(/only http/i);
+  });
+
+  it('browser action validators reject unsafe actions, sessions, and selectors', () => {
+    expect(aetherdesk.normalizeBrowserAction('goto')).toBe('goto');
+    expect(aetherdesk.normalizeBrowserAction('aria')).toBe('aria');
+    expect(aetherdesk.normalizeBrowserAction('guide')).toBe('guide');
+    expect(aetherdesk.normalizeSessionId('main.1')).toBe('main.1');
+    expect(aetherdesk.normalizeSelector('#q')).toBe('#q');
+    expect(() => aetherdesk.normalizeBrowserAction('delete')).toThrow(/unsupported/i);
+    expect(() => aetherdesk.normalizeSessionId('../x')).toThrow(/invalid/i);
+    expect(() => aetherdesk.normalizeSelector('')).toThrow(/selector/i);
+  });
+
+  it('POST /api/browser/action rejects unsafe goto URLs before launching a page', async () => {
+    const { status, body } = await fetchJson(`${baseUrl}/api/browser/action`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ action: 'goto', session_id: 'main', url: 'file:///C:/Windows/win.ini' }),
+    });
+    expect(status).toBe(400);
+    expect(body.ok).toBe(false);
+    expect(body.error).toMatch(/only http/i);
+  });
+
+  it('POST /api/browser/action rejects unsupported actions', async () => {
+    const { status, body } = await fetchJson(`${baseUrl}/api/browser/action`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ action: 'format-disk', session_id: 'main' }),
+    });
+    expect(status).toBe(400);
+    expect(body.ok).toBe(false);
+    expect(body.error).toMatch(/unsupported/i);
+  });
+});
+
+describe('AetherDesk server — transcript, email, notebook apps', () => {
+  it('extracts YouTube video IDs from common URL forms', () => {
+    expect(aetherdesk.extractYouTubeVideoId('dQw4w9WgXcQ')).toBe('dQw4w9WgXcQ');
+    expect(aetherdesk.extractYouTubeVideoId('https://youtu.be/dQw4w9WgXcQ')).toBe('dQw4w9WgXcQ');
+    expect(aetherdesk.extractYouTubeVideoId('https://www.youtube.com/watch?v=dQw4w9WgXcQ')).toBe(
+      'dQw4w9WgXcQ'
+    );
+    expect(aetherdesk.extractYouTubeVideoId('https://www.youtube.com/shorts/dQw4w9WgXcQ')).toBe(
+      'dQw4w9WgXcQ'
+    );
+  });
+
+  it('POST /api/youtube/transcript rejects invalid targets before external fetch', async () => {
+    const { status, body } = await fetchJson(`${baseUrl}/api/youtube/transcript`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ target: 'bad' }),
+    });
+    expect(status).toBe(400);
+    expect(body.ok).toBe(false);
+    expect(body.error).toMatch(/invalid|youtube/i);
+  });
+
+  it('validates email drafts and refuses send-shaped misuse', () => {
+    const draft = aetherdesk.validateEmailDraft({
+      to: 'test@example.com',
+      subject: 'Hello',
+      body: 'Draft only',
+    });
+    expect(draft.to).toBe('test@example.com');
+    expect(() => aetherdesk.validateEmailDraft({ to: 'bad', subject: 'x', body: 'y' })).toThrow(
+      /email address/i
+    );
+    expect(aetherdesk.createEmailDraft({ to: 'test@example.com', subject: 'Saved', body: 'Body' }).status).toBe(
+      'draft_only_not_sent'
+    );
+  });
+
+  it('POST /api/email/draft writes a draft artifact and never reports sent', async () => {
+    const { status, body } = await fetchJson(`${baseUrl}/api/email/draft`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ to: 'desk@example.com', subject: 'AetherDesk', body: 'Draft body' }),
+    });
+    expect(status).toBe(200);
+    expect(body.ok).toBe(true);
+    expect(body.schema).toBe('aetherdesk_email_draft_v0');
+    expect(body.status).toBe('draft_only_not_sent');
+    expect(body.artifact_path).toMatch(/artifacts\/aetherdesk_email_drafts/);
+    expect(fs.existsSync(path.join(REPO_ROOT, body.artifact_path))).toBe(true);
+    fs.unlinkSync(path.join(REPO_ROOT, body.artifact_path));
+  });
+
+  it('notebook IDs reject traversal and round-trip through the API', async () => {
+    expect(aetherdesk.normalizeNotebookId('default.notes')).toBe('default.notes');
+    expect(() => aetherdesk.normalizeNotebookId('../bad')).toThrow(/invalid/i);
+
+    const id = `test_${Date.now()}`;
+    const saved = await fetchJson(`${baseUrl}/api/notebook/${id}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ title: 'Test Notes', body: 'line one' }),
+    });
+    expect(saved.status).toBe(200);
+    expect(saved.body.ok).toBe(true);
+    expect(saved.body.artifact_path).toMatch(/artifacts\/aetherdesk_notebooks/);
+
+    const loaded = await fetchJson(`${baseUrl}/api/notebook/${id}`);
+    expect(loaded.status).toBe(200);
+    expect(loaded.body.title).toBe('Test Notes');
+    expect(loaded.body.body).toBe('line one');
+    fs.unlinkSync(path.join(REPO_ROOT, saved.body.artifact_path));
+  });
+});
+
 describe('AetherDesk server — desktop UI is served', () => {
   function fetchText(url: string) {
     return fetch(url).then((r) =>
@@ -370,6 +568,10 @@ describe('AetherDesk server — desktop UI is served', () => {
     const { body } = await fetchText(`${baseUrl}/`);
     for (const app of [
       'browser',
+      'playwright',
+      'youtube',
+      'email',
+      'notebook',
       'word',
       'editor',
       'image',
@@ -380,6 +582,40 @@ describe('AetherDesk server — desktop UI is served', () => {
     ]) {
       expect(body).toContain(`id="window-${app}"`);
     }
+  });
+
+  it('the terminal advertises agent shell aliases', async () => {
+    const { body } = await fetchText(`${baseUrl}/`);
+    expect(body).toContain('agent probe');
+    expect(body).toContain('agent codex');
+    expect(body).toContain('AG: ');
+    expect(body).toContain('pwsh Get-ChildItem');
+    expect(body).toContain('/api/powershell/run');
+  });
+
+  it('the desktop shell includes Playwright Vision controls', async () => {
+    const { body } = await fetchText(`${baseUrl}/`);
+    expect(body).toContain('id="window-playwright"');
+    expect(body).toContain('Playwright Vision');
+    expect(body).toContain('data-open="playwright"');
+    expect(body).toContain('/api/browser/action');
+    expect(body).toContain('id="playwright-text"');
+    expect(body).toContain('id="playwright-aria"');
+    expect(body).toContain('id="playwright-guide"');
+    expect(body).toContain('id="playwright-close-session"');
+  });
+
+  it('the served shell includes headed transcript, email, and notebook apps', async () => {
+    const { body } = await fetchText(`${baseUrl}/`);
+    expect(body).toContain('id="window-youtube"');
+    expect(body).toContain('id="youtube-pull"');
+    expect(body).toContain('/api/youtube/transcript');
+    expect(body).toContain('id="window-email"');
+    expect(body).toContain('id="email-save-draft"');
+    expect(body).toContain('/api/email/draft');
+    expect(body).toContain('id="window-notebook"');
+    expect(body).toContain('id="notebook-save"');
+    expect(body).toContain('/api/notebook/');
   });
 
   it('the served shell carries no removed Kimi branding', async () => {

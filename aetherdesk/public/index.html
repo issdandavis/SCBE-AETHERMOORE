@@ -6,7 +6,8 @@
     <title>AetherDesk</title>
     <style>
       :root {
-        --blue: #0078d4;
+        --blue: #0f6fba;
+        --blue2: #094f88;
         --paper: rgba(255, 255, 255, 0.97);
         --paper2: #f4f6f8;
         --line: rgba(0, 0, 0, 0.13);
@@ -27,9 +28,8 @@
         font-family: "Segoe UI", Arial, sans-serif;
         color: var(--text);
         background:
-          radial-gradient(circle at 18% 18%, rgba(0, 120, 212, 0.36), transparent 26%),
-          radial-gradient(circle at 78% 30%, rgba(214, 167, 86, 0.28), transparent 32%),
-          linear-gradient(145deg, #cfd7df, #eef1f4);
+          linear-gradient(160deg, rgba(15, 111, 186, 0.24), rgba(214, 167, 86, 0.16)),
+          linear-gradient(145deg, #dbe4ec, #f6f8fa);
       }
 
       button,
@@ -92,23 +92,24 @@
         width: 92px;
         min-height: 88px;
         padding: 7px 5px;
-        border: 1px solid transparent;
+        border: 1px solid rgba(31, 41, 51, 0.12);
         border-radius: 7px;
-        background: transparent;
-        color: #fff;
+        background: rgba(255, 255, 255, 0.78);
+        color: #1f2933;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         gap: 6px;
         cursor: pointer;
-        text-shadow: 0 1px 5px rgba(0, 0, 0, 0.55);
+        text-shadow: none;
+        box-shadow: 0 8px 18px rgba(31, 41, 51, 0.08);
       }
 
       .desktop-icon:hover,
       .desktop-icon:focus {
-        background: rgba(255, 255, 255, 0.12);
-        border-color: rgba(255, 255, 255, 0.22);
+        background: #fff;
+        border-color: rgba(15, 111, 186, 0.45);
         outline: none;
       }
 
@@ -116,7 +117,7 @@
         width: 44px;
         height: 44px;
         border-radius: 10px;
-        background: linear-gradient(145deg, var(--blue), #64b5f6);
+        background: linear-gradient(145deg, var(--blue2), #2f8fd5);
         color: white;
         display: grid;
         place-items: center;
@@ -172,6 +173,7 @@
         align-items: center;
         justify-content: space-between;
         user-select: none;
+        cursor: move;
       }
 
       .title {
@@ -220,11 +222,186 @@
         overflow: auto;
       }
 
+      .launcher-shell {
+        height: 100%;
+        display: grid;
+        grid-template-columns: 196px 1fr;
+        gap: 14px;
+        min-height: 0;
+      }
+
+      .launcher-nav {
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #f8fafc;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .nav-title {
+        margin: 0 0 4px;
+        color: #3f4b57;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .nav-button {
+        min-height: 34px;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        background: transparent;
+        color: #26323d;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 9px;
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .nav-button:hover,
+      .nav-button.active {
+        border-color: rgba(15, 111, 186, 0.24);
+        background: #fff;
+      }
+
+      .nav-button .app-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        font-size: 9px;
+        box-shadow: none;
+      }
+
+      .launcher-main {
+        min-width: 0;
+        overflow: auto;
+        padding-right: 2px;
+      }
+
+      .operator-hero {
+        padding: 16px;
+        border: 1px solid rgba(15, 111, 186, 0.18);
+        border-radius: 8px;
+        background: #fff;
+        display: grid;
+        grid-template-columns: 1.4fr 1fr;
+        gap: 14px;
+        margin-bottom: 12px;
+      }
+
+      .operator-hero h2,
+      .panel h3,
+      .command-section h3 {
+        margin: 0;
+        color: #17212b;
+        font-size: 14px;
+      }
+
+      .operator-hero p {
+        margin: 8px 0 0;
+        color: #52606d;
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .status-strip {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 7px;
+      }
+
+      .state-pill {
+        min-height: 34px;
+        padding: 7px 9px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: #f8fafc;
+      }
+
+      .state-pill b {
+        display: block;
+        color: #18242e;
+        font-size: 11px;
+      }
+
+      .state-pill span {
+        color: #62707d;
+        font-size: 10px;
+      }
+
+      .panel-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+
+      .panel {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: 12px;
+      }
+
+      .system-chain {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+        color: #52606d;
+        font-size: 11px;
+      }
+
+      .chain-node {
+        padding: 5px 7px;
+        border: 1px solid rgba(15, 111, 186, 0.18);
+        border-radius: 5px;
+        background: #f8fbff;
+        color: #24313d;
+      }
+
+      .failure-list,
+      .quick-list {
+        margin: 9px 0 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 6px;
+      }
+
+      .failure-list li,
+      .quick-list li {
+        color: #52606d;
+        font-size: 11px;
+        line-height: 1.35;
+      }
+
+      .failure-list code,
+      .quick-list code {
+        color: #17212b;
+        font-family: Consolas, monospace;
+        font-size: 10px;
+      }
+
+      .command-section {
+        margin-bottom: 12px;
+      }
+
+      .command-section h3 {
+        margin-bottom: 8px;
+      }
+
       #window-launcher {
-        left: 136px;
-        top: 70px;
-        width: min(780px, calc(100vw - 176px));
-        height: min(620px, calc(100vh - 138px));
+        left: 118px;
+        top: 54px;
+        width: min(1080px, calc(100vw - 156px));
+        height: min(720px, calc(100vh - 112px));
       }
 
       #window-terminal {
@@ -257,6 +434,10 @@
       }
 
       #window-browser,
+      #window-playwright,
+      #window-youtube,
+      #window-email,
+      #window-notebook,
       #window-word,
       #window-editor,
       #window-image,
@@ -269,6 +450,26 @@
       #window-browser {
         left: 172px;
         top: 112px;
+      }
+
+      #window-playwright {
+        left: 252px;
+        top: 104px;
+      }
+
+      #window-youtube {
+        left: 292px;
+        top: 124px;
+      }
+
+      #window-email {
+        left: 332px;
+        top: 144px;
+      }
+
+      #window-notebook {
+        left: 372px;
+        top: 164px;
       }
 
       #window-word {
@@ -313,7 +514,7 @@
       }
 
       .cmd {
-        min-height: 152px;
+        min-height: 142px;
         padding: 12px;
         border: 1px solid var(--line);
         border-radius: 8px;
@@ -379,8 +580,8 @@
       .chrome-button {
         border: 1px solid var(--blue);
         border-radius: 5px;
-        background: transparent;
-        color: var(--blue);
+        background: #fff;
+        color: var(--blue2);
         padding: 5px 10px;
         font-size: 11px;
         cursor: pointer;
@@ -388,7 +589,7 @@
 
       button.run:hover,
       .chrome-button:hover {
-        background: var(--blue);
+        background: var(--blue2);
         color: white;
       }
 
@@ -509,7 +710,27 @@
         background: #fff;
       }
 
+      .playwright-stage {
+        min-height: 320px;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: #101418;
+        display: grid;
+        place-items: center;
+        overflow: auto;
+      }
+
+      .playwright-stage img {
+        width: 100%;
+        max-width: 1280px;
+        height: auto;
+        display: block;
+        background: #fff;
+      }
+
       .doc-editor,
+      .notebook-editor,
+      .email-body,
       .code-editor,
       .speech-text {
         width: 100%;
@@ -765,6 +986,11 @@
         background: rgba(0, 0, 0, 0.05);
       }
 
+      .desktop-icon.selected {
+        background: #fff;
+        border-color: rgba(15, 111, 186, 0.55);
+      }
+
       .empty {
         color: var(--muted);
         font-size: 12px;
@@ -789,6 +1015,12 @@
         .desktop-icons {
           width: auto;
           grid-template-columns: repeat(4, minmax(70px, 1fr));
+        }
+
+        .launcher-shell,
+        .operator-hero,
+        .panel-grid {
+          grid-template-columns: 1fr;
         }
 
         .window {
@@ -830,6 +1062,22 @@
           <span class="app-icon">WB</span>
           <span class="label">Web</span>
         </button>
+        <button class="desktop-icon" data-open="playwright">
+          <span class="app-icon">PW</span>
+          <span class="label">Playwright</span>
+        </button>
+        <button class="desktop-icon" data-open="youtube">
+          <span class="app-icon">YT</span>
+          <span class="label">YouTube</span>
+        </button>
+        <button class="desktop-icon" data-open="email">
+          <span class="app-icon">@</span>
+          <span class="label">Email</span>
+        </button>
+        <button class="desktop-icon" data-open="notebook">
+          <span class="app-icon">NB</span>
+          <span class="label">Notebook</span>
+        </button>
         <button class="desktop-icon" data-open="word">
           <span class="app-icon">SW</span>
           <span class="label">Spiral Word</span>
@@ -865,16 +1113,66 @@
           <div class="title"><span class="app-icon">AP</span><span>Apps</span></div>
           <div class="controls">
             <button class="control" data-minimize="launcher" title="Minimize">-</button>
-            <button class="control" data-snap="launcher:full" title="Snap full">□</button>
+            <button class="control" data-snap="launcher:full" title="Snap full">[]</button>
             <button class="control close" data-close="launcher" title="Close">x</button>
           </div>
         </div>
         <div class="window-body">
-          <div class="toolbar">
-            <span>All systems run through bounded apps.</span>
-            <button class="chrome-button" data-open="terminal">Open Terminal</button>
+          <div class="launcher-shell">
+            <aside class="launcher-nav">
+              <p class="nav-title">AetherDesk</p>
+              <button class="nav-button active" data-open="launcher"><span class="app-icon">AP</span><span>Dashboard</span></button>
+              <button class="nav-button" data-open="terminal"><span class="app-icon">TM</span><span>Terminal</span></button>
+              <button class="nav-button" data-open="playwright"><span class="app-icon">PW</span><span>Browser Agent</span></button>
+              <button class="nav-button" data-open="notebook"><span class="app-icon">NB</span><span>Notebook</span></button>
+              <button class="nav-button" data-open="receipts"><span class="app-icon">RC</span><span>Receipts</span></button>
+              <button class="nav-button" data-open="providers"><span class="app-icon">PV</span><span>Providers</span></button>
+            </aside>
+            <section class="launcher-main">
+              <div class="operator-hero">
+                <div>
+                  <h2>Bounded Operator Desktop</h2>
+                  <p>
+                    AetherDesk runs local tools through explicit app actions, visible receipts, and guided browser movement.
+                    Use the launcher to choose a lane, the terminal for repeatable commands, and receipts to verify what happened.
+                  </p>
+                </div>
+                <div class="status-strip">
+                  <div class="state-pill"><b>Host</b><span id="state-host">checking</span></div>
+                  <div class="state-pill"><b>Workspace</b><span>bounded local</span></div>
+                  <div class="state-pill"><b>Mode</b><span>read-first actions</span></div>
+                  <div class="state-pill"><b>Last run</b><span id="state-last-run">none</span></div>
+                </div>
+              </div>
+              <div class="panel-grid">
+                <section class="panel">
+                  <h3>System Graph</h3>
+                  <div class="system-chain">
+                    <span class="chain-node">Host</span><span>-></span><span class="chain-node">Ladders</span><span>-></span>
+                    <span class="chain-node">Failure Map</span><span>-></span><span class="chain-node">Stepwise</span><span>-></span>
+                    <span class="chain-node">Rosetta</span><span>-></span><span class="chain-node">Instrument</span>
+                  </div>
+                </section>
+                <section class="panel">
+                  <h3>Try First</h3>
+                  <ul class="quick-list">
+                    <li><code>run host_check</code> - certify this machine</li>
+                    <li><code>run coding_ladder</code> - measure code tasks</li>
+                    <li><code>open playwright</code> - inspect a page visually</li>
+                  </ul>
+                </section>
+                <section class="panel">
+                  <h3>Failure Modes</h3>
+                  <ul class="failure-list">
+                    <li><code>ERR_UNKNOWN_COMMAND</code> command is not registered</li>
+                    <li><code>ERR_BOUNDARY_VIOLATION</code> action is not allowlisted</li>
+                    <li><code>ERR_HOST_CAPABILITY_FAIL</code> required tool is missing</li>
+                  </ul>
+                </section>
+              </div>
+              <div id="commands"><p class="empty">loading...</p></div>
+            </section>
           </div>
-          <div id="commands" class="app-grid"><p class="empty">loading...</p></div>
         </div>
       </section>
 
@@ -883,7 +1181,7 @@
           <div class="title"><span class="app-icon">TM</span><span>Terminal</span></div>
           <div class="controls">
             <button class="control" data-minimize="terminal" title="Minimize">-</button>
-            <button class="control" data-snap="terminal:full" title="Snap full">□</button>
+            <button class="control" data-snap="terminal:full" title="Snap full">[]</button>
             <button class="control close" data-close="terminal" title="Close">x</button>
           </div>
         </div>
@@ -893,7 +1191,7 @@
               <pre>AetherDesk Terminal
 boundary: allowlisted app actions only
 
-commands: help, apps, open word, run instrument_play, snap left, clear</pre>
+commands: help, apps, agents, agent probe, run instrument_play, snap left, clear</pre>
             </div>
             <label class="terminal-input">
               <span>ad&gt;</span>
@@ -910,7 +1208,7 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
           <div class="title"><span class="app-icon">RC</span><span>GeoSeal Receipts</span></div>
           <div class="controls">
             <button class="control" data-minimize="receipts" title="Minimize">-</button>
-            <button class="control" data-snap="receipts:full" title="Snap full">□</button>
+            <button class="control" data-snap="receipts:full" title="Snap full">[]</button>
             <button class="control close" data-close="receipts" title="Close">x</button>
           </div>
         </div>
@@ -925,7 +1223,7 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
           <div class="title"><span class="app-icon">PV</span><span>Provider Status</span></div>
           <div class="controls">
             <button class="control" data-minimize="providers" title="Minimize">-</button>
-            <button class="control" data-snap="providers:full" title="Snap full">□</button>
+            <button class="control" data-snap="providers:full" title="Snap full">[]</button>
             <button class="control close" data-close="providers" title="Close">x</button>
           </div>
         </div>
@@ -944,7 +1242,7 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
           <div class="controls">
             <button class="control" data-snap="browser:left" title="Snap left">L</button>
             <button class="control" data-minimize="browser" title="Minimize">-</button>
-            <button class="control" data-snap="browser:full" title="Snap full">□</button>
+            <button class="control" data-snap="browser:full" title="Snap full">[]</button>
             <button class="control close" data-close="browser" title="Close">x</button>
           </div>
         </div>
@@ -955,7 +1253,109 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
               <button class="chrome-button" id="browser-go">Go</button>
               <button class="chrome-button" id="browser-open-external">Open Outside</button>
             </div>
-            <iframe id="browser-frame" class="browser-frame" src="about:blank" sandbox="allow-same-origin allow-scripts allow-forms"></iframe>
+            <iframe id="browser-frame" class="browser-frame" src="about:blank" sandbox="allow-scripts allow-forms"></iframe>
+          </div>
+        </div>
+      </section>
+
+      <section class="window hidden" id="window-playwright" data-app="playwright">
+        <div class="titlebar">
+          <div class="title"><span class="app-icon">PW</span><span>Playwright Vision</span></div>
+          <div class="controls">
+            <button class="control" data-snap="playwright:left" title="Snap left">L</button>
+            <button class="control" data-minimize="playwright" title="Minimize">-</button>
+            <button class="control" data-snap="playwright:full" title="Snap full">[]</button>
+            <button class="control close" data-close="playwright" title="Close">x</button>
+          </div>
+        </div>
+        <div class="window-body">
+          <div class="app-pane">
+            <div class="app-toolbar">
+              <input id="playwright-url" value="https://example.com" aria-label="Playwright URL" />
+              <button class="chrome-button" id="playwright-capture">Capture</button>
+              <button class="chrome-button" id="playwright-text">Text</button>
+              <button class="chrome-button" id="playwright-aria">ARIA</button>
+              <button class="chrome-button" id="playwright-guide">Guide</button>
+              <button class="chrome-button" id="playwright-screenshot">Screenshot</button>
+              <button class="chrome-button" id="playwright-close-session">Close Session</button>
+              <button class="chrome-button" id="playwright-copy-state">Copy State</button>
+            </div>
+            <div class="playwright-stage">
+              <img id="playwright-shot" alt="Playwright page screenshot" />
+            </div>
+            <div class="app-output" id="playwright-output">capture a page to give the AI and human the same visual field</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="window hidden" id="window-youtube" data-app="youtube">
+        <div class="titlebar">
+          <div class="title"><span class="app-icon">YT</span><span>YouTube Transcript</span></div>
+          <div class="controls">
+            <button class="control" data-snap="youtube:left" title="Snap left">L</button>
+            <button class="control" data-minimize="youtube" title="Minimize">-</button>
+            <button class="control" data-snap="youtube:full" title="Snap full">[]</button>
+            <button class="control close" data-close="youtube" title="Close">x</button>
+          </div>
+        </div>
+        <div class="window-body">
+          <div class="app-pane">
+            <div class="app-toolbar">
+              <input id="youtube-target" value="https://www.youtube.com/watch?v=dQw4w9WgXcQ" aria-label="YouTube URL or ID" />
+              <input id="youtube-languages" value="en" aria-label="Transcript languages" />
+              <button class="chrome-button" id="youtube-pull">Pull Transcript</button>
+              <button class="chrome-button" id="youtube-copy">Copy</button>
+            </div>
+            <textarea id="youtube-transcript" class="code-editor" spellcheck="false"></textarea>
+            <div class="app-output" id="youtube-output">ready</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="window hidden" id="window-email" data-app="email">
+        <div class="titlebar">
+          <div class="title"><span class="app-icon">@</span><span>Email Draft</span></div>
+          <div class="controls">
+            <button class="control" data-snap="email:right" title="Snap right">R</button>
+            <button class="control" data-minimize="email" title="Minimize">-</button>
+            <button class="control" data-snap="email:full" title="Snap full">[]</button>
+            <button class="control close" data-close="email" title="Close">x</button>
+          </div>
+        </div>
+        <div class="window-body">
+          <div class="app-pane">
+            <div class="app-toolbar">
+              <input id="email-to" placeholder="to@example.com" aria-label="Email recipient" />
+              <input id="email-subject" placeholder="Subject" aria-label="Email subject" />
+              <button class="chrome-button" id="email-save-draft">Save Draft</button>
+            </div>
+            <textarea id="email-body" class="email-body" spellcheck="true" placeholder="Draft body"></textarea>
+            <div class="app-output" id="email-output">draft-only lane; no send action is wired</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="window hidden" id="window-notebook" data-app="notebook">
+        <div class="titlebar">
+          <div class="title"><span class="app-icon">NB</span><span>Notebook</span></div>
+          <div class="controls">
+            <button class="control" data-snap="notebook:left" title="Snap left">L</button>
+            <button class="control" data-minimize="notebook" title="Minimize">-</button>
+            <button class="control" data-snap="notebook:full" title="Snap full">[]</button>
+            <button class="control close" data-close="notebook" title="Close">x</button>
+          </div>
+        </div>
+        <div class="window-body">
+          <div class="app-pane">
+            <div class="app-toolbar">
+              <input id="notebook-id" value="default" aria-label="Notebook ID" />
+              <input id="notebook-title" value="AetherDesk Notes" aria-label="Notebook title" />
+              <button class="chrome-button" id="notebook-load">Load</button>
+              <button class="chrome-button" id="notebook-save">Save</button>
+              <button class="chrome-button" id="notebook-copy">Copy</button>
+            </div>
+            <textarea id="notebook-body" class="notebook-editor" spellcheck="true">AetherDesk headed notebook</textarea>
+            <div class="app-output" id="notebook-output">ready</div>
           </div>
         </div>
       </section>
@@ -966,7 +1366,7 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
           <div class="controls">
             <button class="control" data-snap="word:left" title="Snap left">L</button>
             <button class="control" data-minimize="word" title="Minimize">-</button>
-            <button class="control" data-snap="word:full" title="Snap full">□</button>
+            <button class="control" data-snap="word:full" title="Snap full">[]</button>
             <button class="control close" data-close="word" title="Close">x</button>
           </div>
         </div>
@@ -993,7 +1393,7 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
           <div class="controls">
             <button class="control" data-snap="editor:right" title="Snap right">R</button>
             <button class="control" data-minimize="editor" title="Minimize">-</button>
-            <button class="control" data-snap="editor:full" title="Snap full">□</button>
+            <button class="control" data-snap="editor:full" title="Snap full">[]</button>
             <button class="control close" data-close="editor" title="Close">x</button>
           </div>
         </div>
@@ -1021,7 +1421,7 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
           <div class="controls">
             <button class="control" data-snap="image:left" title="Snap left">L</button>
             <button class="control" data-minimize="image" title="Minimize">-</button>
-            <button class="control" data-snap="image:full" title="Snap full">□</button>
+            <button class="control" data-snap="image:full" title="Snap full">[]</button>
             <button class="control close" data-close="image" title="Close">x</button>
           </div>
         </div>
@@ -1045,7 +1445,7 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
           <div class="controls">
             <button class="control" data-snap="speech:right" title="Snap right">R</button>
             <button class="control" data-minimize="speech" title="Minimize">-</button>
-            <button class="control" data-snap="speech:full" title="Snap full">□</button>
+            <button class="control" data-snap="speech:full" title="Snap full">[]</button>
             <button class="control close" data-close="speech" title="Close">x</button>
           </div>
         </div>
@@ -1068,7 +1468,7 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
           <div class="controls">
             <button class="control" data-snap="vision:right" title="Snap right">R</button>
             <button class="control" data-minimize="vision" title="Minimize">-</button>
-            <button class="control" data-snap="vision:full" title="Snap full">□</button>
+            <button class="control" data-snap="vision:full" title="Snap full">[]</button>
             <button class="control close" data-close="vision" title="Close">x</button>
           </div>
         </div>
@@ -1097,6 +1497,10 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
           <button data-open="launcher" class="active" title="Apps">AP</button>
           <button data-open="terminal" title="Terminal">TM</button>
           <button data-open="browser" title="Web">WB</button>
+          <button data-open="playwright" title="Playwright Vision">PW</button>
+          <button data-open="youtube" title="YouTube Transcript">YT</button>
+          <button data-open="email" title="Email Draft">@</button>
+          <button data-open="notebook" title="Notebook">NB</button>
           <button data-open="word" title="Spiral Word">SW</button>
           <button data-open="editor" title="Editor">ED</button>
           <button data-open="image" title="Image">IM</button>
@@ -1124,6 +1528,10 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
         { label: 'Apps', icon: 'AP', open: 'launcher' },
         { label: 'Terminal', icon: 'TM', open: 'terminal' },
         { label: 'Web', icon: 'WB', open: 'browser' },
+        { label: 'Playwright', icon: 'PW', open: 'playwright' },
+        { label: 'YouTube', icon: 'YT', open: 'youtube' },
+        { label: 'Email', icon: '@', open: 'email' },
+        { label: 'Notebook', icon: 'NB', open: 'notebook' },
         { label: 'Spiral Word', icon: 'SW', open: 'word' },
         { label: 'Editor', icon: 'ED', open: 'editor' },
         { label: 'Image', icon: 'IM', open: 'image' },
@@ -1133,12 +1541,12 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
         { label: 'Providers', icon: 'PV', open: 'providers' },
       ];
       const terminalActionIds = ['chemistry_lookup', 'token_lookup', 'instrument_play', 'rosetta_demo', 'forge_demo'];
-      const shellActionIds = ['pwd', 'git_status', 'powershell_probe'];
+      const shellActionIds = ['pwd', 'git_status', 'powershell_probe', 'agent_shell_probe', 'agent_shell_codex_brief'];
       let z = 10;
       let lastCommands = [];
       let shellProfiles = [];
       let terminalLog =
-        'AetherDesk Terminal\nboundary: allowlisted app actions only\n\ncommands: help, apps, shell, open word, run instrument_play, ps git_status, snap left, clear';
+        'AetherDesk Terminal\nboundary: allowlisted app actions + bounded PowerShell\n\ncommands: help, apps, agents, shell, agent probe, agent codex, open notebook, transcript <youtube-url>, notebook save, run instrument_play, ps git_status, pwsh Get-ChildItem, snap left, clear';
 
       function tickClock() {
         const now = new Date();
@@ -1209,7 +1617,18 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
       }
 
       function bindChrome() {
-        $$('[data-open]').forEach((el) => el.addEventListener('click', () => openApp(el.dataset.open)));
+        $$('[data-open]').forEach((el) => {
+          if (el.classList.contains('desktop-icon')) {
+            el.addEventListener('click', (e) => {
+              $$('.desktop-icon').forEach((icon) => icon.classList.remove('selected'));
+              el.classList.add('selected');
+              e.stopPropagation();
+            });
+            el.addEventListener('dblclick', () => openApp(el.dataset.open));
+          } else {
+            el.addEventListener('click', () => openApp(el.dataset.open));
+          }
+        });
         $$('[data-minimize]').forEach((el) => el.addEventListener('click', () => minimizeApp(el.dataset.minimize)));
         $$('[data-snap]').forEach((el) =>
           el.addEventListener('click', () => {
@@ -1224,11 +1643,15 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
             setActive(w.dataset.app);
           });
         });
+        bindWindowDrag();
         $('#start-button').addEventListener('click', (e) => {
           e.stopPropagation();
           $('#start-menu').classList.toggle('hidden');
         });
         document.addEventListener('click', (e) => {
+          if (!e.target.closest('.desktop-icon')) {
+            $$('.desktop-icon').forEach((icon) => icon.classList.remove('selected'));
+          }
           if (!$('#start-menu').contains(e.target) && e.target !== $('#start-button')) {
             $('#start-menu').classList.add('hidden');
           }
@@ -1239,6 +1662,38 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
           const text = terminalInput.value.trim();
           terminalInput.value = '';
           handleTerminal(text);
+        });
+      }
+
+      function bindWindowDrag() {
+        $$('.window .titlebar').forEach((bar) => {
+          bar.addEventListener('pointerdown', (e) => {
+            if (e.target.closest('button')) return;
+            const win = bar.closest('.window');
+            if (!win || win.classList.contains('maximized')) return;
+            const rect = win.getBoundingClientRect();
+            const startX = e.clientX;
+            const startY = e.clientY;
+            const startLeft = rect.left;
+            const startTop = rect.top;
+            bar.setPointerCapture?.(e.pointerId);
+            const onMove = (move) => {
+              const nextLeft = Math.max(0, Math.min(window.innerWidth - 80, startLeft + move.clientX - startX));
+              const nextTop = Math.max(0, Math.min(window.innerHeight - 92, startTop + move.clientY - startY));
+              win.style.left = `${nextLeft}px`;
+              win.style.top = `${nextTop}px`;
+              win.style.right = 'auto';
+              win.style.bottom = 'auto';
+            };
+            const onUp = () => {
+              bar.removeEventListener('pointermove', onMove);
+              bar.removeEventListener('pointerup', onUp);
+              bar.removeEventListener('pointercancel', onUp);
+            };
+            bar.addEventListener('pointermove', onMove);
+            bar.addEventListener('pointerup', onUp);
+            bar.addEventListener('pointercancel', onUp);
+          });
         });
       }
 
@@ -1255,7 +1710,16 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
 
       function renderLauncher(commands) {
         cmdsEl.innerHTML = '';
-        for (const c of orderedCommands(commands)) cmdsEl.appendChild(commandCard(c));
+        for (const group of commandGroups(commands)) {
+          const section = document.createElement('section');
+          section.className = 'command-section';
+          section.innerHTML = `<h3>${escapeHtml(group.label)}</h3>`;
+          const grid = document.createElement('div');
+          grid.className = 'app-grid';
+          for (const c of group.items) grid.appendChild(commandCard(c));
+          section.appendChild(grid);
+          cmdsEl.appendChild(section);
+        }
         cmdsEl.querySelectorAll('button.run').forEach((b) => {
           b.addEventListener('click', () => runCommand(b.dataset.id, b));
         });
@@ -1269,7 +1733,12 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
           button.dataset.commandIcon = c.id;
           button.innerHTML = `<span class="app-icon">${iconGlyph(c.icon)}</span><span class="label">${escapeHtml(shortLabel(c.label))}</span>`;
           button.addEventListener('dblclick', () => runCommand(c.id, button));
-          button.addEventListener('click', () => openApp('launcher'));
+          button.addEventListener('click', (e) => {
+            $$('.desktop-icon').forEach((icon) => icon.classList.remove('selected'));
+            button.classList.add('selected');
+            openApp('launcher');
+            e.stopPropagation();
+          });
           desktopIconsEl.appendChild(button);
         }
       }
@@ -1309,19 +1778,40 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
           const b = document.createElement('button');
           b.className = 'run';
           b.dataset.shell = p.id;
-          b.textContent = `PS: ${p.label}`;
+          b.textContent = shellButtonLabel(p);
           b.addEventListener('click', () => runShellProfile(p.id, b));
           wrap.appendChild(b);
         }
       }
 
       function orderedCommands(commands) {
-        const order = ['Tools', 'Build', 'Checks', 'Benchmarks', 'Research', 'Commands'];
+        const order = ['System', 'Measure', 'Tools', 'Build', 'Checks', 'Benchmarks', 'Research', 'Commands'];
         return [...commands].sort((a, b) => {
           const ia = order.includes(a.category) ? order.indexOf(a.category) : order.length;
           const ib = order.includes(b.category) ? order.indexOf(b.category) : order.length;
           return ia === ib ? a.label.localeCompare(b.label) : ia - ib;
         });
+      }
+
+      function commandGroups(commands) {
+        const groups = [
+          { label: 'Core Reasoning Stack', ids: ['host_check', 'reasoning_ladder', 'coding_ladder', 'failure_map', 'stepwise'] },
+          { label: 'Cross-Face Tools', ids: ['rosetta_demo', 'instrument_play'] },
+          { label: 'Utility Apps', ids: ['chemistry_lookup', 'token_lookup', 'pazaak_board'] },
+          { label: 'Benchmarks And Checks', ids: ['typecheck', 'ts_tests', 'benchmark_cli', 'benchmark_coding_agents'] },
+          { label: 'Simulation And Forge', ids: ['research_aether_lattice', 'forge_demo'] },
+        ];
+        const byId = new Map(commands.map((c) => [c.id, c]));
+        const used = new Set();
+        const rendered = [];
+        for (const group of groups) {
+          const items = group.ids.map((id) => byId.get(id)).filter(Boolean);
+          for (const item of items) used.add(item.id);
+          if (items.length) rendered.push({ label: group.label, items });
+        }
+        const other = orderedCommands(commands).filter((c) => !used.has(c.id));
+        if (other.length) rendered.push({ label: 'Other Registered Commands', items: other });
+        return rendered;
       }
 
       function commandCard(c) {
@@ -1350,8 +1840,11 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
         const r = await fetch('/api/receipts').then((r) => r.json());
         if (!r.receipts.length) {
           receiptsEl.innerHTML = '<p class="empty">no runs yet</p>';
+          $('#state-last-run').textContent = 'none';
           return;
         }
+        const latest = r.receipts[0];
+        $('#state-last-run').textContent = `${latest.command_label || latest.command_id}: ${latest.result}`;
         receiptsEl.innerHTML = '';
         for (const rec of r.receipts) {
           const div = document.createElement('div');
@@ -1459,6 +1952,105 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
         }
       }
 
+      async function runPowerShellText(command) {
+        appendTerminal(`> pwsh ${command}\nstatus: running`);
+        terminalStatusEl.textContent = 'PowerShell: running';
+        terminalStatusEl.className = 'status running';
+        try {
+          const r = await fetch('/api/powershell/run', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ command }),
+          }).then((r) => r.json());
+          const rec = r.receipt;
+          if (!rec) throw new Error(r.error || 'PowerShell failed');
+          const msg = `${rec.result} (exit ${rec.exit_code}, ${Math.round(rec.duration_ms / 1000)}s)`;
+          terminalStatusEl.textContent = `PowerShell: ${msg}`;
+          terminalStatusEl.className = 'status ' + rec.result;
+          appendTerminal(`result: ${msg}\nreceipt: ${rec.task_id}\n\n${tail(rec.stdout_tail || rec.stderr_tail || '', 2600)}`);
+        } catch (err) {
+          const msg = 'error: ' + String(err.message || err);
+          terminalStatusEl.textContent = msg;
+          terminalStatusEl.className = 'status fail';
+          appendTerminal(msg);
+        } finally {
+          loadReceipts();
+        }
+      }
+
+      async function pullYoutubeTranscript(target) {
+        const resolvedTarget = String(target || $('#youtube-target')?.value || '').trim();
+        if ($('#youtube-target')) $('#youtube-target').value = resolvedTarget;
+        $('#youtube-output').textContent = 'pulling transcript...';
+        try {
+          const languages = ($('#youtube-languages')?.value || 'en').split(',').map((s) => s.trim()).filter(Boolean);
+          const r = await fetch('/api/youtube/transcript', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ target: resolvedTarget, languages }),
+          }).then((r) => r.json());
+          if (!r.ok) throw new Error(r.error || 'transcript pull failed');
+          $('#youtube-transcript').value = r.text || '';
+          $('#youtube-output').textContent = `${r.video_id}: ${r.segment_count || 0} segments, ${String(r.text || '').length} chars`;
+          appendTerminal(`transcript ${r.video_id}: ${r.segment_count || 0} segments`);
+        } catch (err) {
+          $('#youtube-output').textContent = `failed: ${err.message || err}`;
+          appendTerminal(`transcript failed: ${err.message || err}`);
+        }
+      }
+
+      async function saveEmailDraft() {
+        $('#email-output').textContent = 'saving draft...';
+        try {
+          const r = await fetch('/api/email/draft', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              to: $('#email-to').value,
+              subject: $('#email-subject').value,
+              body: $('#email-body').value,
+            }),
+          }).then((r) => r.json());
+          if (!r.ok) throw new Error(r.error || 'draft save failed');
+          $('#email-output').textContent = `saved draft ${r.id} at ${r.artifact_path}`;
+          appendTerminal(`email draft saved: ${r.id}`);
+        } catch (err) {
+          $('#email-output').textContent = `failed: ${err.message || err}`;
+        }
+      }
+
+      async function loadNotebook() {
+        const id = $('#notebook-id').value || 'default';
+        $('#notebook-output').textContent = 'loading...';
+        try {
+          const r = await fetch('/api/notebook/' + encodeURIComponent(id)).then((r) => r.json());
+          if (!r.ok) throw new Error(r.error || 'notebook load failed');
+          $('#notebook-title').value = r.title || id;
+          $('#notebook-body').value = r.body || '';
+          $('#notebook-output').textContent = r.artifact_path ? `loaded ${r.artifact_path}` : 'new notebook';
+          appendTerminal(`notebook loaded: ${r.id}`);
+        } catch (err) {
+          $('#notebook-output').textContent = `failed: ${err.message || err}`;
+        }
+      }
+
+      async function saveNotebook() {
+        const id = $('#notebook-id').value || 'default';
+        $('#notebook-output').textContent = 'saving...';
+        try {
+          const r = await fetch('/api/notebook/' + encodeURIComponent(id), {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ title: $('#notebook-title').value, body: $('#notebook-body').value }),
+          }).then((r) => r.json());
+          if (!r.ok) throw new Error(r.error || 'notebook save failed');
+          $('#notebook-output').textContent = `saved ${r.artifact_path}`;
+          appendTerminal(`notebook saved: ${r.id}`);
+        } catch (err) {
+          $('#notebook-output').textContent = `failed: ${err.message || err}`;
+        }
+      }
+
       function handleTerminal(text) {
         if (!text) return;
         const lower = text.toLowerCase();
@@ -1469,7 +2061,7 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
           return;
         }
         if (lower === 'help') {
-          appendTerminal('help | apps | shell | open <app> | run <command_id> | ps <profile_id> | snap left|right|full | clear');
+          appendTerminal('help | apps | agents | shell | agent probe | agent codex | open <app> | transcript <youtube-url-or-id> | notebook save|load | run <command_id> | ps <profile_id> | pwsh <command> | snap left|right|full | clear');
           return;
         }
         if (lower === 'apps') {
@@ -1478,6 +2070,23 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
         }
         if (lower === 'shell') {
           appendTerminal(shellProfiles.map((p) => `${p.id} - ${p.label} (${p.shell})`).join('\n'));
+          return;
+        }
+        if (lower === 'agents') {
+          const agentProfiles = shellProfiles.filter((p) => p.id.startsWith('agent_shell_'));
+          appendTerminal(
+            agentProfiles.length
+              ? agentProfiles.map((p) => `${p.id} - ${p.label} (${p.risk_tier})`).join('\n')
+              : 'no agent shell profiles loaded'
+          );
+          return;
+        }
+        if (lower === 'agent probe') {
+          runShellProfile('agent_shell_probe', null);
+          return;
+        }
+        if (lower === 'agent codex') {
+          runShellProfile('agent_shell_codex_brief', null);
           return;
         }
         if (lower === 'receipts') {
@@ -1490,6 +2099,21 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
           appendTerminal('opened providers');
           return;
         }
+        if (lower.startsWith('transcript ')) {
+          openApp('youtube');
+          pullYoutubeTranscript(text.slice(11).trim());
+          return;
+        }
+        if (lower === 'notebook save') {
+          openApp('notebook');
+          saveNotebook();
+          return;
+        }
+        if (lower === 'notebook load') {
+          openApp('notebook');
+          loadNotebook();
+          return;
+        }
         if (lower.startsWith('open ')) {
           const app = lower.slice(5).trim();
           const map = {
@@ -1498,6 +2122,14 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
             terminal: 'terminal',
             browser: 'browser',
             web: 'browser',
+            playwright: 'playwright',
+            pw: 'playwright',
+            youtube: 'youtube',
+            yt: 'youtube',
+            email: 'email',
+            mail: 'email',
+            notebook: 'notebook',
+            notes: 'notebook',
             word: 'word',
             spiralword: 'word',
             editor: 'editor',
@@ -1528,6 +2160,10 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
           const id = text.slice(3).trim();
           if (shellProfiles.some((p) => p.id === id)) runShellProfile(id, null);
           else appendTerminal(`shell profile not allowlisted: ${id}`);
+          return;
+        }
+        if (lower.startsWith('pwsh ')) {
+          runPowerShellText(text.slice(5).trim());
           return;
         }
         if (lower.startsWith('run ')) {
@@ -1577,6 +2213,13 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
         }[name] || 'SC';
       }
 
+      function shellButtonLabel(profile) {
+        if (profile.id && profile.id.startsWith('agent_shell_')) {
+          return `AG: ${profile.label.replace(/^Agent Shell\s*/, '')}`;
+        }
+        return `PS: ${profile.label}`;
+      }
+
       function bindWorkspaceApps() {
         $('#browser-go')?.addEventListener('click', () => {
           const url = normalizeUrl($('#browser-url').value);
@@ -1585,6 +2228,32 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
         });
         $('#browser-open-external')?.addEventListener('click', () => {
           window.open(normalizeUrl($('#browser-url').value), '_blank', 'noopener,noreferrer');
+        });
+
+        $('#playwright-capture')?.addEventListener('click', capturePlaywrightView);
+        $('#playwright-text')?.addEventListener('click', () => runBrowserAction('text'));
+        $('#playwright-aria')?.addEventListener('click', () => runBrowserAction('aria'));
+        $('#playwright-guide')?.addEventListener('click', () => runBrowserAction('guide'));
+        $('#playwright-screenshot')?.addEventListener('click', () => runBrowserAction('screenshot'));
+        $('#playwright-close-session')?.addEventListener('click', () => runBrowserAction('close'));
+        $('#playwright-copy-state')?.addEventListener('click', async () => {
+          await navigator.clipboard?.writeText($('#playwright-output').textContent || '');
+          $('#playwright-output').textContent += ' | copied state';
+        });
+
+        $('#youtube-pull')?.addEventListener('click', () => pullYoutubeTranscript());
+        $('#youtube-copy')?.addEventListener('click', async () => {
+          await navigator.clipboard?.writeText($('#youtube-transcript').value || '');
+          $('#youtube-output').textContent = 'copied transcript';
+        });
+
+        $('#email-save-draft')?.addEventListener('click', saveEmailDraft);
+
+        $('#notebook-load')?.addEventListener('click', loadNotebook);
+        $('#notebook-save')?.addEventListener('click', saveNotebook);
+        $('#notebook-copy')?.addEventListener('click', async () => {
+          await navigator.clipboard?.writeText($('#notebook-body').value || '');
+          $('#notebook-output').textContent = 'copied notebook body';
         });
 
         $('#word-save')?.addEventListener('click', () => {
@@ -1666,6 +2335,43 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
         return `https://${s}`;
       }
 
+      async function capturePlaywrightView() {
+        const url = normalizeUrl($('#playwright-url').value);
+        $('#playwright-url').value = url;
+        await runBrowserAction('goto', { url });
+      }
+
+      async function runBrowserAction(action, extra = {}) {
+        const url = normalizeUrl($('#playwright-url').value);
+        $('#playwright-output').textContent = `${action} ${extra.url || url}...`;
+        try {
+          const r = await fetch('/api/browser/action', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ session_id: 'main', action, ...extra }),
+          }).then((r) => r.json());
+          if (!r.ok) throw new Error(r.error || 'browser action failed');
+          if (r.url) $('#playwright-url').value = r.url;
+          if (r.screenshot_data_url) $('#playwright-shot').src = r.screenshot_data_url;
+          if (r.action === 'close') {
+            $('#playwright-output').textContent = `closed session ${r.session_id}`;
+          } else if (r.action === 'text') {
+            $('#playwright-output').textContent = `${r.title || '(untitled)'} | ${r.url}\n${tail(r.text_tail || '', 1600)}`;
+          } else if (r.action === 'aria') {
+            $('#playwright-output').textContent = `${r.title || '(untitled)'} | ${r.url}\n${tail(r.aria_tail || '', 2600)}`;
+          } else if (r.action === 'guide') {
+            const moves = (r.guide || [])
+              .map((m) => `${m.index}. ${m.move} ${m.selector} | ${m.role} | ${m.label || m.href || '(unlabeled)'}`)
+              .join('\n');
+            $('#playwright-output').textContent = `${r.title || '(untitled)'} | ${r.url}\n${moves || 'no visible moves'}`;
+          } else {
+            $('#playwright-output').textContent = `${r.title || '(untitled)'} | ${r.url} | ${r.viewport.width}x${r.viewport.height} | ${r.duration_ms}ms`;
+          }
+        } catch (err) {
+          $('#playwright-output').textContent = `browser action failed: ${err.message || err}`;
+        }
+      }
+
       function loadImageFile(file, img, out) {
         if (!file) return;
         const url = URL.createObjectURL(file);
@@ -1723,6 +2429,9 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
         try {
           const r = await fetch('/api/providers').then((r) => r.json());
           stampEl.textContent = new Date(r.generated_at).toLocaleTimeString();
+          const localReady = (r.providers || []).filter((p) => p.kind === 'local-http' && p.reachable).length;
+          const secretReady = (r.providers || []).filter((p) => p.kind === 'env-var' && p.has_secret).length;
+          $('#state-host').textContent = `${localReady} local, ${secretReady} env`;
           providersEl.innerHTML = '';
           for (const p of r.providers) {
             const div = document.createElement('div');
@@ -1746,6 +2455,7 @@ commands: help, apps, open word, run instrument_play, snap left, clear</pre>
             providersEl.appendChild(div);
           }
         } catch (err) {
+          $('#state-host').textContent = 'provider probe failed';
           providersEl.innerHTML = `<p class="empty">probe failed: ${escapeHtml(err.message || err)}</p>`;
         }
       }
