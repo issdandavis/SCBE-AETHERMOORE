@@ -24,7 +24,6 @@ the rule-based router) scores 100%, so any miss under a real model is the model,
 from __future__ import annotations
 
 import argparse
-import os
 import re
 from typing import Callable, Dict, List, Optional, Sequence
 
@@ -221,13 +220,11 @@ def score(jobs: Sequence[Dict[str, str]], answer_fn: Callable[[Dict[str, str]], 
 def make_ask(model: Optional[str] = None, base: Optional[str] = None, key: Optional[str] = None) -> Ask:
     from python.helm import free_generator as fg
 
-    base = base or os.environ.get("SCBE_LLM_BASE", fg.DEFAULT_BASE)
-    key = key or os.environ.get("SCBE_LLM_KEY", "ollama")
-    model = model or os.environ.get("SCBE_LLM_MODEL", fg.DEFAULT_MODEL)
+    config = fg.resolve_llm_config(base=base, key=key, model=model)
 
     def ask(prompt: str) -> str:
         try:
-            return fg._chat([{"role": "user", "content": prompt}], base=base, key=key, model=model)
+            return fg.chat_with_config([{"role": "user", "content": prompt}], config)
         except Exception:
             return ""
 
