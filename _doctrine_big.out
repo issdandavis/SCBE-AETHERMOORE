@@ -1,0 +1,5 @@
+held-out: 50 (hard: leftover MBPP harvest could not verify)
+PLAIN     8/50
+BEING     12/50
+BECOMING  7/50
+DOCTRINE: becoming-being=-5, becoming-plain=-1, being-plain=+4
