@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import json
 from dataclasses import asdict, dataclass, field
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence
 
 MODEL_ECHO_VERIFIED = "model_echo_verified"
@@ -251,6 +252,139 @@ def run_known_pipeline(steps: Sequence[Mapping[str, Any]]) -> List[KnownLogicPac
     return packets
 
 
+def packet_from_record(record: Mapping[str, Any]) -> KnownLogicPacket:
+    """Build the authoritative packet for one repeatable JSONL record."""
+
+    if "packet" in record:
+        raw = record["packet"]
+        if not isinstance(raw, Mapping):
+            raise TypeError("packet must be an object")
+        return KnownLogicPacket(
+            packet_id=str(raw["packet_id"]),
+            task=str(raw["task"]),
+            answer=str(raw["answer"]),
+            process=str(raw["process"]),
+            source=str(raw["source"]),
+            metadata=dict(raw.get("metadata") or {}),
+        )
+    if "pipeline" in record:
+        raw_steps = record["pipeline"]
+        if not isinstance(raw_steps, Sequence) or isinstance(raw_steps, (str, bytes)):
+            raise TypeError("pipeline must be a list of steps")
+        packets = run_known_pipeline(raw_steps)
+        if not packets:
+            raise ValueError("pipeline produced no packets")
+        return packets[-1]
+    if "tool" in record:
+        payload = record.get("payload") or {}
+        if not isinstance(payload, Mapping):
+            raise TypeError("payload must be an object")
+        return run_known_tool(str(record["tool"]), payload)
+    raise KeyError("record must contain one of: packet, pipeline, tool")
+
+
+def evaluate_record(record: Mapping[str, Any]) -> Dict[str, Any]:
+    """Run one known-logic record and return its packet + decision receipt."""
+
+    packet = packet_from_record(record)
+    model_output = record.get("model_output")
+    decision = inject_or_fallback(packet, None if model_output is None else str(model_output))
+    return {
+        "id": str(record.get("id") or packet.packet_id),
+        "packet": asdict(packet),
+        "prompt": packet.to_prompt(),
+        "decision": decision,
+    }
+
+
+def summarize_decisions(rows: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
+    attempted = len(rows)
+    echo_verified = sum(1 for r in rows if r["decision"]["status"] == MODEL_ECHO_VERIFIED)
+    fallback = sum(1 for r in rows if r["decision"]["status"] == DETERMINISTIC_FALLBACK)
+    false_success = sum(int(r["decision"].get("false_success_count", 0) or 0) for r in rows)
+    closed = sum(1 for r in rows if r["decision"].get("closed") is True)
+    return {
+        "attempted": attempted,
+        "model_echo_verified": echo_verified,
+        "deterministic_fallback": fallback,
+        "false_success_count": false_success,
+        "closure_rate": round(closed / attempted, 6) if attempted else 0.0,
+        "echo_rate": round(echo_verified / attempted, 6) if attempted else 0.0,
+        "contract_passed": attempted == closed and false_success == 0,
+    }
+
+
+def to_sft_record(row: Mapping[str, Any]) -> Dict[str, Any]:
+    """Convert one known-logic decision into the same {messages, meta} shape used by tool trajectories."""
+
+    packet = row["packet"]
+    decision = row["decision"]
+    return {
+        "messages": [
+            {
+                "role": "system",
+                "content": "Use known logic packets exactly. If the packet already contains the answer, repeat it.",
+            },
+            {"role": "user", "content": row["prompt"]},
+            {"role": "assistant", "content": str(decision["deterministic_answer"])},
+        ],
+        "meta": {
+            "source": "known_logic_injection",
+            "id": row["id"],
+            "packet_id": packet["packet_id"],
+            "tool_source": packet["source"],
+            "status": decision["status"],
+            "false_success_count": decision["false_success_count"],
+        },
+    }
+
+
+def run_jsonl(path: str) -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
+    with open(path, "r", encoding="utf-8") as f:
+        for lineno, line in enumerate(f, 1):
+            text = line.strip()
+            if not text or text.startswith("#"):
+                continue
+            try:
+                raw = json.loads(text)
+                if not isinstance(raw, Mapping):
+                    raise TypeError("record must be an object")
+                rows.append(evaluate_record(raw))
+            except Exception as exc:  # intentionally report bad rows as receipts, not tracebacks
+                rows.append(
+                    {
+                        "id": "line_%d" % lineno,
+                        "error": str(exc),
+                        "decision": {
+                            "status": "record_error",
+                            "closed": True,
+                            "false_success_count": 0,
+                            "answer": None,
+                        },
+                    }
+                )
+    return rows
+
+
+def _write_json(path: Optional[str], data: Any) -> None:
+    if not path:
+        return
+    p = Path(path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _write_jsonl(path: Optional[str], rows: Sequence[Mapping[str, Any]]) -> None:
+    if not path:
+        return
+    p = Path(path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    with p.open("w", encoding="utf-8") as f:
+        for row in rows:
+            f.write(json.dumps(row, sort_keys=True) + "\n")
+
+
 def _demo() -> Dict[str, Any]:
     packet = run_known_tool("prime_membership", {"n": 97})
     pipeline = run_known_pipeline(
@@ -284,9 +418,21 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         description="inject deterministic answer/process packets and fall back when the model fails to echo them",
     )
     ap.add_argument("--demo", action="store_true", help="print the built-in prime-membership demo")
+    ap.add_argument("--input", help="JSONL known-logic records to replay")
+    ap.add_argument("--out", help="write detailed decision receipts as JSON")
+    ap.add_argument("--summary", help="write summary metrics as JSON")
+    ap.add_argument("--sft-out", help="write repeat/apply SFT records as JSONL")
     args = ap.parse_args(list(argv) if argv is not None else None)
+    if args.input:
+        rows = run_jsonl(args.input)
+        summary = summarize_decisions([r for r in rows if "decision" in r])
+        _write_json(args.out, {"summary": summary, "rows": rows})
+        _write_json(args.summary, summary)
+        _write_jsonl(args.sft_out, [to_sft_record(r) for r in rows if "packet" in r])
+        print(json.dumps(summary, indent=2, sort_keys=True))
+        return 0 if summary["contract_passed"] else 1
     if not args.demo:
-        print("Use --demo, or import run_known_tool() and inject_or_fallback().")
+        print("Use --demo, --input records.jsonl, or import run_known_tool() and inject_or_fallback().")
         return 0
     print(json.dumps(_demo(), indent=2, sort_keys=True))
     return 0

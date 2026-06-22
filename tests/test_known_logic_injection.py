@@ -7,8 +7,11 @@ from python.helm.known_logic_injection import (
     inject_or_fallback,
     prime_membership_packet,
     render_injection_prompt,
+    run_jsonl,
     run_known_pipeline,
     run_known_tool,
+    summarize_decisions,
+    to_sft_record,
     sieve_primes,
 )
 
@@ -95,3 +98,60 @@ def test_nested_pipeline_feeds_tool_answer_into_if_then_gate():
 
     assert [p.answer for p in packets] == ["prime", "ALLOW"]
     assert packets[1].source == "tool:if_then"
+
+
+def test_jsonl_runner_replays_records_and_scores_repeatability(tmp_path):
+    path = tmp_path / "known_logic.jsonl"
+    path.write_text(
+        "\n".join(
+            [
+                '{"id":"echo-ok","tool":"prime_membership","payload":{"n":97},"model_output":"prime"}',
+                '{"id":"echo-bad","tool":"prime_membership","payload":{"n":97},"model_output":"composite"}',
+                '{"id":"nested","pipeline":[{"tool":"prime_membership","payload":{"n":97}},'
+                '{"tool":"if_then","payload":{"condition":{"$eq":["$prev.answer","prime"]},'
+                '"when_true":"ALLOW","when_false":"DENY","label":"prime_gate"}}],"model_output":"ALLOW"}',
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    rows = run_jsonl(str(path))
+    summary = summarize_decisions(rows)
+
+    assert [r["decision"]["answer"] for r in rows] == ["prime", "prime", "ALLOW"]
+    assert summary == {
+        "attempted": 3,
+        "model_echo_verified": 2,
+        "deterministic_fallback": 1,
+        "false_success_count": 0,
+        "closure_rate": 1.0,
+        "echo_rate": 0.666667,
+        "contract_passed": True,
+    }
+
+
+def test_known_logic_decision_can_be_emitted_as_sft_record():
+    row = {
+        "id": "manual",
+        "packet": {
+            "packet_id": "prime_membership:97",
+            "task": "Decide whether 97 is prime.",
+            "answer": "prime",
+            "process": "Run sieve_primes(97).",
+            "source": "tool:sieve_primes",
+            "metadata": {"n": 97},
+        },
+        "prompt": "KNOWN ANSWER:\nprime",
+        "decision": {
+            "status": MODEL_ECHO_VERIFIED,
+            "deterministic_answer": "prime",
+            "false_success_count": 0,
+        },
+    }
+
+    sft = to_sft_record(row)
+
+    assert sft["messages"][-1]["content"] == "prime"
+    assert sft["meta"]["source"] == "known_logic_injection"
+    assert sft["meta"]["false_success_count"] == 0

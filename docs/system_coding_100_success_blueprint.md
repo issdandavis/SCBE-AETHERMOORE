@@ -63,6 +63,20 @@ treated as a parrot/adapter over a deterministic source. If the model cannot rep
 `python.helm.known_logic_injection.inject_or_fallback` returns the deterministic answer directly with
 `false_success_count == 0`.
 
+Repeatable run:
+
+```bash
+python -m python.helm.known_logic_injection \
+  --input tests/fixtures/known_logic_repeat.jsonl \
+  --out C:/tmp/known_logic_repeat/decisions.json \
+  --summary C:/tmp/known_logic_repeat/summary.json \
+  --sft-out C:/tmp/known_logic_repeat/sft.jsonl
+```
+
+The JSONL input can contain a direct tool call, a nested pipeline, or a raw packet. The output gives
+receipt-level decisions, summary metrics, and optional SFT records for teaching the agent to repeat/apply
+known packets.
+
 Local diagnostic evidence from MBPP failures matched this design: on 20 prior single-shot failures,
 reference-answer injection made the 1.5B model reproduce correct logic on 14/20; inject-or-fallback reached
 19/20 because the reference was the authority.
