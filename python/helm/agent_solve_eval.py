@@ -21,9 +21,9 @@ from __future__ import annotations
 import json, sys, time, subprocess, urllib.request
 
 try:
-    from . import agent_solve as A, query_dispatch
+    from . import agent_solve as A, query_dispatch, reference_bank
 except ImportError:
-    import agent_solve as A, query_dispatch
+    import agent_solve as A, query_dispatch, reference_bank
 
 OLLAMA = "http://localhost:11434/api/generate"
 MODEL = "qwen2.5-coder:1.5b"
@@ -62,10 +62,16 @@ def verify_full(code, tests):
 
 
 def main():
-    n = int(sys.argv[1]) if len(sys.argv) > 1 else None
+    argv = sys.argv[1:]
+    use_ref = "ref" in argv
+    nums = [a for a in argv if a.isdigit()]
+    n = int(nums[0]) if nums else None
     pool = [json.loads(l) for l in open(POOL, encoding="utf-8") if l.strip()]
     if n:
         pool = pool[:n]
+    bank = reference_bank.load() if use_ref else {}
+    if use_ref:
+        print("reference-injection ON: %d verified references in the notebook\n" % len(bank))
     ask = make_ask()
 
     # deterministic dispatch coverage on the raw task text (no model)
@@ -73,13 +79,17 @@ def main():
 
     rungs = {"dispatch": 0, "routed": 0, "escalate": 0}
     claimed_verified = independently_verified = false_success = 0
+    rungs["fallback"] = 0
     for i, r in enumerate(pool):
         tests = r["test_list"]
-        res = A.agent_solve(r["text"], ask=ask, tests=tests)
+        ref = bank.get(r["task_id"]) if use_ref else None
+        res = A.agent_solve(r["text"], ask=ask, tests=tests, reference=ref)
         via = res.get("via", "")
         if via.startswith("dispatch"):
             rungs["dispatch"] += 1
-        elif via.startswith("routed") or via.startswith("fallback"):
+        elif via.startswith("fallback"):
+            rungs["fallback"] += 1
+        elif via.startswith("routed"):
             rungs["routed"] += 1
         else:
             rungs["escalate"] += 1
@@ -103,8 +113,8 @@ def main():
     print("\n=== agent_solve over %d REAL recovery tasks (qwen2.5-coder:1.5b) ===" % N)
     print("deterministic dispatch answers task text directly: %d/%d "
           "(expected ~0: these are code-gen tasks, not tool-questions)" % (dispatch_hits, N))
-    print("rung breakdown:  dispatch(no model)=%d   routed(model+builtin+tools)=%d   escalate=%d"
-          % (rungs["dispatch"], rungs["routed"], rungs["escalate"]))
+    print("rung breakdown:  dispatch(no model)=%d   routed(model)=%d   fallback(reference injected)=%d   escalate=%d"
+          % (rungs["dispatch"], rungs["routed"], rungs["fallback"], rungs["escalate"]))
     print("independently VERIFIED (full test_list, fresh subprocess): %d/%d" % (independently_verified, N))
     print("claimed VERIFIED by the loop: %d/%d" % (claimed_verified, N))
     print("FALSE SUCCESS (claimed but failed independent check): %d   <-- must be 0" % false_success)
