@@ -2400,7 +2400,7 @@ def cmd_forge(args: argparse.Namespace) -> int:
 
 
 def cmd_spine(args: argparse.Namespace) -> int:
-    from python.scbe.bit_spine import BitSpine, BitSpineError, run_bf
+    from python.scbe.bit_spine import BitSpine, BitSpineError, run_bf, run_relationship_program
 
     action = getattr(args, "spine_cmd", None) or "encode"
     try:
@@ -2475,6 +2475,27 @@ def cmd_spine(args: argparse.Namespace) -> int:
                 print(payload["output_text"])
             return 0
 
+        if action == "rel":
+            source = _arg_or_stdin(getattr(args, "program", None))
+            if source is None:
+                print('usage: scbe spine rel "read 0 A; transform add A 1; write A 1; verify mem[1] eq 1"', file=sys.stderr)
+                return 2
+            memory_hex = getattr(args, "memory_hex", "") or ""
+            memory = bytes.fromhex(memory_hex) if memory_hex else b""
+            payload = run_relationship_program(
+                source,
+                memory=memory,
+                max_steps=getattr(args, "max_steps", 10_000),
+            )
+            if getattr(args, "json_output", False):
+                print(json.dumps(payload))
+            else:
+                status = "verified" if payload["verified"] else "failed"
+                print(f"relationship VM: {status} after {payload['steps']} step(s)")
+                print(f"registers: {payload['registers']}")
+                print(f"memory_nonzero: {payload['memory_nonzero']}")
+            return 0
+
         if action == "templates":
             return cmd_spine_templates(args)
 
@@ -2485,6 +2506,167 @@ def cmd_spine(args: argparse.Namespace) -> int:
         return 1
 
     print(f"unknown spine action: {action}", file=sys.stderr)
+    return 2
+
+
+def cmd_opcode(args: argparse.Namespace) -> int:
+    from python.scbe.semantic_opcode_vm import (
+        SemanticOpcodeError,
+        assemble,
+        disassemble_text,
+        opcode_table,
+        run_program,
+    )
+
+    action = getattr(args, "opcode_cmd", None) or "table"
+    try:
+        if action == "table":
+            payload = {
+                "schema": "scbe_semantic_opcode_table_v1",
+                "opcode_count": len(opcode_table()),
+                "family_bits": {
+                    "00xxxxxx": "data operations",
+                    "01xxxxxx": "movement / control operations",
+                    "10xxxxxx": "verification / security operations",
+                    "11xxxxxx": "semantic / high-level operations",
+                    "11111111": "system halt",
+                },
+                "opcodes": opcode_table(),
+            }
+            if getattr(args, "json_output", False):
+                print(json.dumps(payload))
+            else:
+                for row in payload["opcodes"]:
+                    print(f"{row['opcode_hex']}  {row['token']:<14} {row['family']:<12} operands={','.join(row['operands'])}")
+            return 0
+
+        if action == "assemble":
+            source = _arg_or_stdin(getattr(args, "program", None))
+            if source is None:
+                print('usage: scbe opcode assemble "LOAD A 7; COMPARE A 7; VERIFY; HALT"', file=sys.stderr)
+                return 2
+            program = assemble(source)
+            payload = {
+                "schema": "scbe_semantic_opcode_assemble_v1",
+                "program_hex": program.hex(),
+                "byte_len": len(program),
+                "sha256": hashlib.sha256(program).hexdigest(),
+            }
+            if getattr(args, "json_output", False):
+                print(json.dumps(payload))
+            else:
+                print(payload["program_hex"])
+            return 0
+
+        if action == "disasm":
+            program_hex = _arg_or_stdin(getattr(args, "program_hex", None))
+            if program_hex is None:
+                print("usage: scbe opcode disasm <program-hex>", file=sys.stderr)
+                return 2
+            lines = disassemble_text(bytes.fromhex("".join(program_hex.split())))
+            payload = {
+                "schema": "scbe_semantic_opcode_disasm_v1",
+                "program": lines,
+            }
+            if getattr(args, "json_output", False):
+                print(json.dumps(payload))
+            else:
+                print("\n".join(lines))
+            return 0
+
+        if action == "run":
+            source = _arg_or_stdin(getattr(args, "program", None))
+            if source is None:
+                print('usage: scbe opcode run "LOAD A 7; COMPARE A 7; VERIFY; HALT"', file=sys.stderr)
+                return 2
+            if getattr(args, "from_hex", False):
+                payload = run_program(bytes.fromhex("".join(source.split())), max_steps=getattr(args, "max_steps", 10_000))
+            else:
+                payload = run_program(source, max_steps=getattr(args, "max_steps", 10_000))
+            if getattr(args, "json_output", False):
+                print(json.dumps(payload))
+            else:
+                print(f"opcode VM: {payload['status']} verified={payload['verified']} steps={payload['cost']['steps']}")
+                print(f"registers: {payload['registers']}")
+            return 0
+
+    except (SemanticOpcodeError, ValueError) as e:
+        print(f"opcode error: {e}", file=sys.stderr)
+        return 1
+
+    print(f"unknown opcode action: {action}", file=sys.stderr)
+    return 2
+
+
+def cmd_phdm(args: argparse.Namespace) -> int:
+    from python.scbe.phdm_chapter6 import (
+        PHDMChapter6Error,
+        chapter6_table,
+        evaluate_path,
+        jailbreak_demo,
+        transition_penalty,
+    )
+
+    action = getattr(args, "phdm_cmd", None) or "table"
+    try:
+        if action == "table":
+            payload = {
+                "schema": "scbe_phdm_chapter6_table_v1",
+                "node_count": len(chapter6_table()),
+                "budget": 100.0,
+                "nodes": chapter6_table(),
+            }
+            if getattr(args, "json_output", False):
+                print(json.dumps(payload))
+            else:
+                for row in payload["nodes"]:
+                    print(
+                        f"P{row['index']:02d}  {row['name']:<32} "
+                        f"{row['family']:<15} E={row['base_energy']:<4} r={row['radial_position']}"
+                    )
+            return 0
+
+        if action == "path":
+            path = _arg_or_stdin(getattr(args, "path", None))
+            if path is None:
+                print('usage: scbe phdm path "Tetrahedron,Cube,Octahedron"', file=sys.stderr)
+                return 2
+            payload = evaluate_path(path, budget=getattr(args, "budget", 100.0))
+            if getattr(args, "json_output", False):
+                print(json.dumps(payload))
+            else:
+                print(f"PHDM: {payload['decision']} cost={payload['cost']['total']} remaining={payload['cost']['remaining']}")
+                if payload["violations"]:
+                    print("violations: " + ", ".join(payload["violations"]))
+            return 0
+
+        if action == "jailbreak":
+            payload = jailbreak_demo()
+            if getattr(args, "json_output", False):
+                print(json.dumps(payload))
+            else:
+                print(f"PHDM jailbreak demo: {payload['decision']} cost={payload['cost']['total']}")
+                print("violations: " + ", ".join(payload["violations"]))
+            return 0
+
+        if action == "penalty":
+            payload = {
+                "schema": "scbe_phdm_chapter6_penalty_v1",
+                "from": args.from_node,
+                "to": args.to_node,
+                "penalty": transition_penalty(args.from_node, args.to_node),
+            }
+            if getattr(args, "json_output", False):
+                print(json.dumps(payload))
+            else:
+                print(payload["penalty"])
+            return 0
+
+    except PHDMChapter6Error as e:
+        print(f"phdm error: {e}", file=sys.stderr)
+        return 1
+
+    print(f"unknown phdm action: {action}", file=sys.stderr)
     return 2
 
 
@@ -4871,6 +5053,13 @@ Legacy (backward compat):
     sp_run.add_argument("--raw", action="store_true", help="write raw output bytes to stdout")
     sp_run.set_defaults(func=cmd_spine)
 
+    sp_rel = spine_sub.add_parser("rel", help="Run the 8-bit SCBE relationship-token VM")
+    sp_rel.add_argument("program", nargs="?", help="relationship program text (or pipe via stdin)")
+    sp_rel.add_argument("--memory-hex", default="", help="initial 8-bit memory bytes as hex")
+    sp_rel.add_argument("--max-steps", type=int, default=10_000)
+    sp_rel.add_argument("--json", dest="json_output", action="store_true")
+    sp_rel.set_defaults(func=cmd_spine)
+
     sp_tpl = spine_sub.add_parser("templates", help="Show simple commands for users, agents, and small LLMs")
     sp_tpl.add_argument("--json", dest="json_output", action="store_true")
     sp_tpl.set_defaults(func=cmd_spine)
@@ -4882,6 +5071,53 @@ Legacy (backward compat):
     sp_map.add_argument("--limit", type=int, default=8, help="rows to show in text mode")
     sp_map.add_argument("--json", dest="json_output", action="store_true")
     sp_map.set_defaults(func=cmd_spine)
+
+    opcode = sub.add_parser("opcode", help="Semantic opcode VM: token table, assembler, disassembler, runner")
+    opcode_sub = opcode.add_subparsers(dest="opcode_cmd")
+
+    op_table = opcode_sub.add_parser("table", help="Show semantic token opcode contracts")
+    op_table.add_argument("--json", dest="json_output", action="store_true")
+    op_table.set_defaults(func=cmd_opcode)
+
+    op_asm = opcode_sub.add_parser("assemble", aliases=["asm"], help="Assemble semantic token text to bytes")
+    op_asm.add_argument("program", nargs="?", help="token program text (or pipe via stdin)")
+    op_asm.add_argument("--json", dest="json_output", action="store_true")
+    op_asm.set_defaults(func=cmd_opcode)
+
+    op_dis = opcode_sub.add_parser("disasm", aliases=["disassemble"], help="Disassemble semantic opcode hex")
+    op_dis.add_argument("program_hex", nargs="?", help="program hex (or pipe via stdin)")
+    op_dis.add_argument("--json", dest="json_output", action="store_true")
+    op_dis.set_defaults(func=cmd_opcode)
+
+    op_run = opcode_sub.add_parser("run", help="Run semantic token text or opcode hex")
+    op_run.add_argument("program", nargs="?", help="program text or hex (or pipe via stdin)")
+    op_run.add_argument("--from-hex", action="store_true", help="interpret program as assembled hex")
+    op_run.add_argument("--max-steps", type=int, default=10_000)
+    op_run.add_argument("--json", dest="json_output", action="store_true")
+    op_run.set_defaults(func=cmd_opcode)
+
+    phdm = sub.add_parser("phdm", help="Chapter 6 PHDM: polyhedron table, path evaluator, jailbreak demo")
+    phdm_sub = phdm.add_subparsers(dest="phdm_cmd")
+
+    phdm_table = phdm_sub.add_parser("table", help="Show the canonical Chapter 6 PHDM polyhedra")
+    phdm_table.add_argument("--json", dest="json_output", action="store_true")
+    phdm_table.set_defaults(func=cmd_phdm)
+
+    phdm_path = phdm_sub.add_parser("path", help="Evaluate a Hamiltonian PHDM path")
+    phdm_path.add_argument("path", nargs="?", help="comma/semicolon separated node names or indices")
+    phdm_path.add_argument("--budget", type=float, default=100.0)
+    phdm_path.add_argument("--json", dest="json_output", action="store_true")
+    phdm_path.set_defaults(func=cmd_phdm)
+
+    phdm_jailbreak = phdm_sub.add_parser("jailbreak", help="Run the Chapter 6 jailbreak budget-exhaustion example")
+    phdm_jailbreak.add_argument("--json", dest="json_output", action="store_true")
+    phdm_jailbreak.set_defaults(func=cmd_phdm)
+
+    phdm_penalty = phdm_sub.add_parser("penalty", help="Compute the Chapter 6 edge penalty between two nodes")
+    phdm_penalty.add_argument("from_node")
+    phdm_penalty.add_argument("to_node")
+    phdm_penalty.add_argument("--json", dest="json_output", action="store_true")
+    phdm_penalty.set_defaults(func=cmd_phdm)
 
     for view in ("bits", "hex", "trits"):
         sv = sub.add_parser(view, help=f'Show the {view} spine view for text ("scbe {view} hello")')
