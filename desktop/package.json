@@ -1,6 +1,6 @@
 {
   "name": "aetherbrowser",
-  "version": "0.1.0",
+  "version": "0.1.5",
   "description": "AetherBrowser — AI-governed desktop browser with multi-agent sidepanel",
   "author": "Issac Daniel Davis <issdandavis@gmail.com>",
   "license": "MIT",
@@ -16,8 +16,10 @@
   "build": {
     "appId": "com.aethermoorgames.aetherbrowser",
     "productName": "AetherBrowser",
+    "copyright": "Copyright © 2026 Issac Daniel Davis",
     "directories": {
-      "output": "dist-electron"
+      "output": "dist-electron",
+      "buildResources": "build"
     },
     "files": [
       "electron/**/*",
@@ -28,19 +30,23 @@
     "extraResources": [],
     "win": {
       "target": "nsis",
-      "icon": "../src/extension/icons/icon128.png"
+      "icon": "build/icon.png",
+      "artifactName": "AetherBrowser-Setup-${version}.${ext}"
     },
     "nsis": {
       "oneClick": false,
+      "perMachine": false,
       "allowToChangeInstallationDirectory": true,
-      "installerIcon": "../src/extension/icons/icon128.png",
-      "uninstallerIcon": "../src/extension/icons/icon128.png",
-      "installerHeaderIcon": "../src/extension/icons/icon128.png"
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "AetherBrowser",
+      "uninstallDisplayName": "AetherBrowser"
     }
   },
   "devDependencies": {
     "electron": "^42.4.0",
     "electron-builder": "^26.0.0",
+    "playwright-core": "^1.61.1",
     "vite": "^8.0.16"
   }
 }

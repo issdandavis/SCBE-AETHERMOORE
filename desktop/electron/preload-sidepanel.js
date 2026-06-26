@@ -168,10 +168,25 @@ const sidePanelShim = {
 // ---------------------------------------------------------------------------
 // Expose as window.chrome
 // ---------------------------------------------------------------------------
-contextBridge.exposeInMainWorld('chrome', {
-  tabs: tabsShim,
-  storage: { local: storageLocal },
-  runtime: runtimeShim,
-  sidePanel: sidePanelShim,
-  action: { onClicked: { addListener() {} } },
+// `window.chrome` is a built-in in Chromium, so exposing over it can throw. The
+// external extension UI (dev only) wants this shim; the bundled panel uses
+// window.aetherPanel below, so a failure here is non-fatal.
+try {
+  contextBridge.exposeInMainWorld('chrome', {
+    tabs: tabsShim,
+    storage: { local: storageLocal },
+    runtime: runtimeShim,
+    sidePanel: sidePanelShim,
+    action: { onClicked: { addListener() {} } },
+  });
+} catch {
+  /* native window.chrome present — the bundled panel uses window.aetherPanel instead */
+}
+
+// Clean, collision-free API for the bundled AI sidepanel UI.
+contextBridge.exposeInMainWorld('aetherPanel', {
+  readPage: () => ipcRenderer.invoke('chrome-tabs-sendMessage', 0, { action: 'getPageContent' }),
+  getTabs: () => ipcRenderer.invoke('chrome-tabs-query'),
+  capture: () => ipcRenderer.invoke('chrome-tabs-captureVisibleTab'),
+  navigate: (url) => ipcRenderer.send('navigate', url),
 });

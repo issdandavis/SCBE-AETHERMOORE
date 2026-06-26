@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline';" />
+  <title>Tabs</title>
+  <style>
+    :root{
+      --bg:#010409;--tab:#0d1117;--tab-active:#161b22;--text:#e6edf3;--muted:#8b949e;
+      --accent:#58a6ff;--border:#30363d;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html,body{height:100%;overflow:hidden;}
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+      background:var(--bg);color:var(--text);display:flex;align-items:stretch;font-size:12px;
+      -webkit-user-select:none;user-select:none;
+    }
+    #tabs{display:flex;align-items:stretch;flex:1;overflow-x:auto;}
+    #tabs::-webkit-scrollbar{height:0;}
+    .tab{
+      display:flex;align-items:center;gap:8px;padding:0 10px;min-width:120px;max-width:220px;
+      background:var(--tab);border-right:1px solid var(--border);cursor:pointer;color:var(--muted);
+      border-top:2px solid transparent;
+    }
+    .tab:hover{background:var(--tab-active);}
+    .tab.active{background:var(--tab-active);color:var(--text);border-top-color:var(--accent);}
+    .tab .label{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .tab .x{
+      width:16px;height:16px;border-radius:4px;display:flex;align-items:center;justify-content:center;
+      font-size:14px;line-height:1;color:var(--muted);flex:0 0 auto;
+    }
+    .tab .x:hover{background:#f8514933;color:#f85149;}
+    .actions{display:flex;align-items:stretch;}
+    .actions button{
+      font:inherit;color:var(--text);background:transparent;border:none;border-left:1px solid var(--border);
+      padding:0 12px;cursor:pointer;font-size:15px;
+    }
+    .actions button:hover{background:var(--tab-active);}
+    .actions button.on{color:var(--accent);}
+    .actions button .lbl{font-size:11px;margin-left:5px;}
+  </style>
+</head>
+<body>
+  <div id="tabs"></div>
+  <div class="actions">
+    <button id="new" title="New tab (Ctrl+T)">＋</button>
+    <button id="grid" title="Agent grid view — see all tabs at once">⊞<span class="lbl">Grid</span></button>
+    <button id="star" title="Bookmark this page">☆</button>
+    <button id="board" title="Open bookmark board">▦<span class="lbl">Marks</span></button>
+  </div>
+
+  <script>
+    const tabsEl = document.getElementById('tabs');
+    const gridBtn = document.getElementById('grid');
+    let mode = 'single';
+
+    function render(data) {
+      mode = data.mode || 'single';
+      gridBtn.classList.toggle('on', mode === 'grid');
+      tabsEl.innerHTML = '';
+      for (const t of data.tabs) {
+        const el = document.createElement('div');
+        el.className = 'tab' + (t.active ? ' active' : '');
+        el.title = t.title || '';
+        const label = document.createElement('span');
+        label.className = 'label';
+        label.textContent = t.title || 'New Tab';
+        const x = document.createElement('span');
+        x.className = 'x';
+        x.textContent = '×';
+        x.onclick = (e) => { e.stopPropagation(); window.tabStrip.close(t.id); };
+        el.appendChild(label); el.appendChild(x);
+        el.onclick = () => window.tabStrip.select(t.id);
+        tabsEl.appendChild(el);
+      }
+    }
+
+    document.getElementById('new').onclick = () => window.tabStrip.newTab();
+    gridBtn.onclick = () => window.tabStrip.setMode(mode === 'grid' ? 'single' : 'grid');
+    document.getElementById('star').onclick = () => window.tabStrip.bookmarkCurrent();
+    document.getElementById('board').onclick = () => window.tabStrip.openBookmarks();
+
+    window.tabStrip.onUpdate(render);
+  </script>
+</body>
+</html>

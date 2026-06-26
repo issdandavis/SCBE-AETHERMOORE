@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AetherBrowser AI</title>
+  <style>
+    :root {
+      --bg: #0d1117; --surface: #161b22; --input: #0d1117;
+      --text: #e6edf3; --muted: #8b949e; --accent: #58a6ff;
+      --border: #30363d; --good: #3fb950; --warn: #d29922; --radius: 8px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: var(--bg); color: var(--text); display: flex; flex-direction: column;
+      border-left: 1px solid var(--border); overflow: hidden; font-size: 13px;
+    }
+    header {
+      display: flex; align-items: center; gap: 8px; padding: 12px 14px;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+    }
+    header .logo { font-weight: 600; letter-spacing: .3px; }
+    header .logo .mark { color: var(--accent); }
+    .status { margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+    .dot.online { background: var(--good); box-shadow: 0 0 6px var(--good); }
+    .dot.offline { background: var(--warn); }
+    main { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+    .msg { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; line-height: 1.45; }
+    .msg.user { border-color: #1f6feb55; }
+    .msg .who { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+    .msg pre { white-space: pre-wrap; word-break: break-word; font-family: inherit; font-size: 12px; color: var(--text); max-height: 320px; overflow-y: auto; }
+    .empty { color: var(--muted); text-align: center; margin-top: 30px; line-height: 1.6; }
+    footer { border-top: 1px solid var(--border); background: var(--surface); padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+    .quick { display: flex; gap: 6px; }
+    button {
+      font: inherit; color: var(--text); background: var(--input); border: 1px solid var(--border);
+      border-radius: 6px; padding: 7px 10px; cursor: pointer; transition: border-color .15s, background .15s;
+    }
+    button:hover:not(:disabled) { border-color: var(--accent); }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    .quick button { flex: 1; font-size: 12px; }
+    .row { display: flex; gap: 6px; align-items: flex-end; }
+    textarea {
+      flex: 1; resize: none; font: inherit; color: var(--text); background: var(--input);
+      border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; max-height: 120px; min-height: 38px;
+    }
+    textarea:focus { outline: none; border-color: var(--accent); }
+    .send { background: var(--accent); color: #0d1117; border-color: var(--accent); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="logo"><span class="mark">✦</span> AetherBrowser AI</span>
+    <span class="status"><span id="dot" class="dot"></span><span id="status-text">checking…</span></span>
+  </header>
+
+  <main id="feed">
+    <div class="empty" id="empty">
+      Your AI side-panel.<br />
+      Tap <b>Read this page</b> to pull the current page's text,<br />
+      or ask the squad below.
+    </div>
+  </main>
+
+  <footer>
+    <div class="quick">
+      <button id="btn-page">📄 Read this page</button>
+      <button id="btn-clear">Clear</button>
+    </div>
+    <div class="row">
+      <textarea id="input" placeholder="Ask the squad…" rows="1"></textarea>
+      <button id="send" class="send">Send</button>
+    </div>
+  </footer>
+
+  <script>
+    const BACKEND = 'http://127.0.0.1:8002';
+    const feed = document.getElementById('feed');
+    const empty = document.getElementById('empty');
+    const dot = document.getElementById('dot');
+    const statusText = document.getElementById('status-text');
+    const input = document.getElementById('input');
+    let aiOnline = false;
+
+    function add(who, text) {
+      if (empty) empty.remove();
+      const el = document.createElement('div');
+      el.className = 'msg' + (who === 'You' ? ' user' : '');
+      const w = document.createElement('div'); w.className = 'who'; w.textContent = who;
+      const pre = document.createElement('pre'); pre.textContent = text;
+      el.appendChild(w); el.appendChild(pre); feed.appendChild(el);
+      feed.scrollTop = feed.scrollHeight;
+      return pre;
+    }
+
+    // --- AI backend status (graceful: the browser works fully even when offline) ---
+    async function pingBackend() {
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 1500);
+        await fetch(BACKEND + '/', { signal: ctrl.signal });
+        clearTimeout(t);
+        aiOnline = true; dot.className = 'dot online'; statusText.textContent = 'AI online';
+      } catch {
+        aiOnline = false; dot.className = 'dot offline'; statusText.textContent = 'AI offline';
+      }
+    }
+    pingBackend();
+    setInterval(pingBackend, 8000);
+
+    // --- Read this page: works WITHOUT the AI backend (just shows the page content) ---
+    document.getElementById('btn-page').addEventListener('click', async () => {
+      try {
+        const send = window.chrome?.tabs?.sendMessage;
+        if (!send) { add('AetherBrowser', 'Page reading is unavailable in this build.'); return; }
+        const res = await new Promise((resolve) => {
+          const r = send(0, { action: 'getPageContent' }, (x) => resolve(x));
+          if (r && typeof r.then === 'function') r.then(resolve);  // promise-style preloads
+        });
+        if (!res) { add('AetherBrowser', 'Could not read the page.'); return; }
+        const head = (res.headings || []).map(h => '• ' + h.text).slice(0, 8).join('\n');
+        add('This page', (res.title || '') + '\n' + (res.url || '') + '\n\n' +
+            (head ? head + '\n\n' : '') + (res.text || '').slice(0, 1500) + ((res.text||'').length > 1500 ? ' …' : ''));
+      } catch (e) { add('AetherBrowser', 'Page read error: ' + e.message); }
+    });
+
+    document.getElementById('btn-clear').addEventListener('click', () => {
+      feed.innerHTML = ''; feed.appendChild(empty);
+    });
+
+    // --- Send to the AI (works when the backend is online; friendly note when not) ---
+    async function sendMsg() {
+      const text = input.value.trim();
+      if (!text) return;
+      add('You', text); input.value = '';
+      if (!aiOnline) {
+        add('AetherBrowser', "The AI engine isn't running. The browser works fully without it — to enable the squad, start the AetherBrowser backend.");
+        return;
+      }
+      const out = add('Squad', '…');
+      try {
+        const r = await fetch(BACKEND + '/chat', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text }),
+        });
+        const data = await r.json().catch(() => ({}));
+        out.textContent = data.reply || data.message || JSON.stringify(data);
+      } catch (e) { out.textContent = 'AI request failed: ' + e.message; }
+    }
+    document.getElementById('send').addEventListener('click', sendMsg);
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); } });
+  </script>
+</body>
+</html>

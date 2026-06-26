@@ -783,6 +783,88 @@ def swarm_dispatch(
     return result
 
 
+def _swarm_battery(base_args: Dict[str, str], cap: int = 12) -> List[Dict[str, str]]:
+    """Vary the numeric op-args into a battery (base + boundary edges + light fuzz).
+    Non-numeric args are held fixed. This is what turns single-input consensus into a behavioral check."""
+    edges = ["0", "1", "-1", "2", "-2", "10", "-10"]
+    out: List[Dict[str, str]] = [dict(base_args)]
+    seen = {tuple(sorted(base_args.items()))}
+
+    def add(d: Dict[str, str]) -> None:
+        key = tuple(sorted(d.items()))
+        if key not in seen:
+            seen.add(key)
+            out.append(d)
+
+    for k, v in base_args.items():
+        try:
+            base_n = int(v)
+        except (ValueError, TypeError):
+            continue  # non-numeric arg: hold fixed
+        for e in edges:
+            d = dict(base_args); d[k] = e; add(d)
+        for off in (-3, -1, 2, 5):
+            d = dict(base_args); d[k] = str(base_n + off); add(d)
+        if len(out) >= cap:
+            break
+    return out[:cap]
+
+
+def swarm_battery_verify(
+    op: str,
+    tongues: List[str],
+    base_args: Dict[str, str],
+    timeout: float = 10.0,
+    cap: int = 12,
+) -> Dict[str, Any]:
+    """Cross-tongue CORRECTNESS over a BATTERY of inputs -- the behavioral upgrade to the swarm's
+    single-input stdout consensus. Re-runs the op through the EXISTING executor (safety gate intact)
+    across varied args and checks every running tongue agrees on every input:
+        SEAL   all running tongues agree across the battery -> behaviorally verified
+        REJECT a tongue DIVERGES on some input -> that tongue emits wrong behavior (witness attached)
+        FLAG   too few inputs had >=2 running tongues to cross-check -> AI review
+    Agreement proves the tongues mean the same thing; it does NOT prove they match intent.
+    """
+    battery = _swarm_battery(base_args, cap=cap)
+    compared = 0
+    for call_args in battery:
+        outs: Dict[str, str] = {}
+        for t in tongues:
+            try:
+                call = run_tongue_call(op, t, call_args, execute=True, timeout=timeout, gate_audit_log=None)
+            except Exception:
+                continue
+            if call.ran and call.returncode == 0 and call.stdout != "":
+                outs[t] = call.stdout
+        if len(outs) < 2:
+            continue  # need >=2 running tongues to cross-check this input
+        compared += 1
+        if len(set(outs.values())) > 1:
+            tally: Dict[str, int] = {}
+            for s in outs.values():
+                tally[s] = tally.get(s, 0) + 1
+            majority = max(tally, key=lambda s: tally[s])
+            minority = {t: s for t, s in outs.items() if s != majority}
+            return {
+                "verdict": "REJECT",
+                "reason": "tongues DISAGREE on an input -> a tongue emits wrong behavior",
+                "witness": {"args": call_args, "majority": majority, "minority": minority},
+                "inputs_checked": compared,
+            }
+    if compared < 3:
+        return {
+            "verdict": "FLAG",
+            "reason": "too few inputs with >=2 running tongues to cross-check -> AI review",
+            "inputs_checked": compared,
+            "route": "ai_review",
+        }
+    return {
+        "verdict": "SEAL",
+        "reason": "all running tongues agree across %d battery inputs -> behaviorally verified" % compared,
+        "inputs_checked": compared,
+    }
+
+
 def list_ops(band: Optional[str] = None) -> List[Tuple[int, str, str, float]]:
     """List (id, name, band, chi) for lexicon ops, optionally filtered by band."""
     out = []
@@ -3967,6 +4049,15 @@ def cmd_swarm(args: argparse.Namespace) -> int:
         print(f"  {call.tongue} ({call.language:>10}): {status:<20} {out}")
     print(f"quorum_ok={result.quorum_ok}  consensus={result.consensus_hash[:12] or '-'}")
 
+    # Cross-tongue CORRECTNESS gate (opt-in): behavioral agreement across an input BATTERY,
+    # not just the single-input stdout hash above. Blocks on a divergent tongue.
+    verify_verdict = None
+    if getattr(args, "verify", False) and not args.no_run:
+        verify_verdict = swarm_battery_verify(args.op, tongues, kv, timeout=args.timeout)
+        print(f"[verify] {verify_verdict['verdict']}: {verify_verdict['reason']}")
+        if verify_verdict.get("witness"):
+            print(f"[verify] witness={json.dumps(verify_verdict['witness'])}")
+
     # Per-call sacred-tongue boundary digests for downstream parity training.
     # Written as a single 'swarm_tokens' summary record so we don't disturb the
     # per-call records emitted inside swarm_dispatch.
@@ -4000,6 +4091,8 @@ def cmd_swarm(args: argparse.Namespace) -> int:
 
     if args.json:
         print(json.dumps(result.to_dict(), indent=2))
+    if verify_verdict is not None and verify_verdict["verdict"] == "REJECT":
+        return 1  # a tongue diverged behaviorally -> block, regardless of single-input quorum
     return 0 if result.quorum_ok else 1
 
 
@@ -4022,6 +4115,77 @@ def cmd_verify(args: argparse.Namespace) -> int:
     ok = verify_seal(args.seal, args.op or "seal", tongue, args.payload, phi_cost=phi_cost, tier=tier)
     print("OK" if ok else "MISMATCH")
     return 0 if ok else 1
+
+
+def _ts_to_js(ts: str) -> str:
+    """Strip TypeScript type annotations from a code_prism TS face -> runnable JS."""
+    import re
+    js = ts.replace("export function", "function")
+    return re.sub(r":\s*(any|number|string|boolean|void)\b", "", js)
+
+
+def _py_to_prism(src: str):
+    """Parse a Python source file's first function into a PrismModule, for cross-face emit."""
+    import ast as _ast
+    from src.code_prism.models import PrismFunction, PrismModule
+    fn = next((n for n in _ast.parse(src).body if isinstance(n, _ast.FunctionDef)), None)
+    if fn is None:
+        return None, None
+    body = []
+    for stmt in fn.body:
+        if (isinstance(stmt, _ast.Expr) and isinstance(stmt.value, _ast.Constant)
+                and isinstance(stmt.value.value, str)):
+            continue  # drop the docstring
+        body.append(_ast.unparse(stmt))
+    pf = PrismFunction(name=fn.name, args=[a.arg for a in fn.args.args], body=body, returns=None)
+    return PrismModule("candidate", "python", functions=[pf]), fn.name
+
+
+def cmd_verify_faces(args: argparse.Namespace) -> int:
+    """CLI: cross-face CORRECTNESS gate -- the correctness half of the seal.
+
+    The execution_gate asks 'is this code dangerous?' (safety). This asks 'do the language
+    faces AGREE?' (correctness) -- by EXECUTION across a battery of inputs (boundary + structure
+    + grammar), not by comparing text. The second face is an explicit --js file, or one emitted
+    from the Python via code_prism. Verdict forces better output:
+        SEAL (exit 0)   every face agrees on every in-domain input -> seal may proceed
+        REJECT (exit 1) the faces DIVERGE -> a generation/portability bug; block the seal, show witness
+        FLAG (exit 2)   a face won't run / coverage too thin -> escalate to AI review
+    NOTE: agreement proves the faces mean the same thing; it does NOT prove they match your intent.
+    """
+    try:
+        from src.crypto.geoseal_correctness_gate import correctness_gate
+        from src.code_prism.emitter import emit_typescript
+    except ImportError as exc:
+        print(f"correctness gate not available: {exc}", file=sys.stderr)
+        return 2
+    import ast as _ast
+    py_src = Path(args.python).read_text(encoding="utf-8")
+    pyfn = next((n for n in _ast.parse(py_src).body if isinstance(n, _ast.FunctionDef)), None)
+    entry = args.entry or (pyfn.name if pyfn else None)
+    if not entry:
+        print("could not determine entry function (pass --entry)", file=sys.stderr)
+        return 2
+    if args.js:
+        js_src = Path(args.js).read_text(encoding="utf-8")
+    else:
+        module, _ = _py_to_prism(py_src)
+        if module is None:
+            print("no function in --python to emit a JS face from (pass --js)", file=sys.stderr)
+            return 2
+        js_src = _ts_to_js(emit_typescript(module))
+    if args.seeds:
+        seeds = [tuple(s) for s in json.loads(args.seeds)]
+    else:
+        ar = len(pyfn.args.args) if pyfn else 1
+        seeds = [tuple(i + j for j in range(ar)) for i in (1, 3, 7, 0, 5)]
+    verdict = correctness_gate({"python": py_src, "javascript": js_src}, entry, seeds)
+    print(f"verdict={verdict['verdict']}  {verdict['reason']}")
+    if verdict.get("witness"):
+        print(f"witness={json.dumps(verdict['witness'])}")
+    if getattr(args, "json", False):
+        print(json.dumps(verdict, indent=2))
+    return {"SEAL": 0, "REJECT": 1, "FLAG": 2}.get(verdict["verdict"], 2)
 
 
 def cmd_agent(args: argparse.Namespace) -> int:
@@ -6116,6 +6280,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_swarm.add_argument("--tongues", default=None, help="comma-separated (default: all 6)")
     p_swarm.add_argument("--timeout", type=float, default=10.0)
     p_swarm.add_argument("--no-run", action="store_true", help="Emit only, don't execute")
+    p_swarm.add_argument(
+        "--verify",
+        action="store_true",
+        help="Cross-tongue CORRECTNESS gate: check tongues agree across an input BATTERY (not just one input); blocks on divergence",
+    )
     p_swarm.add_argument("--no-ledger", action="store_true", help="Skip writing ledger")
     p_swarm.add_argument("--ledger", default=str(DEFAULT_LEDGER))
     p_swarm.add_argument("--json", action="store_true")
@@ -6158,6 +6327,19 @@ def build_parser() -> argparse.ArgumentParser:
         help="Governance tier embedded in the seal (must match)",
     )
     p_verify.set_defaults(func=cmd_verify)
+
+    p_vf = sub.add_parser(
+        "verify-faces",
+        help="Cross-face CORRECTNESS gate: do the candidate's language faces AGREE by execution? (SEAL/REJECT/FLAG)",
+    )
+    p_vf.add_argument("python", help="Path to the candidate Python source (a single function)")
+    p_vf.add_argument("--js", default=None,
+                      help="Path to an explicit JS face; if omitted, one is emitted from the Python via code_prism")
+    p_vf.add_argument("--entry", default=None, help="Entry function name (default: first def in the Python)")
+    p_vf.add_argument("--seeds", default=None,
+                      help="JSON list of argument-lists, e.g. '[[7,2],[10,3]]' (default: generic numeric inputs)")
+    p_vf.add_argument("--json", action="store_true", help="Emit the full verdict as JSON")
+    p_vf.set_defaults(func=cmd_verify_faces)
 
     p_agent = sub.add_parser("agent", help="Route a coding task via Polly + GeoSeal")
     p_agent.add_argument("task", help="Natural language coding task")

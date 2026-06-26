@@ -355,3 +355,10 @@ docs/proposals/*.zip
 
 # generated audit-receipt runs
 audit_attestation/
+
+# build artifacts (regenerable; too big for git)
+desktop/dist-electron/
+desktop/node_modules/
+node_modules/
+*.exe
+*.blockmap
