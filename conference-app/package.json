@@ -25,15 +25,15 @@
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
-    "@types/node": "^26.0.0",
+    "@types/node": "^26.0.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.1.0",
     "@types/uuid": "^11.0.0",
-    "@vitejs/plugin-react": "^6.0.2",
+    "@vitejs/plugin-react": "^6.0.3",
     "concurrently": "^10.0.3",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3",
-    "vite": "^8.0.16",
+    "vite": "^8.1.0",
     "vitest": "^4.1.9"
   },
   "overrides": {
