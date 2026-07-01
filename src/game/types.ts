@@ -202,22 +202,11 @@ export const GOVERNANCE_TIER_MIN_TRUST: Record<TongueCode, number> = {
 
 /** Discipline traits — develop from HOW you use companions */
 export type DisciplineTrait =
-  | 'careful_verifier'
-  | 'fast_heuristic'
-  | 'collaborative'
-  | 'solo'
-  | 'risk_tolerant'
-  | 'guardian';
+  'careful_verifier' | 'fast_heuristic' | 'collaborative' | 'solo' | 'risk_tolerant' | 'guardian';
 
 /** Emotional states — affect performance + evolution */
 export type EmotionalState =
-  | 'content'
-  | 'excited'
-  | 'anxious'
-  | 'determined'
-  | 'exhausted'
-  | 'corrupted'
-  | 'transcendent';
+  'content' | 'excited' | 'anxious' | 'determined' | 'exhausted' | 'corrupted' | 'transcendent';
 
 /** Formation roles (fleet doctrines) */
 export type FormationRole = 'storm' | 'phalanx' | 'lance' | 'web';

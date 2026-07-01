@@ -2,12 +2,7 @@ import { createHash } from 'crypto';
 import type { TongueCode } from './ss1.js';
 
 export type SemanticDomain =
-  | 'natural'
-  | 'code'
-  | 'workflow'
-  | 'physical'
-  | 'chemical'
-  | 'governance';
+  'natural' | 'code' | 'workflow' | 'physical' | 'chemical' | 'governance';
 
 export type SemanticRelationKind =
   | 'enables'
@@ -111,13 +106,7 @@ export interface SemanticLedgerEntry {
 }
 
 export type SemanticWorkflowChannel =
-  | 'pipe'
-  | 'funnel'
-  | 'dot_to_dot'
-  | 'websocket'
-  | 'agent_handoff'
-  | 'bifurcation'
-  | 'merge';
+  'pipe' | 'funnel' | 'dot_to_dot' | 'websocket' | 'agent_handoff' | 'bifurcation' | 'merge';
 
 export interface SemanticWorkflowNode {
   id: string;

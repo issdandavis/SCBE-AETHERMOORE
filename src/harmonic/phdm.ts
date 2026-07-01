@@ -44,12 +44,7 @@ import * as crypto from 'crypto';
 
 /** Polyhedra family classification */
 export type PolyhedronFamily =
-  | 'platonic'
-  | 'archimedean'
-  | 'kepler-poinsot'
-  | 'toroidal'
-  | 'johnson'
-  | 'rhombic';
+  'platonic' | 'archimedean' | 'kepler-poinsot' | 'toroidal' | 'johnson' | 'rhombic';
 
 /**
  * Polyhedron representation with topological properties

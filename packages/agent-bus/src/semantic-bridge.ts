@@ -375,12 +375,7 @@ export function dimsToBinary(dims: DimVec): string {
  *   backchannel       HOLD only       — pure listener co-construction
  */
 export type DiscourseProfile =
-  | 'governance_steer'
-  | 'long_turn'
-  | 'warranted_claim'
-  | 'floor_hold'
-  | 'backchannel'
-  | null;
+  'governance_steer' | 'long_turn' | 'warranted_claim' | 'floor_hold' | 'backchannel' | null;
 
 export function detectDiscourseProfile(atoms: AtomHit[]): DiscourseProfile {
   const ids = new Set(atoms.map((a) => a.semanticId));

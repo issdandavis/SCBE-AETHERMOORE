@@ -13,12 +13,7 @@ export type GovernanceDecision = 'ALLOW' | 'QUARANTINE' | 'DENY';
  * Industry domains supported by the test suite
  */
 export type Industry =
-  | 'bank'
-  | 'healthcare'
-  | 'manufacturing'
-  | 'autonomous-vehicle'
-  | 'mlops'
-  | 'public-sector';
+  'bank' | 'healthcare' | 'manufacturing' | 'autonomous-vehicle' | 'mlops' | 'public-sector';
 
 /**
  * Attack types for red-team testing
