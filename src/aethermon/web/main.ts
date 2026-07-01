@@ -4,17 +4,20 @@
  * @layer Layer 14
  * @component AETHERMON Web — Browser Game UI
  *
- * The visual AETHERMON client: a virtual-pet device shell rendered in
- * DOM + canvas, driving the exact same tested game core as the CLI.
- * Procedural pixel sprites, animated battles, region-tinted scenes,
- * localStorage saves, and canon synesthesia tones (each tongue sounds
- * its note — KO=A 220Hz … DR=G 392Hz).
+ * The visual AETHERMON client: a virtual-pet handheld ("Spiral Unit")
+ * rendered in DOM + canvas, driving the exact same tested game core as
+ * the CLI. Procedural pixel sprites, region dioramas, animated battles,
+ * a hex tongue-map, an illustrated Codex, and canon synesthesia — every
+ * Sacred Tongue has its color and its note (KO=A 220Hz … DR=G 392Hz),
+ * surfaced everywhere as element chips.
  *
- * Built with esbuild into demos/aethermon/aethermon.js (see
- * `npm run game:aethermon:web`).
+ * Navigable by pointer, keyboard (arrows + A/S/Enter/Esc), or the drawn
+ * D-pad and A/B buttons. Built with esbuild into
+ * demos/aethermon/aethermon.js (see `npm run game:aethermon:web`).
  */
 
 import type {
+  Alignment,
   BattleAction,
   BattleState,
   Combatant,
@@ -23,10 +26,11 @@ import type {
   StatKey,
   TongueCode,
 } from '../types.js';
-import { STAT_KEYS, TONGUE_NOTES } from '../types.js';
+import { STAGE_ORDER, STAT_KEYS, TONGUE_NAMES, TONGUE_NOTES } from '../types.js';
 import { getMove } from '../moves.js';
-import { STARTER_EGG_IDS, getSpecies } from '../species.js';
+import { STARTER_EGG_IDS, getSpecies, speciesByStage } from '../species.js';
 import { REGIONS, getRegion } from '../regions.js';
+import type { RegionId } from '../regions.js';
 import {
   effectiveStats,
   feed,
@@ -64,10 +68,9 @@ import {
 import { createRng, nextInt } from '../rng.js';
 import { ALIGNMENT_HEX, ELEMENT_HEX, drawSprite, spriteForSpecies } from './sprites.js';
 import { sceneGrid } from './scenes.js';
-import type { RegionId } from '../regions.js';
 
 // ---------------------------------------------------------------------------
-//  Tiny DOM + audio toolkit
+//  DOM + audio toolkit
 // ---------------------------------------------------------------------------
 
 const SAVE_KEY = 'aethermon-save';
@@ -98,6 +101,19 @@ const TONGUE_FREQ: Record<TongueCode, number> = {
   UM: 349,
   DR: 392,
 };
+
+/** Meter presentation: icon glyph + accent color. */
+const CARE_METERS: ReadonlyArray<{
+  key: keyof MonsterState['care'];
+  label: string;
+  color: string;
+}> = [
+  { key: 'hunger', label: 'FOOD', color: '#e0a24a' },
+  { key: 'energy', label: 'ENRG', color: '#4ac0e0' },
+  { key: 'mood', label: 'MOOD', color: '#e0e04a' },
+  { key: 'bond', label: 'BOND', color: '#e04a8a' },
+  { key: 'discipline', label: 'DISC', color: '#8a8ae0' },
+];
 
 let audioCtx: AudioContext | null = null;
 let muted = false;
@@ -144,7 +160,54 @@ const sfx = {
 };
 
 // ---------------------------------------------------------------------------
-//  Game state container
+//  Chips & bars (Sacred Tongue synesthesia made visible)
+// ---------------------------------------------------------------------------
+
+/** Element chip: colored pill with tongue code + its canon note. */
+function elementChip(element: TongueCode): HTMLElement {
+  const chip = el('span', 'chip');
+  chip.style.setProperty('--c', ELEMENT_HEX[element]);
+  chip.title = `${TONGUE_NAMES[element]} — note ${TONGUE_NOTES[element]}`;
+  chip.append(document.createTextNode(element));
+  chip.append(el('span', 'note', TONGUE_NOTES[element]));
+  return chip;
+}
+
+/** Alignment chip: AEGIS / VENOM / FLUX, colored by triangle role. */
+function alignmentChip(alignment: Alignment): HTMLElement {
+  const cls = alignment === 'VENOM' ? 'venom' : alignment === 'FLUX' ? 'flux' : '';
+  const chip = el('span', `chip align ${cls}`.trim(), alignment);
+  return chip;
+}
+
+function bar(fillClass: string, value: number, max: number, low = false): HTMLElement {
+  const track = el('div', 'track');
+  const fill = el('div', `fill ${fillClass}${low ? ' low' : ''}`);
+  fill.style.width = `${Math.max(0, Math.min(100, (value / max) * 100))}%`;
+  track.append(fill);
+  return track;
+}
+
+function statRow(label: string, key: StatKey, value: number, max: number): HTMLElement {
+  const row = el('div', 'stat-row');
+  row.append(
+    el('span', 'stat-label', label),
+    bar(key, value, max),
+    el('span', 'stat-val', String(value))
+  );
+  return row;
+}
+
+function careMeterRow(label: string, value: number, color: string): HTMLElement {
+  const row = el('div', 'meter');
+  const track = bar('care', value, 100, value <= 25);
+  (track.firstChild as HTMLElement).style.setProperty('--mc', color);
+  row.append(el('span', 'meter-label', label), track, el('span', 'meter-val', String(value)));
+  return row;
+}
+
+// ---------------------------------------------------------------------------
+//  Game state
 // ---------------------------------------------------------------------------
 
 let state: GameState | null = null;
@@ -159,15 +222,13 @@ function safeGetItem(key: string): string | null {
     return null;
   }
 }
-
 function safeSetItem(key: string, value: string): void {
   try {
     localStorage.setItem(key, value);
   } catch {
-    /* storage unavailable; keep playing in memory */
+    /* keep playing in memory */
   }
 }
-
 function safeRemoveItem(key: string): void {
   try {
     localStorage.removeItem(key);
@@ -175,11 +236,9 @@ function safeRemoveItem(key: string): void {
     /* ignore */
   }
 }
-
 function saveState(): void {
   if (state) safeSetItem(SAVE_KEY, serializeGame(state));
 }
-
 function loadState(): GameState | null {
   const raw = safeGetItem(SAVE_KEY);
   if (!raw) return null;
@@ -189,7 +248,6 @@ function loadState(): GameState | null {
     return null;
   }
 }
-
 function battleSeed(game: GameState): number {
   const rng = createRng(game.rngState);
   const seed = nextInt(rng, 0, 2 ** 31 - 1);
@@ -198,38 +256,97 @@ function battleSeed(game: GameState): number {
 }
 
 // ---------------------------------------------------------------------------
-//  Rendering
+//  Screens & chrome
 // ---------------------------------------------------------------------------
 
-function setScreen(id: 'screen-title' | 'screen-egg' | 'screen-main' | 'screen-battle'): void {
-  for (const screen of ['screen-title', 'screen-egg', 'screen-main', 'screen-battle']) {
-    $(screen).classList.toggle('hidden', screen !== id);
-  }
+type ScreenId =
+  | 'screen-title'
+  | 'screen-egg'
+  | 'screen-main'
+  | 'screen-battle'
+  | 'screen-codex'
+  | 'screen-map';
+
+const SCREENS: ScreenId[] = [
+  'screen-title',
+  'screen-egg',
+  'screen-main',
+  'screen-battle',
+  'screen-codex',
+  'screen-map',
+];
+
+function setScreen(id: ScreenId): void {
+  for (const screen of SCREENS) $(screen).classList.toggle('hidden', screen !== id);
+}
+
+function currentTongue(): TongueCode {
+  return state ? getRegion(state.region).tongue : 'KO';
 }
 
 function applyRegionTint(): void {
-  const tongue = state ? getRegion(state.region).tongue : 'KO';
-  document.documentElement.style.setProperty('--tint', ELEMENT_HEX[tongue]);
+  document.documentElement.style.setProperty('--tint', ELEMENT_HEX[currentTongue()]);
 }
 
-/** Paint the current region's backdrop onto a scene canvas. */
+/** Paint the current region's backdrop onto a scene canvas if present. */
 function drawScene(canvasId: string): void {
   if (!state) return;
   const canvas = document.getElementById(canvasId) as HTMLCanvasElement | null;
-  if (!canvas) return;
-  drawSprite(canvas, sceneGrid(state.region as RegionId, 64, 34, spriteFrame), 1);
+  if (canvas) drawSprite(canvas, sceneGrid(state.region as RegionId, 64, 34, spriteFrame), 1);
 }
 
-/** Element-colored glow around a sprite canvas. */
 function applyGlow(canvasId: string, element: TongueCode): void {
   const canvas = document.getElementById(canvasId);
   if (canvas) canvas.style.filter = `drop-shadow(0 0 7px ${ELEMENT_HEX[element]})`;
 }
 
-function renderButtons(
-  container: HTMLElement,
-  buttons: Array<{ label: string; onClick: () => void; cls?: string; title?: string }>
-): void {
+function statusLcd(): void {
+  const lcd = $('lcd');
+  lcd.replaceChildren();
+  if (!state) {
+    lcd.append(el('span', '', 'SPIRAL UNIT READY'));
+    lcd.append(el('span', '', 'φ'));
+    return;
+  }
+  const region = getRegion(state.region);
+  lcd.append(el('span', '', `${region.name.toUpperCase()} · GEN ${state.generation}`));
+  const right = el('span', '');
+  right.append(document.createTextNode(`ARENA ${state.arenaRank}/${ARENA_LADDER.length}`));
+  if (isChampion(state)) {
+    const champ = el('span', 'champ', ' ★');
+    right.append(champ);
+  }
+  lcd.append(right);
+}
+
+// ── In-screen log ─────────────────────────────────────────────────────────
+
+const logLines: string[] = [];
+function pushLog(text: string, cls = ''): void {
+  logLines.push(text);
+  if (logLines.length > 60) logLines.shift();
+  const log = $('log');
+  log.append(el('div', `log-line ${cls}`.trim(), text));
+  while (log.children.length > 4) log.removeChild(log.firstChild as Node);
+  log.scrollTop = log.scrollHeight;
+}
+
+// ---------------------------------------------------------------------------
+//  Menu buttons with D-pad / keyboard focus
+// ---------------------------------------------------------------------------
+
+interface MenuButton {
+  label: string;
+  onClick: () => void;
+  cls?: string;
+  title?: string;
+}
+
+let focusIndex = 0;
+const MENU_COLS = 3;
+
+function renderButtons(buttons: MenuButton[]): void {
+  const container = $('buttons');
   container.replaceChildren();
   for (const spec of buttons) {
     const button = el('button', `btn ${spec.cls ?? ''}`.trim(), spec.label) as HTMLButtonElement;
@@ -238,49 +355,66 @@ function renderButtons(
       sfx.click();
       spec.onClick();
     });
+    button.addEventListener('mouseenter', () => setFocus([...container.children].indexOf(button)));
     container.append(button);
   }
+  focusIndex = Math.min(focusIndex, buttons.length - 1);
+  if (focusIndex < 0) focusIndex = 0;
+  paintFocus();
 }
 
-function meter(label: string, value: number, max = 100): HTMLElement {
-  const wrap = el('div', 'meter');
-  wrap.append(el('span', 'meter-label', label));
-  const track = el('div', 'meter-track');
-  const fill = el('div', 'meter-fill');
-  fill.style.width = `${Math.max(0, Math.min(100, (value / max) * 100))}%`;
-  if (value <= max * 0.25) fill.classList.add('low');
-  track.append(fill);
-  wrap.append(track);
-  return wrap;
+function menuButtons(): HTMLButtonElement[] {
+  return [...$('buttons').children] as HTMLButtonElement[];
 }
 
-function statusLcd(): void {
-  if (!state) return;
-  const region = getRegion(state.region);
-  $('lcd').textContent =
-    `${region.name} · Gen ${state.generation} · Arena ${state.arenaRank}/${ARENA_LADDER.length}` +
-    (isChampion(state) ? ' · CHAMPION ★' : '');
+function paintFocus(): void {
+  const buttons = menuButtons();
+  buttons.forEach((b, i) => b.classList.toggle('focus', i === focusIndex));
 }
 
-const logLines: string[] = [];
-function pushLog(text: string, cls = ''): void {
-  logLines.push(text);
-  if (logLines.length > 60) logLines.shift();
-  const log = $('log');
-  const line = el('div', `log-line ${cls}`.trim(), text);
-  log.append(line);
-  while (log.children.length > 8) log.removeChild(log.firstChild as Node);
-  log.scrollTop = log.scrollHeight;
+function setFocus(index: number): void {
+  const count = menuButtons().length;
+  if (count === 0) return;
+  focusIndex = ((index % count) + count) % count;
+  paintFocus();
 }
 
-// ── Title screen ─────────────────────────────────────────────────────────
+function moveFocus(dir: 'up' | 'down' | 'left' | 'right'): void {
+  const count = menuButtons().length;
+  if (count === 0) return;
+  const delta = dir === 'left' ? -1 : dir === 'right' ? 1 : dir === 'up' ? -MENU_COLS : MENU_COLS;
+  setFocus(focusIndex + delta);
+  litDpad(dir);
+}
+
+function activateFocused(): void {
+  const buttons = menuButtons();
+  const target = buttons[focusIndex];
+  if (target) target.click();
+}
+
+/** Back = click a BACK button if present. */
+function pressBack(): void {
+  const back = menuButtons().find((b) => b.textContent === 'BACK');
+  if (back) back.click();
+}
+
+function litDpad(dir: string): void {
+  const btn = document.querySelector(`.dpad button[data-dir="${dir}"]`);
+  if (!btn) return;
+  btn.classList.add('lit');
+  setTimeout(() => btn.classList.remove('lit'), 140);
+}
+
+// ── Title screen ──────────────────────────────────────────────────────────
 
 function renderTitle(): void {
-  // Fresh line, fresh screen: clear old messages and the region tint.
   logLines.length = 0;
   $('log').replaceChildren();
   document.documentElement.style.setProperty('--tint', ELEMENT_HEX.KO);
   setScreen('screen-title');
+  statusLcd();
+
   const eggRow = $('egg-row');
   eggRow.replaceChildren();
   let chosen = STARTER_EGG_IDS[0];
@@ -290,8 +424,8 @@ function renderTitle(): void {
     const card = el('div', 'egg-card');
     const canvas = document.createElement('canvas');
     canvas.className = 'pixel';
-    drawSprite(canvas, spriteForSpecies(species), 6);
-    card.append(canvas, el('div', 'egg-name', species.name));
+    drawSprite(canvas, spriteForSpecies(species), 5);
+    card.append(canvas, elementChip(species.element), el('div', 'egg-name', species.name));
     card.style.setProperty('--egg-color', ELEMENT_HEX[species.element]);
     card.title = species.lore;
     card.addEventListener('click', () => {
@@ -305,7 +439,7 @@ function renderTitle(): void {
   }
   cards[0].classList.add('selected');
 
-  renderButtons($('buttons'), [
+  renderButtons([
     {
       label: 'BEGIN',
       cls: 'primary',
@@ -318,26 +452,26 @@ function renderTitle(): void {
       },
     },
   ]);
-  $('lcd').textContent = 'A creature of Aethermoore is waiting.';
 }
 
-// ── Egg screen ───────────────────────────────────────────────────────────
+// ── Egg screen ────────────────────────────────────────────────────────────
 
 function renderEgg(): void {
   if (!state?.egg) return renderMain();
   setScreen('screen-egg');
+  applyRegionTint();
   const species = getSpecies(state.egg.speciesId);
-  const canvas = $('egg-canvas') as HTMLCanvasElement;
-  drawSprite(canvas, spriteForSpecies(species, spriteFrame), 10);
+  drawScene('egg-scene');
+  drawSprite($('egg-canvas') as HTMLCanvasElement, spriteForSpecies(species, spriteFrame), 9);
   $('egg-title').textContent =
     `${species.name} · Generation ${state.egg.generation ?? state.generation}`;
   $('egg-warmth').textContent =
     '♥'.repeat(state.egg.warmth) + '·'.repeat(Math.max(0, 3 - state.egg.warmth));
   statusLcd();
 
-  renderButtons($('buttons'), [
+  renderButtons([
     {
-      label: 'WARM THE EGG',
+      label: 'WARM',
       cls: 'primary',
       onClick: () => {
         if (!state?.egg) return;
@@ -362,7 +496,7 @@ function renderEgg(): void {
   ]);
 }
 
-// ── Main (care) screen ───────────────────────────────────────────────────
+// ── Care screen ───────────────────────────────────────────────────────────
 
 function renderMain(): void {
   if (!state) return;
@@ -375,31 +509,67 @@ function renderMain(): void {
 
   const species = getSpecies(monster.speciesId);
   const stats = effectiveStats(monster);
+  const region = getRegion(state.region);
   drawScene('main-scene');
-  drawSprite($('monster-canvas') as HTMLCanvasElement, spriteForSpecies(species, spriteFrame), 8);
+  drawSprite($('monster-canvas') as HTMLCanvasElement, spriteForSpecies(species, spriteFrame), 7);
   applyGlow('monster-canvas', species.element);
-  $('monster-name').textContent = `${monster.nickname}`;
-  $('monster-species').textContent =
-    `${species.name} · ${species.stage} · ${species.element}/${species.alignment}`;
-  ($('monster-species') as HTMLElement).style.color = ELEMENT_HEX[species.element];
-  $('monster-stats').textContent =
-    `Lv.${monster.level}  XP ${monster.xp}/${xpToNext(monster.level)}  ` +
-    `HP ${stats.hp} ATK ${stats.atk} DEF ${stats.def} SPD ${stats.spd}`;
-  $('monster-extra').textContent =
-    `Gen ${monster.generation} · Scars ${monster.scars} · Hollow ${monster.hollowExposure} · ` +
-    `Lifespan ${lifespanRemaining(monster)} · sounds in ${TONGUE_NOTES[species.element]}`;
+  $('region-tag').textContent = region.name;
 
-  const meters = $('meters');
-  meters.replaceChildren(
-    meter('FOOD', monster.care.hunger),
-    meter('ENRG', monster.care.energy),
-    meter('MOOD', monster.care.mood),
-    meter('BOND', monster.care.bond),
-    meter('DISC', monster.care.discipline)
+  $('monster-name').textContent = monster.nickname;
+  $('chip-element').replaceChildren(elementChip(species.element));
+  $('chip-align').replaceChildren(alignmentChip(species.alignment));
+
+  const xpNeed = xpToNext(monster.level);
+  ($('xp-fill') as HTMLElement).style.width =
+    `${Math.min(100, (monster.xp / Math.max(1, xpNeed)) * 100)}%`;
+
+  const statMax = 220;
+  $('stat-panel').replaceChildren(
+    statRow('HP', 'hp', stats.hp, statMax),
+    statRow('ATK', 'atk', stats.atk, statMax),
+    statRow('DEF', 'def', stats.def, statMax),
+    statRow('SPD', 'spd', stats.spd, statMax)
   );
 
-  const region = getRegion(state.region);
-  const buttons: Array<{ label: string; onClick: () => void; cls?: string; title?: string }> = [
+  $('meters').replaceChildren(
+    ...CARE_METERS.map((m) => careMeterRow(m.label, monster.care[m.key] as number, m.color))
+  );
+
+  // Evolution hint: the branch it would take now, or the best locked one.
+  const options = evolutionOptions(monster);
+  const evo = $('evo-hint');
+  evo.replaceChildren();
+  if (options.length === 0) {
+    evo.append(el('span', '', '▲'), el('span', '', 'Final form'));
+  } else {
+    const eligible = selectEvolution(monster);
+    if (eligible) {
+      evo.append(
+        el('span', 'ready', '▲ READY:'),
+        el('span', 'ready', getSpecies(eligible.targetId).name)
+      );
+    } else {
+      const soonest = options[0];
+      evo.append(
+        el('span', '', '▲ next:'),
+        el('span', '', getSpecies(soonest.requirement.targetId).name),
+        el('span', '', `— ${soonest.blockedBy[0] ?? ''}`)
+      );
+    }
+  }
+
+  // Status tags.
+  const tags = $('tags');
+  tags.replaceChildren(
+    el('span', 'tag', `Lv.${monster.level}`),
+    el('span', 'tag', `Gen ${monster.generation}`),
+    el('span', 'tag', `Life ${lifespanRemaining(monster)}`)
+  );
+  if (monster.scars > 0) tags.append(el('span', 'tag scar', `${monster.scars} scars`));
+  if (monster.hollowExposure > 0)
+    tags.append(el('span', 'tag hollow', `Hollow ${monster.hollowExposure}`));
+
+  const buttons: MenuButton[] = [
     { label: 'FEED', onClick: () => care(() => feed(monster)) },
     { label: 'TRAIN', onClick: renderTrainPicker },
     { label: 'PLAY', onClick: () => care(() => play(monster)) },
@@ -408,7 +578,8 @@ function renderMain(): void {
     { label: 'SCOLD', onClick: () => care(() => scold(monster)) },
     { label: 'BATTLE', cls: 'danger', onClick: () => void startWildBattle() },
     { label: 'ARENA', cls: 'danger', onClick: () => void startArenaBattle() },
-    { label: 'TRAVEL', onClick: renderTravelPicker },
+    { label: 'MAP', onClick: renderMap },
+    { label: 'CODEX', onClick: renderCodex },
     { label: 'PATHS', onClick: renderPaths, title: 'Evolution paths' },
   ];
   if (region.touchesHollow) {
@@ -416,7 +587,7 @@ function renderMain(): void {
       label: 'THE GAP',
       cls: 'hollow',
       onClick: () => {
-        if (!state || !state.monster) return;
+        if (!state?.monster) return;
         const result = communeWithGap(state, state.monster);
         pushLog(result.message, result.ok ? 'hollow-text' : '');
         if (result.ok) tone(66, 600, 0, 0.06);
@@ -426,7 +597,7 @@ function renderMain(): void {
   }
   buttons.push({ label: muted ? 'UNMUTE' : 'MUTE', onClick: toggleMute });
   buttons.push({
-    label: 'NEW LINE',
+    label: 'RESET',
     title: 'Abandon this save and start over',
     onClick: () => {
       if (window.confirm('Abandon this line and start a new game?')) {
@@ -436,7 +607,7 @@ function renderMain(): void {
       }
     },
   });
-  renderButtons($('buttons'), buttons);
+  renderButtons(buttons);
 }
 
 function toggleMute(): void {
@@ -454,39 +625,19 @@ function renderTrainPicker(): void {
   if (!state?.monster) return;
   const monster = state.monster;
   renderButtons(
-    $('buttons'),
     (STAT_KEYS as readonly StatKey[])
       .map((stat) => ({
         label: `TRAIN ${stat.toUpperCase()}`,
-        onClick: () => {
-          care(() => train(monster, stat));
-        },
+        onClick: () => care(() => train(monster, stat)),
       }))
       .concat([{ label: 'BACK', onClick: renderMain }])
-  );
-}
-
-function renderTravelPicker(): void {
-  if (!state) return;
-  renderButtons(
-    $('buttons'),
-    REGIONS.map((region) => ({
-      label: region.id === state!.region ? `· ${region.name} ·` : region.name,
-      onClick: () => {
-        pushLog(travel(state!, region.id));
-        tone(TONGUE_FREQ[region.tongue], 160);
-        afterAction();
-      },
-    })).concat([{ label: 'BACK', onClick: renderMain }])
   );
 }
 
 function renderPaths(): void {
   if (!state?.monster) return;
   const options = evolutionOptions(state.monster);
-  if (options.length === 0) {
-    pushLog(`${state.monster.nickname} has reached its final form.`);
-  }
+  if (options.length === 0) pushLog(`${state.monster.nickname} has reached its final form.`);
   for (const option of options) {
     const target = getSpecies(option.requirement.targetId);
     pushLog(
@@ -499,7 +650,112 @@ function renderPaths(): void {
   renderMain();
 }
 
-/** Post-action bookkeeping: evolution, rebirth, autosave, re-render. */
+// ── Codex (illustrated bestiary) ──────────────────────────────────────────
+
+function renderCodex(): void {
+  if (!state) return;
+  setScreen('screen-codex');
+  statusLcd();
+  const owned = new Set(state.monster?.lineage ?? []);
+  const currentId = state.monster?.speciesId;
+  const body = $('codex-body');
+  body.replaceChildren();
+
+  for (const stage of STAGE_ORDER) {
+    const list = speciesByStage(stage);
+    if (list.length === 0) continue;
+    body.append(el('div', 'codex-stage-label', stage));
+    const grid = el('div', 'codex-grid');
+    for (const species of list) {
+      const cell = el('div', `codex-cell${owned.has(species.id) ? ' owned' : ''}`);
+      cell.style.setProperty('--cc', ELEMENT_HEX[species.element]);
+      const canvas = document.createElement('canvas');
+      canvas.className = 'pixel';
+      drawSprite(canvas, spriteForSpecies(species), 3);
+      if (species.id === currentId)
+        canvas.style.filter = `drop-shadow(0 0 5px ${ELEMENT_HEX[species.element]})`;
+      cell.append(canvas, elementChip(species.element), el('div', 'cx-name', species.name));
+      cell.title = species.lore;
+      grid.append(cell);
+    }
+    body.append(grid);
+  }
+  renderButtons([{ label: 'BACK', cls: 'primary', onClick: renderMain }]);
+}
+
+// ── Region map (tongue hexagon) ───────────────────────────────────────────
+
+function renderMap(): void {
+  if (!state) return;
+  setScreen('screen-map');
+  statusLcd();
+  const wheel = $('map-wheel');
+  wheel.replaceChildren();
+
+  const size = 260;
+  const center = size / 2;
+  const radius = 96;
+  const points = REGIONS.map((_, i) => {
+    const angle = (-90 + i * 60) * (Math.PI / 180);
+    return { x: center + radius * Math.cos(angle), y: center + radius * Math.sin(angle) };
+  });
+
+  // Spokes + hexagon ring behind the nodes.
+  const svgNs = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNs, 'svg');
+  const hex = document.createElementNS(svgNs, 'polygon');
+  hex.setAttribute('points', points.map((p) => `${p.x},${p.y}`).join(' '));
+  hex.setAttribute('fill', 'none');
+  hex.setAttribute('stroke', 'rgba(255,255,255,.12)');
+  hex.setAttribute('stroke-width', '1');
+  svg.append(hex);
+  for (const p of points) {
+    const line = document.createElementNS(svgNs, 'line');
+    line.setAttribute('x1', String(center));
+    line.setAttribute('y1', String(center));
+    line.setAttribute('x2', String(p.x));
+    line.setAttribute('y2', String(p.y));
+    line.setAttribute('stroke', 'rgba(255,255,255,.07)');
+    svg.append(line);
+  }
+  wheel.append(svg);
+
+  REGIONS.forEach((region, i) => {
+    const node = el(
+      'div',
+      `region-node${region.id === state!.region ? ' here' : ''}${region.touchesHollow ? ' hollow' : ''}`
+    );
+    node.style.setProperty('--rc', ELEMENT_HEX[region.tongue]);
+    node.style.left = `${points[i].x}px`;
+    node.style.top = `${points[i].y}px`;
+    node.append(
+      elementChip(region.tongue),
+      el('div', 'rn-name', region.name),
+      el(
+        'div',
+        'rn-tag',
+        region.touchesHollow ? '◇ the gap' : region.id === state!.region ? 'you are here' : 'travel'
+      )
+    );
+    node.title = region.description;
+    node.addEventListener('click', () => {
+      if (!state) return;
+      sfx.click();
+      pushLog(travel(state, region.id));
+      tone(TONGUE_FREQ[region.tongue], 160);
+      saveState();
+      renderMain();
+    });
+    wheel.append(node);
+  });
+
+  const hub = el('div', 'wheel-center', 'φ');
+  wheel.append(hub);
+  renderButtons([{ label: 'BACK', cls: 'primary', onClick: renderMain }]);
+}
+
+// ── Post-action bookkeeping ───────────────────────────────────────────────
+
 function afterAction(): void {
   if (!state) return;
   const monster = state.monster;
@@ -540,21 +796,21 @@ function afterAction(): void {
 
 function flashOverlay(title: string, subtitle: string, color: string): void {
   const overlay = $('overlay');
-  overlay.style.setProperty('--flash-color', color);
+  overlay.style.setProperty('--flash', color);
   $('overlay-title').textContent = title;
   $('overlay-sub').textContent = subtitle;
-  overlay.classList.remove('hidden');
-  overlay.classList.remove('animate');
-  void overlay.offsetWidth; // restart the CSS animation
+  overlay.classList.remove('hidden', 'animate');
+  void overlay.offsetWidth;
   overlay.classList.add('animate');
   setTimeout(() => overlay.classList.add('hidden'), 2400);
 }
 
-// ── Battle screen ────────────────────────────────────────────────────────
+// ---------------------------------------------------------------------------
+//  Battle
+// ---------------------------------------------------------------------------
 
 interface BattleSession {
   battle: BattleState;
-  enemySpeciesId: string;
   wasArena: boolean;
   busy: boolean;
 }
@@ -562,8 +818,7 @@ let session: BattleSession | null = null;
 
 async function startWildBattle(): Promise<void> {
   if (!state?.monster) return;
-  const enemy = generateWildEncounter(state, state.monster);
-  await beginBattle(enemy, false);
+  await beginBattle(generateWildEncounter(state, state.monster), false);
 }
 
 async function startArenaBattle(): Promise<void> {
@@ -581,12 +836,7 @@ async function startArenaBattle(): Promise<void> {
 async function beginBattle(enemy: Combatant, wasArena: boolean): Promise<void> {
   if (!state?.monster) return;
   const mine = toCombatant(state.monster);
-  session = {
-    battle: createBattle(mine, enemy, battleSeed(state)),
-    enemySpeciesId: enemy.speciesId,
-    wasArena,
-    busy: false,
-  };
+  session = { battle: createBattle(mine, enemy, battleSeed(state)), wasArena, busy: false };
   setScreen('screen-battle');
   renderBattle();
   pushLog(`⚔ ${mine.name} vs ${enemy.name} (Lv.${enemy.level})`);
@@ -616,60 +866,61 @@ function renderBattle(): void {
   );
   applyGlow('battle-mine', battle.a.element);
   applyGlow('battle-foe', battle.b.element);
-  $('battle-mine-name').textContent = `${battle.a.name} Lv.${battle.a.level}`;
-  $('battle-foe-name').textContent = `${battle.b.name} Lv.${battle.b.level}`;
+  $('pa-name').textContent = `${battle.a.name} L${battle.a.level}`;
+  $('pb-name').textContent = `${battle.b.name} L${battle.b.level}`;
+  $('pa-chip').replaceChildren(elementChip(battle.a.element));
+  $('pb-chip').replaceChildren(elementChip(battle.b.element));
+  $('turn-tag').textContent = `TURN ${battle.turn}`;
   battleHp('a', battle.a);
   battleHp('b', battle.b);
 
   const species = getSpecies(battle.a.speciesId);
-  renderButtons(
-    $('buttons'),
-    species.moves
-      .map((moveId) => {
-        const move = getMove(moveId);
-        return {
-          label: move.name.toUpperCase(),
-          title: `${move.element} · ${move.effect === 'heal' ? 'heal' : `pow ${move.power}`} · acc ${move.accuracy}`,
-          onClick: () => void playerTurn({ type: 'move', moveId }),
-        };
-      })
-      .concat([
-        {
-          label: 'GUARD',
-          title: 'Halve damage this round',
-          onClick: () => void playerTurn({ type: 'guard' }),
-        },
-        { label: 'RUN', title: 'Flee (counts as a loss)', onClick: () => void fleeBattle() },
-      ])
-  );
+  const moves: MenuButton[] = species.moves.map((moveId) => {
+    const move = getMove(moveId);
+    return {
+      label: move.name.toUpperCase(),
+      cls: 'move',
+      title: `${TONGUE_NAMES[move.element]} · ${move.effect === 'heal' ? 'heal' : `pow ${move.power}`} · acc ${Math.round(move.accuracy * 100)}%`,
+      onClick: () => void playerTurn({ type: 'move', moveId }),
+    };
+  });
+  moves.push({
+    label: 'GUARD',
+    title: 'Halve damage this round',
+    onClick: () => void playerTurn({ type: 'guard' }),
+  });
+  moves.push({
+    label: 'RUN',
+    cls: 'danger',
+    title: 'Flee (counts as a loss)',
+    onClick: () => void fleeBattle(),
+  });
+  renderButtons(moves);
 }
 
-/** Restartable CSS animation: remove, reflow, add. */
 function replayClass(node: HTMLElement, className: string): void {
   node.classList.remove(className);
   void node.offsetWidth;
   node.classList.add(className);
 }
 
-/** Floating combat number over a fighter (visual only — no game RNG). */
 function damageFloat(fighterId: string, text: string, cls: string): void {
-  const fighter = $(fighterId);
   const float = el('span', `dmg-float ${cls}`.trim(), text);
   float.style.left = `${30 + Math.random() * 40}%`;
-  fighter.append(float);
+  $(fighterId).append(float);
   setTimeout(() => float.remove(), 950);
 }
 
-/** Burst of element-colored sparks on impact (visual only). */
 function sparkBurst(fighterId: string, element: TongueCode): void {
   const fighter = $(fighterId);
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < 8; i++) {
     const spark = el('span', 'spark');
     spark.style.background = ELEMENT_HEX[element];
-    spark.style.setProperty('--dx', `${(Math.random() - 0.5) * 70}px`);
-    spark.style.setProperty('--dy', `${-20 - Math.random() * 50}px`);
+    spark.style.color = ELEMENT_HEX[element];
+    spark.style.setProperty('--dx', `${(Math.random() - 0.5) * 74}px`);
+    spark.style.setProperty('--dy', `${-20 - Math.random() * 54}px`);
     spark.style.left = '50%';
-    spark.style.top = '40%';
+    spark.style.top = '38%';
     fighter.append(spark);
     setTimeout(() => spark.remove(), 650);
   }
@@ -683,12 +934,12 @@ async function playerTurn(action: BattleAction): Promise<void> {
   const events = performRound(battle, action, enemyAction);
   for (const event of events) {
     pushLog(event.text, event.kind === 'crit' ? 'good' : '');
-    const actorCombatant = event.actor === 'A' ? battle.a : battle.b;
+    const actor = event.actor === 'A' ? battle.a : battle.b;
     const actorFighter = event.actor === 'A' ? 'fighter-a' : 'fighter-b';
     const targetFighter = event.actor === 'A' ? 'fighter-b' : 'fighter-a';
     const targetCanvas = event.actor === 'A' ? 'battle-foe' : 'battle-mine';
     if (event.kind === 'move' || event.kind === 'crit') {
-      const moveElement = event.moveId ? getMove(event.moveId).element : actorCombatant.element;
+      const moveElement = event.moveId ? getMove(event.moveId).element : actor.element;
       sfx.hit(moveElement);
       replayClass($(actorFighter), event.actor === 'A' ? 'lunge-right' : 'lunge-left');
       replayClass($(targetCanvas), 'shake');
@@ -700,22 +951,20 @@ async function playerTurn(action: BattleAction): Promise<void> {
       sfx.miss();
       damageFloat(targetFighter, 'MISS', 'miss');
     } else if (event.kind === 'heal' || event.kind === 'drain') {
-      sfx.heal(actorCombatant.element);
+      sfx.heal(actor.element);
       if (event.healed !== undefined) damageFloat(actorFighter, `+${event.healed}`, 'heal');
     } else if (event.kind === 'faint') {
       sfx.faint();
       $(event.actor === 'A' ? 'battle-mine' : 'battle-foe').classList.add('fainted');
     }
+    $('turn-tag').textContent = `TURN ${battle.turn}`;
     battleHp('a', battle.a);
     battleHp('b', battle.b);
     await sleep(420);
   }
   session.busy = false;
-  if (battle.over) {
-    await finishBattle(false);
-  } else {
-    renderBattle();
-  }
+  if (battle.over) await finishBattle(false);
+  else renderBattle();
 }
 
 async function fleeBattle(): Promise<void> {
@@ -755,10 +1004,67 @@ async function finishBattle(fled: boolean): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+//  Global controls (keyboard + drawn D-pad / A / B)
+// ---------------------------------------------------------------------------
+
+function wireControls(): void {
+  document.querySelectorAll<HTMLButtonElement>('.dpad button[data-dir]').forEach((btn) => {
+    btn.addEventListener('click', () =>
+      moveFocus(btn.dataset.dir as 'up' | 'down' | 'left' | 'right')
+    );
+  });
+  $('btn-a').addEventListener('click', () => {
+    sfx.click();
+    activateFocused();
+  });
+  $('btn-b').addEventListener('click', () => {
+    sfx.click();
+    pressBack();
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if ((e.target as HTMLElement)?.tagName === 'INPUT') return;
+    switch (e.key) {
+      case 'ArrowUp':
+      case 'w':
+        moveFocus('up');
+        e.preventDefault();
+        break;
+      case 'ArrowDown':
+      case 's':
+        moveFocus('down');
+        e.preventDefault();
+        break;
+      case 'ArrowLeft':
+      case 'a':
+        moveFocus('left');
+        e.preventDefault();
+        break;
+      case 'ArrowRight':
+      case 'd':
+        moveFocus('right');
+        e.preventDefault();
+        break;
+      case 'Enter':
+      case ' ':
+        activateFocused();
+        e.preventDefault();
+        break;
+      case 'Escape':
+      case 'Backspace':
+        pressBack();
+        e.preventDefault();
+        break;
+    }
+  });
+}
+
+// ---------------------------------------------------------------------------
 //  Boot
 // ---------------------------------------------------------------------------
 
 function boot(): void {
+  wireControls();
   state = loadState();
   applyRegionTint();
   setInterval(() => {
@@ -766,27 +1072,28 @@ function boot(): void {
     if (session) {
       renderBattle();
     } else if (state?.egg && !$('screen-egg').classList.contains('hidden')) {
-      const species = getSpecies(state.egg.speciesId);
-      drawSprite($('egg-canvas') as HTMLCanvasElement, spriteForSpecies(species, spriteFrame), 10);
+      drawScene('egg-scene');
+      drawSprite(
+        $('egg-canvas') as HTMLCanvasElement,
+        spriteForSpecies(getSpecies(state.egg.speciesId), spriteFrame),
+        9
+      );
     } else if (state?.monster && !$('screen-main').classList.contains('hidden')) {
-      const species = getSpecies(state.monster.speciesId);
       drawScene('main-scene');
       drawSprite(
         $('monster-canvas') as HTMLCanvasElement,
-        spriteForSpecies(species, spriteFrame),
-        8
+        spriteForSpecies(getSpecies(state.monster.speciesId), spriteFrame),
+        7
       );
     }
   }, 650);
 
   if (!state) {
     renderTitle();
-  } else if (state.egg) {
-    pushLog(`Welcome back, ${state.tamerName}.`);
-    renderEgg();
   } else {
     pushLog(`Welcome back, ${state.tamerName}.`);
-    renderMain();
+    if (state.egg) renderEgg();
+    else renderMain();
   }
 }
 
