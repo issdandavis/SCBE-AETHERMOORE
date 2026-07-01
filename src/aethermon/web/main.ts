@@ -260,12 +260,7 @@ function battleSeed(game: GameState): number {
 // ---------------------------------------------------------------------------
 
 type ScreenId =
-  | 'screen-title'
-  | 'screen-egg'
-  | 'screen-main'
-  | 'screen-battle'
-  | 'screen-codex'
-  | 'screen-map';
+  'screen-title' | 'screen-egg' | 'screen-main' | 'screen-battle' | 'screen-codex' | 'screen-map';
 
 const SCREENS: ScreenId[] = [
   'screen-title',
