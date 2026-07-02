@@ -176,14 +176,7 @@ export interface PipelineRunResult {
 }
 
 export type GovernedMoveClass =
-  | 'observe'
-  | 'read'
-  | 'verify'
-  | 'write'
-  | 'network'
-  | 'deploy'
-  | 'destructive'
-  | 'unknown';
+  'observe' | 'read' | 'verify' | 'write' | 'network' | 'deploy' | 'destructive' | 'unknown';
 
 export interface GovernedMoveRecord {
   at: string;
