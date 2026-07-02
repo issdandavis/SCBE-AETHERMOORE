@@ -183,6 +183,8 @@ function alignmentChip(alignment: Alignment): HTMLElement {
 function bar(fillClass: string, value: number, max: number, low = false): HTMLElement {
   const track = el('div', 'track');
   const fill = el('div', `fill ${fillClass}${low ? ' low' : ''}`);
+  // A4: clamp the normalized fill to [0, 100]% so out-of-range stats/meters
+  // (every stat bar and care meter flows through here) never overflow the track.
   fill.style.width = `${Math.max(0, Math.min(100, (value / max) * 100))}%`;
   track.append(fill);
   return track;
@@ -715,6 +717,16 @@ function renderMap(): void {
   }
   wheel.append(svg);
 
+  // Travel action shared by the visual wheel nodes (pointer) and the
+  // focusable menu buttons below (keyboard / D-pad).
+  const travelTo = (region: (typeof REGIONS)[number]): void => {
+    if (!state) return;
+    pushLog(travel(state, region.id));
+    tone(TONGUE_FREQ[region.tongue], 160);
+    saveState();
+    renderMain();
+  };
+
   REGIONS.forEach((region, i) => {
     const node = el(
       'div',
@@ -734,19 +746,25 @@ function renderMap(): void {
     );
     node.title = region.description;
     node.addEventListener('click', () => {
-      if (!state) return;
       sfx.click();
-      pushLog(travel(state, region.id));
-      tone(TONGUE_FREQ[region.tongue], 160);
-      saveState();
-      renderMain();
+      travelTo(region);
     });
     wheel.append(node);
   });
 
   const hub = el('div', 'wheel-center', 'φ');
   wheel.append(hub);
-  renderButtons([{ label: 'BACK', cls: 'primary', onClick: renderMain }]);
+
+  // Region choices as focusable menu buttons so the map is fully operable by
+  // keyboard / D-pad (moveFocus + A), not only by pointer clicks on the wheel.
+  const buttons: MenuButton[] = REGIONS.map((region) => ({
+    label: region.id === state!.region ? `· ${region.name} ·` : region.name,
+    cls: region.touchesHollow ? 'hollow' : '',
+    title: region.description,
+    onClick: () => travelTo(region),
+  }));
+  buttons.push({ label: 'BACK', cls: 'primary', onClick: renderMain });
+  renderButtons(buttons);
 }
 
 // ── Post-action bookkeeping ───────────────────────────────────────────────

@@ -430,11 +430,23 @@ function renderDevice(outFile, mode) {
       blendPixel(raster, xx, yy, tint, a);
     }
 
-  // Shell.
-  vGradient(raster, 16, 14, W - 32, H - 28, '#2a2a3a', '#0e0e16');
-  roundRect(raster, 16, 14, W - 32, H - 28, 36, [0, 0, 0, 0], 0); // no-op guard
-  // re-apply rounded mask by erasing outside corners to bg
-  // (draw shell as rounded on top of gradient)
+  // Shell — vertical gradient clipped to the rounded body (not a rectangle).
+  {
+    const [tr, tg, tb] = hexToRgb('#2a2a3a');
+    const [brc, bgc, bbc] = hexToRgb('#0e0e16');
+    const sw2 = W - 32;
+    const sh2 = H - 28;
+    for (let yy = 0; yy < sh2; yy++) {
+      const t = yy / Math.max(1, sh2 - 1);
+      const row = [
+        Math.round(tr + (brc - tr) * t),
+        Math.round(tg + (bgc - tg) * t),
+        Math.round(tb + (bbc - tb) * t),
+      ];
+      for (let xx = 0; xx < sw2; xx++)
+        if (!cornerOutside(xx, yy, sw2, sh2, 36)) blendPixel(raster, 16 + xx, 14 + yy, row, 1);
+    }
+  }
   roundFrame(raster, 16, 14, W - 32, H - 28, 36, tint, 0.4, 1);
   // corner screws
   for (const [sx, sy] of [
@@ -472,10 +484,11 @@ function renderDevice(outFile, mode) {
       blendPixel(raster, sx + xx, sy + yy, tint, 0.06 * (1 - yy / 60));
   roundFrame(raster, sx, sy, sw, sh, 10, [tint[0], tint[1], tint[2], 255], 0.3, 1);
 
-  // Status bar.
+  // Status bar. Care and battle previews carry mode-appropriate status text.
   const region = mode === 'battle' ? 'AERIAL EXPANSE' : 'EMBER REACH';
+  const status = mode === 'battle' ? 'ARENA 4/10' : 'CARE';
   drawText(raster, `${region} · GEN 1`, sx + 8, sy + 7, [Math.min(255, tint[0] + 40), Math.min(255, tint[1] + 40), Math.min(255, tint[2] + 40), 255], 1);
-  drawText(raster, mode === 'battle' ? 'ARENA 4/10' : 'ARENA 4/10', sx + sw - textWidth('ARENA 4/10', 1) - 8, sy + 7, DIM, 1);
+  drawText(raster, status, sx + sw - textWidth(status, 1) - 8, sy + 7, DIM, 1);
 
   const contentY = sy + 22;
   if (mode === 'care') drawCareScreen(raster, sx + 8, contentY, sw - 16, sh - 60);
