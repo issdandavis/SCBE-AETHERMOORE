@@ -14,12 +14,7 @@ export type SearchPlane =
   | 'space';
 
 export type SearchNodeState =
-  | 'open'
-  | 'expanded'
-  | 'contracted'
-  | 'claimed'
-  | 'complete'
-  | 'blocked';
+  'open' | 'expanded' | 'contracted' | 'claimed' | 'complete' | 'blocked';
 
 export type SearchColorGrade = 'blue' | 'green' | 'yellow' | 'orange' | 'red' | 'purple';
 

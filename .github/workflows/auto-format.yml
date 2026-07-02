@@ -1,17 +1,20 @@
 name: auto-format
 
 # Self-healing formatter. Many agents merge to main concurrently; some land
-# unformatted Python, which turns the "Lint and Format Check" job red. Instead of
-# anyone hand-formatting after the fact, this runs black on every push to main and
-# commits the result back — so main's code stays black-clean automatically and the
-# formatting churn stops. Uses the SAME black version + dirs as the CI lint check,
-# so "auto-format made it clean" == "CI black --check passes".
+# unformatted code, which turns the "Lint and Format Check" job red. Instead of
+# hand-formatting after the fact, this runs the same Python and TypeScript
+# formatters used by CI and commits the result back to main.
 
 on:
   push:
     branches: [main]
     paths:
-      - "**.py"
+      - '**.py'
+      - 'src/**/*.ts'
+      - 'tests/**/*.ts'
+      - 'packages/**/*.ts'
+      - 'package.json'
+      - 'package-lock.json'
 
 permissions:
   contents: write
@@ -21,7 +24,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  black:
+  format:
     runs-on: ubuntu-latest
     # Don't re-run on the bot's own format commit (belt-and-suspenders; pushes made
     # with GITHUB_TOKEN don't trigger workflows anyway, so no loop).
@@ -33,7 +36,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: '3.11'
 
       - name: Install black (pinned to match the CI lint check)
         run: pip install --quiet "black==26.5.1"
@@ -41,15 +44,26 @@ jobs:
       - name: Format the same dirs CI's black --check covers
         run: black --target-version py311 --line-length 120 src/ tests/ scripts/ agents/ || true
 
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Format the same TypeScript surface CI checks
+        run: npm run format
+
       - name: Commit + push if anything changed
         run: |
           if git diff --quiet; then
-            echo "Already black-clean — nothing to do."
+            echo "Already format-clean; nothing to do."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "style: auto-format python with black [auto-format]"
+          git commit -m "style: auto-format code [auto-format]"
           git push origin HEAD:main
-          echo "Formatted and pushed. main is black-clean again."
+          echo "Formatted and pushed. main is format-clean again."
