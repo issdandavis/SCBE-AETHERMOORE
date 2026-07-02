@@ -36,13 +36,7 @@ import {
  * Mitosis lifecycle phase
  */
 export type MitosisPhase =
-  | 'INTERPHASE'
-  | 'PROPHASE'
-  | 'METAPHASE'
-  | 'ANAPHASE'
-  | 'TELOPHASE'
-  | 'COMPLETE'
-  | 'REJECTED';
+  'INTERPHASE' | 'PROPHASE' | 'METAPHASE' | 'ANAPHASE' | 'TELOPHASE' | 'COMPLETE' | 'REJECTED';
 
 /**
  * Record of a single mitosis event

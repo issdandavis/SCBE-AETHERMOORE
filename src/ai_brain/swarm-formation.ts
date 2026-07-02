@@ -32,11 +32,7 @@ import { safePoincareEmbed, hyperbolicDistanceSafe } from './unified-state.js';
  * Swarm formation type
  */
 export type FormationType =
-  | 'defensive_circle'
-  | 'investigation_wedge'
-  | 'pursuit_line'
-  | 'consensus_ring'
-  | 'patrol_grid';
+  'defensive_circle' | 'investigation_wedge' | 'pursuit_line' | 'consensus_ring' | 'patrol_grid';
 
 /**
  * Position assignment within a formation

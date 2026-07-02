@@ -160,10 +160,7 @@ export function hyperbolicDistance(u: number[], v: number[]): number {
 }
 
 export type GeometryWeaknessKind =
-  | 'ok'
-  | 'non_finite'
-  | 'boundary_saturation'
-  | 'denominator_collapse';
+  'ok' | 'non_finite' | 'boundary_saturation' | 'denominator_collapse';
 
 export interface GeometryWeaknessSignal {
   isWeak: boolean;

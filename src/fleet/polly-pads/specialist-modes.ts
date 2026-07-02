@@ -26,12 +26,7 @@ import type { SacredTongue } from './drone-core.js';
 
 /** The 6 specialist mode identifiers */
 export type SpecialistModeId =
-  | 'engineering'
-  | 'navigation'
-  | 'systems'
-  | 'science'
-  | 'communications'
-  | 'mission_planning';
+  'engineering' | 'navigation' | 'systems' | 'science' | 'communications' | 'mission_planning';
 
 /** Tool available within a mode */
 export interface ModeTool {
