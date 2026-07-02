@@ -1,0 +1,49 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "aethermon-agent-adapter-v0-local",
+  "title": "AETHERMON agent adapter v0 local proof profile",
+  "description": "Small local QLoRA proof target. Built for 6GB VRAM constraints; run dry-run/preflight before any GPU training.",
+  "backend": "local-qlora-peft",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "aethermon_agent_adapter_v0_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "aethermon_agent_adapter_v0_holdout.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 512,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 8,
+    "max_steps": 60,
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "lora_dropout": 0.05,
+    "learning_rate": 0.0001,
+    "gradient_checkpointing": true,
+    "seed": 42,
+    "save_total_limit": 2
+  },
+  "evaluation": {
+    "commands": {
+      "oracle_control": "npm run training:aethermon-adapter:eval:oracle -- --json",
+      "abstain_control": "npm run training:aethermon-adapter:eval:abstain -- --json",
+      "score_predictions": "python scripts/system/eval_aethermon_agent_adapter_v0.py --mode predictions --predictions <predictions.jsonl> --json"
+    },
+    "gates": [
+      "heldout_json_action_validity",
+      "legal_action_membership",
+      "aethermon_episode_success",
+      "coding_json_parse_validity"
+    ],
+    "do_not_promote_without": "adapter-vs-base holdout comparison receipt"
+  },
+  "local_constraints": {
+    "target_vram_gb": 6,
+    "disk_headroom_note": "Keep output/checkpoint count small; delete failed scratch runs before scaling.",
+    "recommended_first_command": "python scripts/system/preflight_zero_cost_training.py --profile config/model_training/aethermon-agent-adapter-v0-local.json --json"
+  }
+}

@@ -37,6 +37,14 @@ def run_geoseal(*args: str) -> subprocess.CompletedProcess[str]:
     )
 
 
+def ensure_aethermon_adapter_target() -> None:
+    result = run_geoseal("aethermon-adapter", "build", "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is True
+    assert payload["schema"] == "aethermon_agent_adapter_v0_manifest"
+
+
 def test_bits_alias_emits_machine_readable_packet() -> None:
     result = run_scbe("bits", "SCBE", "--json")
 
@@ -201,3 +209,98 @@ def test_geoseal_systems_passthrough_to_inventory() -> None:
     payload = json.loads(result.stdout)
     assert payload["schema"] == "scbe_local_code_systems_v1"
     assert any(system["id"] == "atomic_tokenization" for system in payload["systems"])
+
+
+def test_geoseal_help_lists_system_map_and_aethermon_adapter_lanes() -> None:
+    if shutil.which("node") is None:
+        return
+
+    result = run_geoseal("help")
+
+    assert result.returncode == 0, result.stderr
+    assert "geoseal system-map --check" in result.stdout
+    assert "geoseal aethermon-adapter preflight --json" in result.stdout
+    assert "geoseal powershell check --command" in result.stdout
+
+
+def test_geoseal_system_map_runs_procedural_map_json() -> None:
+    if shutil.which("node") is None:
+        return
+
+    result = run_geoseal("system-map", "--dry-run", "--json")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is True
+    assert payload["world_digest"]
+    assert payload["summary"]["regions"] >= 1
+
+
+def test_geoseal_aethermon_adapter_preflight_uses_local_profile() -> None:
+    if shutil.which("node") is None:
+        return
+
+    ensure_aethermon_adapter_target()
+    result = run_geoseal("aethermon-adapter", "preflight", "--json")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is True
+    assert payload["profile_id"] == "aethermon-agent-adapter-v0-local"
+
+
+def test_geoseal_aethermon_adapter_abstain_runs_eval_gate() -> None:
+    if shutil.which("node") is None:
+        return
+
+    ensure_aethermon_adapter_target()
+    result = run_geoseal("aethermon-adapter", "abstain", "--json")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is True
+    assert payload["rates"]["abstain"] == 1.0
+    assert payload["promotion_gate"]["ok"] is False
+
+
+def test_geoseal_powershell_profiles_are_bounded() -> None:
+    if shutil.which("node") is None:
+        return
+
+    result = run_geoseal("powershell", "profiles", "--json")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["schema_version"] == "geoseal_powershell_profiles_v1"
+    assert payload["ok"] is True
+    profile_ids = {profile["id"] for profile in payload["profiles"]}
+    assert {"pwd", "version", "repo_files"} <= profile_ids
+    assert all("command" not in profile for profile in payload["profiles"])
+    assert "get-location" in payload["ad_hoc_profile"]["allowed_commands"]
+
+
+def test_geoseal_powershell_check_blocks_destructive_command() -> None:
+    if shutil.which("node") is None:
+        return
+
+    result = run_geoseal("powershell", "check", "--command", r"Remove-Item C:\Temp -Recurse", "--json")
+
+    assert result.returncode != 0
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert payload["decision"] == "block"
+
+
+def test_geoseal_powershell_run_executes_harmless_command() -> None:
+    if shutil.which("node") is None or shutil.which("powershell") is None:
+        return
+
+    result = run_geoseal("powershell", "run", "--command", "Write-Output GEOSEAL_PS_OK", "--json")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["schema_version"] == "geoseal_powershell_run_v1"
+    assert payload["ok"] is True
+    assert payload["risk_tier"] == "bounded-host-read"
+    assert payload["command_digest"]
+    assert "GEOSEAL_PS_OK" in payload["stdout_tail"]

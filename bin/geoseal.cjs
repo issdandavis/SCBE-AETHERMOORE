@@ -42,6 +42,10 @@ Useful commands:
   geoseal stage --room frontend --example slideshow
   geoseal stage-frame --room github --example pr-flow
   geoseal command-check "Remove-Item -Recurse C:\\Users\\issda"
+  geoseal powershell profiles --json
+  geoseal powershell check --command "Get-Location" --json
+  geoseal powershell run --command "Write-Output GEOSEAL_OK" --json
+  geoseal powershell run --profile pwd --json
   geoseal code-cube "build a todo app with auth and tests" --json
   geoseal code-cube --twist tests.backend --language rust "todo api" --json
   geoseal code-cube --target manifold --dimensions 6 --twist security.deploy "station safe-mode controller" --json
@@ -74,6 +78,14 @@ Useful commands:
   geoseal hex "hello"
   geoseal trits "hello"
   geoseal systems --json
+  geoseal system-map --json
+  geoseal system-map --check
+  geoseal system-map watch --interval 30
+  geoseal aethermon-adapter build --json
+  geoseal aethermon-adapter preflight --json
+  geoseal aethermon-adapter eval --mode oracle --json
+  geoseal aethermon-adapter oracle --json
+  geoseal aethermon-adapter abstain --json
   geoseal inc 1111
   geoseal map "release payload after compare" --json
   geoseal spine encode "hello" --json
@@ -147,6 +159,84 @@ const SCBE_SPINE_COMMANDS = new Set([
   "code-systems",
 ]);
 const CUSTOM_COMMANDS_DIR = path.join(ROOT, ".geoseal", "commands");
+const AETHERMON_ADAPTER_PROFILE = "config/model_training/aethermon-agent-adapter-v0-local.json";
+const MAX_POWERSHELL_COMMAND_CHARS = 900;
+const POWERSHELL_TIMEOUT_MS = 45000;
+const POWERSHELL_ALLOWED_COMMANDS = new Set([
+  "convertto-json",
+  "get-childitem",
+  "get-command",
+  "get-content",
+  "get-date",
+  "get-host",
+  "get-item",
+  "get-location",
+  "get-process",
+  "get-service",
+  "measure-object",
+  "resolve-path",
+  "select-object",
+  "select-string",
+  "sort-object",
+  "test-path",
+  "write-output",
+]);
+const POWERSHELL_BLOCKED_PATTERNS = Object.freeze([
+  /\bRemove-Item\b/i,
+  /\bSet-Item\b/i,
+  /\bSet-Content\b/i,
+  /\bAdd-Content\b/i,
+  /\bOut-File\b/i,
+  /\bNew-Item\b/i,
+  /\bMove-Item\b/i,
+  /\bCopy-Item\b/i,
+  /\bRename-Item\b/i,
+  /\bInvoke-Expression\b/i,
+  /\biex\b/i,
+  /\bInvoke-WebRequest\b/i,
+  /\bInvoke-RestMethod\b/i,
+  /\bStart-Process\b/i,
+  /\bStop-Process\b/i,
+  /\bSet-ExecutionPolicy\b/i,
+  /\bRemove-Module\b/i,
+  /\bImport-Module\b/i,
+  /\bFormat-Volume\b/i,
+  /\bdiskpart\b/i,
+  /\bshutdown\b/i,
+  /\brestart-computer\b/i,
+  /\bstop-computer\b/i,
+  /\bgit\s+(reset|clean|push|pull|merge|rebase)\b/i,
+  /\b(?:rm|del|erase|rmdir|curl|wget|iwr|irm|ssh|scp)\b/i,
+  />/,
+  /</,
+  /;/,
+  /&&/,
+  /\|\|/,
+  /`/,
+  /\$\(/,
+  /@\(/,
+  /\r|\n/,
+]);
+const POWERSHELL_PROFILES = Object.freeze({
+  pwd: {
+    label: "Working Directory",
+    risk_tier: "bounded-host-read",
+    description: "Print GeoSeal's repo working directory.",
+    command: "Get-Location | Select-Object -ExpandProperty Path",
+  },
+  version: {
+    label: "PowerShell Version",
+    risk_tier: "bounded-host-read",
+    description: "Print the local PowerShell version through Get-Host.",
+    command: "Get-Host | Select-Object -ExpandProperty Version",
+  },
+  repo_files: {
+    label: "Repo Files",
+    risk_tier: "bounded-host-read",
+    description: "List top-level repo entries without recursion.",
+    command: "Get-ChildItem -Name",
+  },
+});
 
 const STAGE_ROOMS = {
   frontend: {
@@ -685,6 +775,241 @@ function runCommandCheck(positionals, flags) {
   writeJsonOrText(flags, payload, lines.join("\n"));
   if (risk.decision === "block") process.exitCode = 2;
   if (risk.decision === "confirm") process.exitCode = 3;
+}
+
+function powershellExecutables() {
+  const executables = [];
+  if (process.env.SCBE_GEOSEAL_POWERSHELL) executables.push(process.env.SCBE_GEOSEAL_POWERSHELL);
+  if (process.platform === "win32") executables.push("powershell.exe", "powershell");
+  executables.push("pwsh", "powershell");
+  return [...new Set(executables.filter(Boolean))];
+}
+
+function redactedPowerShellProfiles() {
+  return Object.entries(POWERSHELL_PROFILES).map(([id, profile]) => ({
+    id,
+    label: profile.label,
+    risk_tier: profile.risk_tier,
+    description: profile.description,
+  }));
+}
+
+function validatePowerShellCommand(command) {
+  const text = String(command || "").trim();
+  if (!text) return { ok: false, decision: "block", safety: "missing", reasons: ["No PowerShell command supplied."] };
+  if (text.length > MAX_POWERSHELL_COMMAND_CHARS) {
+    return {
+      ok: false,
+      decision: "block",
+      safety: "too_long",
+      reasons: [`PowerShell command too long (${text.length} chars).`],
+    };
+  }
+  for (const pattern of POWERSHELL_BLOCKED_PATTERNS) {
+    if (pattern.test(text)) {
+      return {
+        ok: false,
+        decision: "block",
+        safety: "blocked_pattern",
+        reasons: [`PowerShell command blocked by safety pattern: ${pattern}`],
+      };
+    }
+  }
+
+  const segments = text.split("|").map((segment) => segment.trim()).filter(Boolean);
+  if (!segments.length) {
+    return { ok: false, decision: "block", safety: "missing", reasons: ["No executable PowerShell segment supplied."] };
+  }
+  const commands = [];
+  for (const segment of segments) {
+    const match = segment.match(/^([A-Za-z][A-Za-z0-9-]*)\b/);
+    const cmdlet = match ? match[1].toLowerCase() : "";
+    if (!cmdlet || !POWERSHELL_ALLOWED_COMMANDS.has(cmdlet)) {
+      return {
+        ok: false,
+        decision: "block",
+        safety: "not_allowlisted",
+        reasons: [`PowerShell segment is not allowlisted: ${segment}`],
+      };
+    }
+    commands.push(cmdlet);
+  }
+  const genericRisk = commandRisk(text);
+  if (genericRisk.decision === "block") {
+    return { ok: false, ...genericRisk };
+  }
+  return {
+    ok: true,
+    command: text,
+    decision: "allow",
+    safety: "bounded-host-read",
+    reasons: ["All pipeline segments use allowlisted read-only PowerShell commands."],
+    commands,
+  };
+}
+
+function tailText(value, limit = 8192) {
+  const text = String(value || "");
+  return text.length > limit ? text.slice(text.length - limit) : text;
+}
+
+function runPowerShellProfiles(flags) {
+  const payload = {
+    schema_version: "geoseal_powershell_profiles_v1",
+    ok: true,
+    default_profile: "pwd",
+    ad_hoc_profile: {
+      id: "read-only-command",
+      risk_tier: "bounded-host-read",
+      allowed_commands: [...POWERSHELL_ALLOWED_COMMANDS].sort(),
+      max_chars: MAX_POWERSHELL_COMMAND_CHARS,
+    },
+    profiles: redactedPowerShellProfiles(),
+  };
+  const text = payload.profiles.map((profile) => `${profile.id}: ${profile.description}`).join("\n");
+  writeJsonOrText(flags, payload, text);
+}
+
+function runPowerShellCheck(commandText, flags) {
+  const validation = validatePowerShellCommand(commandText);
+  const payload = {
+    schema_version: "geoseal_powershell_check_v1",
+    ok: validation.ok,
+    command: String(commandText || "").trim(),
+    ...validation,
+  };
+  writeJsonOrText(flags, payload, validation.ok ? "PowerShell command allowed." : validation.reasons.join("\n"));
+  if (!validation.ok) process.exitCode = 2;
+}
+
+function runPowerShellExecution(commandText, flags, source) {
+  const validation = validatePowerShellCommand(commandText);
+  const startedAt = new Date().toISOString();
+  const baseReceipt = {
+    schema_version: "geoseal_powershell_run_v1",
+    command_id: "powershell:bounded-read",
+    source,
+    profile: source.profile || null,
+    command: String(commandText || "").trim(),
+    command_digest: crypto.createHash("sha256").update(String(commandText || ""), "utf8").digest("hex"),
+    cwd: ROOT,
+    risk_tier: validation.ok ? "bounded-host-read" : "blocked",
+    started_at: startedAt,
+  };
+  if (!validation.ok) {
+    const payload = {
+      ok: false,
+      ...baseReceipt,
+      ...validation,
+      exit_code: 126,
+      finished_at: new Date().toISOString(),
+      stdout_tail: "",
+      stderr_tail: validation.reasons.join("\n"),
+    };
+    writeJsonOrText(flags, payload, payload.stderr_tail);
+    process.exitCode = 2;
+    return;
+  }
+
+  const timeoutMs = Math.max(1000, Math.min(300000, Number(flags.timeout || POWERSHELL_TIMEOUT_MS) || POWERSHELL_TIMEOUT_MS));
+  for (const executable of powershellExecutables()) {
+    const result = spawnSync(
+      executable,
+      ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", validation.command],
+      {
+        cwd: ROOT,
+        env: process.env,
+        encoding: "utf8",
+        shell: false,
+        timeout: timeoutMs,
+      }
+    );
+    if (result.error && result.error.code === "ENOENT") continue;
+    const exitCode = result.error ? 1 : result.status === null ? 1 : result.status;
+    const payload = {
+      ok: exitCode === 0,
+      ...baseReceipt,
+      executable,
+      decision: validation.decision,
+      safety: validation.safety,
+      reasons: validation.reasons,
+      allowed_commands: validation.commands,
+      exit_code: exitCode,
+      signal: result.signal || null,
+      error: result.error ? String(result.error.message || result.error) : null,
+      finished_at: new Date().toISOString(),
+      stdout_tail: tailText(result.stdout),
+      stderr_tail: tailText(result.stderr),
+    };
+    writeJsonOrText(flags, payload, payload.stdout_tail || payload.stderr_tail || `PowerShell exit ${exitCode}`);
+    if (exitCode !== 0) process.exitCode = exitCode;
+    return;
+  }
+
+  const payload = {
+    ok: false,
+    ...baseReceipt,
+    executable: null,
+    exit_code: 127,
+    finished_at: new Date().toISOString(),
+    stdout_tail: "",
+    stderr_tail: "No PowerShell executable found. Set SCBE_GEOSEAL_POWERSHELL if needed.",
+  };
+  writeJsonOrText(flags, payload, payload.stderr_tail);
+  process.exitCode = 127;
+}
+
+function runPowerShell(positionals, flags) {
+  const action = String(positionals[1] || "profiles").toLowerCase();
+  if (action === "profiles" || action === "list") {
+    runPowerShellProfiles(flags);
+    return;
+  }
+
+  const profileId = String(flags.profile || "").trim();
+  const profile = profileId ? POWERSHELL_PROFILES[profileId] : null;
+  if (profileId && !profile) {
+    writeJsonOrText(
+      flags,
+      {
+        schema_version: "geoseal_powershell_error_v1",
+        ok: false,
+        error: "unknown_powershell_profile",
+        profile: profileId,
+        profiles: redactedPowerShellProfiles(),
+      },
+      `Unknown PowerShell profile: ${profileId}`
+    );
+    process.exitCode = 2;
+    return;
+  }
+
+  const positionalCommand = positionals.slice(2).join(" ").trim();
+  const commandText = String(flags.command || flags.content || (profile ? profile.command : positionalCommand)).trim();
+  if (action === "check") {
+    runPowerShellCheck(commandText, flags);
+    return;
+  }
+  if (action === "run" || action === "exec") {
+    runPowerShellExecution(commandText, flags, {
+      kind: profile ? "profile" : "ad_hoc",
+      profile: profileId || null,
+    });
+    return;
+  }
+
+  writeJsonOrText(
+    flags,
+    {
+      schema_version: "geoseal_powershell_error_v1",
+      ok: false,
+      error: "unknown_powershell_action",
+      action,
+      actions: ["profiles", "check", "run"],
+    },
+    `Unknown PowerShell action: ${action}`
+  );
+  process.exitCode = 2;
 }
 
 const CODE_CUBE_FACES = {
@@ -1710,6 +2035,10 @@ function runDoctor(flags) {
     "provider-registry",
     "lanes",
     "product-lanes",
+    "system-map",
+    "aethermon-adapter",
+    "powershell",
+    "ps",
     "ask",
     "do",
     "status",
@@ -1876,6 +2205,16 @@ function runProductLanes(flags) {
         id: "tokenizer",
         commands: ["geoseal tokenizer-code-lanes", "geoseal verify-code-lanes", "geoseal decode-code-lanes", "geoseal tongue-compile", "geoseal tongue-run"],
         purpose: "Bijective command tokenization, binary/hex lanes, six-tongue code families, and VM execution.",
+      },
+      {
+        id: "map-and-training",
+        commands: ["geoseal system-map --check", "geoseal aethermon-adapter build", "geoseal aethermon-adapter preflight", "geoseal aethermon-adapter eval"],
+        purpose: "Procedural repo map, AETHERMON local adapter target, and executable promotion gates.",
+      },
+      {
+        id: "host-powershell",
+        commands: ["geoseal powershell profiles", "geoseal powershell check --command \"Get-Location\"", "geoseal powershell run --profile pwd"],
+        purpose: "Bounded Windows PowerShell checks and read-only command receipts for local automation.",
       },
       {
         id: "arrays-spreadsheets",
@@ -2172,6 +2511,104 @@ function runScbePassthrough(args) {
   process.exit(1);
 }
 
+function runPythonScript(scriptRel, args, failureMessage) {
+  const script = path.join(ROOT, scriptRel);
+  if (!fs.existsSync(script)) {
+    process.stderr.write(`GeoSeal local script not found: ${scriptRel}\n`);
+    process.exit(2);
+  }
+  for (const executable of pythonExecutables()) {
+    const result = spawnSync(executable, [script, ...args], {
+      stdio: "inherit",
+      shell: false,
+      cwd: ROOT,
+    });
+    if (result.error) continue;
+    process.exit(result.status === null ? 1 : result.status);
+  }
+
+  process.stderr.write(`${failureMessage}\n`);
+  process.exit(1);
+}
+
+function runSystemMap(positionals, argv) {
+  const action = String(positionals[1] || "").toLowerCase();
+  let args = argv.slice(1);
+  if (action === "check") {
+    args = ["--check", ...args.slice(1)];
+  } else if (action === "watch") {
+    args = ["--watch", ...args.slice(1)];
+  } else if (action === "build" || action === "write" || action === "once") {
+    args = args.slice(1);
+  } else if (action && !action.startsWith("--")) {
+    writeJsonOrText(
+      { json: argv.includes("--json") },
+      {
+        ok: false,
+        error: "unknown_system_map_action",
+        action,
+        actions: ["build", "check", "watch"],
+      },
+      `Unknown system-map action: ${action}`
+    );
+    process.exit(2);
+  }
+
+  runPythonScript(
+    "scripts/system/procedural_system_map.py",
+    args,
+    "GeoSeal could not find a usable Python runtime for procedural_system_map.py. Set SCBE_GEOSEAL_PYTHON if needed."
+  );
+}
+
+function runAethermonAdapter(positionals, flags, argv) {
+  const knownActions = new Set(["build", "preflight", "eval", "oracle", "abstain"]);
+  const rawAction = String(positionals[1] || "build").toLowerCase();
+  if (!knownActions.has(rawAction)) {
+    writeJsonOrText(
+      flags,
+      {
+        ok: false,
+        error: "unknown_aethermon_adapter_action",
+        action: rawAction,
+        actions: [...knownActions],
+      },
+      `Unknown aethermon-adapter action: ${rawAction}`
+    );
+    process.exit(2);
+  }
+
+  const args = positionals[1] ? argv.slice(2) : argv.slice(1);
+  if (rawAction === "build") {
+    runPythonScript(
+      "scripts/system/build_aethermon_agent_adapter_v0.py",
+      args,
+      "GeoSeal could not find a usable Python runtime for build_aethermon_agent_adapter_v0.py. Set SCBE_GEOSEAL_PYTHON if needed."
+    );
+  }
+  if (rawAction === "preflight") {
+    runPythonScript(
+      "scripts/system/preflight_zero_cost_training.py",
+      ["--profile", AETHERMON_ADAPTER_PROFILE, ...args],
+      "GeoSeal could not find a usable Python runtime for preflight_zero_cost_training.py. Set SCBE_GEOSEAL_PYTHON if needed."
+    );
+  }
+  if (rawAction === "eval") {
+    runPythonScript(
+      "scripts/system/eval_aethermon_agent_adapter_v0.py",
+      args,
+      "GeoSeal could not find a usable Python runtime for eval_aethermon_agent_adapter_v0.py. Set SCBE_GEOSEAL_PYTHON if needed."
+    );
+  }
+
+  const outPath = `artifacts/aethermon_agent_adapter_v0/eval_${rawAction}.json`;
+  runPythonScript(
+    "scripts/system/eval_aethermon_agent_adapter_v0.py",
+    ["--mode", rawAction, "--out", outPath, ...args],
+    "GeoSeal could not find a usable Python runtime for eval_aethermon_agent_adapter_v0.py. Set SCBE_GEOSEAL_PYTHON if needed."
+  );
+}
+
 async function main() {
   const argv = process.argv.slice(2);
   const { positionals, flags } = parseArgs(argv);
@@ -2187,6 +2624,18 @@ async function main() {
   }
   if (SCBE_SPINE_COMMANDS.has(command)) {
     runScbePassthrough(argv);
+    return;
+  }
+  if (command === "system-map" || command === "map-system") {
+    runSystemMap(positionals, argv);
+    return;
+  }
+  if (command === "aethermon-adapter" || command === "aethermon") {
+    runAethermonAdapter(positionals, flags, argv);
+    return;
+  }
+  if (command === "powershell" || command === "ps") {
+    runPowerShell(positionals, flags);
     return;
   }
   if (command === "doctor") {
