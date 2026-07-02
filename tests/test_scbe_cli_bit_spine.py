@@ -335,3 +335,42 @@ def test_geoseal_powershell_run_can_write_and_list_receipts() -> None:
     listed_payload = json.loads(listed.stdout)
     assert listed_payload["schema_version"] == "geoseal_powershell_receipts_v1"
     assert any(item["file"] == payload["receipt_path"] for item in listed_payload["receipts"])
+
+
+def test_geoseal_colab_watch_reads_local_checkpoint(tmp_path: Path) -> None:
+    if shutil.which("node") is None:
+        return
+
+    result_path = tmp_path / "results_20260702_050228.json"
+    result_path.write_text(
+        json.dumps(
+            {
+                "meta": {"stamp": "20260702_050228"},
+                "A": {
+                    "Qwen2.5-Coder-0.5B": {"py": {}, "jl": {}, "rs": {}, "hs": {}},
+                    "Qwen2.5-Coder-1.5B": {"py": {}, "jl": {}, "rs": {}, "hs": {}},
+                },
+                "B": {},
+                "C": {},
+            }
+        ),
+        encoding="utf-8",
+    )
+    receipt_dir = "artifacts/pytest_tmp/geoseal_colab_watch"
+
+    result = run_geoseal(
+        "colab-watch",
+        "--file",
+        str(result_path),
+        "--write-receipt",
+        "--receipt-dir",
+        receipt_dir,
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["schema_version"] == "scbe_colab_hf_watch_v1"
+    assert payload["state"]["status"] == "complete"
+    assert payload["state"]["a_cells"] == 8
+    assert (REPO_ROOT / payload["receipt_path"]).exists()

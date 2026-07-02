@@ -88,6 +88,7 @@ Useful commands:
   geoseal aethermon-adapter eval --mode oracle --json
   geoseal aethermon-adapter oracle --json
   geoseal aethermon-adapter abstain --json
+  geoseal colab-watch --json --write-receipt
   geoseal inc 1111
   geoseal map "release payload after compare" --json
   geoseal spine encode "hello" --json
@@ -2111,6 +2112,7 @@ function runDoctor(flags) {
     "product-lanes",
     "system-map",
     "aethermon-adapter",
+    "colab-watch",
     "powershell",
     "ps",
     "ask",
@@ -2282,8 +2284,8 @@ function runProductLanes(flags) {
       },
       {
         id: "map-and-training",
-        commands: ["geoseal system-map --check", "geoseal aethermon-adapter build", "geoseal aethermon-adapter preflight", "geoseal aethermon-adapter eval"],
-        purpose: "Procedural repo map, AETHERMON local adapter target, and executable promotion gates.",
+        commands: ["geoseal system-map --check", "geoseal colab-watch --json", "geoseal aethermon-adapter build", "geoseal aethermon-adapter preflight", "geoseal aethermon-adapter eval"],
+        purpose: "Procedural repo map, Colab checkpoint watch, AETHERMON local adapter target, and executable promotion gates.",
       },
       {
         id: "host-powershell",
@@ -2711,6 +2713,14 @@ async function main() {
   }
   if (command === "aethermon-adapter" || command === "aethermon") {
     runAethermonAdapter(positionals, flags, argv);
+    return;
+  }
+  if (command === "colab-watch" || command === "hf-colab-watch") {
+    runPythonScript(
+      "scripts/system/hf_colab_watch.py",
+      argv.slice(1),
+      "GeoSeal could not find a usable Python runtime for hf_colab_watch.py. Set SCBE_GEOSEAL_PYTHON if needed."
+    );
     return;
   }
   if (command === "powershell" || command === "ps") {

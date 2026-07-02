@@ -1,9 +1,9 @@
 # SCBE Procedural System Map
 
-Generated: `2026-07-02T07:16:36+00:00`
+Generated: `2026-07-02T12:46:57+00:00`
 Source: `scripts/system/procedural_system_map.py`
 Seed file: `config/system/procedural_system_map_seeds.json`
-World digest: `b24f60876957f387ed4899354f95999455961105ff3662a642f757634d2fee49`
+World digest: `e73fc629e7f47f3b270f6d7d0b15336adbac0439b0e3511ac750e714937a3e53`
 
 This file is generated from tracked seeds plus live repo files. Edit the seed file, not this output.
 
@@ -17,7 +17,7 @@ This file is generated from tracked seeds plus live repo files. Edit the seed fi
 | Compiler And Polyglot Brick Ridge | `compiler` | `verified` | 20 | 9 | 2 | 0 | `1076,1756` |
 | AetherDesk Portable PC Basin | `portable-ui` | `verified` | 12 | 1 | 10 | 0 | `1390,-537` |
 | Local Agent Bus Forest | `operator` | `truncated` | 160 | 39 | 14 | 0 | `716,232` |
-| System Ops Control Plateau | `operator` | `truncated` | 240 | 42 | 0 | 0 | `199,-396` |
+| System Ops Control Plateau | `operator` | `truncated` | 240 | 43 | 0 | 0 | `199,-396` |
 | API Control Plane Delta | `service` | `verified` | 62 | 16 | 0 | 0 | `-1138,1988` |
 | Training Builder Farm | `training` | `verified` | 83 | 15 | 6 | 0 | `155,-1015` |
 | Eval Benchmark Farm | `benchmark` | `verified` | 198 | 55 | 0 | 0 | `-511,1113` |
@@ -195,7 +195,7 @@ Primary cells:
 - Tags: `operator`, `mcp`, `shell`, `config`, `receipts`
 - Roots: `tests/system`, `tests/operator`, `tests/mcp`, `scripts/system`, `config/system`, `config/governance`
 - Scan note: `truncated`
-- Roles: `{"operator": 198, "test": 42}`
+- Roles: `{"operator": 197, "test": 43}`
 - Kinds: `{"code": 240}`
 
 Primary cells:
@@ -411,7 +411,7 @@ Primary cells:
 Primary cells:
 - `training-data/sft/aetherdesk_browser_use_v1.sft.jsonl` (generated/jsonl, `45ce07f935db2cc0`)
 - `training-data/sft/aetherdesk_browser_use_v1_holdout.sft.jsonl` (generated/jsonl, `0d0c9b961249cf70`)
-- `training-data/sft/aethermon_agent_adapter_v0.manifest.json` (config/config, `91e858f7f5671d07`)
+- `training-data/sft/aethermon_agent_adapter_v0.manifest.json` (config/config, `193cb77ce7879d00`)
 - `training-data/sft/aethermon_agent_adapter_v0_holdout.sft.jsonl` (generated/jsonl, `47cfff670026a48d`)
 - `training-data/sft/aethermon_agent_adapter_v0_train.sft.jsonl` (generated/jsonl, `e8a574bdb03bad52`)
 - `training-data/sft/coding_system_full_v1_holdout.sft.jsonl` (generated/jsonl, `7780a028cd5c72d8`)

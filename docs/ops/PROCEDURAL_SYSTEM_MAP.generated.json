@@ -1,6 +1,6 @@
 {
   "schema": "scbe_procedural_system_map_v1",
-  "generated_at": "2026-07-02T07:16:36+00:00",
+  "generated_at": "2026-07-02T12:46:57+00:00",
   "source": "scripts/system/procedural_system_map.py",
   "seed_file": "config/system/procedural_system_map_seeds.json",
   "map_name": "SCBE Procedural System Map",
@@ -47,7 +47,7 @@
           "config": 1,
           "doc": 2
         },
-        "bytes": 337874
+        "bytes": 339060
       },
       "cells": [
         {
@@ -432,9 +432,9 @@
           "path": "tests/test_scbe_cli_bit_spine.py",
           "kind": "code",
           "role": "test",
-          "size_bytes": 11955,
-          "mtime_utc": "2026-07-02T07:15:09+00:00",
-          "fingerprint": "d3eadfc73009752f",
+          "size_bytes": 13141,
+          "mtime_utc": "2026-07-02T12:45:55+00:00",
+          "fingerprint": "dc2d4f07218d78f5",
           "coord": {
             "x": -715,
             "z": 512
@@ -3384,7 +3384,7 @@
           "config": 1,
           "doc": 1
         },
-        "bytes": 1573316
+        "bytes": 1574502
       },
       "cells": [
         {
@@ -5160,9 +5160,9 @@
           "path": "tests/test_scbe_cli_bit_spine.py",
           "kind": "code",
           "role": "test",
-          "size_bytes": 11955,
-          "mtime_utc": "2026-07-02T07:15:09+00:00",
-          "fingerprint": "d3eadfc73009752f",
+          "size_bytes": 13141,
+          "mtime_utc": "2026-07-02T12:45:55+00:00",
+          "fingerprint": "dc2d4f07218d78f5",
           "coord": {
             "x": 1388,
             "z": -269
@@ -7842,13 +7842,13 @@
       "counts": {
         "cells": 240,
         "roles": {
-          "operator": 198,
-          "test": 42
+          "operator": 197,
+          "test": 43
         },
         "kinds": {
           "code": 240
         },
-        "bytes": 2331789
+        "bytes": 2337225
       },
       "cells": [
         {
@@ -8109,6 +8109,19 @@
           "coord": {
             "x": 939,
             "z": 309
+          }
+        },
+        {
+          "id": "2636da8cbb15",
+          "path": "tests/system/test_hf_colab_watch.py",
+          "kind": "code",
+          "role": "test",
+          "size_bytes": 3042,
+          "mtime_utc": "2026-07-02T12:44:52+00:00",
+          "fingerprint": "a88237592e679f6e",
+          "coord": {
+            "x": 261,
+            "z": 1971
           }
         },
         {
@@ -9867,6 +9880,19 @@
           }
         },
         {
+          "id": "23118d202b3d",
+          "path": "scripts/system/hf_colab_watch.py",
+          "kind": "code",
+          "role": "operator",
+          "size_bytes": 8031,
+          "mtime_utc": "2026-07-02T12:44:52+00:00",
+          "fingerprint": "d7769701a61ed494",
+          "coord": {
+            "x": -1540,
+            "z": -1094
+          }
+        },
+        {
           "id": "8185955e7458",
           "path": "scripts/system/html_text.py",
           "kind": "code",
@@ -10944,32 +10970,6 @@
             "x": -1109,
             "z": 755
           }
-        },
-        {
-          "id": "7e4f874b87b2",
-          "path": "scripts/system/run_mcp_tenreary.py",
-          "kind": "code",
-          "role": "operator",
-          "size_bytes": 4019,
-          "mtime_utc": "2026-06-16T13:38:46+00:00",
-          "fingerprint": "9f89bc956d33a924",
-          "coord": {
-            "x": -830,
-            "z": 1873
-          }
-        },
-        {
-          "id": "5946587e01fa",
-          "path": "scripts/system/run_patent_monitor.ps1",
-          "kind": "code",
-          "role": "operator",
-          "size_bytes": 1618,
-          "mtime_utc": "2026-06-14T11:28:56+00:00",
-          "fingerprint": "d25bc05b7089c864",
-          "coord": {
-            "x": 2008,
-            "z": -1411
-          }
         }
       ]
     },
@@ -11873,7 +11873,7 @@
           "kind": "config",
           "role": "config",
           "size_bytes": 1880,
-          "mtime_utc": "2026-07-02T07:16:23+00:00",
+          "mtime_utc": "2026-07-02T12:46:40+00:00",
           "fingerprint": "055a7f507b912b4d",
           "coord": {
             "x": -1402,
@@ -12939,8 +12939,8 @@
           "kind": "config",
           "role": "config",
           "size_bytes": 1383,
-          "mtime_utc": "2026-07-02T07:16:23+00:00",
-          "fingerprint": "91e858f7f5671d07",
+          "mtime_utc": "2026-07-02T12:46:40+00:00",
+          "fingerprint": "193cb77ce7879d00",
           "coord": {
             "x": -1372,
             "z": -610
@@ -18524,7 +18524,7 @@
           "config": 85,
           "doc": 26
         },
-        "bytes": 2533768
+        "bytes": 2530410
       },
       "cells": [
         {
@@ -19248,8 +19248,8 @@
           "kind": "config",
           "role": "config",
           "size_bytes": 9436,
-          "mtime_utc": "2026-07-02T07:16:23+00:00",
-          "fingerprint": "c14006d9a99be742",
+          "mtime_utc": "2026-07-02T12:46:40+00:00",
+          "fingerprint": "a12695eb8f2c21f6",
           "coord": {
             "x": 458,
             "z": 42
@@ -19880,6 +19880,19 @@
           }
         },
         {
+          "id": "6611a8353de4",
+          "path": "artifacts/colab_hf_watch/hf_watch_20260702T124609Z.json",
+          "kind": "config",
+          "role": "config",
+          "size_bytes": 1211,
+          "mtime_utc": "2026-07-02T12:46:09+00:00",
+          "fingerprint": "828463d84e42515e",
+          "coord": {
+            "x": 192,
+            "z": 522
+          }
+        },
+        {
           "id": "9f502d43b463",
           "path": "artifacts/cross_language_lookup/full_cross_language_lookup.json",
           "kind": "config",
@@ -20072,19 +20085,6 @@
           "coord": {
             "x": -212,
             "z": -579
-          }
-        },
-        {
-          "id": "29a65522e3df",
-          "path": "artifacts/machine_crystal/dual_fano_receipt.json",
-          "kind": "config",
-          "role": "config",
-          "size_bytes": 4569,
-          "mtime_utc": "2026-06-28T05:00:24+00:00",
-          "fingerprint": "73c6a96234150684",
-          "coord": {
-            "x": -1111,
-            "z": -1393
           }
         }
       ]
@@ -21751,8 +21751,8 @@
           "kind": "config",
           "role": "config",
           "size_bytes": 1383,
-          "mtime_utc": "2026-07-02T07:16:23+00:00",
-          "fingerprint": "91e858f7f5671d07",
+          "mtime_utc": "2026-07-02T12:46:40+00:00",
+          "fingerprint": "193cb77ce7879d00",
           "coord": {
             "x": -1809,
             "z": -602
@@ -21764,7 +21764,7 @@
           "kind": "jsonl",
           "role": "generated",
           "size_bytes": 44806,
-          "mtime_utc": "2026-07-02T07:16:23+00:00",
+          "mtime_utc": "2026-07-02T12:46:40+00:00",
           "fingerprint": "47cfff670026a48d",
           "coord": {
             "x": 1520,
@@ -21777,7 +21777,7 @@
           "kind": "jsonl",
           "role": "generated",
           "size_bytes": 398068,
-          "mtime_utc": "2026-07-02T07:16:23+00:00",
+          "mtime_utc": "2026-07-02T12:46:40+00:00",
           "fingerprint": "e8a574bdb03bad52",
           "coord": {
             "x": 1949,
@@ -22174,7 +22174,7 @@
       "verified": 7
     }
   },
-  "world_digest": "b24f60876957f387ed4899354f95999455961105ff3662a642f757634d2fee49",
+  "world_digest": "e73fc629e7f47f3b270f6d7d0b15336adbac0439b0e3511ac750e714937a3e53",
   "next_actions": [
     "Split or raise max_files for harmonic-crypto-governance so the chunk is not truncated.",
     "Split or raise max_files for local-agent-bus so the chunk is not truncated.",
