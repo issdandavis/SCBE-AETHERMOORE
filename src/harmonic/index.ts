@@ -597,3 +597,22 @@ export {
   type AbacusBead,
   type AbacusRun,
 } from './governanceAbacus.js';
+
+// ── The Spine: negabinary cord + balanced-ternary detents over 14 layers ──
+export { type Trit } from './balancedTernary.js';
+export { NegaBinary, type PolarityProfile } from './negabinary.js';
+export {
+  SPINE,
+  SPINE_LENGTH,
+  AXIOMS,
+  segmentOf,
+  detentFromDecision,
+  articulateSpine,
+  formatSpine,
+  poseWord,
+  type AxiomName,
+  type SpineSegment,
+  type Vertebra,
+  type SpinePose,
+  type SpineInput,
+} from './spine.js';
