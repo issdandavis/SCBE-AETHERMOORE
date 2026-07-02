@@ -186,7 +186,11 @@ card = {
     },
     "tool": "custom (perf_counter, stdlib statistics)",
     "stable": e2e_speedup_cv < CV_WARN,
-    "notes": "Kaggle free compute. Interleaved paired runs; e2e_speedup = median of per-pair ratios (drift-cancelling). Rust path includes subprocess startup; engine_speedup is startup-excluded.",
+    "notes": (
+        "Kaggle free compute. Interleaved paired runs; e2e_speedup = median of "
+        "per-pair ratios (drift-cancelling). Rust path includes subprocess startup; "
+        "engine_speedup is startup-excluded."
+    ),
 }
 (WORK / "encoder-card.json").write_text(json.dumps(card, indent=2), encoding="utf-8")
 print(json.dumps(card, indent=2))
