@@ -158,7 +158,7 @@ jobs:
         run: npm ci
 
       - name: Check TypeScript formatting
-        run: npx prettier --check "src/**/*.ts" "tests/**/*.ts"
+        run: npm run lint
 
       - name: Setup Python
         uses: actions/setup-python@v6
