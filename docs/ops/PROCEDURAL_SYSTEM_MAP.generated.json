@@ -1,6 +1,6 @@
 {
   "schema": "scbe_procedural_system_map_v1",
-  "generated_at": "2026-07-02T07:09:23+00:00",
+  "generated_at": "2026-07-02T07:16:36+00:00",
   "source": "scripts/system/procedural_system_map.py",
   "seed_file": "config/system/procedural_system_map_seeds.json",
   "map_name": "SCBE Procedural System Map",
@@ -47,7 +47,7 @@
           "config": 1,
           "doc": 2
         },
-        "bytes": 336683
+        "bytes": 337874
       },
       "cells": [
         {
@@ -432,9 +432,9 @@
           "path": "tests/test_scbe_cli_bit_spine.py",
           "kind": "code",
           "role": "test",
-          "size_bytes": 10764,
-          "mtime_utc": "2026-07-02T07:08:35+00:00",
-          "fingerprint": "5098a674980c5fa6",
+          "size_bytes": 11955,
+          "mtime_utc": "2026-07-02T07:15:09+00:00",
+          "fingerprint": "d3eadfc73009752f",
           "coord": {
             "x": -715,
             "z": 512
@@ -3384,7 +3384,7 @@
           "config": 1,
           "doc": 1
         },
-        "bytes": 1572125
+        "bytes": 1573316
       },
       "cells": [
         {
@@ -5160,9 +5160,9 @@
           "path": "tests/test_scbe_cli_bit_spine.py",
           "kind": "code",
           "role": "test",
-          "size_bytes": 10764,
-          "mtime_utc": "2026-07-02T07:08:35+00:00",
-          "fingerprint": "5098a674980c5fa6",
+          "size_bytes": 11955,
+          "mtime_utc": "2026-07-02T07:15:09+00:00",
+          "fingerprint": "d3eadfc73009752f",
           "coord": {
             "x": 1388,
             "z": -269
@@ -11873,7 +11873,7 @@
           "kind": "config",
           "role": "config",
           "size_bytes": 1880,
-          "mtime_utc": "2026-07-02T07:09:05+00:00",
+          "mtime_utc": "2026-07-02T07:16:23+00:00",
           "fingerprint": "055a7f507b912b4d",
           "coord": {
             "x": -1402,
@@ -12939,8 +12939,8 @@
           "kind": "config",
           "role": "config",
           "size_bytes": 1383,
-          "mtime_utc": "2026-07-02T07:09:05+00:00",
-          "fingerprint": "810d689d48e0cd54",
+          "mtime_utc": "2026-07-02T07:16:23+00:00",
+          "fingerprint": "91e858f7f5671d07",
           "coord": {
             "x": -1372,
             "z": -610
@@ -18524,7 +18524,7 @@
           "config": 85,
           "doc": 26
         },
-        "bytes": 2541101
+        "bytes": 2533768
       },
       "cells": [
         {
@@ -19248,8 +19248,8 @@
           "kind": "config",
           "role": "config",
           "size_bytes": 9436,
-          "mtime_utc": "2026-07-02T07:09:05+00:00",
-          "fingerprint": "78c6a8037a0feb89",
+          "mtime_utc": "2026-07-02T07:16:23+00:00",
+          "fingerprint": "c14006d9a99be742",
           "coord": {
             "x": 458,
             "z": 42
@@ -19945,6 +19945,19 @@
           }
         },
         {
+          "id": "8d451cf270fb",
+          "path": "artifacts/geoseal_powershell_receipts/20260702T071533Z_8bef8a30946a.json",
+          "kind": "config",
+          "role": "config",
+          "size_bytes": 999,
+          "mtime_utc": "2026-07-02T07:15:33+00:00",
+          "fingerprint": "7c5a95b2a70c5972",
+          "coord": {
+            "x": -760,
+            "z": -492
+          }
+        },
+        {
           "id": "6e628f070327",
           "path": "artifacts/language_systems_atlas/code_coordination_graph.json",
           "kind": "config",
@@ -20072,19 +20085,6 @@
           "coord": {
             "x": -1111,
             "z": -1393
-          }
-        },
-        {
-          "id": "130a59af65ca",
-          "path": "artifacts/machine_crystal/geometry_relation_map.json",
-          "kind": "config",
-          "role": "config",
-          "size_bytes": 8332,
-          "mtime_utc": "2026-06-28T05:00:26+00:00",
-          "fingerprint": "257133efbfb4e6ae",
-          "coord": {
-            "x": -1368,
-            "z": -978
           }
         }
       ]
@@ -21751,8 +21751,8 @@
           "kind": "config",
           "role": "config",
           "size_bytes": 1383,
-          "mtime_utc": "2026-07-02T07:09:05+00:00",
-          "fingerprint": "810d689d48e0cd54",
+          "mtime_utc": "2026-07-02T07:16:23+00:00",
+          "fingerprint": "91e858f7f5671d07",
           "coord": {
             "x": -1809,
             "z": -602
@@ -21764,7 +21764,7 @@
           "kind": "jsonl",
           "role": "generated",
           "size_bytes": 44806,
-          "mtime_utc": "2026-07-02T07:09:05+00:00",
+          "mtime_utc": "2026-07-02T07:16:23+00:00",
           "fingerprint": "47cfff670026a48d",
           "coord": {
             "x": 1520,
@@ -21777,7 +21777,7 @@
           "kind": "jsonl",
           "role": "generated",
           "size_bytes": 398068,
-          "mtime_utc": "2026-07-02T07:09:05+00:00",
+          "mtime_utc": "2026-07-02T07:16:23+00:00",
           "fingerprint": "e8a574bdb03bad52",
           "coord": {
             "x": 1949,
@@ -22174,7 +22174,7 @@
       "verified": 7
     }
   },
-  "world_digest": "3739291f637ad6bc7b77efe983f655de26091ffb8e0b7727aeab7d95941d7397",
+  "world_digest": "b24f60876957f387ed4899354f95999455961105ff3662a642f757634d2fee49",
   "next_actions": [
     "Split or raise max_files for harmonic-crypto-governance so the chunk is not truncated.",
     "Split or raise max_files for local-agent-bus so the chunk is not truncated.",

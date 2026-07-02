@@ -304,3 +304,34 @@ def test_geoseal_powershell_run_executes_harmless_command() -> None:
     assert payload["risk_tier"] == "bounded-host-read"
     assert payload["command_digest"]
     assert "GEOSEAL_PS_OK" in payload["stdout_tail"]
+
+
+def test_geoseal_powershell_run_can_write_and_list_receipts() -> None:
+    if shutil.which("node") is None or shutil.which("powershell") is None:
+        return
+
+    receipt_dir = "artifacts/pytest_tmp/geoseal_powershell_receipts"
+    result = run_geoseal(
+        "powershell",
+        "run",
+        "--command",
+        "Write-Output GEOSEAL_PS_RECEIPT",
+        "--write-receipt",
+        "--receipt-dir",
+        receipt_dir,
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    receipt_path = REPO_ROOT / payload["receipt_path"]
+    assert receipt_path.exists()
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert receipt["schema_version"] == "geoseal_powershell_run_v1"
+    assert "GEOSEAL_PS_RECEIPT" in receipt["stdout_tail"]
+
+    listed = run_geoseal("powershell", "receipts", "--receipt-dir", receipt_dir, "--json")
+    assert listed.returncode == 0, listed.stderr
+    listed_payload = json.loads(listed.stdout)
+    assert listed_payload["schema_version"] == "geoseal_powershell_receipts_v1"
+    assert any(item["file"] == payload["receipt_path"] for item in listed_payload["receipts"])

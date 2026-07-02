@@ -1,9 +1,9 @@
 # SCBE Procedural System Map
 
-Generated: `2026-07-02T07:09:23+00:00`
+Generated: `2026-07-02T07:16:36+00:00`
 Source: `scripts/system/procedural_system_map.py`
 Seed file: `config/system/procedural_system_map_seeds.json`
-World digest: `3739291f637ad6bc7b77efe983f655de26091ffb8e0b7727aeab7d95941d7397`
+World digest: `b24f60876957f387ed4899354f95999455961105ff3662a642f757634d2fee49`
 
 This file is generated from tracked seeds plus live repo files. Edit the seed file, not this output.
 
@@ -411,7 +411,7 @@ Primary cells:
 Primary cells:
 - `training-data/sft/aetherdesk_browser_use_v1.sft.jsonl` (generated/jsonl, `45ce07f935db2cc0`)
 - `training-data/sft/aetherdesk_browser_use_v1_holdout.sft.jsonl` (generated/jsonl, `0d0c9b961249cf70`)
-- `training-data/sft/aethermon_agent_adapter_v0.manifest.json` (config/config, `810d689d48e0cd54`)
+- `training-data/sft/aethermon_agent_adapter_v0.manifest.json` (config/config, `91e858f7f5671d07`)
 - `training-data/sft/aethermon_agent_adapter_v0_holdout.sft.jsonl` (generated/jsonl, `47cfff670026a48d`)
 - `training-data/sft/aethermon_agent_adapter_v0_train.sft.jsonl` (generated/jsonl, `e8a574bdb03bad52`)
 - `training-data/sft/coding_system_full_v1_holdout.sft.jsonl` (generated/jsonl, `7780a028cd5c72d8`)

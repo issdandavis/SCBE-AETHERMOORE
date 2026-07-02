@@ -46,6 +46,8 @@ Useful commands:
   geoseal powershell check --command "Get-Location" --json
   geoseal powershell run --command "Write-Output GEOSEAL_OK" --json
   geoseal powershell run --profile pwd --json
+  geoseal powershell run --profile pwd --write-receipt --json
+  geoseal powershell receipts --json
   geoseal code-cube "build a todo app with auth and tests" --json
   geoseal code-cube --twist tests.backend --language rust "todo api" --json
   geoseal code-cube --target manifold --dimensions 6 --twist security.deploy "station safe-mode controller" --json
@@ -160,6 +162,7 @@ const SCBE_SPINE_COMMANDS = new Set([
 ]);
 const CUSTOM_COMMANDS_DIR = path.join(ROOT, ".geoseal", "commands");
 const AETHERMON_ADAPTER_PROFILE = "config/model_training/aethermon-agent-adapter-v0-local.json";
+const GEOSEAL_POWERSHELL_RECEIPTS_DIR = path.join(ROOT, "artifacts", "geoseal_powershell_receipts");
 const MAX_POWERSHELL_COMMAND_CHARS = 900;
 const POWERSHELL_TIMEOUT_MS = 45000;
 const POWERSHELL_ALLOWED_COMMANDS = new Set([
@@ -853,6 +856,73 @@ function tailText(value, limit = 8192) {
   return text.length > limit ? text.slice(text.length - limit) : text;
 }
 
+function relRepoPath(absPath) {
+  try {
+    return path.relative(ROOT, absPath).replace(/\\/g, "/");
+  } catch (_err) {
+    return String(absPath);
+  }
+}
+
+function resolvePowerShellReceiptDir(flags) {
+  const raw = flags["receipt-dir"] || process.env.SCBE_GEOSEAL_POWERSHELL_RECEIPTS_DIR;
+  const resolved = raw ? path.resolve(ROOT, String(raw)) : GEOSEAL_POWERSHELL_RECEIPTS_DIR;
+  const rootResolved = ROOT;
+  if (resolved !== rootResolved && !resolved.startsWith(`${rootResolved}${path.sep}`)) {
+    throw new Error(`PowerShell receipt dir must stay inside repo root: ${resolved}`);
+  }
+  return resolved;
+}
+
+function shouldWritePowerShellReceipt(flags) {
+  return Boolean(flags["write-receipt"] || flags.receipt || flags["receipt-dir"]);
+}
+
+function writePowerShellReceipt(payload, flags) {
+  if (!shouldWritePowerShellReceipt(flags)) return payload;
+  const receiptDir = resolvePowerShellReceiptDir(flags);
+  fs.mkdirSync(receiptDir, { recursive: true });
+  const timestamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\..*/, "Z");
+  const digest = String(payload.command_digest || crypto.createHash("sha256").update(JSON.stringify(payload)).digest("hex")).slice(0, 12);
+  const receiptPath = path.join(receiptDir, `${timestamp}_${digest}.json`);
+  const withPath = {
+    ...payload,
+    receipt_path: relRepoPath(receiptPath),
+  };
+  fs.writeFileSync(receiptPath, `${JSON.stringify(withPath, null, 2)}\n`, "utf8");
+  return withPath;
+}
+
+function runPowerShellReceipts(flags) {
+  const receiptDir = resolvePowerShellReceiptDir(flags);
+  const limit = Math.max(1, Math.min(200, Number(flags.limit || 25) || 25));
+  const files = fs.existsSync(receiptDir)
+    ? fs
+        .readdirSync(receiptDir)
+        .filter((name) => name.endsWith(".json"))
+        .map((name) => {
+          const receiptPath = path.join(receiptDir, name);
+          const stat = fs.statSync(receiptPath);
+          return {
+            file: relRepoPath(receiptPath),
+            bytes: stat.size,
+            modified_at: stat.mtime.toISOString(),
+          };
+        })
+        .sort((a, b) => String(b.modified_at).localeCompare(String(a.modified_at)))
+        .slice(0, limit)
+    : [];
+  const payload = {
+    schema_version: "geoseal_powershell_receipts_v1",
+    ok: true,
+    receipt_dir: relRepoPath(receiptDir),
+    count: files.length,
+    receipts: files,
+  };
+  const text = files.length ? files.map((item) => `${item.modified_at} ${item.file}`).join("\n") : "No PowerShell receipts found.";
+  writeJsonOrText(flags, payload, text);
+}
+
 function runPowerShellProfiles(flags) {
   const payload = {
     schema_version: "geoseal_powershell_profiles_v1",
@@ -897,7 +967,7 @@ function runPowerShellExecution(commandText, flags, source) {
     started_at: startedAt,
   };
   if (!validation.ok) {
-    const payload = {
+    const payload = writePowerShellReceipt({
       ok: false,
       ...baseReceipt,
       ...validation,
@@ -905,7 +975,7 @@ function runPowerShellExecution(commandText, flags, source) {
       finished_at: new Date().toISOString(),
       stdout_tail: "",
       stderr_tail: validation.reasons.join("\n"),
-    };
+    }, flags);
     writeJsonOrText(flags, payload, payload.stderr_tail);
     process.exitCode = 2;
     return;
@@ -926,7 +996,7 @@ function runPowerShellExecution(commandText, flags, source) {
     );
     if (result.error && result.error.code === "ENOENT") continue;
     const exitCode = result.error ? 1 : result.status === null ? 1 : result.status;
-    const payload = {
+    const payload = writePowerShellReceipt({
       ok: exitCode === 0,
       ...baseReceipt,
       executable,
@@ -940,13 +1010,13 @@ function runPowerShellExecution(commandText, flags, source) {
       finished_at: new Date().toISOString(),
       stdout_tail: tailText(result.stdout),
       stderr_tail: tailText(result.stderr),
-    };
+    }, flags);
     writeJsonOrText(flags, payload, payload.stdout_tail || payload.stderr_tail || `PowerShell exit ${exitCode}`);
     if (exitCode !== 0) process.exitCode = exitCode;
     return;
   }
 
-  const payload = {
+  const payload = writePowerShellReceipt({
     ok: false,
     ...baseReceipt,
     executable: null,
@@ -954,7 +1024,7 @@ function runPowerShellExecution(commandText, flags, source) {
     finished_at: new Date().toISOString(),
     stdout_tail: "",
     stderr_tail: "No PowerShell executable found. Set SCBE_GEOSEAL_POWERSHELL if needed.",
-  };
+  }, flags);
   writeJsonOrText(flags, payload, payload.stderr_tail);
   process.exitCode = 127;
 }
@@ -963,6 +1033,10 @@ function runPowerShell(positionals, flags) {
   const action = String(positionals[1] || "profiles").toLowerCase();
   if (action === "profiles" || action === "list") {
     runPowerShellProfiles(flags);
+    return;
+  }
+  if (action === "receipts" || action === "history") {
+    runPowerShellReceipts(flags);
     return;
   }
 
@@ -1005,7 +1079,7 @@ function runPowerShell(positionals, flags) {
       ok: false,
       error: "unknown_powershell_action",
       action,
-      actions: ["profiles", "check", "run"],
+      actions: ["profiles", "check", "run", "receipts"],
     },
     `Unknown PowerShell action: ${action}`
   );
@@ -2213,7 +2287,12 @@ function runProductLanes(flags) {
       },
       {
         id: "host-powershell",
-        commands: ["geoseal powershell profiles", "geoseal powershell check --command \"Get-Location\"", "geoseal powershell run --profile pwd"],
+        commands: [
+          "geoseal powershell profiles",
+          "geoseal powershell check --command \"Get-Location\"",
+          "geoseal powershell run --profile pwd --write-receipt",
+          "geoseal powershell receipts",
+        ],
         purpose: "Bounded Windows PowerShell checks and read-only command receipts for local automation.",
       },
       {
