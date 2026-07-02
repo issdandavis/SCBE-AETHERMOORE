@@ -39,12 +39,7 @@ export type BundleTongue = 'KO' | 'AV' | 'RU' | 'CA' | 'UM' | 'DR';
 
 /** Bundle lifecycle status */
 export type BundleStatus =
-  | 'CREATED'
-  | 'IN_TRANSIT'
-  | 'STORED'
-  | 'DELIVERED'
-  | 'EXPIRED'
-  | 'CORRUPTED';
+  'CREATED' | 'IN_TRANSIT' | 'STORED' | 'DELIVERED' | 'EXPIRED' | 'CORRUPTED';
 
 /** Forward Error Correction block — one per tongue */
 export interface FECBlock {

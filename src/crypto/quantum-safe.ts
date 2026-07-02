@@ -411,8 +411,7 @@ export function getKEM(name: string): QuantumSafeKEM {
 
   // Look up in catalog and create stub
   const desc = Object.values(PQC_ALGORITHMS).find((a) => a.kind === 'kem' && a.name === name) as
-    | KEMDescriptor
-    | undefined;
+    KEMDescriptor | undefined;
   if (!desc) {
     throw new Error(`Unknown KEM algorithm: ${name}`);
   }

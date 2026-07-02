@@ -68,7 +68,7 @@ build_s = round(time.time() - build_start, 1)
 exe = ROOT / "target" / "release" / "ast_cube"
 print("rust build:", build_s, "s; exe:", exe.exists(), flush=True)
 
-WARMUP, RUNS, PURE_RUNS, BIG_TARGET, CV_WARN = 5, 20, 10, 200, 5.0
+WARMUP, RUNS, PURE_RUNS, BIG_TARGET, CV_WARN = 8, 30, 10, 200, 5.0
 
 
 def run_python(files):
@@ -90,6 +90,18 @@ def measure(fn, files, runs, warmup):
     return [fn(files) for _ in range(runs)]
 
 
+def measure_paired(fn_a, fn_b, files, rounds, warmup):
+    # Interleave both engines so machine drift cancels in each per-round ratio.
+    for _ in range(warmup):
+        fn_a(files)
+        fn_b(files)
+    a_times, b_times = [], []
+    for _ in range(rounds):
+        a_times.append(fn_a(files))
+        b_times.append(fn_b(files))
+    return a_times, b_times
+
+
 def summarize(times):
     mean = statistics.fmean(times)
     stdev = statistics.stdev(times) if len(times) > 1 else 0.0
@@ -108,9 +120,13 @@ def summarize(times):
     }
 
 
-py = summarize(measure(run_python, corpus, RUNS, WARMUP))
-rust = summarize(measure(run_rust, corpus, RUNS, WARMUP))
-e2e_speedup = round(py["median"] / rust["median"], 2) if rust["median"] else None
+_py_t, _rust_t = measure_paired(run_python, run_rust, corpus, RUNS, WARMUP)
+py = summarize(_py_t)
+rust = summarize(_rust_t)
+_ratios = [a / b for a, b in zip(_py_t, _rust_t) if b > 0]
+# Primary estimator: median of per-pair ratios (drift-cancelling, reproducible on shared compute).
+e2e_speedup = round(statistics.median(_ratios), 2) if _ratios else None
+e2e_speedup_cv = round(100 * statistics.stdev(_ratios) / statistics.fmean(_ratios), 3) if len(_ratios) > 1 else 0.0
 
 big = (corpus * max(1, math.ceil(BIG_TARGET / len(corpus))))[:BIG_TARGET]
 r1 = statistics.median(measure(run_rust, corpus[:1], PURE_RUNS, WARMUP))
@@ -133,6 +149,7 @@ card = {
     },
     "variants": {"python_reference": py, "rust": rust},
     "end_to_end_speedup_x": e2e_speedup,
+    "end_to_end_speedup_cv_pct": e2e_speedup_cv,
     "pure_encode": {
         "method": "two-point linear model t(k)=startup+k*per_file; subprocess startup excluded",
         "batch_files": len(big),
@@ -154,8 +171,8 @@ card = {
         "cpu_governor": "kaggle-managed",
     },
     "tool": "custom (perf_counter, stdlib statistics)",
-    "stable": py["cv_pct"] < CV_WARN and rust["cv_pct"] < CV_WARN,
-    "notes": "Kaggle free compute. Rust path includes subprocess startup; engine_speedup is startup-excluded.",
+    "stable": e2e_speedup_cv < CV_WARN,
+    "notes": "Kaggle free compute. Interleaved paired runs; e2e_speedup = median of per-pair ratios (drift-cancelling). Rust path includes subprocess startup; engine_speedup is startup-excluded.",
 }
 (WORK / "encoder-card.json").write_text(json.dumps(card, indent=2), encoding="utf-8")
 print(json.dumps(card, indent=2))
