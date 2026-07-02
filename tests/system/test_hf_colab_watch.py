@@ -66,6 +66,38 @@ def test_stage_state_detects_complete_result() -> None:
     assert payload["state"]["c_complete"] is True
 
 
+def test_stage_state_detects_running_bc_only_after_b_lands() -> None:
+    mod = load_module()
+    result = {"meta": {"stamp": "20260702_061104"}, "B": {"v1": {}, "v2": {}}}
+    source = mod.ResultSource(path=Path("results_20260702_061104.json"), name="results_20260702_061104.json", modified_at=None)
+
+    payload = mod.stage_state(result, source, stale_minutes=45.0)
+
+    assert payload["state"]["status"] == "running_c"
+    assert payload["state"]["run_mode"] == "bc_only"
+    assert payload["state"]["a_complete"] is False
+    assert payload["state"]["b_complete"] is True
+    assert payload["state"]["c_complete"] is False
+
+
+def test_stage_state_detects_complete_bc_only_result() -> None:
+    mod = load_module()
+    result = {
+        "meta": {"stamp": "20260702_061104"},
+        "B": {"v1": {}, "v2": {}},
+        "C": {"base": {}, "ca-diverse-v1": {}},
+    }
+    source = mod.ResultSource(path=Path("results_20260702_061104.json"), name="results_20260702_061104.json", modified_at=None)
+
+    payload = mod.stage_state(result, source, stale_minutes=45.0)
+
+    assert payload["state"]["status"] == "complete"
+    assert payload["state"]["run_mode"] == "bc_only"
+    assert payload["state"]["a_complete"] is False
+    assert payload["state"]["b_complete"] is True
+    assert payload["state"]["c_complete"] is True
+
+
 def test_cli_file_mode_writes_receipt(tmp_path: Path) -> None:
     mod = load_module()
     result_path = tmp_path / "results_20260702_050228.json"

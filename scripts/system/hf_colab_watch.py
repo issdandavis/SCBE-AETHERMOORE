@@ -88,12 +88,23 @@ def count_a_cells(result: dict[str, Any]) -> tuple[int, list[str]]:
     return len(cells), cells
 
 
+def classify_run_mode(a_count: int, has_b: bool, has_c: bool) -> str:
+    if a_count == 0 and (has_b or has_c):
+        return "bc_only"
+    if a_count >= EXPECTED_A_CELLS and (has_b or has_c):
+        return "a_plus_bc"
+    if a_count:
+        return "a_ceiling"
+    return "unknown"
+
+
 def stage_state(result: dict[str, Any], source: ResultSource, stale_minutes: float) -> dict[str, Any]:
     now = utc_now()
     a_count, a_cells = count_a_cells(result)
     has_b = isinstance(result.get("B"), dict)
     has_c = isinstance(result.get("C"), dict)
     has_errors = bool(result.get("errors"))
+    run_mode = classify_run_mode(a_count, has_b, has_c)
     age_minutes = None
     if source.modified_at:
         age_minutes = round((now - source.modified_at).total_seconds() / 60, 2)
@@ -102,6 +113,23 @@ def stage_state(result: dict[str, Any], source: ResultSource, stale_minutes: flo
     if has_errors:
         status = "error"
         action = "Read result['errors']; fix the notebook builder; stage a new notebook before browser work."
+    elif run_mode == "bc_only" and has_b and has_c:
+        status = "complete"
+        action = "Run synthesis: report B precision/coverage and C adapter verdict; A came from a separate ceiling run."
+    elif run_mode == "bc_only" and has_b:
+        status = "stale_needs_c" if stale else "running_c"
+        action = (
+            "C did not land after B; inspect the Colab tab or run a C-only adapter verdict."
+            if stale
+            else "B landed; keep watching HF for C without touching the browser."
+        )
+    elif run_mode == "bc_only":
+        status = "stale_needs_b" if stale else "running_b"
+        action = (
+            "B+C run has no B checkpoint; inspect the Colab tab before rerunning."
+            if stale
+            else "B+C run has started but has not pushed B yet; keep watching HF."
+        )
     elif a_count < EXPECTED_A_CELLS:
         status = "stale_partial_a" if stale else "running_a"
         action = (
@@ -134,6 +162,7 @@ def stage_state(result: dict[str, Any], source: ResultSource, stale_minutes: flo
         "state": {
             "status": status,
             "stale": stale,
+            "run_mode": run_mode,
             "a_cells": a_count,
             "a_complete": a_count >= EXPECTED_A_CELLS,
             "a_cell_ids": a_cells,
