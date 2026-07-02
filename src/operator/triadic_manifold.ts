@@ -19,10 +19,7 @@ export type OperatorMode = 'local_first' | 'cloud_assist' | 'hybrid';
 export type PrivacyLevel = 'local_only' | 'remote_ok';
 export type WorkloadSize = 'small' | 'medium' | 'large';
 export type CompanionPackageName =
-  | 'scbe-aethermoore'
-  | 'scbe-agent-bus'
-  | '@scbe/kernel'
-  | 'scbe-sixtongues';
+  'scbe-aethermoore' | 'scbe-agent-bus' | '@scbe/kernel' | 'scbe-sixtongues';
 
 export interface OperatorActor {
   kind: ActorKind;

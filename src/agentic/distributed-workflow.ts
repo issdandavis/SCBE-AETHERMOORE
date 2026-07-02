@@ -10,12 +10,7 @@
 import { AgentRole, BuiltInAgent, ROLE_TONGUE_MAP } from './types';
 
 export type TinyLLMCapability =
-  | 'planning'
-  | 'implementation'
-  | 'analysis'
-  | 'testing'
-  | 'security'
-  | 'deployment';
+  'planning' | 'implementation' | 'analysis' | 'testing' | 'security' | 'deployment';
 
 export interface TinyLLMAdapter {
   id: string;

@@ -16,12 +16,7 @@
  * Non-tech modes: science, communications, mission_planning
  */
 export type SpecialistMode =
-  | 'engineering'
-  | 'navigation'
-  | 'systems'
-  | 'science'
-  | 'communications'
-  | 'mission_planning';
+  'engineering' | 'navigation' | 'systems' | 'science' | 'communications' | 'mission_planning';
 
 /**
  * Tool definition available within a specialist mode.
