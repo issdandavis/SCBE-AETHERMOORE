@@ -36,13 +36,7 @@ export type TaskPriority = 'critical' | 'high' | 'medium' | 'low';
  * Task status
  */
 export type TaskStatus =
-  | 'pending'
-  | 'assigned'
-  | 'running'
-  | 'completed'
-  | 'failed'
-  | 'cancelled'
-  | 'awaiting_approval';
+  'pending' | 'assigned' | 'running' | 'completed' | 'failed' | 'cancelled' | 'awaiting_approval';
 
 /**
  * Sacred Tongue governance tier

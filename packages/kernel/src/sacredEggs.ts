@@ -227,8 +227,7 @@ export interface Approval {
  * Hatch result
  */
 export type HatchResult =
-  | { success: true; plaintext: Uint8Array }
-  | { success: false; output: Uint8Array }; // Fail-to-noise: indistinguishable failure
+  { success: true; plaintext: Uint8Array } | { success: false; output: Uint8Array }; // Fail-to-noise: indistinguishable failure
 
 // ═══════════════════════════════════════════════════════════════
 // Predicate Functions

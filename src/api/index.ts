@@ -102,14 +102,7 @@ export interface PricingTier {
 
 /** Action types for Roundtable consensus */
 export type ActionType =
-  | 'read'
-  | 'query'
-  | 'write'
-  | 'update'
-  | 'delete'
-  | 'grant'
-  | 'deploy'
-  | 'rotate_keys';
+  'read' | 'query' | 'write' | 'update' | 'delete' | 'grant' | 'deploy' | 'rotate_keys';
 
 /** Security gate configuration */
 export interface SecurityGateConfig {

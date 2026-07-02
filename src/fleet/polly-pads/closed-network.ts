@@ -23,16 +23,10 @@ import { createHmac } from 'crypto';
 
 /** Allowed communication channels */
 export type NetworkChannel =
-  | 'local_squad_mesh'
-  | 'earth_deep_space'
-  | 'onboard_sensors'
-  | 'emergency_beacon';
+  'local_squad_mesh' | 'earth_deep_space' | 'onboard_sensors' | 'emergency_beacon';
 
 export type BlockedCategory =
-  | 'internet'
-  | 'external_apis'
-  | 'social_media'
-  | 'unauthorized_devices';
+  'internet' | 'external_apis' | 'social_media' | 'unauthorized_devices';
 
 export interface NetworkMessage {
   id: string;

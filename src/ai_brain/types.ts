@@ -216,11 +216,7 @@ export type RiskDecision = 'ALLOW' | 'QUARANTINE' | 'ESCALATE' | 'DENY';
  * Detection mechanism type identifiers
  */
 export type DetectionMechanism =
-  | 'phase_distance'
-  | 'curvature_accumulation'
-  | 'threat_lissajous'
-  | 'decimal_drift'
-  | 'six_tonic';
+  'phase_distance' | 'curvature_accumulation' | 'threat_lissajous' | 'decimal_drift' | 'six_tonic';
 
 /**
  * Detection result from a single mechanism
