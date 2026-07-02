@@ -28,10 +28,13 @@ describe('generateSyntheticConversationV2Wire', () => {
   });
 
   it('is deterministic for the same seed', () => {
+    const baseTimestamp = Math.floor(Date.now() / 1000) - 30;
+
     const a = generateSyntheticConversationV2Wire({
       baseTopic: 'base',
       numPivots: 5,
       seed: 1234,
+      baseTimestamp,
       keyring: testKeyring,
     });
 
@@ -41,6 +44,7 @@ describe('generateSyntheticConversationV2Wire', () => {
       baseTopic: 'base',
       numPivots: 5,
       seed: 1234,
+      baseTimestamp,
       keyring: testKeyring,
     });
 
@@ -49,10 +53,13 @@ describe('generateSyntheticConversationV2Wire', () => {
   });
 
   it('differs for different seeds', () => {
+    const baseTimestamp = Math.floor(Date.now() / 1000) - 30;
+
     const a = generateSyntheticConversationV2Wire({
       baseTopic: 'base',
       numPivots: 3,
       seed: 1,
+      baseTimestamp,
       keyring: testKeyring,
     });
 
@@ -62,6 +69,7 @@ describe('generateSyntheticConversationV2Wire', () => {
       baseTopic: 'base',
       numPivots: 3,
       seed: 2,
+      baseTimestamp,
       keyring: testKeyring,
     });
 

@@ -91,6 +91,7 @@ export function generateSyntheticConversationV2Wire(params: {
   aad?: string;
   primaryTongue?: RWP2WireTongue;
   signingTongues?: RWP2WireTongue[];
+  baseTimestamp?: number;
   keyring: Keyring;
   policy?: 'standard' | 'strict' | 'critical';
 }): SyntheticConversation {
@@ -101,6 +102,7 @@ export function generateSyntheticConversationV2Wire(params: {
     aad = 'source=synthetic;factory=spiralverse;ver=2',
     primaryTongue = 'KO',
     signingTongues = ['KO', 'RU'], // default to 2+ tongues for Roundtable
+    baseTimestamp,
     keyring,
     policy = 'standard',
   } = params;
@@ -119,7 +121,7 @@ export function generateSyntheticConversationV2Wire(params: {
   // to pass replay windows in strict modes. We anchor to "now" and apply a small
   // deterministic offset so same-seed calls within a run remain stable.
   const nowSec = Math.floor(Date.now() / 1000);
-  const ts0 = nowSec - 10 + (seed % 5);
+  const ts0 = baseTimestamp ?? nowSec - 10 + (seed % 5);
 
   for (let i = 0; i < numPivots; i++) {
     const tongue = prng.pick(tongues);

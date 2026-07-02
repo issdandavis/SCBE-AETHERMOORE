@@ -18,16 +18,37 @@ npm run game:aethermon         # interactive terminal game (saves to .aethermon-
 npm run game:aethermon:demo    # scripted, deterministic playthrough — no input, no saves
 ```
 
-The web version (`demos/aethermon/index.html`) is a virtual-pet device shell driving the
-same tested game core: procedurally generated pixel sprites for all 39 species (seeded by
-species id — the sprites are math, like everything else in Aethermoore), region-tinted
-scenes, animated battles with HP bars and screen shake, evolution flashes, and canon
-synesthesia tones — every tongue sounds its note (KO=A 220Hz … DR=G 392Hz). Saves live in
-localStorage. Rebuild the bundle after code changes with `npm run game:aethermon:web:build`;
-regenerate preview PNGs (sprite sheet + battle mock, no browser needed) with
-`node scripts/aethermon_render_preview.cjs` — the preview script imports compiled output, so
-run `npm run build` (or any `game:aethermon*` CLI script, which runs `tsc`) first to
-populate `dist/`.
+The web version (`demos/aethermon/index.html`) is the **"Spiral Unit"** — a detailed
+virtual-pet handheld driving the same tested game core. The device has a molded shell,
+brand plate and φ mark, a pulsing tongue-colored status LED, a bezelled CRT screen (curved
+glass + animated scanlines), a functional D-pad and A/B buttons, and a speaker grille.
+
+The Sacred Tongue synesthesia is surfaced everywhere as **element chips** — a tongue code
+plus its canon musical note, colored by its hue (KO red/A, AV amber/B, RU green/C#, CA
+cyan/D#, UM indigo/F, DR magenta/G). Screens:
+
+- **Care** — region diorama with a region tag and animated backdrop, the creature on a
+  ground-shadowed stage, element + alignment chips, an XP bar, per-stat bars
+  (HP/ATK/DEF/SPD), color-coded care meters with numeric readouts, a live evolution hint,
+  and status tags (level / generation / lifespan / scars / Hollow).
+- **Battle** — two dioramas with element-chipped nameplates, segmented HP bars, a turn
+  counter, element-colored move cards, floating damage/heal/miss numbers, spark bursts,
+  lunges, and screen shake.
+- **Codex** — an illustrated bestiary of all 39 species grouped by stage; your current
+  lineage is highlighted.
+- **Map** — a hexagonal wheel of the six tongue regions (spokes to a φ hub), your current
+  location and the Hollow (Null Vale) marked; click a node to travel.
+
+Navigate by pointer, keyboard (arrows / WASD to move focus, Enter or A to select, Esc or B
+to go back), or the drawn D-pad and A/B buttons. Sprites are procedurally generated from the
+species id (the sprites are math, like everything else in Aethermoore) and every move plays
+its tongue's note. Saves live in localStorage.
+
+Rebuild the bundle after code changes with `npm run game:aethermon:web:build`; regenerate
+preview PNGs — the full handheld (care + battle) plus the species sheet, no browser needed —
+with `node scripts/aethermon_render_preview.cjs`. The preview script imports compiled
+output, so run `npm run build` (or any `game:aethermon*` CLI script, which runs `tsc`) first
+to populate `dist/`.
 
 CLI flags (after `--`): `--seed <n>` fixed RNG seed, `--save <path>` custom save location.
 
