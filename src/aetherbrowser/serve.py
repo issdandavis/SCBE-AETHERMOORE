@@ -13,6 +13,8 @@ from __future__ import annotations
 import json
 import logging
 from dataclasses import dataclass
+from datetime import datetime, timezone
+from itertools import count
 from typing import Any
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -44,12 +46,137 @@ analyzer = PageAnalyzer()
 router = OctoArmorRouter()
 executor = ProviderExecutor()
 pending_zone_requests: dict[int, "PendingCommandApproval"] = {}
+shared_headless_context: dict[str, Any] = {
+    "page_context": None,
+    "page_analysis": None,
+    "topology": None,
+    "updated_at": None,
+}
+pending_browser_actions: list[dict[str, Any]] = []
+pending_controller_events: list[dict[str, Any]] = []
+_headless_seq = count(1)
+
+_SAFE_CONTROLLER_EVENTS = {
+    "observe",
+    "move_up",
+    "move_down",
+    "move_left",
+    "move_right",
+    "back",
+    "forward",
+    "reload",
+    "escape",
+}
+_HELD_CONTROLLER_EVENTS = {
+    "primary",
+    "secondary",
+    "type",
+    "paste",
+    "submit",
+}
 
 
 @dataclass
 class PendingCommandApproval:
     plan: CommandPlan
     assignments: list[dict[str, Any]]
+
+
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _bounded_append(queue: list[dict[str, Any]], item: dict[str, Any], *, limit: int = 100) -> None:
+    queue.append(item)
+    if len(queue) > limit:
+        del queue[: len(queue) - limit]
+
+
+def _normalize_browser_items(items: Any, *, text_key: str = "text") -> list[dict[str, Any]]:
+    if not isinstance(items, list):
+        return []
+    normalized: list[dict[str, Any]] = []
+    for item in items:
+        if isinstance(item, dict):
+            normalized.append(item)
+        elif item is not None:
+            normalized.append({text_key: str(item)})
+    return normalized
+
+
+def _analyze_page_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    url = str(payload.get("url", ""))
+    title = str(payload.get("title", ""))
+    text = str(payload.get("text", ""))
+    headings = _normalize_browser_items(payload.get("headings"))
+    links = _normalize_browser_items(payload.get("links"), text_key="href")
+    forms = _normalize_browser_items(payload.get("forms"))
+    buttons = _normalize_browser_items(payload.get("buttons"))
+    tabs = _normalize_browser_items(payload.get("tabs"))
+
+    result = analyzer.analyze_sync(
+        url=url,
+        title=title,
+        text=text,
+        headings=headings,
+        links=links,
+        forms=forms,
+        buttons=buttons,
+        tabs=tabs,
+        selection=payload.get("selection", ""),
+        page_type=payload.get("page_type", "generic"),
+        screenshot=payload.get("screenshot", ""),
+    )
+    topology = compute_page_topology(
+        url=url,
+        title=result["title"],
+        text=text,
+        links=links,
+        headings=headings,
+        topics=result.get("topics") or [],
+        risk_tier=result.get("risk_tier", "low"),
+    )
+    result["topology_lens"] = _derive_topology_lens(
+        result=result,
+        topology=topology,
+        forms=forms,
+        buttons=buttons,
+    )
+
+    page_context = {
+        "url": url,
+        "title": result["title"],
+        "word_count": result["word_count"],
+        "risk_tier": result["risk_tier"],
+        "page_type": result["page_type"],
+    }
+    return {
+        "page_context": page_context,
+        "page_analysis": result,
+        "topology": topology,
+    }
+
+
+def _build_headless_plan(
+    *,
+    text: str,
+    routing: dict[str, Any] | None = None,
+) -> CommandPlan:
+    routing = routing or {}
+    routing_preferences = routing.get("preferences") if isinstance(routing.get("preferences"), dict) else None
+    auto_cascade = bool(routing.get("auto_cascade", routing.get("autoCascade", True)))
+    plan = build_command_plan(
+        text=text,
+        squad=squad,
+        router=router,
+        routing_preferences=routing_preferences,
+        auto_cascade=auto_cascade,
+    )
+    if plan.risk_tier == "high" and not plan.approval_required:
+        import dataclasses
+
+        return dataclasses.replace(plan, approval_required=True, review_zone="RED")
+    return plan
 
 
 def _derive_topology_lens(
@@ -100,6 +227,221 @@ def health():
         "agents": squad.status_snapshot(),
         "providers": router.provider_status_snapshot(),
         "executor": executor.runtime_status_snapshot(),
+    }
+
+
+@app.get("/context")
+def context():
+    return {
+        "status": "ok",
+        "schema": "aetherbrowser_context_v0",
+        "generated_at": _utc_now(),
+        "context": shared_headless_context,
+        "pending": {
+            "browser_actions": len(pending_browser_actions),
+            "controller_events": len(pending_controller_events),
+            "zone_requests": len(pending_zone_requests),
+        },
+    }
+
+
+@app.get("/headless/capabilities")
+def headless_capabilities():
+    return {
+        "ok": True,
+        "schema": "aetherbrowser_headless_capabilities_v0",
+        "generated_at": _utc_now(),
+        "backend": "src.aetherbrowser.serve",
+        "surfaces": [
+            "headless-http",
+            "websocket",
+            "headed-frontdoor-bridge",
+            "visible-browser-queue",
+        ],
+        "routes": {
+            "health": {"method": "GET", "path": "/health", "gate": "read-only"},
+            "context": {"method": "GET", "path": "/context", "gate": "read-only"},
+            "capabilities": {"method": "GET", "path": "/headless/capabilities", "gate": "read-only"},
+            "command": {"method": "POST", "path": "/headless/command", "gate": "plan-first"},
+            "page_context": {"method": "POST", "path": "/headless/page-context", "gate": "read-only"},
+            "browser_action": {"method": "POST", "path": "/headless/browser-action", "gate": "queued"},
+            "browser_actions": {"method": "GET", "path": "/headless/browser-actions", "gate": "read-only"},
+            "controller_state": {"method": "GET", "path": "/headless/controller-state", "gate": "read-only"},
+            "controller_event": {"method": "POST", "path": "/headless/controller-event", "gate": "event-policy"},
+            "ws": {"method": "WS", "path": "/ws", "gate": "message-policy"},
+        },
+        "controller": {
+            "model": "webpage_as_game_state",
+            "safe_events": sorted(_SAFE_CONTROLLER_EVENTS),
+            "held_events": sorted(_HELD_CONTROLLER_EVENTS),
+            "haptics": ["selection", "impact", "success", "warning", "error"],
+        },
+        "boundaries": {
+            "execution": "HTTP routes plan and queue; visible/headless consumers execute queued actions.",
+            "mutation_gate": "state-changing commands and held controller events require approval",
+            "host_scope": "localhost",
+            "secrets": "not_returned",
+        },
+    }
+
+
+@app.post("/headless/page-context")
+def headless_page_context(payload: dict[str, Any]):
+    analyzed = _analyze_page_payload(payload)
+    shared_headless_context.update(
+        {
+            **analyzed,
+            "updated_at": _utc_now(),
+        }
+    )
+    return {
+        "status": "analyzed",
+        "schema": "aetherbrowser_headless_page_context_v0",
+        "context": shared_headless_context,
+    }
+
+
+@app.post("/headless/command")
+async def headless_command(payload: dict[str, Any]):
+    text = str(payload.get("text", "")).strip()
+    if not text:
+        return {
+            "status": "error",
+            "error": "Empty command",
+        }
+
+    routing = payload.get("routing") if isinstance(payload.get("routing"), dict) else None
+    plan = _build_headless_plan(text=text, routing=routing)
+    plan_dict = plan.to_dict()
+
+    if plan.approval_required:
+        return {
+            "status": "approval_required",
+            "schema": "aetherbrowser_headless_command_v0",
+            "source": payload.get("source", "headless-http"),
+            "plan": plan_dict,
+            "approval": {
+                "zone": plan.review_zone,
+                "required_approvals": plan.required_approvals,
+            },
+        }
+
+    if not bool(payload.get("execute", False)):
+        return {
+            "status": "planned",
+            "schema": "aetherbrowser_headless_command_v0",
+            "source": payload.get("source", "headless-http"),
+            "plan": plan_dict,
+        }
+
+    execution = await executor.execute(plan)
+    return {
+        "status": "executed",
+        "schema": "aetherbrowser_headless_command_v0",
+        "source": payload.get("source", "headless-http"),
+        "plan": plan_dict,
+        "execution": execution.to_dict(),
+    }
+
+
+@app.post("/headless/browser-action")
+def headless_browser_action(payload: dict[str, Any]):
+    action = str(payload.get("action", "")).strip()
+    if not action:
+        return {
+            "status": "error",
+            "error": "Missing action",
+        }
+
+    record = {
+        "id": next(_headless_seq),
+        "schema": "aetherbrowser_queued_browser_action_v0",
+        "queued_at": _utc_now(),
+        "source": payload.get("source", "headless-http"),
+        "action": action,
+        "url": payload.get("url"),
+        "selector": payload.get("selector"),
+        "text": payload.get("text"),
+        "payload": payload,
+        "status": "pending",
+    }
+    _bounded_append(pending_browser_actions, record)
+    return {
+        "status": "queued",
+        "queued": record,
+        "pending_count": len(pending_browser_actions),
+    }
+
+
+@app.get("/headless/browser-actions")
+def headless_browser_actions():
+    return {
+        "status": "ok",
+        "schema": "aetherbrowser_browser_actions_v0",
+        "pending": pending_browser_actions,
+    }
+
+
+@app.get("/headless/controller-state")
+def headless_controller_state():
+    page_context = shared_headless_context.get("page_context") or {}
+    return {
+        "status": "ok",
+        "schema": "aetherbrowser_controller_state_v0",
+        "model": "webpage_as_game_state",
+        "generated_at": _utc_now(),
+        "page": page_context,
+        "available_events": sorted(_SAFE_CONTROLLER_EVENTS | _HELD_CONTROLLER_EVENTS),
+        "safe_events": sorted(_SAFE_CONTROLLER_EVENTS),
+        "held_events": sorted(_HELD_CONTROLLER_EVENTS),
+        "pending_events": pending_controller_events,
+    }
+
+
+@app.post("/headless/controller-event")
+def headless_controller_event(payload: dict[str, Any]):
+    event = str(payload.get("event", "")).strip().lower()
+    if not event:
+        return {
+            "status": "error",
+            "error": "Missing event",
+        }
+
+    if event in _HELD_CONTROLLER_EVENTS:
+        return {
+            "status": "approval_required",
+            "schema": "aetherbrowser_controller_event_v0",
+            "event": event,
+            "approval": {
+                "zone": "YELLOW",
+                "required_approvals": ["Controller event can change page state"],
+            },
+        }
+
+    if event not in _SAFE_CONTROLLER_EVENTS:
+        return {
+            "status": "rejected",
+            "schema": "aetherbrowser_controller_event_v0",
+            "event": event,
+            "error": "Unknown controller event",
+            "allowed": sorted(_SAFE_CONTROLLER_EVENTS | _HELD_CONTROLLER_EVENTS),
+        }
+
+    record = {
+        "id": next(_headless_seq),
+        "schema": "aetherbrowser_queued_controller_event_v0",
+        "queued_at": _utc_now(),
+        "source": payload.get("source", "headless-http"),
+        "event": event,
+        "intensity": payload.get("intensity"),
+        "payload": payload,
+        "status": "pending",
+    }
+    _bounded_append(pending_controller_events, record)
+    return {
+        "status": "queued",
+        "queued": record,
+        "pending_count": len(pending_controller_events),
     }
 
 
