@@ -12,12 +12,15 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from itertools import count
+from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.aetherbrowser.ws_feed import WsFeed, MsgType, Agent, Zone
@@ -55,6 +58,8 @@ shared_headless_context: dict[str, Any] = {
 pending_browser_actions: list[dict[str, Any]] = []
 pending_controller_events: list[dict[str, Any]] = []
 _headless_seq = count(1)
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+_HEADLESS_RUN_ARTIFACT_DIR = _REPO_ROOT / "artifacts" / "aetherbrowser_headless_runs"
 
 _SAFE_CONTROLLER_EVENTS = {
     "observe",
@@ -84,6 +89,37 @@ class PendingCommandApproval:
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _stamp() -> str:
+    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+
+
+def _safe_slug(value: str, *, fallback: str = "page") -> str:
+    slug = re.sub(r"[^A-Za-z0-9_.-]+", "-", value).strip("-._")
+    return (slug or fallback)[:80]
+
+
+def _validate_headless_url(value: Any) -> str:
+    url = str(value or "").strip()
+    if not url:
+        raise HTTPException(status_code=400, detail="url is required")
+    parsed = urlparse(url)
+    if parsed.scheme in {"http", "https"} and parsed.netloc:
+        return url
+    if url == "about:blank":
+        return url
+    if url.startswith("data:text/html,") and len(url) <= 20_000:
+        return url
+    raise HTTPException(status_code=400, detail="url must be http(s), about:blank, or a short data:text/html URL")
+
+
+def _normalize_timeout_ms(value: Any, *, default: int = 20_000, minimum: int = 3_000, maximum: int = 60_000) -> int:
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        parsed = default
+    return max(minimum, min(maximum, parsed))
 
 
 def _bounded_append(queue: list[dict[str, Any]], item: dict[str, Any], *, limit: int = 100) -> None:
@@ -179,6 +215,112 @@ def _build_headless_plan(
     return plan
 
 
+async def _run_headless_readonly(payload: dict[str, Any]) -> dict[str, Any]:
+    action = str(payload.get("action", "inspect")).strip().lower()
+    if action not in {"inspect", "read", "screenshot"}:
+        raise HTTPException(status_code=400, detail="headless run action must be inspect, read, or screenshot")
+
+    url = _validate_headless_url(payload.get("url"))
+    timeout_ms = _normalize_timeout_ms(payload.get("timeout_ms"))
+    full_page = bool(payload.get("full_page", False))
+    run_id = f"{_stamp()}_{_safe_slug(urlparse(url).netloc or urlparse(url).path or action)}_{next(_headless_seq)}"
+    run_dir = _HEADLESS_RUN_ARTIFACT_DIR / run_id
+    run_dir.mkdir(parents=True, exist_ok=True)
+
+    from agents.playwright_runtime import PlaywrightRuntime
+
+    runtime = PlaywrightRuntime()
+    started_at = _utc_now()
+    try:
+        await runtime.launch(headless=True)
+        final_url = await runtime.navigate(url, timeout=timeout_ms)
+        title = await runtime.title()
+        text = await runtime.evaluate("() => document.body ? document.body.innerText : ''")
+        html = await runtime.content()
+        page_bits = await runtime.evaluate(
+            """() => ({
+              headings: Array.from(document.querySelectorAll('h1,h2,h3')).slice(0, 24)
+                .map((el) => ({ level: el.tagName, text: (el.innerText || el.textContent || '').trim() })),
+              links: Array.from(document.querySelectorAll('a[href]')).slice(0, 80)
+                .map((el) => ({ text: (el.innerText || el.textContent || '').trim(), href: el.href })),
+              buttons: Array.from(document.querySelectorAll('button,[role="button"],input[type="button"],input[type="submit"]')).slice(0, 40)
+                .map((el) => ({ text: (el.innerText || el.value || el.textContent || '').trim(), type: el.type || el.getAttribute('role') || 'button' })),
+              forms: Array.from(document.querySelectorAll('form')).slice(0, 20)
+                .map((form, index) => ({
+                  index,
+                  method: (form.getAttribute('method') || 'get').toLowerCase(),
+                  fields: Array.from(form.querySelectorAll('input,textarea,select')).slice(0, 40)
+                    .map((field) => ({ name: field.getAttribute('name') || '', type: field.getAttribute('type') || field.tagName.toLowerCase() }))
+                }))
+            })"""
+        )
+        screenshot_path = run_dir / "screenshot.png"
+        text_path = run_dir / "visible_text.txt"
+        html_path = run_dir / "page.html"
+        receipt_path = run_dir / "receipt.json"
+
+        screenshot_bytes = await runtime.screenshot(path=str(screenshot_path), full_page=full_page)
+        text_path.write_text(str(text or ""), encoding="utf-8")
+        html_path.write_text(str(html or ""), encoding="utf-8")
+
+        analyzed = _analyze_page_payload(
+            {
+                "url": final_url,
+                "title": title,
+                "text": str(text or ""),
+                "headings": (page_bits or {}).get("headings") or [],
+                "links": (page_bits or {}).get("links") or [],
+                "forms": (page_bits or {}).get("forms") or [],
+                "buttons": (page_bits or {}).get("buttons") or [],
+                "page_type": "headless-run",
+            }
+        )
+
+        receipt = {
+            "ok": True,
+            "schema": "aetherbrowser_headless_run_v0",
+            "run_id": run_id,
+            "action": action,
+            "started_at": started_at,
+            "finished_at": _utc_now(),
+            "url": final_url,
+            "title": title,
+            "word_count": analyzed["page_analysis"]["word_count"],
+            "risk_tier": analyzed["page_analysis"]["risk_tier"],
+            "page_type": analyzed["page_analysis"]["page_type"],
+            "artifacts": {
+                "dir": str(run_dir),
+                "receipt": str(receipt_path),
+                "screenshot": str(screenshot_path),
+                "text": str(text_path),
+                "html": str(html_path),
+            },
+            "screenshot_bytes": len(screenshot_bytes),
+            "text_tail": str(text or "")[-4000:],
+            "page_analysis": analyzed["page_analysis"],
+            "topology": analyzed["topology"],
+            "boundaries": {
+                "mode": "fresh-headless-context",
+                "logged_in_state": "not_used",
+                "mutations": "none",
+            },
+        }
+        receipt_path.write_text(json.dumps(receipt, indent=2, ensure_ascii=True), encoding="utf-8")
+        shared_headless_context.update(
+            {
+                "page_context": analyzed["page_context"],
+                "page_analysis": analyzed["page_analysis"],
+                "topology": analyzed["topology"],
+                "updated_at": receipt["finished_at"],
+                "source": "headless-run",
+                "receipt_path": str(receipt_path),
+            }
+        )
+        return receipt
+    finally:
+        await runtime.close()
+
+
 def _derive_topology_lens(
     *,
     result: dict[str, Any],
@@ -263,6 +405,7 @@ def headless_capabilities():
             "context": {"method": "GET", "path": "/context", "gate": "read-only"},
             "capabilities": {"method": "GET", "path": "/headless/capabilities", "gate": "read-only"},
             "command": {"method": "POST", "path": "/headless/command", "gate": "plan-first"},
+            "run": {"method": "POST", "path": "/headless/run", "gate": "read-only-evidence"},
             "page_context": {"method": "POST", "path": "/headless/page-context", "gate": "read-only"},
             "browser_action": {"method": "POST", "path": "/headless/browser-action", "gate": "queued"},
             "browser_actions": {"method": "GET", "path": "/headless/browser-actions", "gate": "read-only"},
@@ -278,6 +421,7 @@ def headless_capabilities():
         },
         "boundaries": {
             "execution": "HTTP routes plan and queue; visible/headless consumers execute queued actions.",
+            "headless_run": "fresh headless browser context for read-only inspect/read/screenshot receipts",
             "mutation_gate": "state-changing commands and held controller events require approval",
             "host_scope": "localhost",
             "secrets": "not_returned",
@@ -342,6 +486,22 @@ async def headless_command(payload: dict[str, Any]):
         "plan": plan_dict,
         "execution": execution.to_dict(),
     }
+
+
+@app.post("/headless/run")
+async def headless_run(payload: dict[str, Any]):
+    try:
+        result = await _run_headless_readonly(payload)
+        return result
+    except HTTPException:
+        raise
+    except Exception as exc:
+        return {
+            "ok": False,
+            "schema": "aetherbrowser_headless_run_v0",
+            "status": "error",
+            "error": str(exc),
+        }
 
 
 @app.post("/headless/browser-action")

@@ -31,6 +31,7 @@ def test_headless_capabilities_expose_http_surface() -> None:
     data = response.json()
     assert data["ok"] is True
     assert "headless-http" in data["surfaces"]
+    assert data["routes"]["run"]["path"] == "/headless/run"
     assert data["routes"]["page_context"]["path"] == "/headless/page-context"
     assert data["controller"]["model"] == "webpage_as_game_state"
 
@@ -94,3 +95,28 @@ def test_browser_action_queue_and_controller_policy() -> None:
     assert state["model"] == "webpage_as_game_state"
     assert held["status"] == "approval_required"
     assert move["status"] == "queued"
+
+
+def test_headless_run_route_returns_evidence_receipt(monkeypatch: pytest.MonkeyPatch) -> None:
+    async def fake_run(payload):
+        return {
+            "ok": True,
+            "schema": "aetherbrowser_headless_run_v0",
+            "action": payload["action"],
+            "url": payload["url"],
+            "artifacts": {"receipt": "artifacts/aetherbrowser_headless_runs/fake/receipt.json"},
+            "boundaries": {"mode": "fresh-headless-context", "mutations": "none"},
+        }
+
+    monkeypatch.setattr(serve_module, "_run_headless_readonly", fake_run)
+
+    response = client.post(
+        "/headless/run",
+        json={"action": "inspect", "url": "https://example.com", "source": "contract-test"},
+    )
+
+    data = response.json()
+    assert response.status_code == 200
+    assert data["ok"] is True
+    assert data["schema"] == "aetherbrowser_headless_run_v0"
+    assert data["boundaries"]["mutations"] == "none"
