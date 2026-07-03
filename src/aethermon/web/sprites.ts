@@ -142,6 +142,7 @@ function hexToHsl(hex: string): [number, number, number] {
 
 function hslToRgbString(h: number, s: number, l: number): string {
   h = ((h % 360) + 360) % 360;
+  // A4: Clamping — saturation/lightness bounded to [0,1]
   s = Math.max(0, Math.min(1, s));
   l = Math.max(0, Math.min(1, l));
   const c = (1 - Math.abs(2 * l - 1)) * s;
@@ -177,6 +178,7 @@ interface Ramp {
  */
 function rampFor(hex: string): Ramp {
   const [h, s, l] = hexToHsl(hex);
+  // A4: Clamping — every derived tone keeps s/l inside displayable bounds
   return {
     outline: hslToRgbString(h - 24, Math.min(1, s * 0.9), Math.max(0.06, l - 0.34)),
     shadow: hslToRgbString(h - 12, Math.min(1, s * 1.05), Math.max(0.1, l - 0.16)),
