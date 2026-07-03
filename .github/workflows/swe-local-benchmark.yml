@@ -43,7 +43,7 @@ jobs:
 
       - name: Check official SWE-bench readiness
         run: npm run benchmark:swe-verified:readiness
-        continue-on-error: true
+        continue-on-error: true  # audit: advisory - SWE-bench readiness is informational, not a gate
 
       - name: Run regression tests
         run: python -m pytest tests/benchmark/test_swe_local_benchmark.py -q

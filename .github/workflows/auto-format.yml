@@ -42,7 +42,7 @@ jobs:
         run: pip install --quiet "black==26.5.1"
 
       - name: Format the same dirs CI's black --check covers
-        run: black --target-version py311 --line-length 120 src/ tests/ scripts/ agents/ || true
+        run: black --target-version py311 --line-length 120 src/ tests/ scripts/ agents/
 
       - uses: actions/setup-node@v6
         with:

@@ -89,6 +89,7 @@ class TestRatesEnv:
 
 
 class TestBudgetGate:
+    @pytest.mark.asyncio
     async def test_llm_generate_refuses_when_budget_exceeded(self, monkeypatch):
         bus = AgentBus(budget_usd=0.01)
         bus.cost.spent_usd = 0.02  # already over
@@ -104,6 +105,7 @@ class TestBudgetGate:
         assert "budget_exceeded" in result["error"]
         assert result["cost_usd"] == 0.0
 
+    @pytest.mark.asyncio
     async def test_llm_generate_charges_offline_fallback(self, monkeypatch):
         bus = AgentBus(budget_usd=0.0)
 
@@ -117,6 +119,7 @@ class TestBudgetGate:
         assert result["provider"] == "offline"
         assert result["cost_usd"] == 0.0  # offline is free, but the field is present
 
+    @pytest.mark.asyncio
     async def test_llm_generate_charges_provider_result(self, monkeypatch):
         bus = AgentBus(budget_usd=1.00)
         bus.cost.rates = dict(PAID_RATES)

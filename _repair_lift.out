@@ -1,3 +1,0 @@
-SINGLE-SHOT      : 20/30 (67%)
-WITH REPAIR LOOP : 21/30 (70%)  recovered=1
-GUIDED-COMPUTE LIFT: +1 solved  (1 rescued by the loop)

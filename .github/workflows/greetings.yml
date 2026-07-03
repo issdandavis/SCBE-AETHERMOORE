@@ -20,7 +20,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Post first-interaction greeting
-        continue-on-error: true
+        continue-on-error: true  # audit: advisory - greeting bot is non-critical; a failed greeting must not fail CI
         uses: actions/first-interaction@v3
         with:
           issue_message: "👋 Welcome to SCBE-AETHERMOORE! Thanks for your first issue. Please review CONTRIBUTING.md and SECURITY.md. A maintainer will review soon."

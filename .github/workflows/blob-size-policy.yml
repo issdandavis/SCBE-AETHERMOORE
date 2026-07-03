@@ -38,8 +38,9 @@ jobs:
           # under `set -e` fails this gate at exit 1 BEFORE any file size is inspected.
           # Fetch the base fully, and fall back gracefully if no merge-base resolves.
           git fetch --no-tags origin "$BASE_REF"
-          base="$(git merge-base HEAD "origin/$BASE_REF" 2>/dev/null || true)"
-          if [ -z "$base" ]; then
+          if base="$(git merge-base HEAD "origin/$BASE_REF" 2>/dev/null)"; then
+            :
+          else
             echo "No merge-base found (base may have been force-updated); comparing against origin/$BASE_REF directly."
             base="origin/$BASE_REF"
           fi
