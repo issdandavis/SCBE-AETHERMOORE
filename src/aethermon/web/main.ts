@@ -508,7 +508,7 @@ function renderMain(): void {
   const stats = effectiveStats(monster);
   const region = getRegion(state.region);
   drawScene('main-scene');
-  drawSprite($('monster-canvas') as HTMLCanvasElement, spriteForSpecies(species, spriteFrame), 7);
+  drawSprite($('monster-canvas') as HTMLCanvasElement, spriteForSpecies(species, spriteFrame), 6);
   applyGlow('monster-canvas', species.element);
   $('region-tag').textContent = region.name;
 
@@ -1096,7 +1096,7 @@ function boot(): void {
       drawSprite(
         $('monster-canvas') as HTMLCanvasElement,
         spriteForSpecies(getSpecies(state.monster.speciesId), spriteFrame),
-        7
+        6
       );
     }
   }, 650);

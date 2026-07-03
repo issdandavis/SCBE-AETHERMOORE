@@ -121,6 +121,21 @@ export function sceneGrid(
     p.set(x, y, bright ? blend(tint, '#FFFFFF', 0.5) : blend(NIGHT, tint, 0.3));
   }
 
+  // Far horizon layer — low rolling silhouettes for depth (drawn before
+  // the region motifs, which sit closer and darker).
+  const farColor = blend(NIGHT, tint, 0.13);
+  let ridge = nextInt(rng, 3, 6);
+  for (let x = 0; x < width; x++) {
+    ridge = Math.max(2, Math.min(8, ridge + nextInt(rng, -1, 1)));
+    for (let y = groundY - ridge; y < groundY; y++) p.set(x, y, farColor);
+  }
+  // Ground texture — sparse dark flecks so the floor reads as terrain.
+  for (let i = 0; i < Math.floor(width * 0.5); i++) {
+    const x = nextInt(rng, 0, width - 1);
+    const y = nextInt(rng, groundY + 1, height - 1);
+    p.set(x, y, blend(NIGHT, tint, 0.03));
+  }
+
   const silhouette = blend(NIGHT, tint, 0.22);
   const glow = blend(tint, '#FFFFFF', 0.35);
 
