@@ -35,12 +35,16 @@ From the repo root:
 
 ```powershell
 npm install
+npm run aetherbrowser:frontdoor
 npm run aetherbrowser:service:start
 npm run aetherbrowser:service:verify
 ```
 
 What those do:
 
+- `aetherbrowser:frontdoor`
+  - checks the Codex/MCP browser bridge and writes a compact readiness receipt
+  - does not launch Chrome unless you pass `-- --start`
 - `aetherbrowser:service:start`
   - starts the backend service and Chrome debug session
 - `aetherbrowser:service:verify`
@@ -52,10 +56,15 @@ What those do:
 
 The lane is considered working when:
 
+- `npm run aetherbrowser:frontdoor -- --start --target github` reports `cdp: ready`
 - `http://127.0.0.1:8002/health` responds
 - `http://127.0.0.1:9222/json/list` responds
 - the verify script emits a report under:
   - `artifacts/smokes/aetherbrowser-service-verify-*/service_verify_report.json`
+
+The lightweight front-door receipts land under:
+
+- `artifacts/aetherbrowser_frontdoor/frontdoor_*.json`
 
 ## Stop
 

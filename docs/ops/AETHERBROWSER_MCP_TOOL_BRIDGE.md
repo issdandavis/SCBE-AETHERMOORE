@@ -43,6 +43,24 @@ It does not execute arbitrary host shell text.
 
 ## Local Commands
 
+Check the bridge and write a front-door receipt without launching Chrome:
+
+```powershell
+npm run aetherbrowser:frontdoor
+```
+
+Start or reuse persistent Chrome through the same bounded lane:
+
+```powershell
+npm run aetherbrowser:frontdoor -- --start --target github
+```
+
+Open a destination and refresh the receipt:
+
+```powershell
+npm run aetherbrowser:frontdoor -- --open --target github
+```
+
 Probe the MCP server and call `aetherbrowser_doctor`:
 
 ```powershell
@@ -130,6 +148,8 @@ surface as first-class `aetherbrowser_*` MCP tools.
 - Does not run arbitrary shell commands.
 - Keeps screenshots and inspect artifacts under `artifacts/aetherbrowser_mcp/`
   when called through MCP.
+- Keeps front-door readiness receipts under
+  `artifacts/aetherbrowser_frontdoor/`.
 - Keeps local voiceover WAV receipts under `artifacts/aetherbrowser_voiceover/`.
 - Keeps voice-code receipts and optional WAV artifacts under
   `artifacts/aetherbrowser_voice_code/`.

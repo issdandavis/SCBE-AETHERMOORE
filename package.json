@@ -234,6 +234,7 @@
     "aetherbrowser:status": "node scripts/system/aether_browser_agent.mjs status",
     "aetherbrowser:voiceover": "node scripts/system/aether_browser_agent.mjs voiceover",
     "aetherbrowser:voice-code": "node scripts/system/aether_browser_agent.mjs voice-code",
+    "aetherbrowser:frontdoor": "node scripts/system/aetherbrowser_frontdoor.mjs",
     "aetherbrowser:mcp": "node scripts/system/aetherbrowser_mcp_server.mjs",
     "aetherbrowser:mcp:probe": "node scripts/mcp_stdio_probe.mjs --name aetherbrowser --command node --arg scripts/system/aetherbrowser_mcp_server.mjs --tool aetherbrowser_doctor --tool-args \"{}\"",
     "aetherdesk:runs": "node scripts/system/aetherdesk_run_control.mjs",
