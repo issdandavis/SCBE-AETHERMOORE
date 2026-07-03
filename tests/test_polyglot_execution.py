@@ -14,6 +14,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import time
 
 import pytest
 
@@ -34,8 +35,42 @@ def _which(*names: str):
     return None
 
 
+# Transient OS-level failures (NOT compiler errors): a freshly-written face.exe is
+# briefly locked by an AV/indexer scan, the temp dir is contended, or the run times
+# out under a heavy parallel batch. These are environmental and self-clear on retry.
+# A REAL emitter bug surfaces as a compiler diagnostic (error[E0xxx], SyntaxError,
+# Traceback, parse error) which never matches this signature -> still fails hard.
+_TRANSIENT = (
+    "access is denied",
+    "being used by another process",
+    "permission denied",
+    "os error 5",
+    "resource temporarily unavailable",
+    "text file busy",
+    "cannot create",
+    "couldn't write output",
+)
+
+
+def _is_transient(text: str) -> bool:
+    low = (text or "").lower()
+    return any(sig in low for sig in _TRANSIENT)
+
+
 def _run(cmd, **kw):
-    return subprocess.run(cmd, capture_output=True, text=True, timeout=180, **kw)
+    last = None
+    for attempt in range(3):
+        try:
+            r = subprocess.run(cmd, capture_output=True, text=True, timeout=180, **kw)
+        except subprocess.TimeoutExpired as exc:  # batch contention, not a code bug
+            last = exc
+            time.sleep(0.5 * (attempt + 1))
+            continue
+        if r.returncode and _is_transient((r.stderr or "") + (r.stdout or "")) and attempt < 2:
+            time.sleep(0.5 * (attempt + 1))  # let the AV/indexer release the lock
+            continue
+        return r
+    raise RuntimeError(f"transient toolchain failure after retries: {last}")
 
 
 def _last_number(stdout: str) -> float:
