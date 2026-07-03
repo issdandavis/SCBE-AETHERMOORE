@@ -122,6 +122,14 @@ def _normalize_timeout_ms(value: Any, *, default: int = 20_000, minimum: int = 3
     return max(minimum, min(maximum, parsed))
 
 
+def _normalize_limit(value: Any, *, default: int = 10, minimum: int = 1, maximum: int = 50) -> int:
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        parsed = default
+    return max(minimum, min(maximum, parsed))
+
+
 def _bounded_append(queue: list[dict[str, Any]], item: dict[str, Any], *, limit: int = 100) -> None:
     queue.append(item)
     if len(queue) > limit:
@@ -321,6 +329,48 @@ async def _run_headless_readonly(payload: dict[str, Any]) -> dict[str, Any]:
         await runtime.close()
 
 
+def _summarize_headless_run(receipt_path: Path) -> dict[str, Any] | None:
+    try:
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        stat = receipt_path.stat()
+    except (OSError, json.JSONDecodeError):
+        return None
+
+    artifacts = receipt.get("artifacts") if isinstance(receipt.get("artifacts"), dict) else {}
+    return {
+        "run_id": receipt.get("run_id") or receipt_path.parent.name,
+        "action": receipt.get("action"),
+        "url": receipt.get("url"),
+        "title": receipt.get("title"),
+        "finished_at": receipt.get("finished_at"),
+        "risk_tier": receipt.get("risk_tier"),
+        "word_count": receipt.get("word_count"),
+        "screenshot_bytes": receipt.get("screenshot_bytes"),
+        "receipt": str(receipt_path),
+        "screenshot": artifacts.get("screenshot"),
+        "text": artifacts.get("text"),
+        "html": artifacts.get("html"),
+        "mtime": stat.st_mtime,
+        "boundaries": receipt.get("boundaries") if isinstance(receipt.get("boundaries"), dict) else {},
+    }
+
+
+def _list_headless_runs(limit: Any = 10) -> list[dict[str, Any]]:
+    limit_int = _normalize_limit(limit)
+    if not _HEADLESS_RUN_ARTIFACT_DIR.exists():
+        return []
+
+    runs: list[dict[str, Any]] = []
+    for receipt_path in _HEADLESS_RUN_ARTIFACT_DIR.glob("*/receipt.json"):
+        summary = _summarize_headless_run(receipt_path)
+        if summary is not None:
+            runs.append(summary)
+    runs.sort(key=lambda item: float(item.get("mtime") or 0), reverse=True)
+    for item in runs:
+        item.pop("mtime", None)
+    return runs[:limit_int]
+
+
 def _derive_topology_lens(
     *,
     result: dict[str, Any],
@@ -406,6 +456,7 @@ def headless_capabilities():
             "capabilities": {"method": "GET", "path": "/headless/capabilities", "gate": "read-only"},
             "command": {"method": "POST", "path": "/headless/command", "gate": "plan-first"},
             "run": {"method": "POST", "path": "/headless/run", "gate": "read-only-evidence"},
+            "runs": {"method": "GET", "path": "/headless/runs", "gate": "read-only"},
             "page_context": {"method": "POST", "path": "/headless/page-context", "gate": "read-only"},
             "browser_action": {"method": "POST", "path": "/headless/browser-action", "gate": "queued"},
             "browser_actions": {"method": "GET", "path": "/headless/browser-actions", "gate": "read-only"},
@@ -426,6 +477,19 @@ def headless_capabilities():
             "host_scope": "localhost",
             "secrets": "not_returned",
         },
+    }
+
+
+@app.get("/headless/runs")
+def headless_runs(limit: int = 10):
+    runs = _list_headless_runs(limit)
+    return {
+        "ok": True,
+        "schema": "aetherbrowser_headless_runs_v0",
+        "generated_at": _utc_now(),
+        "artifact_dir": str(_HEADLESS_RUN_ARTIFACT_DIR),
+        "count": len(runs),
+        "runs": runs,
     }
 
 

@@ -1,5 +1,7 @@
 """HTTP contract tests for the non-UI AetherBrowser control plane."""
 
+import json
+
 import pytest
 
 pytest.importorskip("fastapi", reason="fastapi not installed")
@@ -32,6 +34,7 @@ def test_headless_capabilities_expose_http_surface() -> None:
     assert data["ok"] is True
     assert "headless-http" in data["surfaces"]
     assert data["routes"]["run"]["path"] == "/headless/run"
+    assert data["routes"]["runs"]["path"] == "/headless/runs"
     assert data["routes"]["page_context"]["path"] == "/headless/page-context"
     assert data["controller"]["model"] == "webpage_as_game_state"
 
@@ -120,3 +123,40 @@ def test_headless_run_route_returns_evidence_receipt(monkeypatch: pytest.MonkeyP
     assert data["ok"] is True
     assert data["schema"] == "aetherbrowser_headless_run_v0"
     assert data["boundaries"]["mutations"] == "none"
+
+
+def test_headless_runs_lists_recent_receipts(tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
+    run_dir = tmp_path / "run-a"
+    run_dir.mkdir()
+    receipt_path = run_dir / "receipt.json"
+    receipt_path.write_text(
+        json.dumps(
+            {
+                "run_id": "run-a",
+                "action": "inspect",
+                "url": "https://example.com",
+                "title": "Example",
+                "finished_at": "2026-07-03T00:00:00Z",
+                "risk_tier": "low",
+                "word_count": 7,
+                "screenshot_bytes": 123,
+                "artifacts": {
+                    "screenshot": str(run_dir / "screenshot.png"),
+                    "text": str(run_dir / "visible_text.txt"),
+                    "html": str(run_dir / "page.html"),
+                },
+                "boundaries": {"mutations": "none"},
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(serve_module, "_HEADLESS_RUN_ARTIFACT_DIR", tmp_path)
+
+    response = client.get("/headless/runs?limit=1")
+
+    data = response.json()
+    assert response.status_code == 200
+    assert data["schema"] == "aetherbrowser_headless_runs_v0"
+    assert data["count"] == 1
+    assert data["runs"][0]["run_id"] == "run-a"
+    assert data["runs"][0]["boundaries"]["mutations"] == "none"
