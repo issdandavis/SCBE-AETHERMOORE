@@ -130,8 +130,7 @@ jobs:
           )"
           python -m scripts.system.geoseal_llm_verify \
             --json "$GEOSEAL_INPUT" \
-            --dry-run --quiet || true  # audit: advisory - external video verify is non-blocking; step is continue-on-error by design
-        continue-on-error: true
+            --dry-run --quiet
 
       - name: Upload to YouTube (resumable)
         env:
