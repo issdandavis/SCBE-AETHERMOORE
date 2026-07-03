@@ -20,7 +20,7 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/labeler@v5
-        continue-on-error: true
+        continue-on-error: true  # audit: advisory - auto-labeling is non-critical; label failures must not block PRs
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           configuration-path: .github/labeler.yml
