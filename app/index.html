@@ -1,24 +1,13 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="scbe-api-base" content="">
-  <title>SCBE App</title>
-</head>
-<body>
-  <main id="app">SCBE application shell</main>
-  <script>
-    function resolveApiBase() {
-      const meta = document.querySelector('meta[name="scbe-api-base"]');
-      const configured = meta && meta.getAttribute('content');
-      if (configured) return configured.replace(/\/$/, '');
-      if (window.SCBE_API_BASE) return String(window.SCBE_API_BASE).replace(/\/$/, '');
-      return window.location.origin;
-    }
-
-    const API_URL = resolveApiBase();
-    window.SCBE_APP_CONFIG = { apiBase: API_URL };
-  </script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="AetherDesk is the in-world computer for SCBE-AETHERMOORE: governed AI workflows, Machine Crystal computation, training rooms, and proof receipts." />
+    <title>AetherDesk - pull up to the machine</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>

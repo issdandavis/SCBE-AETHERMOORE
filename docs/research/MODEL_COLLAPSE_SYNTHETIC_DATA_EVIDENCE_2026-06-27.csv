@@ -1,0 +1,6 @@
+claim,source,published_at,verified_with,confidence
+"Recursive training on model-generated data can cause model collapse and loss of the true data distribution tails.","https://www.nature.com/articles/s41586-024-07566-y","2024-07-24","https://arxiv.org/abs/2305.17493","high"
+"The Curse of Recursion paper argues that generated content in training can cause irreversible defects and tail disappearance.","https://arxiv.org/abs/2305.17493","2023-05-27","https://www.nature.com/articles/s41586-024-07566-y","high"
+"Self-consuming generative model loops can degrade when synthetic data repeatedly feeds later generations.","https://arxiv.org/abs/2307.01850","2023-07-04","https://www.nature.com/articles/s41586-024-07566-y","medium-high"
+"Human or user curation can materially change outcomes in iterative retraining with generated data.","https://openreview.net/forum?id=cyv0LkIaoH","2024","https://proceedings.neurips.cc/paper_files/paper/2024/file/b9e88ae0308cf82d0b0f634ddbdf809a-Paper-Conference.pdf","medium"
+"Genuine human interaction data becomes more valuable as online data contains more LLM-generated content.","https://arxiv.org/abs/2305.17493","2023-05-27","https://www.nature.com/articles/s41586-024-07566-y","high"

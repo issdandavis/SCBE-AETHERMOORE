@@ -1,0 +1,25 @@
+{
+  "title": "Your Nonfiction Book",
+  "subtitle": "A Practical Subtitle",
+  "author": "Your Name",
+  "copyright_year": 2026,
+  "publisher": "Your Name",
+  "isbn": "Print ISBN: printed on back cover or assigned in KDP",
+  "edition_statement": "First edition",
+  "source": "../starter/manuscript.md",
+  "output_dir": "../build/nonfiction-6x9",
+  "trim": "6x9",
+  "page_count": 260,
+  "print": {
+    "paper": "white",
+    "ink": "bw",
+    "cover_finish": "matte"
+  },
+  "typography": {
+    "body_font": "Georgia",
+    "body_size_pt": 11,
+    "leading_pt": 14.6,
+    "first_line_indent_in": 0.18,
+    "chapter_title_size_pt": 18
+  }
+}

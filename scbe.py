@@ -4755,6 +4755,17 @@ ALL_TONGUES = list(_CANONICAL_TONGUES.keys()) + [t.lower() for t in _CANONICAL_T
 _CLI_PARSER: Optional[argparse.ArgumentParser] = None
 
 
+def cmd_verify(args: argparse.Namespace) -> int:
+    """Bridge to the verification toolkit (probe/burn/gate/flow/liquid/live/sieve/xface) in C:\\dev."""
+    import subprocess
+
+    tool = r"C:\dev\scbe_verify.py"
+    if not os.path.exists(tool):
+        print(f"scbe verify: toolkit not found at {tool}", file=sys.stderr)
+        return 1
+    return subprocess.run([sys.executable, tool, *(getattr(args, "rest", None) or [])]).returncode
+
+
 def build_cli() -> argparse.ArgumentParser:
     global _CLI_PARSER
     if _CLI_PARSER is not None:
@@ -4812,6 +4823,14 @@ Legacy (backward compat):
     )
     p.add_argument("-V", "--version", action="version", version=f"scbe {VERSION}")
     sub = p.add_subparsers(dest="command", metavar="<command>")
+
+    # ─── verify (verification instruments live in C:\dev\scbe_verify.py) ───
+    verify = sub.add_parser(
+        "verify",
+        help="Verification instruments: probe/burn/gate/flow/liquid/live/sieve/xface (omit name to list)",
+    )
+    verify.add_argument("rest", nargs=argparse.REMAINDER, help="<instrument> [args]")
+    verify.set_defaults(func=cmd_verify)
 
     # ─── tongues ───
     tongues = sub.add_parser("tongues", help="Sacred Tongue tokenization")

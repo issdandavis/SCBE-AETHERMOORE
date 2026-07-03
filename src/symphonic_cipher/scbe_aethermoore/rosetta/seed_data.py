@@ -1214,3 +1214,33 @@ LANGUAGE_METADATA: dict[str, dict] = {
         "vocab_size": 256,
     },
 }
+
+# -----------------------------------------------------------------------------
+# SCBE technical Rosetta extensions
+# -----------------------------------------------------------------------------
+# Added 2026-06-27: text transference concept for the UTF/BOM -> Python-safe
+# bridge. Kept as an import-time extension instead of editing the multilingual
+# seed blocks above, because those blocks intentionally preserve source corpus
+# spellings/encodings.
+
+NSM_PRIMES.setdefault(
+    "UTF_TRANSFER",
+    {
+        "EN": ["utf transfer", "encoding transference", "python-safe text"],
+        "ZH": ["UTF transfer", "encoding bridge"],
+        "JA": ["UTF transfer", "encoding bridge"],
+        "KO": ["UTF transfer", "encoding bridge"],
+    },
+)
+
+SACRED_TONGUE_PRIMES.setdefault(
+    "UTF_TRANSFER",
+    {
+        "KO": "kel-byte",
+        "AV": "vari-bridge",
+        "RU": "ash-codec",
+        "CA": "sul-utf",
+        "UM": "ren-clean",
+        "DR": "kin-python",
+    },
+)

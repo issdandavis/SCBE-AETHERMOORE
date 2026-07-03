@@ -1,0 +1,6 @@
+claim,source,published_at,verified_with,confidence
+"The implementation's curvature metric is a discrete polyhedral face-path turn metric, not the Julia-Caratheodory angular derivative.","local implementation","2026-06-27","python/scbe/machine_crystal_higher.py",High
+"Cut-and-project schemes generate lower-dimensional model sets or tilings from a lattice in a product of direct and internal spaces.","https://tilings.math.uni-bielefeld.de/glossary/cut-and-project/","accessed 2026-06-27","https://www.math.uh.edu/~haynes/files/SLO1.pdf",High
+"Geometry of Interaction gives a computation model where execution follows paths/trips through graph-like proof structures.","https://dl.acm.org/doi/10.1145/199448.199483","1995","https://www.cambridge.org/core/journals/mathematical-structures-in-computer-science/article/towards-a-typed-geometry-of-interaction/762142E58DFC91D9BFF256FAEF8026F9",Medium
+"Polyhedral graphs are closely related to 3D topology and geometry and can be treated as planar 3-connected graph structures.","https://pmc.ncbi.nlm.nih.gov/articles/PMC9474462/","2022","Hamiltonian path/polyhedral graph literature",High
+"The SCBE higher-shape implementation executes a bounded tape-machine model, not a physical optical computer.","local implementation","2026-06-27","python/scbe/machine_crystal_higher.py",High

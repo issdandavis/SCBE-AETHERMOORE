@@ -67,10 +67,12 @@ function makeState(overrides: Partial<VerifierState> = {}): VerifierState {
     policyCell: [0, 0, 0],
     ringHistory: [4, 3, 2, 1, 0],
     approvals: [makeApproval('A'), makeApproval('B'), makeApproval('C')],
-    sharedSecret: new Uint8Array([10, 20, 30, 40]),
+    sharedSecret: new Uint8Array(32).fill(0x2a),
     ...overrides,
   };
 }
+
+const acceptApproval = (_approval: Approval, _eggId: string): boolean => true;
 
 // ═══════════════════════════════════════════════════════════════
 // Constants
@@ -175,23 +177,29 @@ describe('evaluateGenesis', () => {
   it('grants genesis when all predicates pass', () => {
     const egg = makeEgg();
     const state = makeState();
-    const eval_ = evaluateGenesis(egg, state);
+    const eval_ = evaluateGenesis(egg, state, {}, acceptApproval);
     expect(eval_.genesisGranted).toBe(true);
     expect(eval_.meetsThreshold).toBe(true);
     expect(eval_.geoSealPassed).toBe(true);
   });
 
+  it('denies genesis with the default approval verifier', () => {
+    const eval_ = evaluateGenesis(makeEgg(), makeState());
+    expect(eval_.predicateResults[3]).toBe(false);
+    expect(eval_.genesisGranted).toBe(false);
+  });
+
   it('denies genesis when tongue mismatch', () => {
     const egg = makeEgg({ policy: makePolicy({ primaryTongue: 'DR' as Tongue }) });
     const state = makeState({ observedTongue: 'KO' as Tongue });
-    const eval_ = evaluateGenesis(egg, state);
+    const eval_ = evaluateGenesis(egg, state, {}, acceptApproval);
     expect(eval_.predicateResults[0]).toBe(false);
     expect(eval_.genesisGranted).toBe(false);
   });
 
   it('denies genesis when GeoSeal distance exceeded', () => {
     const state = makeState({ position: [0.999, 0, 0] });
-    const eval_ = evaluateGenesis(makeEgg(), state, { geoSealMaxDistance: 0.5 });
+    const eval_ = evaluateGenesis(makeEgg(), state, { geoSealMaxDistance: 0.5 }, acceptApproval);
     expect(eval_.geoSealPassed).toBe(false);
     expect(eval_.genesisGranted).toBe(false);
   });
@@ -200,7 +208,7 @@ describe('evaluateGenesis', () => {
     const state = makeState({
       approvals: [makeApproval('A'), makeApproval('B')],
     });
-    const eval_ = evaluateGenesis(makeEgg(), state, { quorumMode: '3of3' });
+    const eval_ = evaluateGenesis(makeEgg(), state, { quorumMode: '3of3' }, acceptApproval);
     expect(eval_.genesisGranted).toBe(false);
   });
 
@@ -208,20 +216,20 @@ describe('evaluateGenesis', () => {
     const state = makeState({
       approvals: [makeApproval('A'), makeApproval('B')],
     });
-    const eval_ = evaluateGenesis(makeEgg(), state, { quorumMode: '2of3' });
+    const eval_ = evaluateGenesis(makeEgg(), state, { quorumMode: '2of3' }, acceptApproval);
     expect(eval_.genesisGranted).toBe(true);
   });
 
   it('denies genesis when path is not monotone descending', () => {
     const state = makeState({ ringHistory: [2, 3, 1] }); // Not strictly descending
-    const eval_ = evaluateGenesis(makeEgg(), state);
+    const eval_ = evaluateGenesis(makeEgg(), state, {}, acceptApproval);
     expect(eval_.predicateResults[2]).toBe(false);
     expect(eval_.genesisGranted).toBe(false);
   });
 
   it('denies genesis when shared secret is empty', () => {
     const state = makeState({ sharedSecret: new Uint8Array(0) });
-    const eval_ = evaluateGenesis(makeEgg(), state);
+    const eval_ = evaluateGenesis(makeEgg(), state, {}, acceptApproval);
     expect(eval_.predicateResults[4]).toBe(false);
     // Hatch weight will be lower without crypto predicate
   });
@@ -229,7 +237,7 @@ describe('evaluateGenesis', () => {
   it('computes correct hatch weight', () => {
     const egg = makeEgg();
     const state = makeState();
-    const eval_ = evaluateGenesis(egg, state);
+    const eval_ = evaluateGenesis(egg, state, {}, acceptApproval);
     // All 5 predicates pass with default ranks [0,1,2,3,4]
     const expectedW = 1 + PHI + PHI ** 2 + PHI ** 3 + PHI ** 4;
     expect(eval_.hatchWeight).toBeCloseTo(expectedW);
@@ -237,7 +245,7 @@ describe('evaluateGenesis', () => {
 
   it('reports correct GeoSeal distance', () => {
     const state = makeState({ position: [0.5, 0, 0] });
-    const eval_ = evaluateGenesis(makeEgg(), state);
+    const eval_ = evaluateGenesis(makeEgg(), state, {}, acceptApproval);
     expect(eval_.geoSealDistance).toBeCloseTo(2 * Math.atanh(0.5));
   });
 });
@@ -248,7 +256,7 @@ describe('evaluateGenesis', () => {
 
 describe('genesis', () => {
   it('spawns agent with valid inputs', () => {
-    const result = genesis(makeEgg(), makeState());
+    const result = genesis(makeEgg(), makeState(), {}, acceptApproval);
     expect(result.spawned).toBe(true);
     if (result.spawned) {
       expect(result.certificate.agentId).toBeTruthy();
@@ -263,7 +271,7 @@ describe('genesis', () => {
   it('returns noise on failure', () => {
     const egg = makeEgg({ policy: makePolicy({ primaryTongue: 'DR' as Tongue }) });
     const state = makeState({ observedTongue: 'KO' as Tongue });
-    const result = genesis(egg, state);
+    const result = genesis(egg, state, {}, acceptApproval);
     expect(result.spawned).toBe(false);
     if (!result.spawned) {
       expect(result.output.length).toBe(256);
@@ -271,9 +279,14 @@ describe('genesis', () => {
   });
 
   it('fail-to-noise: failure output length equals success output length', () => {
-    const successResult = genesis(makeEgg(), makeState());
+    const successResult = genesis(makeEgg(), makeState(), {}, acceptApproval);
     const failEgg = makeEgg({ policy: makePolicy({ primaryTongue: 'DR' as Tongue }) });
-    const failResult = genesis(failEgg, makeState({ observedTongue: 'KO' as Tongue }));
+    const failResult = genesis(
+      failEgg,
+      makeState({ observedTongue: 'KO' as Tongue }),
+      {},
+      acceptApproval
+    );
 
     const successLen = successResult.spawned ? successResult.serialized.length : 0;
     const failLen = !failResult.spawned ? failResult.output.length : 0;
@@ -281,8 +294,8 @@ describe('genesis', () => {
   });
 
   it('generates unique agent IDs', () => {
-    const r1 = genesis(makeEgg(), makeState());
-    const r2 = genesis(makeEgg(), makeState());
+    const r1 = genesis(makeEgg(), makeState(), {}, acceptApproval);
+    const r2 = genesis(makeEgg(), makeState(), {}, acceptApproval);
     if (r1.spawned && r2.spawned) {
       expect(r1.certificate.agentId).not.toBe(r2.certificate.agentId);
     }
@@ -290,7 +303,7 @@ describe('genesis', () => {
 
   it('assigns ring level from position', () => {
     // Position at origin → ring 0
-    const result = genesis(makeEgg(), makeState({ position: [0.05, 0, 0] }));
+    const result = genesis(makeEgg(), makeState({ position: [0.05, 0, 0] }), {}, acceptApproval);
     if (result.spawned) {
       expect(result.certificate.ringLevel).toBe(0);
     }
@@ -299,7 +312,7 @@ describe('genesis', () => {
   it('assigns correct tongue domain from policy', () => {
     const egg = makeEgg({ policy: makePolicy({ primaryTongue: 'AV' as Tongue }) });
     const state = makeState({ observedTongue: 'AV' as Tongue });
-    const result = genesis(egg, state);
+    const result = genesis(egg, state, {}, acceptApproval);
     if (result.spawned) {
       expect(result.certificate.tongueDomain).toBe('AV');
     }
@@ -312,14 +325,14 @@ describe('genesis', () => {
 
 describe('verifyCertificateSeal', () => {
   it('verifies a valid certificate', () => {
-    const result = genesis(makeEgg(), makeState());
+    const result = genesis(makeEgg(), makeState(), {}, acceptApproval);
     if (result.spawned) {
       expect(verifyCertificateSeal(result.certificate)).toBe(true);
     }
   });
 
   it('rejects tampered agent ID', () => {
-    const result = genesis(makeEgg(), makeState());
+    const result = genesis(makeEgg(), makeState(), {}, acceptApproval);
     if (result.spawned) {
       const tampered = { ...result.certificate, agentId: 'tampered-id' };
       expect(verifyCertificateSeal(tampered)).toBe(false);
@@ -327,7 +340,7 @@ describe('verifyCertificateSeal', () => {
   });
 
   it('rejects tampered hatch weight', () => {
-    const result = genesis(makeEgg(), makeState());
+    const result = genesis(makeEgg(), makeState(), {}, acceptApproval);
     if (result.spawned) {
       const tampered = { ...result.certificate, hatchWeight: 999 };
       expect(verifyCertificateSeal(tampered)).toBe(false);
@@ -335,7 +348,7 @@ describe('verifyCertificateSeal', () => {
   });
 
   it('rejects tampered tongue domain', () => {
-    const result = genesis(makeEgg(), makeState());
+    const result = genesis(makeEgg(), makeState(), {}, acceptApproval);
     if (result.spawned) {
       const tampered = { ...result.certificate, tongueDomain: 'DR' as Tongue };
       expect(verifyCertificateSeal(tampered)).toBe(false);
@@ -343,7 +356,7 @@ describe('verifyCertificateSeal', () => {
   });
 
   it('rejects tampered predicate results', () => {
-    const result = genesis(makeEgg(), makeState());
+    const result = genesis(makeEgg(), makeState(), {}, acceptApproval);
     if (result.spawned) {
       const tampered = {
         ...result.certificate,
@@ -367,7 +380,7 @@ describe('verifyCertificateSeal', () => {
 describe('Edge Cases', () => {
   it('handles empty ring history (path predicate passes)', () => {
     const state = makeState({ ringHistory: [] });
-    const eval_ = evaluateGenesis(makeEgg(), state);
+    const eval_ = evaluateGenesis(makeEgg(), state, {}, acceptApproval);
     expect(eval_.predicateResults[2]).toBe(true);
   });
 

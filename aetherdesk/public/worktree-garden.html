@@ -1,0 +1,895 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Worktree Garden</title>
+    <style>
+      :root {
+        --ink: #18221f;
+        --muted: #5b665f;
+        --panel: rgba(250, 248, 238, 0.93);
+        --panel-strong: #fffaf0;
+        --line: rgba(33, 44, 39, 0.18);
+        --field: #6cae66;
+        --field-dark: #3d774a;
+        --soil: #a46d43;
+        --water: #4e9cc4;
+        --gold: #c99a35;
+        --rust: #a84e36;
+        --violet: #7560a8;
+        --shadow: rgba(21, 26, 22, 0.28);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        color: var(--ink);
+        font-family: "Segoe UI", system-ui, sans-serif;
+        background: #223830;
+      }
+
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+
+      button {
+        border: 1px solid rgba(36, 54, 44, 0.28);
+        border-radius: 7px;
+        background: #fff8e4;
+        color: #1c2b24;
+        min-height: 34px;
+        padding: 7px 10px;
+        cursor: pointer;
+        box-shadow: 0 2px 0 rgba(52, 66, 48, 0.18);
+      }
+
+      button:hover,
+      button:focus {
+        border-color: rgba(34, 96, 70, 0.65);
+        outline: none;
+      }
+
+      button.primary {
+        background: #2f6f4f;
+        color: #fff9eb;
+      }
+
+      button.danger {
+        background: #8f4538;
+        color: #fff9eb;
+      }
+
+      input,
+      select {
+        width: 100%;
+        min-height: 34px;
+        border: 1px solid rgba(36, 54, 44, 0.26);
+        border-radius: 7px;
+        background: rgba(255, 255, 255, 0.82);
+        color: var(--ink);
+        padding: 6px 8px;
+      }
+
+      #game {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        display: block;
+      }
+
+      .hud {
+        position: fixed;
+        left: 14px;
+        top: 14px;
+        width: min(390px, calc(100vw - 28px));
+        display: grid;
+        gap: 8px;
+        pointer-events: none;
+      }
+
+      .hud-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .hud-card {
+        pointer-events: auto;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        box-shadow: 0 12px 32px var(--shadow);
+        padding: 10px;
+      }
+
+      .title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .title h1 {
+        margin: 0;
+        font-size: 18px;
+        letter-spacing: 0;
+      }
+
+      .season {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 6px;
+      }
+
+      .stat {
+        min-width: 0;
+        border: 1px solid rgba(49, 69, 57, 0.14);
+        border-radius: 7px;
+        background: rgba(255, 255, 255, 0.48);
+        padding: 7px 8px;
+      }
+
+      .stat span {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .stat strong {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 15px;
+      }
+
+      .selected-chip {
+        min-height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .selected-chip .name {
+        min-width: 0;
+      }
+
+      .selected-chip strong,
+      .selected-chip span {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .drawer {
+        position: fixed;
+        right: 14px;
+        top: 14px;
+        width: min(365px, calc(100vw - 28px));
+        max-height: calc(100vh - 28px);
+        overflow: auto;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        box-shadow: 0 18px 48px var(--shadow);
+        padding: 12px;
+      }
+
+      .drawer.collapsed {
+        display: none;
+      }
+
+      .drawer h2 {
+        margin: 0 0 8px;
+        font-size: 17px;
+      }
+
+      .field {
+        margin-top: 9px;
+      }
+
+      .field label {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .facts {
+        display: grid;
+        gap: 6px;
+        margin-top: 10px;
+      }
+
+      .fact {
+        border: 1px solid rgba(49, 69, 57, 0.13);
+        border-radius: 7px;
+        background: rgba(255, 255, 255, 0.44);
+        padding: 7px 8px;
+      }
+
+      .fact span {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .fact strong {
+        display: block;
+        overflow-wrap: anywhere;
+        font-size: 13px;
+      }
+
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 18px;
+        transform: translateX(-50%);
+        max-width: min(520px, calc(100vw - 28px));
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 250, 235, 0.96);
+        box-shadow: 0 12px 34px var(--shadow);
+        padding: 10px 12px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 140ms ease;
+      }
+
+      .toast.visible {
+        opacity: 1;
+      }
+
+      .mini {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      @media (max-width: 760px) {
+        .hud {
+          right: 10px;
+          left: 10px;
+          top: 10px;
+          width: auto;
+        }
+
+        .stats {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .drawer {
+          left: 10px;
+          right: 10px;
+          top: auto;
+          bottom: 10px;
+          width: auto;
+          max-height: 48vh;
+        }
+
+        .actions {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="game"></canvas>
+
+    <section class="hud" aria-label="Garden HUD">
+      <div class="hud-card title">
+        <div>
+          <h1>Worktree Garden</h1>
+          <div class="season" id="season">Local homestead</div>
+        </div>
+        <button id="refresh">Refresh</button>
+      </div>
+      <div class="hud-card stats">
+        <div class="stat"><span>Plots</span><strong id="stat-plots">0/0</strong></div>
+        <div class="stat"><span>Leases</span><strong id="stat-leases">0</strong></div>
+        <div class="stat"><span>Dirty</span><strong id="stat-dirty">0</strong></div>
+        <div class="stat"><span>Harvest</span><strong id="stat-harvest">0</strong></div>
+      </div>
+      <div class="hud-card selected-chip">
+        <div class="name">
+          <strong id="selected-name">No plot selected</strong>
+          <span class="mini" id="selected-sub">Click a plot</span>
+        </div>
+        <button id="toggle-drawer">Details</button>
+      </div>
+    </section>
+
+    <aside class="drawer collapsed" id="drawer" aria-label="Plot detail">
+      <h2 id="detail-title">Plot</h2>
+      <div class="mini" id="detail-role">No plot selected</div>
+
+      <div class="facts">
+        <div class="fact"><span>Zone</span><strong id="fact-zone">-</strong></div>
+        <div class="fact"><span>Health</span><strong id="fact-health">-</strong></div>
+        <div class="fact"><span>Branch</span><strong id="fact-branch">-</strong></div>
+        <div class="fact"><span>Path</span><strong id="fact-path">-</strong></div>
+        <div class="fact"><span>Care</span><strong id="fact-care">0/5</strong></div>
+      </div>
+
+      <div class="field">
+        <label for="agent">Agent</label>
+        <input id="agent" value="codex" maxlength="80" />
+      </div>
+      <div class="field">
+        <label for="mode">Mode</label>
+        <select id="mode">
+          <option value="work">work</option>
+          <option value="observe">observe</option>
+          <option value="review">review</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="task">Task</label>
+        <input id="task" value="tend this plot" maxlength="240" />
+      </div>
+
+      <div class="actions">
+        <button class="primary" id="assign">Assign</button>
+        <button id="release">Release</button>
+        <button id="tend">Tend</button>
+        <button class="danger" id="harvest">Harvest</button>
+      </div>
+    </aside>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+      const canvas = document.getElementById("game");
+      const ctx = canvas.getContext("2d");
+      const state = {
+        garden: null,
+        selected: null,
+        layout: [],
+        time: 0,
+        drawerOpen: false,
+        toastUntil: 0,
+        toastText: "",
+        save: loadSave(),
+      };
+
+      const fallbackGarden = {
+        garden_name: "SCBE Worktree Garden",
+        max_plots: 12,
+        summary: {
+          plots: 5,
+          max_plots: 12,
+          active_leases: 0,
+          leased_plots: 0,
+          health: { "growing-dirty": 2, ready: 2, "cloud-storage": 1 },
+        },
+        plots: [
+          { id: "house-scbe", zone: "house", role: "primary_monorepo", path: "C:\\Users\\issda\\SCBE-AETHERMOORE", health: "growing-dirty", active_agents: 0, max_agents: 2, git: { branch: "local", dirty_count: 0 }, leases: [] },
+          { id: "homestead-aetherdesk", zone: "homestead", role: "desktop_product", path: "C:\\Users\\issda\\AetherDesk", health: "growing-dirty", active_agents: 0, max_agents: 2, git: { branch: "main", dirty_count: 0 }, leases: [] },
+          { id: "homestead-local-apps", zone: "homestead", role: "local_only_apps", path: "C:\\Users\\issda\\LocalOnly\\Apps", health: "ready", active_agents: 0, max_agents: 1, git: {}, leases: [] },
+          { id: "outsource-onedrive", zone: "outsource_storage", role: "cloud_sync_root", path: "C:\\Users\\issda\\OneDrive", health: "cloud-storage", active_agents: 0, max_agents: 1, git: {}, leases: [] },
+          { id: "outsource-localonly", zone: "outsource_storage", role: "local_only_storage", path: "C:\\Users\\issda\\LocalOnly", health: "ready", active_agents: 0, max_agents: 1, git: {}, leases: [] },
+        ],
+      };
+
+      const zoneNames = {
+        house: "House",
+        homestead: "Homestead",
+        outsource_storage: "Outsource Storage",
+      };
+
+      state.garden = fallbackGarden;
+      state.selected = fallbackGarden.plots[0].id;
+
+      const healthColors = {
+        ready: "#74b66d",
+        "growing-dirty": "#b78a4f",
+        "cloud-storage": "#5aa4c7",
+        occupied: "#c99a35",
+        tended: "#7f9f5d",
+        missing: "#9b4c3f",
+      };
+
+      function loadSave() {
+        try {
+          return JSON.parse(localStorage.getItem("worktreeGardenGame") || "{}");
+        } catch (_err) {
+          return {};
+        }
+      }
+
+      function saveGame() {
+        localStorage.setItem("worktreeGardenGame", JSON.stringify(state.save));
+      }
+
+      function resize() {
+        const ratio = window.devicePixelRatio || 1;
+        canvas.width = Math.floor(window.innerWidth * ratio);
+        canvas.height = Math.floor(window.innerHeight * ratio);
+        canvas.style.width = window.innerWidth + "px";
+        canvas.style.height = window.innerHeight + "px";
+        ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+        buildLayout();
+      }
+
+      function getCare(id) {
+        return Number((state.save.care && state.save.care[id]) || 0);
+      }
+
+      function setCare(id, value) {
+        state.save.care = state.save.care || {};
+        state.save.care[id] = Math.max(0, Math.min(5, value));
+        saveGame();
+      }
+
+      function getHarvest() {
+        return Number(state.save.harvest || 0);
+      }
+
+      function setHarvest(value) {
+        state.save.harvest = Math.max(0, value);
+        saveGame();
+      }
+
+      async function refreshGarden(showMessage = false) {
+        try {
+          const response = await fetch("/api/worktree-garden", { cache: "no-store" });
+          if (!response.ok) throw new Error("garden API unavailable");
+          const body = await response.json();
+          state.garden = body.payload || fallbackGarden;
+          if (showMessage) showToast("Garden refreshed");
+        } catch (err) {
+          state.garden = state.garden || fallbackGarden;
+          if (showMessage) showToast(String(err.message || err));
+        }
+        if (!state.selected && state.garden.plots.length) state.selected = state.garden.plots[0].id;
+        buildLayout();
+        updateHud();
+      }
+
+      function buildLayout() {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        const plots = (state.garden && state.garden.plots) || [];
+        if (w < 620) {
+          const slots = {
+            house: [{ x: w * 0.17, y: h * 0.54 }],
+            homestead: [
+              { x: w * 0.48, y: h * 0.54 },
+              { x: w * 0.48, y: h * 0.66 },
+            ],
+            outsource_storage: [
+              { x: w * 0.79, y: h * 0.54 },
+              { x: w * 0.79, y: h * 0.66 },
+            ],
+          };
+          const counters = {};
+          state.layout = plots.map((plot, index) => {
+            const list = slots[plot.zone] || [{ x: w * 0.5, y: h * (0.52 + index * 0.1) }];
+            const count = counters[plot.zone] || 0;
+            counters[plot.zone] = count + 1;
+            const slot = list[count % list.length];
+            return { plot, x: slot.x, y: slot.y, r: 34 };
+          });
+          return;
+        }
+        const bands = {
+          house: { x: w * 0.08, y: h * 0.25, width: w * 0.25, height: h * 0.5 },
+          homestead: { x: w * 0.38, y: h * 0.18, width: w * 0.27, height: h * 0.62 },
+          outsource_storage: { x: w * 0.7, y: h * 0.24, width: w * 0.22, height: h * 0.5 },
+        };
+        const grouped = plots.reduce((acc, plot) => {
+          acc[plot.zone] = acc[plot.zone] || [];
+          acc[plot.zone].push(plot);
+          return acc;
+        }, {});
+        state.layout = [];
+        for (const [zone, list] of Object.entries(grouped)) {
+          const band = bands[zone] || bands.homestead;
+          const cols = Math.max(1, Math.ceil(Math.sqrt(list.length)));
+          const rows = Math.max(1, Math.ceil(list.length / cols));
+          const cellW = band.width / cols;
+          const cellH = band.height / rows;
+          list.forEach((plot, index) => {
+            const col = index % cols;
+            const row = Math.floor(index / cols);
+            const size = Math.min(cellW, cellH) * 0.68;
+            state.layout.push({
+              plot,
+              x: band.x + col * cellW + cellW * 0.5,
+              y: band.y + row * cellH + cellH * 0.56,
+              r: Math.max(42, Math.min(86, size)),
+            });
+          });
+        }
+      }
+
+      function draw() {
+        state.time += 0.016;
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        drawBackground(w, h);
+        drawZones(w, h);
+        for (const item of state.layout) drawPlot(item);
+        drawPaths();
+        requestAnimationFrame(draw);
+      }
+
+      function drawBackground(w, h) {
+        const gradient = ctx.createLinearGradient(0, 0, w, h);
+        gradient.addColorStop(0, "#88b784");
+        gradient.addColorStop(0.48, "#d8c17b");
+        gradient.addColorStop(1, "#6fa0b9");
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, w, h);
+
+        ctx.fillStyle = "rgba(255, 255, 255, 0.18)";
+        for (let i = 0; i < 26; i++) {
+          const x = ((i * 137 + state.time * 6) % (w + 160)) - 80;
+          const y = 80 + ((i * 73) % Math.max(100, h - 160));
+          ctx.beginPath();
+          ctx.ellipse(x, y, 46, 14, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      function drawZones(w, h) {
+        if (w < 620) {
+          drawHouse(w * 0.18, h * 0.79);
+          drawShed(w * 0.74, h * 0.79);
+          return;
+        }
+        drawZoneSign("House", w * 0.2, h * 0.18, "#35583d");
+        drawZoneSign("Homestead", w * 0.515, h * 0.12, "#64502e");
+        drawZoneSign("Outsource", w * 0.81, h * 0.18, "#2f6172");
+        drawHouse(w * 0.17, h * 0.76);
+        drawShed(w * 0.78, h * 0.76);
+      }
+
+      function drawZoneSign(text, x, y, color) {
+        ctx.save();
+        ctx.fillStyle = "rgba(255, 248, 226, 0.78)";
+        roundRect(x - 70, y - 18, 140, 36, 8);
+        ctx.fill();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = color;
+        ctx.font = "700 15px Segoe UI";
+        ctx.textAlign = "center";
+        ctx.fillText(text, x, y + 5);
+        ctx.restore();
+      }
+
+      function drawHouse(x, y) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.fillStyle = "#8d5c37";
+        ctx.fillRect(-42, -38, 84, 58);
+        ctx.fillStyle = "#5a3830";
+        ctx.beginPath();
+        ctx.moveTo(-54, -38);
+        ctx.lineTo(0, -78);
+        ctx.lineTo(54, -38);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = "#f1d291";
+        ctx.fillRect(-11, -12, 22, 32);
+        ctx.restore();
+      }
+
+      function drawShed(x, y) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.fillStyle = "#4a7886";
+        ctx.fillRect(-46, -34, 92, 54);
+        ctx.fillStyle = "#304a5d";
+        ctx.fillRect(-52, -50, 104, 18);
+        ctx.fillStyle = "#d5e7ee";
+        ctx.fillRect(-32, -20, 24, 20);
+        ctx.fillRect(12, -20, 24, 20);
+        ctx.restore();
+      }
+
+      function drawPlot(item) {
+        const { plot, x, y, r } = item;
+        const selected = state.selected === plot.id;
+        const care = getCare(plot.id);
+        const color = healthColors[plot.health] || "#7da86a";
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.shadowColor = "rgba(0,0,0,0.25)";
+        ctx.shadowBlur = selected ? 18 : 8;
+        ctx.shadowOffsetY = 8;
+        ctx.fillStyle = "#704b2f";
+        roundRect(-r * 0.58, -r * 0.36, r * 1.16, r * 0.72, 14);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = color;
+        roundRect(-r * 0.48, -r * 0.28, r * 0.96, r * 0.56, 10);
+        ctx.fill();
+
+        ctx.strokeStyle = selected ? "#fff7ca" : "rgba(35, 52, 42, 0.36)";
+        ctx.lineWidth = selected ? 4 : 2;
+        ctx.stroke();
+
+        for (let i = 0; i < 5; i++) {
+          const filled = i < care;
+          ctx.fillStyle = filled ? "#f0d05b" : "rgba(255,255,255,0.32)";
+          ctx.beginPath();
+          ctx.arc(-r * 0.32 + i * (r * 0.16), r * 0.05, 4.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        if (plot.health === "cloud-storage") drawWaterMark(r);
+        if (plot.health === "growing-dirty") drawSprouts(r);
+        if (plot.health === "missing") drawMissing(r);
+        if (plot.active_agents > 0) drawAgent(r, plot.active_agents);
+
+        ctx.fillStyle = "#19261f";
+        ctx.font = window.innerWidth < 620 ? "700 10px Segoe UI" : "700 12px Segoe UI";
+        ctx.textAlign = "center";
+        ctx.fillText(shortName(plot.id), 0, r * 0.55);
+        ctx.restore();
+      }
+
+      function drawWaterMark(r) {
+        ctx.strokeStyle = "rgba(255,255,255,0.72)";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(0, -2, r * 0.14, Math.PI * 0.15, Math.PI * 1.25);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(12, -2, r * 0.14, Math.PI * 0.85, Math.PI * 1.95);
+        ctx.stroke();
+      }
+
+      function drawSprouts(r) {
+        ctx.strokeStyle = "#244f2f";
+        ctx.lineWidth = 3;
+        for (let i = -1; i <= 1; i++) {
+          ctx.beginPath();
+          ctx.moveTo(i * 18, -2);
+          ctx.quadraticCurveTo(i * 18 + 8, -18, i * 18 + 2, -28);
+          ctx.stroke();
+        }
+      }
+
+      function drawMissing(r) {
+        ctx.strokeStyle = "#fff5dd";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(-r * 0.22, -r * 0.12);
+        ctx.lineTo(r * 0.22, r * 0.12);
+        ctx.moveTo(r * 0.22, -r * 0.12);
+        ctx.lineTo(-r * 0.22, r * 0.12);
+        ctx.stroke();
+      }
+
+      function drawAgent(r, count) {
+        for (let i = 0; i < count; i++) {
+          const bounce = Math.sin(state.time * 5 + i) * 3;
+          const x = -r * 0.22 + i * 24;
+          const y = -r * 0.43 + bounce;
+          ctx.fillStyle = "#f4ead0";
+          ctx.beginPath();
+          ctx.arc(x, y, 8, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#513f7d";
+          ctx.fillRect(x - 7, y + 8, 14, 16);
+        }
+      }
+
+      function drawPaths() {
+        ctx.save();
+        ctx.strokeStyle = "rgba(92, 65, 36, 0.28)";
+        ctx.lineWidth = 9;
+        ctx.lineCap = "round";
+        const selected = state.layout.find((item) => item.plot.id === state.selected);
+        if (selected) {
+          ctx.beginPath();
+          ctx.moveTo(window.innerWidth * 0.17, window.innerHeight * 0.72);
+          ctx.quadraticCurveTo(window.innerWidth * 0.42, window.innerHeight * 0.86, selected.x, selected.y);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      function roundRect(x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + w, y, x + w, y + h, r);
+        ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r);
+        ctx.arcTo(x, y, x + w, y, r);
+        ctx.closePath();
+      }
+
+      function shortName(id) {
+        return String(id).replace(/^homestead-/, "").replace(/^outsource-/, "").replace(/^house-/, "");
+      }
+
+      function selectedPlot() {
+        return (state.garden && state.garden.plots.find((plot) => plot.id === state.selected)) || null;
+      }
+
+      function updateHud() {
+        const garden = state.garden || fallbackGarden;
+        const summary = garden.summary || {};
+        const dirty = (garden.plots || []).reduce((sum, plot) => sum + Number((plot.git && plot.git.dirty_count) || 0), 0);
+        document.getElementById("stat-plots").textContent = `${summary.plots || garden.plots.length}/${summary.max_plots || garden.max_plots || 0}`;
+        document.getElementById("stat-leases").textContent = String(summary.active_leases || 0);
+        document.getElementById("stat-dirty").textContent = String(dirty);
+        document.getElementById("stat-harvest").textContent = String(getHarvest());
+        document.getElementById("season").textContent = garden.garden_digest ? `Digest ${garden.garden_digest}` : "Local homestead";
+
+        const plot = selectedPlot();
+        document.getElementById("selected-name").textContent = plot ? plot.id : "No plot selected";
+        document.getElementById("selected-sub").textContent = plot ? `${zoneNames[plot.zone] || plot.zone} / ${plot.health}` : "Click a plot";
+        updateDrawer();
+      }
+
+      function updateDrawer() {
+        const plot = selectedPlot();
+        document.getElementById("drawer").classList.toggle("collapsed", !state.drawerOpen);
+        if (!plot) return;
+        document.getElementById("detail-title").textContent = plot.id;
+        document.getElementById("detail-role").textContent = plot.role || "plot";
+        document.getElementById("fact-zone").textContent = zoneNames[plot.zone] || plot.zone;
+        document.getElementById("fact-health").textContent = plot.health;
+        document.getElementById("fact-branch").textContent = (plot.git && plot.git.branch) || "-";
+        document.getElementById("fact-path").textContent = plot.path || "-";
+        document.getElementById("fact-care").textContent = `${getCare(plot.id)}/5`;
+        document.getElementById("task").value = `tend ${plot.id}`;
+      }
+
+      function showToast(text) {
+        state.toastText = text;
+        state.toastUntil = performance.now() + 2600;
+        const el = document.getElementById("toast");
+        el.textContent = text;
+        el.classList.add("visible");
+        setTimeout(() => {
+          if (performance.now() > state.toastUntil) el.classList.remove("visible");
+        }, 2700);
+      }
+
+      function pickPlot(x, y) {
+        for (let i = state.layout.length - 1; i >= 0; i--) {
+          const item = state.layout[i];
+          const dx = x - item.x;
+          const dy = y - item.y;
+          if (Math.abs(dx) < item.r * 0.62 && Math.abs(dy) < item.r * 0.48) {
+            state.selected = item.plot.id;
+            state.drawerOpen = true;
+            updateHud();
+            return;
+          }
+        }
+      }
+
+      async function assignAgent() {
+        const plot = selectedPlot();
+        if (!plot) return;
+        try {
+          const body = {
+            agent: document.getElementById("agent").value,
+            plot: plot.id,
+            task: document.getElementById("task").value,
+            mode: document.getElementById("mode").value,
+            ttl_hours: 12,
+          };
+          const response = await fetch("/api/worktree-garden/attach", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(body),
+          });
+          const json = await response.json();
+          if (!response.ok || !json.ok) throw new Error(json.error || (json.payload && json.payload.error) || "attach failed");
+          state.garden = json.payload;
+          showToast(`Assigned ${body.agent} to ${plot.id}`);
+          buildLayout();
+          updateHud();
+        } catch (err) {
+          showToast(String(err.message || err));
+        }
+      }
+
+      async function releaseAgent() {
+        const plot = selectedPlot();
+        if (!plot) return;
+        try {
+          const body = { plot: plot.id, agent: document.getElementById("agent").value };
+          const firstLease = plot.leases && plot.leases[0];
+          if (firstLease && firstLease.lease_id) body.lease_id = firstLease.lease_id;
+          const response = await fetch("/api/worktree-garden/release", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(body),
+          });
+          const json = await response.json();
+          if (!response.ok || !json.ok) throw new Error(json.error || (json.payload && json.payload.error) || "release failed");
+          state.garden = json.payload;
+          showToast(`Released ${plot.id}`);
+          buildLayout();
+          updateHud();
+        } catch (err) {
+          showToast(String(err.message || err));
+        }
+      }
+
+      function tendPlot() {
+        const plot = selectedPlot();
+        if (!plot) return;
+        setCare(plot.id, getCare(plot.id) + 1);
+        showToast(`Tended ${plot.id}`);
+        updateHud();
+      }
+
+      function harvestPlot() {
+        const plot = selectedPlot();
+        if (!plot) return;
+        if (getCare(plot.id) < 3) {
+          showToast("Care needs 3 pips");
+          return;
+        }
+        setCare(plot.id, 0);
+        setHarvest(getHarvest() + 1);
+        showToast(`Harvested ${plot.id}`);
+        updateHud();
+      }
+
+      canvas.addEventListener("pointerdown", (event) => pickPlot(event.clientX, event.clientY));
+      window.addEventListener("resize", resize);
+      document.getElementById("refresh").addEventListener("click", () => refreshGarden(true));
+      document.getElementById("toggle-drawer").addEventListener("click", () => {
+        state.drawerOpen = !state.drawerOpen;
+        updateHud();
+      });
+      document.getElementById("assign").addEventListener("click", assignAgent);
+      document.getElementById("release").addEventListener("click", releaseAgent);
+      document.getElementById("tend").addEventListener("click", tendPlot);
+      document.getElementById("harvest").addEventListener("click", harvestPlot);
+      window.addEventListener("keydown", (event) => {
+        const plots = (state.garden && state.garden.plots) || [];
+        const index = plots.findIndex((plot) => plot.id === state.selected);
+        if (event.key === "Tab") {
+          event.preventDefault();
+          state.selected = plots[(index + 1 + plots.length) % plots.length]?.id || state.selected;
+          updateHud();
+        }
+        if (event.key === "Escape") {
+          state.drawerOpen = false;
+          updateHud();
+        }
+      });
+
+      resize();
+      refreshGarden(false);
+      draw();
+    </script>
+  </body>
+</html>

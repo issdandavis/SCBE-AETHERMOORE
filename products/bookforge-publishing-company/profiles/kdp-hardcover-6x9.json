@@ -1,0 +1,33 @@
+{
+  "title": "Your Hardcover Book",
+  "subtitle": "",
+  "author": "Your Name",
+  "copyright_year": 2026,
+  "publisher": "Your Name",
+  "isbn": "Hardcover ISBN or KDP-assigned identifier",
+  "edition_statement": "Hardcover edition",
+  "binding": "hardcover",
+  "source": "../starter/manuscript.md",
+  "output_dir": "../build/hardcover-6x9",
+  "trim": "6x9",
+  "page_count": 300,
+  "print": {
+    "paper": "cream",
+    "ink": "bw",
+    "cover_finish": "matte"
+  },
+  "typography": {
+    "body_font": "Georgia",
+    "body_size_pt": 11,
+    "leading_pt": 14.8,
+    "first_line_indent_in": 0.22,
+    "chapter_title_size_pt": 18
+  },
+  "margins": {
+    "inside_in": 0.82,
+    "outside_in": 0.58,
+    "top_in": 0.68,
+    "bottom_in": 0.72,
+    "hardcover_inside_bonus_in": 0.125
+  }
+}

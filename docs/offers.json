@@ -1,6 +1,6 @@
 {
   "schema": "aethermoore-offers-v1",
-  "updated_at": "2026-05-16",
+  "updated_at": "2026-07-02",
   "site_base": "https://aethermoore.com/SCBE-AETHERMOORE",
   "usage_policy": {
     "name": "SCBE Service Credits",
@@ -70,6 +70,28 @@
         "no installation service, no remote upload, no API key"
       ],
       "checkout_note": "Ko-fi and Cash App are active low-friction purchase paths. Use payment note: SCBE Black Box."
+    },
+    {
+      "id": "bookforge_publishing_kit",
+      "name": "BookForge Publishing Kit",
+      "price_label": "$19 self-serve",
+      "type": "digital_download",
+      "checkout_url": "https://ko-fi.com/izdandavis",
+      "alternate_checkout": {
+        "cash_app": "$IzzyDDavis7",
+        "cash_app_qr_url": "https://aethermoore.com/SCBE-AETHERMOORE/static/cash-app-payment.png",
+        "manual_invoice": "mailto:aethermoregames@pm.me?subject=BookForge%20Publishing%20Kit%20purchase"
+      },
+      "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/bookforge-publishing-kit.html",
+      "quickstart_url": "https://aethermoore.com/SCBE-AETHERMOORE/downloads/kdp-bookforge-checklist.md",
+      "status": "live",
+      "scope": [
+        "self-serve publishing operations kit for BookForge",
+        "KDP trim presets, starter manuscript, blurb JSON, author intake, build receipt, and upload checklist",
+        "manual delivery while PyPI and automated digital delivery are finalized",
+        "does not include legal, tax, ISBN, copyediting, cover design, ad, or guaranteed KDP approval services"
+      ],
+      "checkout_note": "Ko-fi and Cash App are active low-friction purchase paths. Use payment note: BookForge Publishing Kit."
     },
     {
       "id": "service_credits",

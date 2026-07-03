@@ -1,0 +1,30 @@
+{
+  "title": "Your Book Title",
+  "subtitle": "",
+  "author": "Your Name",
+  "copyright_year": 2026,
+  "publisher": "Your Name",
+  "isbn": "Print ISBN: printed on back cover or assigned in KDP",
+  "edition_statement": "First edition",
+  "source": "../starter/manuscript.md",
+  "output_dir": "../build/novel-5_5x8_5",
+  "trim": "5.5x8.5",
+  "page_count": 320,
+  "print": {
+    "paper": "cream",
+    "ink": "bw",
+    "cover_finish": "matte"
+  },
+  "epigraph": {
+    "enabled": true,
+    "text": "Replace this epigraph or disable it.",
+    "attribution": "Source"
+  },
+  "typography": {
+    "body_font": "Georgia",
+    "body_size_pt": 10.75,
+    "leading_pt": 14,
+    "first_line_indent_in": 0.22,
+    "chapter_title_size_pt": 17
+  }
+}

@@ -90,6 +90,8 @@ Beyond the primary mapping, each tongue governs a family of languages:
 
 Note: TypeScript appears under both AV (primary home) and DR (secondary) because its type system bridges knowledge and architecture.
 
+Runtime note: Go is wired as a DR/Draumric `language_family` lane in `python/scbe/tongue_code_lanes.py`; the stricter `computational_isomorphism` profile remains unchanged for narrow contract checks.
+
 ## Interop Bridges
 
 The foundation trio (Python-TypeScript-Rust) forms the primary interop triangle:

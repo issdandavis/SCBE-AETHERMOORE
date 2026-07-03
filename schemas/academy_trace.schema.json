@@ -1,0 +1,64 @@
+﻿{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scbe.local/schemas/academy_trace.schema.json",
+  "title": "AetherDesk Academy Training Trace",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["trace_id", "lesson_id", "created_at", "actor", "action", "files_before_hash", "files_after_hash", "verdict", "provenance"],
+  "properties": {
+    "trace_id": {"type": "string", "minLength": 1},
+    "lesson_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "format": "date-time"},
+    "actor": {"type": "string", "enum": ["human", "ai_pal", "system", "tool"]},
+    "input_text": {"type": "string"},
+    "normalized_text": {"type": "string"},
+    "token_spans": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["start", "end", "tags"],
+        "properties": {
+          "start": {"type": "integer", "minimum": 0},
+          "end": {"type": "integer", "minimum": 0},
+          "token_ids": {"type": "array", "items": {"type": "integer"}},
+          "tags": {"type": "array", "items": {"type": "string"}},
+          "correction": {"type": "string"},
+          "code_face": {"type": "string"},
+          "opcode": {"type": "string"}
+        }
+      }
+    },
+    "action": {"type": "string", "enum": ["edit", "run", "hint", "submit", "reflect", "patch", "inspect", "clarify", "block"]},
+    "files_before_hash": {"type": "string", "minLength": 1},
+    "files_after_hash": {"type": "string", "minLength": 1},
+    "tool_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "command": {"type": "string"},
+        "exit_code": {"type": "integer"},
+        "stdout_tail": {"type": "string"},
+        "stderr_tail": {"type": "string"},
+        "duration_ms": {"type": "integer", "minimum": 0},
+        "receipt_path": {"type": "string"},
+        "receipt_sha256": {"type": "string"}
+      }
+    },
+    "reflection": {"type": "string"},
+    "verdict": {"type": "string", "enum": ["pass", "fail", "blocked", "clarify", "aborted"]},
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["human_original", "ai_generated", "source_urls"],
+      "properties": {
+        "human_original": {"type": "boolean"},
+        "ai_generated": {"type": "boolean"},
+        "verified_by_compiler": {"type": "boolean"},
+        "verified_by_human": {"type": "boolean"},
+        "source_urls": {"type": "array", "items": {"type": "string"}},
+        "source_files": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

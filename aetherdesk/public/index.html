@@ -426,6 +426,13 @@
         height: 360px;
       }
 
+      #window-runcontrol {
+        left: 148px;
+        top: 92px;
+        width: min(980px, calc(100vw - 188px));
+        height: min(650px, calc(100vh - 120px));
+      }
+
       #window-providers {
         right: 28px;
         bottom: 68px;
@@ -796,6 +803,62 @@
         gap: 7px;
       }
 
+      .run-card-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+
+      .run-card {
+        min-height: 72px;
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+      }
+
+      .run-card b {
+        display: block;
+        color: #18242e;
+        font-size: 11px;
+      }
+
+      .run-card span {
+        display: block;
+        margin-top: 7px;
+        color: var(--muted);
+        font: 11px/1.25 Consolas, monospace;
+        overflow-wrap: anywhere;
+      }
+
+      .run-card.pass span {
+        color: var(--pass);
+      }
+
+      .run-card.fail span {
+        color: var(--fail);
+      }
+
+      .run-control-main {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        min-height: 0;
+      }
+
+      .run-control-list {
+        min-height: 170px;
+        max-height: 260px;
+        overflow: auto;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: #fff;
+        padding: 8px;
+        font: 11px/1.35 Consolas, monospace;
+        white-space: pre-wrap;
+      }
+
       .receipt,
       .provider {
         padding: 9px 10px;
@@ -1094,6 +1157,14 @@
           <span class="app-icon">VO</span>
           <span class="label">Voice</span>
         </button>
+        <button class="desktop-icon" data-forge-trainer>
+          <span class="app-icon">SF</span>
+          <span class="label">SCBE Forge</span>
+        </button>
+        <button class="desktop-icon" data-garden-game>
+          <span class="app-icon">WG</span>
+          <span class="label">Worktree Garden</span>
+        </button>
         <button class="desktop-icon" data-open="vision">
           <span class="app-icon">VI</span>
           <span class="label">Vision</span>
@@ -1101,6 +1172,10 @@
         <button class="desktop-icon" data-open="receipts">
           <span class="app-icon">RC</span>
           <span class="label">Receipts</span>
+        </button>
+        <button class="desktop-icon" data-open="runcontrol">
+          <span class="app-icon">RUN</span>
+          <span class="label">Run Control</span>
         </button>
         <button class="desktop-icon" data-open="providers">
           <span class="app-icon">PV</span>
@@ -1125,6 +1200,9 @@
               <button class="nav-button" data-open="terminal"><span class="app-icon">TM</span><span>Terminal</span></button>
               <button class="nav-button" data-open="playwright"><span class="app-icon">PW</span><span>Browser Agent</span></button>
               <button class="nav-button" data-open="notebook"><span class="app-icon">NB</span><span>Notebook</span></button>
+              <button class="nav-button" data-forge-trainer><span class="app-icon">SF</span><span>SCBE Forge</span></button>
+              <button class="nav-button" data-garden-game><span class="app-icon">WG</span><span>Worktree Garden</span></button>
+              <button class="nav-button" data-open="runcontrol"><span class="app-icon">RUN</span><span>Run Control</span></button>
               <button class="nav-button" data-open="receipts"><span class="app-icon">RC</span><span>Receipts</span></button>
               <button class="nav-button" data-open="providers"><span class="app-icon">PV</span><span>Providers</span></button>
             </aside>
@@ -1233,6 +1311,49 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
             <button id="refresh-providers" class="chrome-button">Refresh</button>
           </div>
           <div id="providers" class="providers"><p class="empty">checking...</p></div>
+        </div>
+      </section>
+
+      <section class="window hidden" id="window-runcontrol" data-app="runcontrol">
+        <div class="titlebar">
+          <div class="title"><span class="app-icon">RUN</span><span>AetherDesk Run Control</span></div>
+          <div class="controls">
+            <button class="control" data-snap="runcontrol:left" title="Snap left">L</button>
+            <button class="control" data-minimize="runcontrol" title="Minimize">-</button>
+            <button class="control" data-snap="runcontrol:full" title="Snap full">[]</button>
+            <button class="control close" data-close="runcontrol" title="Close">x</button>
+          </div>
+        </div>
+        <div class="window-body">
+          <div class="app-pane">
+            <div class="app-toolbar">
+              <button class="chrome-button" id="runcontrol-refresh">Refresh</button>
+              <button class="chrome-button" id="runcontrol-add-rescue">Queue Rescue</button>
+              <button class="chrome-button" id="runcontrol-add-monitor">Queue Monitor</button>
+              <button class="chrome-button" id="runcontrol-add-colab">Queue Fast Colab</button>
+              <button class="chrome-button" id="runcontrol-run-next">Run Next</button>
+              <input id="runcontrol-watch" value="SCBE_FAST_FULL_DONE" aria-label="Watch marker" />
+            </div>
+            <div>
+              <div class="run-card-grid">
+                <div class="run-card" id="run-card-browser"><b>Browser</b><span>unknown</span></div>
+                <div class="run-card" id="run-card-colab"><b>Colab</b><span>unknown</span></div>
+                <div class="run-card" id="run-card-training"><b>Training</b><span>unknown</span></div>
+                <div class="run-card" id="run-card-queue"><b>Queue</b><span>unknown</span></div>
+              </div>
+              <div class="run-control-main">
+                <section class="panel">
+                  <h3>Inventory</h3>
+                  <div class="run-control-list" id="runcontrol-inventory">loading...</div>
+                </section>
+                <section class="panel">
+                  <h3>Queue / Last action</h3>
+                  <div class="run-control-list" id="runcontrol-queue">loading...</div>
+                </section>
+              </div>
+            </div>
+            <div class="app-output" id="runcontrol-output">ready</div>
+          </div>
         </div>
       </section>
 
@@ -1536,8 +1657,10 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
         { label: 'Editor', icon: 'ED', open: 'editor' },
         { label: 'Image', icon: 'IM', open: 'image' },
         { label: 'Voice', icon: 'VO', open: 'speech' },
+        { label: 'SCBE Forge', icon: 'SF', url: '/forge.html' },
         { label: 'Vision', icon: 'VI', open: 'vision' },
         { label: 'Receipts', icon: 'RC', open: 'receipts' },
+        { label: 'Run Control', icon: 'RUN', open: 'runcontrol' },
         { label: 'Providers', icon: 'PV', open: 'providers' },
       ];
       const terminalActionIds = ['chemistry_lookup', 'token_lookup', 'instrument_play', 'rosetta_demo', 'forge_demo'];
@@ -1627,6 +1750,32 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
             el.addEventListener('dblclick', () => openApp(el.dataset.open));
           } else {
             el.addEventListener('click', () => openApp(el.dataset.open));
+          }
+        });
+        $$('[data-forge-trainer]').forEach((el) => {
+          const openForge = () => window.open('/forge.html', '_blank', 'noopener,noreferrer');
+          if (el.classList.contains('desktop-icon')) {
+            el.addEventListener('click', (e) => {
+              $$('.desktop-icon').forEach((icon) => icon.classList.remove('selected'));
+              el.classList.add('selected');
+              e.stopPropagation();
+            });
+            el.addEventListener('dblclick', openForge);
+          } else {
+            el.addEventListener('click', openForge);
+          }
+        });
+        $$('[data-garden-game]').forEach((el) => {
+          const openGarden = () => window.open('/worktree-garden.html', '_blank', 'noopener,noreferrer');
+          if (el.classList.contains('desktop-icon')) {
+            el.addEventListener('click', (e) => {
+              $$('.desktop-icon').forEach((icon) => icon.classList.remove('selected'));
+              el.classList.add('selected');
+              e.stopPropagation();
+            });
+            el.addEventListener('dblclick', openGarden);
+          } else {
+            el.addEventListener('click', openGarden);
           }
         });
         $$('[data-minimize]').forEach((el) => el.addEventListener('click', () => minimizeApp(el.dataset.minimize)));
@@ -1752,7 +1901,15 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
         for (const item of pinned) {
           const b = document.createElement('button');
           b.innerHTML = `<span class="app-icon">${escapeHtml(item.icon)}</span><span>${escapeHtml(item.label)}</span>`;
-          b.addEventListener('click', () => (item.open ? openApp(item.open) : runCommand(item.run, b)));
+          b.addEventListener('click', () => {
+            if (item.url) {
+              window.open(item.url, '_blank', 'noopener,noreferrer');
+            } else if (item.open) {
+              openApp(item.open);
+            } else {
+              runCommand(item.run, b);
+            }
+          });
           startGridEl.appendChild(b);
         }
       }
@@ -1965,9 +2122,14 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
           const rec = r.receipt;
           if (!rec) throw new Error(r.error || 'PowerShell failed');
           const msg = `${rec.result} (exit ${rec.exit_code}, ${Math.round(rec.duration_ms / 1000)}s)`;
+          const audit = [
+            `receipt: ${rec.task_id}`,
+            rec.executor ? `executor: ${rec.executor}` : '',
+            rec.upstream_receipt_path ? `geoseal: ${rec.upstream_receipt_path}` : '',
+          ].filter(Boolean).join('\n');
           terminalStatusEl.textContent = `PowerShell: ${msg}`;
           terminalStatusEl.className = 'status ' + rec.result;
-          appendTerminal(`result: ${msg}\nreceipt: ${rec.task_id}\n\n${tail(rec.stdout_tail || rec.stderr_tail || '', 2600)}`);
+          appendTerminal(`result: ${msg}\n${audit}\n\n${tail(rec.stdout_tail || rec.stderr_tail || '', 2600)}`);
         } catch (err) {
           const msg = 'error: ' + String(err.message || err);
           terminalStatusEl.textContent = msg;
@@ -2061,7 +2223,7 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
           return;
         }
         if (lower === 'help') {
-          appendTerminal('help | apps | agents | shell | agent probe | agent codex | open <app> | transcript <youtube-url-or-id> | notebook save|load | run <command_id> | ps <profile_id> | pwsh <command> | snap left|right|full | clear');
+          appendTerminal('help | apps | agents | shell | runs | run status | run queue | run next | agent probe | agent codex | open <app> | transcript <youtube-url-or-id> | notebook save|load | run <command_id> | ps <profile_id> | pwsh <command> | snap left|right|full | clear');
           return;
         }
         if (lower === 'apps') {
@@ -2097,6 +2259,29 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
         if (lower === 'providers') {
           openApp('providers');
           appendTerminal('opened providers');
+          return;
+        }
+        if (lower === 'runs' || lower === 'run status') {
+          openApp('runcontrol');
+          loadRunControl();
+          appendTerminal('opened run control');
+          return;
+        }
+        if (lower === 'run queue') {
+          openApp('runcontrol');
+          loadRunQueue();
+          appendTerminal('loaded run queue');
+          return;
+        }
+        if (lower === 'run inventory') {
+          openApp('runcontrol');
+          loadRunInventory();
+          appendTerminal('loaded run inventory');
+          return;
+        }
+        if (lower === 'run next') {
+          openApp('runcontrol');
+          runNextControl();
           return;
         }
         if (lower.startsWith('transcript ')) {
@@ -2139,6 +2324,9 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
             voice: 'speech',
             vision: 'vision',
             receipts: 'receipts',
+            runs: 'runcontrol',
+            runcontrol: 'runcontrol',
+            control: 'runcontrol',
             providers: 'providers',
           };
           if (map[app]) {
@@ -2460,16 +2648,135 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
         }
       }
 
+      function setRunCard(id, value, ok) {
+        const el = $(id);
+        if (!el) return;
+        el.classList.toggle('pass', ok === true);
+        el.classList.toggle('fail', ok === false);
+        el.querySelector('span').textContent = value || 'unknown';
+      }
+
+      async function fetchRunControl(path, options = {}) {
+        const r = await fetch(path, {
+          method: options.method || 'GET',
+          headers: { 'content-type': 'application/json' },
+          body: options.body ? JSON.stringify(options.body) : undefined,
+        }).then((r) => r.json());
+        if (!r.ok) throw new Error(r.error || r.stderr_tail || r.stdout_tail || 'run-control request failed');
+        return r.payload || r;
+      }
+
+      async function loadRunControl() {
+        const out = $('#runcontrol-output');
+        if (out) out.textContent = 'refreshing...';
+        try {
+          const status = await fetchRunControl('/api/aetherdesk/runs/status');
+          const p = status.productVerdict || {};
+          const inv = status.inventory || {};
+          const colab = status.colab || {};
+          const queue = status.queue || {};
+          setRunCard('#run-card-browser', p.browserControl, p.browserControl === 'WORKING');
+          setRunCard('#run-card-colab', p.colabVisibility, p.colabVisibility === 'WORKING');
+          setRunCard('#run-card-training', p.trainingCompletion, /^(DONE|RUNNING|COLAB_RESCUE_READY)/.test(p.trainingCompletion || ''));
+          setRunCard('#run-card-queue', `${queue.length || 0} queued`, true);
+          $('#runcontrol-inventory').textContent = [
+            `matched scripts: ${inv.matchedLocalScripts ?? '?'}`,
+            `package commands: ${inv.packageTrainingScripts ?? '?'}`,
+            `colab artifacts: ${inv.colabArtifacts ?? '?'}`,
+            `browser artifacts: ${inv.browserArtifacts ?? '?'}`,
+            '',
+            `latest receipt: ${colab.file || 'none'}`,
+            `receipt status: ${colab.verdict || 'unknown'}`,
+          ].join('\n');
+          $('#runcontrol-queue').textContent = JSON.stringify(queue.next || { queue: 'empty' }, null, 2);
+          out.textContent = `checked ${status.checkedAt || new Date().toISOString()}`;
+        } catch (err) {
+          $('#runcontrol-output').textContent = `failed: ${err.message || err}`;
+        }
+      }
+
+      async function loadRunInventory() {
+        try {
+          const inv = await fetchRunControl('/api/aetherdesk/runs/inventory');
+          $('#runcontrol-inventory').textContent = [
+            `matched scripts: ${inv.counts?.matchedLocalScripts ?? '?'}`,
+            `package commands: ${inv.counts?.packageTrainingScripts ?? '?'}`,
+            '',
+            ...(inv.packageTrainingScripts || []).slice(0, 40),
+          ].join('\n');
+        } catch (err) {
+          $('#runcontrol-inventory').textContent = `inventory failed: ${err.message || err}`;
+        }
+      }
+
+      async function loadRunQueue() {
+        try {
+          const q = await fetchRunControl('/api/aetherdesk/runs/queue');
+          $('#runcontrol-queue').textContent = JSON.stringify(q.queue || [], null, 2);
+        } catch (err) {
+          $('#runcontrol-queue').textContent = `queue failed: ${err.message || err}`;
+        }
+      }
+
+      async function queueRunControl(kind) {
+        const marker = $('#runcontrol-watch').value || 'SCBE_FAST_FULL_DONE';
+        $('#runcontrol-output').textContent = `queueing ${kind}...`;
+        const path = kind === 'colab'
+          ? '/api/aetherdesk/runs/queue/colab-fast'
+          : kind === 'rescue'
+          ? '/api/aetherdesk/runs/queue/colab-rescue'
+          : '/api/aetherdesk/runs/queue/monitor';
+        try {
+          const r = await fetchRunControl(path, {
+            method: 'POST',
+            body: { watch_for: marker, match: 'train_qlora', timeout_ms: 1800000 },
+          });
+          $('#runcontrol-output').textContent = `queued ${r.item?.id || r.payload?.item?.id || kind}`;
+          await loadRunControl();
+          await loadRunQueue();
+        } catch (err) {
+          $('#runcontrol-output').textContent = `queue failed: ${err.message || err}`;
+        }
+      }
+
+      async function runNextControl() {
+        $('#runcontrol-output').textContent = 'running next queued item...';
+        try {
+          const r = await fetchRunControl('/api/aetherdesk/runs/run-next', { method: 'POST' });
+          $('#runcontrol-output').textContent = `run-next ${r.ok ? 'ok' : 'failed'}: ${r.item?.id || 'none'}`;
+          appendTerminal(`run-next: ${r.ok ? 'ok' : 'failed'} ${r.item?.id || ''}`);
+          await loadRunControl();
+          await loadRunQueue();
+        } catch (err) {
+          $('#runcontrol-output').textContent = `run-next failed: ${err.message || err}`;
+        }
+      }
+
+      function bindRunControl() {
+        $('#runcontrol-refresh')?.addEventListener('click', async () => {
+          await loadRunControl();
+          await loadRunInventory();
+          await loadRunQueue();
+        });
+        $('#runcontrol-add-monitor')?.addEventListener('click', () => queueRunControl('monitor'));
+        $('#runcontrol-add-rescue')?.addEventListener('click', () => queueRunControl('rescue'));
+        $('#runcontrol-add-colab')?.addEventListener('click', () => queueRunControl('colab'));
+        $('#runcontrol-run-next')?.addEventListener('click', runNextControl);
+      }
+
       $('#refresh-providers').addEventListener('click', loadProviders);
       bindChrome();
       bindWorkspaceApps();
+      bindRunControl();
       tickClock();
       setInterval(tickClock, 30000);
       loadCommands();
       loadReceipts();
       loadProviders();
+      loadRunControl();
       setInterval(loadReceipts, 5000);
       setInterval(loadProviders, 30000);
+      setInterval(loadRunControl, 30000);
     </script>
   </body>
 </html>

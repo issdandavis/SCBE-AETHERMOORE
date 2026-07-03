@@ -15,6 +15,7 @@ Tests cover:
 """
 
 import base64
+import dataclasses
 import json
 
 import pytest
@@ -29,6 +30,7 @@ from src.symphonic_cipher.scbe_aethermoore.cli_toolkit import (
 from src.symphonic_cipher.scbe_aethermoore.sacred_egg_integrator import (
     SacredEggIntegrator,
     context_radius,
+    hatch_condition_digest,
 )
 
 # =============================================================================
@@ -115,6 +117,8 @@ class TestSacredEggCreation:
         assert egg.primary_tongue == "KO"
         assert egg.glyph == "diamond"
         assert egg.hatch_condition == {"ring": "inner"}
+        assert egg.condition_digest == hatch_condition_digest({"ring": "inner"})
+        assert egg.self_shape
         assert "ct_k" in egg.yolk_ct
         assert "ct_spec" in egg.yolk_ct
         assert "attest" in egg.yolk_ct
@@ -162,6 +166,8 @@ class TestSerialization:
         assert restored.primary_tongue == egg_solitary.primary_tongue
         assert restored.glyph == egg_solitary.glyph
         assert restored.hatch_condition == egg_solitary.hatch_condition
+        assert restored.condition_digest == egg_solitary.condition_digest
+        assert restored.self_shape == egg_solitary.self_shape
         assert restored.yolk_ct == egg_solitary.yolk_ct
 
     def test_json_is_valid(self, integrator, egg_solitary):
@@ -201,6 +207,15 @@ class TestSolitaryRitual:
             result = integrator.hatch_egg(egg_solitary, interior_context, tongue, sk, pk, ritual_mode="solitary")
             assert result.success is False
             assert result.reason == "sealed"
+
+    def test_hatch_condition_tamper_fails_sealed(self, integrator, egg_solitary, key_pair, interior_context):
+        pk, sk = key_pair
+        tampered = dataclasses.replace(egg_solitary, hatch_condition={})
+
+        result = integrator.hatch_egg(tampered, interior_context, "KO", sk, pk, ritual_mode="solitary")
+
+        assert result.success is False
+        assert result.reason == "sealed"
 
 
 # =============================================================================
@@ -603,18 +618,14 @@ class TestPaintEgg:
         assert painted.egg_id == egg_solitary.egg_id
         assert painted.primary_tongue == egg_solitary.primary_tongue
 
-    def test_paint_hatch_condition(self, integrator, egg_solitary):
+    def test_paint_hatch_condition_rejected(self, integrator, egg_solitary):
         new_cond = {"ring": "outer", "path": "exterior"}
-        painted = integrator.paint_egg(egg_solitary, hatch_condition=new_cond)
-        assert painted.hatch_condition == new_cond
-        assert painted.glyph == egg_solitary.glyph  # unchanged
-        assert painted.yolk_ct == egg_solitary.yolk_ct  # yolk untouched
+        with pytest.raises(ValueError, match="hatch conditions are sealed"):
+            integrator.paint_egg(egg_solitary, hatch_condition=new_cond)
 
-    def test_paint_both(self, integrator, egg_solitary):
-        painted = integrator.paint_egg(egg_solitary, glyph="golden", hatch_condition={"min_tongues": 5})
-        assert painted.glyph == "golden"
-        assert painted.hatch_condition == {"min_tongues": 5}
-        assert painted.yolk_ct == egg_solitary.yolk_ct
+    def test_paint_glyph_with_hatch_condition_rejected(self, integrator, egg_solitary):
+        with pytest.raises(ValueError, match="hatch conditions are sealed"):
+            integrator.paint_egg(egg_solitary, glyph="golden", hatch_condition={"min_tongues": 5})
 
     def test_paint_none_keeps_original(self, integrator, egg_solitary):
         painted = integrator.paint_egg(egg_solitary)
@@ -819,7 +830,7 @@ class TestCLIEggCommands:
         assert painted["egg_id"] == original["egg_id"]
 
     def test_cmd_egg_paint_hatch_condition(self, tmp_path, interior_context, key_pair):
-        """egg-paint can change hatch conditions."""
+        """egg-paint rejects hatch condition mutation."""
         import argparse
         from src.symphonic_cipher.scbe_aethermoore.cli_toolkit import (
             cmd_egg_create,
@@ -848,8 +859,5 @@ class TestCLIEggCommands:
             hatch_condition=json.dumps({"ring": "outer", "min_tongues": 4}),
             outfile=painted_file,
         )
-        cmd_egg_paint(paint_args)
-
-        painted = json.loads(open(painted_file).read())
-        assert painted["hatch_condition"] == {"ring": "outer", "min_tongues": 4}
-        assert painted["glyph"] == "egg"  # unchanged
+        with pytest.raises(ValueError, match="hatch conditions are sealed"):
+            cmd_egg_paint(paint_args)

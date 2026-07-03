@@ -34,6 +34,7 @@ def test_packages_hub_links_each_product_page_and_install_command() -> None:
     assert 'href="packages/scbe-aethermoore-cli.html"' in page
     assert 'href="packages/scbe-agent-bus.html"' in page
     assert 'href="packages/scbe-bookforge.html"' in page
+    assert 'href="bookforge-publishing-kit.html"' in page
     assert "npm install scbe-aethermoore" in page
     assert "npm install -g scbe-aethermoore-cli" in page
     assert "pip install scbe-agent-bus" in page
@@ -66,6 +67,7 @@ def test_bookforge_page_is_marked_publish_pending_without_dead_pypi_link() -> No
     assert "scbe-bookforge" in page
     assert "publish pending" in page.lower()
     assert "pip install scbe-bookforge" in page
+    assert "../bookforge-publishing-kit.html" in page
     assert "https://pypi.org/project/scbe-bookforge/" not in page
 
 
@@ -81,6 +83,7 @@ def test_package_pages_are_discoverable_to_search_vercel_and_homepage() -> None:
         "packages/scbe-aethermoore-cli.html",
         "packages/scbe-agent-bus.html",
         "packages/scbe-bookforge.html",
+        "bookforge-publishing-kit.html",
     ]:
         assert f"https://aethermoore.com/SCBE-AETHERMOORE/{path}" in sitemap
 

@@ -1,0 +1,10 @@
+{
+  "hook": "A clean publishing workflow for authors who want the files finished.",
+  "blurb_paragraphs": [
+    "Replace this paragraph with the main promise of the book.",
+    "Use this second paragraph for stakes, audience, or transformation.",
+    "Close with the practical reason to read now."
+  ],
+  "author_bio": "Replace with a short author bio.",
+  "bottom_left_caption": "A BOOKFORGE BUILD"
+}

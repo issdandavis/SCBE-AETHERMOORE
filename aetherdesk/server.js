@@ -32,6 +32,8 @@ const SHELL_TIMEOUT_MS = 45 * 1000;
 const PLAYWRIGHT_TIMEOUT_MS = 15 * 1000;
 const POWERSHELL_TIMEOUT_MS = 45 * 1000;
 const TRANSCRIPT_TIMEOUT_MS = 45 * 1000;
+const RUN_CONTROL_TIMEOUT_MS = 45 * 1000;
+const WORKTREE_GARDEN_TIMEOUT_MS = 45 * 1000;
 const MAX_TERMINAL_COMMAND_CHARS = 900;
 const MAX_EMAIL_FIELD_CHARS = 4000;
 const MAX_NOTEBOOK_CHARS = 200000;
@@ -526,6 +528,9 @@ function buildPowerShellReceipt({
   finishedAt,
   artifactPath,
   blocked,
+  geosealPayload,
+  riskTier,
+  commandLabel,
 }) {
   const commandStr = `powershell -NoProfile -ExecutionPolicy Bypass -Command ${command}`;
   const result = exitCode === 0 ? 'pass' : 'fail';
@@ -533,10 +538,10 @@ function buildPowerShellReceipt({
     schema: 'aetherdesk_receipt_v0',
     task_id: `${utcStamp()}_powershell`,
     command_id: 'powershell:command',
-    command_label: blocked ? 'PowerShell blocked' : 'PowerShell command',
+    command_label: commandLabel || (blocked ? 'PowerShell blocked' : 'PowerShell command'),
     command: commandStr,
     command_digest: sha256(Buffer.from(commandStr, 'utf8')),
-    risk_tier: blocked ? 'blocked' : 'bounded-host-read',
+    risk_tier: riskTier || (blocked ? 'blocked' : 'bounded-host-read'),
     allowed_paths: [REPO_ROOT],
     started_at: startedAt,
     finished_at: finishedAt,
@@ -546,6 +551,12 @@ function buildPowerShellReceipt({
     stdout_tail: stdoutTail,
     stderr_tail: stderrTail,
     artifact_path: artifactPath,
+    executor: blocked ? 'aetherdesk:preflight' : 'geoseal:powershell',
+    upstream_schema: geosealPayload && geosealPayload.schema_version ? geosealPayload.schema_version : null,
+    upstream_command_id: geosealPayload && geosealPayload.command_id ? geosealPayload.command_id : null,
+    upstream_receipt_path: geosealPayload && geosealPayload.receipt_path ? geosealPayload.receipt_path : null,
+    upstream_decision: geosealPayload && geosealPayload.decision ? geosealPayload.decision : null,
+    upstream_safety: geosealPayload && geosealPayload.safety ? geosealPayload.safety : null,
   };
 }
 
@@ -564,6 +575,9 @@ function runPowerShellCommand(command) {
         finishedAt,
         artifactPath: null,
         blocked: true,
+        geosealPayload: null,
+        riskTier: 'blocked',
+        commandLabel: 'PowerShell blocked',
       });
       const filePath = writeReceipt(receipt);
       receipt.artifact_path = path.relative(REPO_ROOT, filePath).replace(/\\/g, '/');
@@ -573,8 +587,18 @@ function runPowerShellCommand(command) {
     const stdoutChunks = [];
     const stderrChunks = [];
     const child = spawn(
-      'powershell',
-      ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', validation.command],
+      process.execPath,
+      [
+        'bin/geoseal.cjs',
+        'powershell',
+        'run',
+        '--command',
+        validation.command,
+        '--write-receipt',
+        '--json',
+        '--timeout',
+        String(POWERSHELL_TIMEOUT_MS),
+      ],
       {
         cwd: REPO_ROOT,
         env: process.env,
@@ -593,19 +617,46 @@ function runPowerShellCommand(command) {
     child.on('close', (code) => {
       clearTimeout(timer);
       const finishedAt = new Date().toISOString();
+      const stdout = stdoutChunks.join('');
+      const stderr = stderrChunks.join('');
+      let geosealPayload = null;
+      let exitCode = code;
+      let stdoutTail = tailBytes(stdout, MAX_OUTPUT_TAIL_BYTES);
+      let stderrTail = tailBytes(stderr, MAX_OUTPUT_TAIL_BYTES);
+      try {
+        geosealPayload = parseJsonFromStdout(stdout);
+        exitCode = Number.isInteger(geosealPayload.exit_code) ? geosealPayload.exit_code : code;
+        stdoutTail = geosealPayload.stdout_tail || '';
+        stderrTail = geosealPayload.stderr_tail || geosealPayload.error || '';
+      } catch (err) {
+        stderrTail = tailBytes(
+          `${stderrTail}\n[geoseal parse error] ${String(err && err.message ? err.message : err)}`.trim(),
+          MAX_OUTPUT_TAIL_BYTES
+        );
+      }
       const receipt = buildPowerShellReceipt({
         command: validation.command,
-        exitCode: code,
-        stdoutTail: tailBytes(stdoutChunks.join(''), MAX_OUTPUT_TAIL_BYTES),
-        stderrTail: tailBytes(stderrChunks.join(''), MAX_OUTPUT_TAIL_BYTES),
+        exitCode,
+        stdoutTail,
+        stderrTail,
         startedAt,
         finishedAt,
         artifactPath: null,
         blocked: false,
+        geosealPayload,
+        riskTier: geosealPayload && geosealPayload.risk_tier ? geosealPayload.risk_tier : 'bounded-host-read',
+        commandLabel: geosealPayload && geosealPayload.risk_tier === 'blocked'
+          ? 'PowerShell blocked by GeoSeal'
+          : 'PowerShell command',
       });
       const filePath = writeReceipt(receipt);
       receipt.artifact_path = path.relative(REPO_ROOT, filePath).replace(/\\/g, '/');
-      resolve({ ok: true, receipt });
+      const blockedByGeoSeal = geosealPayload && geosealPayload.risk_tier === 'blocked';
+      resolve({
+        ok: !blockedByGeoSeal && exitCode !== 127,
+        error: blockedByGeoSeal ? stderrTail || 'PowerShell command blocked by GeoSeal' : undefined,
+        receipt,
+      });
     });
     child.on('error', (err) => {
       clearTimeout(timer);
@@ -619,10 +670,79 @@ function runPowerShellCommand(command) {
         finishedAt,
         artifactPath: null,
         blocked: false,
+        geosealPayload: null,
+        riskTier: 'bounded-host-read',
+        commandLabel: 'PowerShell command',
       });
       const filePath = writeReceipt(receipt);
       receipt.artifact_path = path.relative(REPO_ROOT, filePath).replace(/\\/g, '/');
-      resolve({ ok: true, receipt });
+      resolve({ ok: false, error: receipt.stderr_tail, receipt });
+    });
+  });
+}
+
+function parseJsonFromStdout(stdout) {
+  const text = String(stdout || '').replace(/^\uFEFF/, '');
+  const start = text.indexOf('{');
+  const end = text.lastIndexOf('}');
+  if (start < 0 || end < start) throw new Error('run-control emitted no JSON object');
+  return JSON.parse(text.slice(start, end + 1));
+}
+
+function runControlCommand(args, timeoutMs = RUN_CONTROL_TIMEOUT_MS) {
+  return new Promise((resolve) => {
+    const startedAt = new Date().toISOString();
+    const stdoutChunks = [];
+    const stderrChunks = [];
+    const child = spawn('node', ['scripts/system/aetherdesk_run_control.mjs', ...args], {
+      cwd: REPO_ROOT,
+      env: process.env,
+      shell: false,
+    });
+    const timer = setTimeout(() => {
+      try {
+        child.kill('SIGTERM');
+      } catch (_err) {
+        /* swallow */
+      }
+    }, timeoutMs);
+    child.stdout.on('data', (d) => stdoutChunks.push(d.toString('utf8')));
+    child.stderr.on('data', (d) => stderrChunks.push(d.toString('utf8')));
+    child.on('close', (code) => {
+      clearTimeout(timer);
+      const stdout = stdoutChunks.join('');
+      const stderr = stderrChunks.join('');
+      try {
+        const payload = parseJsonFromStdout(stdout);
+        resolve({
+          ok: code === 0 && payload.ok !== false,
+          exit_code: code,
+          started_at: startedAt,
+          finished_at: new Date().toISOString(),
+          payload,
+          stderr_tail: tailBytes(stderr, MAX_OUTPUT_TAIL_BYTES),
+        });
+      } catch (err) {
+        resolve({
+          ok: false,
+          exit_code: code,
+          started_at: startedAt,
+          finished_at: new Date().toISOString(),
+          error: String(err && err.message ? err.message : err),
+          stdout_tail: tailBytes(stdout, MAX_OUTPUT_TAIL_BYTES),
+          stderr_tail: tailBytes(stderr, MAX_OUTPUT_TAIL_BYTES),
+        });
+      }
+    });
+    child.on('error', (err) => {
+      clearTimeout(timer);
+      resolve({
+        ok: false,
+        exit_code: -1,
+        started_at: startedAt,
+        finished_at: new Date().toISOString(),
+        error: `[spawn error] ${String(err && err.message ? err.message : err)}`,
+      });
     });
   });
 }
@@ -630,6 +750,93 @@ function runPowerShellCommand(command) {
 // Provider status checks — read-only. Never expose secret values, only
 // their presence as booleans. HTTP probes use a hard 1.5s timeout so a
 // single slow provider can't block the whole panel.
+function normalizeGardenToken(raw, label, fallback = '') {
+  const value = String(raw || fallback).trim();
+  if (!/^[A-Za-z0-9_.-]{1,80}$/.test(value)) {
+    throw new Error(`invalid ${label}`);
+  }
+  return value;
+}
+
+function normalizeGardenMode(raw) {
+  const mode = String(raw || 'work').trim();
+  if (!['observe', 'work', 'review'].includes(mode)) {
+    throw new Error('invalid garden mode');
+  }
+  return mode;
+}
+
+function normalizeGardenTask(raw) {
+  return String(raw || '').replace(/\s+/g, ' ').trim().slice(0, 240);
+}
+
+function normalizeGardenTtlHours(raw) {
+  const value = Number(raw || 12);
+  if (!Number.isFinite(value)) return 12;
+  return Math.max(0.25, Math.min(72, value));
+}
+
+function runWorktreeGardenCommand(args, timeoutMs = WORKTREE_GARDEN_TIMEOUT_MS) {
+  return new Promise((resolve) => {
+    const startedAt = new Date().toISOString();
+    const stdoutChunks = [];
+    const stderrChunks = [];
+    const child = spawn('python', ['scripts/system/worktree_garden.py', ...args], {
+      cwd: REPO_ROOT,
+      env: process.env,
+      shell: false,
+    });
+    const timer = setTimeout(() => {
+      try {
+        child.kill('SIGTERM');
+      } catch (_err) {
+        /* swallow */
+      }
+    }, timeoutMs);
+    child.stdout.on('data', (d) => stdoutChunks.push(d.toString('utf8')));
+    child.stderr.on('data', (d) => stderrChunks.push(d.toString('utf8')));
+    child.on('close', (code) => {
+      clearTimeout(timer);
+      const stdout = stdoutChunks.join('');
+      const stderr = stderrChunks.join('');
+      try {
+        const payload = parseJsonFromStdout(stdout);
+        resolve({
+          ok: code === 0 && payload.ok !== false,
+          schema: 'aetherdesk_worktree_garden_v0',
+          exit_code: code,
+          started_at: startedAt,
+          finished_at: new Date().toISOString(),
+          payload,
+          stderr_tail: tailBytes(stderr, MAX_OUTPUT_TAIL_BYTES),
+        });
+      } catch (err) {
+        resolve({
+          ok: false,
+          schema: 'aetherdesk_worktree_garden_v0',
+          exit_code: code,
+          started_at: startedAt,
+          finished_at: new Date().toISOString(),
+          error: String(err && err.message ? err.message : err),
+          stdout_tail: tailBytes(stdout, MAX_OUTPUT_TAIL_BYTES),
+          stderr_tail: tailBytes(stderr, MAX_OUTPUT_TAIL_BYTES),
+        });
+      }
+    });
+    child.on('error', (err) => {
+      clearTimeout(timer);
+      resolve({
+        ok: false,
+        schema: 'aetherdesk_worktree_garden_v0',
+        exit_code: -1,
+        started_at: startedAt,
+        finished_at: new Date().toISOString(),
+        error: `[spawn error] ${String(err && err.message ? err.message : err)}`,
+      });
+    });
+  });
+}
+
 const PROVIDER_PROBE_TIMEOUT_MS = 1500;
 
 const PROVIDER_DEFS = Object.freeze([
@@ -1120,7 +1327,13 @@ function loadNotebook(id) {
 function buildApp() {
   const app = express();
   app.use(express.json({ limit: '64kb' }));
-  app.use(express.static(path.join(__dirname, 'public')));
+  app.use(express.static(path.join(__dirname, 'public'), {
+    etag: false,
+    maxAge: 0,
+    setHeaders(res) {
+      res.setHeader('Cache-Control', 'no-store');
+    }
+  }));
 
   app.get('/api/health', (_req, res) => {
     res.json({ ok: true, schema: 'aetherdesk_health_v0', port: PORT, host: HOST });
@@ -1164,6 +1377,138 @@ function buildApp() {
         error: String(err && err.message ? err.message : err),
       });
     }
+  });
+
+  app.get('/api/aetherdesk/runs/status', async (_req, res) => {
+    const result = await runControlCommand(['status'], RUN_CONTROL_TIMEOUT_MS);
+    res.status(result.ok ? 200 : 502).json({
+      ok: result.ok,
+      schema: 'aetherdesk_run_control_status_v0',
+      ...result,
+    });
+  });
+
+  app.get('/api/worktree-garden', async (_req, res) => {
+    const result = await runWorktreeGardenCommand(['status', '--json']);
+    res.status(result.ok ? 200 : 502).json({
+      ok: result.ok,
+      ...result,
+    });
+  });
+
+  app.post('/api/worktree-garden/attach', async (req, res) => {
+    try {
+      const body = req.body || {};
+      const result = await runWorktreeGardenCommand([
+        'attach',
+        '--agent',
+        normalizeGardenToken(body.agent, 'agent', 'codex'),
+        '--plot',
+        normalizeGardenToken(body.plot, 'plot'),
+        '--task',
+        normalizeGardenTask(body.task),
+        '--mode',
+        normalizeGardenMode(body.mode),
+        '--ttl-hours',
+        String(normalizeGardenTtlHours(body.ttl_hours)),
+        '--json',
+      ]);
+      res.status(result.ok ? 200 : 400).json({ ok: result.ok, ...result });
+    } catch (err) {
+      res.status(400).json({
+        ok: false,
+        schema: 'aetherdesk_worktree_garden_v0',
+        error: String(err && err.message ? err.message : err),
+      });
+    }
+  });
+
+  app.post('/api/worktree-garden/release', async (req, res) => {
+    try {
+      const body = req.body || {};
+      const args = ['release'];
+      if (body.agent) args.push('--agent', normalizeGardenToken(body.agent, 'agent'));
+      if (body.plot) args.push('--plot', normalizeGardenToken(body.plot, 'plot'));
+      if (body.lease_id) args.push('--lease-id', normalizeGardenToken(body.lease_id, 'lease_id'));
+      args.push('--json');
+      const result = await runWorktreeGardenCommand(args);
+      res.status(result.ok ? 200 : 400).json({ ok: result.ok, ...result });
+    } catch (err) {
+      res.status(400).json({
+        ok: false,
+        schema: 'aetherdesk_worktree_garden_v0',
+        error: String(err && err.message ? err.message : err),
+      });
+    }
+  });
+
+  app.get('/api/aetherdesk/runs/inventory', async (_req, res) => {
+    const result = await runControlCommand(['inventory', '--json'], RUN_CONTROL_TIMEOUT_MS);
+    res.status(result.ok ? 200 : 502).json({
+      ok: result.ok,
+      schema: 'aetherdesk_run_control_inventory_v0',
+      ...result,
+    });
+  });
+
+  app.get('/api/aetherdesk/runs/queue', async (_req, res) => {
+    const result = await runControlCommand(['queue-list', '--json'], RUN_CONTROL_TIMEOUT_MS);
+    res.status(result.ok ? 200 : 502).json({
+      ok: result.ok,
+      schema: 'aetherdesk_run_control_queue_v0',
+      ...result,
+    });
+  });
+
+  app.post('/api/aetherdesk/runs/queue/colab-fast', async (req, res) => {
+    const watchFor = String((req.body && req.body.watch_for) || 'SCBE_FAST_FULL_DONE');
+    const timeoutMs = Math.max(15000, Math.min(24 * 60 * 60 * 1000, Number((req.body && req.body.timeout_ms) || 1800000)));
+    const result = await runControlCommand(
+      ['queue-add-colab-fast', '--watch-for', watchFor, '--timeout-ms', String(timeoutMs)],
+      RUN_CONTROL_TIMEOUT_MS
+    );
+    res.status(result.ok ? 200 : 502).json({
+      ok: result.ok,
+      schema: 'aetherdesk_run_control_queue_add_v0',
+      ...result,
+    });
+  });
+
+  app.post('/api/aetherdesk/runs/queue/colab-rescue', async (req, res) => {
+    const timeoutMs = Math.max(15000, Math.min(30 * 60 * 1000, Number((req.body && req.body.timeout_ms) || 600000)));
+    const result = await runControlCommand(
+      ['queue-add-colab-rescue', '--timeout-ms', String(timeoutMs)],
+      RUN_CONTROL_TIMEOUT_MS
+    );
+    res.status(result.ok ? 200 : 502).json({
+      ok: result.ok,
+      schema: 'aetherdesk_run_control_queue_rescue_v0',
+      ...result,
+    });
+  });
+
+  app.post('/api/aetherdesk/runs/queue/monitor', async (req, res) => {
+    const watchFor = String((req.body && req.body.watch_for) || 'SCBE_FAST_FULL_DONE');
+    const match = String((req.body && req.body.match) || 'train_qlora');
+    const timeoutMs = Math.max(15000, Math.min(24 * 60 * 60 * 1000, Number((req.body && req.body.timeout_ms) || 1800000)));
+    const result = await runControlCommand(
+      ['queue-add-monitor', '--watch-for', watchFor, '--match', match, '--timeout-ms', String(timeoutMs)],
+      RUN_CONTROL_TIMEOUT_MS
+    );
+    res.status(result.ok ? 200 : 502).json({
+      ok: result.ok,
+      schema: 'aetherdesk_run_control_queue_add_v0',
+      ...result,
+    });
+  });
+
+  app.post('/api/aetherdesk/runs/run-next', async (_req, res) => {
+    const result = await runControlCommand(['run-next'], 24 * 60 * 60 * 1000);
+    res.status(result.ok ? 200 : 502).json({
+      ok: result.ok,
+      schema: 'aetherdesk_run_control_run_next_v0',
+      ...result,
+    });
   });
 
   app.post('/api/browser/action', async (req, res) => {
@@ -1309,6 +1654,10 @@ module.exports = {
   normalizeNotebookId,
   saveNotebook,
   loadNotebook,
+  normalizeGardenToken,
+  normalizeGardenMode,
+  normalizeGardenTask,
+  normalizeGardenTtlHours,
   validatePowerShellCommand,
   RECEIPTS_DIR,
   EMAIL_DRAFTS_DIR,
@@ -1321,6 +1670,7 @@ module.exports = {
     runCommand,
     runShellProfile,
     runPowerShellCommand,
+    runWorktreeGardenCommand,
     runYouTubeTranscript,
     probeHttp,
     defaultPlaywrightExecutable,

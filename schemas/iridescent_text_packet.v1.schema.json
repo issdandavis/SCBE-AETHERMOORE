@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scbe.local/schemas/iridescent_text_packet.v1.schema.json",
+  "title": "SCBE Iridescent Text Packet",
+  "type": "object",
+  "required": ["schema", "id", "plain_text", "segments", "metadata"],
+  "properties": {
+    "schema": {
+      "const": "scbe.iridescent_text.v1"
+    },
+    "id": {
+      "type": "string"
+    },
+    "plain_text": {
+      "type": "string"
+    },
+    "segments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["start", "end", "tags"],
+        "properties": {
+          "start": {"type": "integer", "minimum": 0},
+          "end": {"type": "integer", "minimum": 0},
+          "tags": {
+            "type": "object",
+            "properties": {
+              "source": {"type": "array", "items": {"type": "string"}},
+              "confidence": {"type": "array", "items": {"type": "string"}},
+              "function": {"type": "array", "items": {"type": "string"}},
+              "project": {"type": "array", "items": {"type": "string"}},
+              "runtime": {"type": "array", "items": {"type": "string"}},
+              "conlang": {"type": "array", "items": {"type": "string"}},
+              "emotion": {"type": "array", "items": {"type": "string"}}
+            },
+            "additionalProperties": {
+              "type": "array",
+              "items": {"type": "string"}
+            }
+          },
+          "render": {
+            "type": "object",
+            "properties": {
+              "mode": {
+                "enum": ["plain", "span_color", "iridescent_span", "glyph_stripe", "underline_only"]
+              },
+              "palette": {
+                "type": "array",
+                "items": {"type": "string"}
+              }
+            },
+            "additionalProperties": true
+          },
+          "glyphs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["i", "char", "tags"],
+              "properties": {
+                "i": {"type": "integer", "minimum": 0},
+                "char": {"type": "string", "minLength": 1},
+                "tags": {"type": "object"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["provenance", "validated"],
+      "properties": {
+        "created_by": {"type": "string"},
+        "provenance": {"type": "string"},
+        "source_refs": {"type": "array", "items": {"type": "string"}},
+        "validated": {"type": "boolean"},
+        "license": {"type": "string"}
+      },
+      "additionalProperties": true
+    }
+  }
+}

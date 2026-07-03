@@ -1,0 +1,70 @@
+{
+  "schema": "scbe_worktree_garden_config_v1",
+  "garden_name": "SCBE Worktree Garden",
+  "max_plots": 12,
+  "default_lease_hours": 12,
+  "zones": {
+    "house": {
+      "label": "House",
+      "max_plots": 2,
+      "purpose": "Daily-driver repo surfaces that should stay close, visible, and actively tended."
+    },
+    "homestead": {
+      "label": "Homestead",
+      "max_plots": 6,
+      "purpose": "Adjacent local products, workspaces, and satellite repos."
+    },
+    "outsource_storage": {
+      "label": "Outsource Storage",
+      "max_plots": 4,
+      "purpose": "Storage lanes for offload, cloud sync, backups, and large generated material."
+    }
+  },
+  "plot_seeds": [
+    {
+      "id": "house-scbe",
+      "zone": "house",
+      "kind": "git",
+      "path": "${USERPROFILE}\\SCBE-AETHERMOORE",
+      "role": "primary_monorepo",
+      "max_agents": 2,
+      "notes": "Main SCBE-AETHERMOORE repo. Treat dirty work as live crops, not weeds."
+    },
+    {
+      "id": "homestead-aetherdesk",
+      "zone": "homestead",
+      "kind": "git",
+      "path": "${USERPROFILE}\\AetherDesk",
+      "role": "desktop_product",
+      "max_agents": 2,
+      "notes": "Standalone AetherDesk product repo; keep separate from the older SCBE aetherdesk lane."
+    },
+    {
+      "id": "homestead-local-apps",
+      "zone": "homestead",
+      "kind": "storage",
+      "path": "${USERPROFILE}\\LocalOnly\\Apps",
+      "role": "local_only_apps",
+      "max_agents": 1,
+      "notes": "Non-synced local app staging lane."
+    },
+    {
+      "id": "outsource-onedrive",
+      "zone": "outsource_storage",
+      "kind": "storage",
+      "path": "${USERPROFILE}\\OneDrive",
+      "role": "cloud_sync_root",
+      "max_agents": 1,
+      "notes": "Cloud-backed storage. Verify exact paths before bulk moves or deletion."
+    },
+    {
+      "id": "outsource-localonly",
+      "zone": "outsource_storage",
+      "kind": "storage",
+      "path": "${USERPROFILE}\\LocalOnly",
+      "role": "local_only_storage",
+      "max_agents": 1,
+      "notes": "Local-only storage lane for material that should not churn OneDrive."
+    }
+  ]
+}

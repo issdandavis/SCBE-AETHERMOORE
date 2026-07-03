@@ -181,6 +181,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://aethermoore.com/SCBE-AETHERMOORE/bookforge-publishing-kit.html</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
     <loc>https://aethermoore.com/SCBE-AETHERMOORE/shopify-command-center.html</loc>
     <lastmod>2026-05-12</lastmod>
     <changefreq>weekly</changefreq>

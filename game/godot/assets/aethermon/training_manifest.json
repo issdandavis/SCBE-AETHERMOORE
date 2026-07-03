@@ -1,0 +1,75 @@
+{
+  "schema": "aethermon_godot_training_manifest_v1",
+  "tile_size": 24,
+  "sprites": {
+    "kindlemote": {
+      "name": "Kindlemote",
+      "tongue": "KO",
+      "role": "starter",
+      "path": "res://assets/aethermon/sprites/kindlemote.png"
+    },
+    "galewing": {
+      "name": "Galewing",
+      "tongue": "AV",
+      "role": "wind partner",
+      "path": "res://assets/aethermon/sprites/galewing.png"
+    },
+    "bitling": {
+      "name": "Bitling",
+      "tongue": "CA",
+      "role": "logic partner",
+      "path": "res://assets/aethermon/sprites/bitling.png"
+    },
+    "gloomkit": {
+      "name": "Gloomkit",
+      "tongue": "UM",
+      "role": "shadow partner",
+      "path": "res://assets/aethermon/sprites/gloomkit.png"
+    },
+    "rival_venom": {
+      "name": "Rival Venom",
+      "tongue": "UM",
+      "role": "sparring rival",
+      "path": "res://assets/aethermon/sprites/rival_venom.png"
+    },
+    "berry": {
+      "name": "Berry",
+      "role": "tile",
+      "path": "res://assets/aethermon/sprites/berry.png"
+    },
+    "training_pad": {
+      "name": "Training Pad",
+      "role": "tile",
+      "path": "res://assets/aethermon/sprites/training_pad.png"
+    },
+    "hazard": {
+      "name": "Hazard",
+      "role": "tile",
+      "path": "res://assets/aethermon/sprites/hazard.png"
+    },
+    "nexus": {
+      "name": "Nexus",
+      "role": "tile",
+      "path": "res://assets/aethermon/sprites/nexus.png"
+    }
+  },
+  "board": [
+    "##########",
+    "#A..T...N#",
+    "#..##....#",
+    "#..B..H..#",
+    "#....##..#",
+    "#..R.....#",
+    "##########"
+  ],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    "A": "aethermon start",
+    "T": "training pad",
+    "B": "berry recovery",
+    "H": "hazard",
+    "R": "rival",
+    "N": "nexus goal"
+  }
+}

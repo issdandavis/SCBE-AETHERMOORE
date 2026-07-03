@@ -8,6 +8,8 @@ instead of passive metadata. It supports two distinct views:
     The paradigm mapping documented in TONGUE_ISOMORPHISM_PROOF.md
 - opcode_runtime:
     Concrete execution-lane mappings used by tongue-specific opcode tables
+- language_family:
+    Broader primary/standard-tier language families from TONGUE_CODING_LANGUAGE_MAP.md
 """
 
 from __future__ import annotations
@@ -28,18 +30,44 @@ CODE_LANE_REGISTRY = {
     "opcode_runtime": {
         "CA": "c",
     },
+    "language_family": {
+        "KO": ("python", "shell", "lua"),
+        "AV": ("typescript", "sql", "haskell", "graphql", "prolog"),
+        "RU": ("rust", "solidity", "cobol", "yaml", "nix"),
+        "CA": ("c", "c++", "cuda", "fortran"),
+        "UM": ("julia", "assembly", "zig", "verilog"),
+        "DR": ("haskell", "go", "typescript", "terraform", "kotlin"),
+    },
 }
 
 KNOWN_CODE_LANES = {
     "assembly",
     "c",
+    "c++",
+    "cobol",
+    "cuda",
     "forth",
+    "fortran",
+    "go",
+    "graphql",
+    "haskell",
+    "julia",
+    "kotlin",
     "lisp",
+    "lua",
     "make",
+    "nix",
+    "prolog",
     "python",
     "rust",
+    "shell",
     "sql",
+    "solidity",
+    "terraform",
     "typescript",
+    "verilog",
+    "yaml",
+    "zig",
 }
 
 
@@ -91,9 +119,14 @@ def expected_code_lanes(
     mapping = CODE_LANE_REGISTRY.get(profile, {})
     lanes: list[str] = []
     for tongue in tongues:
-        lane = mapping.get(tongue)
-        if lane and lane not in lanes:
-            lanes.append(lane)
+        lane_value = mapping.get(tongue)
+        if not lane_value:
+            continue
+        candidates = (lane_value,) if isinstance(lane_value, str) else lane_value
+        for lane in candidates:
+            normalized = lane.strip().lower()
+            if normalized and normalized not in lanes:
+                lanes.append(normalized)
     return lanes
 
 

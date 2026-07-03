@@ -323,6 +323,27 @@ def compile_ca_tokens(
     )
 
 
+def emit_compiled_program_source(prog: CompiledProgram, *, include_runtime: bool = True) -> str:
+    """Emit runnable source for a compiled CA program.
+
+    This is the official plumbing point for CA opcode programs. Generic CA ops
+    may emit helper calls such as ``ca_apply3(...)``; those helpers live in
+    ``runtime_prelude(target)``. Callers that emit CA source should use this
+    helper instead of calling Code Prism directly, otherwise fallback opcodes can
+    produce syntactically valid but non-runnable source.
+    """
+
+    from src.code_prism.emitter import emit_from_ir
+
+    source = emit_from_ir(prog.to_prism_module(), target_language=prog.target)
+    if not include_runtime:
+        return source
+    prelude = runtime_prelude(prog.target).strip()
+    if not prelude:
+        return source
+    return prelude + "\n\n" + source
+
+
 def _stack_init(target: str, args: List[str]) -> str:
     joined = ", ".join(args)
     if target == "python":

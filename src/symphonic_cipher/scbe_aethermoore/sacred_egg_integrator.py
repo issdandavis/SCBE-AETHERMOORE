@@ -27,6 +27,7 @@ import base64
 import copy
 import dataclasses
 import hashlib
+import hmac
 import importlib
 import json
 import os
@@ -59,18 +60,31 @@ DEFAULT_EGG_SELF_TAG = "SCBE-AETHERMOORE:SacredEggGenesis:v1"
 _AEAD_TAG_LEN = 16
 
 
-def self_detect_shape(egg_id: str, self_tag: str = DEFAULT_EGG_SELF_TAG) -> str:
+def _canonical_json(value: object) -> str:
+    return json.dumps(value, sort_keys=True, separators=(",", ":"))
+
+
+def hatch_condition_digest(hatch_condition: dict) -> str:
+    """Stable digest for the security policy portion of the egg shell."""
+    return hashlib.sha256(_canonical_json(hatch_condition).encode()).hexdigest()
+
+
+def self_detect_shape(
+    egg_id: str,
+    self_tag: str = DEFAULT_EGG_SELF_TAG,
+    condition_digest: str = "",
+) -> str:
     """Deterministic self-identity fingerprint for an egg.
 
     This is the python-side equivalent of:
       selfShape := H(selfShapeBase || selfTag)
 
     We use egg_id as the stable base shape (it is derived from the yolk envelope),
-    then bind it to a stable protocol label (self_tag).
+    then bind it to a stable protocol label and the hatch-condition digest.
 
     Returns a hex SHA-256 digest (64 chars).
     """
-    return hashlib.sha256(f"{egg_id}|{self_tag}".encode()).hexdigest()
+    return hashlib.sha256(f"{egg_id}|{self_tag}|{condition_digest}".encode()).hexdigest()
 
 
 # =============================================================================
@@ -108,6 +122,7 @@ class SacredEgg:
     # Genesis-bound self identity (unchanging variables linked to genesis protocol)
     self_tag: str = DEFAULT_EGG_SELF_TAG
     self_shape: str = ""
+    condition_digest: str = ""
 
     # --- Biological anatomy accessors ---
 
@@ -121,6 +136,7 @@ class SacredEgg:
             "hatch_condition": self.hatch_condition,
             "self_tag": self.self_tag,
             "self_shape": self.self_shape,
+            "condition_digest": self.condition_digest,
         }
 
     @property
@@ -250,7 +266,8 @@ class SacredEggIntegrator:
         env = toolkit.geoseal_encrypt(pt_b64, context, pk_kem_b64, sk_dsa_b64)
         egg_id = hashlib.sha256(json.dumps(env, sort_keys=True).encode()).hexdigest()[:16]
         self_tag = DEFAULT_EGG_SELF_TAG
-        self_shape = self_detect_shape(egg_id, self_tag)
+        condition_digest = hatch_condition_digest(hatch_condition)
+        self_shape = self_detect_shape(egg_id, self_tag, condition_digest)
 
         return SacredEgg(
             egg_id=egg_id,
@@ -260,6 +277,7 @@ class SacredEggIntegrator:
             yolk_ct=env,
             self_tag=self_tag,
             self_shape=self_shape,
+            condition_digest=condition_digest,
         )
 
     def hatch_egg(
@@ -312,11 +330,19 @@ class SacredEggIntegrator:
         pt_len = max(ct_spec_len - _AEAD_TAG_LEN, 0)
         fail_tokens = _sealed_noise_tokens(self.xt, agent_tongue, nbytes=pt_len)
 
-        # --- Self-identity integrity check (genesis-bound) ---
-        # Back-compat: if fields are missing/empty, do not fail here.
-        if egg.self_tag and egg.self_shape:
-            if self_detect_shape(egg.egg_id, egg.self_tag) != egg.self_shape:
-                return HatchResult(False, fail_tokens, None, "sealed")
+        # --- Self-identity and hatch-condition integrity check (genesis-bound) ---
+        current_condition_digest = hatch_condition_digest(egg.hatch_condition)
+        if not egg.condition_digest or not hmac.compare_digest(
+            current_condition_digest, egg.condition_digest
+        ):
+            return HatchResult(False, fail_tokens, None, "sealed")
+        if not egg.self_tag or not egg.self_shape:
+            return HatchResult(False, fail_tokens, None, "sealed")
+        if not hmac.compare_digest(
+            self_detect_shape(egg.egg_id, egg.self_tag, egg.condition_digest),
+            egg.self_shape,
+        ):
+            return HatchResult(False, fail_tokens, None, "sealed")
 
         # --- Enforce hatch conditions (geometric) ---
 
@@ -399,19 +425,23 @@ class SacredEggIntegrator:
         Args:
             egg:              The egg to paint
             glyph:            New visual symbol (None = keep current)
-            hatch_condition:  New hatch conditions (None = keep current)
+            hatch_condition:  Rejected; use reissue semantics instead
 
         Returns:
             A new SacredEgg with the updated shell
         """
+        if hatch_condition is not None:
+            raise ValueError("hatch conditions are sealed; reissue the egg instead of painting")
+
         return SacredEgg(
             egg_id=egg.egg_id,
             primary_tongue=egg.primary_tongue,
             glyph=glyph if glyph is not None else egg.glyph,
-            hatch_condition=(dict(hatch_condition) if hatch_condition is not None else dict(egg.hatch_condition)),
+            hatch_condition=dict(egg.hatch_condition),
             yolk_ct=egg.yolk_ct,
             self_tag=egg.self_tag,
             self_shape=egg.self_shape,
+            condition_digest=egg.condition_digest,
         )
 
     def to_json(self, egg: SacredEgg) -> str:

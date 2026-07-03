@@ -1,0 +1,1117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SCBE Forge Trainer</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #101312;
+        --panel: #171d1b;
+        --panel-2: #1f2825;
+        --panel-3: #121716;
+        --line: #2e3a35;
+        --line-strong: #476157;
+        --text: #eef6f0;
+        --muted: #9aad9f;
+        --muted-2: #718176;
+        --teal: #31c7ad;
+        --teal-dark: #168a78;
+        --copper: #c9823e;
+        --green: #6edb84;
+        --red: #df6f65;
+        --amber: #e3b45d;
+        --code: #0c100f;
+        --shadow: 0 18px 50px rgba(0, 0, 0, 0.34);
+        --radius: 8px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        overflow: hidden;
+        background:
+          linear-gradient(180deg, rgba(49, 199, 173, 0.06), transparent 36%),
+          radial-gradient(circle at 88% 12%, rgba(201, 130, 62, 0.12), transparent 28%),
+          var(--bg);
+        color: var(--text);
+        font-family:
+          Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+      }
+
+      button,
+      textarea,
+      input {
+        font: inherit;
+      }
+
+      button {
+        color: inherit;
+      }
+
+      .app {
+        height: 100vh;
+        display: grid;
+        grid-template-rows: 58px 1fr 154px;
+      }
+
+      .topbar {
+        border-bottom: 1px solid var(--line);
+        background: rgba(17, 22, 21, 0.96);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 18px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 280px;
+      }
+
+      .mark {
+        width: 34px;
+        height: 34px;
+        border: 1px solid rgba(49, 199, 173, 0.55);
+        border-radius: 7px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(145deg, #10201d, #20312d);
+        color: var(--teal);
+        font-family: Consolas, "SFMono-Regular", monospace;
+        font-weight: 800;
+        letter-spacing: 0;
+      }
+
+      .brand-title {
+        font-size: 15px;
+        font-weight: 760;
+        line-height: 1.05;
+      }
+
+      .brand-sub {
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .top-stats {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .stat {
+        min-width: 86px;
+        height: 34px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 6px 10px;
+        background: #141918;
+      }
+
+      .stat span {
+        display: block;
+        color: var(--muted-2);
+        font-size: 10px;
+        line-height: 1;
+        text-transform: uppercase;
+      }
+
+      .stat strong {
+        display: block;
+        margin-top: 4px;
+        color: var(--text);
+        font-size: 13px;
+        line-height: 1;
+      }
+
+      .run-status {
+        height: 34px;
+        border: 1px solid rgba(110, 219, 132, 0.42);
+        border-radius: 6px;
+        padding: 8px 12px;
+        background: rgba(37, 74, 45, 0.28);
+        color: var(--green);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .workspace {
+        min-height: 0;
+        display: grid;
+        grid-template-columns: 270px minmax(560px, 1fr) 380px;
+        gap: 12px;
+        padding: 12px;
+      }
+
+      .panel {
+        min-height: 0;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: rgba(23, 29, 27, 0.96);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .panel-header {
+        height: 42px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 12px;
+        background: #151b19;
+      }
+
+      .panel-title {
+        font-size: 12px;
+        font-weight: 780;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+      }
+
+      .panel-note {
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .path-list {
+        padding: 12px;
+        display: grid;
+        gap: 8px;
+      }
+
+      .path-item {
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        padding: 10px;
+        background: var(--panel-3);
+        cursor: pointer;
+      }
+
+      .path-item.active {
+        border-color: rgba(49, 199, 173, 0.7);
+        background: linear-gradient(90deg, rgba(49, 199, 173, 0.13), rgba(23, 29, 27, 0.95));
+      }
+
+      .path-item.done {
+        border-color: rgba(110, 219, 132, 0.36);
+      }
+
+      .path-kicker {
+        color: var(--muted-2);
+        font-size: 10px;
+        text-transform: uppercase;
+      }
+
+      .path-name {
+        margin-top: 5px;
+        font-size: 13px;
+        font-weight: 760;
+      }
+
+      .path-meta {
+        margin-top: 6px;
+        display: flex;
+        justify-content: space-between;
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .language-strip {
+        margin-top: 6px;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        padding: 10px;
+        background: #111615;
+      }
+
+      .language-strip h2 {
+        margin: 0 0 10px;
+        color: var(--teal);
+        font-size: 11px;
+        font-weight: 780;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .language-faces {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 5px;
+      }
+
+      .language-face {
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        padding: 6px 0;
+        text-align: center;
+        color: #d9e8de;
+        background: var(--code);
+        font: 700 10px/1 Consolas, "SFMono-Regular", monospace;
+      }
+
+      .main {
+        min-height: 0;
+        display: grid;
+        grid-template-rows: 178px 1fr;
+        gap: 12px;
+      }
+
+      .lesson {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background:
+          linear-gradient(90deg, rgba(22, 138, 120, 0.22), transparent 62%),
+          var(--panel);
+        padding: 18px;
+        overflow: hidden;
+      }
+
+      .lesson-grid {
+        display: grid;
+        grid-template-columns: 1fr 255px;
+        gap: 18px;
+        height: 100%;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(24px, 2vw, 34px);
+        line-height: 1.04;
+        letter-spacing: 0;
+      }
+
+      .lesson p {
+        max-width: 760px;
+        margin: 10px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.45;
+      }
+
+      .chips {
+        margin-top: 16px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .chip {
+        border: 1px solid var(--line-strong);
+        border-radius: 5px;
+        padding: 6px 8px;
+        background: rgba(12, 16, 15, 0.72);
+        color: #c8d7cd;
+        font-size: 11px;
+      }
+
+      .challenge-card {
+        border: 1px solid rgba(201, 130, 62, 0.4);
+        border-radius: 7px;
+        padding: 12px;
+        background: rgba(36, 28, 20, 0.76);
+      }
+
+      .challenge-card .small {
+        color: var(--amber);
+        font-size: 11px;
+        text-transform: uppercase;
+      }
+
+      .challenge-card code {
+        display: block;
+        margin-top: 10px;
+        border-radius: 5px;
+        padding: 10px;
+        background: var(--code);
+        color: var(--green);
+        font: 700 17px/1.2 Consolas, "SFMono-Regular", monospace;
+      }
+
+      .editor-wrap {
+        min-height: 0;
+        display: grid;
+        grid-template-columns: minmax(380px, 1.05fr) minmax(290px, 0.95fr);
+        gap: 12px;
+      }
+
+      .code-panel,
+      .receipt-panel {
+        min-height: 0;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--panel);
+        overflow: hidden;
+        display: grid;
+        grid-template-rows: 42px 1fr;
+      }
+
+      .toolbar {
+        border-bottom: 1px solid var(--line);
+        background: #151b19;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 10px;
+      }
+
+      .toolbar-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--teal);
+      }
+
+      .file-label {
+        color: #cddbd1;
+        font-size: 12px;
+        font-family: Consolas, "SFMono-Regular", monospace;
+      }
+
+      .button-row {
+        display: flex;
+        gap: 8px;
+      }
+
+      .btn {
+        height: 30px;
+        border: 1px solid var(--line-strong);
+        border-radius: 6px;
+        padding: 0 10px;
+        background: #202a27;
+        color: var(--text);
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 720;
+      }
+
+      .btn:hover,
+      .btn:focus {
+        border-color: var(--teal);
+        outline: none;
+      }
+
+      .btn.primary {
+        border-color: rgba(49, 199, 173, 0.75);
+        background: var(--teal-dark);
+        color: #effffb;
+      }
+
+      .btn.copper {
+        border-color: rgba(201, 130, 62, 0.7);
+        background: rgba(201, 130, 62, 0.22);
+      }
+
+      textarea {
+        width: 100%;
+        height: 100%;
+        resize: none;
+        border: 0;
+        outline: 0;
+        padding: 18px;
+        background: var(--code);
+        color: #dff9e6;
+        caret-color: var(--teal);
+        font: 16px/1.55 Consolas, "SFMono-Regular", Menlo, monospace;
+      }
+
+      .receipt-body {
+        min-height: 0;
+        display: grid;
+        grid-template-rows: 1fr 112px;
+      }
+
+      pre {
+        margin: 0;
+        overflow: auto;
+        padding: 16px;
+        background: var(--code);
+        color: #d5e8da;
+        font: 12px/1.5 Consolas, "SFMono-Regular", Menlo, monospace;
+      }
+
+      .face-grid {
+        border-top: 1px solid var(--line);
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .face {
+        border-right: 1px solid var(--line);
+        padding: 10px;
+        min-width: 0;
+      }
+
+      .face:last-child {
+        border-right: 0;
+      }
+
+      .face span {
+        display: block;
+        color: var(--muted-2);
+        font-size: 10px;
+        text-transform: uppercase;
+      }
+
+      .face strong {
+        display: block;
+        margin-top: 5px;
+        color: var(--text);
+        font: 760 10px/1.2 Consolas, "SFMono-Regular", monospace;
+        white-space: nowrap;
+      }
+
+      .guide {
+        min-height: 0;
+        display: grid;
+        grid-template-rows: 42px 1fr 166px;
+      }
+
+      .guide-stream {
+        min-height: 0;
+        overflow: auto;
+        padding: 12px;
+        display: grid;
+        align-content: start;
+        gap: 10px;
+      }
+
+      .msg {
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        padding: 10px;
+        background: var(--panel-3);
+      }
+
+      .msg.guide-msg {
+        border-color: rgba(49, 199, 173, 0.42);
+      }
+
+      .msg.user-msg {
+        border-color: rgba(201, 130, 62, 0.4);
+        background: rgba(36, 28, 20, 0.45);
+      }
+
+      .msg-name {
+        margin-bottom: 6px;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 760;
+        text-transform: uppercase;
+      }
+
+      .msg-text {
+        color: #dce9df;
+        font-size: 13px;
+        line-height: 1.42;
+      }
+
+      .voice-panel {
+        border-top: 1px solid var(--line);
+        background: #151b19;
+        padding: 12px;
+      }
+
+      .voice-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .voice-mode {
+        font-size: 12px;
+        font-weight: 760;
+      }
+
+      .voice-mode span {
+        color: var(--teal);
+      }
+
+      .wave {
+        height: 44px;
+        margin: 12px 0;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        display: flex;
+        align-items: end;
+        gap: 4px;
+        padding: 7px;
+        background: var(--code);
+      }
+
+      .bar {
+        flex: 1;
+        min-width: 4px;
+        background: linear-gradient(180deg, var(--teal), var(--green));
+        opacity: 0.54;
+        border-radius: 2px 2px 0 0;
+        transition: height 160ms ease, opacity 160ms ease;
+      }
+
+      .voice-panel.speaking .bar {
+        opacity: 0.92;
+      }
+
+      .guide-input {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+      }
+
+      .guide-input input {
+        width: 100%;
+        height: 32px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 0 10px;
+        background: var(--code);
+        color: var(--text);
+        outline: none;
+        font-size: 12px;
+      }
+
+      .bottom {
+        min-height: 0;
+        border-top: 1px solid var(--line);
+        background: rgba(17, 22, 21, 0.96);
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 12px;
+        padding: 12px;
+      }
+
+      .bottom-panel {
+        min-height: 0;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--panel);
+        overflow: hidden;
+        display: grid;
+        grid-template-rows: 34px 1fr;
+      }
+
+      .bottom-head {
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 10px;
+        background: #151b19;
+        font-size: 12px;
+        font-weight: 760;
+      }
+
+      .tests {
+        padding: 10px;
+        display: grid;
+        gap: 8px;
+        align-content: start;
+      }
+
+      .test-row {
+        display: grid;
+        grid-template-columns: 82px 1fr auto;
+        gap: 10px;
+        align-items: center;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 7px 9px;
+        background: var(--panel-3);
+        font-size: 12px;
+      }
+
+      .status-pass {
+        color: var(--green);
+        font-weight: 800;
+      }
+
+      .status-fail {
+        color: var(--red);
+        font-weight: 800;
+      }
+
+      .train-policy {
+        padding: 10px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+      }
+
+      .policy-cell {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 8px;
+        background: var(--panel-3);
+      }
+
+      .policy-cell span {
+        display: block;
+        color: var(--muted-2);
+        font-size: 10px;
+        text-transform: uppercase;
+      }
+
+      .policy-cell strong {
+        display: block;
+        margin-top: 6px;
+        color: var(--text);
+        font-size: 12px;
+      }
+
+      @media (max-width: 1100px) {
+        body {
+          overflow: auto;
+        }
+
+        .app {
+          min-height: 100vh;
+          height: auto;
+          grid-template-rows: auto auto auto;
+        }
+
+        .topbar,
+        .workspace,
+        .bottom {
+          grid-template-columns: 1fr;
+        }
+
+        .topbar {
+          align-items: flex-start;
+          gap: 12px;
+          padding: 12px;
+          flex-direction: column;
+        }
+
+        .workspace {
+          display: grid;
+        }
+
+        .main,
+        .editor-wrap,
+        .lesson-grid,
+        .bottom,
+        .train-policy {
+          grid-template-columns: 1fr;
+        }
+
+        .main {
+          grid-template-rows: auto auto;
+        }
+
+        .guide {
+          min-height: 520px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <div class="mark">SF</div>
+          <div>
+            <div class="brand-title">SCBE Forge</div>
+            <div class="brand-sub">AetherDesk code-language trainer</div>
+          </div>
+        </div>
+        <div class="top-stats">
+          <div class="stat"><span>Path</span><strong>CA Foundations</strong></div>
+          <div class="stat"><span>XP</span><strong id="xp">420</strong></div>
+          <div class="stat"><span>Streak</span><strong>3 days</strong></div>
+          <div class="stat"><span>Voice</span><strong id="voice-state">ready</strong></div>
+          <div class="run-status" id="run-status">awaiting run</div>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <aside class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Forge Path</div>
+            <div class="panel-note">6 lessons</div>
+          </div>
+          <div class="path-list">
+            <div class="path-item done">
+              <div class="path-kicker">Lesson 00</div>
+              <div class="path-name">Read a receipt</div>
+              <div class="path-meta"><span>done</span><span>+80 XP</span></div>
+            </div>
+            <div class="path-item active">
+              <div class="path-kicker">Lesson 01</div>
+              <div class="path-name">CA add opcode</div>
+              <div class="path-meta"><span>active</span><span>+120 XP</span></div>
+            </div>
+            <div class="path-item">
+              <div class="path-kicker">Lesson 02</div>
+              <div class="path-name">DR forge packet</div>
+              <div class="path-meta"><span>locked</span><span>+150 XP</span></div>
+            </div>
+            <div class="path-item">
+              <div class="path-kicker">Lesson 03</div>
+              <div class="path-name">RU verify branch</div>
+              <div class="path-meta"><span>locked</span><span>+150 XP</span></div>
+            </div>
+            <div class="path-item">
+              <div class="path-kicker">Lesson 04</div>
+              <div class="path-name">UM speak hint</div>
+              <div class="path-meta"><span>locked</span><span>+180 XP</span></div>
+            </div>
+            <div class="path-item">
+              <div class="path-kicker">Lesson 05</div>
+              <div class="path-name">Emit two faces</div>
+              <div class="path-meta"><span>locked</span><span>+220 XP</span></div>
+            </div>
+            <div class="language-strip">
+              <h2>Six language faces</h2>
+              <div class="language-faces" aria-label="SCBE language faces">
+                <span class="language-face">KO</span>
+                <span class="language-face">AV</span>
+                <span class="language-face">RU</span>
+                <span class="language-face">CA</span>
+                <span class="language-face">UM</span>
+                <span class="language-face">DR</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <section class="main">
+          <section class="lesson">
+            <div class="lesson-grid">
+              <div>
+                <h1>Teach the machine in our own code language.</h1>
+                <p>
+                  Write the SCBE source first. The trainer tokenizes it, binds it to an opcode,
+                  emits one host-language face, runs tests, and keeps the provenance fields separate.
+                </p>
+                <div class="chips">
+                  <span class="chip">binds_to: CA:0x00:add</span>
+                  <span class="chip">emits_to: python</span>
+                  <span class="chip">executed_on: browser-sim</span>
+                  <span class="chip">training: gated</span>
+                </div>
+              </div>
+              <div class="challenge-card">
+                <div class="small">Current challenge</div>
+                <code>bip'a 3 4</code>
+                <p>Make the expression evaluate to 7 without losing the opcode receipt.</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="editor-wrap">
+            <div class="code-panel">
+              <div class="toolbar">
+                <div class="toolbar-left">
+                  <span class="dot"></span>
+                  <span class="file-label">lesson_01.ca.scbe</span>
+                </div>
+                <div class="button-row">
+                  <button class="btn copper" id="hint-btn" type="button">Hint</button>
+                  <button class="btn primary" id="run-btn" type="button">Run</button>
+                </div>
+              </div>
+              <textarea id="source" spellcheck="false">bip'a 3 4</textarea>
+            </div>
+
+            <div class="receipt-panel">
+              <div class="toolbar">
+                <div class="toolbar-left">
+                  <span class="dot"></span>
+                  <span class="file-label">token_receipt.json</span>
+                </div>
+                <button class="btn" id="reset-btn" type="button">Reset</button>
+              </div>
+              <div class="receipt-body">
+                <pre id="receipt"></pre>
+                <div class="face-grid">
+                  <div class="face"><span>Bind</span><strong id="face-bind">pending</strong></div>
+                  <div class="face"><span>Emit</span><strong id="face-emit">pending</strong></div>
+                  <div class="face"><span>Execute</span><strong id="face-exec">pending</strong></div>
+                  <div class="face"><span>Result</span><strong id="face-result">pending</strong></div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <aside class="panel guide">
+          <div class="panel-header">
+            <div class="panel-title">TTS Guide</div>
+            <div class="panel-note">mentor mode</div>
+          </div>
+          <div class="guide-stream" id="guide-stream">
+            <div class="msg guide-msg">
+              <div class="msg-name">Forge Guide</div>
+              <div class="msg-text">
+                Start with the source phrase. In this lesson, bip'a is not English prose; it is a
+                conlang opcode word that must bind to CA:0x00:add.
+              </div>
+            </div>
+            <div class="msg guide-msg">
+              <div class="msg-name">Voice Hint</div>
+              <div class="msg-text" id="current-hint">
+                Keep the three claims apart: binds-to, emits-to, and executed-on.
+              </div>
+            </div>
+          </div>
+          <div class="voice-panel" id="voice-panel">
+            <div class="voice-top">
+              <div class="voice-mode">Voice mode: <span>local browser TTS</span></div>
+              <div class="button-row">
+                <button class="btn" id="speak-btn" type="button">Play</button>
+                <button class="btn" id="pause-btn" type="button">Pause</button>
+                <button class="btn" id="stop-btn" type="button">Stop</button>
+              </div>
+            </div>
+            <div class="wave" aria-hidden="true">
+              <div class="bar" style="height: 36%"></div>
+              <div class="bar" style="height: 68%"></div>
+              <div class="bar" style="height: 44%"></div>
+              <div class="bar" style="height: 82%"></div>
+              <div class="bar" style="height: 55%"></div>
+              <div class="bar" style="height: 72%"></div>
+              <div class="bar" style="height: 38%"></div>
+              <div class="bar" style="height: 64%"></div>
+              <div class="bar" style="height: 50%"></div>
+              <div class="bar" style="height: 76%"></div>
+            </div>
+            <div class="guide-input">
+              <input id="mentor-input" value="Why does emits_to not mean executed_on?" />
+              <button class="btn primary" id="ask-btn" type="button">Ask</button>
+            </div>
+          </div>
+        </aside>
+      </main>
+
+      <footer class="bottom">
+        <section class="bottom-panel">
+          <div class="bottom-head">
+            <span>Tests</span>
+            <span id="test-summary">0/3 run</span>
+          </div>
+          <div class="tests" id="tests"></div>
+        </section>
+        <section class="bottom-panel">
+          <div class="bottom-head">
+            <span>Training Admission</span>
+            <span id="training-state">blocked until pass</span>
+          </div>
+          <div class="train-policy">
+            <div class="policy-cell"><span>Surface</span><strong id="policy-surface">preserved</strong></div>
+            <div class="policy-cell"><span>Receipt</span><strong id="policy-receipt">pending</strong></div>
+            <div class="policy-cell"><span>Tests</span><strong id="policy-tests">pending</strong></div>
+            <div class="policy-cell"><span>Admit</span><strong id="policy-admit">no</strong></div>
+          </div>
+        </section>
+      </footer>
+    </div>
+
+    <script>
+      const sourceEl = document.getElementById('source');
+      const receiptEl = document.getElementById('receipt');
+      const testsEl = document.getElementById('tests');
+      const guideStreamEl = document.getElementById('guide-stream');
+      const currentHintEl = document.getElementById('current-hint');
+      const voicePanelEl = document.getElementById('voice-panel');
+      const voiceStateEl = document.getElementById('voice-state');
+
+      const hints = [
+        "bip'a is the opcode word. The numbers are operands, so the parser should see operator, left, right.",
+        "The host language is only one face. In this lesson Python is emitted, but the browser simulation is what actually executes.",
+        "A training row is clean only after the source, receipt, and tests agree."
+      ];
+      let hintIndex = 0;
+      let lastReceipt = null;
+
+      function sha256ish(text) {
+        let h = 2166136261;
+        for (let i = 0; i < text.length; i += 1) {
+          h ^= text.charCodeAt(i);
+          h = Math.imul(h, 16777619);
+        }
+        return ('00000000' + (h >>> 0).toString(16)).slice(-8);
+      }
+
+      function parseSource(text) {
+        const trimmed = text.trim();
+        const parts = trimmed.split(/\s+/);
+        const [op, aRaw, bRaw] = parts;
+        const left = Number(aRaw);
+        const right = Number(bRaw);
+        const errors = [];
+        if (op !== "bip'a") errors.push("expected opcode word bip'a");
+        if (!Number.isFinite(left)) errors.push("left operand must be numeric");
+        if (!Number.isFinite(right)) errors.push("right operand must be numeric");
+        if (parts.length !== 3) errors.push("expected exactly three tokens");
+        const result = errors.length ? null : left + right;
+        return { trimmed, parts, op, left, right, errors, result };
+      }
+
+      function buildReceipt(parsed) {
+        const ok = parsed.errors.length === 0;
+        return {
+          schema: 'scbe_forge_lesson_receipt_v0',
+          lesson_id: 'ca.add.001',
+          surface: parsed.trimmed,
+          source_sha256_short: sha256ish(parsed.trimmed),
+          tokens: parsed.parts.map((surface, index) => ({
+            surface,
+            index,
+            role: index === 0 ? 'opcode_word' : 'operand'
+          })),
+          binds_to: ok ? ['CA:0x00:add'] : [],
+          emits_to: ok ? ['python'] : [],
+          executed_on: ok ? ['browser-sim'] : [],
+          emitted_python: ok ? `def run():\n    return ${parsed.left} + ${parsed.right}` : null,
+          result: parsed.result,
+          tests_passed: ok && parsed.result === 7,
+          honesty_firewall: 'binds_to != emits_to != executed_on'
+        };
+      }
+
+      function renderReceipt(receipt) {
+        receiptEl.textContent = JSON.stringify(receipt, null, 2);
+        document.getElementById('face-bind').textContent = receipt.binds_to[0] || 'failed';
+        document.getElementById('face-emit').textContent = receipt.emits_to[0] || 'blocked';
+        document.getElementById('face-exec').textContent = receipt.executed_on[0] || 'blocked';
+        document.getElementById('face-result').textContent = receipt.result === null ? 'none' : String(receipt.result);
+        document.getElementById('policy-receipt').textContent = receipt.binds_to.length ? 'present' : 'failed';
+      }
+
+      function renderTests(parsed, receipt) {
+        const tests = [
+          {
+            name: 'tokenize',
+            detail: "source has opcode plus two operands",
+            pass: parsed.parts.length === 3 && parsed.op === "bip'a"
+          },
+          {
+            name: 'bind',
+            detail: "bip'a binds to CA:0x00:add",
+            pass: receipt.binds_to.includes('CA:0x00:add')
+          },
+          {
+            name: 'execute',
+            detail: 'result equals 7',
+            pass: receipt.result === 7
+          }
+        ];
+        testsEl.innerHTML = tests.map((test) => `
+          <div class="test-row">
+            <span class="${test.pass ? 'status-pass' : 'status-fail'}">${test.pass ? 'PASS' : 'FAIL'}</span>
+            <span>${test.detail}</span>
+            <span>${test.name}</span>
+          </div>
+        `).join('');
+        const passed = tests.filter((test) => test.pass).length;
+        document.getElementById('test-summary').textContent = `${passed}/${tests.length} pass`;
+        document.getElementById('policy-tests').textContent = passed === tests.length ? 'passed' : 'failed';
+        document.getElementById('policy-admit').textContent = passed === tests.length ? 'yes' : 'no';
+        document.getElementById('training-state').textContent = passed === tests.length ? 'verified row ready' : 'blocked until pass';
+        document.getElementById('run-status').textContent = passed === tests.length ? 'verified pass' : 'needs repair';
+        document.getElementById('run-status').style.color = passed === tests.length ? 'var(--green)' : 'var(--red)';
+        if (passed === tests.length) {
+          document.getElementById('xp').textContent = '540';
+        }
+      }
+
+      function addMessage(name, text, kind) {
+        const div = document.createElement('div');
+        div.className = `msg ${kind === 'user' ? 'user-msg' : 'guide-msg'}`;
+        div.innerHTML = `<div class="msg-name">${name}</div><div class="msg-text">${text}</div>`;
+        guideStreamEl.appendChild(div);
+        guideStreamEl.scrollTop = guideStreamEl.scrollHeight;
+      }
+
+      function runLesson() {
+        const parsed = parseSource(sourceEl.value);
+        const receipt = buildReceipt(parsed);
+        lastReceipt = receipt;
+        renderReceipt(receipt);
+        renderTests(parsed, receipt);
+        if (parsed.errors.length) {
+          addMessage('Forge Guide', `Repair target: ${parsed.errors.join('; ')}.`, 'guide');
+          currentHintEl.textContent = 'Repair the source until it has opcode, left operand, and right operand.';
+        } else {
+          addMessage('Forge Guide', "Good. The source binds to CA:0x00:add, emits Python, and the browser simulation executed this lesson.", 'guide');
+          currentHintEl.textContent = "This row is training-ready because source, receipt, and tests agree.";
+        }
+      }
+
+      function speak(text) {
+        if (!('speechSynthesis' in window)) {
+          voiceStateEl.textContent = 'unavailable';
+          return;
+        }
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.92;
+        utterance.pitch = 0.92;
+        utterance.onstart = () => {
+          voicePanelEl.classList.add('speaking');
+          voiceStateEl.textContent = 'speaking';
+        };
+        utterance.onend = () => {
+          voicePanelEl.classList.remove('speaking');
+          voiceStateEl.textContent = 'ready';
+        };
+        window.speechSynthesis.speak(utterance);
+      }
+
+      document.getElementById('run-btn').addEventListener('click', runLesson);
+      document.getElementById('reset-btn').addEventListener('click', () => {
+        sourceEl.value = "bip'a 3 4";
+        runLesson();
+      });
+      document.getElementById('hint-btn').addEventListener('click', () => {
+        hintIndex = (hintIndex + 1) % hints.length;
+        currentHintEl.textContent = hints[hintIndex];
+        addMessage('Voice Hint', hints[hintIndex], 'guide');
+      });
+      document.getElementById('speak-btn').addEventListener('click', () => speak(currentHintEl.textContent));
+      document.getElementById('pause-btn').addEventListener('click', () => {
+        if ('speechSynthesis' in window) {
+          if (window.speechSynthesis.paused) {
+            window.speechSynthesis.resume();
+            voiceStateEl.textContent = 'speaking';
+          } else {
+            window.speechSynthesis.pause();
+            voiceStateEl.textContent = 'paused';
+          }
+        }
+      });
+      document.getElementById('stop-btn').addEventListener('click', () => {
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        voicePanelEl.classList.remove('speaking');
+        voiceStateEl.textContent = 'ready';
+      });
+      document.getElementById('ask-btn').addEventListener('click', () => {
+        const input = document.getElementById('mentor-input');
+        const question = input.value.trim();
+        if (!question) return;
+        addMessage('Student', question, 'user');
+        const answer = "Because a compiler can emit a target without this lesson running that target. The receipt only marks browser-sim as executed here.";
+        addMessage('Forge Guide', answer, 'guide');
+        currentHintEl.textContent = answer;
+      });
+
+      runLesson();
+    </script>
+  </body>
+</html>
