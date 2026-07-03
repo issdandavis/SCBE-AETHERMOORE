@@ -1,8 +1,0 @@
-STRENGTH-ROUTER LIFT  (proactive routed vs plain single-shot, 30 tasks)
-  single-shot : 2 / 30
-  routed      : 26 / 30
-  newly solved: 24  [1001, 1002, 1003, 1004, 1006, 1007, 1008, 1009, 1011, 1012, 1013, 1014, 1016, 1017, 1018, 1019, 1021, 1022, 1023, 1024, 1026, 1027, 1028, 1029]   <- routed clears, lone weak model could not
-  regressed   : 0  []   <- routed broke what single-shot solved
-  NET LIFT    : +24
-  solver mix  : small=54 strong=0 block=60 calc=60  <- lift must come from ROUTING, not a fat strong/block
-  (block-offload: 60 modulo computations done by verified blocks; model made 54 label judgements only)

@@ -1,5 +1,0 @@
-SINGLE-SHOT: 17/20 (85%)
-FAILED single-shot: ['p2_rotate_left', 'p2_buzzfizz', 'p5_max_coins']
-RESCUED by repair loop: ['p2_buzzfizz']
-STILL STUCK (ceilings): ['p2_rotate_left', 'p5_max_coins']
-MEASURABLE-SURFACE VERDICT: base 17/20, 1 recoverable, 2 ceiling

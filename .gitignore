@@ -355,3 +355,6 @@ docs/proposals/*.zip
 
 # generated audit-receipt runs
 audit_attestation/
+# --- run/eval output artifacts (never commit) ---
+_*.out
+_failuremap.json
