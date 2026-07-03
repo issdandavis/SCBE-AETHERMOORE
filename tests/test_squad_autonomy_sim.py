@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "research" / "comms_sim"))
@@ -89,5 +90,6 @@ def test_every_nasa_figure_carries_a_nasa_source_url():
     # no fabricated figure: every NASA_SOURCES entry cites a nasa.gov URL so it can be audited back to NASA
     assert sa.NASA_SOURCES, "NASA_SOURCES must be populated"
     for key, src in sa.NASA_SOURCES.items():
-        assert "nasa.gov" in src, key
-        assert "http" in src, key
+        host = urlparse(src).netloc.split("@")[-1].split(":")[0].lower()
+        assert host == "nasa.gov" or host.endswith(".nasa.gov"), key
+        assert src.startswith(("http://", "https://")), key
