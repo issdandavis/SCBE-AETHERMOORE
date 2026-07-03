@@ -91,7 +91,7 @@ jobs:
             ':!node_modules/**' \
             ':!artifacts/**' \
             ':!training-data/**' \
-            ':!**/target/**' || true)"
+            ':!**/target/**' || true)"  # audit: advisory - git grep exits nonzero when no conflict markers exist (the clean, passing case)
           if [ -n "$conflict_report" ]; then
             failures=1
             {
