@@ -16,6 +16,7 @@ and the Aethermoore canon (world bible / novel / Spiral Forge) each system is dr
 npm run game:aethermon:web     # BROWSER game — pixel sprites, animated battles, sound
 npm run game:aethermon         # interactive terminal game (saves to .aethermon-save.json)
 npm run game:aethermon:demo    # scripted, deterministic playthrough — no input, no saves
+python scripts/system/aethermon_training_arena.py  # AI training arena + Godot sprite manifest
 ```
 
 The web version (`demos/aethermon/index.html`) is a virtual-pet device shell driving the
@@ -30,6 +31,24 @@ run `npm run build` (or any `game:aethermon*` CLI script, which runs `tsc`) firs
 populate `dist/`.
 
 CLI flags (after `--`): `--seed <n>` fixed RNG seed, `--save <path>` custom save location.
+
+## Godot AI Training Arena
+
+`scripts/system/aethermon_training_arena.py` is the smallest Godot-facing training loop:
+
+```text
+observe -> choose action -> mutate world -> verify -> receipt
+```
+
+It generates a deterministic grid arena, tiny AETHERMON PNG sprites, a Godot manifest at
+`game/godot/assets/aethermon/training_manifest.json`, and per-tick receipts under
+`artifacts/aethermon_training_arena/`. The matching Godot visual shell is
+`game/godot/scenes/aethermon/aethermon_training_arena.tscn`; open that scene after running
+the Python script to mirror the board in-engine.
+
+The current objective is intentionally small: train once, win one sparring battle, then
+reach the nexus. This keeps the game useful as a verified trajectory generator instead of
+turning the prototype into pure demo polish.
 
 ## Module
 

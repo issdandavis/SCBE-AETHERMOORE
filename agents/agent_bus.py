@@ -521,12 +521,10 @@ class AgentBus:
         import sys
 
         sys.path.insert(0, "python") if "python" not in sys.path[:3] else None
-        from scbe.tongue_isa import compile_ca_tokens, disassemble
-        from src.code_prism.emitter import emit_from_ir
+        from scbe.tongue_isa import compile_ca_tokens, disassemble, emit_compiled_program_source
 
         prog = compile_ca_tokens(tokens, target=target, fn_name=fn_name, arg_names=arg_names)
-        module = prog.to_prism_module()
-        source = emit_from_ir(module, target_language=target)
+        source = emit_compiled_program_source(prog)
         return {
             "source": source,
             "op_trace": prog.op_trace,
@@ -561,9 +559,8 @@ class AgentBus:
         import sys
 
         sys.path.insert(0, "python") if "python" not in sys.path[:3] else None
-        from scbe.tongue_isa import compile_ca_tokens
+        from scbe.tongue_isa import compile_ca_tokens, emit_compiled_program_source
         from scbe.tongue_isa_binary import decode
-        from src.code_prism.emitter import emit_from_ir
 
         block = decode(blob)
         prog = compile_ca_tokens(
@@ -572,7 +569,7 @@ class AgentBus:
             fn_name=block.fn_name,
             arg_names=block.arg_names,
         )
-        return emit_from_ir(prog.to_prism_module(), target_language=target)
+        return emit_compiled_program_source(prog)
 
     # -- self-extension ------------------------------------------------------
 

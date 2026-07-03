@@ -1,0 +1,66 @@
+{
+  "schema": "scbe_doc_source_manifest_v1",
+  "retrieved_at": "2026-06-27",
+  "sources": [
+    {
+      "id": "repo_instrument",
+      "path_or_url": "python/scbe/instrument.py",
+      "hash_or_commit": "working-tree",
+      "use": "existing notes-to-CA-op surface, keyspace colors, emit_all, Python execution"
+    },
+    {
+      "id": "repo_tongue_isa",
+      "path_or_url": "python/scbe/tongue_isa.py",
+      "hash_or_commit": "working-tree",
+      "use": "8 primary CA source faces and runtime emission"
+    },
+    {
+      "id": "repo_machine_crystal",
+      "path_or_url": "python/scbe/machine_crystal.py",
+      "hash_or_commit": "working-tree",
+      "use": "Brainfuck-class tape runtime and receipts"
+    },
+    {
+      "id": "repo_atomic_tokenization",
+      "path_or_url": "python/scbe/atomic_tokenization.py",
+      "hash_or_commit": "working-tree",
+      "use": "STISTA/atomic-token metadata lane for played op tokens"
+    },
+    {
+      "id": "scratch_holophonor",
+      "path_or_url": "C:/dev/holophonor.py",
+      "hash_or_commit": "local-scratch",
+      "use": "prototype behavior for play-once code/color/voice"
+    },
+    {
+      "id": "scratch_any_instrument",
+      "path_or_url": "C:/dev/any_instrument.py",
+      "hash_or_commit": "local-scratch",
+      "use": "prototype alphabet proof"
+    },
+    {
+      "id": "scratch_music_theory",
+      "path_or_url": "C:/dev/music_theory.py",
+      "hash_or_commit": "local-scratch",
+      "use": "prototype note-role and consonance functions"
+    },
+    {
+      "id": "scratch_music_bijection",
+      "path_or_url": "C:/dev/music_bijection.py",
+      "hash_or_commit": "local-scratch",
+      "use": "prototype key-independent degree rendering proof"
+    },
+    {
+      "id": "scratch_rulings",
+      "path_or_url": "C:/dev/rulings.py",
+      "hash_or_commit": "local-scratch",
+      "use": "prototype ruling-system taxonomy"
+    },
+    {
+      "id": "scratch_daw_model",
+      "path_or_url": "C:/dev/daw_model.py",
+      "hash_or_commit": "local-scratch",
+      "use": "prototype DAW scheduling map"
+    }
+  ]
+}

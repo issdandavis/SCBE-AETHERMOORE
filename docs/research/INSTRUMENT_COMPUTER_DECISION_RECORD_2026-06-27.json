@@ -1,0 +1,40 @@
+{
+  "schema": "scbe_decision_record_v1",
+  "date": "2026-06-27",
+  "decision": "Consolidate instrument-computer experiments into one repo-native package and CLI.",
+  "choices": [
+    {
+      "choice": "Use python/scbe/instrument_computer.py as the reusable package boundary.",
+      "reason": "Keeps shared logic importable and avoids depending on scripts or C:/dev scratch files."
+    },
+    {
+      "choice": "Keep scripts/audio/instrument_computer.py as a thin CLI.",
+      "reason": "Provides a single user-facing demo surface without mixing CLI code into package logic."
+    },
+    {
+      "choice": "Expose both 8 primary faces and broad emit_all faces in Holophonor receipts.",
+      "reason": "The primary faces are traceable through tongue_isa; broad faces preserve the existing instrument fan-out."
+    },
+    {
+      "choice": "Keep Haskell as an explicit primary face.",
+      "reason": "The CA stack model maps cleanly to pure functional stack transformations even though Haskell is less common in mainstream product deployment."
+    },
+    {
+      "choice": "Wire STISTA via atomic_tokenization rows for each played op.",
+      "reason": "The repo has a real finite atomic-tokenization runtime; receipts should use that instead of treating STISTA as only prose."
+    },
+    {
+      "choice": "Do not claim execution on every emitted language.",
+      "reason": "The local receipt executes Python; other faces are emitted unless external compilers are run separately."
+    },
+    {
+      "choice": "Implement stateful shell RAM as old movie-player reels.",
+      "reason": "Segmenting the tape into reels gives a concrete mechanism for bounded tape chunks and automatic reel changes while preserving BF-class semantics."
+    }
+  ],
+  "verification": [
+    "python scripts/audio/instrument_computer.py demo",
+    "python scripts/audio/instrument_computer.py reel",
+    "python -m pytest tests/audio/test_instrument_computer_package.py -q"
+  ]
+}

@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from scbe_bookforge import load_profile, build_epub, build_docx, interior_engine_for
+from scbe_bookforge.interior_xelatex import _compose_document
 from scbe_bookforge.profile import KDP_TRIM_SIZES
 from scbe_bookforge.manuscript import clean_source_text, parse_markdown, word_count
 
@@ -71,3 +72,19 @@ def test_build_docx_round_trip(tmp_path: Path):
     out = build_docx(profile)
     assert out.exists()
     assert out.stat().st_size > 1024
+
+
+def test_xelatex_document_loads_hyperref_for_pandoc_heading_anchors(tmp_path: Path):
+    md = tmp_path / "manuscript.md"
+    md.write_text("# Test\n\n## Chapter 1. Hello\n\nWorld.\n", encoding="utf-8")
+    profile_path = tmp_path / "bookforge.json"
+    profile_path.write_text(json.dumps({
+        "title": "Test Book",
+        "author": "Tester",
+        "source": "manuscript.md",
+        "output_dir": "build",
+        "trim": "5.5x8.5",
+    }), encoding="utf-8")
+    profile = load_profile(profile_path)
+    document = _compose_document(profile, "body.tex")
+    assert r"\usepackage[hidelinks]{hyperref}" in document

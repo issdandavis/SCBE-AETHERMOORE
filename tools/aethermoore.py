@@ -213,18 +213,18 @@ class SacredEggIntegrator:
         # Validate ritual
         if ritual_mode == "solitary":
             if tongue not in provided_tongues:
-                return {"success": False, "error": f"Wrong tongue: need {tongue}"}
+                return {"success": False, "error": "sealed"}
         elif ritual_mode == "triadic":
             missing = [t for t in egg["ritual_tongues"] if t not in provided_tongues]
             if missing:
-                return {"success": False, "error": f"Missing tongues: {missing}"}
+                return {"success": False, "error": "sealed"}
             total_weight = sum(TONGUES[t]["weight"] for t in provided_tongues if t in TONGUE_IDS)
             if total_weight < egg["weight_threshold"]:
-                return {"success": False, "error": "Weight threshold not met"}
+                return {"success": False, "error": "sealed"}
         elif ritual_mode == "ring_descent":
             for i, expected in enumerate(egg["ritual_tongues"]):
                 if i >= len(provided_tongues) or provided_tongues[i] != expected:
-                    return {"success": False, "error": f"Ring {i} mismatch"}
+                    return {"success": False, "error": "sealed"}
 
         # Decrypt
         try:
@@ -234,7 +234,7 @@ class SacredEggIntegrator:
             payload = self.tokenizer.decode(tokens, tongue)
             return {"success": True, "payload": payload.decode("utf-8", errors="replace"), "tokens": len(tokens)}
         except Exception as e:
-            return {"success": False, "error": str(e)}
+            return {"success": False, "error": "sealed"}
 
 
 # ============================================================================
@@ -354,8 +354,12 @@ def cmd_egg_create(args):
 
     output = {
         "egg": egg,
-        "master_key": master_key.hex(),
+        "security_note": "demo container; keep master keys outside egg JSON",
     }
+    if getattr(args, "include_master_key", False):
+        output["master_key"] = master_key.hex()
+    else:
+        output["master_key_required"] = "provide --master-key separately to egg-hatch"
 
     if args.output:
         with open(args.output, "w") as f:
@@ -374,7 +378,10 @@ def cmd_egg_hatch(args):
         data = json.loads(sys.stdin.read())
 
     egg = data["egg"]
-    master_key = bytes.fromhex(data["master_key"])
+    master_key_hex = getattr(args, "master_key", None) or data.get("master_key")
+    if not master_key_hex:
+        raise SystemExit("egg-hatch requires --master-key; egg JSON no longer stores it by default")
+    master_key = bytes.fromhex(master_key_hex)
     integrator = SacredEggIntegrator(master_key)
 
     tongues = [t.strip().upper() for t in args.tongues.split(",")]
@@ -511,12 +518,18 @@ Examples:
     p_ecreate.add_argument("--input", "-i", help="Payload string (or stdin)")
     p_ecreate.add_argument("--output", "-o", help="Output file path")
     p_ecreate.add_argument("--master-key", help="Hex-encoded master key")
+    p_ecreate.add_argument(
+        "--include-master-key",
+        action="store_true",
+        help="Demo-only: include raw master key in output JSON",
+    )
     p_ecreate.add_argument("--geo", help="lat,lon,alt coordinates")
 
     # egg-hatch
     p_ehatch = subparsers.add_parser("egg-hatch", help="Hatch a Sacred Egg")
     p_ehatch.add_argument("--tongues", required=True, help="Comma-separated tongues for ritual")
     p_ehatch.add_argument("--egg-file", help="Egg JSON file (or stdin)")
+    p_ehatch.add_argument("--master-key", help="Hex-encoded master key")
     p_ehatch.add_argument("--geo", help="lat,lon,alt coordinates")
 
     # selftest

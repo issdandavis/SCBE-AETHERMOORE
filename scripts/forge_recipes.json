@@ -15,5 +15,24 @@
     ],
     "deed": 3292800,
     "verified": true
+  },
+  {
+    "intent": "a task tracker I can mark done and count",
+    "caps": [
+      "done",
+      "count",
+      "add",
+      "list"
+    ],
+    "moves": [
+      "add",
+      "list",
+      "done",
+      "count",
+      "clear",
+      "remove"
+    ],
+    "deed": 1913384442124905750,
+    "verified": true
   }
 ]

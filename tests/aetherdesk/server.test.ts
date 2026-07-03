@@ -192,6 +192,9 @@ describe('AetherDesk server — bounded PowerShell terminal', () => {
     expect(body.ok).toBe(true);
     expect(body.receipt.command_id).toBe('powershell:command');
     expect(body.receipt.risk_tier).toBe('bounded-host-read');
+    expect(body.receipt.executor).toBe('geoseal:powershell');
+    expect(body.receipt.upstream_schema).toBe('geoseal_powershell_run_v1');
+    expect(body.receipt.upstream_receipt_path).toMatch(/^artifacts\/geoseal_powershell_receipts\/.+\.json$/);
     expect(body.receipt.stdout_tail).toContain('AETHERDESK_OK');
     expect(body.receipt.command_digest).toMatch(/^[a-f0-9]{64}$/);
   });
@@ -208,6 +211,42 @@ describe('AetherDesk server — bounded PowerShell terminal', () => {
     expect(body.receipt.command_label).toBe('PowerShell blocked');
     expect(body.receipt.exit_code).toBe(126);
   });
+
+  it('POST /api/powershell/run honors GeoSeal stricter command validation', async () => {
+    const { status, body } = await fetchJson(`${baseUrl}/api/powershell/run`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ command: 'Get-ChildItem; Get-Location' }),
+    });
+    expect(status).toBe(400);
+    expect(body.ok).toBe(false);
+    expect(body.error).toMatch(/blocked/i);
+    expect(body.receipt.executor).toBe('geoseal:powershell');
+    expect(body.receipt.command_label).toBe('PowerShell blocked by GeoSeal');
+    expect(body.receipt.risk_tier).toBe('blocked');
+    expect(body.receipt.upstream_schema).toBe('geoseal_powershell_run_v1');
+    expect(body.receipt.exit_code).toBe(126);
+  });
+});
+
+describe('AetherDesk server - Worktree Garden boundary', () => {
+  it('validates garden attach inputs without accepting shell-shaped text', () => {
+    expect(aetherdesk.normalizeGardenToken('codex.1', 'agent')).toBe('codex.1');
+    expect(aetherdesk.normalizeGardenMode('review')).toBe('review');
+    expect(aetherdesk.normalizeGardenTask('  tend   the house plot  ')).toBe('tend the house plot');
+    expect(aetherdesk.normalizeGardenTtlHours(1000)).toBe(72);
+    expect(() => aetherdesk.normalizeGardenToken('../bad', 'plot')).toThrow(/invalid/i);
+    expect(() => aetherdesk.normalizeGardenMode('format-disk')).toThrow(/invalid/i);
+  });
+
+  it('GET /api/worktree-garden returns a bounded garden payload', async () => {
+    const { status, body } = await fetchJson(`${baseUrl}/api/worktree-garden`);
+    expect(status).toBe(200);
+    expect(body.ok).toBe(true);
+    expect(body.schema).toBe('aetherdesk_worktree_garden_v0');
+    expect(body.payload.schema).toBe('scbe_worktree_garden_state_v1');
+    expect(Array.isArray(body.payload.plots)).toBe(true);
+  }, 15000);
 });
 
 describe('AetherDesk server — receipt schema + listing', () => {
@@ -616,6 +655,18 @@ describe('AetherDesk server — desktop UI is served', () => {
     expect(body).toContain('id="window-notebook"');
     expect(body).toContain('id="notebook-save"');
     expect(body).toContain('/api/notebook/');
+  });
+
+  it('serves the Worktree Garden game and launcher', async () => {
+    const shell = await fetchText(`${baseUrl}/`);
+    expect(shell.body).toContain('Worktree Garden');
+    expect(shell.body).toContain('data-garden-game');
+
+    const game = await fetchText(`${baseUrl}/worktree-garden.html`);
+    expect(game.status).toBe(200);
+    expect(game.type).toMatch(/text\/html/);
+    expect(game.body).toContain('<canvas id="game"');
+    expect(game.body).toContain('/api/worktree-garden');
   });
 
   it('the served shell carries no removed Kimi branding', async () => {

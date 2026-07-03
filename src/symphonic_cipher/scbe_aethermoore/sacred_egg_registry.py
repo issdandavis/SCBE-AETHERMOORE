@@ -68,6 +68,7 @@ class SacredEggRegistry:
                 primary_tongue  TEXT NOT NULL,
                 glyph           TEXT NOT NULL,
                 hatch_condition TEXT NOT NULL,
+                condition_digest TEXT NOT NULL DEFAULT '',
                 yolk_ct         TEXT NOT NULL,
                 status          TEXT NOT NULL DEFAULT 'SEALED',
                 created_at      REAL NOT NULL,
@@ -76,6 +77,10 @@ class SacredEggRegistry:
                 hatched_by      TEXT
             )
         """)
+        c.execute("PRAGMA table_info(eggs)")
+        columns = {row[1] for row in c.fetchall()}
+        if "condition_digest" not in columns:
+            c.execute("ALTER TABLE eggs ADD COLUMN condition_digest TEXT NOT NULL DEFAULT ''")
         c.execute("""
             CREATE TABLE IF NOT EXISTS ritual_log (
                 id              INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -107,13 +112,14 @@ class SacredEggRegistry:
         c.execute(
             """INSERT OR REPLACE INTO eggs
                (egg_id, primary_tongue, glyph, hatch_condition,
-                yolk_ct, status, created_at, ttl_seconds)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                condition_digest, yolk_ct, status, created_at, ttl_seconds)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (
                 egg.egg_id,
                 egg.primary_tongue,
                 egg.glyph,
                 json.dumps(egg.hatch_condition),
+                egg.condition_digest,
                 json.dumps(egg.yolk_ct),
                 SEALED,
                 time.time(),
@@ -144,7 +150,12 @@ class SacredEggRegistry:
             hatch_condition=json.loads(row["hatch_condition"]),
             yolk_ct=json.loads(row["yolk_ct"]),
             self_tag=DEFAULT_EGG_SELF_TAG,
-            self_shape=self_detect_shape(row["egg_id"], DEFAULT_EGG_SELF_TAG),
+            self_shape=self_detect_shape(
+                row["egg_id"],
+                DEFAULT_EGG_SELF_TAG,
+                row["condition_digest"],
+            ),
+            condition_digest=row["condition_digest"],
         )
 
     def get_status(self, egg_id: str) -> Optional[str]:

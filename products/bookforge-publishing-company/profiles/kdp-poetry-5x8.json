@@ -1,0 +1,31 @@
+{
+  "title": "Your Poetry Book",
+  "subtitle": "",
+  "author": "Your Name",
+  "copyright_year": 2026,
+  "publisher": "Your Name",
+  "isbn": "Print ISBN: printed on back cover or assigned in KDP",
+  "edition_statement": "First edition",
+  "source": "../starter/manuscript.md",
+  "output_dir": "../build/poetry-5x8",
+  "trim": "5x8",
+  "page_count": 120,
+  "print": {
+    "paper": "cream",
+    "ink": "bw",
+    "cover_finish": "matte"
+  },
+  "typography": {
+    "body_font": "Georgia",
+    "body_size_pt": 11,
+    "leading_pt": 16,
+    "first_line_indent_in": 0,
+    "chapter_title_size_pt": 16
+  },
+  "margins": {
+    "inside_in": 0.74,
+    "outside_in": 0.58,
+    "top_in": 0.72,
+    "bottom_in": 0.72
+  }
+}

@@ -1,6 +1,6 @@
 {
   "schema": "aethermoor-bus-app-config-v1",
-  "updated_at": "2026-05-16",
+  "updated_at": "2026-07-02",
   "app": {
     "name": "Aethermoor Bus",
     "package_name": "io.aethermoor.bus",
@@ -35,6 +35,7 @@
     "shopify_command_center_page": "https://aethermoore.com/SCBE-AETHERMOORE/shopify-command-center.html",
     "bookshelf_page": "https://aethermoore.com/SCBE-AETHERMOORE/books.html",
     "guides_page": "https://aethermoore.com/SCBE-AETHERMOORE/guides.html",
+    "bookforge_publishing_kit_page": "https://aethermoore.com/SCBE-AETHERMOORE/bookforge-publishing-kit.html",
     "shopify_command_center_demo": "https://shopify-command-center-165664533862.us-west2.run.app",
     "shopify_command_center_repo": "https://github.com/issdandavis/Shopify-Command-Center",
     "cash_app_qr": "https://aethermoore.com/SCBE-AETHERMOORE/static/cash-app-payment.png",
@@ -106,6 +107,7 @@
     "shopify_command_center": true,
     "governance_snapshot": true,
     "behind_the_scenes_pack": true,
+    "bookforge_publishing_kit": true,
     "unified_payment_center": true,
     "zero_key_agent_bus": true,
     "local_download_storage": true,

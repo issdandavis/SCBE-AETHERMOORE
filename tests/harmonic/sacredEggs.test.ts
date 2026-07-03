@@ -60,6 +60,8 @@ function createValidState(): VerifierState {
   };
 }
 
+const acceptApproval = (_approval: Approval, _eggId: string): boolean => true;
+
 // ═══════════════════════════════════════════════════════════════
 // SE-1: Predicate Gating Matrix
 // ═══════════════════════════════════════════════════════════════
@@ -126,7 +128,7 @@ describe('SE-1: Predicate Gating Matrix', () => {
         sharedSecret: validState.sharedSecret,
       };
 
-      const result = await hatch(egg, testState);
+      const result = await hatch(egg, testState, acceptApproval);
 
       if (shouldDecrypt) {
         expect(result.success).toBe(true);
@@ -161,7 +163,7 @@ describe('SE-1: Predicate Gating Matrix', () => {
         sharedSecret: validState.sharedSecret,
       };
 
-      const result = await hatch(egg, testState);
+      const result = await hatch(egg, testState, acceptApproval);
       if (result.success) successCount++;
     }
 
@@ -206,7 +208,7 @@ describe('SE-2: Output Collapse Check', () => {
     ];
 
     for (const state of failureStates) {
-      const result = await hatch(egg, state);
+      const result = await hatch(egg, state, acceptApproval);
       expect(result.success).toBe(false);
       if (!result.success) {
         lengths.push(result.output.length);
@@ -231,7 +233,7 @@ describe('SE-2: Output Collapse Check', () => {
       observedTongue: 'DR' as Tongue,
       validTongues: new Set(['DR' as Tongue]),
     };
-    const result = await hatch(egg, failState);
+    const result = await hatch(egg, failState, acceptApproval);
 
     expect(result.success).toBe(false);
     if (!result.success) {
@@ -262,7 +264,7 @@ describe('SE-2: Output Collapse Check', () => {
     ];
 
     for (const state of failureModes) {
-      const result = await hatch(egg, state);
+      const result = await hatch(egg, state, acceptApproval);
       if (!result.success) {
         outputs.push(result.output);
       }
@@ -295,8 +297,48 @@ describe('SE-3: Wrong-Geometry Key Separation', () => {
     const plaintext = new TextEncoder().encode('GEOMETRY_TEST');
     const egg = await createEgg(plaintext, policy, validState.sharedSecret, validState);
 
-    const result = await hatch(egg, validState);
+    const result = await hatch(egg, validState, acceptApproval);
     expect(result.success).toBe(true);
+  });
+
+  it('default approval verifier denies otherwise valid hatches', async () => {
+    const policy = createTestPolicy();
+    const validState = createValidState();
+    const plaintext = new TextEncoder().encode('APPROVAL_REQUIRED');
+    const egg = await createEgg(plaintext, policy, validState.sharedSecret, validState);
+
+    const denied = await hatch(egg, validState);
+    const allowed = await hatch(egg, validState, acceptApproval);
+
+    expect(denied.success).toBe(false);
+    expect(allowed.success).toBe(true);
+  });
+
+  it('rejects post-creation policy tampering before predicate evaluation', async () => {
+    const policy = createTestPolicy();
+    policy.quorumRequired = 2;
+    const validState = createValidState();
+    validState.approvals = [
+      { approverId: 'a1', signature: new Uint8Array(64), timestamp: Date.now() },
+      { approverId: 'a2', signature: new Uint8Array(64), timestamp: Date.now() },
+    ];
+    const plaintext = new TextEncoder().encode('POLICY_SEALED');
+    const egg = await createEgg(plaintext, policy, validState.sharedSecret, validState);
+
+    const tamperedEgg: SacredEgg = {
+      ...egg,
+      policy: {
+        ...egg.policy,
+        quorumRequired: 0,
+      },
+    };
+    const attackState = {
+      ...validState,
+      approvals: [],
+    };
+
+    const result = await hatch(tamperedEgg, attackState, acceptApproval);
+    expect(result.success).toBe(false);
   });
 
   it('different ring level → decryption fails', async () => {
@@ -314,7 +356,7 @@ describe('SE-3: Wrong-Geometry Key Separation', () => {
     };
 
     // Even if predicates pass, key derivation uses different ring → AEAD fails
-    const result = await hatch(egg, altState);
+    const result = await hatch(egg, altState, acceptApproval);
 
     // This tests the cryptographic binding to geometry
     // The key is derived from ring level, so wrong ring = wrong key = decryption fails
@@ -341,7 +383,7 @@ describe('SE-3: Wrong-Geometry Key Separation', () => {
     };
 
     // Key derivation includes cell → different key → AEAD fails
-    const result = await hatch(egg, altState);
+    const result = await hatch(egg, altState, acceptApproval);
     expect(result.success).toBe(false);
   });
 
@@ -360,7 +402,7 @@ describe('SE-3: Wrong-Geometry Key Separation', () => {
     };
 
     // Key derivation includes path digest → different key → AEAD fails
-    const result = await hatch(egg, altState);
+    const result = await hatch(egg, altState, acceptApproval);
     expect(result.success).toBe(false);
   });
 
@@ -390,7 +432,7 @@ describe('SE-3: Wrong-Geometry Key Separation', () => {
         position: pos,
       };
 
-      const result = await hatch(egg, altState);
+      const result = await hatch(egg, altState, acceptApproval);
       if (!result.success) failures++;
     }
 

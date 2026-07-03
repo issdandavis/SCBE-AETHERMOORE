@@ -36,12 +36,12 @@ def to_ssml(marked: str) -> str:
     """Compile the inflection notation to a SAPI XML fragment. XML-escapes the prose first, so a literal
     & or < in the text is safe; the notation delimiters then become real tags."""
     s = escape(marked)  # & < > in the spoken text -> entities, before we insert real tags
-    s = s.replace("||", '<silence msec="600"/>').replace("|", '<silence msec="250"/>')
     s = re.sub(r"\*([^*]+)\*", r"<emph>\1</emph>", s)
-    s = re.sub(r"\^([^^]+)\^", r'<pitch absmiddle="%d">\1</pitch>' % _PITCH_STEP, s)
-    s = re.sub(r"~([^~]+)~", r'<pitch absmiddle="-%d">\1</pitch>' % _PITCH_STEP, s)
     s = re.sub(r"\+([^+]+)\+", r'<volume level="100">\1</volume>', s)
     s = re.sub(r"=([^=]+)=", r'<volume level="55">\1</volume>', s)
+    s = re.sub(r"\^([^^]+)\^", r'<pitch absmiddle="%d">\1</pitch>' % _PITCH_STEP, s)
+    s = re.sub(r"~([^~]+)~", r'<pitch absmiddle="-%d">\1</pitch>' % _PITCH_STEP, s)
+    s = s.replace("||", '<silence msec="600"/>').replace("|", '<silence msec="250"/>')
     return s
 
 

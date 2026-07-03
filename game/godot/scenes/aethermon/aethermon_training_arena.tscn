@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://aethermon_training_arena"]
+
+[ext_resource type="Script" path="res://scripts/aethermon/aethermon_training_arena.gd" id="1_arena"]
+
+[node name="AethermonTrainingArena" type="Node2D"]
+script = ExtResource("1_arena")

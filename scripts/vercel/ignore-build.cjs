@@ -40,6 +40,7 @@ const relevantPaths = [
   'docs/hire.html',
   'docs/hire-b.html',
   'docs/products.html',
+  'docs/bookforge-publishing-kit.html',
   'docs/packages.html',
   'docs/packages',
   'docs/books.html',

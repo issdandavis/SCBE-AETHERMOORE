@@ -82,6 +82,40 @@ function stableHashHex64(data: string): string {
   return hex;
 }
 
+function canonicalizeForJson(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(canonicalizeForJson);
+  }
+  if (value && typeof value === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const key of Object.keys(value as Record<string, unknown>).sort()) {
+      const child = (value as Record<string, unknown>)[key];
+      if (child !== undefined) {
+        out[key] = canonicalizeForJson(child);
+      }
+    }
+    return out;
+  }
+  return value;
+}
+
+export function canonicalPolicyJson(policy: EggPolicy): string {
+  return JSON.stringify(canonicalizeForJson(policy));
+}
+
+export async function computePolicyHash(policy: EggPolicy): Promise<string> {
+  const policyBytes = new TextEncoder().encode(canonicalPolicyJson(policy));
+  const hashBuffer = await crypto.subtle.digest('SHA-256', policyBytes);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+export async function verifyEggPolicyHash(egg: SacredEgg): Promise<boolean> {
+  if (!egg.header.policyHash) return false;
+  return (await computePolicyHash(egg.policy)) === egg.header.policyHash;
+}
+
 /**
  * Combine a base shape + self tag into a single stable identity fingerprint.
  *
@@ -513,10 +547,16 @@ function generateFailureOutput(length: number): Uint8Array {
 export async function hatch(
   egg: SacredEgg,
   state: VerifierState,
-  verifyApproval: (approval: Approval, eggId: string) => boolean = () => true
+  verifyApproval: (approval: Approval, eggId: string) => boolean = () => false
 ): Promise<HatchResult> {
   // Default failure output length (matches expected plaintext size or fixed)
   const failureLength = egg.ciphertext.length;
+
+  // Public policy metadata is part of the seal. Do not evaluate attacker-mutated
+  // policy before proving it still matches the genesis-bound header.
+  if (!(await verifyEggPolicyHash(egg)) || !verifyEggSelfIdentity(egg)) {
+    return { success: false, output: generateFailureOutput(failureLength) };
+  }
 
   // P_tongue: Domain membership check
   if (!predicateTongue(egg, state)) {
@@ -608,12 +648,7 @@ export async function createEgg(
   partialEgg.ciphertext = new Uint8Array(ciphertext);
 
   // Compute policy hash
-  const policyStr = JSON.stringify(policy);
-  const policyBytes = new TextEncoder().encode(policyStr);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', policyBytes);
-  partialEgg.header.policyHash = Array.from(new Uint8Array(hashBuffer))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
+  partialEgg.header.policyHash = await computePolicyHash(policy);
 
   // Bind genesis self identity (shape + tag) as unchanging variables
   const selfIdentity = computeEggSelfIdentity(partialEgg);

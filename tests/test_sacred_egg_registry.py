@@ -12,6 +12,7 @@ Tests cover:
 @component Sacred Egg Registry Tests
 """
 
+import json
 import time
 
 import pytest
@@ -23,6 +24,7 @@ from src.symphonic_cipher.scbe_aethermoore.cli_toolkit import (
 )
 from src.symphonic_cipher.scbe_aethermoore.sacred_egg_integrator import (
     SacredEggIntegrator,
+    hatch_condition_digest,
 )
 from src.symphonic_cipher.scbe_aethermoore.sacred_egg_registry import (
     SacredEggRegistry,
@@ -94,7 +96,29 @@ class TestRegisterAndRetrieve:
         assert egg.egg_id == sample_egg.egg_id
         assert egg.primary_tongue == "KO"
         assert egg.glyph == "star"
+        assert egg.hatch_condition == sample_egg.hatch_condition
+        assert egg.condition_digest == sample_egg.condition_digest
+        assert egg.self_shape == sample_egg.self_shape
         assert egg.yolk_ct == sample_egg.yolk_ct
+
+    def test_tampered_registered_hatch_condition_fails(
+        self, registry, sample_egg, integrator, key_pair, context
+    ):
+        pk, sk = key_pair
+        registry.register(sample_egg)
+        registry._conn.execute(
+            "UPDATE eggs SET hatch_condition = ? WHERE egg_id = ?",
+            (json.dumps({}), sample_egg.egg_id),
+        )
+        registry._conn.commit()
+
+        egg = registry.get(sample_egg.egg_id)
+        assert egg is not None
+        assert hatch_condition_digest(egg.hatch_condition) != egg.condition_digest
+
+        result = integrator.hatch_egg(egg, context, "KO", sk, pk, ritual_mode="solitary")
+        assert result.success is False
+        assert result.reason == "sealed"
 
     def test_get_nonexistent_returns_none(self, registry):
         assert registry.get("nonexistent") is None

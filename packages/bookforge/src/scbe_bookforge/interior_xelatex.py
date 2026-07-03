@@ -99,6 +99,7 @@ def _compose_document(profile: Profile, body_tex_relpath: str) -> str:
         rf"includehead,headsep=0.18in]{{geometry}}"
     )
     parts.append(r"\usepackage{fontspec}")
+    parts.append(r"\usepackage[hidelinks]{hyperref}")
     parts.append(rf"\setmainfont{{{p.body_font}}}")
     parts.append(r"\usepackage{microtype}")
     parts.append(r"\usepackage{setspace}")

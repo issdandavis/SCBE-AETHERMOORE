@@ -197,7 +197,7 @@ export function evaluateGenesis(
   egg: SacredEgg,
   state: VerifierState,
   config: Partial<GenesisConfig> = {},
-  verifyApproval: (approval: Approval, eggId: string) => boolean = () => true
+  verifyApproval: (approval: Approval, eggId: string) => boolean = () => false
 ): GenesisEvaluation {
   const cfg = { ...DEFAULT_GENESIS_CONFIG, ...config };
 
@@ -207,8 +207,8 @@ export function evaluateGenesis(
   const pPath = predicatePath(egg, state);
   const pQuorum = predicateQuorum(egg, state, verifyApproval);
 
-  // For the crypto predicate in sync context, check shared secret exists
-  const pCrypto = state.sharedSecret.length > 0;
+  // For the crypto predicate in sync context, require full-width key material.
+  const pCrypto = state.sharedSecret.length >= 32;
 
   const predicateResults: [boolean, boolean, boolean, boolean, boolean] = [
     pTongue,
@@ -352,7 +352,7 @@ export function genesis(
   egg: SacredEgg,
   state: VerifierState,
   config: Partial<GenesisConfig> = {},
-  verifyApproval: (approval: Approval, eggId: string) => boolean = () => true
+  verifyApproval: (approval: Approval, eggId: string) => boolean = () => false
 ): GenesisResult {
   const evaluation = evaluateGenesis(egg, state, config, verifyApproval);
 

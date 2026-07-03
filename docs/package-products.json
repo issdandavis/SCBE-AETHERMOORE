@@ -1,6 +1,6 @@
 {
   "schema": "aethermoore-package-products-v1",
-  "updated": "2026-05-13",
+  "updated": "2026-07-02",
   "products": [
     {
       "id": "scbe-aethermoore",
@@ -67,8 +67,8 @@
     {
       "id": "scbe-bookforge",
       "name": "scbe-bookforge",
-      "headline": "Markdown to KDP-ready interiors, EPUB, and cover-wrap proofs.",
-      "status": "Publish pending",
+      "headline": "Markdown to KDP-ready interiors, EPUB, cover-wrap proofs, and the BookForge Publishing Kit.",
+      "status": "Kit live; PyPI pending",
       "page": "packages/scbe-bookforge.html",
       "primary_install": "pip install scbe-bookforge",
       "npm": null,
