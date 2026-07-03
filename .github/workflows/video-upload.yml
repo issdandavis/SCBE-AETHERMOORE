@@ -130,8 +130,7 @@ jobs:
           )"
           python -m scripts.system.geoseal_llm_verify \
             --json "$GEOSEAL_INPUT" \
-            --dry-run --quiet || true
-        continue-on-error: true
+            --dry-run --quiet
 
       - name: Upload to YouTube (resumable)
         env:

@@ -87,11 +87,16 @@ jobs:
           fi
 
           # --- Unresolved merge-conflict markers
+          conflict_status=0
           conflict_report="$(git grep -nE '^(<<<<<<<|>>>>>>>)' -- \
             ':!node_modules/**' \
             ':!artifacts/**' \
             ':!training-data/**' \
-            ':!**/target/**' || true)"
+            ':!**/target/**')" || conflict_status=$?
+          if [ "$conflict_status" -ne 0 ] && [ "$conflict_status" -ne 1 ]; then
+            echo "git grep failed with status $conflict_status" >&2
+            exit "$conflict_status"
+          fi
           if [ -n "$conflict_report" ]; then
             failures=1
             {

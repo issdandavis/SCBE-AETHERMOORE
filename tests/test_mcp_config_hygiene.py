@@ -1,5 +1,6 @@
 import json
 import shutil
+import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -41,6 +42,12 @@ def test_mcp_config_uses_available_local_launchers_for_non_remote_commands():
     missing = []
     for name, server in cfg["mcpServers"].items():
         command = server.get("command")
+        args = server.get("args") or []
+        if command == "cmd" and sys.platform != "win32":
+            # This repo's checked-in MCP config is Windows-local (`cmd /c npx ...`).
+            # On Linux CI, validate the nested cross-platform launcher instead of
+            # requiring cmd.exe to exist.
+            command = args[1] if len(args) >= 2 and args[0].lower() == "/c" else command
         if command in {"cmd", "python", "npx"} and shutil.which(command) is None:
             missing.append(f"{name}:{command}")
     assert missing == []
