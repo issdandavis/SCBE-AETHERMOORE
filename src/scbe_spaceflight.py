@@ -17,6 +17,15 @@ a 1:1 correspondence with an SCBE architectural element:
 Mathematical constants and formulas are taken directly from the
 AETHERMOORE constants registry (PHI, R_FIFTH, harmonic scaling H(d, R)).
 
+Conlang macros integration (honesty firewall, 2026-06-27):
+- conlang_macros added as level=6 verified language face.
+- Emitted-to-8 (provenance for multi-face targeting) is NOT executed-on-8.
+- Narrow runtime: verified where local toolchains ran (see claim manifest).
+- Use for space comms / docking commands in CA mode while preserving the split:
+  binds-to core opcodes, emits-to broad faces, executed-on narrow verified set.
+- Artifact hash: 5117a81c6dc6bf2f6594862e728fd9b149a9835a1938172ac22fb8cf51e1efb1
+See artifacts/ai_brain/conlang_macros_claim_manifest.json and rosetta.py for details.
+
 Dependencies: Python stdlib only (math, hashlib, dataclasses, typing, enum).
 
 Author : SCBE-AETHERMOORE project

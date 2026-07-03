@@ -19,6 +19,14 @@ conlang words (bip'a=add, bip'i=mul) -- same opcode core, different keys, like s
 names. "Verified" means the face was actually executed and AGREED with the Python reference; a
 face with no local toolchain is honestly reported emitted-but-unverified, never claimed --
 because a symbol set you have not checked everywhere is exactly where the round(2.5) trap lives.
+
+Honesty firewall (conlang_macros example, 2026-06-27):
+- conlang_macros registered as level=6 verified language face.
+- Artifact hash: 5117a81c6dc6bf2f6594862e728fd9b149a9835a1938172ac22fb8cf51e1efb1
+- Caveat: emitted-to-8 faces is NOT claimed as executed-on-8.
+- Binds-to core (ca_word_for_opcode / instrument), emits-to provenance, executed-on = narrow verified set only.
+- BOM/UTF handled at transference_gate adapter level.
+See artifacts/ai_brain/conlang_macros_claim_manifest.json and gate_reports.
 Run it on a box (or CI) with more compilers and the verified count rises.
 
     python -m python.scbe.rosetta "C E"                    # note song -> every face, run the local ones
