@@ -1,7 +1,0 @@
-FAILURE MAP over 50 hard held-out problems:
-  both solve        : 7 (small-model zone)
-  3b ONLY (route up): 0 (<- proactive routing win zone)
-  1.5b only         : 1
-  neither (ceiling) : 42 (<- need decompose/blocks)
-  CEILING for proactive route-up: 1.5b-alone=8 -> if route 3b-only up = 8/50
-wrote _failuremap.json
