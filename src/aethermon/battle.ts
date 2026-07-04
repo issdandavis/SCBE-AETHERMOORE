@@ -302,6 +302,7 @@ function applyAction(
       return events;
     }
     self[flag] = true;
+    // A4: Clamping — buffed stat stays >= 1.
     self.stats[stat] = Math.max(1, Math.floor(self.stats[stat] * BUFF_MULTIPLIER));
     events.push({
       turn: state.turn,
@@ -335,6 +336,7 @@ function applyAction(
       return events;
     }
     foe.defLowered = true;
+    // A4: Clamping — debuffed DEF stays >= 1.
     foe.stats.def = Math.max(1, Math.floor(foe.stats.def * DEBUFF_MULTIPLIER));
     events.push({
       turn: state.turn,

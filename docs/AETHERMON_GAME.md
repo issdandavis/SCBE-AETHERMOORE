@@ -60,7 +60,7 @@ CLI flags (after `--`): `--seed <n>` fixed RNG seed, `--save <path>` custom save
 | -------------- | ----------------------------------------------------------------------- |
 | `types.ts`     | Stages, alignment triangle, element wheel, Hodge duals, stats, lifespan |
 | `rng.ts`       | Mulberry32 seeded RNG — every outcome reproducible from a save          |
-| `moves.ts`     | 24-move catalog (4 power tiers per Sacred Tongue + drain/heal)          |
+| `moves.ts`     | 29-move catalog (4 power tiers per Sacred Tongue + drain/heal + a utility tactic per tongue) |
 | `species.ts`   | 39-species catalog and branching evolution graph (incl. Hollow branch)  |
 | `regions.ts`   | The six canon tongue regions of Aethermoore                             |
 | `monster.ts`   | Care meters, ticks, training economy, XP curve, lifespan                |

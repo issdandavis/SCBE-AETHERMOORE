@@ -157,13 +157,21 @@ describe('guard break (ward shatter)', () => {
     expect(breaker.damage).toBeGreaterThan(normal.damage);
 
     const battle = createBattle(attacker, defender, 17);
-    const events = performRound(
-      battle,
-      { type: 'move', moveId: 'ward_shatter' },
-      { type: 'guard' }
-    );
-    const hit = events.find((e) => e.actor === 'A' && (e.kind === 'move' || e.kind === 'crit'));
-    if (hit) expect(hit.text).toContain('the ward shatters!');
+    // Retry until the 0.9-accuracy move lands (seeded, so the sequence
+    // is fixed; a miss just consumes a round) — mirrors the rust_hex test.
+    let hit;
+    let guard = 0;
+    while (!hit && guard < 10) {
+      const events = performRound(
+        battle,
+        { type: 'move', moveId: 'ward_shatter' },
+        { type: 'guard' }
+      );
+      hit = events.find((e) => e.actor === 'A' && (e.kind === 'move' || e.kind === 'crit'));
+      guard += 1;
+    }
+    expect(hit).toBeDefined();
+    expect(hit?.text).toContain('the ward shatters!');
   });
 });
 
