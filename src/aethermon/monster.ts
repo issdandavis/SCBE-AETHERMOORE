@@ -349,6 +349,7 @@ export function train(monster: MonsterState, stat: StatKey): CareResult {
   care.hunger = clamp100(care.hunger - 10);
   care.bond = clamp100(care.bond + 2);
   care.discipline = clamp100(care.discipline + 1);
+  // A4: Clamping — weight never drops below MIN_WEIGHT.
   monster.weightKb = Math.max(MIN_WEIGHT, monster.weightKb - WEIGHT_TRAIN_BURN);
   const before = monster.trainBonus[stat];
   monster.trainBonus[stat] = Math.min(MAX_TRAIN_BONUS, before + TRAIN_POINTS_PER_SESSION);
@@ -381,7 +382,11 @@ export function cleanUp(monster: MonsterState): CareResult {
   };
 }
 
-/** Apply a patch: cures a glitched creature. */
+/**
+ * Apply a patch: cures a glitched creature. The patch fixes the creature,
+ * not the pen — over a full static floor the cure warns that corruption
+ * will return unless the residue is swept.
+ */
 export function patch(monster: MonsterState): CareResult {
   if (!monster.glitched) {
     return { ok: false, message: `${monster.nickname} is running clean — no patch needed.` };
@@ -389,6 +394,14 @@ export function patch(monster: MonsterState): CareResult {
   tick(monster);
   monster.glitched = false;
   monster.care.mood = clamp100(monster.care.mood + 5);
+  if (monster.residue >= RESIDUE_CAP) {
+    return {
+      ok: true,
+      message:
+        `You apply a patch. ${monster.nickname} steadies — but the floor is still ` +
+        `buried in static. Sweep it, or the corruption will return.`,
+    };
+  }
   return {
     ok: true,
     message: `You apply a patch. ${monster.nickname}'s static clears; it hums steadily again.`,

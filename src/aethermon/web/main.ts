@@ -78,6 +78,7 @@ import {
   applyGlitchOverlay,
   drawSprite,
   spriteForSpecies,
+  type SpriteGrid,
 } from './sprites.js';
 import { sceneGrid } from './scenes.js';
 
@@ -339,15 +340,20 @@ function applyGlow(canvasId: string, element: TongueCode): void {
   if (canvas) canvas.style.filter = `drop-shadow(0 0 7px ${ELEMENT_HEX[element]})`;
 }
 
+/** Build a species sprite grid, applying the glitch look when corrupted. */
+function buildMonsterGrid(speciesId: string, glitched: boolean, frame: number): SpriteGrid {
+  const grid = spriteForSpecies(getSpecies(speciesId), frame);
+  if (glitched) applyGlitchOverlay(grid, speciesId, frame);
+  return grid;
+}
+
 /**
  * Draw the tamed creature on the care stage: sprite plus status looks —
  * glitch static when corrupted, and a one-pixel idle bob on the off
  * frame so it visibly breathes.
  */
 function drawMonster(monster: MonsterState): void {
-  const species = getSpecies(monster.speciesId);
-  const grid = spriteForSpecies(species, spriteFrame);
-  if (monster.glitched) applyGlitchOverlay(grid, species.id, spriteFrame);
+  const grid = buildMonsterGrid(monster.speciesId, monster.glitched, spriteFrame);
   const canvas = $('monster-canvas') as HTMLCanvasElement;
   drawSprite(canvas, grid, 6);
   canvas.style.transform = spriteFrame === 1 ? 'translateY(2px)' : 'translateY(0)';
@@ -948,8 +954,11 @@ function renderBattle(): void {
   if (!session || !state?.monster) return;
   const { battle } = session;
   drawScene('battle-scene');
-  const mineGrid = spriteForSpecies(getSpecies(battle.a.speciesId), spriteFrame);
-  if (state?.monster?.glitched) applyGlitchOverlay(mineGrid, battle.a.speciesId, spriteFrame);
+  const mineGrid = buildMonsterGrid(
+    battle.a.speciesId,
+    state?.monster?.glitched ?? false,
+    spriteFrame
+  );
   drawSprite($('battle-mine') as HTMLCanvasElement, mineGrid, 6);
   drawSprite(
     $('battle-foe') as HTMLCanvasElement,

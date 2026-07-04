@@ -257,6 +257,16 @@ describe('the GLITCHED sickness', () => {
     expect(patch(monster).ok).toBe(false);
   });
 
+  it('patching over a full static floor warns that the cure will not hold', () => {
+    const monster = fresh();
+    monster.glitched = true;
+    monster.residue = RESIDUE_CAP;
+    const result = patch(monster);
+    expect(result.ok).toBe(true);
+    expect(monster.glitched).toBe(false);
+    expect(result.message).toMatch(/sweep/i);
+  });
+
   it('over-battling without rest corrupts the creature', () => {
     const monster = fresh();
     let glitchedByStrain = false;

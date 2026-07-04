@@ -612,7 +612,7 @@ function drawCareScreen(raster, x, y, w, h) {
     ['GEN 1', '#9aa0b8'],
     ['LIFE 190', '#9aa0b8'],
     [`${monster.weightKb}KB`, '#9aa0b8'],
-    ['STATIC 2', '#ffb35a'],
+    [`STATIC ${monster.residue}`, '#ffb35a'],
     ['2 SCARS', '#ff9a7a'],
     ['HOLLOW 1', '#c08aff'],
   ]) {

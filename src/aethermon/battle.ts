@@ -406,6 +406,7 @@ export function applyBattleResult(monster: MonsterState, won: boolean): BattleAf
   const care = monster.care;
   tick(monster);
   monster.consecutiveBattles += 1;
+  // A4: Clamping — weight never drops below MIN_WEIGHT.
   monster.weightKb = Math.max(MIN_WEIGHT, monster.weightKb - WEIGHT_BATTLE_BURN);
   let scarred = false;
   if (won) {
