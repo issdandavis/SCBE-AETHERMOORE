@@ -151,6 +151,47 @@ def benchmark_bridge(
 
     _, query_ms = _time_ms(_query_lattice)
 
+    # ---- Real recall@5 for the geometry (vs brute-force kNN ground truth) ----
+    # Build the brute-force ground truth over the full feature space (the same
+    # baseline used below) and compute the TRUE top-5 neighbor set per query.
+    gt_bf = BruteForceKNN()
+    for g in geos:
+        gt_bf.insert(
+            g["note_id"],
+            np.concatenate([g["coord_3d"], g["tongue_coords"], g["intent_vector"]]),
+        )
+    ground_truth_top5 = []
+    for qg in query_geos[:10]:
+        qvec = np.concatenate([qg["coord_3d"], qg["tongue_coords"], qg["intent_vector"]])
+        ground_truth_top5.append(set(gt_bf.query_nearest(qvec, top_k=5)))
+
+    def _measure_lattice_recall_at_5() -> float:
+        """Fraction of brute-force true top-5 that the lattice geometry retrieves."""
+        hits = 0
+        total = 0
+        for qg, truth in zip(query_geos[:10], ground_truth_top5):
+            if not truth:
+                continue
+            retrieved = lab.lattice.query_nearest(
+                qg["x"],
+                qg["y"],
+                qg["phase_rad"],
+                intent_vector=list(qg["intent_vector"]),
+                tongue=qg["tongue"],
+                top_k=5,
+            )
+            # Bundles store the originating note_id in intent_label (note_id[:48]).
+            retrieved_ids = {b.intent_label for b, _ in retrieved}
+            hits += len(truth & retrieved_ids)
+            total += len(truth)
+        return round(hits / total, 4) if total else 0.0
+
+    lattice_recall = _measure_lattice_recall_at_5()
+    # Surfaces other than the lattice are not exercised with a retrieval query in
+    # this benchmark, so their recall is not measured here (sentinel -1.0) rather
+    # than a fabricated 1.0.
+    NOT_MEASURED = -1.0
+
     report = lab.compare()
     for surface_name in ("octree", "lattice25d", "qc_drive", "sphere"):
         s = report["surfaces"][surface_name]
@@ -163,7 +204,7 @@ def benchmark_bridge(
             total_nodes=node_count,
             node_explosion=round(s["node_explosion"], 4),
             compaction_score=round(s.get("compaction_score", 0.0), 6),
-            recall_at_5=1.0 if surface_name != "sphere" else 0.0,
+            recall_at_5=lattice_recall if surface_name == "lattice25d" else NOT_MEASURED,
             memory_proxy_kb=round(node_count * 0.1, 1),  # rough: ~100 bytes/node
         )
 

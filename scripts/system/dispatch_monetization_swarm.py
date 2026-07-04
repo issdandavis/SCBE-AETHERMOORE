@@ -22,7 +22,23 @@ if str(REPO_ROOT) not in sys.path:
 if str(REPO_ROOT / "src") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from src.aethercode.gateway import CrossTalkRequest, _write_crosstalk_packet  # noqa: E402
+try:
+    from src.aethercode.gateway import CrossTalkRequest, _write_crosstalk_packet  # noqa: E402
+except Exception:  # pragma: no cover - optional dependency, import-time guard
+    # NEEDS-DEP: src.aethercode.gateway is not present in this checkout.
+    # Provide clear stubs so this module imports cleanly; actually using the
+    # cross-talk bus without the gateway raises a descriptive error.
+    _CROSSTALK_DEP_ERROR = (
+        "src.aethercode.gateway is unavailable (NEEDS-DEP): cannot emit "
+        "cross-talk packets. Restore/install the aethercode gateway module."
+    )
+
+    class CrossTalkRequest:  # type: ignore[no-redef]
+        def __init__(self, *args, **kwargs):
+            raise ModuleNotFoundError(_CROSSTALK_DEP_ERROR)
+
+    def _write_crosstalk_packet(*args, **kwargs):  # type: ignore[no-redef]
+        raise ModuleNotFoundError(_CROSSTALK_DEP_ERROR)
 
 
 @dataclass(frozen=True)

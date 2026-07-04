@@ -26,7 +26,20 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.shopify_bridge import ShopifyCLIBridge  # noqa: E402
+try:
+    from scripts.shopify_bridge import ShopifyCLIBridge  # noqa: E402
+except Exception:  # pragma: no cover - optional dependency, import-time guard
+    # NEEDS-DEP: scripts.shopify_bridge is not present in this checkout.
+    # Provide a clear stub so this module imports cleanly; instantiating the
+    # bridge without the real dependency raises a descriptive error.
+    _SHOPIFY_BRIDGE_DEP_ERROR = (
+        "scripts.shopify_bridge.ShopifyCLIBridge is unavailable (NEEDS-DEP): "
+        "cannot run live Shopify operations. Restore the shopify_bridge module."
+    )
+
+    class ShopifyCLIBridge:  # type: ignore[no-redef]
+        def __init__(self, *args, **kwargs):
+            raise ModuleNotFoundError(_SHOPIFY_BRIDGE_DEP_ERROR)
 
 
 def utc_now_iso() -> str:

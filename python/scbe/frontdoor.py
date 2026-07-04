@@ -27,8 +27,13 @@ from typing import List, Sequence, Tuple
 
 from . import bijective_dna as DNA
 from . import board as _BOARD
+from . import correctness_gate as _CG
 from . import polyglot as P
 from . import torus as _TOR
+
+# inputs the execution gate seeds its fuzz battery with (3-arg tongue_fn; negatives expose
+# Python-vs-JS divergences like `%` semantics that the structural round-trip can't see)
+_EXEC_SEEDS = [(2.0, 3.0, 4.0), (1.0, 2.0, 3.0), (7.0, -3.0, 5.0), (9.0, 4.0, 2.0)]
 
 # --- the friendly keyboard: any of these -> a core opcode name ------------------
 _SYMBOLS = {
@@ -222,6 +227,36 @@ def _badge(ok: bool, label: str, st: _S) -> str:
     return mark + (label if ok else st.red(label))
 
 
+def _exec_verify(prog: Sequence[int]):
+    """Run the program's Python and JavaScript faces and cross-check them by EXECUTION.
+    Returns the gate verdict (SEAL/REJECT/FLAG) or None if verification was skipped/unavailable."""
+    try:
+        faces = {
+            "python": P.emit(prog, "python", runnable=True),
+            "javascript": P.emit(prog, "javascript", runnable=True),
+        }
+        return _CG.correctness_gate(faces, "tongue_fn", _EXEC_SEEDS)
+    except Exception as e:  # pragma: no cover - defensive: never let the gate crash the front door
+        return {"verdict": "FLAG", "reason": "gate error (%s) -> review" % type(e).__name__}
+
+
+def _exec_badge(v, st: _S) -> str:
+    """The PRIMARY trust badge: it lights from real cross-face EXECUTION, not a structural round-trip."""
+    if v is None:
+        dot = "·" if st.uni else "*"
+        return st.dim(dot + " exec-verify off")
+    verdict = v.get("verdict")
+    if verdict == "SEAL":
+        mark = st.green("✓ " if st.uni else "OK ")
+        return mark + st.green("exec-verified") + st.dim("  (%d in-domain inputs agree)" % v.get("checked", 0))
+    if verdict == "REJECT":
+        mark = st.red("✗ " if st.uni else "ERR ")
+        wit = v.get("witness", {}).get("input")
+        return mark + st.red("exec-REJECT") + st.dim("  (faces diverge on %s)" % (wit,))
+    mark = st.yellow("⚠ " if st.uni else "WARN ")
+    return mark + st.yellow("exec-flag → review") + st.dim("  (%s)" % v.get("reason", "")[:34])
+
+
 def _fmt(v) -> str:
     if isinstance(v, float):
         return "%.1f" % v if v == int(v) else "%.6g" % v
@@ -305,10 +340,12 @@ def render(
     width: int = 58,
     tongue: str = "ko",
     board: bool = False,
+    verify_exec: bool = True,
 ) -> str:
     st = _S(_style_enabled(color))
     names, prog = tokens_to_program(text, tongue)
     rep = DNA.verify(names)
+    exec_v = _exec_verify(prog) if verify_exec else None  # the trust signal: real cross-face execution
     seal = DNA.seal(prog) if DNA._HAVE_SEAL else []
     acc = 0
     for w in seal:
@@ -324,10 +361,11 @@ def render(
         st.dim("strand  ")
         + (" ".join("%02x" % b for b in prog) or st.dim(dot))
         + st.dim("   (%d op%s %s 1 object)" % (len(prog), "" if len(prog) == 1 else "s", dot)),
-        st.dim("verify  ")
+        st.dim("verify  ") + _exec_badge(exec_v, st),
+        st.dim("        ")
         + "  ".join(
             [
-                _badge(rep["all_faces_agree"], "%d/%d faces" % (rep["faces_agree"], rep["faces_total"]), st),
+                _badge(rep["all_faces_agree"], "%d/%d faces struct" % (rep["faces_agree"], rep["faces_total"]), st),
                 _badge(rep["seekable"], "seekable", st),
                 _badge(bool(rep.get("seal_roundtrip", True)), "sealed", st),
             ]
@@ -356,7 +394,7 @@ def render(
     return "\n".join(_panel(title, lines, st, inner, accent) for title, lines, accent in blocks)
 
 
-def _repl(langs, color, tongue="ko", board=False):
+def _repl(langs, color, tongue="ko", board=False, verify_exec=True):
     st = _S(_style_enabled(color))
     dash = "—" if st.uni else "-"
     prompt = "› " if st.uni else "> "
@@ -392,7 +430,7 @@ def _repl(langs, color, tongue="ko", board=False):
         if not line:
             continue
         try:
-            print(render(line, cur, color, tongue=tng, board=brd))
+            print(render(line, cur, color, tongue=tng, board=brd, verify_exec=verify_exec))
         except ValueError as e:
             print(st.red("  " + str(e)))
 
@@ -407,14 +445,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     ap.add_argument("--tongue", default="ko", help="Sacred Tongue for input/spelling (ko av ru ca um dr)")
     ap.add_argument("--board", action="store_true", help="show the go-board / cube embedding")
     ap.add_argument("--repl", action="store_true", help="interactive hit-Enter loop")
+    ap.add_argument("--no-exec-verify", action="store_true", help="skip the execution cross-check (faster; structural badges only)")
     ap.add_argument("--no-color", action="store_true")
     a = ap.parse_args(argv)
     color = not a.no_color
+    ve = not a.no_exec_verify
     langs = P.languages() if a.all else (a.lang or ["python"])
     if a.repl or not a.tokens:
-        return _repl(langs, color, a.tongue, a.board)
+        return _repl(langs, color, a.tongue, a.board, ve)
     try:
-        print(render(" ".join(a.tokens), langs, color, tongue=a.tongue, board=a.board))
+        print(render(" ".join(a.tokens), langs, color, tongue=a.tongue, board=a.board, verify_exec=ve))
         return 0
     except ValueError as e:
         print(_S(_style_enabled(color)).red(str(e)))
