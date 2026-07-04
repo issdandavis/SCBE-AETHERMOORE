@@ -103,6 +103,23 @@ test). Feed, rest, play, praise (+bond, −discipline), scold (+discipline, −m
 (+3 permanent stat points, capped at +50 per stat). Battles take a tick too — creatures age
 in the arena — and fighting 4+ times without resting causes **strain**.
 
+### Daily life (sleep, weight, static, glitches)
+
+The day is 24 ticks; night falls at hour 18 (the LCD shows ☀/☾ and the hour).
+
+- **Sleep** — at night, **TUCK IN** skips to dawn: energy refills, strain resets, hunger
+  burns at half rate, and a prompt bedtime (first two night hours) builds bond. Staying
+  awake past midnight is a care mistake (the V-Pet lights-out rule).
+- **Weight (kb)** — meals add 4 kb, training burns 2, battles burn 1. Every stage has an
+  ideal weight (10 kb MOTE → 30 kb APEX, ±50% tolerance): overweight drags SPD, underweight
+  drags ATK, and evolution reformats the body to the new ideal.
+- **Static residue** — a waking creature sheds static every 8 ticks (you'll see the piles
+  on the pen floor). **CLEAN** sweeps it. Letting the third pile overflow **glitches** the
+  creature and counts a care mistake — neglect is the mistake, not the shedding.
+- **GLITCHED** — a sick creature sags to 80% on every stat, refuses training and play, and
+  bleeds mood until you **PATCH** it. Over-battling (strain) also corrupts. Evolution
+  overwrites the corruption.
+
 ### Scars — the immune flywheel
 
 Every loss leaves a scar. Scars harden defense (+1 each, capped at +10 — the system gets

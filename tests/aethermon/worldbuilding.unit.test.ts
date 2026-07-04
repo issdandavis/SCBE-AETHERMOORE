@@ -247,7 +247,7 @@ describe('save migration', () => {
     delete monster.heirloom;
 
     const migrated = deserializeGame(JSON.stringify(v1));
-    expect(migrated.version).toBe(2);
+    expect(migrated.version).toBe(3);
     expect(migrated.region).toBe('ember_reach');
     expect(migrated.generation).toBe(1);
     expect(migrated.lineageMemorial).toEqual([]);
@@ -256,7 +256,7 @@ describe('save migration', () => {
     expect(getRegion(migrated.region).name).toBe('Ember Reach');
   });
 
-  it('round-trips version-2 saves including new fields', () => {
+  it('round-trips current saves including new fields', () => {
     const state = hatched('umbral_egg');
     travel(state, 'null_vale');
     communeWithGap(state, state.monster!);

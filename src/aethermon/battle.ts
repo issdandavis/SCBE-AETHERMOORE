@@ -28,8 +28,10 @@ import {
   HODGE_DUALS,
   HODGE_RESONANCE,
   MAX_BATTLE_TURNS,
+  MIN_WEIGHT,
   STAB_BONUS,
   STRAIN_THRESHOLD,
+  WEIGHT_BATTLE_BURN,
   alignmentMultiplier,
   elementMultiplier,
 } from './types.js';
@@ -389,18 +391,22 @@ export interface BattleAftermath {
   readonly scarred: boolean;
   /** The creature fought past its limit (V-Pet over-battling rule). */
   readonly strained: boolean;
+  /** Over-battling just corrupted it — it needs a patch. */
+  readonly glitchedByStrain: boolean;
 }
 
 /**
  * Apply a battle result to the tamed creature's history and meters.
- * A battle takes time (one care tick — creatures age in the arena).
- * Losses leave scars (immune memory: +DEF, capped, and keys to dark
- * evolutions). Battling repeatedly without rest causes strain.
+ * A battle takes time (one care tick — creatures age in the arena) and
+ * burns a little weight. Losses leave scars (immune memory: +DEF,
+ * capped, and keys to dark evolutions). Battling repeatedly without
+ * rest causes strain — and strain corrupts: the creature glitches.
  */
 export function applyBattleResult(monster: MonsterState, won: boolean): BattleAftermath {
   const care = monster.care;
   tick(monster);
   monster.consecutiveBattles += 1;
+  monster.weightKb = Math.max(MIN_WEIGHT, monster.weightKb - WEIGHT_BATTLE_BURN);
   let scarred = false;
   if (won) {
     monster.battlesWon += 1;
@@ -416,9 +422,14 @@ export function applyBattleResult(monster: MonsterState, won: boolean): BattleAf
   care.hunger = Math.max(0, care.hunger - 10);
 
   const strained = monster.consecutiveBattles >= STRAIN_THRESHOLD;
+  let glitchedByStrain = false;
   if (strained) {
     care.energy = Math.max(0, care.energy - 15);
     care.mood = Math.max(0, care.mood - 10);
+    if (!monster.glitched) {
+      monster.glitched = true;
+      glitchedByStrain = true;
+    }
   }
-  return { scarred, strained };
+  return { scarred, strained, glitchedByStrain };
 }

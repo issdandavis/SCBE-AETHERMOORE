@@ -14,21 +14,27 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as readline from 'node:readline';
 import type { BattleAction, Combatant, GameState, MonsterState, Stage } from './types.js';
-import { STAGE_MIN_LEVEL, TONGUE_NOTES } from './types.js';
+import { RESIDUE_CAP, STAGE_MIN_LEVEL, TONGUE_NOTES } from './types.js';
 import { getMove } from './moves.js';
 import { STARTER_EGG_IDS, getSpecies } from './species.js';
 import { REGIONS, getRegion } from './regions.js';
 import {
+  cleanUp,
   describeCare,
   effectiveStats,
   feed,
+  hourOf,
+  isNight,
   isStatKey,
   lifespanRemaining,
+  patch,
   play,
   praise,
   rest,
   scold,
   train,
+  tuckIn,
+  weightBand,
   xpToNext,
 } from './monster.js';
 import { evolutionOptions, evolve, selectEvolution } from './evolution.js';
@@ -177,6 +183,13 @@ function showMonsterCard(monster: MonsterState): void {
       )
   );
   console.log(describeCare(monster.care));
+  const band = weightBand(monster);
+  console.log(
+    `Weight ${monster.weightKb}kb${band === 'IDEAL' ? '' : paint('33', ` (${band})`)}  ` +
+      `Hour ${hourOf(monster)}/24 ${isNight(monster) ? '☾ night' : '☀ day'}  ` +
+      `Residue ${monster.residue}/${RESIDUE_CAP}` +
+      (monster.glitched ? '  ' + paint('31', 'GLITCHED — needs a patch') : '')
+  );
   console.log(`Moves: ${species.moves.map((id) => getMove(id).name).join(', ')}`);
   line();
 }
@@ -312,6 +325,11 @@ async function interactiveBattle(
       paint('33', `${monster.nickname} is overworked — it needs a proper rest before fighting on.`)
     );
   }
+  if (aftermath.glitchedByStrain) {
+    console.log(
+      paint('31', `${monster.nickname} glitches from the strain! Patch it before training again.`)
+    );
+  }
   if (levels > 0) console.log(bold(`${monster.nickname} grew to Lv.${monster.level}!`));
   maybeEvolve(state, monster);
   if (wasArena && won) {
@@ -424,9 +442,16 @@ async function interactiveMain(argv: string[]): Promise<void> {
               (isChampion(state) ? ' · CHAMPION' : '')
           )
       );
+      if (isNight(monster)) {
+        console.log(paint('34', '  ☾ Night has fallen — tuck it in [z] before midnight.'));
+      }
+      if (monster.glitched) {
+        console.log(paint('31', '  ⚠ It is glitching — apply a patch [p].'));
+      }
       console.log(
         '  [1] Status   [2] Feed    [3] Train   [4] Play    [5] Rest\n' +
           '  [6] Praise   [7] Scold   [8] Wild battle   [9] Arena\n' +
+          '  [c] Clean pen   [p] Patch   [z] Tuck in\n' +
           '  [t] Travel   [e] Evolution paths   [s] Save   [q] Save & quit' +
           (region.touchesHollow ? '\n  ' + paint('35', '[h] Approach the gap') : '')
       );
@@ -457,6 +482,15 @@ async function interactiveMain(argv: string[]): Promise<void> {
           break;
         case '7':
           console.log(scold(monster).message);
+          break;
+        case 'c':
+          console.log(cleanUp(monster).message);
+          break;
+        case 'p':
+          console.log(patch(monster).message);
+          break;
+        case 'z':
+          console.log(tuckIn(monster).message);
           break;
         case '8': {
           const enemy = generateWildEncounter(state, monster);
@@ -534,9 +568,13 @@ function demoMain(argv: string[]): void {
 
   let battles = 0;
   while (monster.level < STAGE_MIN_LEVEL.GUARDIAN && battles < 60) {
-    // Care loop: keep meters healthy, train ATK toward the VENOM branch.
+    // Care loop: keep meters healthy, train ATK toward the VENOM branch,
+    // sweep the pen, patch glitches, and honor the sleep schedule.
     if (monster.care.hunger < 40) console.log(dim(feed(monster).message));
     if (monster.care.energy < 30) console.log(dim(rest(monster).message));
+    if (monster.residue >= 2) console.log(dim(cleanUp(monster).message));
+    if (monster.glitched) console.log(dim(patch(monster).message));
+    if (isNight(monster)) console.log(dim(tuckIn(monster).message));
     if (battles % 3 === 0) train(monster, 'atk');
     if (battles === 20) {
       console.log(travel(state, 'null_vale'));

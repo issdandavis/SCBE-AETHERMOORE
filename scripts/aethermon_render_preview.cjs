@@ -510,7 +510,7 @@ function renderDevice(outFile, mode) {
   drawDpad(raster, 46, deckY);
   const menuLabels =
     mode === 'care'
-      ? ['FEED', 'TRAIN', 'PLAY', 'REST', 'PRAISE', 'SCOLD', 'BATTLE', 'ARENA', 'MAP', 'CODEX', 'PATHS', 'THE GAP']
+      ? ['FEED', 'TRAIN', 'PLAY', 'REST', 'PRAISE', 'SCOLD', 'CLEAN', 'PATCH', 'TUCK IN', 'BATTLE', 'ARENA', 'MAP', 'CODEX', 'PATHS', 'THE GAP']
       : ['EMBER JAB', 'CMD BURST', 'SOLAR LNC', 'LAT SLAM', 'GUARD', 'RUN'];
   const borders =
     mode === 'battle'
@@ -535,11 +535,21 @@ function drawCareScreen(raster, x, y, w, h) {
   monster.trainBonus = { hp: 12, atk: 24, def: 6, spd: 6 };
   monster.care = { hunger: 82, energy: 48, mood: 90, bond: 66, discipline: 38, careMistakes: 1, starving: false, exhausted: false };
   monster.scars = 2;
+  monster.residue = 2;
   const stats = effectiveStats(monster);
 
   // Diorama stage.
   const stageH = 150;
   const scene = sceneGrid('ember_reach', Math.ceil(w / 4), Math.ceil(stageH / 4), 0);
+  // Static-residue piles on the pen floor (mirrors the web client).
+  const sceneGroundY = Math.floor(scene.length * 0.82);
+  for (let i = 0; i < monster.residue; i++) {
+    const px2 = 8 + i * 18;
+    for (const [dx, dy] of [[0, -1], [1, -1], [-1, 0], [0, 0], [1, 0], [2, 0]]) {
+      const row = scene[sceneGroundY + dy];
+      if (row && px2 + dx >= 0 && px2 + dx < row.length) row[px2 + dx] = dy === -1 ? '#4a4a5e' : '#2a2a38';
+    }
+  }
   roundRect(raster, x, y, w, stageH, 8, [5, 5, 12, 255]);
   for (let gy = 0; gy < scene.length; gy++)
     for (let gx = 0; gx < (scene[gy] || []).length; gx++) {
@@ -601,6 +611,8 @@ function drawCareScreen(raster, x, y, w, h) {
     ['LV.15', '#9aa0b8'],
     ['GEN 1', '#9aa0b8'],
     ['LIFE 190', '#9aa0b8'],
+    [`${monster.weightKb}KB`, '#9aa0b8'],
+    ['STATIC 2', '#ffb35a'],
     ['2 SCARS', '#ff9a7a'],
     ['HOLLOW 1', '#c08aff'],
   ]) {

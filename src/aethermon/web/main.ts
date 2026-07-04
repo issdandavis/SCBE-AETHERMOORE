@@ -32,14 +32,20 @@ import { STARTER_EGG_IDS, getSpecies, speciesByStage } from '../species.js';
 import { REGIONS, getRegion } from '../regions.js';
 import type { RegionId } from '../regions.js';
 import {
+  cleanUp,
   effectiveStats,
   feed,
+  hourOf,
+  isNight,
   lifespanRemaining,
+  patch,
   play,
   praise,
   rest,
   scold,
   train,
+  tuckIn,
+  weightBand,
   xpToNext,
 } from '../monster.js';
 import { evolutionOptions, evolve, selectEvolution } from '../evolution.js';
@@ -66,7 +72,13 @@ import {
   warmEgg,
 } from '../game.js';
 import { createRng, nextInt } from '../rng.js';
-import { ALIGNMENT_HEX, ELEMENT_HEX, drawSprite, spriteForSpecies } from './sprites.js';
+import {
+  ALIGNMENT_HEX,
+  ELEMENT_HEX,
+  applyGlitchOverlay,
+  drawSprite,
+  spriteForSpecies,
+} from './sprites.js';
 import { sceneGrid } from './scenes.js';
 
 // ---------------------------------------------------------------------------
@@ -289,12 +301,56 @@ function applyRegionTint(): void {
 function drawScene(canvasId: string): void {
   if (!state) return;
   const canvas = document.getElementById(canvasId) as HTMLCanvasElement | null;
-  if (canvas) drawSprite(canvas, sceneGrid(state.region as RegionId, 64, 34, spriteFrame), 1);
+  if (!canvas) return;
+  const grid = sceneGrid(state.region as RegionId, 64, 34, spriteFrame);
+  if (canvasId === 'main-scene') stampResidue(grid);
+  drawSprite(canvas, grid, 1);
+}
+
+/**
+ * Stamp static-residue piles onto the pen floor of the care scene — the
+ * visible nag to hit CLEAN. Positions are fixed so piles don't wander
+ * between animation frames.
+ */
+function stampResidue(grid: (string | null)[][]): void {
+  const monster = state?.monster;
+  if (!monster || monster.residue <= 0) return;
+  const groundY = Math.floor(34 * 0.82); // matches sceneGrid's ground line
+  for (let i = 0; i < monster.residue; i++) {
+    const x = 8 + i * 18;
+    for (const [dx, dy] of [
+      [0, -1],
+      [1, -1],
+      [-1, 0],
+      [0, 0],
+      [1, 0],
+      [2, 0],
+    ] as const) {
+      const row = grid[groundY + dy];
+      if (row && x + dx >= 0 && x + dx < row.length) {
+        row[x + dx] = dy === -1 ? '#4a4a5e' : '#2a2a38';
+      }
+    }
+  }
 }
 
 function applyGlow(canvasId: string, element: TongueCode): void {
   const canvas = document.getElementById(canvasId);
   if (canvas) canvas.style.filter = `drop-shadow(0 0 7px ${ELEMENT_HEX[element]})`;
+}
+
+/**
+ * Draw the tamed creature on the care stage: sprite plus status looks —
+ * glitch static when corrupted, and a one-pixel idle bob on the off
+ * frame so it visibly breathes.
+ */
+function drawMonster(monster: MonsterState): void {
+  const species = getSpecies(monster.speciesId);
+  const grid = spriteForSpecies(species, spriteFrame);
+  if (monster.glitched) applyGlitchOverlay(grid, species.id, spriteFrame);
+  const canvas = $('monster-canvas') as HTMLCanvasElement;
+  drawSprite(canvas, grid, 6);
+  canvas.style.transform = spriteFrame === 1 ? 'translateY(2px)' : 'translateY(0)';
 }
 
 function statusLcd(): void {
@@ -306,7 +362,10 @@ function statusLcd(): void {
     return;
   }
   const region = getRegion(state.region);
-  lcd.append(el('span', '', `${region.name.toUpperCase()} · GEN ${state.generation}`));
+  const clock = state.monster
+    ? ` · ${isNight(state.monster) ? '☾' : '☀'} ${hourOf(state.monster)}H`
+    : '';
+  lcd.append(el('span', '', `${region.name.toUpperCase()} · GEN ${state.generation}${clock}`));
   const right = el('span', '');
   right.append(document.createTextNode(`ARENA ${state.arenaRank}/${ARENA_LADDER.length}`));
   if (isChampion(state)) {
@@ -508,7 +567,7 @@ function renderMain(): void {
   const stats = effectiveStats(monster);
   const region = getRegion(state.region);
   drawScene('main-scene');
-  drawSprite($('monster-canvas') as HTMLCanvasElement, spriteForSpecies(species, spriteFrame), 6);
+  drawMonster(monster);
   applyGlow('monster-canvas', species.element);
   $('region-tag').textContent = region.name;
 
@@ -562,6 +621,16 @@ function renderMain(): void {
     el('span', 'tag', `Gen ${monster.generation}`),
     el('span', 'tag', `Life ${lifespanRemaining(monster)}`)
   );
+  const band = weightBand(monster);
+  tags.append(
+    el(
+      'span',
+      band === 'IDEAL' ? 'tag' : 'tag warn',
+      `${monster.weightKb}kb${band === 'IDEAL' ? '' : ` ${band}`}`
+    )
+  );
+  if (monster.residue > 0) tags.append(el('span', 'tag warn', `Static ×${monster.residue}`));
+  if (monster.glitched) tags.append(el('span', 'tag glitch', 'GLITCHED'));
   if (monster.scars > 0) tags.append(el('span', 'tag scar', `${monster.scars} scars`));
   if (monster.hollowExposure > 0)
     tags.append(el('span', 'tag hollow', `Hollow ${monster.hollowExposure}`));
@@ -573,6 +642,18 @@ function renderMain(): void {
     { label: 'REST', onClick: () => care(() => rest(monster)) },
     { label: 'PRAISE', onClick: () => care(() => praise(monster)) },
     { label: 'SCOLD', onClick: () => care(() => scold(monster)) },
+    { label: 'CLEAN', onClick: () => care(() => cleanUp(monster)) },
+    {
+      label: 'PATCH',
+      cls: monster.glitched ? 'primary' : undefined,
+      onClick: () => care(() => patch(monster)),
+    },
+    {
+      label: 'TUCK IN',
+      cls: isNight(monster) ? 'primary' : undefined,
+      title: 'Sleep until dawn (night only)',
+      onClick: () => care(() => tuckIn(monster)),
+    },
     { label: 'BATTLE', cls: 'danger', onClick: () => void startWildBattle() },
     { label: 'ARENA', cls: 'danger', onClick: () => void startArenaBattle() },
     { label: 'MAP', onClick: renderMap },
@@ -867,11 +948,9 @@ function renderBattle(): void {
   if (!session || !state?.monster) return;
   const { battle } = session;
   drawScene('battle-scene');
-  drawSprite(
-    $('battle-mine') as HTMLCanvasElement,
-    spriteForSpecies(getSpecies(battle.a.speciesId), spriteFrame),
-    6
-  );
+  const mineGrid = spriteForSpecies(getSpecies(battle.a.speciesId), spriteFrame);
+  if (state?.monster?.glitched) applyGlitchOverlay(mineGrid, battle.a.speciesId, spriteFrame);
+  drawSprite($('battle-mine') as HTMLCanvasElement, mineGrid, 6);
   drawSprite(
     $('battle-foe') as HTMLCanvasElement,
     spriteForSpecies(getSpecies(battle.b.speciesId), spriteFrame),
@@ -998,6 +1077,8 @@ async function finishBattle(fled: boolean): Promise<void> {
   else pushLog(won ? '★ VICTORY!' : 'Defeat...', won ? 'good' : 'warn');
   if (aftermath.scarred) pushLog(`A new scar. (${monster.scars} total — its guard hardens.)`);
   if (aftermath.strained) pushLog(`${monster.nickname} is overworked — let it rest.`, 'warn');
+  if (aftermath.glitchedByStrain)
+    pushLog(`${monster.nickname} glitches from the strain! PATCH it.`, 'warn');
   if (levels > 0) {
     sfx.levelUp();
     pushLog(`${monster.nickname} grew to Lv.${monster.level}!`, 'good');
@@ -1093,11 +1174,7 @@ function boot(): void {
       );
     } else if (state?.monster && !$('screen-main').classList.contains('hidden')) {
       drawScene('main-scene');
-      drawSprite(
-        $('monster-canvas') as HTMLCanvasElement,
-        spriteForSpecies(getSpecies(state.monster.speciesId), spriteFrame),
-        6
-      );
+      drawMonster(state.monster);
     }
   }, 650);
 

@@ -164,6 +164,8 @@ function hslToRgbString(h: number, s: number, l: number): string {
 /** A five-step ramp plus support colors, all derived from one hue. */
 interface Ramp {
   outline: string;
+  /** Heavier outline for bottom edges — grounds the form (selout). */
+  outlineDark: string;
   shadow: string;
   base: string;
   light: string;
@@ -181,6 +183,7 @@ function rampFor(hex: string): Ramp {
   // A4: Clamping — every derived tone keeps s/l inside displayable bounds
   return {
     outline: hslToRgbString(h - 24, Math.min(1, s * 0.9), Math.max(0.06, l - 0.34)),
+    outlineDark: hslToRgbString(h - 28, Math.min(1, s * 0.8), Math.max(0.03, l - 0.44)),
     shadow: hslToRgbString(h - 12, Math.min(1, s * 1.05), Math.max(0.1, l - 0.16)),
     base: hslToRgbString(h, s, l),
     light: hslToRgbString(h + 10, Math.min(1, s * 0.95), Math.min(0.9, l + 0.13)),
@@ -298,18 +301,50 @@ function eggSprite(species: SpeciesDef, rng: Rng, size: number): SpriteGrid {
   return grid;
 }
 
-/** Surround the silhouette with a dark outline (readability pass). */
-function outlinePass(grid: SpriteGrid, outlineColor: string): void {
+/**
+ * Surround the silhouette with an outline (readability pass). Selective
+ * outlining: edges beneath the form take the heavier `darkColor` so the
+ * creature reads as grounded, while top and side edges stay softer.
+ */
+function outlinePass(grid: SpriteGrid, outlineColor: string, darkColor = outlineColor): void {
   const size = grid.length;
   const isBody = (x: number, y: number): boolean =>
-    x >= 0 && y >= 0 && x < size && y < size && grid[y][x] !== null && grid[y][x] !== outlineColor;
+    x >= 0 &&
+    y >= 0 &&
+    x < size &&
+    y < size &&
+    grid[y][x] !== null &&
+    grid[y][x] !== outlineColor &&
+    grid[y][x] !== darkColor;
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
       if (grid[y][x] !== null) continue;
       if (isBody(x - 1, y) || isBody(x + 1, y) || isBody(x, y - 1) || isBody(x, y + 1)) {
-        grid[y][x] = outlineColor;
+        grid[y][x] = isBody(x, y - 1) ? darkColor : outlineColor;
       }
     }
+  }
+}
+
+/**
+ * Scatter deterministic static over a sprite — the GLITCHED look. The
+ * seed string plus frame drives the crawl, so the corruption flickers
+ * between idle frames but never wanders on re-render.
+ */
+export function applyGlitchOverlay(grid: SpriteGrid, seedKey: string, frame = 0): void {
+  const rows = grid.length;
+  const cols = grid[0]?.length ?? 0;
+  const rng = createRng(hashString(`${seedKey}#glitch${frame}`));
+  const flecks = Math.max(4, Math.floor(rows * 0.8));
+  for (let i = 0; i < flecks; i++) {
+    const x = Math.floor(nextFloat(rng) * cols);
+    const y = Math.floor(nextFloat(rng) * rows);
+    if (grid[y]?.[x]) grid[y][x] = i % 2 === 0 ? '#FF3355' : '#66FFE8';
+  }
+  // One horizontal tear line: a classic corrupted-scanline artifact.
+  const tearY = Math.floor(nextFloat(rng) * rows);
+  for (let x = 0; x < cols; x++) {
+    if (grid[tearY]?.[x] && x % 3 !== 0) grid[tearY][x] = '#66FFE8';
   }
 }
 
@@ -501,8 +536,9 @@ export function spriteForSpecies(species: SpeciesDef, frame = 0): SpriteGrid {
     }
   }
 
-  // 6) Outline hugs the final silhouette; feet get a grounding shadow.
-  outlinePass(grid, ramp.outline);
+  // 6) Selective outline hugs the final silhouette: soft on top/sides,
+  //    heavy beneath — the creature sits on its shadow.
+  outlinePass(grid, ramp.outline, ramp.outlineDark);
   return grid;
 }
 

@@ -15,6 +15,7 @@
  */
 
 import type { EvolutionRequirement, MonsterState } from './types.js';
+import { IDEAL_WEIGHT } from './types.js';
 import { getSpecies } from './species.js';
 import { dominantTrainedStat, effectiveStats } from './monster.js';
 
@@ -112,6 +113,10 @@ export function evolve(monster: MonsterState): EvolutionResult | null {
   monster.care.careMistakes = 0; // fresh test for the new form
   monster.care.starving = false;
   monster.care.exhausted = false;
+  // The body reformats: weight snaps to the new form's ideal and any
+  // static corruption is overwritten. (Residue stays on the floor.)
+  monster.weightKb = IDEAL_WEIGHT[to.stage];
+  monster.glitched = false;
 
   return { fromSpeciesId: from.id, toSpeciesId: to.id, fromName: from.name, toName: to.name };
 }
