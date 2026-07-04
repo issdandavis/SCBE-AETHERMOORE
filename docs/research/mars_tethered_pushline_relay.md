@@ -297,3 +297,68 @@ This is not yet a flight design. It is a plausible subsystem concept that needs:
 - Mars analog deployment trials.
 
 The right next step is not a claim. It is a scaled mechanical and communications prototype.
+
+---
+
+## Acoustic Verified Side-Channel (addition, 2026-06-29)
+
+The relay above leans on fiber + RF. This adds a **near-field acoustic last-hop** that carries a
+**verified opcode tape**, not trusted words — the same FSK pitch-code used in `astromech.py` (R2-D2-style
+beeps that round-trip losslessly, 240/240). It makes concrete the "acoustic comms for inner layers,
+jam-resistant" links the nested-drone architecture already calls for, and it adds the trust layer.
+
+### What it is
+
+A bundle (an opcode, a short command, a key) is encoded as 16-tone FSK beeps and played over a short
+acoustic path. The receiver does **not** trust the decoded bytes. It re-derives the tape and **re-executes
+it in an independent engine**, accepting only if the program reproduces the expected result. A tampered or
+spoofed bundle that arrives "cleanly" is still **rejected** — lossless transport is not trust.
+
+### Honest Mars boundary (this is a niche channel, not a primary link)
+
+Free-air acoustic on the Mars **surface** is weak: the ~0.6%-density CO₂ atmosphere muffles it (NASA
+Perseverance mics, 2021 — high frequencies attenuate hard, sound ≈ 240 m/s). So this is **not** a surface
+free-air link. Its real roles are:
+
+1. **Habitat-internal** (normal pressurized air) — device-to-device with no RF (air-gap security).
+2. **Structure-/tether-borne vibration** between *contacting* nodes — atmosphere-independent; the
+   "billiard-linked" docked relay nodes can pass a message through the structure when the **fiber is cut**.
+3. **Jam-resistant, deliberately RF-less** short hop for the inner (micro) layers the architecture specifies.
+
+The novelty is **not** the audio (prior art: ggwave, acoustic modems, GibberLink). It is the
+**verification** — trust-without-reading over an untrusted hop.
+
+### How it slots into the logical layers
+
+| Layer | Acoustic side-channel |
+|---|---|
+| physical | near-field acoustic / structure-borne vibration (fallback to fiber) |
+| link | 16-tone FSK + bundle seq id |
+| routing | nearest-live-node forwarding (unchanged) |
+| mission | the bundle payload is an **opcode tape**, not opaque bytes |
+| governance | SCBE = **re-execute the tape in an independent engine and require agreement**; reject on mismatch |
+
+It **composes with DTN custody/dedup**: bundles are ordered by seq, deduped, and replayed (the same
+event-sourced convergence `mars_dtn_sim.py` validates), so delay/reorder/duplication don't change the
+result, and a corrupted bundle fails re-execution.
+
+### Proven by execution
+
+`C:\dev\mars_acoustic_relay.py` (runnable): an opcode tape that computes 15 is carried opcode-by-opcode
+over the real astromech FSK, subjected to DTN reorder+duplication, reconstructed, and re-executed.
+
+```
+clean path : reconstructed tape == original, re-executes to 15  -> SEAL
+DTN chaos  : reordered + duplicated -> still converges to 15     -> SEAL
+tampered   : one bit flipped -> re-executes to -1 != 15          -> REJECT
+```
+
+Lossless+converges under DTN chaos **and** tampered bundle rejected — the acoustic hop is untrusted, the
+re-execution is the trust.
+
+### Honest boundary
+
+A bench-only proof on real audio code, not a flight design or a Mars-acoustics propagation model. Next
+steps: a structure-borne (vibration) transducer test on an Earth analog tether, a Mars-atmosphere
+attenuation model to bound free-air range, and a habitat-internal air-gap demo. The verification layer is
+the durable part; the acoustic transport is the niche carrier.

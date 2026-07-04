@@ -16,8 +16,13 @@ Conformance is checked by polyglot_conformance.py: it compiles+runs each backend
 a LOCAL toolchain (python in-process, javascript via node, rust via rustc) and reports the
 rest as emitted-but-unverified -- never as agreement. "Compiles no matter what" means the
 emitter PRODUCES source for every backend; it does NOT mean the backends compute identical
-results -- they provably diverge on e.g. .5 rounding (Python half-to-even vs JS/Rust),
-which the harness surfaces as DISAGREE rather than hiding.
+results -- where they would diverge, the harness surfaces it as DISAGREE rather than hiding.
+The known cross-language splits on the EXECUTED faces (py/js/rust) have since been UNIFIED to
+the Python reference and verified on adversarial inputs: round -> half-to-even (round_ties_even
+/ banker's helper); mod -> floored (a - b*floor(a/b), matches Python's sign-of-divisor); pow ->
+the negative-base/non-integer-exponent intersection roundabouts to 0.0 in all faces (like
+sqrt-of-negative); div is portable. Emit-only faces (c/cpp/go/java/...) still use native
+semantics and would need the same helpers before joining the executed gate.
 
 Two op sets, kept distinct on purpose:
   * SCALAR_OPS   (22) -- the original cube/DNA core. It is the intended baseline for registered
@@ -151,15 +156,25 @@ def _render(name: str, d: Dialect, safe: bool = False) -> Tuple[str, bool]:
             expr = _sub(_ternary(d), cond=f"{vb} == 0.0", t="0.0", f=f"{va} / {vb}")
         return expr, True
     if name in CMPS:
-        # NOTE: `round` (FUNC1) intentionally uses each language's native rounding —
-        # Python is round-half-to-even, JS round-half-up, Rust round-half-away — so faces
-        # can diverge on exact .5 values. Tracked as a known divergence, not yet unified.
+        # NOTE: `round` (FUNC1) is UNIFIED to Python's round-half-to-even (banker's) across the
+        # executed faces: Rust uses round_ties_even(); JS uses the _round_ties_even() prelude helper;
+        # Python's round() is already half-to-even. So py/js/rust now AGREE on exact .5 values (the
+        # former known divergence). Untested emit-only faces (c/cpp/go/java/...) still use native
+        # rounding and would need the same helper before they can be added to the executed gate.
         op = d.cmp_over.get(name, CMPS[name])
         return _sub(d.cmp_tmpl, cond=f"{va} {op} {vb}"), True
     if name in FUNC2:
         expr = _sub(d.func2[name], a=va, b=vb)
         if safe and name == "mod":
             expr = _sub(_ternary(d), cond=f"{vb} == 0.0", t="0.0", f=expr)
+        if safe and name == "pow":
+            # Undefined intersection: negative base with a NON-integer exponent (Python -> complex,
+            # JS/Rust -> NaN). Roundabout to 0.0 in all faces, the same handler as sqrt/log of a
+            # negative. Nested so each cond is a single comparison (no per-language "and"), reusing
+            # the dialect's own floor() so it stays language-correct.
+            floor_b = _sub(d.func1["floor"], a=vb)
+            inner = _sub(_ternary(d), cond=f"{vb} != {floor_b}", t="0.0", f=expr)
+            expr = _sub(_ternary(d), cond=f"{va} < 0.0", t=inner, f=expr)
         return expr, True
     if name in FUNC1:
         expr = _sub(d.func1[name], a=va)
@@ -284,7 +299,7 @@ register(
         ext="js",
         comment="//",
         indent="  ",
-        prelude=(),
+        prelude=("function _round_ties_even(x) { const f = Math.floor(x); const d = x - f; if (d < 0.5) return f; if (d > 0.5) return f + 1; return (f % 2 === 0) ? f : f + 1; }",),
         fn_open="function {fn}({params}) {",
         stack_init="const s = [{init}];",
         pop2="{ const b = s.pop(); const a = s.pop(); ",
@@ -298,7 +313,7 @@ register(
             "sqrt": "Math.sqrt({a})",
             "floor": "Math.floor({a})",
             "ceil": "Math.ceil({a})",
-            "round": "Math.round({a})",
+            "round": "_round_ties_even({a})",
             "inc": "({a} + 1)",
             "dec": "({a} - 1)",
             "sign": "({a} > 0 ? 1.0 : ({a} < 0 ? -1.0 : 0.0))",
@@ -313,7 +328,7 @@ register(
             "pow": "Math.pow({a}, {b})",
             "min": "Math.min({a}, {b})",
             "max": "Math.max({a}, {b})",
-            "mod": "({a} % {b})",
+            "mod": "({a} - {b} * Math.floor({a} / {b}))",
             "cmp": "({a} > {b} ? 1.0 : ({a} < {b} ? -1.0 : 0.0))",
             "and": "(({a}) & ({b}))",
             "or": "(({a}) | ({b}))",
@@ -400,7 +415,7 @@ register(
             "sqrt": "({a}).sqrt()",
             "floor": "({a}).floor()",
             "ceil": "({a}).ceil()",
-            "round": "({a}).round()",
+            "round": "({a}).round_ties_even()",
             "inc": "({a} + 1.0)",
             "dec": "({a} - 1.0)",
             "sign": "(if {a} > 0.0 { 1.0 } else if {a} < 0.0 { -1.0 } else { 0.0 })",
@@ -415,7 +430,7 @@ register(
             "pow": "({a}).powf({b})",
             "min": "({a}).min({b})",
             "max": "({a}).max({b})",
-            "mod": "({a} % {b})",
+            "mod": "({a} - {b} * ({a} / {b}).floor())",
             "cmp": "(if {a} > {b} { 1.0 } else if {a} < {b} { -1.0 } else { 0.0 })",
             "and": "(((({a}) as i64) & (({b}) as i64)) as f64)",
             "or": "(((({a}) as i64) | (({b}) as i64)) as f64)",

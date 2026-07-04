@@ -528,7 +528,21 @@ class TimeQuasicrystal:
 
         Returns array of times when pulses should fire.
         """
-        seq = self.fibonacci_sequence(8)[:n_pulses]
+        # Grow the Fibonacci substitution sequence until it has at least
+        # n_pulses symbols. Length after k iterations = F(k+1), so the number
+        # of iterations must scale with n_pulses (the old hardcoded value of 8
+        # capped the sequence at F(9)=34 symbols, so pulse_times(50) silently
+        # returned only 35 times and self-reported FAIL).
+        seq = ["A"]
+        while len(seq) < n_pulses:
+            new_seq: List[str] = []
+            for s in seq:
+                if s == "A":
+                    new_seq.extend(["A", "B"])
+                else:
+                    new_seq.append("A")
+            seq = new_seq
+        seq = seq[:n_pulses]
         times = [0.0]
         for s in seq:
             dt = self.period_a if s == "A" else self.period_b
@@ -712,6 +726,15 @@ def self_test() -> Dict[str, Any]:
 
 
 if __name__ == "__main__":
+    # Make stdout UTF-8 safe so Greek glyphs (φ, ψ, σ, …) in the self-test
+    # output don't crash on a Windows cp1252 console (UnicodeEncodeError).
+    import sys
+
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
     print("=" * 60)
     print("Quantum Lattice Extensions — Self-Test")
     print("=" * 60)

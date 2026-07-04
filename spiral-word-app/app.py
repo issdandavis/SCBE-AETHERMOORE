@@ -11,13 +11,14 @@ plus WebSocket endpoints for real-time sync.
 Run: uvicorn app:app --reload --host 0.0.0.0 --port 8000
 """
 
+import hashlib
 import json
 import logging
 from contextlib import asynccontextmanager
 from typing import Dict, List, Set
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
 
 from sync_engine import SyncEngine, EditOp
@@ -30,6 +31,7 @@ from governance import (
     verify_signature,
 )
 from ai_ports import ai_ports
+from export import docx_bytes
 
 logging.basicConfig(
     level=logging.INFO,
@@ -204,6 +206,33 @@ async def delete_document(doc_id: str):
     if sync.delete_doc(doc_id):
         return {"status": "deleted", "doc_id": doc_id}
     raise HTTPException(status_code=404, detail="Document not found")
+
+
+@app.get("/doc/{doc_id}/export.docx")
+async def export_document(doc_id: str):
+    """Export the document as a downloadable Word .docx (governed + audited, dependency-free)."""
+    allowed, reason = check_governance("export")
+    if not allowed:
+        raise HTTPException(status_code=403, detail=reason)
+
+    doc = sync.get_or_create(doc_id)
+    text = doc.snapshot().get("text", "")
+    data = docx_bytes(text)
+
+    # L14: Audit the export with a deterministic checksum of the produced file
+    audit_log.record(
+        doc_id=doc_id,
+        site_id="api",
+        action="export_docx",
+        op_checksum=hashlib.sha256(data).hexdigest()[:16],
+        governance_decision=reason,
+    )
+
+    return Response(
+        content=data,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": 'attachment; filename="%s.docx"' % doc_id},
+    )
 
 
 # ---------------------------------------------------------------------------
