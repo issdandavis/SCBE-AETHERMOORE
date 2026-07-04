@@ -94,6 +94,25 @@ Damage: `raw = power × (atk/def) × 0.25 + 2`, then alignment × element × aff
 (×1.5, 1/16 chance) × variance (0.85–1.0); guarding halves it. Tuned for ~3–5 hits per
 knockout between equals.
 
+### Battle tactics (utility moves)
+
+From GUARDIAN stage up, every line carries a tactic that fits its tongue's domain:
+
+| Move | Tongue | Effect |
+|------|--------|--------|
+| **Rally Cry** | KO (Command) | Own ATK ×1.3, once per battle |
+| **Tailwind** | AV (Transport) | Own SPD ×1.3, once per battle — shifts turn order |
+| **Rust Hex** | RU (Entropy) | Foe DEF ×0.75, once per battle |
+| **Mend Protocol** | CA (Compute) | Restore 35% max HP (the existing heal) |
+| **Ward Shatter** | UM (Security) | 55-power hit that ignores (and shatters) a guard |
+| **Binding Lattice** | DR (Structure) | Foe loses its next action (70% accuracy) |
+
+Buffs and debuffs apply once per battle (using them again wastes the turn); a stunned
+creature can't act *or* brace behind a guard, and the binding releases after the skipped
+turn. The AI opens with a useful tactic in the early turns, so arena rivals from Echo the
+Cache Keeper onward fight noticeably smarter. Off-element tactics ride the Hodge-dual
+resonance — Oraclemind (CA) casting Rust Hex (RU) is canon-correct dual-speak.
+
 ### Care (the virtual-pet loop)
 
 Every action advances one tick; hunger (−6/tick) and energy (−4/tick) decay. Letting either

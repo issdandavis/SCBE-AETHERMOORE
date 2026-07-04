@@ -274,7 +274,11 @@ async function interactiveBattle(
     const species = getSpecies(mine.speciesId);
     species.moves.forEach((id, i) => {
       const move = getMove(id);
-      const kind = move.effect === 'heal' ? 'heal' : `pow ${move.power}`;
+      const kind = move.effect
+        ? move.power > 0
+          ? `${move.effect.replace('_', ' ')} ${move.power}`
+          : move.effect.replace('_', ' ')
+        : `pow ${move.power}`;
       console.log(
         `    [${i + 1}] ${move.name} ${dim(`(${move.element}, ${kind}, acc ${move.accuracy})`)}`
       );

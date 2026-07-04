@@ -174,8 +174,21 @@ export const MAX_LEVEL = 50;
 //  Moves
 // ---------------------------------------------------------------------------
 
-/** Special move effects. */
-export type MoveEffect = 'drain' | 'heal';
+/**
+ * Special move effects. Beyond drain/heal: `atk_up`/`spd_up` raise the
+ * user's stat once per battle (×BUFF_MULTIPLIER), `def_down` crumbles
+ * the foe's defense once per battle (×DEBUFF_MULTIPLIER), `stun` makes
+ * the foe lose its next action, and `guard_break` damage ignores (and
+ * shatters) a guard.
+ */
+export type MoveEffect =
+  'drain' | 'heal' | 'atk_up' | 'spd_up' | 'def_down' | 'stun' | 'guard_break';
+
+/** Stat multiplier applied by atk_up / spd_up (once per battle). */
+export const BUFF_MULTIPLIER = 1.3;
+
+/** Defense multiplier applied by def_down (once per battle). */
+export const DEBUFF_MULTIPLIER = 0.75;
 
 /** A battle move definition. */
 export interface MoveDef {
@@ -406,6 +419,12 @@ export interface Combatant {
   readonly level: number;
   hp: number;
   guarding: boolean;
+  /** Loses its next action (binding_lattice). Cleared when it skips. */
+  stunned: boolean;
+  /** Once-per-battle buff/debuff flags. */
+  atkRaised: boolean;
+  spdRaised: boolean;
+  defLowered: boolean;
 }
 
 /** Player/AI battle action. */
@@ -415,7 +434,18 @@ export type BattleAction = { type: 'move'; moveId: string } | { type: 'guard' };
 export interface BattleEvent {
   readonly turn: number;
   readonly actor: 'A' | 'B';
-  readonly kind: 'move' | 'guard' | 'miss' | 'crit' | 'drain' | 'heal' | 'faint';
+  readonly kind:
+    | 'move'
+    | 'guard'
+    | 'miss'
+    | 'crit'
+    | 'drain'
+    | 'heal'
+    | 'faint'
+    | 'buff'
+    | 'debuff'
+    | 'stun'
+    | 'immobile';
   readonly moveId?: string;
   readonly damage?: number;
   readonly healed?: number;

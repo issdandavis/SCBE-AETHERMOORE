@@ -170,6 +170,34 @@ const sfx = {
     tone(660, 120, 90);
   },
   click: () => tone(520, 35, 0, 0.02),
+  buff: () => {
+    tone(330, 70);
+    tone(440, 110, 80, 0.05);
+  },
+  debuff: () => {
+    tone(294, 90);
+    tone(220, 130, 90);
+  },
+  stun: () => {
+    tone(587, 50);
+    tone(587, 50, 70);
+    tone(587, 140, 140, 0.05);
+  },
+  /**
+   * Species battle-cry: a seeded three-note motif rooted on the tongue's
+   * canon note — every species calls in its own voice, deterministically.
+   */
+  cry: (speciesId: string, element: TongueCode, delayMs = 0) => {
+    let hash = 7;
+    for (const ch of speciesId) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+    const base = TONGUE_FREQ[element];
+    const stepA = 2 + (hash % 6); // 2..7 semitones
+    const stepB = 4 + ((hash >> 3) % 9); // 4..12 semitones
+    const shape = (hash >> 7) % 2 === 0 ? [0, stepA, stepB] : [stepB, stepA, 0];
+    shape.forEach((semitones, i) => {
+      tone(base * 2 ** (semitones / 12), 110, delayMs + i * 120, 0.05);
+    });
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -866,6 +894,7 @@ function afterAction(): void {
       if (!result) break;
       const after = getSpecies(result.toSpeciesId);
       sfx.evolve();
+      sfx.cry(after.id, after.element, 620);
       flashOverlay(
         'EVOLUTION',
         `${monster.nickname}: ${before.name} → ${after.name}`,
@@ -940,6 +969,8 @@ async function beginBattle(enemy: Combatant, wasArena: boolean): Promise<void> {
   setScreen('screen-battle');
   renderBattle();
   pushLog(`⚔ ${mine.name} vs ${enemy.name} (Lv.${enemy.level})`);
+  sfx.cry(mine.speciesId, mine.element);
+  sfx.cry(enemy.speciesId, enemy.element, 420);
   await sleep(150);
 }
 
@@ -981,7 +1012,7 @@ function renderBattle(): void {
     return {
       label: move.name.toUpperCase(),
       cls: 'move',
-      title: `${TONGUE_NAMES[move.element]} · ${move.effect === 'heal' ? 'heal' : `pow ${move.power}`} · acc ${Math.round(move.accuracy * 100)}%`,
+      title: `${TONGUE_NAMES[move.element]} · ${moveKindLabel(move)} · acc ${Math.round(move.accuracy * 100)}%`,
       onClick: () => void playerTurn({ type: 'move', moveId }),
     };
   });
@@ -997,6 +1028,13 @@ function renderBattle(): void {
     onClick: () => void fleeBattle(),
   });
   renderButtons(moves);
+}
+
+/** Short human label for what a move does (tooltip). */
+function moveKindLabel(move: ReturnType<typeof getMove>): string {
+  if (!move.effect) return `pow ${move.power}`;
+  const label = move.effect.replace('_', ' ');
+  return move.power > 0 ? `${label} ${move.power}` : label;
 }
 
 function replayClass(node: HTMLElement, className: string): void {
@@ -1054,6 +1092,21 @@ async function playerTurn(action: BattleAction): Promise<void> {
     } else if (event.kind === 'heal' || event.kind === 'drain') {
       sfx.heal(actor.element);
       if (event.healed !== undefined) damageFloat(actorFighter, `+${event.healed}`, 'heal');
+    } else if (event.kind === 'buff') {
+      sfx.buff();
+      const label = event.moveId && getMove(event.moveId).effect === 'spd_up' ? '+SPD' : '+ATK';
+      damageFloat(actorFighter, label, 'heal');
+      sparkBurst(actorFighter, actor.element);
+    } else if (event.kind === 'debuff') {
+      sfx.debuff();
+      damageFloat(targetFighter, '-DEF', 'miss');
+    } else if (event.kind === 'stun') {
+      sfx.stun();
+      damageFloat(targetFighter, 'BOUND', 'crit');
+      replayClass($(event.actor === 'A' ? 'battle-foe' : 'battle-mine'), 'shake');
+    } else if (event.kind === 'immobile') {
+      sfx.stun();
+      damageFloat(actorFighter, 'BOUND', 'miss');
     } else if (event.kind === 'faint') {
       sfx.faint();
       $(event.actor === 'A' ? 'battle-mine' : 'battle-foe').classList.add('fainted');
