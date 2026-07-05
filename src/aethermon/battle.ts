@@ -46,6 +46,14 @@ import { chance, createRng, nextFloat, type Rng } from './rng.js';
 //  Combatant construction
 // ---------------------------------------------------------------------------
 
+/** Per-battle status flags, fresh for every new combatant. */
+function freshBattleFlags(): Pick<
+  Combatant,
+  'guarding' | 'stunned' | 'atkRaised' | 'spdRaised' | 'defLowered'
+> {
+  return { guarding: false, stunned: false, atkRaised: false, spdRaised: false, defLowered: false };
+}
+
 /**
  * Snapshot a tamed creature for battle. Mood nudges effective attack:
  * ×0.9 (miserable) to ×1.1 (delighted).
@@ -64,11 +72,7 @@ export function toCombatant(monster: MonsterState): Combatant {
     moves: species.moves,
     level: monster.level,
     hp: stats.hp,
-    guarding: false,
-    stunned: false,
-    atkRaised: false,
-    spdRaised: false,
-    defLowered: false,
+    ...freshBattleFlags(),
   };
 }
 
@@ -90,11 +94,7 @@ export function wildCombatant(species: SpeciesDef, level: number, name?: string)
     moves: species.moves,
     level,
     hp: stats.hp,
-    guarding: false,
-    stunned: false,
-    atkRaised: false,
-    spdRaised: false,
-    defLowered: false,
+    ...freshBattleFlags(),
   };
 }
 

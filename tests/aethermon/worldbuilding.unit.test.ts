@@ -320,6 +320,9 @@ describe('the Engine Sovereign (canon: the steam-powered Analytical Engine, 1837
     const move = getMove('bernoulli_sequence');
     expect(move.element).toBe('CA');
     expect(move.power).toBeGreaterThan(0);
+    // A plain damage move by design: CA's utility slot is Mend Protocol;
+    // the First Song's power is the point.
+    expect(move.effect).toBeUndefined();
     expect(getSpecies('engine_sovereign').moves).toContain('bernoulli_sequence');
   });
 });
