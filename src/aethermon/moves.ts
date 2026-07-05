@@ -192,6 +192,14 @@ const MOVE_LIST: readonly MoveDef[] = [
     effect: 'heal',
     description: 'Self-repair routine — restores 35% of max HP.',
   },
+  {
+    id: 'bernoulli_sequence',
+    name: 'Bernoulli Sequence',
+    element: 'CA',
+    power: 95,
+    accuracy: 0.85,
+    description: 'The First Song — the oldest program in the realm, still running.',
+  },
   // ── UM (Umbroth — Security) ───────────────────────────────────────────
   {
     id: 'shade_tap',

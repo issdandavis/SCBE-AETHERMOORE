@@ -295,7 +295,7 @@ function renderSpriteSheet(outFile) {
   raster.rect(0, 0, width, height, BG);
 
   drawText(raster, 'AETHERMON', margin, 18, GOLD, 5);
-  drawText(raster, '39 SPECIES OF THE AETHERMOORE REALM', margin, 46, DIM, 2);
+  drawText(raster, '40 SPECIES OF THE AETHERMOORE REALM', margin, 46, DIM, 2);
 
   let y = titleH + margin;
   for (const group of byStage) {

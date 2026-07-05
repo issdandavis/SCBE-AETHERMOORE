@@ -485,6 +485,16 @@ const SPECIES_LIST: readonly SpeciesDef[] = [
     moves: ['cipher_break', 'proof_of_ruin', 'mend_protocol', 'rust_hex'],
     evolvesTo: [
       {
+        // The general-purpose machine demands Victorian precision:
+        // drilled discipline and balanced, unspecialized training.
+        targetId: 'engine_sovereign',
+        minLevel: 35,
+        fallback: false,
+        priority: 3,
+        minDiscipline: 70,
+        dominantStat: 'balanced',
+      },
+      {
         targetId: 'radiant_sovereign',
         minLevel: 35,
         fallback: false,
@@ -583,6 +593,25 @@ const SPECIES_LIST: readonly SpeciesDef[] = [
     moves: ['worldframe', 'binding_lattice', 'proof_of_ruin', 'mend_protocol'],
     evolvesTo: [],
     lore: 'The load-bearing thought at the bottom of Aethermoore.',
+  },
+  {
+    // Canon: the steam-powered Analytical Engine (Babbage, 1837) — a Mill
+    // for arithmetic, a Store of a thousand fifty-digit numbers, punched
+    // cards borrowed from the Jacquard loom, and conditional branching:
+    // it eats its own tail. Ada's Bernoulli sequence is its signature.
+    id: 'engine_sovereign',
+    name: 'Engine Sovereign',
+    stage: 'APEX',
+    element: 'CA',
+    alignment: 'FLUX',
+    baseStats: { hp: 156, atk: 48, def: 50, spd: 40 },
+    growth: 0.1,
+    moves: ['bernoulli_sequence', 'proof_of_ruin', 'mend_protocol', 'binding_lattice'],
+    evolvesTo: [],
+    lore:
+      'The locomotive-sized first dream of a thinking machine: a Mill for thought, ' +
+      'a Store for memory, punched cards for a soul. It eats its own tail — ' +
+      'each result chooses the next instruction.',
   },
   {
     id: 'void_sovereign',

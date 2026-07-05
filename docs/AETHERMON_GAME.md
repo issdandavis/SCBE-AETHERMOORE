@@ -34,7 +34,7 @@ cyan/D#, UM indigo/F, DR magenta/G). Screens:
 - **Battle** — two dioramas with element-chipped nameplates, segmented HP bars, a turn
   counter, element-colored move cards, floating damage/heal/miss numbers, spark bursts,
   lunges, and screen shake.
-- **Codex** — an illustrated bestiary of all 39 species grouped by stage; your current
+- **Codex** — an illustrated bestiary of all 40 species grouped by stage; your current
   lineage is highlighted.
 - **Map** — a hexagonal wheel of the six tongue regions (spokes to a φ hub), your current
   location and the Hollow (Null Vale) marked; click a node to travel.
@@ -61,7 +61,7 @@ CLI flags (after `--`): `--seed <n>` fixed RNG seed, `--save <path>` custom save
 | `types.ts`     | Stages, alignment triangle, element wheel, Hodge duals, stats, lifespan |
 | `rng.ts`       | Mulberry32 seeded RNG — every outcome reproducible from a save          |
 | `moves.ts`     | 29-move catalog (4 power tiers per Sacred Tongue + drain/heal + a utility tactic per tongue) |
-| `species.ts`   | 39-species catalog and branching evolution graph (incl. Hollow branch)  |
+| `species.ts`   | 40-species catalog and branching evolution graph (incl. Hollow branch)  |
 | `regions.ts`   | The six canon tongue regions of Aethermoore                             |
 | `monster.ts`   | Care meters, ticks, training economy, XP curve, lifespan                |
 | `evolution.ts` | Requirement evaluation and branch selection                             |

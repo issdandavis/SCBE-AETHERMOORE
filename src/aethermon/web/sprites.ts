@@ -102,6 +102,7 @@ const SPECIES_ARCHETYPE: Record<string, BodyArchetype> = {
   lattice_sovereign: 'golem',
   void_sovereign: 'drake',
   storm_sovereign: 'winged',
+  engine_sovereign: 'golem', // the locomotive-sized machine
 };
 
 /** Archetype for a species id. */
