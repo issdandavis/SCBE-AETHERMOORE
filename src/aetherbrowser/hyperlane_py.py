@@ -76,11 +76,36 @@ _RED_DOMAINS = [
 ]
 
 
+def _load_scbe_layer():
+    """Load the hardened SCBE security layer (the aether-browser module) as a second gate.
+
+    Returns None gracefully if unavailable, so the router still works standalone.
+    """
+    try:
+        import os
+        import sys
+
+        _src = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "aether-browser", "src"))
+        if _src not in sys.path:
+            sys.path.insert(0, _src)
+        import scbe_security_layer as _scbe  # noqa: PLC0415
+
+        return _scbe.SCBESecurityLayer()
+    except Exception:
+        return None
+
+
+# Decision strictness ordering: DENY > QUARANTINE > ALLOW (two gates -> take the stricter).
+_STRICTNESS = {Decision.ALLOW: 0, Decision.QUARANTINE: 1, Decision.DENY: 2}
+
+
 class HyperLanePy:
     def __init__(self, rate_limit_per_min: int = 60):
         self._rate_limit = rate_limit_per_min
         self._request_log: dict[str, list[float]] = defaultdict(list)
         self._custom_domains: dict[str, Zone] = {}
+        # Second, content-aware gate: the hardened SCBE layer (intent/phishing/transport analysis).
+        self._scbe = _load_scbe_layer()
 
     def add_domain(self, domain: str, zone: Zone) -> None:
         self._custom_domains[domain] = zone
@@ -132,9 +157,35 @@ class HyperLanePy:
         else:
             decision = Decision.QUARANTINE
             reason = "RED zone: all actions require user approval"
+
+        # Defense-in-depth: consult the hardened SCBE layer and take the STRICTER decision.
+        # Adds content/intent analysis (incl. name-shaped phishing) on top of the zone allowlist.
+        decision, reason = self._apply_scbe_gate(url, action, decision, reason)
+
         return HyperLaneResult(
             decision=decision,
             zone=zone,
             reason=reason,
             latency_ms=(time.monotonic() - start) * 1000,
         )
+
+    def _apply_scbe_gate(self, url: str, action: str, decision: Decision, reason: str) -> tuple[Decision, str]:
+        """Consult the SCBE security layer; escalate to the stricter decision if it flags the URL."""
+        if self._scbe is None:
+            return decision, reason
+        try:
+            method = "GET" if action in ("read", "search") else "POST"
+            scbe_dec = self._scbe.classify_request(
+                url,
+                method=method,
+                content_signals={"claimed_type": "text/html", "actual_type": "text/html"},
+            )
+            scbe_name = getattr(scbe_dec, "value", str(scbe_dec).split(".")[-1])
+            scbe_d = {"ALLOW": Decision.ALLOW, "QUARANTINE": Decision.QUARANTINE, "DENY": Decision.DENY}.get(
+                scbe_name, Decision.QUARANTINE
+            )
+            if _STRICTNESS[scbe_d] > _STRICTNESS[decision]:
+                return scbe_d, f"{reason} | SCBE gate: {scbe_name} (intent/phishing/transport)"
+        except Exception:
+            pass
+        return decision, reason
