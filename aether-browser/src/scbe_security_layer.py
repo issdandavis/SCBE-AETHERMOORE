@@ -457,6 +457,11 @@ _BRANDS = (
     "steam",
     "discord",
     "roblox",
+    "adobe",
+    "twitter",
+    "tiktok",
+    "ebay",
+    "spotify",
 )
 
 # Common multi-label public suffixes so the registrable ("brand") label is extracted correctly.
@@ -499,6 +504,7 @@ _CONFUSABLES = str.maketrans(
         "к": "k",
         "н": "h",
         "г": "r",
+        "ɡ": "g",
         "α": "a",
         "ο": "o",
         "ρ": "p",
@@ -583,12 +589,39 @@ def analyze_url_threats(url: str) -> List[Tuple[str, str]]:
             ("ip_loopback" if _ip.is_loopback else ("ip_private" if _ip.is_private else "ip_literal"), "quarantine")
         )
 
-    # Homograph / typosquat: the brand label, skeletonised, collapses onto a brand while not
-    # being that brand verbatim -> impersonation (goog1e, paypa1, аpple with a cyrillic 'а').
-    label = _registrable_label(host)
-    if label and _skeleton(label) in _BRANDS and label not in _BRANDS:
+    # Split host into labels; the registrable ('brand') label is where a legit owner's identity
+    # lives -- everything to its LEFT is attacker-controlled subdomain space.
+    parts = host.split(".")
+    if len(parts) >= 3 and ".".join(parts[-2:]) in _MULTI_SUFFIXES:
+        reg_idx = len(parts) - 3
+    elif len(parts) >= 2:
+        reg_idx = len(parts) - 2
+    else:
+        reg_idx = 0
+    reg_label = parts[reg_idx] if parts else host
+    reg_is_brand = _skeleton(reg_label) in _BRANDS  # google.com / docs.google.com -> True (legit)
+
+    # Homograph / typosquat on the REGISTRABLE label: skeleton collapses onto a brand while not
+    # being that brand verbatim -> impersonation (goog1e.com, paypa1.com, аpple.com cyrillic 'а').
+    if reg_label and _skeleton(reg_label) in _BRANDS and reg_label not in _BRANDS:
         threats.append(("homograph_typosquat", "deny"))
-    # Punycode that decodes to a brand-shaped skeleton (xn--pypal-4ve -> "pаypal" -> "paypal").
+
+    # Brand-in-subdomain: a brand (or its skeleton) appears in a NON-registrable label while the
+    # registrable owner is NOT that brand -> paypal.evil.com, apple-login.attacker.net. Skipped when
+    # the registrable label itself is a brand (docs.google.com, signin.aws.amazon.com) -> no FP.
+    if not reg_is_brand:
+        sub_tokens: List[str] = []
+        for _p in parts[:reg_idx]:
+            sub_tokens.extend(_p.split("-"))
+        if any(tok and _skeleton(tok) in _BRANDS for tok in sub_tokens):
+            threats.append(("brand_subdomain", "deny"))
+
+    # Exact brand as the registrable label on a disposable free TLD -> paypal.tk, apple.ml. A real
+    # brand never lives on a throwaway .tk/.ml/.ga/.cf/.gq, so this verbatim case is decisive.
+    if host.endswith(_FREE_ABUSED_TLDS) and _skeleton(reg_label) in _BRANDS:
+        threats.append(("brand_free_tld", "deny"))
+
+    # Punycode that decodes to a brand-shaped skeleton (xn--pypal-4ve -> 'pаypal' -> 'paypal').
     if "xn--" in host:
         try:
             decoded = host.encode("ascii").decode("idna")
@@ -679,7 +712,13 @@ class SacredTongueFilter:
         # brand homograph/typosquat or a phishing word on a disposable free TLD. This deliberately
         # does NOT fire on legitimate internationalized domains -- see analyze_url_threats().
         for _tid, _sev in analyze_url_threats(url):
-            if _tid in ("homograph_typosquat", "punycode_brand", "phish_free_tld"):
+            if _tid in (
+                "homograph_typosquat",
+                "punycode_brand",
+                "phish_free_tld",
+                "brand_subdomain",
+                "brand_free_tld",
+            ):
                 score -= 0.4
 
         return max(0.0, min(1.0, score))
