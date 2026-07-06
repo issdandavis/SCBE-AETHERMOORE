@@ -70,10 +70,10 @@ from config import (
     DOMAIN_TRUST_DEFAULTS,
 )
 
-
 # =============================================================================
 # HELPER: POINCARE BALL GEOMETRY (stdlib-only, no numpy)
 # =============================================================================
+
 
 def _clamp_to_ball(r: float) -> float:
     """Clamp a radial distance to strictly inside the Poincare ball.
@@ -110,7 +110,7 @@ def _poincare_distance_1d(r_u: float, r_v: float) -> float:
     r_v = _clamp_to_ball(abs(r_v))
 
     diff_sq: float = (r_u - r_v) ** 2
-    denom: float = (1.0 - r_u ** 2) * (1.0 - r_v ** 2)
+    denom: float = (1.0 - r_u**2) * (1.0 - r_v**2)
 
     if denom < EPSILON:
         return 50.0  # Effective infinity when at the boundary
@@ -135,17 +135,15 @@ def _poincare_distance_nd(u: List[float], v: List[float]) -> float:
         Hyperbolic distance (non-negative float).
     """
     if len(u) != len(v):
-        raise ValueError(
-            f"Dimension mismatch: len(u)={len(u)} != len(v)={len(v)}"
-        )
+        raise ValueError(f"Dimension mismatch: len(u)={len(u)} != len(v)={len(v)}")
 
     u_norm_sq: float = sum(x * x for x in u)
     v_norm_sq: float = sum(x * x for x in v)
     diff_norm_sq: float = sum((a - b) ** 2 for a, b in zip(u, v))
 
     # Clamp norms to ball interior
-    u_norm_sq = min(u_norm_sq, BALL_RADIUS ** 2)
-    v_norm_sq = min(v_norm_sq, BALL_RADIUS ** 2)
+    u_norm_sq = min(u_norm_sq, BALL_RADIUS**2)
+    v_norm_sq = min(v_norm_sq, BALL_RADIUS**2)
 
     denom: float = (1.0 - u_norm_sq) * (1.0 - v_norm_sq)
     if denom < EPSILON:
@@ -173,7 +171,7 @@ def _domain_to_radial(domain: str) -> float:
     h: bytes = hashlib.sha256(domain.lower().encode("utf-8")).digest()
     # Interpret first 4 bytes as unsigned int, normalise to [0, 1)
     raw: int = int.from_bytes(h[:4], byteorder="big")
-    return (raw / (2 ** 32)) * BALL_RADIUS
+    return (raw / (2**32)) * BALL_RADIUS
 
 
 def _domain_to_vector(domain: str, dims: int = 6) -> List[float]:
@@ -212,6 +210,7 @@ def _domain_to_vector(domain: str, dims: int = 6) -> List[float]:
 # CLASS: TrustZoneManager
 # =============================================================================
 
+
 @dataclass
 class DomainRecord:
     """Internal record for a tracked domain.
@@ -224,6 +223,7 @@ class DomainRecord:
         promotion_count: Number of promotions in the current tracking window.
         first_seen: Timestamp when the domain was first encountered.
     """
+
     domain: str
     zone: TrustZone
     evidence_score: float = 0.0
@@ -411,14 +411,13 @@ class TrustZoneManager:
         Returns:
             List of domain name strings.
         """
-        return [
-            r.domain for r in self._records.values() if r.zone == zone
-        ]
+        return [r.domain for r in self._records.values() if r.zone == zone]
 
 
 # =============================================================================
 # CLASS: SacredTongueFilter
 # =============================================================================
+
 
 class SacredTongueFilter:
     """Content filtering using the Six Sacred Tongues.
@@ -483,6 +482,32 @@ class SacredTongueFilter:
         # Reward pages with clear navigation intent
         if signals.get("has_navigation", False):
             score += 0.1
+
+        # Penalise impersonation-shaped domain NAMES (not just content): a phishing action/brand
+        # word in the host combined with a free/abused TLD or plaintext transport signals deceptive
+        # intent -- the KO tongue asking "is the domain what it claims to be?", not just the payload.
+        host = (urlparse(url).hostname or "").lower()
+        if host:
+            _phish_words = (
+                "login",
+                "verify",
+                "secure",
+                "account",
+                "signin",
+                "update",
+                "confirm",
+                "banking",
+                "paypal",
+                "wallet",
+                "recover",
+                "unlock",
+            )
+            _suspicious_tlds = (".tk", ".ml", ".ga", ".cf", ".gq", ".xyz", ".ru", ".top", ".zip")
+            _has_phish = any(word in host for word in _phish_words)
+            if _has_phish and (host.endswith(_suspicious_tlds) or not url.startswith("https:")):
+                score -= 0.5  # impersonation-shaped: pull hard toward the wall
+            elif _has_phish and host.count(".") >= 2:
+                score -= 0.2  # brand.login.example subdomain trickery
 
         return max(0.0, min(1.0, score))
 
@@ -718,6 +743,7 @@ class SacredTongueFilter:
 # CLASS: SCBESecurityLayer
 # =============================================================================
 
+
 class SCBESecurityLayer:
     """Main SCBE security wrapper for AetherBrowser.
 
@@ -813,9 +839,7 @@ class SCBESecurityLayer:
 
         # 4. Content analysis (if signals provided)
         if content_signals:
-            tongue_scores: Dict[str, float] = self.tongue_filter.analyze_page(
-                url, content_signals
-            )
+            tongue_scores: Dict[str, float] = self.tongue_filter.analyze_page(url, content_signals)
             coherence: float = self.tongue_filter.composite_score(tongue_scores)
             # Blend content coherence into risk (lower coherence = higher risk)
             risk = risk * 0.6 + (1.0 - coherence) * 0.4
@@ -939,18 +963,14 @@ class SCBESecurityLayer:
         for i in range(6):
             # Use 4 bytes per tongue (24 bytes total, within 32-byte SHA-256)
             offset: int = i * 4
-            segment: int = int.from_bytes(
-                combined_hash[offset:offset + 4], byteorder="big"
-            )
+            segment: int = int.from_bytes(combined_hash[offset : offset + 4], byteorder="big")
             # Normalise to [0, 1]
-            tongue_scores.append(segment / (2 ** 32))
+            tongue_scores.append(segment / (2**32))
 
         # Coherence threshold: the variance of tongue scores must be below
         # a threshold (coherent chains produce balanced hashes)
         mean_score: float = sum(tongue_scores) / len(tongue_scores)
-        variance: float = sum(
-            (s - mean_score) ** 2 for s in tongue_scores
-        ) / len(tongue_scores)
+        variance: float = sum((s - mean_score) ** 2 for s in tongue_scores) / len(tongue_scores)
 
         # Variance threshold derived from golden ratio:
         # For a truly random hash, expected variance ~ 1/12 ~ 0.083
@@ -991,9 +1011,7 @@ class SCBESecurityLayer:
             ValueError: If request_depth is negative.
         """
         if request_depth < 0:
-            raise ValueError(
-                f"request_depth must be non-negative, got {request_depth}"
-            )
+            raise ValueError(f"request_depth must be non-negative, got {request_depth}")
 
         # Hard limit on depth
         if request_depth > HARMONIC_WALL_MAX_DEPTH:
