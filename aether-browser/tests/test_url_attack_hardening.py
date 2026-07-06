@@ -83,3 +83,26 @@ def test_phish_word_substring_not_false_positive():
     assert _d("https://accountant.ga/") == "ALLOW"
     # but a real phish-word TOKEN on a free TLD is still caught
     assert _d("http://login-verify-account.tk") == "DENY"
+
+
+def test_regional_brand_domains_not_false_positive():
+    # brand on a country second-level domain (com.hk / com.sg / com.ph) is the REAL brand,
+    # not attacker subdomain space -- adversarial-verify caught these being wrongly DENIED
+    for url in (
+        "https://google.com.hk/",
+        "https://apple.com.hk/",
+        "https://amazon.com.sg/",
+        "https://facebook.com.ph/",
+        "https://amazon.co.za/",
+    ):
+        assert _d(url) == "ALLOW", url
+
+
+def test_brand_in_subdomain_and_free_tld_denied():
+    # a brand sitting in attacker subdomain space, or verbatim on a disposable free TLD
+    assert _d("https://paypal.evil.com/signin") == "DENY"
+    assert _d("https://apple-login.attacker.net/") == "DENY"
+    assert _d("http://paypal.tk/") == "DENY"
+    # but the brand's OWN subdomains stay allowed (registrable owner IS the brand)
+    assert _d("https://docs.google.com/") == "ALLOW"
+    assert _d("https://signin.aws.amazon.com/") == "ALLOW"
