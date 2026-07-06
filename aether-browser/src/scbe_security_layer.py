@@ -415,6 +415,194 @@ class TrustZoneManager:
 
 
 # =============================================================================
+# URL THREAT DETECTION (high-precision, decisive -- vetoes the diluted risk blend)
+# =============================================================================
+
+# Disposable/abused free TLDs strongly tied to throwaway phishing. Deliberately EXCLUDES
+# .ru/.xyz/.top/.zip -- those are legitimate registries (mail.ru, login.yandex.ru, etc.).
+_FREE_ABUSED_TLDS = (".tk", ".ml", ".ga", ".cf", ".gq")
+
+_PHISH_WORDS = (
+    "login",
+    "verify",
+    "secure",
+    "signin",
+    "account",
+    "confirm",
+    "update",
+    "recover",
+    "unlock",
+    "wallet",
+    "banking",
+)
+
+_BRANDS = (
+    "google",
+    "paypal",
+    "github",
+    "apple",
+    "microsoft",
+    "amazon",
+    "facebook",
+    "netflix",
+    "youtube",
+    "instagram",
+    "whatsapp",
+    "linkedin",
+    "dropbox",
+    "wellsfargo",
+    "chase",
+    "coinbase",
+    "binance",
+    "steam",
+    "discord",
+    "roblox",
+)
+
+# Common multi-label public suffixes so the registrable ("brand") label is extracted correctly.
+_MULTI_SUFFIXES = (
+    "co.uk",
+    "org.uk",
+    "gov.uk",
+    "ac.uk",
+    "com.au",
+    "net.au",
+    "org.au",
+    "co.jp",
+    "co.nz",
+    "co.kr",
+    "com.br",
+    "co.in",
+    "com.cn",
+    "com.tr",
+    "com.mx",
+)
+
+# Confusable homoglyphs: cyrillic/greek lookalikes + digit substitutions -> ASCII skeleton.
+_CONFUSABLES = str.maketrans(
+    {
+        "а": "a",
+        "е": "e",
+        "о": "o",
+        "р": "p",
+        "с": "c",
+        "у": "y",
+        "х": "x",
+        "ѕ": "s",
+        "і": "i",
+        "ј": "j",
+        "ԁ": "d",
+        "ո": "n",
+        "м": "m",
+        "т": "t",
+        "в": "b",
+        "к": "k",
+        "н": "h",
+        "г": "r",
+        "α": "a",
+        "ο": "o",
+        "ρ": "p",
+        "ε": "e",
+        "ι": "i",
+        "κ": "k",
+        "ν": "v",
+        "τ": "t",
+        "υ": "u",
+        "χ": "x",
+        "0": "o",
+        "1": "l",
+        "3": "e",
+        "4": "a",
+        "5": "s",
+        "7": "t",
+        "8": "b",
+    }
+)
+
+
+def _registrable_label(host: str) -> str:
+    """Best-effort registrable ('brand') label, handling common multi-part public suffixes."""
+    parts = host.split(".")
+    if len(parts) >= 3 and ".".join(parts[-2:]) in _MULTI_SUFFIXES:
+        return parts[-3]
+    if len(parts) >= 2:
+        return parts[-2]
+    return host
+
+
+def _skeleton(label: str) -> str:
+    """Collapse confusable unicode + digit homoglyphs to an ASCII skeleton."""
+    return label.lower().translate(_CONFUSABLES)
+
+
+def analyze_url_threats(url: str) -> List[Tuple[str, str]]:
+    """High-precision URL threat detection.
+
+    Returns a list of ``(threat_id, severity)`` where severity is "deny" (clear impersonation /
+    executable page) or "quarantine" (structurally suspicious). Tuned to NOT fire on legitimate
+    internationalized domains (bücher.de, президент.рф) or ordinary sites -- only decisive attacks.
+    Used both as a soft tongue signal AND as a decisive veto in classify_request().
+    """
+    import ipaddress
+
+    threats: List[Tuple[str, str]] = []
+    parsed = urlparse(url)
+    scheme = (parsed.scheme or "").lower()
+
+    if scheme == "javascript":
+        threats.append(("javascript_uri", "deny"))
+    elif scheme == "data":
+        threats.append(("data_uri", "quarantine"))
+
+    if parsed.username or parsed.password:
+        threats.append(("url_credentials", "quarantine"))
+
+    try:
+        host = (parsed.hostname or "").lower()
+    except ValueError:
+        host = ""
+    if not host:
+        return threats
+
+    # IP-literal host in ANY encoding (dotted-quad, decimal, hex, IPv6) -> SSRF-shaped.
+    _iph = host.strip("[]")
+    _ip = None
+    try:
+        _ip = ipaddress.ip_address(_iph)
+    except ValueError:
+        if _iph[:1].isdigit():
+            try:
+                _ip = ipaddress.ip_address(int(_iph, 0))
+            except ValueError:
+                _ip = None
+    if _ip is not None:
+        threats.append(
+            ("ip_loopback" if _ip.is_loopback else ("ip_private" if _ip.is_private else "ip_literal"), "quarantine")
+        )
+
+    # Homograph / typosquat: the brand label, skeletonised, collapses onto a brand while not
+    # being that brand verbatim -> impersonation (goog1e, paypa1, аpple with a cyrillic 'а').
+    label = _registrable_label(host)
+    if label and _skeleton(label) in _BRANDS and label not in _BRANDS:
+        threats.append(("homograph_typosquat", "deny"))
+    # Punycode that decodes to a brand-shaped skeleton (xn--pypal-4ve -> "pаypal" -> "paypal").
+    if "xn--" in host:
+        try:
+            decoded = host.encode("ascii").decode("idna")
+            dlabel = _registrable_label(decoded)
+            if dlabel and _skeleton(dlabel) in _BRANDS and dlabel not in _BRANDS:
+                threats.append(("punycode_brand", "deny"))
+        except Exception:
+            pass
+
+    # Phishing action-word + disposable free TLD -> decisive (free TLDs only, not .ru/.xyz).
+    if host.endswith(_FREE_ABUSED_TLDS) and any(w in host for w in _PHISH_WORDS):
+        threats.append(("phish_free_tld", "deny"))
+
+    return threats
+
+
+# =============================================================================
 # CLASS: SacredTongueFilter
 # =============================================================================
 
@@ -483,57 +671,12 @@ class SacredTongueFilter:
         if signals.get("has_navigation", False):
             score += 0.1
 
-        # Penalise impersonation-shaped domain NAMES (not just content): a phishing action/brand
-        # word in the host combined with a free/abused TLD or plaintext transport signals deceptive
-        # intent -- the KO tongue asking "is the domain what it claims to be?", not just the payload.
-        host = (urlparse(url).hostname or "").lower()
-        if host:
-            _phish_words = (
-                "login",
-                "verify",
-                "secure",
-                "account",
-                "signin",
-                "update",
-                "confirm",
-                "banking",
-                "paypal",
-                "wallet",
-                "recover",
-                "unlock",
-            )
-            _suspicious_tlds = (".tk", ".ml", ".ga", ".cf", ".gq", ".xyz", ".ru", ".top", ".zip")
-            _has_phish = any(word in host for word in _phish_words)
-            if _has_phish and (host.endswith(_suspicious_tlds) or not url.startswith("https:")):
-                score -= 0.5  # impersonation-shaped: pull hard toward the wall
-            elif _has_phish and host.count(".") >= 2:
-                score -= 0.2  # brand.login.example subdomain trickery
-
-            # Homograph impersonation: punycode or non-ASCII host mimicking a real brand.
-            if "xn--" in host or any(ord(ch) > 127 for ch in host):
+        # Intent penalty from PRECISE URL threats only (impersonation-shaped identity):
+        # brand homograph/typosquat or a phishing word on a disposable free TLD. This deliberately
+        # does NOT fire on legitimate internationalized domains -- see analyze_url_threats().
+        for _tid, _sev in analyze_url_threats(url):
+            if _tid in ("homograph_typosquat", "punycode_brand", "phish_free_tld"):
                 score -= 0.4
-
-            # Typosquatting: the registrable label is a lookalike of a known brand.
-            _brands = (
-                "google",
-                "paypal",
-                "github",
-                "apple",
-                "microsoft",
-                "amazon",
-                "facebook",
-                "netflix",
-                "youtube",
-                "wellsfargo",
-            )
-            _reg = host.split(".")[-2] if host.count(".") >= 1 else host
-            if _reg and _reg not in _brands:
-                _norm = _reg.translate(str.maketrans("013457", "oleast"))  # digit homoglyphs (0->o,1->l,3->e...)
-                _deletions = [_reg[:i] + _reg[i + 1 :] for i in range(len(_reg))]  # single-char removals
-                if _norm in _brands and _norm != _reg:
-                    score -= 0.4  # digit-homoglyph typosquat (goog1e, paypa1)
-                elif any(d in _brands for d in _deletions):
-                    score -= 0.4  # inserted-char typosquat (githubb, gooogle)
 
         return max(0.0, min(1.0, score))
 
@@ -571,43 +714,12 @@ class SacredTongueFilter:
         if signals.get("cert_valid", False):
             score += 0.1
 
-        # URL-structure attack vectors -- the transport identity itself being dishonest.
-        host = (parsed.hostname or "").lower()
-        if parsed.username or parsed.password:
-            score -= 0.4  # credentials embedded in the URL (user:pass@host) -- obfuscation/phishing
-
-        # Any IP-literal host (dotted-quad, decimal 2130706433, hex 0x7f000001, or IPv6 [::1]),
-        # not just dotted-quad -- otherwise SSRF/loopback access slips through via encoding.
-        import ipaddress
-
-        _ip_host = host.strip("[]")
-        _ip = None
-        try:
-            _ip = ipaddress.ip_address(_ip_host)
-        except ValueError:
-            if _ip_host[:1].isdigit():  # int/hex-encoded IPv4 (2130706433 / 0x7f000001)
-                try:
-                    _ip = ipaddress.ip_address(int(_ip_host, 0))
-                except ValueError:
-                    _ip = None
-        if _ip is not None:
-            score -= 0.4  # raw IP literal instead of a domain name
-            if _ip.is_loopback or _ip.is_private:
-                score -= 0.2  # SSRF-shaped: loopback / RFC1918 target
-
-        if "xn--" in host:
-            score -= 0.35  # punycode host -> potential homograph impersonation
-        if any(ord(ch) > 127 for ch in host):
-            score -= 0.4  # non-ASCII host characters -> cyrillic/greek lookalike attack
-
-        # parsed.port raises ValueError on a malformed/out-of-range port -- guard it (crash fix)
-        try:
-            _port = parsed.port
-        except ValueError:
-            _port = None
-            score -= 0.3  # unparseable port -> suspicious
-        if _port and _port not in (80, 443):
-            score -= 0.2  # non-standard port
+        # Transport penalty from PRECISE URL threats only: embedded credentials or an IP-literal
+        # host (any encoding). No blanket non-ASCII/port penalty -- those broke legit IDN and dev
+        # servers. IP-encoding and crash-safety are handled centrally in analyze_url_threats().
+        for _tid, _sev in analyze_url_threats(url):
+            if _tid in ("url_credentials", "ip_loopback", "ip_private", "ip_literal"):
+                score -= 0.4
 
         return max(0.0, min(1.0, score))
 
@@ -918,13 +1030,23 @@ class SCBESecurityLayer:
         risk += zone_bonus.get(zone, 0.0)
         risk = max(0.0, min(1.0, risk))
 
-        # 6. Decision
+        # 6. Base decision from the (phi-weighted, blended) risk score.
         if risk < ALLOW_THRESHOLD:
-            return Decision.ALLOW
+            base = Decision.ALLOW
         elif risk < DENY_THRESHOLD:
-            return Decision.QUARANTINE
+            base = Decision.QUARANTINE
         else:
+            base = Decision.DENY
+
+        # 7. Decisive URL-threat veto. The blend dilutes single-signal penalties below the
+        # thresholds, so precise, high-confidence threats (impersonation, SSRF, executable URIs,
+        # embedded credentials) OVERRIDE the base decision instead of being averaged away.
+        threat_sevs = {sev for _, sev in analyze_url_threats(url)}
+        if "deny" in threat_sevs:
             return Decision.DENY
+        if "quarantine" in threat_sevs and base == Decision.ALLOW:
+            return Decision.QUARANTINE
+        return base
 
     # ----- Trust scoring -----
 
