@@ -509,6 +509,32 @@ class SacredTongueFilter:
             elif _has_phish and host.count(".") >= 2:
                 score -= 0.2  # brand.login.example subdomain trickery
 
+            # Homograph impersonation: punycode or non-ASCII host mimicking a real brand.
+            if "xn--" in host or any(ord(ch) > 127 for ch in host):
+                score -= 0.4
+
+            # Typosquatting: the registrable label is a lookalike of a known brand.
+            _brands = (
+                "google",
+                "paypal",
+                "github",
+                "apple",
+                "microsoft",
+                "amazon",
+                "facebook",
+                "netflix",
+                "youtube",
+                "wellsfargo",
+            )
+            _reg = host.split(".")[-2] if host.count(".") >= 1 else host
+            if _reg and _reg not in _brands:
+                _norm = _reg.translate(str.maketrans("013457", "oleast"))  # digit homoglyphs (0->o,1->l,3->e...)
+                _deletions = [_reg[:i] + _reg[i + 1 :] for i in range(len(_reg))]  # single-char removals
+                if _norm in _brands and _norm != _reg:
+                    score -= 0.4  # digit-homoglyph typosquat (goog1e, paypa1)
+                elif any(d in _brands for d in _deletions):
+                    score -= 0.4  # inserted-char typosquat (githubb, gooogle)
+
         return max(0.0, min(1.0, score))
 
     @staticmethod
@@ -544,6 +570,19 @@ class SacredTongueFilter:
         # Certificate validity signal
         if signals.get("cert_valid", False):
             score += 0.1
+
+        # URL-structure attack vectors -- the transport identity itself being dishonest.
+        host = (parsed.hostname or "").lower()
+        if parsed.username or parsed.password:
+            score -= 0.4  # credentials embedded in the URL (user:pass@host) -- obfuscation/phishing
+        if host and host.replace(".", "").isdigit():
+            score -= 0.4  # raw IPv4 address instead of a domain name
+        if "xn--" in host:
+            score -= 0.35  # punycode host -> potential homograph impersonation
+        if any(ord(ch) > 127 for ch in host):
+            score -= 0.4  # non-ASCII host characters -> cyrillic/greek lookalike attack
+        if parsed.port and parsed.port not in (80, 443):
+            score -= 0.2  # non-standard port
 
         return max(0.0, min(1.0, score))
 
