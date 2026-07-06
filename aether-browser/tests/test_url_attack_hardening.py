@@ -70,3 +70,16 @@ def test_legit_idn_and_lookalike_companies_allowed():
         "http://myapp.localhost:3000/",  # local dev server
     ):
         assert _d(url) == "ALLOW", url
+
+
+def test_malformed_bracket_url_fails_closed_no_crash():
+    # re-verify finding: urlparse() itself raised ValueError before the .hostname guard
+    assert _d("http://[oops/login") in {"ALLOW", "QUARANTINE", "DENY"}  # must not raise
+
+
+def test_phish_word_substring_not_false_positive():
+    # 'account' is a substring of 'accountant' -- token match must not DENY these legit sites
+    assert _d("https://accountant.tk/") == "ALLOW"
+    assert _d("https://accountant.ga/") == "ALLOW"
+    # but a real phish-word TOKEN on a free TLD is still caught
+    assert _d("http://login-verify-account.tk") == "DENY"

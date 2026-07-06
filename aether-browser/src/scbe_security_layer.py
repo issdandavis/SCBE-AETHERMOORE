@@ -546,7 +546,10 @@ def analyze_url_threats(url: str) -> List[Tuple[str, str]]:
     import ipaddress
 
     threats: List[Tuple[str, str]] = []
-    parsed = urlparse(url)
+    try:
+        parsed = urlparse(url)
+    except ValueError:
+        return [("malformed_url", "deny")]  # a URL we cannot even parse is suspicious
     scheme = (parsed.scheme or "").lower()
 
     if scheme == "javascript":
@@ -596,7 +599,8 @@ def analyze_url_threats(url: str) -> List[Tuple[str, str]]:
             pass
 
     # Phishing action-word + disposable free TLD -> decisive (free TLDs only, not .ru/.xyz).
-    if host.endswith(_FREE_ABUSED_TLDS) and any(w in host for w in _PHISH_WORDS):
+    _tokens = host.replace("-", ".").split(".")
+    if host.endswith(_FREE_ABUSED_TLDS) and any(w in _tokens for w in _PHISH_WORDS):
         threats.append(("phish_free_tld", "deny"))
 
     return threats
@@ -990,8 +994,11 @@ class SCBESecurityLayer:
         Returns:
             A ``Decision`` enum value.
         """
-        parsed = urlparse(url)
-        domain: str = (parsed.hostname or "").lower()
+        try:
+            parsed = urlparse(url)
+            domain: str = (parsed.hostname or "").lower()
+        except ValueError:
+            return Decision.DENY  # unparseable URL -> fail closed
 
         if not domain:
             return Decision.DENY
