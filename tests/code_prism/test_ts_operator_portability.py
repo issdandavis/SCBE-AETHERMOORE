@@ -43,3 +43,28 @@ def test_typescript_floor_division_semantics_match_python():
 
     value = eval(expr.replace("Math.floor", "math.floor"), {"math": math, "a": 7, "b": 2})
     assert value == 3  # matches Python's 7 // 2
+
+
+def _module(body):
+    return PrismModule(
+        module_name="m",
+        source_language="python",
+        functions=[PrismFunction(name="f", args=["a", "b", "c"], body=body, returns="int")],
+    )
+
+
+def test_floor_division_inside_string_literal_is_not_rewritten():
+    # regression: a `//` inside a string literal must NOT be rewritten to Math.floor.
+    code = emit_typescript(_module(['return "a // b"']))
+    assert 'return "a // b";' in code
+    assert "Math.floor" not in code
+
+
+def test_chained_floor_division_is_left_associative():
+    # a // b // c == (a // b) // c in Python; the rewrite must nest left, not right.
+    code = emit_typescript(_module(["return a // b // c"]))
+    assert "Math.floor((Math.floor((a) / (b))) / (c))" in code
+    import math
+
+    expr = next(l for l in code.splitlines() if "return" in l).strip()[len("return ") : -1]
+    assert eval(expr.replace("Math.floor", "math.floor"), {"math": math, "a": 20, "b": 3, "c": 2}) == 20 // 3 // 2
