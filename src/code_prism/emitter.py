@@ -44,15 +44,31 @@ def _ts_type(type_name: str | None) -> str:
     return type_name
 
 
+def _ts_floor_division(expr: str) -> str:
+    """Rewrite Python floor division ``a // b`` to JS ``Math.floor(a / b)``.
+
+    In JavaScript/TypeScript a bare ``//`` begins a line comment, so emitting a
+    Python floor-division operator verbatim silently truncates the statement and
+    the function returns only the left operand (e.g. ``return a // b;`` behaves
+    like ``return a;``). Rewriting keeps the emitted code behaviourally faithful.
+    """
+    if " // " not in expr:
+        return expr
+    left, right = expr.split(" // ", 1)
+    return f"Math.floor(({left.strip()}) / ({_ts_floor_division(right.strip())}))"
+
+
 def _ts_body_line(line: str) -> str:
     stripped = line.strip()
     if not stripped or stripped == "pass":
         return "// no-op"
     if stripped.startswith("return "):
-        return f"{stripped};"
+        expr = _ts_floor_division(stripped[len("return ") :].strip())
+        return f"return {expr};"
     if "=" in stripped and "==" not in stripped and not stripped.startswith(("const ", "let ", "var ")):
         name, value = stripped.split("=", 1)
-        return f"const {name.strip()} = {value.strip()};"
+        return f"const {name.strip()} = {_ts_floor_division(value.strip())};"
+    stripped = _ts_floor_division(stripped)
     return stripped if stripped.endswith(";") else f"{stripped};"
 
 
