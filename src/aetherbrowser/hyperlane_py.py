@@ -186,6 +186,13 @@ class HyperLanePy:
             )
             if _STRICTNESS[scbe_d] > _STRICTNESS[decision]:
                 return scbe_d, f"{reason} | SCBE gate: {scbe_name} (intent/phishing/transport)"
-        except Exception:
-            pass
+        except Exception as exc:
+            # FAIL CLOSED: a security control that errors must not silently keep the weaker
+            # decision (that lets an attacker disable the gate by triggering an error, e.g. a
+            # malformed port). Escalate to at least QUARANTINE (user approval).
+            if _STRICTNESS[Decision.QUARANTINE] > _STRICTNESS[decision]:
+                return (
+                    Decision.QUARANTINE,
+                    f"{reason} | SCBE gate error -> fail-closed QUARANTINE ({type(exc).__name__})",
+                )
         return decision, reason

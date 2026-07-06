@@ -575,13 +575,38 @@ class SacredTongueFilter:
         host = (parsed.hostname or "").lower()
         if parsed.username or parsed.password:
             score -= 0.4  # credentials embedded in the URL (user:pass@host) -- obfuscation/phishing
-        if host and host.replace(".", "").isdigit():
-            score -= 0.4  # raw IPv4 address instead of a domain name
+
+        # Any IP-literal host (dotted-quad, decimal 2130706433, hex 0x7f000001, or IPv6 [::1]),
+        # not just dotted-quad -- otherwise SSRF/loopback access slips through via encoding.
+        import ipaddress
+
+        _ip_host = host.strip("[]")
+        _ip = None
+        try:
+            _ip = ipaddress.ip_address(_ip_host)
+        except ValueError:
+            if _ip_host[:1].isdigit():  # int/hex-encoded IPv4 (2130706433 / 0x7f000001)
+                try:
+                    _ip = ipaddress.ip_address(int(_ip_host, 0))
+                except ValueError:
+                    _ip = None
+        if _ip is not None:
+            score -= 0.4  # raw IP literal instead of a domain name
+            if _ip.is_loopback or _ip.is_private:
+                score -= 0.2  # SSRF-shaped: loopback / RFC1918 target
+
         if "xn--" in host:
             score -= 0.35  # punycode host -> potential homograph impersonation
         if any(ord(ch) > 127 for ch in host):
             score -= 0.4  # non-ASCII host characters -> cyrillic/greek lookalike attack
-        if parsed.port and parsed.port not in (80, 443):
+
+        # parsed.port raises ValueError on a malformed/out-of-range port -- guard it (crash fix)
+        try:
+            _port = parsed.port
+        except ValueError:
+            _port = None
+            score -= 0.3  # unparseable port -> suspicious
+        if _port and _port not in (80, 443):
             score -= 0.2  # non-standard port
 
         return max(0.0, min(1.0, score))
