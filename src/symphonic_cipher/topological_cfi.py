@@ -50,7 +50,6 @@ class BasicBlock:
 
 
 @dataclass
-@dataclass
 class HyperbolicPoint:
     """2D point in the Poincare disk model (|z| < 1)."""
 
@@ -61,6 +60,7 @@ class HyperbolicPoint:
         return float(np.sqrt(self.x**2 + self.y**2))
 
 
+@dataclass
 class CFGEdge:
     """Represents an edge in the control-flow graph."""
 
@@ -374,27 +374,37 @@ class TopologicalCFI:
     def check_transition(self, from_block: int, to_block: int) -> CFIResult:
         """
         O(1) runtime check for control-flow transition validity.
-        This is called at every control-flow transition.
+        Called at every control-flow transition.
+
+        Correctness note (honesty firewall): the principal-curve deviation is a
+        GEOMETRIC signal, not a complete detector. Every known basic block sits
+        ON the fitted curve, so deviation-of-destination alone only catches jumps
+        to UNKNOWN blocks -- it cannot catch an invalid edge between two VALID
+        blocks, which is the common ROP/JOP case. The authoritative CFI gate is
+        therefore the allowed-edge set; curve deviation is a secondary anomaly
+        score. (Demonstrated: with deviation-only, simulated jumps 0->5 and 2->0
+        both passed as "valid".)
         """
         self.check_count += 1
 
-        if self.curve is None or not self.embeddings:
+        if self.cfg is None or self.curve is None or not self.embeddings:
             return CFIResult.UNKNOWN
 
-        # Get embeddings for both blocks
         from_embed = self.embeddings.get(from_block)
         to_embed = self.embeddings.get(to_block)
 
+        # Unknown block -> violation.
         if from_embed is None or to_embed is None:
-            # Unknown block - potential violation
             self.violation_count += 1
             return CFIResult.VIOLATION
 
-        # Compute deviation from principal curve
-        # This is the key O(1) check
+        # Authoritative gate: is this transition an allowed edge in the CFG?
+        allowed = to_block in self.cfg.adjacency.get(from_block, [])
+
+        # Secondary geometric signal: destination deviation from the curve.
         deviation = self.curve.deviation(to_embed)
 
-        if deviation > DEVIATION_THRESHOLD:
+        if not allowed or deviation > DEVIATION_THRESHOLD:
             self.violation_count += 1
             return CFIResult.VIOLATION
 

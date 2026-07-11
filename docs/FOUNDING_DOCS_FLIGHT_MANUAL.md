@@ -13,8 +13,8 @@
 | Anchor | Canonical value | Authority |
 |--------|-----------------|-----------|
 | **Core axiom (never changes)** | Poincaré distance `d_H(u,v) = arccosh(1 + 2‖u−v‖² / ((1−‖u‖²)(1−‖v‖²)))` — all dynamics transform *points*, never the metric | `axiom_grouped/SPECIFICATION.md`, `LAYER_INDEX.md` L5 |
-| **Layer-12 harmonic score (CURRENT)** | **Bounded** `H_score(d*,pd) = 1/(1 + d* + 2·pd)` ∈ (0,1], scale 1e6 | `docs/LAYER_INDEX.md`, `ABACUS_ARCHITECTURE.md` (bit-identical in `governanceAbacus.ts`) |
-| **Layer-12 (DEPRECATED — do not cite)** | `H = R^(d²)` / `R^((φ·d*)²)` "exponential wall" | Refuted: adversarial-cost bench measured it **linear**, not exponential ([[adversarial-cost-benchmark]]) |
+| **Layer-12 DECISION score** | **Bounded** `H_score(d*,pd) = 1/(1 + d* + 2·pd)` ∈ (0,1], scale 1e6 — the number the gate reads | `docs/LAYER_INDEX.md`, `ABACUS_ARCHITECTURE.md` (bit-identical in `governanceAbacus.ts`) |
+| **Layer-12 WORK-FACTOR shape** | `H = R^(d²)` / `R^((φ·d*)²)` — cost/latency amplification lens (a *different job* than the decision score) | ⚠ narrow caveat: measured attacker-cost is **linear**, so use it as a penalty *shape*, don't claim "exponential hardness" ([[adversarial-cost-benchmark]]) |
 | **Decision tiers (L13)** | ALLOW ≥ .65 · QUARANTINE ≥ .45 · ESCALATE ≥ .25 · DENY < .25 | `ABACUS_ARCHITECTURE.md` |
 | **Formula source-of-truth** | `docs/specs/CANONICAL_FORMULA_REGISTRY.md` → `CANONICAL_SYSTEM_STATE.md` → `SCBE_CANONICAL_CONSTANTS.md` | cited as top authority by both LAYER_INDEX copies + full-system map (⚠ not yet inventoried — index next) |
 | **Filing** | Provisional **63/961,403** (2026-01-15) → Non-provisional **19/691,526** (2026-05-28), docket **SCBE-2026-0001** | Patent Center; priority date 2026-01-15 carries |
@@ -95,7 +95,7 @@
 | Pillar | Claimed | Actual status |
 |--------|---------|---------------|
 | **P1 — Hyperbolic authorization (PBHG)** | adaptive Poincaré trust gating | ✅ **PROVEN in code** (`opcode_router.py`, behaviour+Poincaré, 4.5× twin/synonym margin) |
-| **P2 — Topological CFI (TLCFI)** | "90%+ ROP/JOP detection @ <0.5% overhead vs 70%/10-20%" | ⚠ **simulated on toy CFGs only**; real-binary detector is the open build; module has a run bug |
+| **P2 — Topological CFI (TLCFI)** | "90%+ ROP/JOP detection @ <0.5% overhead vs 70%/10-20%" | ⚠ **runs now** (fixed 2026-07-11): catches 3/3 toy attacks, 0 FP — but via the **allowed-edge gate**, NOT the curve geometry (deviation-alone passed the ROP jumps). "90%" is unmeasured; real-binary CFG is the open build. |
 | **P3 — Lyapunov stability** | "globally asymptotically stable" | ⚠ **proof *sketch* only** — unproven |
 | PQC (ML-KEM-768 / ML-DSA-65) | post-quantum binding | ⚠ **HMAC-simulated placeholders** in current code (per UNIFIED status table) |
 
@@ -103,8 +103,8 @@
 
 ## DENTS TO FIX (the "keep the ship flying" worklist)
 
-1. **Formula drift — pin ONE canonical wall.** `R^(1+d²)` vs `R^(d²)` vs `R^((φd*)²)` vs bounded `1/(1+d*+2pd)` all live in founding docs. Canonical = **bounded**; `R^(d²)` family is **deprecated** (measured linear). Add a one-line "canonical L12 = bounded; R^(d²) retired" banner to each math doc.
-2. **Reconcile the LAYER_INDEX twins.** `docs/specs/LAYER_INDEX.md` still teaches the deprecated wall; overwrite it with (or delete in favor of) `docs/LAYER_INDEX.md`.
+1. **Label metrics by ROLE — do NOT collapse to one.** The multiple distance/scaling forms are *by design*: each distance is the right tool for a different job — decision score (`1/(1+d*+2pd)`), work-factor shape (`R^(d²)`), invariant trust (`d_H`), multi-channel (`d_M`). Collapsing them would destroy that ([[multi-representation-route-dont-blend]]). Fix = drop a one-line role tag into each math doc so opening any formula tells you which job it serves. The ONLY empirical caveat is narrow: don't assert *exponential* attacker-cost for the `R^(d²)` work-factor (measured linear).
+2. **Same-name, different-content `LAYER_INDEX.md`.** The `docs/` and `docs/specs/` copies give different L12 forms under the *same filename* — an addressability snag (you can't tell which you opened). Cross-reference them (decision-score vs work-factor) or rename one; not a matter of one being "wrong."
 3. **De-dup SCBE_SYSTEM_OVERVIEW.md** (byte-identical in `docs/` and `docs/specs/`); both still teach the refuted "exponential/vertical wall" — **highest overclaim risk if quoted in a pitch.** Pick one home; add the honesty caveat.
 4. **Title divergence.** Formal app drafts are titled "Post-Quantum…Security Envelope"; the *filed* title is "Hyperbolic Geometry-Based Authorization with Topological CFI." The matching framing lives only in the coverage/portfolio docs. Align narrative to the filed title.
 5. **`topological_cfi.py` run bug.** `class CFGEdge` has bare annotations (no `@dataclass`/`__init__`) yet `create_sample_cfg()` calls `CFGEdge(src,tgt,etype)` → `TypeError`; `HyperbolicPoint` has a doubled `@dataclass`. Fix before citing it as a runnable embodiment.
