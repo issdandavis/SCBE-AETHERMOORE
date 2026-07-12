@@ -19,9 +19,10 @@
       "id": "ai-workspace",
       "label": "AI Workspace",
       "tiles": [
-        { "id": "pollypad",  "name": "Polly Pad",  "appId": "pollypad",  "icon": "FileText",     "bgColor": "bg-sky-600" },
-        { "id": "code",      "name": "IDE",        "appId": "code",      "icon": "Code",         "bgColor": "bg-zinc-800" },
-        { "id": "automator", "name": "Automator",  "appId": "automator", "icon": "Share2",       "bgColor": "bg-violet-600" },
+        { "id": "pollypad",   "name": "Polly Pad",   "appId": "pollypad",   "icon": "FileText",     "bgColor": "bg-sky-600" },
+        { "id": "code",       "name": "IDE",         "appId": "code",       "icon": "Code",         "bgColor": "bg-zinc-800" },
+        { "id": "htmlbridge", "name": "HTML Bridge", "appId": "htmlbridge", "icon": "Code",         "bgColor": "bg-gradient-to-br from-sky-500 to-fuchsia-600" },
+        { "id": "automator",  "name": "Automator",   "appId": "automator",  "icon": "Share2",       "bgColor": "bg-violet-600" },
         { "id": "mail",      "name": "Mail",       "appId": "mail",      "icon": "Mail",         "bgColor": "bg-blue-600" },
         { "id": "slides",    "name": "Slides",     "appId": "slides",    "icon": "Presentation", "bgColor": "bg-orange-600" }
       ]
