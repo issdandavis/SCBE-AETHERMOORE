@@ -47,6 +47,44 @@ def _run(cmd: list[str], cwd: Path | None = None, timeout: int = 300) -> dict[st
     }
 
 
+def _kaggle_submit_raw(competition: str, out_zip: Path, message: str) -> dict[str, Any]:
+    """Submit with the Kaggle Python API so HTTP error bodies are preserved."""
+
+    started = time.time()
+    result: dict[str, Any] = {
+        "cmd": ["kaggle-api", "competition_submit", competition, str(out_zip)],
+        "returncode": 1,
+        "seconds": None,
+    }
+    try:
+        from kaggle.api.kaggle_api_extended import KaggleApi
+
+        api = KaggleApi()
+        api.authenticate()
+        api.competition_submit(str(out_zip), message, competition, quiet=False)
+        result["returncode"] = 0
+        result["stdout_tail"] = "submit_ok"
+    except Exception as exc:  # Kaggle raises requests.HTTPError for server-side 400s.
+        result["exception_type"] = f"{type(exc).__module__}.{type(exc).__name__}"
+        result["exception"] = str(exc)[-2000:]
+        response = getattr(exc, "response", None)
+        if response is not None:
+            result["http_status"] = getattr(response, "status_code", None)
+            result["http_reason"] = getattr(response, "reason", None)
+            text = getattr(response, "text", "") or ""
+            result["response_text_tail"] = text[-4000:]
+            try:
+                body = response.json()
+                result["response_json"] = body
+                result["kaggle_error_message"] = body.get("error", {}).get("message")
+                result["kaggle_error_status"] = body.get("error", {}).get("status")
+            except Exception:
+                pass
+    finally:
+        result["seconds"] = round(time.time() - started, 3)
+    return result
+
+
 def _resolve_agent_dir(raw: str, competition_dir: Path) -> Path:
     path = Path(raw)
     if path.is_absolute():
@@ -143,11 +181,7 @@ def main() -> int:
         return 1
 
     if args.submit:
-        receipt["steps"]["submit"] = _run(
-            ["kaggle", "competitions", "submit", args.competition, "-f", str(out_zip), "-m", args.message],
-            cwd=competition_dir,
-            timeout=180,
-        )
+        receipt["steps"]["submit"] = _kaggle_submit_raw(args.competition, out_zip, args.message)
         if receipt["steps"]["submit"]["returncode"] != 0:
             _json_write(args.receipt, receipt)
             if args.json:
