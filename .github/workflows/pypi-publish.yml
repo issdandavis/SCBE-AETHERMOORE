@@ -9,7 +9,6 @@ on:
 
 permissions:
   contents: read
-  id-token: write  # required for PyPI Trusted Publishing (OIDC)
 
 jobs:
   build-and-publish:
@@ -42,6 +41,8 @@ jobs:
         if: env.skip_pypi != 'true'
         run: python -m build
 
-      - name: Publish to PyPI via Trusted Publisher (OIDC)
+      - name: Publish to PyPI with repository API token
         if: env.skip_pypi != 'true'
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}

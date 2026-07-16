@@ -44,8 +44,14 @@ jobs:
             exit 1
           fi
 
+      - name: Disable local prepare hook for CI publish
+        run: npm pkg delete scripts.prepare
+
+      - name: Verify package contents
+        run: npm run publish:check:strict
+
       - name: Publish to npmjs
-        run: npm publish --provenance --access public
+        run: npm publish --provenance --access public --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -83,7 +89,10 @@ jobs:
             fs.writeFileSync('package.json', JSON.stringify(p, null, 2));
           "
 
+      - name: Disable local prepare hook for CI publish
+        run: npm pkg delete scripts.prepare
+
       - name: Publish to GitHub Packages
-        run: npm publish
+        run: npm publish --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
