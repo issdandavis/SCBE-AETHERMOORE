@@ -51,3 +51,17 @@ submission.zip
   agent/
     agent.yaml
 ```
+
+## Kaggle `400 CreateSubmission`
+
+If validation and packaging pass but Kaggle returns:
+
+```text
+400 Client Error: Bad Request ... CreateSubmission
+```
+
+the guard records `submit_diagnosis.kind =
+kaggle_create_submission_400` and still checks submission status when `--status`
+is present. Treat this as an upload-gate or daily-cap failure first, not proof
+that the agent package is malformed. Keep the generated `submission.zip` and
+retry after the submission slot resets before changing package content.

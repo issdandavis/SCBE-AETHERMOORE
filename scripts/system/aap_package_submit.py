@@ -47,6 +47,32 @@ def _run(cmd: list[str], cwd: Path | None = None, timeout: int = 300) -> dict[st
     }
 
 
+def _diagnose_submit_failure(step: dict[str, Any]) -> dict[str, Any]:
+    text = f"{step.get('stdout_tail', '')}\n{step.get('stderr_tail', '')}"
+    if "CreateSubmission" in text and "400 Client Error: Bad Request" in text:
+        return {
+            "kind": "kaggle_create_submission_400",
+            "likely_causes": [
+                "daily outer submission cap exhausted",
+                "competition upload gate rejected the request after local package validation",
+                "transient Kaggle API-side validation mismatch",
+            ],
+            "package_status": "local_validator_and_zip_layout_passed_before_upload",
+            "action": "keep the generated submission.zip and retry after slot reset before changing package content",
+        }
+    if "429" in text or "Too Many Requests" in text:
+        return {
+            "kind": "kaggle_rate_limit",
+            "package_status": "unknown_after_upload_throttle",
+            "action": "wait before retrying the same package",
+        }
+    return {
+        "kind": "submit_failed",
+        "package_status": "local_validator_and_zip_layout_passed_before_upload",
+        "action": "inspect submit stderr/stdout and Kaggle submissions status",
+    }
+
+
 def _resolve_agent_dir(raw: str, competition_dir: Path) -> Path:
     path = Path(raw)
     if path.is_absolute():
@@ -149,6 +175,13 @@ def main() -> int:
             timeout=180,
         )
         if receipt["steps"]["submit"]["returncode"] != 0:
+            receipt["submit_diagnosis"] = _diagnose_submit_failure(receipt["steps"]["submit"])
+            if args.status:
+                receipt["steps"]["status"] = _run(
+                    ["kaggle", "competitions", "submissions", args.competition, "-v"],
+                    cwd=competition_dir,
+                    timeout=60,
+                )
             _json_write(args.receipt, receipt)
             if args.json:
                 print(json.dumps(receipt, indent=2, sort_keys=True))
