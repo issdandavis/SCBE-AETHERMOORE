@@ -1,4 +1,4 @@
-﻿# CLARA Summary Slide Draft
+# CLARA Summary Slide Draft
 
 Use this content to populate the official DARPA Summary Slide template. This is not a substitute for the required template if the solicitation requires one.
 
@@ -55,4 +55,3 @@ The work targets CLARA's core aim: tightly integrating ML and AR components into
 - **Risk:** proof export maturity. **Mitigation:** Phase 1 formal proof stubs and trace schema.
 - **Risk:** LP toolchain integration. **Mitigation:** explicit defeasible-rule export and compatibility mapping.
 - **Risk:** evaluation transfer. **Mitigation:** deterministic runners, benchmark receipts, and hackathon package.
-

@@ -1,4 +1,4 @@
-﻿# Email Draft
+# Email Draft
 
 To: `CLARA@darpa.mil`
 Cc: `Rachita Varma-Jain` if a direct address is provided in the notice
@@ -19,4 +19,3 @@ Thank you for your time.
 Sincerely,
 
 Issac Davis
-
