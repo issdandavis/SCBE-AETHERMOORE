@@ -106,6 +106,18 @@ Useful commands:
   geoseal testing-cli --source-file sample.py --language python --execute --json
   geoseal project-scaffold --content "build a pacman style web game" --language python --output-dir artifacts/pacman --json
   geoseal code-roundtrip --source hello.rs --lang rust --tongue RU --execute --json
+  geoseal neurogolf-sieve --limit 80 --fresh 0 --json
+  geoseal neurogolf-classify C:\\dev\\neurogolf\\reports\\rubix_ternary_sieve_latest\\ledger.csv --json
+  geoseal neurogolf-package --ledger C:\\dev\\neurogolf\\reports\\rubix_ternary_sieve_latest\\ledger.csv --base-package C:\\dev\\neurogolf\\_ledger_packages\\best7365_69_plus_074_090_387_20260715\\submission.zip --require-evidence --validate
+  geoseal neurogolf-submit --package C:\\dev\\neurogolf\\_ledger_packages\\ledger_patch\\submission.zip --message "safe generator-gated package" --dry-run --json
+  geoseal neurogolf-pipeline --base-zip C:\\dev\\neurogolf\\_ledger_packages\\best7365_69_plus_074_090_387_20260715\\submission.zip --fresh 200 --json
+  geoseal neurogolf-audit --append-checkpoint --json
+  geoseal neurogolf-budget --current-score 7365.76 --target-score 7500 --json
+  geoseal neurogolf-priority C:\\dev\\neurogolf\\reports\\rubix_ternary_sieve_latest\\ledger.csv --target-score 7500 --json
+  geoseal neurogolf-templates C:\\dev\\neurogolf\\reports\\rubix_priority_latest.csv --json
+  geoseal neurogolf-work-order C:\\dev\\neurogolf\\reports\\rubix_ternary_sieve_latest\\ledger.csv --target-score 7500 --json
+  geoseal neurogolf-scratchpad task366 --json
+  geoseal neurogolf-promote task366 --candidate C:\\dev\\neurogolf\\reports\\rubix_scratchpad_task366\\task366.onnx --proof proof.json --json
 
 Flags:
   --api-base <url>       GeoSeal API base URL
@@ -2612,6 +2624,147 @@ function runPythonScript(scriptRel, args, failureMessage) {
   process.exit(1);
 }
 
+function runExternalPythonScript(scriptPath, args, failureMessage, cwdPath = null) {
+  const script = path.resolve(scriptPath);
+  if (!fs.existsSync(script)) {
+    process.stderr.write(`GeoSeal external script not found: ${script}\n`);
+    process.exit(2);
+  }
+  for (const executable of pythonExecutables()) {
+    const result = spawnSync(executable, [script, ...args], {
+      stdio: "inherit",
+      shell: false,
+      cwd: cwdPath || path.dirname(script),
+      env: { ...process.env, MPLBACKEND: process.env.MPLBACKEND || "Agg" },
+    });
+    if (result.error) continue;
+    process.exit(result.status === null ? 1 : result.status);
+  }
+
+  process.stderr.write(`${failureMessage}\n`);
+  process.exit(1);
+}
+
+function runNeuroGolfSieve(argv) {
+  const script = process.env.GEOSEAL_NEUROGOLF_SIEVE || "C:\\dev\\neurogolf\\rubix_batch_ternary_sieve.py";
+  runExternalPythonScript(
+    script,
+    argv.slice(1),
+    "GeoSeal could not find a usable Python runtime for the NeuroGolf ternary sieve. Set SCBE_GEOSEAL_PYTHON if needed.",
+    "C:\\dev\\neurogolf"
+  );
+}
+
+function runNeuroGolfClassify(argv) {
+  const script = process.env.GEOSEAL_NEUROGOLF_CLASSIFIER || "C:\\dev\\neurogolf\\rubix_classify_candidate_evidence.py";
+  runExternalPythonScript(
+    script,
+    argv.slice(1),
+    "GeoSeal could not find a usable Python runtime for the NeuroGolf evidence classifier. Set SCBE_GEOSEAL_PYTHON if needed.",
+    "C:\\dev\\neurogolf"
+  );
+}
+
+function runNeuroGolfPackage(argv) {
+  const script = process.env.GEOSEAL_NEUROGOLF_PACKAGER || "C:\\dev\\neurogolf\\rubix_build_ledger_package.py";
+  runExternalPythonScript(
+    script,
+    argv.slice(1),
+    "GeoSeal could not find a usable Python runtime for the NeuroGolf safe packager. Set SCBE_GEOSEAL_PYTHON if needed.",
+    "C:\\dev\\neurogolf"
+  );
+}
+
+function runNeuroGolfSubmit(argv) {
+  const script = process.env.GEOSEAL_NEUROGOLF_SUBMITTER || "C:\\dev\\neurogolf\\rubix_guarded_submit.py";
+  runExternalPythonScript(
+    script,
+    argv.slice(1),
+    "GeoSeal could not find a usable Python runtime for the NeuroGolf guarded submitter. Set SCBE_GEOSEAL_PYTHON if needed.",
+    "C:\\dev\\neurogolf"
+  );
+}
+
+function runNeuroGolfPipeline(argv) {
+  const script = process.env.GEOSEAL_NEUROGOLF_PIPELINE || "C:\\dev\\neurogolf\\rubix_safe_pipeline.py";
+  runExternalPythonScript(
+    script,
+    argv.slice(1),
+    "GeoSeal could not find a usable Python runtime for the NeuroGolf safe pipeline. Set SCBE_GEOSEAL_PYTHON if needed.",
+    "C:\\dev\\neurogolf"
+  );
+}
+
+function runNeuroGolfAudit(argv) {
+  const script = process.env.GEOSEAL_NEUROGOLF_AUDIT || "C:\\dev\\neurogolf\\rubix_postrun_audit.py";
+  runExternalPythonScript(
+    script,
+    argv.slice(1),
+    "GeoSeal could not find a usable Python runtime for the NeuroGolf post-run auditor. Set SCBE_GEOSEAL_PYTHON if needed.",
+    "C:\\dev\\neurogolf"
+  );
+}
+
+function runNeuroGolfBudget(argv) {
+  const script = process.env.GEOSEAL_NEUROGOLF_BUDGET || "C:\\dev\\neurogolf\\rubix_score_budget.py";
+  runExternalPythonScript(
+    script,
+    argv.slice(1),
+    "GeoSeal could not find a usable Python runtime for the NeuroGolf score budget calculator. Set SCBE_GEOSEAL_PYTHON if needed.",
+    "C:\\dev\\neurogolf"
+  );
+}
+
+function runNeuroGolfPriority(argv) {
+  const script = process.env.GEOSEAL_NEUROGOLF_PRIORITY || "C:\\dev\\neurogolf\\rubix_rewrite_priority.py";
+  runExternalPythonScript(
+    script,
+    argv.slice(1),
+    "GeoSeal could not find a usable Python runtime for the NeuroGolf rewrite-priority planner. Set SCBE_GEOSEAL_PYTHON if needed.",
+    "C:\\dev\\neurogolf"
+  );
+}
+
+function runNeuroGolfTemplates(argv) {
+  const script = process.env.GEOSEAL_NEUROGOLF_TEMPLATES || "C:\\dev\\neurogolf\\rubix_identity_templates.py";
+  runExternalPythonScript(
+    script,
+    argv.slice(1),
+    "GeoSeal could not find a usable Python runtime for the NeuroGolf identity-template catalog. Set SCBE_GEOSEAL_PYTHON if needed.",
+    "C:\\dev\\neurogolf"
+  );
+}
+
+function runNeuroGolfWorkOrder(argv) {
+  const script = process.env.GEOSEAL_NEUROGOLF_WORK_ORDER || "C:\\dev\\neurogolf\\rubix_rewrite_work_order.py";
+  runExternalPythonScript(
+    script,
+    argv.slice(1),
+    "GeoSeal could not find a usable Python runtime for the NeuroGolf rewrite work-order generator. Set SCBE_GEOSEAL_PYTHON if needed.",
+    "C:\\dev\\neurogolf"
+  );
+}
+
+function runNeuroGolfScratchpad(argv) {
+  const script = process.env.GEOSEAL_NEUROGOLF_SCRATCHPAD || "C:\\dev\\neurogolf\\rubix_task_scratchpad.py";
+  runExternalPythonScript(
+    script,
+    argv.slice(1),
+    "GeoSeal could not find a usable Python runtime for the NeuroGolf task scratchpad creator. Set SCBE_GEOSEAL_PYTHON if needed.",
+    "C:\\dev\\neurogolf"
+  );
+}
+
+function runNeuroGolfPromote(argv) {
+  const script = process.env.GEOSEAL_NEUROGOLF_PROMOTE || "C:\\dev\\neurogolf\\rubix_promote_candidate.py";
+  runExternalPythonScript(
+    script,
+    argv.slice(1),
+    "GeoSeal could not find a usable Python runtime for the NeuroGolf candidate promotion gate. Set SCBE_GEOSEAL_PYTHON if needed.",
+    "C:\\dev\\neurogolf"
+  );
+}
+
 function runSystemMap(positionals, argv) {
   const action = String(positionals[1] || "").toLowerCase();
   let args = argv.slice(1);
@@ -2713,6 +2866,54 @@ async function main() {
   }
   if (command === "aethermon-adapter" || command === "aethermon") {
     runAethermonAdapter(positionals, flags, argv);
+    return;
+  }
+  if (command === "neurogolf-sieve" || command === "rubix-sieve") {
+    runNeuroGolfSieve(argv);
+    return;
+  }
+  if (command === "neurogolf-classify" || command === "rubix-classify") {
+    runNeuroGolfClassify(argv);
+    return;
+  }
+  if (command === "neurogolf-package" || command === "rubix-package") {
+    runNeuroGolfPackage(argv);
+    return;
+  }
+  if (command === "neurogolf-submit" || command === "rubix-submit") {
+    runNeuroGolfSubmit(argv);
+    return;
+  }
+  if (command === "neurogolf-pipeline" || command === "rubix-pipeline") {
+    runNeuroGolfPipeline(argv);
+    return;
+  }
+  if (command === "neurogolf-audit" || command === "rubix-audit") {
+    runNeuroGolfAudit(argv);
+    return;
+  }
+  if (command === "neurogolf-budget" || command === "rubix-budget") {
+    runNeuroGolfBudget(argv);
+    return;
+  }
+  if (command === "neurogolf-priority" || command === "rubix-priority") {
+    runNeuroGolfPriority(argv);
+    return;
+  }
+  if (command === "neurogolf-templates" || command === "rubix-templates") {
+    runNeuroGolfTemplates(argv);
+    return;
+  }
+  if (command === "neurogolf-work-order" || command === "rubix-work-order") {
+    runNeuroGolfWorkOrder(argv);
+    return;
+  }
+  if (command === "neurogolf-scratchpad" || command === "rubix-scratchpad") {
+    runNeuroGolfScratchpad(argv);
+    return;
+  }
+  if (command === "neurogolf-promote" || command === "rubix-promote") {
+    runNeuroGolfPromote(argv);
     return;
   }
   if (command === "colab-watch" || command === "hf-colab-watch") {
