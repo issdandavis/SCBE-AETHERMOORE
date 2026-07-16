@@ -258,6 +258,16 @@ polly_iq_results.json
 
 _external/
 external_repos/
+
+# 2026-07-16 cleanup: generated Kaggle/proposal/package scratch
+_tmp_*.py
+_verify_*.py
+aether-browser/biohub-cell-tracking-during-development.zip
+aether-browser/src/_*.py
+docs/proposals/DARPA_CLARA_CURE/generated/
+*.tgz
+reports/aap_*_probe.json
+reports/aap_package_submit_receipt.json
 external/benchmarks/
 external/cli-quests/
 
