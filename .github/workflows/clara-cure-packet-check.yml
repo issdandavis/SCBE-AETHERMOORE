@@ -1,0 +1,51 @@
+name: CLARA Cure Packet Check
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install packet builder dependencies
+        run: pip install openpyxl reportlab --quiet
+
+      - name: Build corrected CLARA packet and run SAM.gov check
+        env:
+          SAM_GOV_API_KEY: ${{ secrets.SAM_GOV_API_KEY }}
+          DATA_GOV_API_KEY: ${{ secrets.DATA_GOV_API_KEY }}
+        run: python scripts/proposals/build_clara_cure_packet.py
+
+      - name: Print non-secret submission check summary
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          check = json.loads(Path("docs/proposals/DARPA_CLARA_CURE/generated/submission_data_check.json").read_text())
+          summary = {
+              "proposal_ref": check["proposal_ref"],
+              "conforming_local_packet_ready": check["conforming_local_packet_ready"],
+              "price": check["price"],
+              "sam_gov_live_check": check["sam_gov_live_check"],
+          }
+          print(json.dumps(summary, indent=2))
+          PY
+
+      - name: Upload corrected packet artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: clara-cure-packet
+          path: docs/proposals/DARPA_CLARA_CURE/generated/**
+          retention-days: 30
