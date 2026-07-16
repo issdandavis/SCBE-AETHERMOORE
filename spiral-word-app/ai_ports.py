@@ -197,3 +197,76 @@ def _custom_provider(prompt: str, options: dict = None) -> str:
 
 # Module-level registry
 ai_ports = AIPortRegistry()
+
+
+# ---------------------------------------------------------------------------
+# Local, $0, verified ports (added 2026-07-03).
+# - local_qwen: write with your own cached Qwen coder on the GPU (no API key).
+# - word_forge: return a VERIFIED word-transform from WORD_FORGE_HOME/SCBE_LOCAL_TOOLS, or ABSTAIN.
+# Both still dispatch through the L12/L13 governance gate in AIPortRegistry.call();
+# word_forge writes its own hash-chained receipt (word_forge_ledger.jsonl).
+# ---------------------------------------------------------------------------
+import sys as _sys
+from pathlib import Path as _Path
+
+
+def _register_local_tool_path() -> None:
+    for raw in (os.environ.get("WORD_FORGE_HOME"), os.environ.get("SCBE_LOCAL_TOOLS")):
+        if not raw:
+            continue
+        path = _Path(raw).expanduser()
+        if path.exists() and str(path) not in _sys.path:
+            _sys.path.insert(0, str(path))
+
+
+_register_local_tool_path()
+
+_LOCAL = {"tok": None, "model": None, "name": None}
+
+
+def _local_qwen_provider(prompt: str, options: dict = None) -> str:
+    """Write locally with a cached Qwen coder on the GPU (no API key, $0)."""
+    opts = options or {}
+    name = opts.get("model", os.environ.get("WORD_APP_MODEL", "Qwen/Qwen2.5-Coder-1.5B-Instruct"))
+    try:
+        import torch
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+    except ImportError:
+        return "[ERROR] transformers/torch not installed"
+    if _LOCAL["name"] != name:
+        tok = AutoTokenizer.from_pretrained(name)
+        model = AutoModelForCausalLM.from_pretrained(name, torch_dtype=torch.float16, low_cpu_mem_usage=True)
+        _LOCAL.update(tok=tok, model=model.to("cuda" if torch.cuda.is_available() else "cpu").eval(), name=name)
+    import torch
+    tok, model = _LOCAL["tok"], _LOCAL["model"]
+    text = tok.apply_chat_template([{"role": "user", "content": prompt}], tokenize=False,
+                                   add_generation_prompt=True) if getattr(tok, "chat_template", None) else prompt
+    inp = tok(text, return_tensors="pt").to(model.device)
+    with torch.no_grad():
+        out = model.generate(**inp, max_new_tokens=opts.get("max_tokens", 512), do_sample=True,
+                             temperature=opts.get("temperature", 0.7), top_p=0.95, pad_token_id=tok.eos_token_id)
+    return tok.decode(out[0][inp["input_ids"].shape[1]:], skip_special_tokens=True).strip()
+
+
+def _word_forge_provider(prompt: str, options: dict = None) -> str:
+    """Forge a VERIFIED word-transform. The prompt (or options['recipe']) names a word_forge recipe
+    such as 'atbash-cipher'. Returns verified source, or an ABSTAIN note -- never an unverified guess."""
+    opts = options or {}
+    try:
+        import word_forge
+    except Exception as e:
+        return f"[ERROR] word_forge unavailable ({e})"
+    recipe = (opts.get("recipe") or prompt or "").strip()
+    if recipe not in word_forge.RECIPES:
+        return f"[ABSTAIN] no verified recipe for {recipe!r}. Known: {', '.join(word_forge.RECIPES)}"
+    use_model = bool(opts.get("use_model", False))
+    if use_model:
+        word_forge._load()
+    r = word_forge.forge(word_forge.RECIPES[recipe], use_model=use_model)
+    if r["built"]:
+        return f"# {recipe}: VERIFIED (receipt {r['receipt']}, {r['cases']} cases)\n{r['source']}"
+    return f"[ABSTAIN] {recipe} not verified (leaves={r['leaves']})"
+
+
+ai_ports.register("local_qwen", _local_qwen_provider)
+ai_ports.register("word_forge", _word_forge_provider)
