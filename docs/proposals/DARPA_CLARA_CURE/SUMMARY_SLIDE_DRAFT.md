@@ -1,15 +1,15 @@
-# CLARA Summary Slide Draft
+﻿# CLARA Summary Slide Draft
 
 Use this content to populate the official DARPA Summary Slide template. This is not a substitute for the required template if the solicitation requires one.
 
 ## Proposal
 
-**Title:** SCBE-AETHERMOORE: Verifiable Defeasible LP Composition for Trustworthy Multi-Agent AI Governance  
-**Solicitation:** DARPA-PA-25-07-02, CLARA  
-**Task Area:** TA1 Performer  
-**PI:** Issac Daniel Davis  
-**Organization:** AetherMoore / Issac D. Davis  
-**UEI:** J4NXHM6N5F59  
+**Title:** SCBE-AETHERMOORE: Verifiable Defeasible LP Composition for Trustworthy Multi-Agent AI Governance
+**Solicitation:** DARPA-PA-25-07-02, CLARA
+**Task Area:** TA1 Performer
+**PI:** Issac Daniel Davis
+**Organization:** AetherMoore / Issac D. Davis
+**UEI:** J4NXHM6N5F59
 **Total Proposed Cost:** `$1.655M` draft, from local 1-page abstract
 
 ## Problem
@@ -55,3 +55,4 @@ The work targets CLARA's core aim: tightly integrating ML and AR components into
 - **Risk:** proof export maturity. **Mitigation:** Phase 1 formal proof stubs and trace schema.
 - **Risk:** LP toolchain integration. **Mitigation:** explicit defeasible-rule export and compatibility mapping.
 - **Risk:** evaluation transfer. **Mitigation:** deterministic runners, benchmark receipts, and hackathon package.
+

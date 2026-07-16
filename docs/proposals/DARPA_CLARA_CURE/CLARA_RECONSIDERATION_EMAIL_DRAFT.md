@@ -1,7 +1,7 @@
-# Email Draft
+﻿# Email Draft
 
-To: `CLARA@darpa.mil`  
-Cc: `Rachita Varma-Jain` if a direct address is provided in the notice  
+To: `CLARA@darpa.mil`
+Cc: `Rachita Varma-Jain` if a direct address is provided in the notice
 Subject: `DARPA-PA-25-07-02-CLARA-FP-033 - Request to cure missing attachments if permitted`
 
 Dear Ms. Varma-Jain,
@@ -19,3 +19,4 @@ Thank you for your time.
 Sincerely,
 
 Issac Davis
+
