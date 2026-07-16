@@ -1,14 +1,22 @@
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "languages": [
     "python",
     "typescript",
-    "go"
+    "go",
+    "rust",
+    "c",
+    "julia",
+    "haskell"
   ],
   "transpilers": {
-    "python": ["typescript", "go"],
-    "typescript": ["python", "go"],
-    "go": ["python", "typescript"]
+    "python": ["python", "typescript", "go", "rust", "c", "julia", "haskell"],
+    "typescript": ["python", "typescript", "go", "rust", "c", "julia", "haskell"],
+    "go": ["python", "typescript", "go", "rust", "c", "julia", "haskell"],
+    "rust": ["python", "typescript", "go", "rust", "c", "julia", "haskell"],
+    "c": ["python", "typescript", "go", "rust", "c", "julia", "haskell"],
+    "julia": ["python", "typescript", "go", "rust", "c", "julia", "haskell"],
+    "haskell": ["python", "typescript", "go", "rust", "c", "julia", "haskell"]
   },
   "conlang_routes": {
     "KO": ["control-flow", "api-contracts"],
@@ -24,7 +32,12 @@
       "arguments",
       "return_statement",
       "basic_assignments",
-      "simple_expressions"
+      "simple_expressions",
+      "safe_subset_rust_functions",
+      "safe_subset_c_functions",
+      "safe_subset_julia_functions",
+      "safe_subset_haskell_definitions",
+      "safe_subset_go_functions"
     ],
     "deferred_constructs": [
       "classes",

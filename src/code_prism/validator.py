@@ -24,7 +24,16 @@ def _balanced_braces(source: str, open_char: str, close_char: str) -> bool:
 
 
 def validate_generated_code(source: str, language: str) -> List[ValidationIssue]:
-    lang = language.lower()
+    aliases = {
+        "ts": "typescript",
+        "js": "typescript",
+        "javascript": "typescript",
+        "rs": "rust",
+        "jl": "julia",
+        "hs": "haskell",
+        "golang": "go",
+    }
+    lang = aliases.get(language.lower(), language.lower())
     issues: List[ValidationIssue] = []
 
     if lang == "python":
@@ -68,6 +77,32 @@ def validate_generated_code(source: str, language: str) -> List[ValidationIssue]
                     message="Unbalanced braces in Go output.",
                 )
             )
+        return issues
+
+    if lang == "rust":
+        if "fn " not in source:
+            issues.append(ValidationIssue(code="rust_missing_function", message="No Rust function emitted."))
+        if not _balanced_braces(source, "{", "}"):
+            issues.append(ValidationIssue(code="rust_unbalanced_braces", message="Unbalanced braces in Rust output."))
+        return issues
+
+    if lang == "c":
+        if "(" not in source or ")" not in source:
+            issues.append(ValidationIssue(code="c_missing_function", message="No C function emitted."))
+        if not _balanced_braces(source, "{", "}"):
+            issues.append(ValidationIssue(code="c_unbalanced_braces", message="Unbalanced braces in C output."))
+        return issues
+
+    if lang == "julia":
+        if "function " not in source:
+            issues.append(ValidationIssue(code="julia_missing_function", message="No Julia function emitted."))
+        if source.count("function ") != source.count("\nend"):
+            issues.append(ValidationIssue(code="julia_unbalanced_function", message="Julia function/end mismatch."))
+        return issues
+
+    if lang == "haskell":
+        if "=" not in source:
+            issues.append(ValidationIssue(code="haskell_missing_definition", message="No Haskell definition emitted."))
         return issues
 
     issues.append(ValidationIssue(code="unsupported_language", message=f"Unsupported language {language}."))
