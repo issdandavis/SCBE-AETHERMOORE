@@ -4,22 +4,29 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag to publish (e.g. agent-bus-py-v0.2.0). Tag must start with `agent-bus-py-v` for release-triggered runs.'
+        description: 'Tag/version to publish (e.g. agent-bus-py-v0.2.0, v0.2.0, or 0.2.0).'
         required: true
+      package_dir:
+        description: 'Python package directory to publish.'
+        required: false
+        default: 'packages/agent-bus-py'
+      package_name:
+        description: 'PyPI project name to publish.'
+        required: false
+        default: 'scbe-agent-bus'
 
 permissions:
   contents: read
-  id-token: write  # required for PyPI Trusted Publishing (OIDC)
 
 jobs:
   build-and-publish:
-    name: Build sdist+wheel and publish scbe-agent-bus to PyPI
+    name: Build sdist+wheel and publish Python package to PyPI
     runs-on: ubuntu-latest
     environment: release-agent-bus
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.tag || github.ref }}
+          ref: ${{ github.ref }}
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -29,31 +36,31 @@ jobs:
       - name: Install build tooling
         run: python -m pip install --upgrade pip build
 
-      - name: Verify pyproject version matches tag
-        working-directory: packages/agent-bus-py
+      - name: Verify pyproject identity and version
+        working-directory: ${{ inputs.package_dir || 'packages/agent-bus-py' }}
         run: |
-          PKG_VER=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          PKG_VER=$(python -c "import tomllib; p=tomllib.load(open('pyproject.toml','rb'))['project']; print(p['version'])")
+          PKG_NAME=$(python -c "import tomllib; p=tomllib.load(open('pyproject.toml','rb'))['project']; print(p['name'])")
           TAG="${{ inputs.tag }}"
-          # Strip the agent-bus-py-v prefix to get the bare semver
           TAG_VER="${TAG#agent-bus-py-v}"
-          # Also accept plain v-prefixed (e.g. workflow_dispatch with v0.2.0)
           TAG_VER="${TAG_VER#v}"
-          if [ -z "$TAG_VER" ]; then
-            echo "::warning::No tag provided; skipping version check"
-          elif [ "$PKG_VER" != "$TAG_VER" ]; then
-            echo "::warning::pyproject.toml version ($PKG_VER) does not match tag ($TAG_VER) — skipping PyPI publish."
-            echo "skip_pypi=true" >> "$GITHUB_ENV"
+          EXPECTED_NAME="${{ inputs.package_name || 'scbe-agent-bus' }}"
+          if [ "$PKG_NAME" != "$EXPECTED_NAME" ]; then
+            echo "::error::pyproject.toml name ($PKG_NAME) does not match expected ($EXPECTED_NAME)"
+            exit 1
           fi
+          if [ "$PKG_VER" != "$TAG_VER" ]; then
+            echo "::error::pyproject.toml version ($PKG_VER) does not match expected ($TAG_VER)"
+            exit 1
+          fi
+          echo "Publishing $PKG_NAME@$PKG_VER"
 
       - name: Build distributions
-        if: env.skip_pypi != 'true'
-        working-directory: packages/agent-bus-py
+        working-directory: ${{ inputs.package_dir || 'packages/agent-bus-py' }}
         run: python -m build
 
-      - name: Publish to PyPI (Trusted Publisher)
-        if: env.skip_pypi != 'true'
+      - name: Publish to PyPI with repository API token
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          packages-dir: packages/agent-bus-py/dist/
-        # Requires PyPI Trusted Publishing to be configured for `scbe-agent-bus`
-        # with workflow=pypi-publish-agent-bus.yml and environment=release-agent-bus.
+          packages-dir: ${{ inputs.package_dir || 'packages/agent-bus-py' }}/dist/
+          password: ${{ secrets.PYPI_API_TOKEN }}

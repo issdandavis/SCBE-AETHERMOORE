@@ -9,6 +9,14 @@ on:
       version:
         description: 'Version to publish (e.g. 0.3.11). Must match package.json.'
         required: true
+      package_dir:
+        description: 'Package directory to publish.'
+        required: false
+        default: 'packages/agent-bus'
+      package_name:
+        description: 'Package name to publish.'
+        required: false
+        default: 'scbe-agent-bus'
 
 permissions:
   contents: read
@@ -16,11 +24,11 @@ permissions:
 
 jobs:
   publish:
-    name: Publish scbe-agent-bus to npm
+    name: Publish npm package
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: packages/agent-bus
+        working-directory: ${{ inputs.package_dir || 'packages/agent-bus' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -33,36 +41,46 @@ jobs:
       - name: Install dependencies
         run: npm ci || npm install
 
-      - name: Build
-        run: npm run build
+      - name: Build if available
+        run: npm run build --if-present
 
-      - name: Verify version
+      - name: Verify package identity and version
         env:
           DISPATCH_VERSION: ${{ inputs.version }}
         run: |
           PKG_VER=$(node -p "require('./package.json').version")
+          PKG_NAME=$(node -p "require('./package.json').name")
           if [ "${{ github.event_name }}" = "push" ]; then
             TAG="${GITHUB_REF#refs/tags/agent-bus/v}"
           else
             TAG="${DISPATCH_VERSION}"
           fi
+          EXPECTED_NAME="${{ inputs.package_name || 'scbe-agent-bus' }}"
           if ! [[ "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.-]+)?$ ]]; then
             echo "::error::Invalid version format: $TAG"
+            exit 1
+          fi
+          if [ "$PKG_NAME" != "$EXPECTED_NAME" ]; then
+            echo "::error::package.json name ($PKG_NAME) does not match expected ($EXPECTED_NAME)"
             exit 1
           fi
           if [ "$PKG_VER" != "$TAG" ]; then
             echo "::error::package.json version ($PKG_VER) does not match expected ($TAG)"
             exit 1
           fi
-          echo "Publishing scbe-agent-bus@$PKG_VER"
+          echo "Publishing $PKG_NAME@$PKG_VER"
+
+      - name: Disable local prepare hook for CI publish
+        run: npm pkg delete scripts.prepare
 
       - name: Publish
         run: |
           PKG_VER=$(node -p "require('./package.json').version")
-          if npm view "scbe-agent-bus@$PKG_VER" version 2>/dev/null | grep -qx "$PKG_VER"; then
-            echo "::notice::scbe-agent-bus@$PKG_VER already published — skipping."
+          PKG_NAME=$(node -p "require('./package.json').name")
+          if npm view "$PKG_NAME@$PKG_VER" version 2>/dev/null | grep -qx "$PKG_VER"; then
+            echo "::notice::$PKG_NAME@$PKG_VER already published - skipping."
             exit 0
           fi
-          npm publish --access public
+          npm publish --access public --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
