@@ -63,6 +63,12 @@ PURPOSE_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
             "youtube",
             "field_trips",
             "context_sft",
+            "tool_use",
+            "tool-use",
+            "tool_call",
+            "tool-call",
+            "agent_bus",
+            "agent-bus",
         ),
     ),
     (
