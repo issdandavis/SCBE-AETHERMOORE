@@ -34,6 +34,7 @@ export * from './governance-types.js';
 export * from './hyperbolic.js';
 export * from './adaptiveNavigator.js';
 export * from './hamiltonianCFI.js';
+export * from './topologicalLinearization.js';
 
 // ═══════════════════════════════════════════════════════════════
 // 14-Layer Pipeline

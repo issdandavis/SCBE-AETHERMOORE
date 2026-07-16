@@ -25,6 +25,7 @@ Quick start:
 from .emit import emit_c, emit_js, emit_python
 from .equiv import behaviorally_equivalent, cross_check, mirror_check, run_reference
 from .machine import Instr, LoomSyntaxError, Program, RunResult, parse, run, unparse
+from .typewriter import TypewriterKey, encode_typewriter, typewriter_receipt, validate_typewriter_table
 
 __all__ = [
     "parse",
@@ -41,4 +42,8 @@ __all__ = [
     "cross_check",
     "behaviorally_equivalent",
     "mirror_check",
+    "TypewriterKey",
+    "encode_typewriter",
+    "typewriter_receipt",
+    "validate_typewriter_table",
 ]

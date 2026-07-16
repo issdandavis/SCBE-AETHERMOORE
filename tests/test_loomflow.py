@@ -15,7 +15,16 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from python.scbe.loomflow import EXAMPLES, emit, interpret, parse, verify  # noqa: E402
+from python.scbe.loomflow import (  # noqa: E402
+    EXAMPLES,
+    control_flow_edges,
+    emit,
+    interpret,
+    parse,
+    trace_execution,
+    verify,
+    verify_trace_integrity,
+)
 
 _HAVE_NODE = shutil.which("node") is not None
 _HAVE_RUST = shutil.which("rustc") is not None
@@ -84,3 +93,32 @@ def test_normal_program_is_unaffected_by_the_guard():
     r = verify(parse("const a 6\nconst b 7\nmul r a b\nprint r\nhalt"), faces=("python",))
     assert r["reference"] == 42.0 and r["reference_error"] is None
     assert r["results"]["python"]["status"] == "AGREE"
+
+
+def test_phase_lift_linearizes_the_real_loop_without_inventing_cfg_edges():
+    prog = parse(EXAMPLES["sum_1_to_5"])
+    receipt = trace_execution(prog)
+    assert receipt["outputs"][-1] == 15.0
+    assert receipt["proof"] == {
+        "topology_preserved": True,
+        "unique_lifted_states": True,
+        "projection_covers_program": True,
+        "lift_has_hamiltonian_path": True,
+    }
+    assert len(set(receipt["pc_trace"])) < len(receipt["pc_trace"])  # the base loop repeats PCs
+    allowed = {tuple(edge) for edge in control_flow_edges(prog)}
+    assert all(edge in allowed for edge in zip(receipt["pc_trace"], receipt["pc_trace"][1:]))
+
+
+def test_trace_cfi_detects_skip_substitution_and_replay():
+    reference = trace_execution(parse(EXAMPLES["factorial_5"]))["pc_trace"]
+    assert verify_trace_integrity(reference, reference)["valid"] is True
+
+    skipped = reference[:3] + reference[4:]
+    substituted = list(reference)
+    substituted[3] = (substituted[3] + 1) % 12
+    replayed = list(reference) + [reference[0]]
+    for attack in (skipped, substituted, replayed):
+        result = verify_trace_integrity(reference, attack)
+        assert result["valid"] is False
+        assert result["decision"] == "ATTACK"

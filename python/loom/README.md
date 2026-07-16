@@ -41,6 +41,25 @@ cross_check(prog, [{"r1": 3, "r2": 4}])  # -> {"all_agree": True, "backends": [.
 mirror_check(ADD)                        # -> {"exact_mirror": True, ...}
 ```
 
+### STISA opcode typewriter
+
+The optional SCBE bridge turns a Loom program into deterministic
+Cassisivadan/STISA lookup records and a hash-bound route receipt:
+
+```python
+from python.loom import typewriter_receipt
+
+receipt = typewriter_receipt("dec budget done\nout budget\ndone: halt", {"budget": 3})
+receipt["status"]          # "halted"
+receipt["route_sha256"]    # stable opcode-route digest
+receipt["keystrokes"]      # opcode, tongue token, trits, features, and namespace
+```
+
+`inc` and `dec` align exactly with the CA table. Loom-only control semantics
+(`jmp`, `out`/`print`, `halt`) are explicitly namespaced as
+`loom-control-overlay`; their underlying CA byte entry is recorded so an opcode
+collision is visible rather than silently redefined.
+
 ## The three ideas (and the honest caveats)
 
 - **Points & loops.** A run is a sequence of state-points `(pc, registers)`. Because the machine is deterministic, a **revisited state closes a loop** — a self-intersection of the trajectory — which *proves* the program never halts. Loop detection is therefore **sound but incomplete**: a detected revisit is certainly infinite; not finding one within the step budget means *undetermined*, never *halts*. (You can't, in general, decide your own halting — the formal version of "you can't fully match yourself".)

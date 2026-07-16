@@ -22,11 +22,13 @@ A program is a line-based assembly (variables are named slots; comments use ; or
 
 from __future__ import annotations
 
+import hashlib
+import json
 import shutil
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Callable, Dict, List, Optional, Sequence, Tuple
 
 Instr = Tuple[str, Tuple[str, ...]]
 
@@ -71,13 +73,20 @@ def _labels(prog: Sequence[Instr]) -> Dict[str, int]:
     return {a[0]: i for i, (op, a) in enumerate(prog) if op == "label"}
 
 
-def interpret(prog: Sequence[Instr], step_limit: int = 1_000_000) -> List[float]:
+def interpret(
+    prog: Sequence[Instr],
+    step_limit: int = 1_000_000,
+    *,
+    trace_hook: Optional[Callable[[int, Instr], None]] = None,
+) -> List[float]:
     """The reference: run the IR directly and return everything it printed."""
     labels = _labels(prog)
     s: Dict[str, float] = {}
     out: List[float] = []
     pc, steps = 0, 0
     while 0 <= pc < len(prog):
+        if trace_hook is not None:
+            trace_hook(pc, prog[pc])
         steps += 1
         if steps > step_limit:
             raise RuntimeError("step limit exceeded (infinite loop?)")
@@ -115,6 +124,83 @@ def interpret(prog: Sequence[Instr], step_limit: int = 1_000_000) -> List[float]
         elif op == "halt":
             break
     return out
+
+
+def control_flow_edges(prog: Sequence[Instr]) -> List[Tuple[int, int]]:
+    """Return the exact static PC transitions authorized by the Loomflow IR."""
+    labels = _labels(prog)
+    edges = set()
+    for pc, (op, args) in enumerate(prog):
+        if op == "halt":
+            continue
+        if op == "jmp":
+            edges.add((pc, labels[args[0]]))
+            continue
+        if op == "brz":
+            edges.add((pc, labels[args[1]]))
+            if pc + 1 < len(prog):
+                edges.add((pc, pc + 1))
+            continue
+        if pc + 1 < len(prog):
+            edges.add((pc, pc + 1))
+    return sorted(edges)
+
+
+def trace_execution(prog: Sequence[Instr], step_limit: int = 1_000_000) -> dict:
+    """Execute and receipt the phase-lifted PC trajectory.
+
+    A loop revisits a base PC. Pairing it with the monotonically increasing
+    ``phase`` makes every lifted state unique. Every projected transition is
+    checked against the original Loomflow CFG, so the lift cannot invent an
+    edge merely to make the execution linear.
+    """
+    pcs: List[int] = []
+    outputs = interpret(
+        prog,
+        step_limit=step_limit,
+        trace_hook=lambda pc, _instruction: pcs.append(pc),
+    )
+    allowed = set(control_flow_edges(prog))
+    observed = list(zip(pcs, pcs[1:]))
+    topology_preserved = all(edge in allowed for edge in observed)
+    states = [{"phase": phase, "pc": pc, "op": prog[pc][0]} for phase, pc in enumerate(pcs)]
+    canonical_program = json.dumps(list(prog), separators=(",", ":"))
+    canonical_trace = json.dumps(states, separators=(",", ":"))
+    return {
+        "schema": "scbe.loomflow-topological-trace.v1",
+        "outputs": outputs,
+        "base_instruction_count": len(prog),
+        "base_edges": [list(edge) for edge in sorted(allowed)],
+        "pc_trace": pcs,
+        "lifted_states": states,
+        "program_sha256": hashlib.sha256(canonical_program.encode()).hexdigest(),
+        "trace_sha256": hashlib.sha256(canonical_trace.encode()).hexdigest(),
+        "proof": {
+            "topology_preserved": topology_preserved,
+            "unique_lifted_states": len({(row["phase"], row["pc"]) for row in states}) == len(states),
+            "projection_covers_program": set(pcs) == set(range(len(prog))),
+            "lift_has_hamiltonian_path": bool(states),
+        },
+    }
+
+
+def verify_trace_integrity(reference_pcs: Sequence[int], observed_pcs: Sequence[int]) -> dict:
+    """Compare an observed dispatch trajectory to the authorized PC record."""
+    common = min(len(reference_pcs), len(observed_pcs))
+    first_deviation = next(
+        (index for index in range(common) if reference_pcs[index] != observed_pcs[index]),
+        None,
+    )
+    if first_deviation is None and len(reference_pcs) != len(observed_pcs):
+        first_deviation = common
+    valid = first_deviation is None
+    return {
+        "valid": valid,
+        "decision": "VALID" if valid else "ATTACK",
+        "first_deviation_phase": first_deviation,
+        "expected_length": len(reference_pcs),
+        "observed_length": len(observed_pcs),
+    }
 
 
 def _slots(prog: Sequence[Instr]) -> List[str]:

@@ -105,6 +105,15 @@ export {
   type HamiltonianCheck,
 } from './hamiltonianCFI.js';
 
+export {
+  TopologicalLinearCFI,
+  liftAuthorizedTrace,
+  linearizeConnectedTopology,
+  type LiftedControlState,
+  type LinearizationProof,
+  type TopologicalLift,
+} from './topologicalLinearization.js';
+
 // ═══════════════════════════════════════════════════════════════
 // Layers 5-8: Hyperbolic Geometry (Poincaré Ball)
 // ═══════════════════════════════════════════════════════════════
