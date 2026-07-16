@@ -2509,6 +2509,44 @@ def cmd_spine(args: argparse.Namespace) -> int:
     return 2
 
 
+def cmd_sieve(args: argparse.Namespace) -> int:
+    import json as _json
+    from pathlib import Path as _Path
+
+    from python.scbe.graph_cost_sieve import build_sieve_report
+
+    ledger = _Path(args.ledger).expanduser()
+    try:
+        payload = _json.loads(ledger.read_text(encoding="utf-8"))
+        report = build_sieve_report(payload, target_score=float(args.target_score))
+    except Exception as exc:
+        print(f"sieve error: {exc}", file=sys.stderr)
+        return 1
+
+    if getattr(args, "json_output", False):
+        print(_json.dumps(report, separators=(",", ":"), allow_nan=False))
+        return 0
+
+    summary = report["summary"]
+    target = report["target"]
+    print(
+        f"graph sieve: {summary['task_count']} measured task(s), "
+        f"target {target['score']:.3f} points / cost {target['cost']:.3f}"
+    )
+    print(
+        f"geometric cost {summary['geometric_mean_cost']:.3f}; "
+        f"{summary['tasks_over_target']} task(s) above target"
+    )
+    for row in report["actions"][: max(1, int(args.top))]:
+        program = ">".join(row["assembly"]["tokens"])
+        print(
+            f"{row['task']}: cost={row['cost']:.0f} score={row['current_score']:.3f} "
+            f"gain<={row['score_gain_ceiling']:.3f} x{row['compression_ratio_required']:.1f} "
+            f"{row['bottleneck']} [{program}]"
+        )
+    return 0
+
+
 def cmd_opcode(args: argparse.Namespace) -> int:
     from python.scbe.semantic_opcode_vm import (
         SemanticOpcodeError,
@@ -5189,6 +5227,17 @@ Legacy (backward compat):
     mp.add_argument("--limit", type=int, default=8, help="rows to show in text mode")
     mp.add_argument("--json", dest="json_output", action="store_true")
     mp.set_defaults(func=cmd_substrate_map)
+
+    sieve_p = sub.add_parser(
+        "sieve",
+        aliases=["golf"],
+        help="Rank graph rewrites by logarithmic score gain and emit compact assembly programs",
+    )
+    sieve_p.add_argument("ledger", help="JSON graph/task cost ledger")
+    sieve_p.add_argument("--target-score", type=float, default=20.360475, help="per-task score target")
+    sieve_p.add_argument("--top", type=int, default=20, help="rows to show in text mode")
+    sieve_p.add_argument("--json", dest="json_output", action="store_true")
+    sieve_p.set_defaults(func=cmd_sieve)
 
     octree_p = sub.add_parser(
         "octree",
