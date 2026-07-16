@@ -1,0 +1,89 @@
+{
+  "date": "2026-07-16",
+  "repo": "C:\\Users\\issda\\SCBE-AETHERMOORE",
+  "objective": "Organize the dirty SCBE-AETHERMOORE worktree into safe GitHub branches and PR lanes without destructive cleanup or remote history edits.",
+  "rules": [
+    "do_not_push_main_directly",
+    "do_not_pull_merge_rebase_reset_or_clean_while_dirty",
+    "classify_before_delete",
+    "stage_focused_lanes_only",
+    "separate_aetherdesk_from_scbe_aethermoore"
+  ],
+  "lanes": [
+    {
+      "name": "aap_geoseal_tools",
+      "branch": "codex/aap-geoseal-tools-20260716",
+      "purpose": "Autonomous Agent Prediction packaging, local probing, and Kaggle submission guard.",
+      "candidate_files": [
+        "bin/geoseal.cjs",
+        "src/coding_spine/agent_tool_bridge.py",
+        "scripts/system/aap_family_probe.py",
+        "scripts/system/aap_blend_probe.py",
+        "scripts/system/aap_package_submit.py",
+        "scripts/system/aap_local_meta_eval.py",
+        "scripts/system/aap_validation_scaffold.py",
+        "docs/AAP_FAMILY_PROBE.md",
+        "docs/AAP_BLEND_PROBE.md",
+        "docs/AAP_GEOSEAL_PACKAGE_GUARD.md"
+      ]
+    },
+    {
+      "name": "arc_rubix_tools",
+      "branch": "codex/arc-rubix-geoseal-20260716",
+      "purpose": "ARC/Rubix solver, dashboard, loop, and verifier-first search tooling.",
+      "candidate_files": [
+        "bin/geoseal.cjs",
+        "src/coding_spine/agent_tool_bridge.py",
+        "scripts/system/arc_rubix_solver.py",
+        "scripts/system/arc_rubix_score.py",
+        "scripts/system/arc_rubix_dashboard.py",
+        "scripts/system/arc_rubix_loop.py",
+        "scripts/system/geoseal_verify_search.py",
+        "docs/ARC_RUBIX_GEOSEAL.md",
+        "docs/GEOSEAL_VERIFY_SEARCH.md"
+      ]
+    },
+    {
+      "name": "package_release_control",
+      "branch": "codex/package-registry-control-20260716",
+      "purpose": "Controlled package inventory and release-readiness docs.",
+      "candidate_files": [
+        "bin/geoseal.cjs",
+        "scripts/system/package_registry_control.py",
+        "docs/system/package_release_control.md"
+      ]
+    },
+    {
+      "name": "scratch_quarantine",
+      "branch": null,
+      "purpose": "Hold temporary probes and generated artifacts until reviewed.",
+      "candidate_patterns": [
+        "_tmp_*.py",
+        "_verify_*.py",
+        "aether-browser/src/_probe*.py",
+        "aether-browser/src/_dbg.py",
+        "aether-browser/src/_bypass.py",
+        "*.tgz",
+        "reports/**",
+        "aether-browser/*.zip"
+      ]
+    }
+  ],
+  "next_safe_commands": [
+    "git switch -c codex/aap-geoseal-tools-20260716",
+    "git add bin/geoseal.cjs src/coding_spine/agent_tool_bridge.py scripts/system/aap_family_probe.py scripts/system/aap_blend_probe.py scripts/system/aap_package_submit.py scripts/system/aap_local_meta_eval.py scripts/system/aap_validation_scaffold.py docs/AAP_FAMILY_PROBE.md docs/AAP_BLEND_PROBE.md docs/AAP_GEOSEAL_PACKAGE_GUARD.md docs/github/SCBE_AETHERMOORE_CLEANUP_STRATEGY.md reports/github_cleanup_strategy_20260716.json",
+    "git diff --cached --stat",
+    "git diff --cached",
+    "git commit -m \"feat(geoseal): add AAP package guard and probe workflow\""
+  ],
+  "requires_user_approval_before": [
+    "push",
+    "pull",
+    "merge",
+    "rebase",
+    "reset",
+    "clean",
+    "delete_files",
+    "stage_unrelated_dirty_files"
+  ]
+}

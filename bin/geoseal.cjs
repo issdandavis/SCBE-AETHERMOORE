@@ -118,6 +118,25 @@ Useful commands:
   geoseal neurogolf-work-order C:\\dev\\neurogolf\\reports\\rubix_ternary_sieve_latest\\ledger.csv --target-score 7500 --json
   geoseal neurogolf-scratchpad task366 --json
   geoseal neurogolf-promote task366 --candidate C:\\dev\\neurogolf\\reports\\rubix_scratchpad_task366\\task366.onnx --proof proof.json --json
+  geoseal neurogolf-dashboard --json
+  geoseal biohub-score --json
+  geoseal biohub-dashboard --json
+  geoseal biohub-check-train --json
+  geoseal biohub-loop --json
+  geoseal arc-solve --json
+  geoseal arc-score --json
+  geoseal arc-dashboard --json
+  geoseal arc-loop --mode eval --iterations 1 --json
+  geoseal arc-loop --mode eval --ollama --ollama-model openclaw:latest --json
+  geoseal verify-search --preset arc-rubix --json
+  geoseal verify-search --preset arc-rubix --ollama-models openclaw:latest,qwen2.5-coder:1.5b --json
+  geoseal aap-scaffold --zip --json
+  geoseal aap-meta-eval --data-dir C:\\path\\to\\autonomous-agent-prediction-beta --json
+  geoseal aap-family-probe --json
+  geoseal aap-blend-probe --json
+  geoseal aap-package-submit --agent-dir submissions/scbe_tabular_v3_skillroot_20260716 --submit --status --json
+  geoseal pipeline-receipt --content "def add(a,b): return a+b" --json
+  geoseal package-registry --include-roster --json
 
 Flags:
   --api-base <url>       GeoSeal API base URL
@@ -2765,6 +2784,114 @@ function runNeuroGolfPromote(argv) {
   );
 }
 
+function runNeuroGolfDashboard(argv) {
+  const script = process.env.GEOSEAL_NEUROGOLF_DASHBOARD || "C:\\dev\\neurogolf\\rubix_ai_eyes_dashboard.py";
+  runExternalPythonScript(
+    script,
+    argv.slice(1),
+    "GeoSeal could not find a usable Python runtime for the NeuroGolf AI-eyes dashboard. Set SCBE_GEOSEAL_PYTHON if needed.",
+    "C:\\dev\\neurogolf"
+  );
+}
+
+function runBiohubLoopAction(action, argv) {
+  const script = process.env.GEOSEAL_BIOHUB_LOOP || path.join(ROOT, "scripts", "system", "biohub_celltrack_loop.py");
+  runExternalPythonScript(
+    script,
+    [action, ...argv.slice(1)],
+    "GeoSeal could not find a usable Python runtime for the Biohub cell-tracking loop. Set SCBE_GEOSEAL_PYTHON if needed.",
+    ROOT
+  );
+}
+
+function runArcRubixSolve(argv) {
+  runPythonScript(
+    "scripts/system/arc_rubix_solver.py",
+    argv.slice(1),
+    "GeoSeal could not find a usable Python runtime for arc_rubix_solver.py. Set SCBE_GEOSEAL_PYTHON if needed."
+  );
+}
+
+function runArcRubixScore(argv) {
+  runPythonScript(
+    "scripts/system/arc_rubix_score.py",
+    argv.slice(1),
+    "GeoSeal could not find a usable Python runtime for arc_rubix_score.py. Set SCBE_GEOSEAL_PYTHON if needed."
+  );
+}
+
+function runArcRubixDashboard(argv) {
+  runPythonScript(
+    "scripts/system/arc_rubix_dashboard.py",
+    argv.slice(1),
+    "GeoSeal could not find a usable Python runtime for arc_rubix_dashboard.py. Set SCBE_GEOSEAL_PYTHON if needed."
+  );
+}
+
+function runArcRubixLoop(argv) {
+  runPythonScript(
+    "scripts/system/arc_rubix_loop.py",
+    argv.slice(1),
+    "GeoSeal could not find a usable Python runtime for arc_rubix_loop.py. Set SCBE_GEOSEAL_PYTHON if needed."
+  );
+}
+
+function runVerifySearch(argv) {
+  runPythonScript(
+    "scripts/system/geoseal_verify_search.py",
+    argv.slice(1),
+    "GeoSeal could not find a usable Python runtime for geoseal_verify_search.py. Set SCBE_GEOSEAL_PYTHON if needed."
+  );
+}
+
+function runAapScaffold(argv) {
+  runPythonScript(
+    "scripts/system/aap_validation_scaffold.py",
+    argv.slice(1),
+    "GeoSeal could not find a usable Python runtime for aap_validation_scaffold.py. Set SCBE_GEOSEAL_PYTHON if needed."
+  );
+}
+
+function runAapMetaEval(argv) {
+  runPythonScript(
+    "scripts/system/aap_local_meta_eval.py",
+    argv.slice(1),
+    "GeoSeal could not find a usable Python runtime for aap_local_meta_eval.py. Set SCBE_GEOSEAL_PYTHON if needed."
+  );
+}
+
+function runAapFamilyProbe(argv) {
+  runPythonScript(
+    "scripts/system/aap_family_probe.py",
+    argv.slice(1),
+    "GeoSeal could not find a usable Python runtime for aap_family_probe.py. Set SCBE_GEOSEAL_PYTHON if needed."
+  );
+}
+
+function runAapBlendProbe(argv) {
+  runPythonScript(
+    "scripts/system/aap_blend_probe.py",
+    argv.slice(1),
+    "GeoSeal could not find a usable Python runtime for aap_blend_probe.py. Set SCBE_GEOSEAL_PYTHON if needed."
+  );
+}
+
+function runAapPackageSubmit(argv) {
+  runPythonScript(
+    "scripts/system/aap_package_submit.py",
+    argv.slice(1),
+    "GeoSeal could not find a usable Python runtime for aap_package_submit.py. Set SCBE_GEOSEAL_PYTHON if needed."
+  );
+}
+
+function runPipelineReceipt(argv) {
+  runPythonScript(
+    "scripts/system/pipeline_receipt.py",
+    argv.slice(1),
+    "GeoSeal could not find a usable Python runtime for pipeline_receipt.py. Set SCBE_GEOSEAL_PYTHON if needed."
+  );
+}
+
 function runSystemMap(positionals, argv) {
   const action = String(positionals[1] || "").toLowerCase();
   let args = argv.slice(1);
@@ -2914,6 +3041,83 @@ async function main() {
   }
   if (command === "neurogolf-promote" || command === "rubix-promote") {
     runNeuroGolfPromote(argv);
+    return;
+  }
+  if (command === "neurogolf-dashboard" || command === "rubix-dashboard") {
+    runNeuroGolfDashboard(argv);
+    return;
+  }
+  if (command === "biohub-score" || command === "celltrack-score") {
+    runBiohubLoopAction("score", argv);
+    return;
+  }
+  if (command === "biohub-dashboard" || command === "celltrack-dashboard") {
+    runBiohubLoopAction("dashboard", argv);
+    return;
+  }
+  if (command === "biohub-check-train" || command === "celltrack-check-train") {
+    runBiohubLoopAction("check-train", argv);
+    return;
+  }
+  if (command === "biohub-loop" || command === "celltrack-loop") {
+    runBiohubLoopAction("loop", argv);
+    return;
+  }
+  if (command === "arc-solve" || command === "rubix-arc-solve" || command === "arc-rubix-solve") {
+    runArcRubixSolve(argv);
+    return;
+  }
+  if (command === "arc-score" || command === "rubix-arc-score" || command === "arc-rubix-score") {
+    runArcRubixScore(argv);
+    return;
+  }
+  if (command === "arc-dashboard" || command === "rubix-arc-dashboard" || command === "arc-rubix-dashboard") {
+    runArcRubixDashboard(argv);
+    return;
+  }
+  if (command === "arc-loop" || command === "rubix-arc-loop" || command === "arc-rubix-loop") {
+    runArcRubixLoop(argv);
+    return;
+  }
+  if (command === "verify-search" || command === "search-verify" || command === "certificate-search") {
+    runVerifySearch(argv);
+    return;
+  }
+  if (
+    command === "aap-scaffold" ||
+    command === "aap-dashboard" ||
+    command === "agent-prediction-scaffold" ||
+    command === "agent-prediction-dashboard"
+  ) {
+    runAapScaffold(argv);
+    return;
+  }
+  if (command === "aap-meta-eval" || command === "agent-prediction-meta-eval") {
+    runAapMetaEval(argv);
+    return;
+  }
+  if (command === "aap-family-probe" || command === "agent-prediction-family-probe") {
+    runAapFamilyProbe(argv);
+    return;
+  }
+  if (command === "aap-blend-probe" || command === "agent-prediction-blend-probe") {
+    runAapBlendProbe(argv);
+    return;
+  }
+  if (command === "aap-package-submit" || command === "aap-pack-submit" || command === "agent-prediction-submit") {
+    runAapPackageSubmit(argv);
+    return;
+  }
+  if (command === "pipeline-receipt" || command === "pipe-receipt" || command === "code-pipeline") {
+    runPipelineReceipt(argv);
+    return;
+  }
+  if (command === "package-registry" || command === "release-control" || command === "registry-control") {
+    runPythonScript(
+      "scripts/system/package_registry_control.py",
+      argv.slice(1),
+      "GeoSeal could not find a usable Python runtime for package_registry_control.py. Set SCBE_GEOSEAL_PYTHON if needed."
+    );
     return;
   }
   if (command === "colab-watch" || command === "hf-colab-watch") {
