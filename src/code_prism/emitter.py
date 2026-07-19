@@ -1,8 +1,92 @@
 from __future__ import annotations
 
+import ast
+import json
 from typing import List
 
 from .models import PrismFunction, PrismModule
+
+
+# --- Python safe-subset expression -> JS expression -------------------------------------------------
+# Python-isms that differ from JS and silently break a passthrough emit:
+#   a // b  -> in JS '//' starts a COMMENT (the whole tail vanishes)   [the bug this fixes]
+#   a ** b  -> Math.pow                  and/or/not -> &&/||/!          True/False/None -> true/false/null
+#   a < b < c (chained compare)          == -> ===                     len(x) -> (x).length
+# Anything outside this subset raises, and the caller falls back to the RAW line (current behaviour),
+# so this can never regress a case it already handled -- and the correctness gate catches any residue.
+_JS_CALLS = {"abs": "Math.abs", "min": "Math.min", "max": "Math.max",
+             "round": "Math.round", "int": "Math.trunc", "float": "Number"}
+_BIN = {ast.Add: "+", ast.Sub: "-", ast.Mult: "*", ast.Div: "/", ast.Mod: "%"}
+_CMP = {ast.Lt: "<", ast.Gt: ">", ast.LtE: "<=", ast.GtE: ">=", ast.Eq: "===", ast.NotEq: "!=="}
+
+
+def _js_expr(n: ast.AST) -> str:
+    if isinstance(n, ast.Constant):
+        v = n.value
+        if v is True:
+            return "true"
+        if v is False:
+            return "false"
+        if v is None:
+            return "null"
+        return json.dumps(v) if isinstance(v, str) else repr(v)
+    if isinstance(n, ast.Name):
+        return n.id
+    if isinstance(n, ast.BinOp):
+        left, right = _js_expr(n.left), _js_expr(n.right)
+        if isinstance(n.op, ast.FloorDiv):
+            return f"Math.floor({left} / {right})"
+        if isinstance(n.op, ast.Pow):
+            return f"Math.pow({left}, {right})"
+        sym = _BIN.get(type(n.op))
+        if sym is None:
+            raise ValueError("binop")
+        return f"({left} {sym} {right})"
+    if isinstance(n, ast.UnaryOp):
+        operand = _js_expr(n.operand)
+        if isinstance(n.op, ast.USub):
+            return f"(-{operand})"
+        if isinstance(n.op, ast.UAdd):
+            return f"(+{operand})"
+        if isinstance(n.op, ast.Not):
+            return f"(!{operand})"
+        raise ValueError("unaryop")
+    if isinstance(n, ast.BoolOp):
+        sym = "&&" if isinstance(n.op, ast.And) else "||"
+        return "(" + f" {sym} ".join(_js_expr(v) for v in n.values) + ")"
+    if isinstance(n, ast.Compare):
+        parts, cur = [], _js_expr(n.left)
+        for op, comp in zip(n.ops, n.comparators):
+            rs = _js_expr(comp)
+            sym = _CMP.get(type(op))
+            if sym is None:
+                raise ValueError("compare")
+            parts.append(f"({cur} {sym} {rs})")
+            cur = rs
+        return "(" + " && ".join(parts) + ")"
+    if isinstance(n, ast.IfExp):
+        return f"({_js_expr(n.test)} ? {_js_expr(n.body)} : {_js_expr(n.orelse)})"
+    if isinstance(n, ast.Call):
+        if not isinstance(n.func, ast.Name) or n.keywords:
+            raise ValueError("call")
+        args = [_js_expr(a) for a in n.args]
+        if n.func.id == "len" and len(args) == 1:
+            return f"({args[0]}).length"
+        target = _JS_CALLS.get(n.func.id, n.func.id)
+        return f"{target}({', '.join(args)})"
+    if isinstance(n, (ast.List, ast.Tuple)):
+        return "[" + ", ".join(_js_expr(e) for e in n.elts) + "]"
+    if isinstance(n, ast.Subscript):
+        return f"{_js_expr(n.value)}[{_js_expr(n.slice)}]"
+    raise ValueError("unsupported node " + type(n).__name__)
+
+
+def _ts_expr(expr: str) -> str:
+    """Translate a Python expression to JS; fall back to the raw text on anything unsupported."""
+    try:
+        return _js_expr(ast.parse(expr.strip(), mode="eval").body)
+    except Exception:
+        return expr
 
 
 def _py_signature(fn: PrismFunction) -> str:
@@ -49,10 +133,10 @@ def _ts_body_line(line: str) -> str:
     if not stripped or stripped == "pass":
         return "// no-op"
     if stripped.startswith("return "):
-        return f"{stripped};"
+        return f"return {_ts_expr(stripped[len('return '):])};"
     if "=" in stripped and "==" not in stripped and not stripped.startswith(("const ", "let ", "var ")):
         name, value = stripped.split("=", 1)
-        return f"const {name.strip()} = {value.strip()};"
+        return f"const {name.strip()} = {_ts_expr(value.strip())};"
     return stripped if stripped.endswith(";") else f"{stripped};"
 
 
