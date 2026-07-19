@@ -542,6 +542,7 @@ export const App: React.FC = () => {
           else if (win.item.appId === 'slides') content = <SlidesApp />;
           else if (win.item.appId === 'snake') content = <AlienDefense />;
           else if (win.item.appId === 'code') content = <CodeEditorApp />;
+          else if (win.item.appId === 'htmlbridge') content = <HtmlBridgeApp />;
           else if (win.item.appId === 'sudoku') content = <SudokuApp />;
           else if (win.item.appId === 'wordle') content = <WordPuzzleApp />;
           else if (win.item.appId === 'notepad')

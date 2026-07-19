@@ -28,6 +28,7 @@ export type AppId =
     | 'knowledge'
     | 'pollypad'
     | 'service'
+    | 'htmlbridge'
     | 'appstore';
 
 export interface ServiceBinding {

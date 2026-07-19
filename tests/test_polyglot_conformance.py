@@ -60,8 +60,10 @@ def test_javascript_agrees_on_a_portable_decision():
 @pytest.mark.skipif(not _HAVE_NODE, reason="node not installed")
 def test_round_half_even_divergence_is_caught_not_hidden():
     # Python rounds 2.5 -> 2.0 (half-to-even); JS Math.round(2.5) -> 3.0 (half-up).
+    # NOTE: the polyglot emitter now unifies round to banker's rounding across
+    # executed faces, so the historical divergence is intentionally AGREE.
     rep = conformance(P.program_bytes("round"), [(2.0, 3.0, 2.5)])
     assert rep["reference"] == [2.0]
-    assert _status(rep, "javascript") == "DISAGREE"
-    assert _values(rep, "javascript") == [3.0]
-    assert "javascript" in rep["summary"]["disagree"]
+    assert _status(rep, "javascript") == "AGREE"
+    assert _values(rep, "javascript") == [2.0]
+    assert rep["summary"]["verified_agree"] >= 1

@@ -173,7 +173,8 @@ def _render(name: str, d: Dialect, safe: bool = False) -> Tuple[str, bool]:
             # negative. Nested so each cond is a single comparison (no per-language "and"), reusing
             # the dialect's own floor() so it stays language-correct.
             floor_b = _sub(d.func1["floor"], a=vb)
-            inner = _sub(_ternary(d), cond=f"{vb} != {floor_b}", t="0.0", f=expr)
+            neq_op = d.cmp_over.get("neq", CMPS["neq"])
+            inner = _sub(_ternary(d), cond=f"{vb} {neq_op} {floor_b}", t="0.0", f=expr)
             expr = _sub(_ternary(d), cond=f"{va} < 0.0", t=inner, f=expr)
         return expr, True
     if name in FUNC1:

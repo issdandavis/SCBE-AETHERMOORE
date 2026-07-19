@@ -66,7 +66,7 @@ function isAppId(value: string | undefined): value is AppId {
         'home', 'mail', 'slides', 'snake', 'folder', 'notepad', 'automator',
         'code', 'sudoku', 'wordle', 'security', 'cryptolab', 'defense',
         'agents', 'overseer', 'fleet', 'knowledge', 'pollypad', 'service',
-        'appstore',
+        'htmlbridge', 'appstore',
     ];
     return (allowed as string[]).includes(value);
 }
