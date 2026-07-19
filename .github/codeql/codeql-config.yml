@@ -6,8 +6,6 @@ paths:
   - services
   - tests
   - rust
-  - kindle-app/android
-  - kindle-app/www
 
 paths-ignore:
   - artifacts/**
@@ -16,10 +14,6 @@ paths-ignore:
   - external/**
   - dist/**
   - node_modules/**
-  - kindle-app/node_modules/**
-  - kindle-app/android/**/build/**
-  - kindle-app/android/.gradle/**
-  - kindle-app/android/capacitor-cordova-android-plugins/**
   - .n8n_local_iso/**
   - SCBE-AETHERMOORE-v3.0.0/**
   - docs-build-smoke/**
