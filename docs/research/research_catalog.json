@@ -293,6 +293,7 @@
     },
     {
       "id": "relational-ontology-self-bounding",
+      "html": "research/papers/relational-ontology-self-bounding.html",
       "title": "Self-Bounding Systems and Relational Ontology",
       "subtitle": "Mapping four informal claims about boundaries, observation, and fundamental relationships onto their formal counterparts in physics and mathematics.",
       "topic": "space-systems",
