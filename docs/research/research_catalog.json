@@ -1,43 +1,82 @@
 {
   "schema": "aethermoore-research-catalog-v1",
-  "updated": "2026-06-17",
+  "updated": "2026-07-12",
   "standard": "research/RESEARCH_PACKET_STANDARD.md",
   "topics": [
     {
       "id": "space-systems",
       "label": "Space Systems",
       "description": "Space chemistry, orbital analogies, microgravity fluids, and resource-management concepts with explicit claim boundaries.",
-      "tags": ["space", "microgravity", "orbital", "water", "energy", "systems"]
+      "tags": [
+        "space",
+        "microgravity",
+        "orbital",
+        "water",
+        "energy",
+        "systems"
+      ]
     },
     {
       "id": "materials-chemistry",
       "label": "Materials and Chemistry",
       "description": "Chemistry-native CLI work, molecular AI targets, lattice materials, and component-level research packets.",
-      "tags": ["chemistry", "materials", "molecules", "lattice", "triboelectric", "energy"]
+      "tags": [
+        "chemistry",
+        "materials",
+        "molecules",
+        "lattice",
+        "triboelectric",
+        "energy"
+      ]
     },
     {
       "id": "autonomy-swarms",
       "label": "Autonomy and Swarms",
       "description": "Agent training, drone autonomy patterns, swarm coordination, and governed task execution.",
-      "tags": ["autonomy", "swarms", "agents", "simulation", "training", "robotics"]
+      "tags": [
+        "autonomy",
+        "swarms",
+        "agents",
+        "simulation",
+        "training",
+        "robotics"
+      ]
     },
     {
       "id": "ai-governance",
       "label": "AI Governance",
       "description": "Evidence receipts, alignment gates, benchmark claims, safety boundaries, and audit trails.",
-      "tags": ["governance", "receipts", "alignment", "audit", "benchmarks"]
+      "tags": [
+        "governance",
+        "receipts",
+        "alignment",
+        "audit",
+        "benchmarks"
+      ]
     },
     {
       "id": "language-code-systems",
       "label": "Language and Code Systems",
       "description": "Sacred Tongues, token maps, coding systems, reversible encodings, and CLI-native representation work.",
-      "tags": ["language", "code", "tokens", "encodings", "cli"]
+      "tags": [
+        "language",
+        "code",
+        "tokens",
+        "encodings",
+        "cli"
+      ]
     },
     {
       "id": "life-systems",
       "label": "Life Systems",
       "description": "Reserved topic lane for plants, animals, bio-inspired systems, ecological routing, and biology-facing research packets.",
-      "tags": ["plants", "animals", "biology", "ecology", "bio-inspired"]
+      "tags": [
+        "plants",
+        "animals",
+        "biology",
+        "ecology",
+        "bio-inspired"
+      ]
     }
   ],
   "papers": [
@@ -46,8 +85,18 @@
       "title": "Magneto-Triboelectric Fluid Cell Research Compendium",
       "subtitle": "Literature-backed prototype rationale for a hybrid electromagnetic, triboelectric, and multi-fluid energy-harvesting cell.",
       "topic": "space-systems",
-      "topics": ["space-systems", "materials-chemistry"],
-      "tags": ["space", "materials", "ferrofluid", "triboelectric", "energy-harvesting", "microgravity"],
+      "topics": [
+        "space-systems",
+        "materials-chemistry"
+      ],
+      "tags": [
+        "space",
+        "materials",
+        "ferrofluid",
+        "triboelectric",
+        "energy-harvesting",
+        "microgravity"
+      ],
       "source_md": "research/mtef_research_compendium_2026-06-17.md",
       "pdf": "research/mtef_research_compendium_2026-06-17.pdf",
       "html": "research/papers/mtef-fluid-cell.html",
@@ -62,8 +111,18 @@
       "title": "Chemistry-Native CLI and Space Chemistry Systems",
       "subtitle": "A governed command-line evidence room for chemistry, space chemistry, and external scientific engine bridges.",
       "topic": "space-systems",
-      "topics": ["space-systems", "materials-chemistry"],
-      "tags": ["space", "chemistry", "cli", "nasa-cea", "pahdb", "receipts"],
+      "topics": [
+        "space-systems",
+        "materials-chemistry"
+      ],
+      "tags": [
+        "space",
+        "chemistry",
+        "cli",
+        "nasa-cea",
+        "pahdb",
+        "receipts"
+      ],
       "source_md": "research/chemistry_cli_space_systems_2026-05-31.md",
       "pdf": "research/papers/pdf/space-chemistry-cli.pdf",
       "html": "research/papers/space-chemistry-cli.html",
@@ -79,8 +138,18 @@
       "title": "Drone Autonomy Training Patterns for SCBE Agent Training",
       "subtitle": "Mapping public autonomy-program patterns onto coding-agent gates, simulations, and promotion tiers.",
       "topic": "autonomy-swarms",
-      "topics": ["autonomy-swarms", "ai-governance"],
-      "tags": ["autonomy", "swarms", "agents", "simulation", "training", "assurance"],
+      "topics": [
+        "autonomy-swarms",
+        "ai-governance"
+      ],
+      "tags": [
+        "autonomy",
+        "swarms",
+        "agents",
+        "simulation",
+        "training",
+        "assurance"
+      ],
       "source_md": "research/drone_autonomy_training_patterns_2026-05-02.md",
       "pdf": "research/papers/pdf/autonomy-training-patterns.pdf",
       "html": "research/papers/autonomy-training-patterns.html",
@@ -96,8 +165,17 @@
       "title": "Layered-Lattice Molecular AI: Beatable Targets",
       "subtitle": "A narrow competitive lane for robust molecular reasoning under topology loss, activity cliffs, and explanation pressure.",
       "topic": "materials-chemistry",
-      "topics": ["materials-chemistry", "ai-governance"],
-      "tags": ["chemistry", "molecules", "lattice", "activity-cliffs", "explainability"],
+      "topics": [
+        "materials-chemistry",
+        "ai-governance"
+      ],
+      "tags": [
+        "chemistry",
+        "molecules",
+        "lattice",
+        "activity-cliffs",
+        "explainability"
+      ],
       "source_md": "research/layered_lattice_molecular_ai_targets_2026-05-31.md",
       "pdf": "research/papers/pdf/layered-lattice-molecular-ai.pdf",
       "html": "research/papers/layered-lattice-molecular-ai.html",
@@ -113,8 +191,17 @@
       "title": "GeoSeed Orbital Model",
       "subtitle": "A deterministic geometry analogy connecting Sacred Tongues, orbital shells, and hyperbolic radial spacing.",
       "topic": "space-systems",
-      "topics": ["space-systems", "language-code-systems"],
-      "tags": ["geometry", "orbital", "sacred-tongues", "hyperbolic", "code"],
+      "topics": [
+        "space-systems",
+        "language-code-systems"
+      ],
+      "tags": [
+        "geometry",
+        "orbital",
+        "sacred-tongues",
+        "hyperbolic",
+        "code"
+      ],
       "source_md": "research/geoseed_orbital_model.md",
       "pdf": "research/papers/pdf/geoseed-orbital-model.pdf",
       "html": "research/papers/geoseed-orbital-model.html",
@@ -130,8 +217,18 @@
       "title": "Task-Autonomous Fabrication Cell Tech Tree",
       "subtitle": "A build-sense-correct loop for governed fabrication workflows inside a human-specified goal envelope.",
       "topic": "autonomy-swarms",
-      "topics": ["autonomy-swarms", "materials-chemistry", "ai-governance"],
-      "tags": ["fabrication", "robotics", "agents", "governance", "receipts"],
+      "topics": [
+        "autonomy-swarms",
+        "materials-chemistry",
+        "ai-governance"
+      ],
+      "tags": [
+        "fabrication",
+        "robotics",
+        "agents",
+        "governance",
+        "receipts"
+      ],
       "source_md": "research/TASK_AUTONOMOUS_FABRICATION_CELL_TECH_TREE_2026-05-22.md",
       "pdf": "research/papers/pdf/fabrication-cell-tech-tree.pdf",
       "html": "research/papers/fabrication-cell-tech-tree.html",
@@ -147,8 +244,16 @@
       "title": "Wolfram Token Map",
       "subtitle": "A language and code-system research note for symbolic token structure.",
       "topic": "language-code-systems",
-      "topics": ["language-code-systems"],
-      "tags": ["tokens", "wolfram", "language", "code", "symbolic"],
+      "topics": [
+        "language-code-systems"
+      ],
+      "tags": [
+        "tokens",
+        "wolfram",
+        "language",
+        "code",
+        "symbolic"
+      ],
       "source_md": "research/WOLFRAM_TOKEN_MAP.md",
       "pdf": "research/papers/pdf/wolfram-token-map.pdf",
       "html": "research/papers/wolfram-token-map.html",
@@ -164,8 +269,18 @@
       "title": "Space Life-Support Animals, Husbandry, and Micro-Energy Concepts",
       "subtitle": "A research scaffold for animal husbandry, habitat telemetry, welfare boundaries, and micro-energy recovery in long-duration space systems.",
       "topic": "life-systems",
-      "topics": ["life-systems", "space-systems"],
-      "tags": ["space", "animals", "life-support", "husbandry", "energy", "welfare"],
+      "topics": [
+        "life-systems",
+        "space-systems"
+      ],
+      "tags": [
+        "space",
+        "animals",
+        "life-support",
+        "husbandry",
+        "energy",
+        "welfare"
+      ],
       "source_md": "research/space_life_support_animals_husbandry_energy_2026-06-17.md",
       "pdf": "research/papers/pdf/space-life-support-animals.pdf",
       "html": "research/papers/space-life-support-animals.html",
@@ -175,6 +290,30 @@
       "review_model": "Framer pass complete; source scout, welfare review, physics budget, and red-team passes required before stronger publication.",
       "claim_boundary": "Does not claim animals can meaningfully power a spacecraft, does not recommend animal use, and makes no legal, welfare-certification, mission-readiness, or patentability claim.",
       "abstract": "This packet turns a speculative animal-husbandry and micro-energy idea into a falsifiable space-systems research question with a required source ledger, validation plan, welfare boundary, and red-team path."
+    },
+    {
+      "id": "relational-ontology-self-bounding",
+      "title": "Self-Bounding Systems and Relational Ontology",
+      "subtitle": "Mapping four informal claims about boundaries, observation, and fundamental relationships onto their formal counterparts in physics and mathematics.",
+      "topic": "space-systems",
+      "topics": [
+        "space-systems",
+        "ai-governance"
+      ],
+      "tags": [
+        "cosmology",
+        "relational",
+        "boundaries",
+        "observation",
+        "quantum-foundations",
+        "structural-realism"
+      ],
+      "source_md": "research/relational_ontology_self_bounding_systems_2026-07-12.md",
+      "status": "Research Brief; source ledger drafted from model memory, citation verification pending.",
+      "grade": "Research Brief",
+      "review_model": "Framer + source scout + partial domain skeptic passes complete; passes 4-10 pending for packet promotion.",
+      "claim_boundary": "Claims only that the informal statements have identifiable formal counterparts with stated statuses and that the container-cosmology variant is observationally excluded; asserts no new physical theory.",
+      "abstract": "Four informally stated claims - systems self-generate their boundaries, boundaries are relational rather than intrinsic, definition is co-created by measurement, and relations are the fundamental layer - are mapped onto self-bounding spacetimes, horizon relativity, it-from-bit and relational quantum mechanics, and ontic structural realism, with each component classified as settled physics, live research, or open philosophy."
     }
   ]
 }
