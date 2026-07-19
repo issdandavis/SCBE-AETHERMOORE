@@ -6,7 +6,6 @@ from typing import List
 
 from .models import PrismFunction, PrismModule
 
-
 # --- Python safe-subset expression -> JS expression -------------------------------------------------
 # Python-isms that differ from JS and silently break a passthrough emit:
 #   a // b  -> in JS '//' starts a COMMENT (the whole tail vanishes)   [the bug this fixes]
@@ -14,8 +13,14 @@ from .models import PrismFunction, PrismModule
 #   a < b < c (chained compare)          == -> ===                     len(x) -> (x).length
 # Anything outside this subset raises, and the caller falls back to the RAW line (current behaviour),
 # so this can never regress a case it already handled -- and the correctness gate catches any residue.
-_JS_CALLS = {"abs": "Math.abs", "min": "Math.min", "max": "Math.max",
-             "round": "Math.round", "int": "Math.trunc", "float": "Number"}
+_JS_CALLS = {
+    "abs": "Math.abs",
+    "min": "Math.min",
+    "max": "Math.max",
+    "round": "Math.round",
+    "int": "Math.trunc",
+    "float": "Number",
+}
 _BIN = {ast.Add: "+", ast.Sub: "-", ast.Mult: "*", ast.Div: "/", ast.Mod: "%"}
 _CMP = {ast.Lt: "<", ast.Gt: ">", ast.LtE: "<=", ast.GtE: ">=", ast.Eq: "===", ast.NotEq: "!=="}
 
