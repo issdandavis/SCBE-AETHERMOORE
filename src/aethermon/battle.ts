@@ -23,13 +23,17 @@ import type {
   SpeciesDef,
 } from './types.js';
 import {
+  BUFF_MULTIPLIER,
   CRIT_CHANCE,
   CRIT_MULTIPLIER,
+  DEBUFF_MULTIPLIER,
   HODGE_DUALS,
   HODGE_RESONANCE,
   MAX_BATTLE_TURNS,
+  MIN_WEIGHT,
   STAB_BONUS,
   STRAIN_THRESHOLD,
+  WEIGHT_BATTLE_BURN,
   alignmentMultiplier,
   elementMultiplier,
 } from './types.js';
@@ -41,6 +45,14 @@ import { chance, createRng, nextFloat, type Rng } from './rng.js';
 // ---------------------------------------------------------------------------
 //  Combatant construction
 // ---------------------------------------------------------------------------
+
+/** Per-battle status flags, fresh for every new combatant. */
+function freshBattleFlags(): Pick<
+  Combatant,
+  'guarding' | 'stunned' | 'atkRaised' | 'spdRaised' | 'defLowered'
+> {
+  return { guarding: false, stunned: false, atkRaised: false, spdRaised: false, defLowered: false };
+}
 
 /**
  * Snapshot a tamed creature for battle. Mood nudges effective attack:
@@ -60,7 +72,7 @@ export function toCombatant(monster: MonsterState): Combatant {
     moves: species.moves,
     level: monster.level,
     hp: stats.hp,
-    guarding: false,
+    ...freshBattleFlags(),
   };
 }
 
@@ -82,7 +94,7 @@ export function wildCombatant(species: SpeciesDef, level: number, name?: string)
     moves: species.moves,
     level,
     hp: stats.hp,
-    guarding: false,
+    ...freshBattleFlags(),
   };
 }
 
@@ -145,7 +157,8 @@ export function rollDamage(
   const variance = 0.85 + 0.15 * nextFloat(rng);
   let damage = raw * alignMult * elemMult * affinity * variance;
   if (crit) damage *= CRIT_MULTIPLIER;
-  if (defender.guarding) damage *= 0.5;
+  // guard_break slips past the ward entirely (and shatters it — see applyAction).
+  if (defender.guarding && move.effect !== 'guard_break') damage *= 0.5;
   return {
     miss: false,
     crit,
@@ -176,7 +189,8 @@ function opponentOf(side: 'A' | 'B'): 'A' | 'B' {
 /**
  * AI move policy: usually picks the highest expected-damage move
  * (power × accuracy × type multipliers), sometimes improvises; heals
- * when hurt and able.
+ * when hurt and able; opens with a useful utility move (buff, bind,
+ * crumble) in the early turns.
  */
 export function chooseAiAction(state: BattleState, side: 'A' | 'B'): BattleAction {
   const self = combatant(state, side);
@@ -189,7 +203,26 @@ export function chooseAiAction(state: BattleState, side: 'A' | 'B'): BattleActio
     return { type: 'move', moveId: healMoves[0] };
   }
 
-  const attackMoves = self.moves.filter((id) => getMove(id).effect !== 'heal');
+  // Utility openers — only ones that would do something right now.
+  const usefulUtility = self.moves.filter((id) => {
+    const move = getMove(id);
+    if (move.effect === 'atk_up') return !self.atkRaised;
+    if (move.effect === 'spd_up') return !self.spdRaised && self.stats.spd <= foe.stats.spd;
+    if (move.effect === 'def_down') return !foe.defLowered;
+    if (move.effect === 'stun') return !foe.stunned;
+    return false;
+  });
+  if (usefulUtility.length > 0 && state.turn < 4 && chance(rng, 0.45)) {
+    const idx = Math.floor(nextFloat(rng) * usefulUtility.length);
+    state.rngState = rng.state;
+    return { type: 'move', moveId: usefulUtility[idx] };
+  }
+
+  // Damaging moves only — spent utilities would be wasted turns.
+  const attackMoves = self.moves.filter((id) => {
+    const move = getMove(id);
+    return move.effect !== 'heal' && move.power > 0;
+  });
   if (attackMoves.length === 0) {
     state.rngState = rng.state;
     return { type: 'guard' };
@@ -229,6 +262,19 @@ function applyAction(
   const foe = combatant(state, opponentOf(side));
   if (self.hp <= 0 || state.over) return events;
 
+  // A stunned creature loses this action (the binding releases after).
+  if (self.stunned) {
+    self.stunned = false;
+    self.guarding = false;
+    events.push({
+      turn: state.turn,
+      actor: side,
+      kind: 'immobile',
+      text: `${self.name} is bound by the lattice and cannot move!`,
+    });
+    return events;
+  }
+
   if (action.type === 'guard') {
     self.guarding = true;
     events.push({
@@ -241,6 +287,98 @@ function applyAction(
   }
 
   const move = getMove(action.moveId);
+
+  if (move.effect === 'atk_up' || move.effect === 'spd_up') {
+    const stat = move.effect === 'atk_up' ? 'atk' : 'spd';
+    const flag = move.effect === 'atk_up' ? 'atkRaised' : 'spdRaised';
+    if (self[flag]) {
+      events.push({
+        turn: state.turn,
+        actor: side,
+        kind: 'buff',
+        moveId: move.id,
+        text: `${self.name} uses ${move.name} — but its ${stat.toUpperCase()} can rise no further.`,
+      });
+      return events;
+    }
+    self[flag] = true;
+    // A4: Clamping — buffed stat stays >= 1.
+    self.stats[stat] = Math.max(1, Math.floor(self.stats[stat] * BUFF_MULTIPLIER));
+    events.push({
+      turn: state.turn,
+      actor: side,
+      kind: 'buff',
+      moveId: move.id,
+      text: `${self.name} uses ${move.name} — its ${stat.toUpperCase()} surges!`,
+    });
+    return events;
+  }
+
+  if (move.effect === 'def_down') {
+    if (nextFloat(rng) >= move.accuracy) {
+      events.push({
+        turn: state.turn,
+        actor: side,
+        kind: 'miss',
+        moveId: move.id,
+        text: `${self.name}'s ${move.name} misses!`,
+      });
+      return events;
+    }
+    if (foe.defLowered) {
+      events.push({
+        turn: state.turn,
+        actor: side,
+        kind: 'debuff',
+        moveId: move.id,
+        text: `${self.name} uses ${move.name} — but ${foe.name}'s guard is already crumbled.`,
+      });
+      return events;
+    }
+    foe.defLowered = true;
+    // A4: Clamping — debuffed DEF stays >= 1.
+    foe.stats.def = Math.max(1, Math.floor(foe.stats.def * DEBUFF_MULTIPLIER));
+    events.push({
+      turn: state.turn,
+      actor: side,
+      kind: 'debuff',
+      moveId: move.id,
+      text: `${self.name} uses ${move.name} — ${foe.name}'s DEF crumbles!`,
+    });
+    return events;
+  }
+
+  if (move.effect === 'stun') {
+    if (nextFloat(rng) >= move.accuracy) {
+      events.push({
+        turn: state.turn,
+        actor: side,
+        kind: 'miss',
+        moveId: move.id,
+        text: `${self.name}'s ${move.name} misses!`,
+      });
+      return events;
+    }
+    if (foe.stunned) {
+      events.push({
+        turn: state.turn,
+        actor: side,
+        kind: 'stun',
+        moveId: move.id,
+        text: `${self.name} uses ${move.name} — but ${foe.name} is already bound.`,
+      });
+      return events;
+    }
+    foe.stunned = true;
+    events.push({
+      turn: state.turn,
+      actor: side,
+      kind: 'stun',
+      moveId: move.id,
+      text: `${self.name} uses ${move.name} — ${foe.name} is seized by crystal bonds!`,
+    });
+    return events;
+  }
 
   if (move.effect === 'heal') {
     const healed = Math.min(
@@ -273,6 +411,10 @@ function applyAction(
 
   foe.hp = Math.max(0, foe.hp - roll.damage);
   const tags: string[] = [];
+  if (move.effect === 'guard_break' && foe.guarding) {
+    foe.guarding = false;
+    tags.push('the ward shatters!');
+  }
   if (roll.crit) tags.push('CRIT!');
   if (roll.resonance) tags.push('dual resonance!');
   if (roll.alignmentMult > 1 || roll.elementMult > 1) tags.push("it's super effective!");
@@ -329,9 +471,10 @@ export function performRound(
   state.b.guarding = false;
 
   const rng = createRng(state.rngState);
-  // Guards resolve first so they protect against this round's attacks.
-  if (actionA.type === 'guard') state.a.guarding = true;
-  if (actionB.type === 'guard') state.b.guarding = true;
+  // Guards resolve first so they protect against this round's attacks —
+  // unless the guard is stunned: bound limbs cannot brace.
+  if (actionA.type === 'guard' && !state.a.stunned) state.a.guarding = true;
+  if (actionB.type === 'guard' && !state.b.stunned) state.b.guarding = true;
 
   let order: Array<['A' | 'B', BattleAction]>;
   const aFirst =
@@ -389,18 +532,23 @@ export interface BattleAftermath {
   readonly scarred: boolean;
   /** The creature fought past its limit (V-Pet over-battling rule). */
   readonly strained: boolean;
+  /** Over-battling just corrupted it — it needs a patch. */
+  readonly glitchedByStrain: boolean;
 }
 
 /**
  * Apply a battle result to the tamed creature's history and meters.
- * A battle takes time (one care tick — creatures age in the arena).
- * Losses leave scars (immune memory: +DEF, capped, and keys to dark
- * evolutions). Battling repeatedly without rest causes strain.
+ * A battle takes time (one care tick — creatures age in the arena) and
+ * burns a little weight. Losses leave scars (immune memory: +DEF,
+ * capped, and keys to dark evolutions). Battling repeatedly without
+ * rest causes strain — and strain corrupts: the creature glitches.
  */
 export function applyBattleResult(monster: MonsterState, won: boolean): BattleAftermath {
   const care = monster.care;
   tick(monster);
   monster.consecutiveBattles += 1;
+  // A4: Clamping — weight never drops below MIN_WEIGHT.
+  monster.weightKb = Math.max(MIN_WEIGHT, monster.weightKb - WEIGHT_BATTLE_BURN);
   let scarred = false;
   if (won) {
     monster.battlesWon += 1;
@@ -416,9 +564,14 @@ export function applyBattleResult(monster: MonsterState, won: boolean): BattleAf
   care.hunger = Math.max(0, care.hunger - 10);
 
   const strained = monster.consecutiveBattles >= STRAIN_THRESHOLD;
+  let glitchedByStrain = false;
   if (strained) {
     care.energy = Math.max(0, care.energy - 15);
     care.mood = Math.max(0, care.mood - 10);
+    if (!monster.glitched) {
+      monster.glitched = true;
+      glitchedByStrain = true;
+    }
   }
-  return { scarred, strained };
+  return { scarred, strained, glitchedByStrain };
 }

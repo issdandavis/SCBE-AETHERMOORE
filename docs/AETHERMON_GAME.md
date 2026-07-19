@@ -34,7 +34,7 @@ cyan/D#, UM indigo/F, DR magenta/G). Screens:
 - **Battle** — two dioramas with element-chipped nameplates, segmented HP bars, a turn
   counter, element-colored move cards, floating damage/heal/miss numbers, spark bursts,
   lunges, and screen shake.
-- **Codex** — an illustrated bestiary of all 39 species grouped by stage; your current
+- **Codex** — an illustrated bestiary of all 40 species grouped by stage; your current
   lineage is highlighted.
 - **Map** — a hexagonal wheel of the six tongue regions (spokes to a φ hub), your current
   location and the Hollow (Null Vale) marked; click a node to travel.
@@ -60,8 +60,8 @@ CLI flags (after `--`): `--seed <n>` fixed RNG seed, `--save <path>` custom save
 | -------------- | ----------------------------------------------------------------------- |
 | `types.ts`     | Stages, alignment triangle, element wheel, Hodge duals, stats, lifespan |
 | `rng.ts`       | Mulberry32 seeded RNG — every outcome reproducible from a save          |
-| `moves.ts`     | 24-move catalog (4 power tiers per Sacred Tongue + drain/heal)          |
-| `species.ts`   | 39-species catalog and branching evolution graph (incl. Hollow branch)  |
+| `moves.ts`     | 29-move catalog (4 power tiers per Sacred Tongue + drain/heal + a utility tactic per tongue) |
+| `species.ts`   | 40-species catalog and branching evolution graph (incl. Hollow branch)  |
 | `regions.ts`   | The six canon tongue regions of Aethermoore                             |
 | `monster.ts`   | Care meters, ticks, training economy, XP curve, lifespan                |
 | `evolution.ts` | Requirement evaluation and branch selection                             |
@@ -94,6 +94,25 @@ Damage: `raw = power × (atk/def) × 0.25 + 2`, then alignment × element × aff
 (×1.5, 1/16 chance) × variance (0.85–1.0); guarding halves it. Tuned for ~3–5 hits per
 knockout between equals.
 
+### Battle tactics (utility moves)
+
+From GUARDIAN stage up, every line carries a tactic that fits its tongue's domain:
+
+| Move | Tongue | Effect |
+|------|--------|--------|
+| **Rally Cry** | KO (Command) | Own ATK ×1.3, once per battle |
+| **Tailwind** | AV (Transport) | Own SPD ×1.3, once per battle — shifts turn order |
+| **Rust Hex** | RU (Entropy) | Foe DEF ×0.75, once per battle |
+| **Mend Protocol** | CA (Compute) | Restore 35% max HP (the existing heal) |
+| **Ward Shatter** | UM (Security) | 55-power hit that ignores (and shatters) a guard |
+| **Binding Lattice** | DR (Structure) | Foe loses its next action (70% accuracy) |
+
+Buffs and debuffs apply once per battle (using them again wastes the turn); a stunned
+creature can't act *or* brace behind a guard, and the binding releases after the skipped
+turn. The AI opens with a useful tactic in the early turns, so arena rivals from Echo the
+Cache Keeper onward fight noticeably smarter. Off-element tactics ride the Hodge-dual
+resonance — Oraclemind (CA) casting Rust Hex (RU) is canon-correct dual-speak.
+
 ### Care (the virtual-pet loop)
 
 Every action advances one tick; hunger (−6/tick) and energy (−4/tick) decay. Letting either
@@ -102,6 +121,23 @@ you get. The counter resets on each evolution (Digimon World rule: every stage i
 test). Feed, rest, play, praise (+bond, −discipline), scold (+discipline, −mood), and train
 (+3 permanent stat points, capped at +50 per stat). Battles take a tick too — creatures age
 in the arena — and fighting 4+ times without resting causes **strain**.
+
+### Daily life (sleep, weight, static, glitches)
+
+The day is 24 ticks; night falls at hour 18 (the LCD shows ☀/☾ and the hour).
+
+- **Sleep** — at night, **TUCK IN** skips to dawn: energy refills, strain resets, hunger
+  burns at half rate, and a prompt bedtime (first two night hours) builds bond. Staying
+  awake past midnight is a care mistake (the V-Pet lights-out rule).
+- **Weight (kb)** — meals add 4 kb, training burns 2, battles burn 1. Every stage has an
+  ideal weight (10 kb MOTE → 30 kb APEX, ±50% tolerance): overweight drags SPD, underweight
+  drags ATK, and evolution reformats the body to the new ideal.
+- **Static residue** — a waking creature sheds static every 8 ticks (you'll see the piles
+  on the pen floor). **CLEAN** sweeps it. Letting the third pile overflow **glitches** the
+  creature and counts a care mistake — neglect is the mistake, not the shedding.
+- **GLITCHED** — a sick creature sags to 80% on every stat, refuses training and play, and
+  bleeds mood until you **PATCH** it. Over-battling (strain) also corrupts. Evolution
+  overwrites the corruption.
 
 ### Scars — the immune flywheel
 

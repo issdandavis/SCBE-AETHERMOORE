@@ -19,15 +19,20 @@ import { getRegion } from '../regions.js';
 import { createRng, nextInt, type Rng } from '../rng.js';
 import { ELEMENT_HEX, type SpriteGrid } from './sprites.js';
 
-function hexToRgbTuple(hex: string): [number, number, number] {
-  const n = Number.parseInt(hex.replace('#', ''), 16);
-  return [(n >> 16) & 0xff, (n >> 8) & 0xff, n & 0xff];
+/** Parse '#rrggbb' or 'rgb(r,g,b)' into a tuple. */
+function parseColor(color: string): [number, number, number] {
+  if (color.startsWith('#')) {
+    const n = Number.parseInt(color.replace('#', ''), 16);
+    return [(n >> 16) & 0xff, (n >> 8) & 0xff, n & 0xff];
+  }
+  const m = /rgb\((\d+),(\d+),(\d+)\)/.exec(color);
+  return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : [0, 0, 0];
 }
 
-/** Blend two hex colors; t=0 → a, t=1 → b. Returns rgb() string. */
+/** Blend two colors (hex or rgb); t=0 → a, t=1 → b. Returns rgb() string. */
 function blend(a: string, b: string, t: number): string {
-  const [ar, ag, ab] = hexToRgbTuple(a);
-  const [br, bg, bb] = hexToRgbTuple(b);
+  const [ar, ag, ab] = parseColor(a);
+  const [br, bg, bb] = parseColor(b);
   const mix = (x: number, y: number): number => Math.round(x + (y - x) * t);
   return `rgb(${mix(ar, br)},${mix(ag, bg)},${mix(ab, bb)})`;
 }
@@ -100,11 +105,19 @@ export function sceneGrid(
   const rng: Rng = createRng([...regionId].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7));
   const groundY = Math.floor(height * 0.82);
 
-  // Sky gradient — darkest at the top, tinted toward the horizon.
+  // Sky gradient — a region-hued dusk, darkest at the zenith and glowing
+  // toward the horizon. Adjacent bands interleave on a checkerboard so
+  // the gradient dithers smoothly instead of striping.
+  const zenith = blend('#04040a', tint, 0.08);
+  const horizonGlow = blend('#141020', tint, 0.42);
   for (let y = 0; y < groundY; y++) {
-    const t = y / groundY;
-    const color = blend(NIGHT, tint, 0.04 + t * 0.16);
-    p.rect(0, y, width, 1, color);
+    const t = (y / groundY) ** 2; // ease: hold dark longer, bloom late
+    const tNext = Math.min(1, ((y + 1) / groundY) ** 2);
+    const band = blend(zenith, horizonGlow, t);
+    const nextBand = blend(zenith, horizonGlow, tNext);
+    for (let x = 0; x < width; x++) {
+      p.set(x, y, (x + y) % 2 === 0 ? band : nextBand);
+    }
   }
   // Ground band.
   p.rect(0, groundY, width, 1, blend(tint, NIGHT, 0.55));
@@ -119,6 +132,21 @@ export function sceneGrid(
     const y = nextInt(rng, 0, Math.floor(groundY * 0.7));
     const bright = (i + frame) % 5 === 0;
     p.set(x, y, bright ? blend(tint, '#FFFFFF', 0.5) : blend(NIGHT, tint, 0.3));
+  }
+
+  // Far horizon layer — low rolling silhouettes for depth (drawn before
+  // the region motifs, which sit closer and darker).
+  const farColor = blend(NIGHT, tint, 0.13);
+  let ridge = nextInt(rng, 3, 6);
+  for (let x = 0; x < width; x++) {
+    ridge = Math.max(2, Math.min(8, ridge + nextInt(rng, -1, 1)));
+    for (let y = groundY - ridge; y < groundY; y++) p.set(x, y, farColor);
+  }
+  // Ground texture — sparse dark flecks so the floor reads as terrain.
+  for (let i = 0; i < Math.floor(width * 0.5); i++) {
+    const x = nextInt(rng, 0, width - 1);
+    const y = nextInt(rng, groundY + 1, height - 1);
+    p.set(x, y, blend(NIGHT, tint, 0.03));
   }
 
   const silhouette = blend(NIGHT, tint, 0.22);
@@ -218,6 +246,28 @@ export function sceneGrid(
         p.set(x + 5, top - 1, frame % 2 === 0 ? glow : tint);
       }
       break;
+    }
+  }
+
+  // Bloom pass: every glow pixel warms its neighbors — ember trails,
+  // ward lights and beacons get a soft halo instead of a hard dot.
+  const bloomAt: Array<[number, number]> = [];
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (p.grid[y][x] === glow) bloomAt.push([x, y]);
+    }
+  }
+  for (const [gx, gy] of bloomAt) {
+    for (const [dx, dy] of [
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1],
+    ] as const) {
+      const neighbor = p.grid[gy + dy]?.[gx + dx];
+      if (neighbor && neighbor !== glow) {
+        p.grid[gy + dy][gx + dx] = blend(neighbor, tint, 0.35);
+      }
     }
   }
   return p.grid;

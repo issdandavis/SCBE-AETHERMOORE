@@ -32,14 +32,20 @@ import { STARTER_EGG_IDS, getSpecies, speciesByStage } from '../species.js';
 import { REGIONS, getRegion } from '../regions.js';
 import type { RegionId } from '../regions.js';
 import {
+  cleanUp,
   effectiveStats,
   feed,
+  hourOf,
+  isNight,
   lifespanRemaining,
+  patch,
   play,
   praise,
   rest,
   scold,
   train,
+  tuckIn,
+  weightBand,
   xpToNext,
 } from '../monster.js';
 import { evolutionOptions, evolve, selectEvolution } from '../evolution.js';
@@ -66,7 +72,14 @@ import {
   warmEgg,
 } from '../game.js';
 import { createRng, nextInt } from '../rng.js';
-import { ALIGNMENT_HEX, ELEMENT_HEX, drawSprite, spriteForSpecies } from './sprites.js';
+import {
+  ALIGNMENT_HEX,
+  ELEMENT_HEX,
+  applyGlitchOverlay,
+  drawSprite,
+  spriteForSpecies,
+  type SpriteGrid,
+} from './sprites.js';
 import { sceneGrid } from './scenes.js';
 
 // ---------------------------------------------------------------------------
@@ -157,6 +170,34 @@ const sfx = {
     tone(660, 120, 90);
   },
   click: () => tone(520, 35, 0, 0.02),
+  buff: () => {
+    tone(330, 70);
+    tone(440, 110, 80, 0.05);
+  },
+  debuff: () => {
+    tone(294, 90);
+    tone(220, 130, 90);
+  },
+  stun: () => {
+    tone(587, 50);
+    tone(587, 50, 70);
+    tone(587, 140, 140, 0.05);
+  },
+  /**
+   * Species battle-cry: a seeded three-note motif rooted on the tongue's
+   * canon note — every species calls in its own voice, deterministically.
+   */
+  cry: (speciesId: string, element: TongueCode, delayMs = 0) => {
+    let hash = 7;
+    for (const ch of speciesId) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+    const base = TONGUE_FREQ[element];
+    const stepA = 2 + (hash % 6); // 2..7 semitones
+    const stepB = 4 + ((hash >> 3) % 9); // 4..12 semitones
+    const shape = (hash >> 7) % 2 === 0 ? [0, stepA, stepB] : [stepB, stepA, 0];
+    shape.forEach((semitones, i) => {
+      tone(base * 2 ** (semitones / 12), 110, delayMs + i * 120, 0.05);
+    });
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -289,12 +330,61 @@ function applyRegionTint(): void {
 function drawScene(canvasId: string): void {
   if (!state) return;
   const canvas = document.getElementById(canvasId) as HTMLCanvasElement | null;
-  if (canvas) drawSprite(canvas, sceneGrid(state.region as RegionId, 64, 34, spriteFrame), 1);
+  if (!canvas) return;
+  const grid = sceneGrid(state.region as RegionId, 64, 34, spriteFrame);
+  if (canvasId === 'main-scene') stampResidue(grid);
+  drawSprite(canvas, grid, 1);
+}
+
+/**
+ * Stamp static-residue piles onto the pen floor of the care scene — the
+ * visible nag to hit CLEAN. Positions are fixed so piles don't wander
+ * between animation frames.
+ */
+function stampResidue(grid: (string | null)[][]): void {
+  const monster = state?.monster;
+  if (!monster || monster.residue <= 0) return;
+  const groundY = Math.floor(34 * 0.82); // matches sceneGrid's ground line
+  for (let i = 0; i < monster.residue; i++) {
+    const x = 8 + i * 18;
+    for (const [dx, dy] of [
+      [0, -1],
+      [1, -1],
+      [-1, 0],
+      [0, 0],
+      [1, 0],
+      [2, 0],
+    ] as const) {
+      const row = grid[groundY + dy];
+      if (row && x + dx >= 0 && x + dx < row.length) {
+        row[x + dx] = dy === -1 ? '#4a4a5e' : '#2a2a38';
+      }
+    }
+  }
 }
 
 function applyGlow(canvasId: string, element: TongueCode): void {
   const canvas = document.getElementById(canvasId);
   if (canvas) canvas.style.filter = `drop-shadow(0 0 7px ${ELEMENT_HEX[element]})`;
+}
+
+/** Build a species sprite grid, applying the glitch look when corrupted. */
+function buildMonsterGrid(speciesId: string, glitched: boolean, frame: number): SpriteGrid {
+  const grid = spriteForSpecies(getSpecies(speciesId), frame);
+  if (glitched) applyGlitchOverlay(grid, speciesId, frame);
+  return grid;
+}
+
+/**
+ * Draw the tamed creature on the care stage: sprite plus status looks —
+ * glitch static when corrupted, and a one-pixel idle bob on the off
+ * frame so it visibly breathes.
+ */
+function drawMonster(monster: MonsterState): void {
+  const grid = buildMonsterGrid(monster.speciesId, monster.glitched, spriteFrame);
+  const canvas = $('monster-canvas') as HTMLCanvasElement;
+  drawSprite(canvas, grid, 6);
+  canvas.style.transform = spriteFrame === 1 ? 'translateY(2px)' : 'translateY(0)';
 }
 
 function statusLcd(): void {
@@ -306,7 +396,10 @@ function statusLcd(): void {
     return;
   }
   const region = getRegion(state.region);
-  lcd.append(el('span', '', `${region.name.toUpperCase()} · GEN ${state.generation}`));
+  const clock = state.monster
+    ? ` · ${isNight(state.monster) ? '☾' : '☀'} ${hourOf(state.monster)}H`
+    : '';
+  lcd.append(el('span', '', `${region.name.toUpperCase()} · GEN ${state.generation}${clock}`));
   const right = el('span', '');
   right.append(document.createTextNode(`ARENA ${state.arenaRank}/${ARENA_LADDER.length}`));
   if (isChampion(state)) {
@@ -508,7 +601,7 @@ function renderMain(): void {
   const stats = effectiveStats(monster);
   const region = getRegion(state.region);
   drawScene('main-scene');
-  drawSprite($('monster-canvas') as HTMLCanvasElement, spriteForSpecies(species, spriteFrame), 7);
+  drawMonster(monster);
   applyGlow('monster-canvas', species.element);
   $('region-tag').textContent = region.name;
 
@@ -562,6 +655,16 @@ function renderMain(): void {
     el('span', 'tag', `Gen ${monster.generation}`),
     el('span', 'tag', `Life ${lifespanRemaining(monster)}`)
   );
+  const band = weightBand(monster);
+  tags.append(
+    el(
+      'span',
+      band === 'IDEAL' ? 'tag' : 'tag warn',
+      `${monster.weightKb}kb${band === 'IDEAL' ? '' : ` ${band}`}`
+    )
+  );
+  if (monster.residue > 0) tags.append(el('span', 'tag warn', `Static ×${monster.residue}`));
+  if (monster.glitched) tags.append(el('span', 'tag glitch', 'GLITCHED'));
   if (monster.scars > 0) tags.append(el('span', 'tag scar', `${monster.scars} scars`));
   if (monster.hollowExposure > 0)
     tags.append(el('span', 'tag hollow', `Hollow ${monster.hollowExposure}`));
@@ -573,6 +676,18 @@ function renderMain(): void {
     { label: 'REST', onClick: () => care(() => rest(monster)) },
     { label: 'PRAISE', onClick: () => care(() => praise(monster)) },
     { label: 'SCOLD', onClick: () => care(() => scold(monster)) },
+    { label: 'CLEAN', onClick: () => care(() => cleanUp(monster)) },
+    {
+      label: 'PATCH',
+      cls: monster.glitched ? 'primary' : undefined,
+      onClick: () => care(() => patch(monster)),
+    },
+    {
+      label: 'TUCK IN',
+      cls: isNight(monster) ? 'primary' : undefined,
+      title: 'Sleep until dawn (night only)',
+      onClick: () => care(() => tuckIn(monster)),
+    },
     { label: 'BATTLE', cls: 'danger', onClick: () => void startWildBattle() },
     { label: 'ARENA', cls: 'danger', onClick: () => void startArenaBattle() },
     { label: 'MAP', onClick: renderMap },
@@ -779,6 +894,7 @@ function afterAction(): void {
       if (!result) break;
       const after = getSpecies(result.toSpeciesId);
       sfx.evolve();
+      sfx.cry(after.id, after.element, 620);
       flashOverlay(
         'EVOLUTION',
         `${monster.nickname}: ${before.name} → ${after.name}`,
@@ -853,6 +969,8 @@ async function beginBattle(enemy: Combatant, wasArena: boolean): Promise<void> {
   setScreen('screen-battle');
   renderBattle();
   pushLog(`⚔ ${mine.name} vs ${enemy.name} (Lv.${enemy.level})`);
+  sfx.cry(mine.speciesId, mine.element);
+  sfx.cry(enemy.speciesId, enemy.element, 420);
   await sleep(150);
 }
 
@@ -867,11 +985,12 @@ function renderBattle(): void {
   if (!session || !state?.monster) return;
   const { battle } = session;
   drawScene('battle-scene');
-  drawSprite(
-    $('battle-mine') as HTMLCanvasElement,
-    spriteForSpecies(getSpecies(battle.a.speciesId), spriteFrame),
-    6
+  const mineGrid = buildMonsterGrid(
+    battle.a.speciesId,
+    state?.monster?.glitched ?? false,
+    spriteFrame
   );
+  drawSprite($('battle-mine') as HTMLCanvasElement, mineGrid, 6);
   drawSprite(
     $('battle-foe') as HTMLCanvasElement,
     spriteForSpecies(getSpecies(battle.b.speciesId), spriteFrame),
@@ -893,7 +1012,7 @@ function renderBattle(): void {
     return {
       label: move.name.toUpperCase(),
       cls: 'move',
-      title: `${TONGUE_NAMES[move.element]} · ${move.effect === 'heal' ? 'heal' : `pow ${move.power}`} · acc ${Math.round(move.accuracy * 100)}%`,
+      title: `${TONGUE_NAMES[move.element]} · ${moveKindLabel(move)} · acc ${Math.round(move.accuracy * 100)}%`,
       onClick: () => void playerTurn({ type: 'move', moveId }),
     };
   });
@@ -909,6 +1028,13 @@ function renderBattle(): void {
     onClick: () => void fleeBattle(),
   });
   renderButtons(moves);
+}
+
+/** Short human label for what a move does (tooltip). */
+function moveKindLabel(move: ReturnType<typeof getMove>): string {
+  if (!move.effect) return `pow ${move.power}`;
+  const label = move.effect.replace('_', ' ');
+  return move.power > 0 ? `${label} ${move.power}` : label;
 }
 
 function replayClass(node: HTMLElement, className: string): void {
@@ -966,6 +1092,21 @@ async function playerTurn(action: BattleAction): Promise<void> {
     } else if (event.kind === 'heal' || event.kind === 'drain') {
       sfx.heal(actor.element);
       if (event.healed !== undefined) damageFloat(actorFighter, `+${event.healed}`, 'heal');
+    } else if (event.kind === 'buff') {
+      sfx.buff();
+      const label = event.moveId && getMove(event.moveId).effect === 'spd_up' ? '+SPD' : '+ATK';
+      damageFloat(actorFighter, label, 'heal');
+      sparkBurst(actorFighter, actor.element);
+    } else if (event.kind === 'debuff') {
+      sfx.debuff();
+      damageFloat(targetFighter, '-DEF', 'miss');
+    } else if (event.kind === 'stun') {
+      sfx.stun();
+      damageFloat(targetFighter, 'BOUND', 'crit');
+      replayClass($(event.actor === 'A' ? 'battle-foe' : 'battle-mine'), 'shake');
+    } else if (event.kind === 'immobile') {
+      sfx.stun();
+      damageFloat(actorFighter, 'BOUND', 'miss');
     } else if (event.kind === 'faint') {
       sfx.faint();
       $(event.actor === 'A' ? 'battle-mine' : 'battle-foe').classList.add('fainted');
@@ -998,6 +1139,8 @@ async function finishBattle(fled: boolean): Promise<void> {
   else pushLog(won ? '★ VICTORY!' : 'Defeat...', won ? 'good' : 'warn');
   if (aftermath.scarred) pushLog(`A new scar. (${monster.scars} total — its guard hardens.)`);
   if (aftermath.strained) pushLog(`${monster.nickname} is overworked — let it rest.`, 'warn');
+  if (aftermath.glitchedByStrain)
+    pushLog(`${monster.nickname} glitches from the strain! PATCH it.`, 'warn');
   if (levels > 0) {
     sfx.levelUp();
     pushLog(`${monster.nickname} grew to Lv.${monster.level}!`, 'good');
@@ -1093,11 +1236,7 @@ function boot(): void {
       );
     } else if (state?.monster && !$('screen-main').classList.contains('hidden')) {
       drawScene('main-scene');
-      drawSprite(
-        $('monster-canvas') as HTMLCanvasElement,
-        spriteForSpecies(getSpecies(state.monster.speciesId), spriteFrame),
-        7
-      );
+      drawMonster(state.monster);
     }
   }, 650);
 

@@ -26,6 +26,7 @@ import {
   effectiveStats,
   evolutionOptions,
   generateWildEncounter,
+  getMove,
   getRegion,
   getSpecies,
   isLifespanExpired,
@@ -247,7 +248,7 @@ describe('save migration', () => {
     delete monster.heirloom;
 
     const migrated = deserializeGame(JSON.stringify(v1));
-    expect(migrated.version).toBe(2);
+    expect(migrated.version).toBe(3);
     expect(migrated.region).toBe('ember_reach');
     expect(migrated.generation).toBe(1);
     expect(migrated.lineageMemorial).toEqual([]);
@@ -256,7 +257,7 @@ describe('save migration', () => {
     expect(getRegion(migrated.region).name).toBe('Ember Reach');
   });
 
-  it('round-trips version-2 saves including new fields', () => {
+  it('round-trips current saves including new fields', () => {
     const state = hatched('umbral_egg');
     travel(state, 'null_vale');
     communeWithGap(state, state.monster!);
@@ -279,5 +280,49 @@ describe('the Gale line (canon: Gale Egg → Galewing)', () => {
     }
     expect(getSpecies(monster.speciesId).stage).toBe('APEX');
     expect(getSpecies(monster.speciesId).element).toBe('AV');
+  });
+});
+
+describe('the Engine Sovereign (canon: the steam-powered Analytical Engine, 1837)', () => {
+  it('crowns the Compute line as a locomotive-sized FLUX apex', () => {
+    const engine = getSpecies('engine_sovereign');
+    expect(engine.stage).toBe('APEX');
+    expect(engine.element).toBe('CA');
+    expect(engine.alignment).toBe('FLUX');
+    expect(engine.evolvesTo).toHaveLength(0); // terminal
+    expect(engine.lore).toContain('Mill'); // the CPU
+    expect(engine.lore).toContain('Store'); // the memory
+    expect(engine.lore).toContain('punched cards'); // the Jacquard I/O
+    expect(engine.lore).toContain('eats its own tail'); // conditional branching
+  });
+
+  it('demands Victorian precision: drilled discipline and balanced training', () => {
+    const state = hatched('cipher_egg');
+    const monster = state.monster!;
+    monster.speciesId = 'oraclemind';
+    monster.level = 40;
+
+    // Undisciplined: falls back to another tongue's sovereign.
+    monster.care.discipline = 30;
+    expect(selectEvolution(monster)?.targetId).not.toBe('engine_sovereign');
+
+    // Drilled and unspecialized (no dominant stat): the Engine assembles.
+    monster.care.discipline = 80;
+    expect(selectEvolution(monster)?.targetId).toBe('engine_sovereign');
+
+    // Lopsided training breaks the requirement — a general-purpose
+    // machine cannot be a specialist.
+    monster.trainBonus.atk = 30;
+    expect(selectEvolution(monster)?.targetId).not.toBe('engine_sovereign');
+  });
+
+  it('sings the First Song — the Bernoulli sequence', () => {
+    const move = getMove('bernoulli_sequence');
+    expect(move.element).toBe('CA');
+    expect(move.power).toBeGreaterThan(0);
+    // A plain damage move by design: CA's utility slot is Mend Protocol;
+    // the First Song's power is the point.
+    expect(move.effect).toBeUndefined();
+    expect(getSpecies('engine_sovereign').moves).toContain('bernoulli_sequence');
   });
 });

@@ -174,8 +174,21 @@ export const MAX_LEVEL = 50;
 //  Moves
 // ---------------------------------------------------------------------------
 
-/** Special move effects. */
-export type MoveEffect = 'drain' | 'heal';
+/**
+ * Special move effects. Beyond drain/heal: `atk_up`/`spd_up` raise the
+ * user's stat once per battle (×BUFF_MULTIPLIER), `def_down` crumbles
+ * the foe's defense once per battle (×DEBUFF_MULTIPLIER), `stun` makes
+ * the foe lose its next action, and `guard_break` damage ignores (and
+ * shatters) a guard.
+ */
+export type MoveEffect =
+  'drain' | 'heal' | 'atk_up' | 'spd_up' | 'def_down' | 'stun' | 'guard_break';
+
+/** Stat multiplier applied by atk_up / spd_up (once per battle). */
+export const BUFF_MULTIPLIER = 1.3;
+
+/** Defense multiplier applied by def_down (once per battle). */
+export const DEBUFF_MULTIPLIER = 0.75;
 
 /** A battle move definition. */
 export interface MoveDef {
@@ -298,6 +311,14 @@ export interface MonsterState {
   heirloom: Stats;
   /** Species ids this creature has passed through. */
   lineage: string[];
+  /** Data mass in kb. Meals add it, training burns it; far from the
+   *  stage ideal costs speed (over) or attack (under). */
+  weightKb: number;
+  /** Static residue shed on the pen floor (0..RESIDUE_CAP). Letting it
+   *  overflow glitches the creature — neglect is the care mistake. */
+  residue: number;
+  /** Corrupted by static: stats sag, training/play refused, until patched. */
+  glitched: boolean;
 }
 
 /**
@@ -333,6 +354,57 @@ export const HEIRLOOM_FRACTION = 0.4;
 export const HEIRLOOM_CAP = 30;
 
 // ---------------------------------------------------------------------------
+//  Daily life (V-Pet rules: sleep, weight, cleanup, sickness)
+// ---------------------------------------------------------------------------
+
+/** Care ticks per in-game day. */
+export const DAY_TICKS = 24;
+
+/**
+ * Hour at which night falls. Hours NIGHT_START..DAY_TICKS-1 are night:
+ * the creature wants its bed, and staying awake past midnight costs a
+ * care mistake (the V-Pet lights-out rule).
+ */
+export const NIGHT_START = 18;
+
+/** Ideal data mass (kb) per stage — what the body reformats to. */
+export const IDEAL_WEIGHT: Record<Stage, number> = {
+  EGG: 5,
+  MOTE: 10,
+  SPRITE: 15,
+  GUARDIAN: 20,
+  PARAGON: 25,
+  APEX: 30,
+};
+
+/** Fractional deviation from ideal weight tolerated before penalties. */
+export const WEIGHT_TOLERANCE = 0.5;
+
+/** Weight gained per meal (kb). */
+export const WEIGHT_PER_FEED = 4;
+
+/** Weight burned per training session (kb). */
+export const WEIGHT_TRAIN_BURN = 2;
+
+/** Weight burned per battle (kb). */
+export const WEIGHT_BATTLE_BURN = 1;
+
+/** A creature never weighs less than this (kb). */
+export const MIN_WEIGHT = 1;
+
+/** Stat multiplier while out of the weight band (SPD over / ATK under). */
+export const WEIGHT_STAT_PENALTY = 0.85;
+
+/** A waking creature sheds static residue every this many care ticks. */
+export const RESIDUE_INTERVAL = 8;
+
+/** Residue piles cap here; shedding onto a full floor glitches the creature. */
+export const RESIDUE_CAP = 3;
+
+/** All-stat multiplier while glitched (static sickness). */
+export const GLITCH_STAT_PENALTY = 0.8;
+
+// ---------------------------------------------------------------------------
 //  Battle
 // ---------------------------------------------------------------------------
 
@@ -347,6 +419,12 @@ export interface Combatant {
   readonly level: number;
   hp: number;
   guarding: boolean;
+  /** Loses its next action (binding_lattice). Cleared when it skips. */
+  stunned: boolean;
+  /** Once-per-battle buff/debuff flags. */
+  atkRaised: boolean;
+  spdRaised: boolean;
+  defLowered: boolean;
 }
 
 /** Player/AI battle action. */
@@ -356,7 +434,18 @@ export type BattleAction = { type: 'move'; moveId: string } | { type: 'guard' };
 export interface BattleEvent {
   readonly turn: number;
   readonly actor: 'A' | 'B';
-  readonly kind: 'move' | 'guard' | 'miss' | 'crit' | 'drain' | 'heal' | 'faint';
+  readonly kind:
+    | 'move'
+    | 'guard'
+    | 'miss'
+    | 'crit'
+    | 'drain'
+    | 'heal'
+    | 'faint'
+    | 'buff'
+    | 'debuff'
+    | 'stun'
+    | 'immobile';
   readonly moveId?: string;
   readonly damage?: number;
   readonly healed?: number;
@@ -411,7 +500,7 @@ export interface ArenaRival {
 
 /** Top-level save-game state. */
 export interface GameState {
-  readonly version: 2;
+  readonly version: 3;
   tamerName: string;
   egg: EggState | null;
   monster: MonsterState | null;
