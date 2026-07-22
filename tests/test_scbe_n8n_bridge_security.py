@@ -75,6 +75,64 @@ async def test_llm_dispatch_ignores_user_hook_override(monkeypatch) -> None:
     assert "zapier_hook_url" not in req.model_dump()
 
 
+@pytest.mark.asyncio
+async def test_arena_chat_requires_api_key(monkeypatch) -> None:
+    monkeypatch.setattr(bridge, "_API_KEYS", {"test-key"})
+    req = bridge.ArenaChatRequest.model_validate(
+        {
+            "tentacle": "openai",
+            "message": "hello",
+            "context": [],
+        }
+    )
+
+    with pytest.raises(bridge.HTTPException) as exc:
+        await bridge.arena_chat(req)
+
+    assert exc.value.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_execute_code_requires_api_key(monkeypatch) -> None:
+    monkeypatch.setattr(bridge, "_API_KEYS", {"test-key"})
+    req = bridge.CodeExecRequest.model_validate(
+        {
+            "code": "print('ok')",
+            "language": "python",
+            "timeout": 1,
+        }
+    )
+
+    with pytest.raises(bridge.HTTPException) as exc:
+        await bridge.execute_code(req)
+
+    assert exc.value.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_execute_code_allows_valid_api_key(monkeypatch) -> None:
+    monkeypatch.setattr(bridge, "_API_KEYS", {"test-key"})
+
+    class _Proc:
+        stdout = "ok\n"
+        stderr = ""
+        returncode = 0
+
+    monkeypatch.setattr(bridge.subprocess, "run", lambda *args, **kwargs: _Proc())
+
+    req = bridge.CodeExecRequest.model_validate(
+        {
+            "code": "print('ok')",
+            "language": "python",
+            "timeout": 1,
+        }
+    )
+    result = await bridge.execute_code(req, x_api_key="test-key")
+
+    assert result["exit_code"] == 0
+    assert result["stdout"] == "ok\n"
+
+
 def test_dispatch_single_provider_hides_exception_text(monkeypatch) -> None:
     monkeypatch.setattr(
         bridge,

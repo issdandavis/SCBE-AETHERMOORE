@@ -710,8 +710,9 @@ def _arena_chat_anthropic_sdk(messages: List[Dict], api_key: str, model: str) ->
 
 
 @app.post("/v1/chat")
-async def arena_chat(req: ArenaChatRequest):
+async def arena_chat(req: ArenaChatRequest, x_api_key: Optional[str] = Header(None)):
     """AetherCode Arena chat — routes to the right AI provider via SDK (no Cloudflare blocks)."""
+    _check_key(x_api_key)
     t0 = time.time()
     seat = req.tentacle.lower().strip()
     cfg = _ARENA_PROVIDERS.get(seat)
@@ -766,8 +767,9 @@ async def arena_providers():
 
 
 @app.post("/v1/execute")
-async def execute_code(req: CodeExecRequest):
+async def execute_code(req: CodeExecRequest, x_api_key: Optional[str] = Header(None)):
     """Run user-supplied code in a subprocess and return stdout/stderr/exit_code."""
+    _check_key(x_api_key)
     if req.language not in ("python", "javascript"):
         raise HTTPException(400, detail=f"Unsupported language: {req.language}")
     timeout = max(1, min(req.timeout, 30))
