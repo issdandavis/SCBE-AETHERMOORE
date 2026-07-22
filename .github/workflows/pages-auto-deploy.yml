@@ -5,6 +5,9 @@ on:
     branches: [main, site-publish-v4]
     paths:
       - 'docs/**'
+      - 'scripts/site/build_github_map.py'
+      - 'tests/site/test_github_map.py'
+      - '.github/workflows/pages-auto-deploy.yml'
   workflow_dispatch:
 
 permissions:
@@ -25,6 +28,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Verify page-to-source map
+        run: |
+          python -m pip install --disable-pip-version-check pytest
+          python scripts/site/build_github_map.py --check
+          python -m pytest tests/site/test_github_map.py -q
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

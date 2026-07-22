@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AetherMoore GitHub Page Map</title>
+    <meta
+      name="description"
+      content="A complete map from every public AetherMoore HTML page to its versioned GitHub source."
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #090d10;
+        --panel: #12191d;
+        --line: #354247;
+        --text: #f7f0e2;
+        --muted: #aeb9b7;
+        --gold: #e0bb68;
+        --green: #22c79a;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 16px/1.5 Inter, ui-sans-serif, system-ui, sans-serif;
+      }
+      main { width: min(1180px, calc(100% - 32px)); margin: 0 auto; padding: 52px 0 72px; }
+      a { color: var(--gold); }
+      h1 { margin: 10px 0 8px; font-size: clamp(34px, 6vw, 64px); line-height: 1; }
+      .eyebrow {
+        color: var(--green);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+      }
+      .summary { max-width: 760px; color: var(--muted); }
+      .count {
+        display: inline-block;
+        margin: 18px 0 28px;
+        padding: 8px 12px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: var(--green);
+      }
+      .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }
+      table { width: 100%; border-collapse: collapse; }
+      th, td {
+        padding: 13px 16px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+      }
+      th {
+        position: sticky;
+        top: 0;
+        background: #172226;
+        color: var(--muted);
+        font-size: 12px;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+      }
+      tr:last-child td { border-bottom: 0; }
+      code { color: var(--muted); white-space: nowrap; }
+      .back { display: inline-block; margin-top: 24px; }
+      @media (max-width: 700px) {
+        main { width: min(100% - 20px, 1180px); padding-top: 30px; }
+        th, td { padding: 11px 12px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="eyebrow">Public source inventory</div>
+      <h1>GitHub page map</h1>
+      <p class="summary">
+        Every deployed HTML surface is paired with its canonical live URL and versioned source location.
+        This page is generated from <code>docs/</code>, so omissions fail validation.
+      </p>
+      <div class="count">81 / 81 pages mapped</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Public page</th><th>Repository path</th><th>GitHub</th></tr></thead>
+          <tbody>
+          <tr>
+            <td><a href="https://aethermoore.com/agents.html">AI Agents | AetherMoore</a></td>
+            <td><code>docs/agents.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/agents.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/ai-agent-governance-toolkit.html">AI Agent Governance Toolkit and Workflow Audit | AetherMoore</a></td>
+            <td><code>docs/ai-agent-governance-toolkit.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/ai-agent-governance-toolkit.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/ai-chemistry-set.html">AI Chemistry Set | AetherMoore</a></td>
+            <td><code>docs/ai-chemistry-set.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/ai-chemistry-set.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/ai-materials-bench.html">AI Materials Bench | AetherMoore</a></td>
+            <td><code>docs/ai-materials-bench.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/ai-materials-bench.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/ai-waves-lab.html">AI Waves Lab | AetherMoore</a></td>
+            <td><code>docs/ai-waves-lab.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/ai-waves-lab.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/ai-workflow-snapshot.html">$99 AI Workflow Snapshot | AetherMoore</a></td>
+            <td><code>docs/ai-workflow-snapshot.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/ai-workflow-snapshot.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/atomic-lab.html">Atomic Output Lab | AetherMoore</a></td>
+            <td><code>docs/atomic-lab.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/atomic-lab.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/benchmarks/dashboard.html">SCBE Benchmark Evidence Dashboard</a></td>
+            <td><code>docs/benchmarks/dashboard.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/benchmarks/dashboard.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/black-box.html">SCBE Black Box | PC shutdown and AI workstation failure report</a></td>
+            <td><code>docs/black-box.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/black-box.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/bookforge-writing-studio.html">AetherMoore Book Studio | Writing and KDP Prep</a></td>
+            <td><code>docs/bookforge-writing-studio.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/bookforge-writing-studio.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/books.html">AetherMoore Bookshelf | Issac Daniel Davis</a></td>
+            <td><code>docs/books.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/books.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/books/miracle-memory.html">The Miracle Was The Memory | AetherMoore Bookshelf</a></td>
+            <td><code>docs/books/miracle-memory.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/books/miracle-memory.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/books/six-tongues-protocol.html">The Six Tongues Protocol | AetherMoore Bookshelf</a></td>
+            <td><code>docs/books/six-tongues-protocol.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/books/six-tongues-protocol.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/chat.html">Polly Chat | AetherMoore</a></td>
+            <td><code>docs/chat.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/chat.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/cli.html">SCBE Terminal - governed CLI workbench</a></td>
+            <td><code>docs/cli.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/cli.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/comparison/toolkit-vs-full-repo.html">Toolkit vs Full Repository | AetherMoore</a></td>
+            <td><code>docs/comparison/toolkit-vs-full-repo.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/comparison/toolkit-vs-full-repo.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/enterprise-license.html">SCBE Enterprise Licensing | AetherMoore</a></td>
+            <td><code>docs/enterprise-license.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/enterprise-license.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/geoseal-hermes.html">GeoSeal Hermes | AetherMoore</a></td>
+            <td><code>docs/geoseal-hermes.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/geoseal-hermes.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/github-map.html">AetherMoore GitHub Page Map</a></td>
+            <td><code>docs/github-map.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/github-map.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/governance-snapshot.html">AI Governance Snapshot | AetherMoore</a></td>
+            <td><code>docs/governance-snapshot.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/governance-snapshot.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/guard.html">AetherGuard — AI Governance API</a></td>
+            <td><code>docs/guard.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/guard.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/guides.html">AetherMoore Working Guides | AI Writing and AI Security</a></td>
+            <td><code>docs/guides.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/guides.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/hire-b.html">$500 AI Governance Snapshot — Issac Davis</a></td>
+            <td><code>docs/hire-b.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/hire-b.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/hire.html">Hire Issac Davis — AI Safety &amp; Governance Engineering</a></td>
+            <td><code>docs/hire.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/hire.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/hosted-run.html">SCBE Hosted Run Intake | AetherMoore</a></td>
+            <td><code>docs/hosted-run.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/hosted-run.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/">AetherMoore | Long-Run AI Workflow Control</a></td>
+            <td><code>docs/index.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/index.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/legal/privacy.html">AetherMoore Privacy Policy</a></td>
+            <td><code>docs/legal/privacy.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/legal/privacy.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/legal/terms.html">AetherMoore Terms of Service</a></td>
+            <td><code>docs/legal/terms.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/legal/terms.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/math-spine.html">The Unified Math Spine — SCBE · PHDM · GeoSeal · HYDRA · VECRO</a></td>
+            <td><code>docs/math-spine.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/math-spine.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/offers/">SCBE Offers | AetherMoore</a></td>
+            <td><code>docs/offers/index.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/offers/index.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/packages.html">AetherMoore Package Products | npm and PyPI</a></td>
+            <td><code>docs/packages.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/packages.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/packages/scbe-aethermoore-cli.html">scbe-aethermoore-cli | SCBE Command Line</a></td>
+            <td><code>docs/packages/scbe-aethermoore-cli.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/packages/scbe-aethermoore-cli.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/packages/scbe-aethermoore.html">scbe-aethermoore | Core Governance Engine</a></td>
+            <td><code>docs/packages/scbe-aethermoore.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/packages/scbe-aethermoore.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/packages/scbe-agent-bus.html">scbe-agent-bus | Governed Agent Routing</a></td>
+            <td><code>docs/packages/scbe-agent-bus.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/packages/scbe-agent-bus.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/packages/scbe-bookforge.html">scbe-bookforge | Publishing Package</a></td>
+            <td><code>docs/packages/scbe-bookforge.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/packages/scbe-bookforge.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/payments.html">AetherMoore Payments | Ko-fi, Cash App, Card Checkout, and Invoice</a></td>
+            <td><code>docs/payments.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/payments.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/polly-stats.html">Polly Capture Stats — SCBE</a></td>
+            <td><code>docs/polly-stats.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/polly-stats.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/privacy.html">AetherMoore Privacy Policy</a></td>
+            <td><code>docs/privacy.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/privacy.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/product-manual/ai-governance-toolkit.html">SCBE AI Governance Toolkit Guide</a></td>
+            <td><code>docs/product-manual/ai-governance-toolkit.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/product-manual/ai-governance-toolkit.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/product-manual/content-spin-engine.html">Content Spin Engine</a></td>
+            <td><code>docs/product-manual/content-spin-engine.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/product-manual/content-spin-engine.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/product-manual/delivery-and-access.html">SCBE Delivery and Access</a></td>
+            <td><code>docs/product-manual/delivery-and-access.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/product-manual/delivery-and-access.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/product-manual/hydra-agent-templates.html">HYDRA Agent Templates</a></td>
+            <td><code>docs/product-manual/hydra-agent-templates.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/product-manual/hydra-agent-templates.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/product-manual/">SCBE Product Manual</a></td>
+            <td><code>docs/product-manual/index.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/product-manual/index.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/product-manual/n8n-workflow-pack.html">n8n Workflow Pack</a></td>
+            <td><code>docs/product-manual/n8n-workflow-pack.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/product-manual/n8n-workflow-pack.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/product-manual/service-fast-start.html">SCBE Service Fast-Start Packet</a></td>
+            <td><code>docs/product-manual/service-fast-start.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/product-manual/service-fast-start.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/product-manual/training-vault.html">AI Security Training Vault Manual | AetherMoore</a></td>
+            <td><code>docs/product-manual/training-vault.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/product-manual/training-vault.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/product-manual/user-guide.html">SCBE Training Vault User Guide</a></td>
+            <td><code>docs/product-manual/user-guide.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/product-manual/user-guide.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/products.html">Products — find your fit | AetherMoore</a></td>
+            <td><code>docs/products.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/products.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/proof-workbench.html">SCBE Proof Workbench | Governed AI Agents With Results</a></td>
+            <td><code>docs/proof-workbench.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/proof-workbench.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/proof/red-team-summary.html">Red-Team Summary | AetherMoore</a></td>
+            <td><code>docs/proof/red-team-summary.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/proof/red-team-summary.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/proof/why-the-manual-exists.html">Why the Manual Exists | AetherMoore</a></td>
+            <td><code>docs/proof/why-the-manual-exists.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/proof/why-the-manual-exists.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/proposals/DARPA_MATHBAC/virtual_business_card.html">Issac D. Davis - SCBE-AETHERMOORE</a></td>
+            <td><code>docs/proposals/DARPA_MATHBAC/virtual_business_card.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/proposals/DARPA_MATHBAC/virtual_business_card.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/redteam.html">Red Team Sandbox - SCBE-AETHERMOORE</a></td>
+            <td><code>docs/redteam.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/redteam.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/research/">Research Library | AetherMoore Research</a></td>
+            <td><code>docs/research/index.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/research/index.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/research/papers/autonomy-training-patterns.html">Drone Autonomy Training Patterns for SCBE Agent Training | AetherMoore Research</a></td>
+            <td><code>docs/research/papers/autonomy-training-patterns.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/research/papers/autonomy-training-patterns.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/research/papers/fabrication-cell-tech-tree.html">Task-Autonomous Fabrication Cell Tech Tree | AetherMoore Research</a></td>
+            <td><code>docs/research/papers/fabrication-cell-tech-tree.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/research/papers/fabrication-cell-tech-tree.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/research/papers/geoseed-orbital-model.html">GeoSeed Orbital Model | AetherMoore Research</a></td>
+            <td><code>docs/research/papers/geoseed-orbital-model.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/research/papers/geoseed-orbital-model.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/research/papers/layered-lattice-molecular-ai.html">Layered-Lattice Molecular AI: Beatable Targets | AetherMoore Research</a></td>
+            <td><code>docs/research/papers/layered-lattice-molecular-ai.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/research/papers/layered-lattice-molecular-ai.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/research/papers/mtef-fluid-cell.html">Magneto-Triboelectric Fluid Cell Research Compendium | AetherMoore Research</a></td>
+            <td><code>docs/research/papers/mtef-fluid-cell.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/research/papers/mtef-fluid-cell.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/research/papers/relational-ontology-self-bounding.html">Self-Bounding Systems and Relational Ontology</a></td>
+            <td><code>docs/research/papers/relational-ontology-self-bounding.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/research/papers/relational-ontology-self-bounding.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/research/papers/space-chemistry-cli.html">Chemistry-Native CLI and Space Chemistry Systems | AetherMoore Research</a></td>
+            <td><code>docs/research/papers/space-chemistry-cli.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/research/papers/space-chemistry-cli.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/research/papers/space-life-support-animals.html">Space Life-Support Animals, Husbandry, and Micro-Energy Concepts | AetherMoore Research</a></td>
+            <td><code>docs/research/papers/space-life-support-animals.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/research/papers/space-life-support-animals.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/research/papers/wolfram-token-map.html">Wolfram Token Map | AetherMoore Research</a></td>
+            <td><code>docs/research/papers/wolfram-token-map.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/research/papers/wolfram-token-map.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/research/topics/ai-governance.html">AI Governance | AetherMoore Research</a></td>
+            <td><code>docs/research/topics/ai-governance.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/research/topics/ai-governance.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/research/topics/autonomy-swarms.html">Autonomy and Swarms | AetherMoore Research</a></td>
+            <td><code>docs/research/topics/autonomy-swarms.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/research/topics/autonomy-swarms.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/research/topics/language-code-systems.html">Language and Code Systems | AetherMoore Research</a></td>
+            <td><code>docs/research/topics/language-code-systems.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/research/topics/language-code-systems.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/research/topics/life-systems.html">Life Systems | AetherMoore Research</a></td>
+            <td><code>docs/research/topics/life-systems.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/research/topics/life-systems.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/research/topics/materials-chemistry.html">Materials and Chemistry | AetherMoore Research</a></td>
+            <td><code>docs/research/topics/materials-chemistry.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/research/topics/materials-chemistry.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/research/topics/space-systems.html">Space Systems | AetherMoore Research</a></td>
+            <td><code>docs/research/topics/space-systems.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/research/topics/space-systems.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/robot.html">AetherMoore AI Agent Map</a></td>
+            <td><code>docs/robot.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/robot.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/service-credits.html">SCBE Service Credits | AetherMoore</a></td>
+            <td><code>docs/service-credits.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/service-credits.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/shopify-command-center.html">Shopify Command Center | AetherMoore</a></td>
+            <td><code>docs/shopify-command-center.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/shopify-command-center.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/solutions.html">AI Agent Governance Solutions | AetherMoore</a></td>
+            <td><code>docs/solutions.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/solutions.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/start-here.html">Start here — three routes in | AetherMoore</a></td>
+            <td><code>docs/start-here.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/start-here.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/support.html">SCBE Support | Delivery, Setup, and Recovery</a></td>
+            <td><code>docs/support.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/support.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/supporter.html">AetherMoore Support | Ko-fi, Cash App, and Stripe</a></td>
+            <td><code>docs/supporter.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/supporter.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/terms.html">AetherMoore Terms of Service</a></td>
+            <td><code>docs/terms.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/terms.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/training-hub.html">SCBE Training Hub</a></td>
+            <td><code>docs/training-hub.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/training-hub.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/use-cases/governed-ai-workflows.html">Governed AI Workflow Use Cases | AetherMoore</a></td>
+            <td><code>docs/use-cases/governed-ai-workflows.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/use-cases/governed-ai-workflows.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/workflow-machine.html">AetherMoore Workflow Machine Proof</a></td>
+            <td><code>docs/workflow-machine.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/workflow-machine.html">View source</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://aethermoore.com/workflow-snapshot.html">AI Agent Workflow Snapshot | AetherMoore</a></td>
+            <td><code>docs/workflow-snapshot.html</code></td>
+            <td><a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/workflow-snapshot.html">View source</a></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+      <a class="back" href="/">Back to AetherMoore</a>
+    </main>
+  </body>
+</html>
