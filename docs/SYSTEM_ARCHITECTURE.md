@@ -7,6 +7,11 @@
 **Author:** Issac Davis
 **Status:** AUTHORITATIVE REFERENCE
 
+> **Status correction (2026-07-24): historical architecture snapshot.**
+> Current authority lives in `docs/CANONICAL_SYSTEM_STATE.md`,
+> `docs/specs/CANONICAL_FORMULA_REGISTRY.md`, and
+> `docs/specs/LAYER_INDEX.md`.
+
 ---
 
 ## 1. EXECUTIVE SUMMARY

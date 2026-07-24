@@ -81,6 +81,12 @@ from . import locality_axiom
 from . import causality_axiom
 from . import symmetry_axiom
 from . import composition_axiom
+from .axiom_lens import (
+    AXIOM_LENS_BASIS_3D,
+    AxiomLensConfig,
+    AxiomLensResult,
+    build_axiom_lens,
+)
 
 
 # ============================================================================
@@ -377,6 +383,12 @@ __all__ = [
     # Verification
     "verify_all_axioms",
     "print_layer_mapping",
+
+    # Five-axis nodal diagnostic overlay
+    "AXIOM_LENS_BASIS_3D",
+    "AxiomLensConfig",
+    "AxiomLensResult",
+    "build_axiom_lens",
 
     # Submodules
     "unitarity_axiom",

@@ -1,179 +1,116 @@
-# SCBE-AETHERMOORE 14-Layer Architecture Index
+# SCBE-AETHERMOORE Fourteen-Layer Index
 
-**Version:** 3.0.0
-**Last Updated:** April 8, 2026
+**Version:** 4.2.1
+**Updated:** 2026-07-24
+**Status:** canonical role and implementation index
 
-> This file is an implementation index, not the formula authority.
-> Canonical formulas live in `docs/specs/CANONICAL_FORMULA_REGISTRY.md`.
-> Current authority order and runtime split live in `CANONICAL_SYSTEM_STATE.md`.
+Formula authority:
+`docs/specs/CANONICAL_FORMULA_REGISTRY.md`.
 
-## Layer Definitions
+System authority:
+`docs/CANONICAL_SYSTEM_STATE.md`.
 
-| Layer | Name | Mathematical Function | Description |
-|-------|------|----------------------|-------------|
-| L1 | Complex Context State | c(t) ∈ ℂᴰ | Maps input to complex-valued state |
-| L2 | Realification | Φ₁: ℂᴰ → ℝ²ᴰ | Isometric embedding to real space |
-| L3 | Weighted Transform | G^½ x | SPD weighted transformation |
-| L4 | Poincaré Embedding | Ψ_α with tanh | Hyperbolic ball embedding |
-| L5 | Hyperbolic Distance | d_H (THE INVARIANT) | Poincaré ball metric calculation |
-| L6 | Breathing Transform | T_breath | Radial rescaling diffeomorphism |
-| L7 | Phase Transform | Möbius ⊕ + rotation | Isometric transformation |
-| L8 | Multi-Well Realms | d* = min_k d_H(ũ, μ_k) | Distance to realm centers |
-| L9 | Spectral Coherence | S_spec = 1 - r_HF | FFT-based pattern stability |
-| L10 | Spin Coherence | C_spin | Mean resultant length |
-| L11 | Triadic Distance | d_tri | Byzantine consensus temporal |
-| L12 | Harmonic Scaling | H(d*, R) = R^((φ · d*)²) | Canonical harmonic wall |
-| L13 | Decision & Risk | ALLOW/QUARANTINE/DENY | Risk-gated decision gate |
-| L14 | Audio Axis | S_audio | Harmonic + stellar octave mapping |
+Axiom authority:
+`docs/CORE_AXIOMS_CANONICAL_INDEX.md`.
 
----
+## Layer Roles
 
-## File Locations
+| Layer | Runtime role | Structural axiom | Current implementation note |
+|---:|---|---|---|
+| 1 | Complex context state | Composition | Builds the phase-aware input state. |
+| 2 | Realification | Unitarity | Maps complex coordinates to a real representation. |
+| 3 | SPD weighted transform | Locality | Applies a positive-definite feature metric. |
+| 4 | Poincare-ball embedding | Unitarity | Contains state inside the open unit ball. |
+| 5 | Hyperbolic distance | Symmetry | Evaluates the registered Poincare metric. |
+| 6 | Breathing transform | Causality | Time-dependent radial diffeomorphism; not an isometry. |
+| 7 | Phase transform | Unitarity | Applies the supported phase/Mobius transform. |
+| 8 | Realm distance | Locality | Selects minimum distance to configured realm centers. |
+| 9 | Spectral coherence | Symmetry | Measures frequency-domain stability. |
+| 10 | Spin coherence | Symmetry | Measures phase/resultant alignment. |
+| 11 | Triadic temporal aggregation | Causality | Formula differs by runtime profile. |
+| 12 | Harmonic scoring | Symmetry | Fourteen-layer profiles use `BOUNDED_SCORE`. |
+| 13 | Risk decision | Causality | Decision enum and risk composition differ by profile. |
+| 14 | Audio/telemetry axis | Composition | Emits spectral telemetry or output representation. |
 
-### Primary Implementation (CANONICAL)
+The table specifies roles and axiom ownership. It does not claim byte-level
+parity between implementations.
 
-```
-src/symphonic_cipher/scbe_aethermoore/layers/
-└── fourteen_layer_pipeline.py    # Complete 14-layer implementation (1,133 lines)
-    ├── layer_1_complex_context()     # L1: Complex state creation
-    ├── layer_2_realify()             # L2: Real embedding
-    ├── layer_3_weighted_transform()  # L3: SPD weighting
-    ├── layer_4_poincare_embed()      # L4: Hyperbolic embedding
-    ├── layer_5_hyperbolic_distance() # L5: THE INVARIANT
-    ├── layer_6_breathing()           # L6: Radial transform
-    ├── layer_7_phase_transform()     # L7: Möbius rotation
-    ├── layer_8_realm_distance()      # L8: Multi-well potential
-    ├── layer_9_spectral_coherence()  # L9: FFT coherence
-    ├── layer_10_spin_coherence()     # L10: Phasor alignment
-    ├── layer_11_triadic_distance()   # L11: Byzantine consensus
-    ├── layer_12_harmonic_scale()     # L12: canonical wall H(d*, R) = R^((φ · d*)²)
-    ├── layer_13_decision()           # L13: Risk gating
-    └── layer_14_audio_axis()         # L14: Spectral telemetry
-```
+## Runtime Differences
 
-### Layer-Specific Modules
+| Profile | Layer 11 | Layer 12 | Layer 13 |
+|---|---|---|---|
+| `TS_PIPELINE14` | normalized quadratic mean | `1/(1+d+2*pd)` | risk divided by score; `ALLOW/QUARANTINE/DENY` |
+| `PY_REFERENCE14` | normalized phi-power mean | `1/(1+d+2*pd)` | weighted risk composition |
+| `PY_FULL14` | feature-space Euclidean aggregate | `1/(1+d+2*pd)` | distance-threshold decision; `ALLOW/REVIEW/DENY` |
 
-| Layer | File | Description |
-|-------|------|-------------|
-| L1-L14 | `src/scbe_14layer_reference.py` | Complete reference implementation |
-| L9-L12 | `src/symphonic_cipher/scbe_aethermoore/layers_9_12.py` | Spectral & harmonic layers |
-| L9 | `scripts/layer9_spectral_coherence.py` | Standalone spectral coherence |
-| L13 | `src/symphonic_cipher/scbe_aethermoore/layer_13.py` | Decision layer standalone |
-| L14 | `src/symphonic_cipher/audio/stellar_octave_mapping.py` | Audio axis implementation |
+The public `harmonicWall` function is a separate
+`QUADRATIC_EXP_COST` helper. It is not the Layer 12 score consumed by these
+three profiles.
 
-### Tests
+## Canonical Implementations
 
-| Layers | Test File |
-|--------|-----------|
-| L1-L14 | `tests/test_scbe_14layers.py` |
-| L1-L14 | `src/symphonic_cipher/tests/test_fourteen_layer.py` |
-| All | `src/symphonic_cipher/scbe_aethermoore/layer_tests.py` |
+| Surface | File |
+|---|---|
+| TypeScript fourteen-layer pipeline | `packages/kernel/src/pipeline14.ts` |
+| Python compact reference | `src/scbe_14layer_reference.py` |
+| Python expanded pipeline | `src/symphonic_cipher/scbe_aethermoore/layers/fourteen_layer_pipeline.py` |
+| Python Layers 9-12 components | `src/symphonic_cipher/scbe_aethermoore/layers_9_12.py` |
+| Five structural axiom package | `src/symphonic_cipher/scbe_aethermoore/axiom_grouped/` |
 
-### Evidence & Proofs
+## Verified Contracts
 
-```
-docs/evidence/
-├── layer1_complex_state.json       # L1 verification data
-├── layer4_poincare_embedding.json  # L4 embedding proofs
-├── layer5_hyperbolic_distance.json # L5 invariant verification
-├── layer6_breathing_transform.json # L6 diffeomorphism proof
-└── layer14_audio_axis.json         # L14 spectral data
-```
+The executable suites test bounded properties, including:
 
----
+- Poincare-ball containment,
+- Layer 5 metric properties on valid finite inputs,
+- Layer 6 invertibility/diffeomorphism checks,
+- supported Layer 7 distance behavior,
+- monotonic decrease of `BOUNDED_SCORE`,
+- structural axiom helpers,
+- AxiomLens analytical gradients and evidence handling.
 
-## Core Theorems
+The following stronger claims are not implied:
 
-| Theorem | Statement | Layer(s) |
-|---------|-----------|----------|
-| A | Metric Invariance: d_H preserved through transforms | L5, L6, L7 |
-| B | End-to-End Continuity: Smooth map composition | L1-L14 |
-| C | Risk Monotonicity: d* ↑ ⟹ H(d*,R) ↑ | L8, L12 |
-| D | Diffeomorphism: T_breath, T_phase are diffeomorphisms | L6, L7 |
+- every transform preserves hyperbolic distance,
+- every entry point executes all fourteen layers,
+- all runtime profiles are numerically equivalent,
+- passing property tests proves universal agent safety.
 
----
+## AxiomLens Overlay
 
-## Layer Dependencies
+`AxiomLens` observes a graph or neural node matrix as an `N x 5` field:
 
-```
-L1 → L2 → L3 → L4 → L5 (INVARIANT)
-                      ↓
-               L6 ←→ L7 (diffeomorphisms)
-                      ↓
-                     L8 → L9 → L10
-                               ↓
-                     L11 ← L12 → L13 → L14
+```text
+[unitarity, locality, causality, symmetry, composition]
 ```
 
----
+It is non-mutating. It returns residuals, observed masks, evidence coverage,
+analytical gradients, edge deltas, and an optional 3D stereo projection.
+Governance and training receipts retain the full five-dimensional field.
 
-## Flight / Governance Coupling Operator (L8–L14 Bridge)
+Source:
+`src/symphonic_cipher/scbe_aethermoore/axiom_grouped/axiom_lens.py`.
 
-Formal spec defining the two concurrent continuous processes that run across L8–L14:
+## Optional Components
 
-| Process | Definition | Mode |
-|---------|-----------|------|
-| **Flight** | `ẋ(t) = f_flight(x, e, u)` — enacted, foreground trajectory | Co-conscious |
-| **Governance** | `ż(t) = f_gov(z, x, h, d, c)` — persistent normative field | Non-co-conscious |
-| **Coupling** | `ẋ_actual = A(ẋ, z) = ẋ ⊙ exp(-H(d,R)) + v_lift(α, tongue blend)` | Adjudication |
+- Layer 0 HMAC/intent preprocessing is a preprocessor, not a numbered member of
+  Layers 1-14.
+- Rhombic Fusion is an optional cross-modal bridge, not Layer 10 or Layer 15.
+- Hamiltonian CFI and PHDM modules are related control-flow experiments; the
+  canonical Layer 8 runtime role remains realm distance.
+- PQC modules provide cryptographic primitives to integrated call paths. Their
+  presence does not prove that every action or layer is cryptographically
+  sealed.
 
-Where `H(d,R) = R^(d²)` is the superexponential hyperbolic cost (always active, even when silent).
+## Focused Verification
 
-This produces the observed metrics:
-- F1 0.813 via early geometric damping
-- Safety Score 34.5% via high-drag on dissonant tongues
-- 64.8% energy savings via continuous throttling before full trajectory expansion
+```powershell
+python -m pytest `
+  tests/governance/test_axiom_lens.py `
+  src/symphonic_cipher/scbe_aethermoore/axiom_grouped/tests/test_axiom_grouped.py `
+  tests/governance/test_atomic_tokenization_and_fusion.py `
+  tests/governance/test_rhombic_bridge.py `
+  tests/industry_standard/test_formal_axioms_reference.py
+```
 
-**Full spec + simulation code:** `docs/FLIGHT_GOVERNANCE_COUPLING.md`
-
----
-
-## Post-Quantum Cryptography Integration
-
-The PQC module provides cryptographic primitives used across layers:
-
-| PQC Primitive | Algorithm | Layers |
-|--------------|-----------|--------|
-| Key Encapsulation | ML-KEM-768 (Kyber) | L1, L4 |
-| Digital Signatures | ML-DSA-65 (Dilithium) | L13 |
-| Dual Lattice Consensus | MLWE + MSIS | L11 |
-
-**Location:** `src/symphonic_cipher/scbe_aethermoore/pqc/`
-- `pqc_core.py` - FIPS 203/204 implementations
-- `pqc_harmonic.py` - Harmonic PQC integration
-- `pqc_hmac.py` - HMAC chains
-
----
-
-## Executable Entry Points
-
-| Entry Point | Layers Used | Description |
-|-------------|-------------|-------------|
-| `scbe-cli.py` | L1-L14 | Interactive CLI |
-| `scbe-agent.py` | L11-L13 | Multi-agent orchestrator |
-| `scbe-visual-system/` | L13-L14 | Desktop/Tablet GUI |
-
-**Built EXE:** `scbe-visual-system/release/SCBE Visual System 3.0.0.exe`
-
----
-
-## Axiom Mapping
-
-| Axiom | Statement | Layers |
-|-------|-----------|--------|
-| A1 | Positive Definite SPD | L3 |
-| A2 | Continuous Embedding | L4 |
-| A3 | Metric Invariance | L5 |
-| A4 | Diffeomorphism Preservation | L6, L7 |
-| A5 | Monotonic Risk | L12, L13 |
-| A6 | Bounded State | L4 (Poincaré ball) |
-| A7 | Temporal Coherence | L11 |
-| A8 | Realm Separation | L8 |
-| A9 | Spectral Stability | L9 |
-| A10 | Spin Alignment | L10 |
-| A11 | Triadic Byzantine | L11 |
-| A12 | Harmonic Boundedness | L12, L14 |
-
----
-
-*SCBE-AETHERMOORE: Hyperbolic geometry for AI safety.*
+Run profile-specific pipeline suites before publishing cross-runtime claims.
