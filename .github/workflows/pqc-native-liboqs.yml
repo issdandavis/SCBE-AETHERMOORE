@@ -30,7 +30,7 @@ permissions:
   contents: read
 
 env:
-  LIBOQS_VERSION: "0.15.0"
+  LIBOQS_VERSION: "0.16.0"
   LIBOQS_INSTALL: "${{ github.workspace }}/.oqs"
   OQS_INSTALL_PATH: "${{ github.workspace }}/.oqs"
   LD_LIBRARY_PATH: "${{ github.workspace }}/.oqs/lib:${{ github.workspace }}/.oqs/lib64"
@@ -78,7 +78,7 @@ jobs:
       - name: Install Python native bindings
         run: |
           python -m pip install --upgrade pip
-          python -m pip install liboqs-python==0.14.1
+          python -m pip install liboqs-python==0.16.0
 
       - name: Prove native liboqs security backend
         run: python scripts/security/native_liboqs_smoke.py
