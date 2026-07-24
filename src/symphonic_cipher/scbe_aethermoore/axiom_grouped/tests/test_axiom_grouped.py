@@ -326,6 +326,28 @@ class TestCausalityAxiom:
         )
         assert d >= 0
 
+    def test_layer_11_causality_uses_explicit_tau(self, monkeypatch):
+        """Layer 11 must not replace an explicit tau with wall-clock time."""
+        causality_axiom.layer_11_triadic_distance.reset_time()
+        monkeypatch.setattr(causality_axiom.time_module, "time", lambda: 1.0)
+        u = random_poincare_point(DIM)
+        ref_u = random_poincare_point(DIM)
+
+        causality_axiom.layer_11_triadic_distance(
+            u=u,
+            ref_u=ref_u,
+            tau=42.0,
+            ref_tau=41.0,
+            eta=0.5,
+            ref_eta=0.3,
+            q=1 + 0j,
+            ref_q=0.5 + 0.5j,
+        )
+
+        check = causality_axiom.layer_11_triadic_distance.last_check
+        assert check.passed
+        assert check.current_time == 42.0
+
     def test_layer_13_decision_levels(self):
         """Layer 13 should return correct decision levels."""
         # Low risk
