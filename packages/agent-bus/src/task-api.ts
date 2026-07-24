@@ -115,8 +115,7 @@ export type GovernedTaskRun = z.infer<typeof GovernedTaskRunSchema>;
 export type TaskFieldBasis = z.infer<typeof TaskFieldBasisSchema>;
 
 export type TaskRunParseResult =
-  | { ok: true; data: GovernedTaskRun }
-  | { ok: false; errors: string[]; raw: unknown };
+  { ok: true; data: GovernedTaskRun } | { ok: false; errors: string[]; raw: unknown };
 
 export interface TaskApiClientOptions {
   baseUrl?: string;
