@@ -11,9 +11,17 @@ export type ScbeCompassMode = HermesTaskMode;
 export type ScbeFormation = 'forge' | 'scribe' | 'broadcast' | 'council' | 'scout' | 'field';
 export type ScbeTongueDomain = 'KO' | 'AV' | 'RU' | 'CA' | 'UM' | 'DR';
 export type ScbeBoardMechanic =
-  'pazaak-hand' | 'go-board-territory' | 'octree-sector' | 'chessboard-stack';
+  | 'pazaak-hand'
+  | 'go-board-territory'
+  | 'octree-sector'
+  | 'chessboard-stack';
 export type ScbeRollKind =
-  'human-input' | 'model-call' | 'api-call' | 'automation' | 'verification' | 'human-approval';
+  | 'human-input'
+  | 'model-call'
+  | 'api-call'
+  | 'automation'
+  | 'verification'
+  | 'human-approval';
 
 export interface HermesModelLane {
   id: string;
