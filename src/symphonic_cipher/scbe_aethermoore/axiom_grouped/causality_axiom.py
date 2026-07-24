@@ -19,6 +19,7 @@ This ensures information cannot travel backwards in time.
 from __future__ import annotations
 
 import functools
+import inspect
 import numpy as np
 from typing import Callable, TypeVar, Any, Tuple, List
 from dataclasses import dataclass
@@ -118,6 +119,14 @@ def causality_check(require_time_param: bool = True, allow_acausal: bool = False
     """
 
     def decorator(func: F) -> F:
+        signature = inspect.signature(func)
+        time_parameter = next(
+            (name for name in ("t", "tau") if name in signature.parameters),
+            None,
+        )
+        if require_time_param and time_parameter is None:
+            raise TypeError(f"{func.__name__} must declare a 't' or 'tau' parameter")
+
         # Track last execution time for ordering checks
         last_time = {"value": None}
 
@@ -125,16 +134,18 @@ def causality_check(require_time_param: bool = True, allow_acausal: bool = False
         def wrapper(*args, **kwargs):
             strict_time_order = bool(kwargs.pop("_strict_causality_order", False))
 
-            # Extract time parameter
-            current_time = kwargs.get("t", None)
-            explicit_time = "t" in kwargs
-            if current_time is None and len(args) > 1:
-                # Try to find explicit time in positional args (skip primary data arg).
-                for arg in args[1:]:
-                    if isinstance(arg, (int, float)) and 0 <= arg < 1e10:
-                        current_time = float(arg)
+            # Bind only declared temporal parameters. Scanning arbitrary numeric
+            # arguments can mistake distances or scores for time, while Layer 11
+            # legitimately exposes its temporal coordinate as ``tau``.
+            current_time = None
+            explicit_time = False
+            if time_parameter is not None:
+                bound_arguments = signature.bind_partial(*args, **kwargs).arguments
+                if time_parameter in bound_arguments:
+                    candidate = bound_arguments[time_parameter]
+                    if isinstance(candidate, (int, float, np.integer, np.floating)):
+                        current_time = float(candidate)
                         explicit_time = True
-                        break
 
             if current_time is None:
                 current_time = time_module.time() % 1000  # Use system time

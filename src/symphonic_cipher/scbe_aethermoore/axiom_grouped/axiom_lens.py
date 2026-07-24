@@ -118,10 +118,7 @@ class AxiomLensResult:
     def to_dict(self) -> dict[str, object]:
         """Return a strict-JSON-compatible receipt."""
 
-        compliance = [
-            [None if np.isnan(value) else float(value) for value in row]
-            for row in self.node_compliance
-        ]
+        compliance = [[None if np.isnan(value) else float(value) for value in row] for row in self.node_compliance]
 
         return {
             "schema": "scbe.axiom-lens.v1",
@@ -149,9 +146,7 @@ class AxiomLensResult:
         }
 
 
-def _state_matrix(
-    name: str, values: np.ndarray | Sequence[Sequence[float]]
-) -> np.ndarray:
+def _state_matrix(name: str, values: np.ndarray | Sequence[Sequence[float]]) -> np.ndarray:
     matrix = np.asarray(values, dtype=float)
     if matrix.ndim != 2 or matrix.shape[0] == 0 or matrix.shape[1] == 0:
         raise ValueError(f"{name} must have shape (nodes, features)")
@@ -173,9 +168,7 @@ def _matching_state_matrix(
     return matrix
 
 
-def _edge_matrix(
-    edges: np.ndarray | Sequence[Sequence[int]] | None, node_count: int
-) -> np.ndarray:
+def _edge_matrix(edges: np.ndarray | Sequence[Sequence[int]] | None, node_count: int) -> np.ndarray:
     if edges is None:
         return np.empty((0, 2), dtype=np.int64)
     raw = np.asarray(edges)
@@ -195,12 +188,7 @@ def _edge_matrix(
 
 
 def _symmetry_views(
-    values: (
-        np.ndarray
-        | Sequence[Sequence[float]]
-        | Sequence[Sequence[Sequence[float]]]
-        | None
-    ),
+    values: np.ndarray | Sequence[Sequence[float]] | Sequence[Sequence[Sequence[float]]] | None,
     shape: tuple[int, int],
 ) -> np.ndarray | None:
     if values is None:
@@ -209,9 +197,7 @@ def _symmetry_views(
     if views.ndim == 2:
         views = views[np.newaxis, ...]
     if views.ndim != 3 or views.shape[1:] != shape or views.shape[0] == 0:
-        raise ValueError(
-            f"symmetry_states must have shape {shape} or (views, {shape[0]}, {shape[1]})"
-        )
+        raise ValueError(f"symmetry_states must have shape {shape} or (views, {shape[0]}, {shape[1]})")
     if not np.all(np.isfinite(views)):
         raise ValueError("symmetry_states must contain only finite values")
     return views
@@ -252,9 +238,7 @@ def _target_residual_and_gradient(
         delta = node_states - target
         denominator = np.maximum(np.sum(target * target, axis=1), floor_squared)
         residuals += np.sum(delta * delta, axis=1) / denominator
-        gradient += (2.0 * delta / denominator[:, np.newaxis]) / (
-            node_count * view_count
-        )
+        gradient += (2.0 * delta / denominator[:, np.newaxis]) / (node_count * view_count)
 
     return residuals / view_count, gradient
 
@@ -265,12 +249,7 @@ def build_axiom_lens(
     edges: np.ndarray | Sequence[Sequence[int]] | None = None,
     reference_states: np.ndarray | Sequence[Sequence[float]] | None = None,
     timestamps: np.ndarray | Sequence[float] | None = None,
-    symmetry_states: (
-        np.ndarray
-        | Sequence[Sequence[float]]
-        | Sequence[Sequence[Sequence[float]]]
-        | None
-    ) = None,
+    symmetry_states: np.ndarray | Sequence[Sequence[float]] | Sequence[Sequence[Sequence[float]]] | None = None,
     composed_states: np.ndarray | Sequence[Sequence[float]] | None = None,
     config: AxiomLensConfig | None = None,
 ) -> AxiomLensResult:
@@ -287,12 +266,8 @@ def build_axiom_lens(
     node_count, feature_count = states.shape
     edge_array = _edge_matrix(edges, node_count)
     edge_count = edge_array.shape[0]
-    references = _matching_state_matrix(
-        "reference_states", reference_states, states.shape
-    )
-    compositions = _matching_state_matrix(
-        "composed_states", composed_states, states.shape
-    )
+    references = _matching_state_matrix("reference_states", reference_states, states.shape)
+    compositions = _matching_state_matrix("composed_states", composed_states, states.shape)
     symmetries = _symmetry_views(symmetry_states, states.shape)
 
     time_values: np.ndarray | None = None
@@ -331,9 +306,7 @@ def build_axiom_lens(
 
         safe_norms = np.maximum(current_norms, config.epsilon)
         state_gradients[unitarity_index] = (
-            (2.0 * norm_delta / (scales**2 * node_count))[:, np.newaxis]
-            * states
-            / safe_norms[:, np.newaxis]
+            (2.0 * norm_delta / (scales**2 * node_count))[:, np.newaxis] * states / safe_norms[:, np.newaxis]
         )
 
     if references is not None and edge_count:
@@ -344,9 +317,7 @@ def build_axiom_lens(
             reference_delta = references[source] - references[target]
             current_distance = float(np.linalg.norm(current_delta))
             reference_distance = float(np.linalg.norm(reference_delta))
-            excess = max(
-                0.0, current_distance - reference_distance - config.locality_slack
-            )
+            excess = max(0.0, current_distance - reference_distance - config.locality_slack)
             scale = max(reference_distance, floor)
             locality_values[edge_index] = (excess / scale) ** 2
 
@@ -356,9 +327,7 @@ def build_axiom_lens(
                 locality_gradient[source] += contribution
                 locality_gradient[target] -= contribution
 
-        node_values, observed = _distribute_edge_values(
-            locality_values, edge_array, node_count
-        )
+        node_values, observed = _distribute_edge_values(locality_values, edge_array, node_count)
         node_residuals[:, locality_index] = node_values
         node_observed[:, locality_index] = observed
         edge_residuals[:, locality_index] = locality_values
@@ -372,9 +341,7 @@ def build_axiom_lens(
         for edge_index, (source, target) in enumerate(edge_array):
             violation = max(
                 0.0,
-                float(
-                    time_values[source] + config.causal_min_step - time_values[target]
-                ),
+                float(time_values[source] + config.causal_min_step - time_values[target]),
             )
             causal_values[edge_index] = violation**2 / scale_squared
             if violation > 0.0:
@@ -382,9 +349,7 @@ def build_axiom_lens(
                 causal_gradient[source] += derivative
                 causal_gradient[target] -= derivative
 
-        node_values, observed = _distribute_edge_values(
-            causal_values, edge_array, node_count
-        )
+        node_values, observed = _distribute_edge_values(causal_values, edge_array, node_count)
         node_residuals[:, causality_index] = node_values
         node_observed[:, causality_index] = observed
         edge_residuals[:, causality_index] = causal_values
@@ -414,8 +379,7 @@ def build_axiom_lens(
         for axis_index in (unitarity_index, symmetry_index, composition_index):
             if node_observed[source, axis_index] and node_observed[target, axis_index]:
                 edge_residuals[edge_index, axis_index] = 0.5 * (
-                    node_residuals[source, axis_index]
-                    + node_residuals[target, axis_index]
+                    node_residuals[source, axis_index] + node_residuals[target, axis_index]
                 )
                 edge_observed[edge_index, axis_index] = True
 
@@ -423,8 +387,7 @@ def build_axiom_lens(
     for edge_index, (source, target) in enumerate(edge_array):
         jointly_observed = node_observed[source] & node_observed[target]
         edge_axiom_delta[edge_index, jointly_observed] = (
-            node_residuals[target, jointly_observed]
-            - node_residuals[source, jointly_observed]
+            node_residuals[target, jointly_observed] - node_residuals[source, jointly_observed]
         )
 
     node_compliance = np.full_like(node_residuals, np.nan)
@@ -482,9 +445,7 @@ def build_axiom_lens(
             for index, name in enumerate(AXIOM_ORDER)
         },
         total_loss=total_loss,
-        coverage_by_axiom={
-            name: float(coverage[index]) for index, name in enumerate(AXIOM_ORDER)
-        },
+        coverage_by_axiom={name: float(coverage[index]) for index, name in enumerate(AXIOM_ORDER)},
         overall_coverage=overall_coverage,
         evidence_status=evidence_status,
         depth=depth,

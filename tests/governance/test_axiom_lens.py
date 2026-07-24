@@ -87,10 +87,7 @@ def test_each_supplied_view_contributes_to_the_five_axis_field():
     )
 
     assert set(result.loss_by_axiom) == set(AXIOM_ORDER)
-    assert all(
-        result.loss_by_axiom[name] is not None and result.loss_by_axiom[name] > 0.0
-        for name in AXIOM_ORDER
-    )
+    assert all(result.loss_by_axiom[name] is not None and result.loss_by_axiom[name] > 0.0 for name in AXIOM_ORDER)
     assert result.evidence_status == "complete"
     assert np.all(np.isfinite(result.node_residuals))
     assert np.all(np.isfinite(result.state_gradient))
@@ -154,12 +151,8 @@ def test_time_gradient_matches_finite_difference():
         minus = timestamps.copy()
         plus[node] += epsilon
         minus[node] -= epsilon
-        plus_loss = build_axiom_lens(
-            states, edges=edges, timestamps=plus, config=config
-        ).total_loss
-        minus_loss = build_axiom_lens(
-            states, edges=edges, timestamps=minus, config=config
-        ).total_loss
+        plus_loss = build_axiom_lens(states, edges=edges, timestamps=plus, config=config).total_loss
+        minus_loss = build_axiom_lens(states, edges=edges, timestamps=minus, config=config).total_loss
         numerical[node] = (plus_loss - minus_loss) / (2.0 * epsilon)
 
     assert result.time_gradient == pytest.approx(numerical, rel=1e-6, abs=1e-6)
@@ -228,19 +221,13 @@ def test_configuration_rejects_non_finite_values():
 
 def test_canonical_axiom_registry_and_document_shims_are_consistent():
     repo_root = Path(__file__).resolve().parents[2]
-    registry = yaml.safe_load(
-        (repo_root / "config" / "scbe_core_axioms_v1.yaml").read_text(encoding="utf-8")
-    )
+    registry = yaml.safe_load((repo_root / "config" / "scbe_core_axioms_v1.yaml").read_text(encoding="utf-8"))
 
     missing_sources = [
-        relative_path
-        for relative_path in registry["canonical_sources"]
-        if not (repo_root / relative_path).exists()
+        relative_path for relative_path in registry["canonical_sources"] if not (repo_root / relative_path).exists()
     ]
     assert missing_sources == []
-    assert registry["formula_regime_authority"] == (
-        "docs/specs/CANONICAL_FORMULA_REGISTRY.md"
-    )
+    assert registry["formula_regime_authority"] == ("docs/specs/CANONICAL_FORMULA_REGISTRY.md")
     assert [item["name"] for item in registry["formula_regimes"]] == [
         "BOUNDED_SCORE",
         "BOUNDED_WALL",
@@ -248,9 +235,7 @@ def test_canonical_axiom_registry_and_document_shims_are_consistent():
         "PI_EXP_COST",
     ]
 
-    formula_registry = (
-        repo_root / "docs" / "specs" / "CANONICAL_FORMULA_REGISTRY.md"
-    ).read_text(encoding="utf-8")
+    formula_registry = (repo_root / "docs" / "specs" / "CANONICAL_FORMULA_REGISTRY.md").read_text(encoding="utf-8")
     for regime in (
         "BOUNDED_SCORE",
         "BOUNDED_WALL",
@@ -259,16 +244,12 @@ def test_canonical_axiom_registry_and_document_shims_are_consistent():
     ):
         assert regime in formula_registry
 
-    layer_index = (repo_root / "docs" / "specs" / "LAYER_INDEX.md").read_text(
-        encoding="utf-8"
-    )
+    layer_index = (repo_root / "docs" / "specs" / "LAYER_INDEX.md").read_text(encoding="utf-8")
     assert "BOUNDED_SCORE" in layer_index
     assert "FLIGHT_GOVERNANCE_COUPLING.md" not in layer_index
     assert "F1 0.813" not in layer_index
 
-    assert "Documentation Shim" in (repo_root / "docs" / "LAYER_INDEX.md").read_text(
+    assert "Documentation Shim" in (repo_root / "docs" / "LAYER_INDEX.md").read_text(encoding="utf-8")
+    assert "Documentation Shim" in (repo_root / "docs" / "specs" / "CANONICAL_SYSTEM_STATE.md").read_text(
         encoding="utf-8"
     )
-    assert "Documentation Shim" in (
-        repo_root / "docs" / "specs" / "CANONICAL_SYSTEM_STATE.md"
-    ).read_text(encoding="utf-8")
