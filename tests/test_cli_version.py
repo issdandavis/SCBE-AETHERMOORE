@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-EXPECTED = "4.2.1"
+EXPECTED = "4.3.0"
 
 
 def _run(*args: str) -> subprocess.CompletedProcess:

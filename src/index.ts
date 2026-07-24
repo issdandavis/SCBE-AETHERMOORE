@@ -369,7 +369,7 @@ export * from './governance/offline_mode.js';
 export * from './operator/index.js';
 
 // Version and Metadata
-export const VERSION = '4.0.3';
+export const VERSION = '4.3.0';
 export const PATENT_NUMBER = 'USPTO #63/961,403';
 export const ARCHITECTURE_LAYERS = 14;
 

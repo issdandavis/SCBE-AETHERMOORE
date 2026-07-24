@@ -98,8 +98,8 @@ console.log(
 // ── version → kv summary ─────────────────────────────────────────────────────
 {
   const { data, live } = fetchJson(['version'], {
-    cli_version: '4.4.0',
-    core_version: '4.1.3',
+    cli_version: '4.5.0',
+    core_version: '4.3.0',
     node: process.version,
     platform: process.platform,
   });
@@ -222,7 +222,7 @@ const before = fetchPlain(['version'])
 console.log(before);
 console.log('\n  ' + u.dim('AFTER (same data through lib/ui.js):'));
 {
-  const { data } = fetchJson(['version'], { cli_version: '4.4.0', node: process.version });
+  const { data } = fetchJson(['version'], { cli_version: '4.5.0', node: process.version });
   console.log(
     u.kv(
       [

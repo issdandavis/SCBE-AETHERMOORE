@@ -1,10 +1,10 @@
 {
   "name": "scbe-polly-pad-cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Polly — governed terminal workpad for AI operators. Persistent workspace, task state, LLM routing, tool recipes, and audit receipts.",
   "type": "commonjs",
   "bin": { "polly": "bin/polly.js" },
-  "files": ["bin", "tests", "README.md", "LICENSE", "LICENSE-APACHE"],
+  "files": ["bin", "lib", "tests", "README.md", "CHANGELOG.md", "LICENSE", "LICENSE-APACHE"],
   "scripts": {
     "help": "node ./bin/polly.js --help",
     "doctor": "node ./bin/polly.js doctor",
