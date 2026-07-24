@@ -209,7 +209,7 @@ In short: the lore terms are labels; the runtime surface is embeddings, weighted
 
 ## Engineering Overview
 
-The core mechanism: input text is embedded, projected onto six φ-weighted semantic axes, and placed in hyperbolic space. The hyperbolic distance from the safe operating region is the cost signal. Cost scales superexponentially with drift — making adversarial inputs computationally distinguishable without a blocklist.
+The core mechanism: input text is embedded, projected onto six phi-weighted semantic axes, and placed in hyperbolic space. The fourteen-layer decision profiles use the bounded score `1/(1+d+2*pd)`. Separate, explicitly named cost helpers provide quadratic-exponent or pi-exponent scaling; they are not interchangeable with the decision score.
 
 **14-layer pipeline:**
 
@@ -233,6 +233,12 @@ Layer 14:    Audio Axis (FFT telemetry)
 - **Causality** (L6, 11, 13): time-ordering
 - **Symmetry** (L5, 9, 10, 12): gauge invariance
 - **Composition** (L1, 14): pipeline integrity
+
+Canonical definitions, formula-regime labels, evidence limits, and the
+five-dimensional `AxiomLens` node overlay:
+[docs/CORE_AXIOMS_CANONICAL_INDEX.md](docs/CORE_AXIOMS_CANONICAL_INDEX.md).
+These axioms verify named transforms under stated assumptions; they are not a
+claim that every possible agent behavior is mathematically proven safe.
 
 **Post-quantum cryptography:** ML-KEM-768, ML-DSA-65, AES-256-GCM envelope.
 

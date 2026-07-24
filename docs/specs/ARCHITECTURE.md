@@ -143,7 +143,7 @@ SCBE-AETHERMOORE/
 9. Spectral Coherence - Frequency analysis
 10. Spin Coherence - Quantum-inspired coherence
 11. Triadic Temporal - Time-based validation
-12. Harmonic Wall - canonical wall `H(d*, R) = R^((φ · d*)²)`
+12. Harmonic Scoring - `BOUNDED_SCORE`; see `docs/specs/CANONICAL_FORMULA_REGISTRY.md`
 13. Composite Risk - Risk aggregation
 14. Audio Axis - Final output encoding
 
