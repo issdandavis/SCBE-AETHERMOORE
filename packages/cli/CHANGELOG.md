@@ -1,5 +1,14 @@
 # Changelog
 
+## 4.5.0 - 2026-07-24
+
+### Added
+
+- **`scbe-task` executable**: submit, wait, inspect, cancel, and validate Clay
+  task-lab runs through the `scbe-agent-bus` fail-closed contract.
+- Owned-network endpoint restrictions, strict JSON request files, evidence
+  files, output schemas, tool allowlists, and execution budgets.
+
 ## 4.4.0 - 2026-05-23
 
 ### Added

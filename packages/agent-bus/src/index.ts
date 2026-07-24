@@ -104,6 +104,24 @@ export {
   GovernanceDecisionContract,
 } from './contracts.js';
 
+// Governed async task API client and fail-closed training contract
+export {
+  GOVERNED_TASK_SCHEMA_VERSION,
+  TASK_API_DEFAULT_URL,
+  GovernedTaskRunSchema,
+  TaskCitationSchema,
+  TaskFieldBasisSchema,
+  TaskDispositionSchema,
+  type GovernedTaskRun,
+  type TaskFieldBasis,
+  type TaskRunParseResult,
+  type TaskApiClientOptions,
+  type WaitForTaskRunOptions,
+  parseTaskApiRun,
+  isOwnedTaskApiUrl,
+  TaskApiClient,
+} from './task-api.js';
+
 // Resilience (circuit breakers)
 export {
   type CircuitState,
@@ -1976,7 +1994,8 @@ export async function startAgentBusServer(
       }
       if (req.method === 'POST' && req.url === '/v1/batch') {
         const body = JSON.parse(await readBody(req)) as
-          { items?: AgentBusEvent[]; enqueue?: boolean } | AgentBusEvent[];
+          | { items?: AgentBusEvent[]; enqueue?: boolean }
+          | AgentBusEvent[];
         const items = Array.isArray(body) ? body : body.items || [];
         const enqueue = !Array.isArray(body) && body.enqueue === true;
         const rows = await runBatch(items, { ...options, enqueue });
@@ -1994,7 +2013,8 @@ export async function startAgentBusServer(
       }
       if (req.method === 'POST' && req.url === '/v1/fanout') {
         const body = JSON.parse(await readBody(req)) as
-          { items?: AgentBusEvent[]; enqueue?: boolean; concurrency?: number } | AgentBusEvent[];
+          | { items?: AgentBusEvent[]; enqueue?: boolean; concurrency?: number }
+          | AgentBusEvent[];
         const items = Array.isArray(body) ? body : body.items || [];
         const enqueue = !Array.isArray(body) && body.enqueue === true;
         const concurrency = !Array.isArray(body) ? Number(body.concurrency || 4) : 4;

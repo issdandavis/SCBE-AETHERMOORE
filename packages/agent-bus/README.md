@@ -28,6 +28,29 @@ const result = await runEvent({
 console.log(result.ok, result.result);
 ```
 
+## Governed Task API client
+
+The task client connects to the local Clay task lab without granting it a
+general shell. It validates every lifecycle response and rejects evidence-free
+output that is presented as reviewable or factual.
+
+```ts
+import { TaskApiClient } from 'scbe-agent-bus';
+
+const tasks = new TaskApiClient({ baseUrl: 'http://127.0.0.1:8766' });
+const queued = await tasks.createRun({
+  objective: 'Check this claim against the supplied evidence.',
+  processor: 'core',
+  evidence: [],
+});
+const completed = await tasks.waitForRun(queued.run_id);
+console.log(completed.disposition);
+```
+
+Loopback, RFC1918, link-local, and Tailscale IP literals are accepted by
+default. Public routing requires explicit opt-in and HTTPS. All completed
+outputs remain `do_not_promote_to_fact: true`.
+
 ## CLI reference
 
 ```

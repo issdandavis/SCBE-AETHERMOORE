@@ -20,6 +20,7 @@ export * from './collaboration';
 export * from './platform';
 export * from './task-group';
 export * from './types';
+export * from './governed-task';
 
 export * from './distributed-workflow';
 
