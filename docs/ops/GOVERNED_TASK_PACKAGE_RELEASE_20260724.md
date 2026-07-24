@@ -86,3 +86,22 @@ Publish only after explicit authorization, in this order:
 Agent Bus must precede the CLI because `scbe-task` consumes its new exported
 client. Re-run each package dry-run and authentication check immediately before
 publication.
+
+## Post-Merge CI Closure
+
+The repository's auto-merge workflow merged the feature PR before its format
+jobs completed. The follow-up exposed a real tooling mismatch: root CI resolved
+Prettier 3.9.5 while `packages/agent-bus` resolved 3.8.3, causing two formatter
+workflows to rewrite the same syntax in opposite directions.
+
+- PR #2712 merged the governed task package surfaces.
+- PR #2714 retained the first automated formatter output.
+- PR #2715 pinned Agent Bus to Prettier 3.9.5, restored one shared format, and
+  merged as main commit `d40f6f2ac`.
+- Both Prettier jobs, root lint, Node 20 tests, Python component tests, unit
+  tests, product delivery smoke, no-fakes, coherence, and policy gates passed
+  after the version alignment.
+- Agent Bus also passed a clean LF-checkout verification locally: full-package
+  format check, build, and 708 tests.
+
+Package publication remains intentionally unperformed.
