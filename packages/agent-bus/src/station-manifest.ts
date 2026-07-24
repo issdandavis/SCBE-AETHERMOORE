@@ -28,14 +28,7 @@
 // ─── Primitive types ──────────────────────────────────────────────────────────
 
 export type District =
-  | 'writing'
-  | 'code'
-  | 'browser'
-  | 'security'
-  | 'research'
-  | 'video'
-  | 'commerce'
-  | 'deployment';
+  'writing' | 'code' | 'browser' | 'security' | 'research' | 'video' | 'commerce' | 'deployment';
 
 export type ZoneState = 'active' | 'standby' | 'maintenance' | 'quarantined' | 'offline';
 
