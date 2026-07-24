@@ -1,104 +1,119 @@
-# Sacred Tongues Governance System Canonical State
+# SCBE Canonical System State
 
-**Updated**: 2026-04-08  
-**Purpose**: define what is canonical, what is legacy, and what is experimental so the working tree stops arguing with itself.
-
-For the practical repo operating map, read `REPO_SURFACE_MAP.md`.
-For the document classification and consolidation rules, read `docs/ops/DOCUMENT_MANAGEMENT_OPERATING_MODEL.md`.
-For expanded-first naming rules, read `docs/CANONICAL_NAMING_EXPANDED_FIRST.md`.
+**Version:** 2.0.0
+**Updated:** 2026-07-24
+**Purpose:** define authority, runtime profiles, and evidence language
 
 ## Authority Order
 
-1. `docs/specs/CANONICAL_FORMULA_REGISTRY.md` — mathematical source of truth
-2. Runtime entrypoints actually in use:
-   - `api/main.py` — governance/control application interface
-   - `src/api/main.py` — minimum-viable-product and product application interface
-3. Test and benchmark lanes that prove current behavior
-4. Public docs (`README.md`, `ARCHITECTURE.md`, website pages)
-5. Legacy notes, historical reports, research drafts, handoff notes
+1. Executed code and tests for the named runtime profile.
+2. `docs/specs/CANONICAL_FORMULA_REGISTRY.md`.
+3. `docs/specs/LAYER_INDEX.md`.
+4. `docs/CORE_AXIOMS_CANONICAL_INDEX.md`.
+5. Runtime-specific configuration and receipts.
+6. Public summaries and architecture maps.
+7. Historical reports, articles, proposals, and research notes.
 
-If a lower-priority document disagrees with a higher-priority one, the lower-priority document is stale and must be updated.
+When a lower authority conflicts with a higher one, the lower document is
+stale for that claim. Historical files may remain for provenance, but they do
+not define current runtime behavior.
 
-## Current Canonical Runtime Formula
+## Current Runtime Profiles
 
-The canonical Layer 12 harmonic wall is:
+SCBE does not have one byte-identical fourteen-layer runtime. The active
+profiles are:
 
-`H(d*, R) = R^((φ · d*)²)`
+| Profile | Source | Status |
+|---|---|---|
+| `TS_PIPELINE14` | `packages/kernel/src/pipeline14.ts` | active TypeScript pipeline |
+| `PY_REFERENCE14` | `src/scbe_14layer_reference.py` | active Python reference |
+| `PY_FULL14` | `src/symphonic_cipher/scbe_aethermoore/layers/fourteen_layer_pipeline.py` | active expanded Python implementation |
+| `PUBLIC_SCAN` | `src/index.ts`, `src/scbe_aethermoore/__init__.py` | package-facing scan/helper surface |
 
-Source: `docs/specs/CANONICAL_FORMULA_REGISTRY.md`
+Their roles align, but Layer 11 aggregation and Layer 13 decisions are not
+fully equivalent. A result must name its profile.
 
-## Legacy Formula Status
+## Formula Resolution
 
-The following formulas may still appear in older public docs, tests, demos, or historical notes:
+There is no unqualified canonical harmonic formula. The registered regimes
+are:
 
-- `H(d, R) = R^(d²)`
-- `score = 1 / (1 + d_H + 2 * phaseDeviation)`
-- `H(d,pd) = 1 / (1 + d + 2*pd)`
+- `BOUNDED_SCORE`: fourteen-layer Layer 12 safety score,
+- `BOUNDED_WALL`: bounded theorem/standalone risk multiplier,
+- `QUADRATIC_EXP_COST`: squared-distance cost helper,
+- `PI_EXP_COST`: resource and access-cost helper.
 
-These should be treated as **legacy or bounded scoring variants**, not the current canonical harmonic wall, unless a file explicitly marks them as:
+Exact equations and sources live in
+`docs/specs/CANONICAL_FORMULA_REGISTRY.md`.
 
-- legacy behavior,
-- bounded runtime scorer,
-- compatibility path,
-- or experiment.
+## Axiom Resolution
 
-## Runtime Surface
+The repository has three distinct axiom surfaces:
 
-### Governance Application Interface
-- Entry: `api/main.py`
-- Role: authorization, fleet scenarios, and audit/control-plane behavior
+1. five structural axioms organizing Layers 1-14,
+2. operational rules A0-A7 in `config/scbe_core_axioms_v1.yaml`,
+3. formula-level behavior tests such as
+   `tests/industry_standard/test_formal_axioms_reference.py`.
 
-### Minimum-Viable-Product and Product Application Interface
-- Entry: `src/api/main.py`
-- Role: broader product endpoints, search/model behavior, and product-side flows
+Their mappings are documented in `docs/CORE_AXIOMS_CANONICAL_INDEX.md`.
+Passing one surface does not prove all three.
 
-These are related but not the same runtime surface. Docs must label which one they are describing.
+## Evidence Language
 
-## Status Language
+Use these labels:
 
-Use this wording unless a document has a narrower scope:
+- **Invariant:** derived for a named formula and stated domain.
+- **Implementation guarantee:** validated and tested behavior of a named code
+  path.
+- **Measured:** result tied to a dataset, command, configuration, and artifact.
+- **Design hypothesis:** proposed mechanism requiring controlled evaluation.
+- **Metaphor:** explanatory language with no proof status.
 
-- **Operational**: yes
-- **Pilot-ready**: yes
-- **Bank-ready / enterprise-regulated-ready**: no
-- **Mathematically active / evolving**: yes
+Do not use "mathematically guaranteed safe," "unbreakable," "100% secure," or
+"production ready" without a bounded property, runtime, threat model, and
+evidence artifact.
 
-Avoid blanket `production ready` statements without scope. If production language is used, it must say **which surface** is production-ready.
+The repository-reported F1 value `0.813` remains a reported historical result
+until one current artifact records the exact corpus, command, configuration,
+and revision that reproduce it.
 
-## Repo Reality
+## Current Axiom Overlay
 
-This repository currently contains several layers of work in one tree:
+`AxiomLens` is the executable five-dimensional diagnostic overlay. It reports:
+
+- five residual channels,
+- an observation mask,
+- evidence coverage and status,
+- analytical state and time gradients,
+- edge residuals and deltas,
+- a lossy 3D stereo visualization.
+
+An unobserved result is explicitly marked `unobserved`; zero observed loss is
+not represented as complete evidence.
+
+## Runtime Boundaries
+
+The repository is a working lab and product tree containing:
 
 - canonical runtime code,
-- public package surface,
-- research and theory,
-- training pipelines and datasets,
-- demos and website surfaces,
-- operational scripts and deployment targets.
+- compatibility packages,
+- experiments and theory,
+- training and benchmark lanes,
+- product and website surfaces,
+- historical and proposal documents.
 
-That is acceptable for now, but it means:
+This is acceptable only while authority remains explicit. New code and docs
+must point to a runtime profile instead of claiming repo-wide parity.
 
-- this repo is a **working lab + product repo**,
-- not every file is canonical,
-- and repo splitting should happen **after** the authority and surface map are stable.
+## Documentation Rules
 
-## Immediate Documentation Rules
+When behavior changes:
 
-When runtime behavior changes:
+1. update executable tests,
+2. update the formula registry,
+3. update the layer index,
+4. update the public summary,
+5. attach or regenerate the evidence artifact.
 
-1. update the canonical formula or state doc first,
-2. update the repo doc or test that proves the change,
-3. update the human-readable handoff/memory note if that lane is still being used.
-
-## Near-Term Repo Boundaries
-
-Do not split repos yet. First stabilize documentation and public/runtime boundaries.
-
-When the repo is ready to split, the likely boundaries are:
-
-1. `scbe-core` — governance and geometry core runtime package
-2. `scbe-product` — product application interface, demos, site, search, user experience
-3. `scbe-training` — corpora, training pipelines, and dataset generation
-4. `scbe-research` — experimental theory, notebooks, and speculative branches
-
-Until then, this repository remains the authoritative working tree.
+Compatibility shims may preserve old links, but only one file owns each
+canonical document.

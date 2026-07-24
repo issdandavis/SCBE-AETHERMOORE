@@ -2,6 +2,10 @@
 
 > Consolidated reference for the SCBE-AETHERMOORE coding intelligence system: vision, core loop, 14-layer pipeline, tongue encoding, language mapping, musical modes, binary strategy, swarm architecture, photonic vision, implementation status, and file index.
 
+> **Design and training reference, not runtime formula authority.** Resolve
+> Layer 11-13 behavior through `docs/specs/CANONICAL_FORMULA_REGISTRY.md` and
+> `docs/specs/LAYER_INDEX.md`.
+
 ## 1. Vision
 
 SCBE-AETHERMOORE trains AI models that understand code the way code actually executes -- not the way training data traditionally frames it. The gap between "what training teaches" and "what actually runs" is the training signal. This residual is captured through the Sacred Six Tongues framework, which decomposes code understanding into six orthogonal dimensions weighted by the golden ratio.

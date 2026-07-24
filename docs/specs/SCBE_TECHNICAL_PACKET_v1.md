@@ -1,5 +1,10 @@
 # SCBE Technical Packet — v1.0
 
+> **Historical proposal packet (2026-04-20).** Formula and performance claims
+> below are preserved as submitted design context, not current runtime
+> authority. Use `docs/specs/CANONICAL_FORMULA_REGISTRY.md` and
+> `docs/CANONICAL_SYSTEM_STATE.md` for current claim status.
+
 **Title:** A Geometric Upper Bound on Adversarial Cost for Agentic AI Communication
 **Subtitle:** The SCBE 14-Layer Pipeline: formal structure, sealed-blind evidence, and proposed MATHBAC work plan
 **Principal:** Issac D. Davis (sole proprietor) · SAM UEI **J4NXHM6N5F59** · CAGE **1EXD5**

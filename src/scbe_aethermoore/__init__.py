@@ -1,8 +1,8 @@
 """
 scbe-aethermoore — Hyperbolic Geometry AI Safety & Governance Framework
 
-A 14-layer security pipeline that makes adversarial behavior superexponentially
-expensive the further an AI agent drifts from safe operation.
+A 14-layer governance package with bounded decision scoring and separately
+named distance-cost helpers.
 
 Quickstart
 ----------
@@ -453,8 +453,8 @@ def harmonic_wall(d_star: float, phi: float = _PHI) -> float:
     """
     Compute the harmonic wall cost H_wall(d*, phi) = phi^((phi * d*)^2).
 
-    This is the superexponential cost function — the further from safe
-    operation, the exponentially higher the cost.
+    This helper is exponential in squared distance. It is separate from the
+    bounded score used by the fourteen-layer decision profiles.
 
     Parameters
     ----------
@@ -463,15 +463,15 @@ def harmonic_wall(d_star: float, phi: float = _PHI) -> float:
 
     Returns
     -------
-    float — cost in [1, ∞); grows superexponentially with d*
+    float — cost in [1, infinity); exponential in squared distance
 
     Examples
     --------
     >>> from scbe_aethermoore import harmonic_wall
     >>> harmonic_wall(0.5)   # mild drift
-    1.89...
+    1.3702...
     >>> harmonic_wall(2.0)   # adversarial
-    1420.0...
+    154.3643...
     """
     exponent = (phi * d_star) ** 2
     try:
