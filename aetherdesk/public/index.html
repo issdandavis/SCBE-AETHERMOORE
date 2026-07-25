@@ -25,7 +25,7 @@
       body {
         margin: 0;
         overflow: hidden;
-        font-family: "Segoe UI", Arial, sans-serif;
+        font-family: 'Segoe UI', Arial, sans-serif;
         color: var(--text);
         background:
           linear-gradient(160deg, rgba(15, 111, 186, 0.24), rgba(214, 167, 86, 0.16)),
@@ -137,14 +137,17 @@
       }
 
       .window {
-        position: absolute;
+        position: fixed;
         min-width: 300px;
         min-height: 220px;
+        max-width: calc(100vw - 16px);
+        max-height: calc(100vh - 66px);
         border: 1px solid var(--line);
         border-radius: 10px;
         background: var(--paper);
         box-shadow: 0 18px 56px rgba(0, 0, 0, 0.24);
         overflow: hidden;
+        resize: both;
       }
 
       .window.hidden,
@@ -158,10 +161,21 @@
         top: 8px !important;
         width: calc(100vw - 16px) !important;
         height: calc(100vh - 66px) !important;
+        resize: none;
       }
 
       .window.active {
         border-color: rgba(0, 120, 212, 0.48);
+        box-shadow:
+          0 22px 70px rgba(0, 0, 0, 0.3),
+          0 0 0 2px rgba(0, 120, 212, 0.12);
+      }
+
+      .window.dragging {
+        user-select: none;
+        box-shadow:
+          0 26px 76px rgba(0, 0, 0, 0.34),
+          0 0 0 2px rgba(0, 120, 212, 0.22);
       }
 
       .titlebar {
@@ -174,6 +188,7 @@
         justify-content: space-between;
         user-select: none;
         cursor: move;
+        touch-action: none;
       }
 
       .title {
@@ -205,6 +220,7 @@
         background: transparent;
         color: #606770;
         cursor: pointer;
+        font-family: Consolas, monospace;
       }
 
       .control:hover {
@@ -750,7 +766,10 @@
         color: var(--text);
         resize: none;
         outline: none;
-        font: 14px/1.5 "Segoe UI", Arial, sans-serif;
+        font:
+          14px/1.5 'Segoe UI',
+          Arial,
+          sans-serif;
       }
 
       .code-editor {
@@ -792,7 +811,9 @@
         border-radius: 6px;
         background: var(--paper2);
         color: var(--muted);
-        font: 11px/1.35 Consolas, monospace;
+        font:
+          11px/1.35 Consolas,
+          monospace;
         white-space: pre-wrap;
       }
 
@@ -828,7 +849,9 @@
         display: block;
         margin-top: 7px;
         color: var(--muted);
-        font: 11px/1.25 Consolas, monospace;
+        font:
+          11px/1.25 Consolas,
+          monospace;
         overflow-wrap: anywhere;
       }
 
@@ -855,7 +878,9 @@
         border-radius: 7px;
         background: #fff;
         padding: 8px;
-        font: 11px/1.35 Consolas, monospace;
+        font:
+          11px/1.35 Consolas,
+          monospace;
         white-space: pre-wrap;
       }
 
@@ -1196,23 +1221,42 @@
           <div class="launcher-shell">
             <aside class="launcher-nav">
               <p class="nav-title">AetherDesk</p>
-              <button class="nav-button active" data-open="launcher"><span class="app-icon">AP</span><span>Dashboard</span></button>
-              <button class="nav-button" data-open="terminal"><span class="app-icon">TM</span><span>Terminal</span></button>
-              <button class="nav-button" data-open="playwright"><span class="app-icon">PW</span><span>Browser Agent</span></button>
-              <button class="nav-button" data-open="notebook"><span class="app-icon">NB</span><span>Notebook</span></button>
-              <button class="nav-button" data-forge-trainer><span class="app-icon">SF</span><span>SCBE Forge</span></button>
-              <button class="nav-button" data-garden-game><span class="app-icon">WG</span><span>Worktree Garden</span></button>
-              <button class="nav-button" data-open="runcontrol"><span class="app-icon">RUN</span><span>Run Control</span></button>
-              <button class="nav-button" data-open="receipts"><span class="app-icon">RC</span><span>Receipts</span></button>
-              <button class="nav-button" data-open="providers"><span class="app-icon">PV</span><span>Providers</span></button>
+              <button class="nav-button active" data-open="launcher">
+                <span class="app-icon">AP</span><span>Dashboard</span>
+              </button>
+              <button class="nav-button" data-open="terminal">
+                <span class="app-icon">TM</span><span>Terminal</span>
+              </button>
+              <button class="nav-button" data-open="playwright">
+                <span class="app-icon">PW</span><span>Browser Agent</span>
+              </button>
+              <button class="nav-button" data-open="notebook">
+                <span class="app-icon">NB</span><span>Notebook</span>
+              </button>
+              <button class="nav-button" data-forge-trainer>
+                <span class="app-icon">SF</span><span>SCBE Forge</span>
+              </button>
+              <button class="nav-button" data-garden-game>
+                <span class="app-icon">WG</span><span>Worktree Garden</span>
+              </button>
+              <button class="nav-button" data-open="runcontrol">
+                <span class="app-icon">RUN</span><span>Run Control</span>
+              </button>
+              <button class="nav-button" data-open="receipts">
+                <span class="app-icon">RC</span><span>Receipts</span>
+              </button>
+              <button class="nav-button" data-open="providers">
+                <span class="app-icon">PV</span><span>Providers</span>
+              </button>
             </aside>
             <section class="launcher-main">
               <div class="operator-hero">
                 <div>
                   <h2>Bounded Operator Desktop</h2>
                   <p>
-                    AetherDesk runs local tools through explicit app actions, visible receipts, and guided browser movement.
-                    Use the launcher to choose a lane, the terminal for repeatable commands, and receipts to verify what happened.
+                    AetherDesk runs local tools through explicit app actions, visible receipts, and
+                    guided browser movement. Use the launcher to choose a lane, the terminal for
+                    repeatable commands, and receipts to verify what happened.
                   </p>
                 </div>
                 <div class="status-strip">
@@ -1226,9 +1270,12 @@
                 <section class="panel">
                   <h3>System Graph</h3>
                   <div class="system-chain">
-                    <span class="chain-node">Host</span><span>-></span><span class="chain-node">Ladders</span><span>-></span>
-                    <span class="chain-node">Failure Map</span><span>-></span><span class="chain-node">Stepwise</span><span>-></span>
-                    <span class="chain-node">Rosetta</span><span>-></span><span class="chain-node">Instrument</span>
+                    <span class="chain-node">Host</span><span>-></span
+                    ><span class="chain-node">Ladders</span><span>-></span>
+                    <span class="chain-node">Failure Map</span><span>-></span
+                    ><span class="chain-node">Stepwise</span><span>-></span>
+                    <span class="chain-node">Rosetta</span><span>-></span
+                    ><span class="chain-node">Instrument</span>
                   </div>
                 </section>
                 <section class="panel">
@@ -1266,10 +1313,12 @@
         <div class="window-body">
           <div class="terminal">
             <div class="terminal-screen" id="terminal-screen">
-              <pre>AetherDesk Terminal
+              <pre>
+AetherDesk Terminal
 boundary: allowlisted app actions only
 
-commands: help, apps, agents, agent probe, run instrument_play, snap left, clear</pre>
+commands: help, apps, agents, agent probe, run instrument_play, snap left, clear</pre
+              >
             </div>
             <label class="terminal-input">
               <span>ad&gt;</span>
@@ -1316,7 +1365,9 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
 
       <section class="window hidden" id="window-runcontrol" data-app="runcontrol">
         <div class="titlebar">
-          <div class="title"><span class="app-icon">RUN</span><span>AetherDesk Run Control</span></div>
+          <div class="title">
+            <span class="app-icon">RUN</span><span>AetherDesk Run Control</span>
+          </div>
           <div class="controls">
             <button class="control" data-snap="runcontrol:left" title="Snap left">L</button>
             <button class="control" data-minimize="runcontrol" title="Minimize">-</button>
@@ -1338,7 +1389,9 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
               <div class="run-card-grid">
                 <div class="run-card" id="run-card-browser"><b>Browser</b><span>unknown</span></div>
                 <div class="run-card" id="run-card-colab"><b>Colab</b><span>unknown</span></div>
-                <div class="run-card" id="run-card-training"><b>Training</b><span>unknown</span></div>
+                <div class="run-card" id="run-card-training">
+                  <b>Training</b><span>unknown</span>
+                </div>
                 <div class="run-card" id="run-card-queue"><b>Queue</b><span>unknown</span></div>
               </div>
               <div class="run-control-main">
@@ -1374,7 +1427,12 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
               <button class="chrome-button" id="browser-go">Go</button>
               <button class="chrome-button" id="browser-open-external">Open Outside</button>
             </div>
-            <iframe id="browser-frame" class="browser-frame" src="about:blank" sandbox="allow-scripts allow-forms"></iframe>
+            <iframe
+              id="browser-frame"
+              class="browser-frame"
+              src="about:blank"
+              sandbox="allow-scripts allow-forms"
+            ></iframe>
           </div>
         </div>
       </section>
@@ -1404,7 +1462,9 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
             <div class="playwright-stage">
               <img id="playwright-shot" alt="Playwright page screenshot" />
             </div>
-            <div class="app-output" id="playwright-output">capture a page to give the AI and human the same visual field</div>
+            <div class="app-output" id="playwright-output">
+              capture a page to give the AI and human the same visual field
+            </div>
           </div>
         </div>
       </section>
@@ -1422,7 +1482,11 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
         <div class="window-body">
           <div class="app-pane">
             <div class="app-toolbar">
-              <input id="youtube-target" value="https://www.youtube.com/watch?v=dQw4w9WgXcQ" aria-label="YouTube URL or ID" />
+              <input
+                id="youtube-target"
+                value="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                aria-label="YouTube URL or ID"
+              />
               <input id="youtube-languages" value="en" aria-label="Transcript languages" />
               <button class="chrome-button" id="youtube-pull">Pull Transcript</button>
               <button class="chrome-button" id="youtube-copy">Copy</button>
@@ -1450,7 +1514,12 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
               <input id="email-subject" placeholder="Subject" aria-label="Email subject" />
               <button class="chrome-button" id="email-save-draft">Save Draft</button>
             </div>
-            <textarea id="email-body" class="email-body" spellcheck="true" placeholder="Draft body"></textarea>
+            <textarea
+              id="email-body"
+              class="email-body"
+              spellcheck="true"
+              placeholder="Draft body"
+            ></textarea>
             <div class="app-output" id="email-output">draft-only lane; no send action is wired</div>
           </div>
         </div>
@@ -1475,7 +1544,9 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
               <button class="chrome-button" id="notebook-save">Save</button>
               <button class="chrome-button" id="notebook-copy">Copy</button>
             </div>
-            <textarea id="notebook-body" class="notebook-editor" spellcheck="true">AetherDesk headed notebook</textarea>
+            <textarea id="notebook-body" class="notebook-editor" spellcheck="true">
+AetherDesk headed notebook</textarea
+            >
             <div class="app-output" id="notebook-output">ready</div>
           </div>
         </div>
@@ -1497,11 +1568,21 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
               <button class="chrome-button" id="word-save">Save Local</button>
               <button class="chrome-button" id="word-load">Load</button>
               <button class="chrome-button" id="word-copy">Copy Text</button>
-              <span class="status" id="word-status">Spiral Word-backed surface; ledger wiring next.</span>
+              <span class="status" id="word-status"
+                >Spiral Word-backed surface; ledger wiring next.</span
+              >
             </div>
-            <article id="word-surface" class="word-surface" contenteditable="true" spellcheck="true">
+            <article
+              id="word-surface"
+              class="word-surface"
+              contenteditable="true"
+              spellcheck="true"
+            >
               <h2>AetherDesk Document</h2>
-              <p>This is the lightweight writing surface. It stores locally now and can be wired to Spiral Word records.</p>
+              <p>
+                This is the lightweight writing surface. It stores locally now and can be wired to
+                Spiral Word records.
+              </p>
             </article>
             <div class="app-output" id="word-output">ready</div>
           </div>
@@ -1530,7 +1611,9 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
               <button class="chrome-button" id="editor-format">Format JSON</button>
               <button class="chrome-button" id="editor-copy">Copy</button>
             </div>
-            <textarea id="code-editor" class="code-editor" spellcheck="false">{"hello":"aetherdesk","tools":["apps","terminal","receipts"]}</textarea>
+            <textarea id="code-editor" class="code-editor" spellcheck="false">
+{"hello":"aetherdesk","tools":["apps","terminal","receipts"]}</textarea
+            >
             <div class="app-output" id="editor-output">ready</div>
           </div>
         </div>
@@ -1550,8 +1633,13 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
           <div class="app-pane">
             <div class="app-toolbar">
               <input id="image-file" type="file" accept="image/*" />
-              <label>Brightness <input id="image-brightness" type="range" min="50" max="150" value="100" /></label>
-              <label>Contrast <input id="image-contrast" type="range" min="50" max="150" value="100" /></label>
+              <label
+                >Brightness
+                <input id="image-brightness" type="range" min="50" max="150" value="100"
+              /></label>
+              <label
+                >Contrast <input id="image-contrast" type="range" min="50" max="150" value="100"
+              /></label>
               <button class="chrome-button" id="image-reset">Reset</button>
             </div>
             <div class="image-stage"><img id="image-preview" alt="image preview" /></div>
@@ -1577,7 +1665,9 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
               <button class="chrome-button" id="speech-speak">Text to Voice</button>
               <button class="chrome-button" id="speech-stop">Stop</button>
             </div>
-            <textarea id="speech-text" class="speech-text">AetherDesk can speak this text and use browser speech recognition when available.</textarea>
+            <textarea id="speech-text" class="speech-text">
+AetherDesk can speak this text and use browser speech recognition when available.</textarea
+            >
             <div class="app-output" id="speech-output">ready</div>
           </div>
         </div>
@@ -1599,7 +1689,9 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
               <input id="vision-file" type="file" accept="image/*" />
               <button class="chrome-button" id="vision-analyze">Analyze Pixels</button>
             </div>
-            <div class="image-stage"><canvas id="vision-canvas" width="640" height="360"></canvas></div>
+            <div class="image-stage">
+              <canvas id="vision-canvas" width="640" height="360"></canvas>
+            </div>
             <div class="app-output" id="vision-output">load an image for local pixel analysis</div>
           </div>
         </div>
@@ -1663,9 +1755,22 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
         { label: 'Run Control', icon: 'RUN', open: 'runcontrol' },
         { label: 'Providers', icon: 'PV', open: 'providers' },
       ];
-      const terminalActionIds = ['chemistry_lookup', 'token_lookup', 'instrument_play', 'rosetta_demo', 'forge_demo'];
-      const shellActionIds = ['pwd', 'git_status', 'powershell_probe', 'agent_shell_probe', 'agent_shell_codex_brief'];
+      const terminalActionIds = [
+        'chemistry_lookup',
+        'token_lookup',
+        'instrument_play',
+        'rosetta_demo',
+        'forge_demo',
+      ];
+      const shellActionIds = [
+        'pwd',
+        'git_status',
+        'powershell_probe',
+        'agent_shell_probe',
+        'agent_shell_codex_brief',
+      ];
       let z = 10;
+      let cascadeIndex = 0;
       let lastCommands = [];
       let shellProfiles = [];
       let terminalLog =
@@ -1675,7 +1780,8 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
         const now = new Date();
         const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         $('#clock-time').textContent = time;
-        $('#tray-clock').innerHTML = `${time}<br>${now.toLocaleDateString([], { month: 'numeric', day: 'numeric' })}`;
+        $('#tray-clock').innerHTML =
+          `${time}<br>${now.toLocaleDateString([], { month: 'numeric', day: 'numeric' })}`;
         $('#clock-date').textContent = now.toLocaleDateString([], {
           weekday: 'long',
           month: 'long',
@@ -1683,13 +1789,62 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
           year: 'numeric',
         });
         const h = now.getHours();
-        $('#greeting').textContent = h < 12 ? 'GOOD MORNING' : h < 17 ? 'GOOD AFTERNOON' : 'GOOD EVENING';
+        $('#greeting').textContent =
+          h < 12 ? 'GOOD MORNING' : h < 17 ? 'GOOD AFTERNOON' : 'GOOD EVENING';
       }
 
       function setActive(app) {
         $$('.window').forEach((w) => w.classList.remove('active'));
         $(`#window-${app}`)?.classList.add('active');
-        $$('#taskbar [data-open]').forEach((b) => b.classList.toggle('active', b.dataset.open === app));
+        $$('#taskbar [data-open]').forEach((b) =>
+          b.classList.toggle('active', b.dataset.open === app)
+        );
+      }
+
+      function bringToFront(win) {
+        if (!win) return;
+        win.style.zIndex = String(++z);
+        setActive(win.dataset.app);
+      }
+
+      function activateTopWindow() {
+        const visible = $$('.window:not(.hidden):not(.minimized)').sort(
+          (a, b) => Number(b.style.zIndex || 0) - Number(a.style.zIndex || 0)
+        );
+        if (visible[0]) setActive(visible[0].dataset.app);
+      }
+
+      function clampWindowPosition(win, left, top) {
+        const gap = 8;
+        const taskbar = 58;
+        const visibleX = Math.min(220, Math.max(96, win.offsetWidth || 300));
+        const maxLeft = Math.max(gap, window.innerWidth - visibleX);
+        const maxTop = Math.max(gap, window.innerHeight - taskbar - 38);
+        return {
+          left: Math.min(Math.max(gap, left), maxLeft),
+          top: Math.min(Math.max(gap, top), maxTop),
+        };
+      }
+
+      function constrainWindowToDesktop(win) {
+        if (!win || win.classList.contains('maximized')) return;
+        const rect = win.getBoundingClientRect();
+        const next = clampWindowPosition(win, rect.left, rect.top);
+        win.style.left = `${next.left}px`;
+        win.style.top = `${next.top}px`;
+      }
+
+      function cascadeWindow(win) {
+        if (!win || win.dataset.placed === 'true') return;
+        if (win.id === 'window-launcher' || win.id === 'window-terminal') {
+          win.dataset.placed = 'true';
+          return;
+        }
+        const offset = (cascadeIndex++ % 8) * 28;
+        const next = clampWindowPosition(win, 144 + offset, 86 + offset);
+        win.style.left = `${next.left}px`;
+        win.style.top = `${next.top}px`;
+        win.dataset.placed = 'true';
       }
 
       function openApp(app) {
@@ -1697,8 +1852,8 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
         if (!win) return;
         win.classList.remove('hidden');
         win.classList.remove('minimized');
-        win.style.zIndex = String(++z);
-        setActive(app);
+        cascadeWindow(win);
+        bringToFront(win);
         $('#start-menu').classList.add('hidden');
       }
 
@@ -1707,6 +1862,7 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
         if (!win) return;
         win.classList.add('minimized');
         $(`#taskbar [data-open="${app}"]`)?.classList.remove('active');
+        activateTopWindow();
       }
 
       function closeApp(app) {
@@ -1716,30 +1872,58 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
           win.classList.remove('minimized', 'maximized');
         }
         $(`#taskbar [data-open="${app}"]`)?.classList.remove('active');
+        activateTopWindow();
       }
 
       function snapApp(app, mode) {
         const win = $(`#window-${app}`);
         if (!win) return;
         win.classList.remove('hidden', 'minimized', 'maximized');
-        win.style.zIndex = String(++z);
+        bringToFront(win);
         if (mode === 'full') {
           win.classList.add('maximized');
         } else {
           win.classList.remove('maximized');
           const gap = 8;
           const taskbar = 58;
-          const w = Math.floor((window.innerWidth - gap * 3) / 2);
-          const h = window.innerHeight - taskbar - gap * 2;
+          const w = Math.max(320, Math.floor((window.innerWidth - gap * 3) / 2));
+          const h = Math.max(260, window.innerHeight - taskbar - gap * 2);
           win.style.top = `${gap}px`;
           win.style.width = `${w}px`;
           win.style.height = `${h}px`;
           win.style.left = mode === 'right' ? `${w + gap * 2}px` : `${gap}px`;
+          requestAnimationFrame(() => constrainWindowToDesktop(win));
         }
-        setActive(app);
+      }
+
+      function ensureWindowControls() {
+        $$('.window').forEach((win) => {
+          const app = win.dataset.app;
+          const controls = win.querySelector('.controls');
+          if (!app || !controls) return;
+          const anchor =
+            controls.querySelector(`[data-minimize="${app}"]`) ||
+            controls.querySelector(`[data-snap="${app}:full"]`) ||
+            controls.querySelector(`[data-close="${app}"]`) ||
+            null;
+          const ensureSnapButton = (mode) => {
+            let button = controls.querySelector(`[data-snap="${app}:${mode}"]`);
+            if (button) return button;
+            button = document.createElement('button');
+            button.className = 'control';
+            button.dataset.snap = `${app}:${mode}`;
+            button.title = mode === 'left' ? 'Snap left' : 'Snap right';
+            button.textContent = mode === 'left' ? 'L' : 'R';
+            return button;
+          };
+          for (const button of [ensureSnapButton('left'), ensureSnapButton('right')]) {
+            controls.insertBefore(button, anchor);
+          }
+        });
       }
 
       function bindChrome() {
+        ensureWindowControls();
         $$('[data-open]').forEach((el) => {
           if (el.classList.contains('desktop-icon')) {
             el.addEventListener('click', (e) => {
@@ -1766,7 +1950,8 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
           }
         });
         $$('[data-garden-game]').forEach((el) => {
-          const openGarden = () => window.open('/worktree-garden.html', '_blank', 'noopener,noreferrer');
+          const openGarden = () =>
+            window.open('/worktree-garden.html', '_blank', 'noopener,noreferrer');
           if (el.classList.contains('desktop-icon')) {
             el.addEventListener('click', (e) => {
               $$('.desktop-icon').forEach((icon) => icon.classList.remove('selected'));
@@ -1778,18 +1963,21 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
             el.addEventListener('click', openGarden);
           }
         });
-        $$('[data-minimize]').forEach((el) => el.addEventListener('click', () => minimizeApp(el.dataset.minimize)));
+        $$('[data-minimize]').forEach((el) =>
+          el.addEventListener('click', () => minimizeApp(el.dataset.minimize))
+        );
         $$('[data-snap]').forEach((el) =>
           el.addEventListener('click', () => {
             const [app, mode] = el.dataset.snap.split(':');
             snapApp(app, mode);
           })
         );
-        $$('[data-close]').forEach((el) => el.addEventListener('click', () => closeApp(el.dataset.close)));
+        $$('[data-close]').forEach((el) =>
+          el.addEventListener('click', () => closeApp(el.dataset.close))
+        );
         $$('.window').forEach((w) => {
           w.addEventListener('pointerdown', () => {
-            w.style.zIndex = String(++z);
-            setActive(w.dataset.app);
+            bringToFront(w);
           });
         });
         bindWindowDrag();
@@ -1816,25 +2004,38 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
 
       function bindWindowDrag() {
         $$('.window .titlebar').forEach((bar) => {
+          bar.addEventListener('dblclick', (e) => {
+            if (e.target.closest('button')) return;
+            const win = bar.closest('.window');
+            if (!win) return;
+            snapApp(win.dataset.app, win.classList.contains('maximized') ? 'left' : 'full');
+          });
           bar.addEventListener('pointerdown', (e) => {
             if (e.target.closest('button')) return;
             const win = bar.closest('.window');
             if (!win || win.classList.contains('maximized')) return;
+            e.preventDefault();
+            bringToFront(win);
             const rect = win.getBoundingClientRect();
             const startX = e.clientX;
             const startY = e.clientY;
             const startLeft = rect.left;
             const startTop = rect.top;
+            win.classList.add('dragging');
             bar.setPointerCapture?.(e.pointerId);
             const onMove = (move) => {
-              const nextLeft = Math.max(0, Math.min(window.innerWidth - 80, startLeft + move.clientX - startX));
-              const nextTop = Math.max(0, Math.min(window.innerHeight - 92, startTop + move.clientY - startY));
-              win.style.left = `${nextLeft}px`;
-              win.style.top = `${nextTop}px`;
+              const next = clampWindowPosition(
+                win,
+                startLeft + move.clientX - startX,
+                startTop + move.clientY - startY
+              );
+              win.style.left = `${next.left}px`;
+              win.style.top = `${next.top}px`;
               win.style.right = 'auto';
               win.style.bottom = 'auto';
             };
             const onUp = () => {
+              win.classList.remove('dragging');
               bar.removeEventListener('pointermove', onMove);
               bar.removeEventListener('pointerup', onUp);
               bar.removeEventListener('pointercancel', onUp);
@@ -1844,12 +2045,17 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
             bar.addEventListener('pointercancel', onUp);
           });
         });
+        window.addEventListener('resize', () => {
+          $$('.window:not(.hidden):not(.minimized)').forEach(constrainWindowToDesktop);
+        });
       }
 
       async function loadCommands() {
         const r = await fetch('/api/commands').then((r) => r.json());
         lastCommands = r.commands || [];
-        const shell = await fetch('/api/shell/profiles').then((r) => r.json()).catch(() => ({ profiles: [] }));
+        const shell = await fetch('/api/shell/profiles')
+          .then((r) => r.json())
+          .catch(() => ({ profiles: [] }));
         shellProfiles = shell.profiles || [];
         renderLauncher(lastCommands);
         renderDesktopApps(lastCommands);
@@ -1896,7 +2102,9 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
         startGridEl.innerHTML = '';
         const pinned = [
           ...builtInApps,
-          ...orderedCommands(commands).slice(0, 6).map((c) => ({ label: shortLabel(c.label), icon: iconGlyph(c.icon), run: c.id })),
+          ...orderedCommands(commands)
+            .slice(0, 6)
+            .map((c) => ({ label: shortLabel(c.label), icon: iconGlyph(c.icon), run: c.id })),
         ];
         for (const item of pinned) {
           const b = document.createElement('button');
@@ -1942,7 +2150,16 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
       }
 
       function orderedCommands(commands) {
-        const order = ['System', 'Measure', 'Tools', 'Build', 'Checks', 'Benchmarks', 'Research', 'Commands'];
+        const order = [
+          'System',
+          'Measure',
+          'Tools',
+          'Build',
+          'Checks',
+          'Benchmarks',
+          'Research',
+          'Commands',
+        ];
         return [...commands].sort((a, b) => {
           const ia = order.includes(a.category) ? order.indexOf(a.category) : order.length;
           const ib = order.includes(b.category) ? order.indexOf(b.category) : order.length;
@@ -1952,10 +2169,16 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
 
       function commandGroups(commands) {
         const groups = [
-          { label: 'Core Reasoning Stack', ids: ['host_check', 'reasoning_ladder', 'coding_ladder', 'failure_map', 'stepwise'] },
+          {
+            label: 'Core Reasoning Stack',
+            ids: ['host_check', 'reasoning_ladder', 'coding_ladder', 'failure_map', 'stepwise'],
+          },
           { label: 'Cross-Face Tools', ids: ['rosetta_demo', 'instrument_play'] },
           { label: 'Utility Apps', ids: ['chemistry_lookup', 'token_lookup', 'pazaak_board'] },
-          { label: 'Benchmarks And Checks', ids: ['typecheck', 'ts_tests', 'benchmark_cli', 'benchmark_coding_agents'] },
+          {
+            label: 'Benchmarks And Checks',
+            ids: ['typecheck', 'ts_tests', 'benchmark_cli', 'benchmark_coding_agents'],
+          },
           { label: 'Simulation And Forge', ids: ['research_aether_lattice', 'forge_demo'] },
         ];
         const byId = new Map(commands.map((c) => [c.id, c]));
@@ -2001,7 +2224,8 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
           return;
         }
         const latest = r.receipts[0];
-        $('#state-last-run').textContent = `${latest.command_label || latest.command_id}: ${latest.result}`;
+        $('#state-last-run').textContent =
+          `${latest.command_label || latest.command_id}: ${latest.result}`;
         receiptsEl.innerHTML = '';
         for (const rec of r.receipts) {
           const div = document.createElement('div');
@@ -2056,7 +2280,9 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
         terminalStatusEl.textContent = `${command?.label || id}: running`;
         terminalStatusEl.className = 'status running';
         try {
-          const r = await fetch('/api/run/' + encodeURIComponent(id), { method: 'POST' }).then((r) => r.json());
+          const r = await fetch('/api/run/' + encodeURIComponent(id), { method: 'POST' }).then(
+            (r) => r.json()
+          );
           if (!r.ok) throw new Error(r.error || 'unknown');
           const msg = `${r.receipt.result} (exit ${r.receipt.exit_code}, ${Math.round(r.receipt.duration_ms / 1000)}s)`;
           if (status) {
@@ -2065,7 +2291,9 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
           }
           terminalStatusEl.textContent = `${command?.label || id}: ${msg}`;
           terminalStatusEl.className = 'status ' + r.receipt.result;
-          appendTerminal(`result: ${msg}\nreceipt: ${r.receipt.task_id}\n\n${tail(r.receipt.stdout_tail || '', 1200)}`);
+          appendTerminal(
+            `result: ${msg}\nreceipt: ${r.receipt.task_id}\n\n${tail(r.receipt.stdout_tail || '', 1200)}`
+          );
         } catch (err) {
           const msg = 'error: ' + String(err.message || err);
           if (status) {
@@ -2097,7 +2325,9 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
           const msg = `${r.receipt.result} (exit ${r.receipt.exit_code}, ${Math.round(r.receipt.duration_ms / 1000)}s)`;
           terminalStatusEl.textContent = `${profile?.label || id}: ${msg}`;
           terminalStatusEl.className = 'status ' + r.receipt.result;
-          appendTerminal(`result: ${msg}\nreceipt: ${r.receipt.task_id}\n\n${tail(r.receipt.stdout_tail || r.receipt.stderr_tail || '', 1600)}`);
+          appendTerminal(
+            `result: ${msg}\nreceipt: ${r.receipt.task_id}\n\n${tail(r.receipt.stdout_tail || r.receipt.stderr_tail || '', 1600)}`
+          );
         } catch (err) {
           const msg = 'error: ' + String(err.message || err);
           terminalStatusEl.textContent = msg;
@@ -2126,10 +2356,14 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
             `receipt: ${rec.task_id}`,
             rec.executor ? `executor: ${rec.executor}` : '',
             rec.upstream_receipt_path ? `geoseal: ${rec.upstream_receipt_path}` : '',
-          ].filter(Boolean).join('\n');
+          ]
+            .filter(Boolean)
+            .join('\n');
           terminalStatusEl.textContent = `PowerShell: ${msg}`;
           terminalStatusEl.className = 'status ' + rec.result;
-          appendTerminal(`result: ${msg}\n${audit}\n\n${tail(rec.stdout_tail || rec.stderr_tail || '', 2600)}`);
+          appendTerminal(
+            `result: ${msg}\n${audit}\n\n${tail(rec.stdout_tail || rec.stderr_tail || '', 2600)}`
+          );
         } catch (err) {
           const msg = 'error: ' + String(err.message || err);
           terminalStatusEl.textContent = msg;
@@ -2145,7 +2379,10 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
         if ($('#youtube-target')) $('#youtube-target').value = resolvedTarget;
         $('#youtube-output').textContent = 'pulling transcript...';
         try {
-          const languages = ($('#youtube-languages')?.value || 'en').split(',').map((s) => s.trim()).filter(Boolean);
+          const languages = ($('#youtube-languages')?.value || 'en')
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean);
           const r = await fetch('/api/youtube/transcript', {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
@@ -2153,7 +2390,8 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
           }).then((r) => r.json());
           if (!r.ok) throw new Error(r.error || 'transcript pull failed');
           $('#youtube-transcript').value = r.text || '';
-          $('#youtube-output').textContent = `${r.video_id}: ${r.segment_count || 0} segments, ${String(r.text || '').length} chars`;
+          $('#youtube-output').textContent =
+            `${r.video_id}: ${r.segment_count || 0} segments, ${String(r.text || '').length} chars`;
           appendTerminal(`transcript ${r.video_id}: ${r.segment_count || 0} segments`);
         } catch (err) {
           $('#youtube-output').textContent = `failed: ${err.message || err}`;
@@ -2189,7 +2427,9 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
           if (!r.ok) throw new Error(r.error || 'notebook load failed');
           $('#notebook-title').value = r.title || id;
           $('#notebook-body').value = r.body || '';
-          $('#notebook-output').textContent = r.artifact_path ? `loaded ${r.artifact_path}` : 'new notebook';
+          $('#notebook-output').textContent = r.artifact_path
+            ? `loaded ${r.artifact_path}`
+            : 'new notebook';
           appendTerminal(`notebook loaded: ${r.id}`);
         } catch (err) {
           $('#notebook-output').textContent = `failed: ${err.message || err}`;
@@ -2203,7 +2443,10 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
           const r = await fetch('/api/notebook/' + encodeURIComponent(id), {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ title: $('#notebook-title').value, body: $('#notebook-body').value }),
+            body: JSON.stringify({
+              title: $('#notebook-title').value,
+              body: $('#notebook-body').value,
+            }),
           }).then((r) => r.json());
           if (!r.ok) throw new Error(r.error || 'notebook save failed');
           $('#notebook-output').textContent = `saved ${r.artifact_path}`;
@@ -2223,11 +2466,18 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
           return;
         }
         if (lower === 'help') {
-          appendTerminal('help | apps | agents | shell | runs | run status | run queue | run next | agent probe | agent codex | open <app> | transcript <youtube-url-or-id> | notebook save|load | run <command_id> | ps <profile_id> | pwsh <command> | snap left|right|full | clear');
+          appendTerminal(
+            'help | apps | agents | shell | runs | run status | run queue | run next | agent probe | agent codex | open <app> | transcript <youtube-url-or-id> | notebook save|load | run <command_id> | ps <profile_id> | pwsh <command> | snap left|right|full | clear'
+          );
           return;
         }
         if (lower === 'apps') {
-          appendTerminal([...builtInApps.map((a) => `${a.open} - ${a.label}`), ...lastCommands.map((c) => `${c.id} - ${c.label}`)].join('\n'));
+          appendTerminal(
+            [
+              ...builtInApps.map((a) => `${a.open} - ${a.label}`),
+              ...lastCommands.map((c) => `${c.id} - ${c.label}`),
+            ].join('\n')
+          );
           return;
         }
         if (lower === 'shell') {
@@ -2374,7 +2624,10 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
       }
 
       function escapeHtml(s) {
-        return String(s).replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' })[c]);
+        return String(s).replace(
+          /[<>&"]/g,
+          (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' })[c]
+        );
       }
 
       function tail(s, max) {
@@ -2383,22 +2636,28 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
       }
 
       function shortLabel(label) {
-        return String(label).replace(/\s*\([^)]*\)/g, '').replace(/Lookup/g, '').replace(/Demo/g, '').trim();
+        return String(label)
+          .replace(/\s*\([^)]*\)/g, '')
+          .replace(/Lookup/g, '')
+          .replace(/Demo/g, '')
+          .trim();
       }
 
       function iconGlyph(name) {
-        return {
-          agent: 'AG',
-          atom: 'At',
-          chart: 'CH',
-          check: 'OK',
-          faces: '18',
-          forge: 'FG',
-          lattice: 'LX',
-          music: 'CE',
-          test: 'TS',
-          token: 'TK',
-        }[name] || 'SC';
+        return (
+          {
+            agent: 'AG',
+            atom: 'At',
+            chart: 'CH',
+            check: 'OK',
+            faces: '18',
+            forge: 'FG',
+            lattice: 'LX',
+            music: 'CE',
+            test: 'TS',
+            token: 'TK',
+          }[name] || 'SC'
+        );
       }
 
       function shellButtonLabel(profile) {
@@ -2422,7 +2681,9 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
         $('#playwright-text')?.addEventListener('click', () => runBrowserAction('text'));
         $('#playwright-aria')?.addEventListener('click', () => runBrowserAction('aria'));
         $('#playwright-guide')?.addEventListener('click', () => runBrowserAction('guide'));
-        $('#playwright-screenshot')?.addEventListener('click', () => runBrowserAction('screenshot'));
+        $('#playwright-screenshot')?.addEventListener('click', () =>
+          runBrowserAction('screenshot')
+        );
         $('#playwright-close-session')?.addEventListener('click', () => runBrowserAction('close'));
         $('#playwright-copy-state')?.addEventListener('click', async () => {
           await navigator.clipboard?.writeText($('#playwright-output').textContent || '');
@@ -2449,7 +2710,8 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
           $('#word-output').textContent = `saved ${new Date().toLocaleTimeString()}`;
         });
         $('#word-load')?.addEventListener('click', () => {
-          $('#word-surface').innerHTML = localStorage.getItem('aetherdesk.word.html') || $('#word-surface').innerHTML;
+          $('#word-surface').innerHTML =
+            localStorage.getItem('aetherdesk.word.html') || $('#word-surface').innerHTML;
           $('#word-output').textContent = 'loaded local document';
         });
         $('#word-copy')?.addEventListener('click', async () => {
@@ -2475,7 +2737,9 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
           img.style.filter = `brightness(${$('#image-brightness').value}%) contrast(${$('#image-contrast').value}%)`;
           $('#image-output').textContent = img.src ? `filter ${img.style.filter}` : 'load an image';
         };
-        $('#image-file')?.addEventListener('change', (e) => loadImageFile(e.target.files?.[0], $('#image-preview'), $('#image-output')));
+        $('#image-file')?.addEventListener('change', (e) =>
+          loadImageFile(e.target.files?.[0], $('#image-preview'), $('#image-output'))
+        );
         $('#image-brightness')?.addEventListener('input', updateImageFilter);
         $('#image-contrast')?.addEventListener('input', updateImageFilter);
         $('#image-reset')?.addEventListener('click', () => {
@@ -2544,16 +2808,23 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
           if (r.action === 'close') {
             $('#playwright-output').textContent = `closed session ${r.session_id}`;
           } else if (r.action === 'text') {
-            $('#playwright-output').textContent = `${r.title || '(untitled)'} | ${r.url}\n${tail(r.text_tail || '', 1600)}`;
+            $('#playwright-output').textContent =
+              `${r.title || '(untitled)'} | ${r.url}\n${tail(r.text_tail || '', 1600)}`;
           } else if (r.action === 'aria') {
-            $('#playwright-output').textContent = `${r.title || '(untitled)'} | ${r.url}\n${tail(r.aria_tail || '', 2600)}`;
+            $('#playwright-output').textContent =
+              `${r.title || '(untitled)'} | ${r.url}\n${tail(r.aria_tail || '', 2600)}`;
           } else if (r.action === 'guide') {
             const moves = (r.guide || [])
-              .map((m) => `${m.index}. ${m.move} ${m.selector} | ${m.role} | ${m.label || m.href || '(unlabeled)'}`)
+              .map(
+                (m) =>
+                  `${m.index}. ${m.move} ${m.selector} | ${m.role} | ${m.label || m.href || '(unlabeled)'}`
+              )
               .join('\n');
-            $('#playwright-output').textContent = `${r.title || '(untitled)'} | ${r.url}\n${moves || 'no visible moves'}`;
+            $('#playwright-output').textContent =
+              `${r.title || '(untitled)'} | ${r.url}\n${moves || 'no visible moves'}`;
           } else {
-            $('#playwright-output').textContent = `${r.title || '(untitled)'} | ${r.url} | ${r.viewport.width}x${r.viewport.height} | ${r.duration_ms}ms`;
+            $('#playwright-output').textContent =
+              `${r.title || '(untitled)'} | ${r.url} | ${r.viewport.width}x${r.viewport.height} | ${r.duration_ms}ms`;
           }
         } catch (err) {
           $('#playwright-output').textContent = `browser action failed: ${err.message || err}`;
@@ -2608,7 +2879,8 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
         g = Math.round(g / n);
         b = Math.round(b / n);
         const brightness = Math.round((r + g + b) / 3);
-        $('#vision-output').textContent = `avg rgb(${r}, ${g}, ${b}) | brightness ${brightness}/255 | sampled ${n} pixels`;
+        $('#vision-output').textContent =
+          `avg rgb(${r}, ${g}, ${b}) | brightness ${brightness}/255 | sampled ${n} pixels`;
       }
 
       async function loadProviders() {
@@ -2617,8 +2889,12 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
         try {
           const r = await fetch('/api/providers').then((r) => r.json());
           stampEl.textContent = new Date(r.generated_at).toLocaleTimeString();
-          const localReady = (r.providers || []).filter((p) => p.kind === 'local-http' && p.reachable).length;
-          const secretReady = (r.providers || []).filter((p) => p.kind === 'env-var' && p.has_secret).length;
+          const localReady = (r.providers || []).filter(
+            (p) => p.kind === 'local-http' && p.reachable
+          ).length;
+          const secretReady = (r.providers || []).filter(
+            (p) => p.kind === 'env-var' && p.has_secret
+          ).length;
           $('#state-host').textContent = `${localReady} local, ${secretReady} env`;
           providersEl.innerHTML = '';
           for (const p of r.providers) {
@@ -2628,11 +2904,15 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
             if (p.kind === 'local-http') {
               statusClass = p.reachable ? 'up' : 'down';
               statusText = p.reachable ? 'up' : 'down';
-              meta = p.reachable ? `${p.latency_ms}ms - ${escapeHtml(new URL(p.url).host)}` : `${escapeHtml(p.error || 'unreachable')}`;
+              meta = p.reachable
+                ? `${p.latency_ms}ms - ${escapeHtml(new URL(p.url).host)}`
+                : `${escapeHtml(p.error || 'unreachable')}`;
             } else {
               statusClass = p.has_secret ? 'up' : 'unknown';
               statusText = p.has_secret ? 'env set' : 'no env';
-              meta = p.has_secret ? `via ${escapeHtml(p.secret_env_var)}` : `checked: ${escapeHtml(p.env_vars_checked.join(', '))}`;
+              meta = p.has_secret
+                ? `via ${escapeHtml(p.secret_env_var)}`
+                : `checked: ${escapeHtml(p.env_vars_checked.join(', '))}`;
             }
             div.innerHTML = `
               <div>
@@ -2662,7 +2942,10 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
           headers: { 'content-type': 'application/json' },
           body: options.body ? JSON.stringify(options.body) : undefined,
         }).then((r) => r.json());
-        if (!r.ok) throw new Error(r.error || r.stderr_tail || r.stdout_tail || 'run-control request failed');
+        if (!r.ok)
+          throw new Error(
+            r.error || r.stderr_tail || r.stdout_tail || 'run-control request failed'
+          );
         return r.payload || r;
       }
 
@@ -2677,7 +2960,11 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
           const queue = status.queue || {};
           setRunCard('#run-card-browser', p.browserControl, p.browserControl === 'WORKING');
           setRunCard('#run-card-colab', p.colabVisibility, p.colabVisibility === 'WORKING');
-          setRunCard('#run-card-training', p.trainingCompletion, /^(DONE|RUNNING|COLAB_RESCUE_READY)/.test(p.trainingCompletion || ''));
+          setRunCard(
+            '#run-card-training',
+            p.trainingCompletion,
+            /^(DONE|RUNNING|COLAB_RESCUE_READY)/.test(p.trainingCompletion || '')
+          );
           setRunCard('#run-card-queue', `${queue.length || 0} queued`, true);
           $('#runcontrol-inventory').textContent = [
             `matched scripts: ${inv.matchedLocalScripts ?? '?'}`,
@@ -2688,7 +2975,11 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
             `latest receipt: ${colab.file || 'none'}`,
             `receipt status: ${colab.verdict || 'unknown'}`,
           ].join('\n');
-          $('#runcontrol-queue').textContent = JSON.stringify(queue.next || { queue: 'empty' }, null, 2);
+          $('#runcontrol-queue').textContent = JSON.stringify(
+            queue.next || { queue: 'empty' },
+            null,
+            2
+          );
           out.textContent = `checked ${status.checkedAt || new Date().toISOString()}`;
         } catch (err) {
           $('#runcontrol-output').textContent = `failed: ${err.message || err}`;
@@ -2721,17 +3012,19 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
       async function queueRunControl(kind) {
         const marker = $('#runcontrol-watch').value || 'SCBE_FAST_FULL_DONE';
         $('#runcontrol-output').textContent = `queueing ${kind}...`;
-        const path = kind === 'colab'
-          ? '/api/aetherdesk/runs/queue/colab-fast'
-          : kind === 'rescue'
-          ? '/api/aetherdesk/runs/queue/colab-rescue'
-          : '/api/aetherdesk/runs/queue/monitor';
+        const path =
+          kind === 'colab'
+            ? '/api/aetherdesk/runs/queue/colab-fast'
+            : kind === 'rescue'
+              ? '/api/aetherdesk/runs/queue/colab-rescue'
+              : '/api/aetherdesk/runs/queue/monitor';
         try {
           const r = await fetchRunControl(path, {
             method: 'POST',
             body: { watch_for: marker, match: 'train_qlora', timeout_ms: 1800000 },
           });
-          $('#runcontrol-output').textContent = `queued ${r.item?.id || r.payload?.item?.id || kind}`;
+          $('#runcontrol-output').textContent =
+            `queued ${r.item?.id || r.payload?.item?.id || kind}`;
           await loadRunControl();
           await loadRunQueue();
         } catch (err) {
@@ -2743,7 +3036,8 @@ commands: help, apps, agents, agent probe, run instrument_play, snap left, clear
         $('#runcontrol-output').textContent = 'running next queued item...';
         try {
           const r = await fetchRunControl('/api/aetherdesk/runs/run-next', { method: 'POST' });
-          $('#runcontrol-output').textContent = `run-next ${r.ok ? 'ok' : 'failed'}: ${r.item?.id || 'none'}`;
+          $('#runcontrol-output').textContent =
+            `run-next ${r.ok ? 'ok' : 'failed'}: ${r.item?.id || 'none'}`;
           appendTerminal(`run-next: ${r.ok ? 'ok' : 'failed'} ${r.item?.id || ''}`);
           await loadRunControl();
           await loadRunQueue();

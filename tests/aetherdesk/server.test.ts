@@ -194,7 +194,9 @@ describe('AetherDesk server — bounded PowerShell terminal', () => {
     expect(body.receipt.risk_tier).toBe('bounded-host-read');
     expect(body.receipt.executor).toBe('geoseal:powershell');
     expect(body.receipt.upstream_schema).toBe('geoseal_powershell_run_v1');
-    expect(body.receipt.upstream_receipt_path).toMatch(/^artifacts\/geoseal_powershell_receipts\/.+\.json$/);
+    expect(body.receipt.upstream_receipt_path).toMatch(
+      /^artifacts\/geoseal_powershell_receipts\/.+\.json$/
+    );
     expect(body.receipt.stdout_tail).toContain('AETHERDESK_OK');
     expect(body.receipt.command_digest).toMatch(/^[a-f0-9]{64}$/);
   });
@@ -495,7 +497,11 @@ describe('AetherDesk server — Playwright Vision boundary', () => {
     const { status, body } = await fetchJson(`${baseUrl}/api/browser/action`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ action: 'goto', session_id: 'main', url: 'file:///C:/Windows/win.ini' }),
+      body: JSON.stringify({
+        action: 'goto',
+        session_id: 'main',
+        url: 'file:///C:/Windows/win.ini',
+      }),
     });
     expect(status).toBe(400);
     expect(body.ok).toBe(false);
@@ -547,9 +553,9 @@ describe('AetherDesk server — transcript, email, notebook apps', () => {
     expect(() => aetherdesk.validateEmailDraft({ to: 'bad', subject: 'x', body: 'y' })).toThrow(
       /email address/i
     );
-    expect(aetherdesk.createEmailDraft({ to: 'test@example.com', subject: 'Saved', body: 'Body' }).status).toBe(
-      'draft_only_not_sent'
-    );
+    expect(
+      aetherdesk.createEmailDraft({ to: 'test@example.com', subject: 'Saved', body: 'Body' }).status
+    ).toBe('draft_only_not_sent');
   });
 
   it('POST /api/email/draft writes a draft artifact and never reports sent', async () => {
@@ -621,6 +627,17 @@ describe('AetherDesk server — desktop UI is served', () => {
     ]) {
       expect(body).toContain(`id="window-${app}"`);
     }
+  });
+
+  it('the served shell includes real multi-window management affordances', async () => {
+    const { body } = await fetchText(`${baseUrl}/`);
+    expect(body).toContain('position: fixed;');
+    expect(body).toContain('resize: both');
+    expect(body).toContain('function ensureWindowControls()');
+    expect(body).toContain('function clampWindowPosition');
+    expect(body).toContain('function bringToFront');
+    expect(body).toContain("win.classList.add('dragging')");
+    expect(body).toContain("bar.addEventListener('dblclick'");
   });
 
   it('the terminal advertises agent shell aliases', async () => {
