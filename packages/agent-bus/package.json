@@ -11,6 +11,7 @@
     "bin",
     "dist",
     "src",
+    "scripts/prepare-husky.cjs",
     "tsconfig.json",
     "README.md",
     "CHANGELOG.md",
@@ -36,7 +37,7 @@
     "pack:dry": "npm pack --dry-run --json",
     "prepublishOnly": "npm run build",
     "prepack": "npm run build",
-    "prepare": "cd ../.. && husky install packages/agent-bus/.husky"
+    "prepare": "node scripts/prepare-husky.cjs"
   },
   "engines": {
     "node": ">=18.0.0"
