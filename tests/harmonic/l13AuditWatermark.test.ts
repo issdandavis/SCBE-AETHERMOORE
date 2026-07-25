@@ -137,7 +137,7 @@ describe('AuditLedger.isIntact watermark', () => {
 // ─── DECIDE() latency regression ─────────────────────────────────────────────
 
 describe('DECIDE() p99 latency with large ledger', () => {
-  it('p99 < 100ms with 150-entry ledger across 100 calls', { timeout: 30_000 }, () => {
+  it('p99 < 150ms with 150-entry ledger across 100 calls', { timeout: 30_000 }, () => {
     const rt = makeRuntime(150);
     const latencies: number[] = [];
 
@@ -149,8 +149,9 @@ describe('DECIDE() p99 latency with large ledger', () => {
     }
 
     latencies.sort((a, b) => a - b);
-    const p99 = latencies[Math.floor(latencies.length * 0.99)]!;
-    const p95 = latencies[Math.floor(latencies.length * 0.95)]!;
+    const percentile = (p: number) => latencies[Math.ceil((latencies.length * p) / 100) - 1]!;
+    const p99 = percentile(99);
+    const p95 = percentile(95);
 
     expect(p99).toBeLessThan(150);
     expect(p95).toBeLessThan(120);

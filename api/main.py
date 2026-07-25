@@ -34,7 +34,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from fastapi import FastAPI, HTTPException, Header, Depends, Query, Security
+from fastapi import FastAPI, HTTPException, Depends, Query, Security
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import APIKeyHeader
 from pydantic import BaseModel, Field
@@ -96,9 +96,9 @@ except Exception:
 
 # Import persistence layer
 try:
-    from api.persistence import get_persistence, SCBEPersistence
+    from api.persistence import get_persistence
 except ImportError:
-    from persistence import get_persistence, SCBEPersistence
+    from persistence import get_persistence
 
 # Configure logging
 logging.basicConfig(
@@ -399,7 +399,7 @@ def scbe_14_layer_pipeline(
 
     # Layer 1-4: Context Embedding
     position = agent_to_6d_position(agent_id, action, target, trust_score)
-    explanation["layers"]["L1-4"] = f"6D position computed"
+    explanation["layers"]["L1-4"] = "6D position computed"
 
     # Layer 5-7: Hyperbolic Geometry Check
     safe_center = (0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
@@ -613,7 +613,7 @@ async def authorize(request: AuthorizeRequest, tenant: str = Depends(verify_api_
     try:
         persistence = get_persistence()
         risk_level = "LOW" if score > 0.6 else ("MEDIUM" if score > 0.3 else "HIGH")
-        audit_id = persistence.log_decision(
+        persistence.log_decision(
             agent_id=request.agent_id,
             action=request.action,
             decision=decision.value,
@@ -1109,7 +1109,10 @@ async def acknowledge_alert(alert_id: str, tenant: str = Depends(verify_api_key)
 class GameActionRequest(BaseModel):
     action_type: str = Field(
         ...,
-        description="Action: spawn_enemy, give_item, trigger_scene, send_dialogue, modify_stat, tv_show, training_result, world_event",
+        description=(
+            "Action: spawn_enemy, give_item, trigger_scene, send_dialogue, modify_stat, "
+            "tv_show, training_result, world_event"
+        ),
     )
     data: Dict[str, Any] = Field(default_factory=dict, description="Action payload")
 
