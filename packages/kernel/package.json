@@ -3,6 +3,30 @@
   "version": "3.2.4",
   "private": true,
   "description": "SCBE-AETHERMOORE pure math kernel: hyperbolic geometry, harmonic scaling, Sacred Tongues, 14-layer pipeline",
+  "license": "MIT OR Apache-2.0",
   "main": "./src/index.ts",
-  "types": "./src/index.ts"
+  "types": "./src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/issdandavis/SCBE-AETHERMOORE.git",
+    "directory": "packages/kernel"
+  },
+  "homepage": "https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/packages/kernel#readme",
+  "bugs": {
+    "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"
+  },
+  "keywords": [
+    "scbe",
+    "kernel",
+    "hyperbolic-geometry",
+    "sacred-tongues",
+    "governance",
+    "typescript"
+  ],
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE",
+    "tsconfig.json"
+  ]
 }

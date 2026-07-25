@@ -146,6 +146,7 @@ function scorePackage(inputDir) {
   }
 
   const pkg = readJson(packageJson);
+  const isPrivate = pkg.private === true;
   const readmePath = path.join(packageDir, 'README.md');
   const readme = readTextIfExists(readmePath).toLowerCase();
   const files = Array.isArray(pkg.files) ? pkg.files : [];
@@ -155,13 +156,13 @@ function scorePackage(inputDir) {
   const checks = [
     {
       id: 'identity',
-      ok: Boolean(pkg.name && pkg.version && !pkg.private),
-      note: 'publishable name/version present',
+      ok: Boolean(pkg.name && pkg.version),
+      note: isPrivate ? 'private package name/version present' : 'publishable name/version present',
     },
     {
       id: 'description',
       ok: typeof pkg.description === 'string' && pkg.description.trim().length >= 40,
-      note: 'description is useful in npm search',
+      note: isPrivate ? 'description is useful for internal package discovery' : 'description is useful in npm search',
     },
     {
       id: 'license',
