@@ -27,7 +27,10 @@ def action_row(action: str = "RIGHT") -> dict:
     return {
         "messages": [
             {"role": "system", "content": "system"},
-            {"role": "user", "content": "Choose the next AETHERMON action for this observation:\n" + json.dumps(observation)},
+            {
+                "role": "user",
+                "content": "Choose the next AETHERMON action for this observation:\n" + json.dumps(observation),
+            },
             {"role": "assistant", "content": json.dumps({"action": action, "reason": "move"})},
         ],
         "meta": {"domain": "aethermon", "kind": "action_policy_tick", "source": "receipt", "tick": 1},

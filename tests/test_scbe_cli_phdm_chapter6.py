@@ -62,4 +62,3 @@ def test_phdm_jailbreak_cli_denies_on_budget_exhaustion() -> None:
     assert payload["decision"] == "DENY"
     assert payload["cost"]["total"] > 100.0
     assert "energy_budget_exhausted" in payload["violations"]
-

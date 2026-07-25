@@ -257,11 +257,20 @@ def build_agent_harness_manifest_v1(
             "arc_loop_eval_json": "node bin/geoseal.cjs arc-loop --mode eval --json",
             "arc_loop_ollama_json": "node bin/geoseal.cjs arc-loop --mode eval --ollama --json",
             "verify_search_arc_json": "node bin/geoseal.cjs verify-search --preset arc-rubix --json",
-            "verify_search_arc_ollama_json": "node bin/geoseal.cjs verify-search --preset arc-rubix --ollama-models openclaw:latest --json",
+            "verify_search_arc_ollama_json": (
+                "node bin/geoseal.cjs verify-search --preset arc-rubix "
+                "--ollama-models openclaw:latest --json"
+            ),
             "aap_family_probe_json": "node bin/geoseal.cjs aap-family-probe --json",
             "aap_blend_probe_json": "node bin/geoseal.cjs aap-blend-probe --json",
-            "aap_package_validate_json": "node bin/geoseal.cjs aap-package-submit --agent-dir submissions/scbe_tabular_v3_skillroot_20260716 --json",
-            "aap_package_submit_json": "node bin/geoseal.cjs aap-package-submit --agent-dir submissions/scbe_tabular_v3_skillroot_20260716 --submit --status --json",
+            "aap_package_validate_json": (
+                "node bin/geoseal.cjs aap-package-submit "
+                "--agent-dir submissions/scbe_tabular_v3_skillroot_20260716 --json"
+            ),
+            "aap_package_submit_json": (
+                "node bin/geoseal.cjs aap-package-submit "
+                "--agent-dir submissions/scbe_tabular_v3_skillroot_20260716 --submit --status --json"
+            ),
             "ghost_terminal_audit_ps1": (
                 "powershell.exe -NoProfile -ExecutionPolicy Bypass "
                 "-File scripts/system/ghost_terminal_audit.ps1 -Json"

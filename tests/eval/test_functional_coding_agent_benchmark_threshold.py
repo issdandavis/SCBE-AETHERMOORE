@@ -142,7 +142,10 @@ def test_eval_jsonl_cli_runs_candidate_file_without_default_tasks(tmp_path: Path
         json.dumps(
             {
                 "task_id": "alpha",
-                "prompt": "Write TypeScript only. Define function evaluate(input, state). Set state.total to input.n and return it.",
+                "prompt": (
+                    "Write TypeScript only. Define function evaluate(input, state). "
+                    "Set state.total to input.n and return it."
+                ),
                 "checks": [
                     {
                         "input": {"n": 4},

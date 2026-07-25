@@ -66,5 +66,5 @@ def test_chained_floor_division_is_left_associative():
     assert "Math.floor((Math.floor((a) / (b))) / (c))" in code
     import math
 
-    expr = next(l for l in code.splitlines() if "return" in l).strip()[len("return ") : -1]
+    expr = next(line for line in code.splitlines() if "return" in line).strip()[len("return ") : -1]
     assert eval(expr.replace("Math.floor", "math.floor"), {"math": math, "a": 20, "b": 3, "c": 2}) == 20 // 3 // 2

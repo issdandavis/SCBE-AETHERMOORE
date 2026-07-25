@@ -245,23 +245,29 @@ async def _run_headless_readonly(payload: dict[str, Any]) -> dict[str, Any]:
         title = await runtime.title()
         text = await runtime.evaluate("() => document.body ? document.body.innerText : ''")
         html = await runtime.content()
-        page_bits = await runtime.evaluate(
-            """() => ({
+        page_bits = await runtime.evaluate("""() => ({
               headings: Array.from(document.querySelectorAll('h1,h2,h3')).slice(0, 24)
                 .map((el) => ({ level: el.tagName, text: (el.innerText || el.textContent || '').trim() })),
               links: Array.from(document.querySelectorAll('a[href]')).slice(0, 80)
                 .map((el) => ({ text: (el.innerText || el.textContent || '').trim(), href: el.href })),
-              buttons: Array.from(document.querySelectorAll('button,[role="button"],input[type="button"],input[type="submit"]')).slice(0, 40)
-                .map((el) => ({ text: (el.innerText || el.value || el.textContent || '').trim(), type: el.type || el.getAttribute('role') || 'button' })),
+              buttons: Array.from(document.querySelectorAll(
+                'button,[role="button"],input[type="button"],input[type="submit"]'
+              )).slice(0, 40)
+                .map((el) => ({
+                  text: (el.innerText || el.value || el.textContent || '').trim(),
+                  type: el.type || el.getAttribute('role') || 'button',
+                })),
               forms: Array.from(document.querySelectorAll('form')).slice(0, 20)
                 .map((form, index) => ({
                   index,
                   method: (form.getAttribute('method') || 'get').toLowerCase(),
                   fields: Array.from(form.querySelectorAll('input,textarea,select')).slice(0, 40)
-                    .map((field) => ({ name: field.getAttribute('name') || '', type: field.getAttribute('type') || field.tagName.toLowerCase() }))
+                    .map((field) => ({
+                      name: field.getAttribute('name') || '',
+                      type: field.getAttribute('type') || field.tagName.toLowerCase(),
+                    }))
                 }))
-            })"""
-        )
+            })""")
         screenshot_path = run_dir / "screenshot.png"
         text_path = run_dir / "visible_text.txt"
         html_path = run_dir / "page.html"

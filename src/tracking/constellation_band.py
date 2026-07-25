@@ -10,6 +10,7 @@ This is a 3D log-distance x angular shape-context histogram of the relative posi
 translation-invariant (relative coords), robust (binned), matchable (histogram similarity). It's the 4th
 band on the trichromatic identity: IR (world-line) / Visible (grain) / UV (dynamics) / Relational (this).
 """
+
 from __future__ import annotations
 import numpy as np
 
@@ -22,7 +23,7 @@ def constellation_signature(center, neighbors, scale, rings=(4.0, 9.0, 16.0, 28.
     nb = np.asarray(neighbors, float)
     if nb.size == 0:
         return np.zeros(len(rings) * n_az * n_el)
-    rel = (nb - center) * scale                                       # physical relative positions
+    rel = (nb - center) * scale  # physical relative positions
     d = np.linalg.norm(rel, axis=1)
     sig = np.zeros((len(rings), n_az, n_el))
     for v, dist in zip(rel, d):
@@ -30,9 +31,9 @@ def constellation_signature(center, neighbors, scale, rings=(4.0, 9.0, 16.0, 28.
             continue
         ring = int(np.searchsorted(rings, dist))
         if ring >= len(rings):
-            continue                                                  # beyond outer ring -> ignored
-        az = np.arctan2(v[1], v[2])                                   # azimuth in the y-x plane
-        el = np.arctan2(v[0], np.linalg.norm(v[1:]) + 1e-9)           # elevation: z vs xy
+            continue  # beyond outer ring -> ignored
+        az = np.arctan2(v[1], v[2])  # azimuth in the y-x plane
+        el = np.arctan2(v[0], np.linalg.norm(v[1:]) + 1e-9)  # elevation: z vs xy
         ai = int((az + np.pi) / (2 * np.pi + 1e-9) * n_az) % n_az
         ei = min(int((el + np.pi / 2) / (np.pi + 1e-9) * n_el), n_el - 1)
         sig[ring, ai, ei] += 1.0
@@ -49,9 +50,9 @@ def _pca_frame(rel):
     """Local orientation frame from the neighbor cloud (PCA) -> the '6D': position + orientation.
     Sign-disambiguated by third-moment (skew) so a rotated neighborhood maps to the SAME frame."""
     cov = rel.T @ rel
-    _, V = np.linalg.eigh(cov)                                        # columns = principal axes
+    _, V = np.linalg.eigh(cov)  # columns = principal axes
     aligned = rel @ V
-    for k in range(aligned.shape[1]):                                # fix axis signs by skew convention
+    for k in range(aligned.shape[1]):  # fix axis signs by skew convention
         if (aligned[:, k] ** 3).sum() < 0:
             aligned[:, k] *= -1
     return aligned
@@ -66,7 +67,8 @@ def _hist_from_aligned(aligned, rings, n_az, n_el):
         ring = int(np.searchsorted(rings, dist))
         if ring >= len(rings):
             continue
-        az = np.arctan2(v[1], v[2]); el = np.arctan2(v[0], np.linalg.norm(v[1:]) + 1e-9)
+        az = np.arctan2(v[1], v[2])
+        el = np.arctan2(v[0], np.linalg.norm(v[1:]) + 1e-9)
         ai = int((az + np.pi) / (2 * np.pi + 1e-9) * n_az) % n_az
         ei = min(int((el + np.pi / 2) / (np.pi + 1e-9) * n_el), n_el - 1)
         sig[ring, ai, ei] += 1.0
@@ -81,16 +83,16 @@ def grid_frame(all_points, scale):
     p = (np.asarray(all_points, float) - np.asarray(all_points, float).mean(0)) * np.asarray(scale)
     _, V = np.linalg.eigh(p.T @ p)
     a = p @ V
-    for k in range(3):                                               # global skew sign -> one consistent choice
+    for k in range(3):  # global skew sign -> one consistent choice
         if (a[:, k] ** 3).sum() < 0:
             V[:, k] *= -1.0
     return V
 
 
-def constellation_signature_gridframe(center, neighbors, gframe, scale, rings=(4.0, 9.0, 16.0, 28.0),
-                                       n_az=8, n_el=3):
+def constellation_signature_gridframe(center, neighbors, gframe, scale, rings=(4.0, 9.0, 16.0, 28.0), n_az=8, n_el=3):
     """Constellation re-oriented by the GRID's global frame (same gframe for every cell in the frame)."""
-    center = np.asarray(center, float); scale = np.asarray(scale, float)
+    center = np.asarray(center, float)
+    scale = np.asarray(scale, float)
     nb = np.asarray(neighbors, float)
     if nb.size == 0:
         return np.zeros(len(rings) * n_az * n_el)
@@ -105,7 +107,8 @@ _PROPER_SIGNS = np.array([[1, 1, 1], [1, -1, -1], [-1, 1, -1], [-1, -1, 1]], dty
 def constellation_frames_sym(center, neighbors, scale, rings=(4.0, 9.0, 16.0, 28.0), n_az=8, n_el=3):
     """Return the constellation over ALL 4 semi-similar (proper-rotation) sign frames, resolving the PCA
     sign ambiguity that a single canonical frame leaves (the antipodal/spinor-like degeneracy)."""
-    center = np.asarray(center, float); scale = np.asarray(scale, float)
+    center = np.asarray(center, float)
+    scale = np.asarray(scale, float)
     nb = np.asarray(neighbors, float)
     if len(nb) < 3:
         return [constellation_signature(center, neighbors, scale, rings, n_az, n_el)]
@@ -121,30 +124,33 @@ def constellation_similarity_sym(frames_a, sig_b):
     return max(constellation_similarity(fa, sig_b) for fa in frames_a)
 
 
-def constellation_signature_cellframe(center, neighbors, cell_frame, scale, rings=(4.0, 9.0, 16.0, 28.0),
-                                       n_az=8, n_el=3):
+def constellation_signature_cellframe(
+    center, neighbors, cell_frame, scale, rings=(4.0, 9.0, 16.0, 28.0), n_az=8, n_el=3
+):
     """Constellation in the cell's OWN nucleus-frame (Issac: skew/vector of the wall->nucleus axis as the
     canonical reference). cell_frame = 3x3 orthonormal (the nucleus principal axes / polarity, cols=axes).
     A crowd swirl rotates the cell's frame WITH it, so the signature is EXACTLY invariant -- no PCA sign
     degeneracy, because the reference is physical/intrinsic, not a fragile statistic of the neighborhood."""
-    center = np.asarray(center, float); scale = np.asarray(scale, float)
+    center = np.asarray(center, float)
+    scale = np.asarray(scale, float)
     nb = np.asarray(neighbors, float)
     if nb.size == 0:
         return np.zeros(len(rings) * n_az * n_el)
     rel = (nb - center) * scale
-    aligned = rel @ np.asarray(cell_frame, float)                    # express neighbors in the cell's own frame
+    aligned = rel @ np.asarray(cell_frame, float)  # express neighbors in the cell's own frame
     return _hist_from_aligned(aligned, rings, n_az, n_el)
 
 
 def constellation_signature_rotinv(center, neighbors, scale, rings=(4.0, 9.0, 16.0, 28.0), n_az=8, n_el=3):
     """ROTATION-INVARIANT constellation: align the neighbor cloud to its own principal axes first, so a
     swirling / rotating crowd still yields the same signature. Inner->outer rings preserved (multi-depth)."""
-    center = np.asarray(center, float); scale = np.asarray(scale, float)
+    center = np.asarray(center, float)
+    scale = np.asarray(scale, float)
     nb = np.asarray(neighbors, float)
     if len(nb) < 3:
         return constellation_signature(center, neighbors, scale, rings, n_az, n_el)
     rel = (nb - center) * scale
-    aligned = _pca_frame(rel)                                        # cancel the rotation
+    aligned = _pca_frame(rel)  # cancel the rotation
     d = np.linalg.norm(aligned, axis=1)
     sig = np.zeros((len(rings), n_az, n_el))
     for v, dist in zip(aligned, d):
@@ -153,7 +159,8 @@ def constellation_signature_rotinv(center, neighbors, scale, rings=(4.0, 9.0, 16
         ring = int(np.searchsorted(rings, dist))
         if ring >= len(rings):
             continue
-        az = np.arctan2(v[1], v[2]); el = np.arctan2(v[0], np.linalg.norm(v[1:]) + 1e-9)
+        az = np.arctan2(v[1], v[2])
+        el = np.arctan2(v[0], np.linalg.norm(v[1:]) + 1e-9)
         ai = int((az + np.pi) / (2 * np.pi + 1e-9) * n_az) % n_az
         ei = min(int((el + np.pi / 2) / (np.pi + 1e-9) * n_el), n_el - 1)
         sig[ring, ai, ei] += 1.0
@@ -171,12 +178,12 @@ if __name__ == "__main__":
     # SELF-TEST: a crowd of identical cells. Does each cell's NEIGHBORHOOD constellation ID it across a
     # frame where the whole crowd drifts + jitters, better than it matches a *different* cell?
     rng = np.random.RandomState(3)
-    scale = np.array([1.625, 0.40625, 0.40625])                       # real anisotropic voxel scale
+    scale = np.array([1.625, 0.40625, 0.40625])  # real anisotropic voxel scale
     N = 40
-    frame0 = rng.uniform(0, 60, size=(N, 3))                          # crowd of N cells (voxel coords)
-    drift = np.array([0.0, 1.5, -1.0])                                # whole crowd drifts
-    jitter = rng.normal(0, 0.6, size=(N, 3))                          # per-cell wobble
-    frame1 = frame0 + drift + jitter                                  # next frame (same cells, moved)
+    frame0 = rng.uniform(0, 60, size=(N, 3))  # crowd of N cells (voxel coords)
+    drift = np.array([0.0, 1.5, -1.0])  # whole crowd drifts
+    jitter = rng.normal(0, 0.6, size=(N, 3))  # per-cell wobble
+    frame1 = frame0 + drift + jitter  # next frame (same cells, moved)
 
     sig0 = constellation_signatures_for_frame(frame0, scale)
     sig1 = constellation_signatures_for_frame(frame1, scale)
@@ -189,20 +196,22 @@ if __name__ == "__main__":
         self_sims.append(sims[i])
         other = np.delete(sims, i)
         best_other.append(other.max())
-        if sims.argmax() == i:                                        # nearest-constellation is itself
+        if sims.argmax() == i:  # nearest-constellation is itself
             correct += 1
     print(f"crowd N={N}: constellation nearest-neighbor self-ID = {correct}/{N} = {correct/N:.2f}")
     print(f"  mean self-sim (same cell across drift): {np.mean(self_sims):.3f}")
     print(f"  mean best-other-sim (nearest wrong cell): {np.mean(best_other):.3f}")
-    print(f"  => neighborhood IDs the cell across drift: {np.mean(self_sims) > np.mean(best_other)}  "
-          f"(margin {np.mean(self_sims) - np.mean(best_other):+.3f})")
+    print(
+        f"  => neighborhood IDs the cell across drift: {np.mean(self_sims) > np.mean(best_other)}  "
+        f"(margin {np.mean(self_sims) - np.mean(best_other):+.3f})"
+    )
 
     # ROTATION TEST: the crowd SWIRLS between frames (morphogenetic rotation), in the isotropic y-x plane.
     # Absolute-angle constellation should break; the PCA-aligned (rotation-invariant) one should hold.
-    th = 0.6                                                          # ~34 deg swirl
+    th = 0.6  # ~34 deg swirl
     R = np.array([[1, 0, 0], [0, np.cos(th), -np.sin(th)], [0, np.sin(th), np.cos(th)]])
     ctr = frame0.mean(0)
-    frame1r = (frame0 - ctr) @ R.T + ctr + drift + jitter            # whole crowd rotates + drifts + jitters
+    frame1r = (frame0 - ctr) @ R.T + ctr + drift + jitter  # whole crowd rotates + drifts + jitters
 
     def self_id(sig_fn):
         s0 = [sig_fn(frame0[i], np.delete(frame0, i, 0), scale) for i in range(N)]
@@ -230,11 +239,14 @@ if __name__ == "__main__":
         if np.linalg.det(Q) < 0:
             Q[:, 0] *= -1
         return Q
+
     rs = np.random.RandomState(99)
-    frames = [rand_rot(rs) for _ in range(N)]                        # each cell's nucleus orientation
-    frames_rot = [R @ Q for Q in frames]                            # orientations swirl with the crowd
+    frames = [rand_rot(rs) for _ in range(N)]  # each cell's nucleus orientation
+    frames_rot = [R @ Q for Q in frames]  # orientations swirl with the crowd
     cf0 = [constellation_signature_cellframe(frame0[i], np.delete(frame0, i, 0), frames[i], scale) for i in range(N)]
-    cf1 = [constellation_signature_cellframe(frame1r[i], np.delete(frame1r, i, 0), frames_rot[i], scale) for i in range(N)]
+    cf1 = [
+        constellation_signature_cellframe(frame1r[i], np.delete(frame1r, i, 0), frames_rot[i], scale) for i in range(N)
+    ]
     cf = sum(np.array([constellation_similarity(cf0[i], cf1[j]) for j in range(N)]).argmax() == i for i in range(N))
     print(f"  cell-frame (nucleus-orientation anchored): {cf}/{N}  (+{cf - rinv} over PCA-skew)")
 

@@ -99,4 +99,3 @@ def test_negative_binary_signature_uses_constructive_neutral_destructive() -> No
 def test_chapter6_self_test() -> None:
     assert len(CHAPTER6_NODES) == 16
     assert self_test() is True
-

@@ -86,14 +86,21 @@ def test_python_to_all_primary_code_prism_lanes():
 def test_rust_c_julia_haskell_parse_into_code_prism_ir():
     builder = CodePrismBuilder()
     samples = {
-        "rust": "pub fn add(a: f64, b: f64) -> f64 { let total = a + b; return total; }",
+        "rust": (
+            "pub fn add(a: f64, b: f64) -> f64 {\n"
+            "    let total = a + b;\n"
+            "    return total;\n"
+            "}\n"
+        ),
         "c": "double add(double a, double b) { double total = a + b; return total; }",
         "julia": "function add(a, b)\n    total = a + b\n    return total\nend\n",
         "haskell": "add a b = a + b\n",
     }
 
     for language, source in samples.items():
-        artifacts = builder.translate(source_code=source, source_language=language, target_languages=["python", "typescript"])
+        artifacts = builder.translate(
+            source_code=source, source_language=language, target_languages=["python", "typescript"]
+        )
         assert artifacts["python"].valid, language
         assert artifacts["typescript"].valid, language
         assert "def add" in artifacts["python"].code
@@ -104,9 +111,19 @@ def test_all_supported_sources_emit_all_supported_targets():
     builder = CodePrismBuilder()
     samples = {
         "python": "def add(a, b):\n    total = a + b\n    return total\n",
-        "typescript": "export function add(a: number, b: number): number {\n  const total = a + b;\n  return total;\n}\n",
+        "typescript": (
+            "export function add(a: number, b: number): number {\n"
+            "  const total = a + b;\n"
+            "  return total;\n"
+            "}\n"
+        ),
         "go": "func add(a float64, b float64) float64 {\n  total := a + b\n  return total\n}\n",
-        "rust": "pub fn add(a: f64, b: f64) -> f64 { let total = a + b; return total; }",
+        "rust": (
+            "pub fn add(a: f64, b: f64) -> f64 {\n"
+            "    let total = a + b;\n"
+            "    return total;\n"
+            "}\n"
+        ),
         "c": "double add(double a, double b) { double total = a + b; return total; }",
         "julia": "function add(a, b)\n    total = a + b\n    return total\nend\n",
         "haskell": "add a b = a + b\n",

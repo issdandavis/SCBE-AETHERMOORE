@@ -56,7 +56,9 @@ def test_stage_state_detects_complete_result() -> None:
     result = result_with_a_cells(8)
     result["B"] = {"v1": {}, "v2": {}}
     result["C"] = {"base": {}, "adapter": {}}
-    source = mod.ResultSource(path=Path("results_20260702_060000.json"), name="results_20260702_060000.json", modified_at=None)
+    source = mod.ResultSource(
+        path=Path("results_20260702_060000.json"), name="results_20260702_060000.json", modified_at=None
+    )
 
     payload = mod.stage_state(result, source, stale_minutes=45.0)
 
@@ -69,7 +71,9 @@ def test_stage_state_detects_complete_result() -> None:
 def test_stage_state_detects_running_bc_only_after_b_lands() -> None:
     mod = load_module()
     result = {"meta": {"stamp": "20260702_061104"}, "B": {"v1": {}, "v2": {}}}
-    source = mod.ResultSource(path=Path("results_20260702_061104.json"), name="results_20260702_061104.json", modified_at=None)
+    source = mod.ResultSource(
+        path=Path("results_20260702_061104.json"), name="results_20260702_061104.json", modified_at=None
+    )
 
     payload = mod.stage_state(result, source, stale_minutes=45.0)
 
@@ -87,7 +91,9 @@ def test_stage_state_detects_complete_bc_only_result() -> None:
         "B": {"v1": {}, "v2": {}},
         "C": {"base": {}, "ca-diverse-v1": {}},
     }
-    source = mod.ResultSource(path=Path("results_20260702_061104.json"), name="results_20260702_061104.json", modified_at=None)
+    source = mod.ResultSource(
+        path=Path("results_20260702_061104.json"), name="results_20260702_061104.json", modified_at=None
+    )
 
     payload = mod.stage_state(result, source, stale_minutes=45.0)
 
