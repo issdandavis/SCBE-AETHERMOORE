@@ -15,8 +15,18 @@
  * Layer 7: Phase Modulation Φ(p,θ) = Möbius rotation in tangent space
  */
 
-/** Small epsilon for numerical stability */
+/** Small epsilon for numerical stability (norm checks, zero-vector guards) */
 const EPSILON = 1e-10;
+
+/**
+ * Boundary epsilon for the Layer 5 distance clamp. Tighter than EPSILON: the
+ * looser 1e-10 clamp collapsed every point within 1e-10 of the Poincare ball
+ * boundary to the identical distance value (verified: r=1-1e-15 through
+ * r=1.0 exactly all produced the same d_H), discarding ~5 orders of
+ * magnitude of real, representable float64 precision. Kept in sync with
+ * src/harmonic/hyperbolic.ts's AUDIT_EPSILON.
+ */
+const BOUNDARY_EPSILON = 1e-15;
 
 /**
  * Compute Euclidean norm of a vector
@@ -87,9 +97,10 @@ export function hyperbolicDistance(u: number[], v: number[]): number {
   const uNormSq = normSq(u);
   const vNormSq = normSq(v);
 
-  // Clamp to ensure points are inside the ball
-  const uFactor = Math.max(EPSILON, 1 - uNormSq);
-  const vFactor = Math.max(EPSILON, 1 - vNormSq);
+  // Clamp to ensure points are inside the ball.
+  // A4: Clamping — BOUNDARY_EPSILON (1e-15), not the looser EPSILON (1e-10).
+  const uFactor = Math.max(BOUNDARY_EPSILON, 1 - uNormSq);
+  const vFactor = Math.max(BOUNDARY_EPSILON, 1 - vNormSq);
 
   const arg = 1 + (2 * diffNormSq) / (uFactor * vFactor);
 
