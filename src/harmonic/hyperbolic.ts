@@ -141,12 +141,18 @@ export function hyperbolicDistance(u: number[], v: number[]): number {
   const uNormSq = normSq(u);
   const vNormSq = normSq(v);
 
-  // Clamp to ensure points are inside the ball
-  const uFactor = Math.max(EPSILON, 1 - uNormSq);
-  const vFactor = Math.max(EPSILON, 1 - vNormSq);
+  // Clamp to ensure points are inside the ball.
+  // A4: Clamping — uses AUDIT_EPSILON (1e-15), not the looser EPSILON (1e-10).
+  // The looser clamp collapsed every point within 1e-10 of the boundary to the
+  // SAME distance value (verified: r=1-1e-15 through r=1.0 exactly all returned
+  // the identical d_H), discarding ~5 orders of magnitude of real, representable
+  // float64 precision that AUDIT_EPSILON was already built to preserve.
+  const boundaryEps = getAuditEpsilon();
+  const uFactor = Math.max(boundaryEps, 1 - uNormSq);
+  const vFactor = Math.max(boundaryEps, 1 - vNormSq);
 
   const denominator = uFactor * vFactor;
-  if (!Number.isFinite(denominator) || denominator <= EPSILON * EPSILON) {
+  if (!Number.isFinite(denominator) || denominator <= boundaryEps * boundaryEps) {
     return Number.POSITIVE_INFINITY;
   }
 

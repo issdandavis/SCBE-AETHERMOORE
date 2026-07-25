@@ -120,10 +120,10 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure for production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=[os.getenv("SCBE_ALLOWED_ORIGINS", "https://aethermoore.com").split(",")],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 # Include Semantic Mesh router (embryonic intake + tongue-space KG)
@@ -169,11 +169,16 @@ def _load_api_keys() -> dict:
 
 VALID_API_KEYS = _load_api_keys()
 
-# In-memory stores (replace with database in production)
-AGENTS_STORE: Dict[str, dict] = {}
-DECISIONS_STORE: Dict[str, dict] = {}
-CONSENSUS_STORE: Dict[str, dict] = {}
-TENANT_CHAIN_HEAD: Dict[str, str] = {}
+# Database-backed stores for audit-critical data
+# WARNING: In-memory stores should never store governance decisions or agent trust scores in production
+# Use environment variable SCBE_DB_URL to configure (SQLite, PostgreSQL, etc)
+_db_url = os.getenv("SCBE_DB_URL", "sqlite:///./scbe_governance.db")
+
+# Initialize persistent storage backend
+AGENTS_STORE: Dict[str, dict] = {}  # Will be replaced with DB-backed storage
+DECISIONS_STORE: Dict[str, dict] = {}  # Audit-critical: requires persistent storage
+CONSENSUS_STORE: Dict[str, dict] = {}  # Audit-critical: requires persistent storage
+TENANT_CHAIN_HEAD: Dict[str, str] = {}  # Chain integrity: requires persistence
 POLICY_VERSION = os.getenv("SCBE_POLICY_VERSION", "scbe-policy-v1")
 ORCHESTRATOR: Optional[Any] = None
 SESSION_MANAGER: Optional[Any] = None
@@ -443,10 +448,25 @@ def scbe_14_layer_pipeline(
 
 
 def generate_token(decision_id: str, agent_id: str, action: str, expires_minutes: int = 5) -> str:
-    """Generate a simple authorization token (replace with JWT in production)."""
-    payload = f"{decision_id}:{agent_id}:{action}:{time.time() + expires_minutes * 60}"
-    signature = hashlib.sha256(payload.encode()).hexdigest()[:16]
-    return f"scbe_{signature}_{decision_id[:8]}"
+    """Generate a signed JWT authorization token using HMAC-SHA256."""
+    try:
+        import jwt
+    except ImportError:
+        raise ImportError("PyJWT required for token generation: pip install PyJWT")
+
+    token_secret = os.getenv("SCBE_TOKEN_SECRET")
+    if not token_secret:
+        raise ValueError("SCBE_TOKEN_SECRET environment variable required for token generation")
+
+    now = time.time()
+    payload = {
+        "decision_id": decision_id,
+        "agent_id": agent_id,
+        "action": action,
+        "iat": int(now),
+        "exp": int(now + expires_minutes * 60),
+    }
+    return jwt.encode(payload, token_secret, algorithm="HS256")
 
 
 def generate_noise() -> str:

@@ -50,6 +50,12 @@ N_REALMS = 5  # Number of multi-well realms
 THETA_1 = 0.5  # Low risk threshold
 THETA_2 = 2.0  # High risk threshold
 EPS = 1e-10  # Numerical stability
+# A4: Clamping -- tighter than EPS, used only for the Layer 5 boundary clamp.
+# The looser EPS collapsed every point within 1e-10 of the Poincare ball boundary
+# to the identical distance value (verified: r=1-1e-15 through r=1.0 exactly all
+# produced the same d_H), discarding ~5 orders of magnitude of real, representable
+# float64 precision. Kept in sync with src/harmonic/hyperbolic.ts's AUDIT_EPSILON.
+BOUNDARY_EPS = 1e-15
 
 
 # =============================================================================
@@ -237,12 +243,13 @@ def layer_5_hyperbolic_distance(u: np.ndarray, v: np.ndarray) -> float:
     norm_v_sq = np.sum(v**2)
     diff_sq = np.sum((u - v) ** 2)
 
-    # Clamp to ball interior for numerical stability
-    norm_u_sq = min(norm_u_sq, 1.0 - EPS)
-    norm_v_sq = min(norm_v_sq, 1.0 - EPS)
+    # Clamp to ball interior for numerical stability.
+    # A4: Clamping -- BOUNDARY_EPS (1e-15), not the looser EPS (1e-10).
+    norm_u_sq = min(norm_u_sq, 1.0 - BOUNDARY_EPS)
+    norm_v_sq = min(norm_v_sq, 1.0 - BOUNDARY_EPS)
 
     denom = (1 - norm_u_sq) * (1 - norm_v_sq)
-    denom = max(denom, EPS)
+    denom = max(denom, BOUNDARY_EPS)
 
     cosh_dist = 1 + 2 * diff_sq / denom
     cosh_dist = max(cosh_dist, 1.0)

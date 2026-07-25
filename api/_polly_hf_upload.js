@@ -49,11 +49,10 @@ function stamp(record) {
 
 function nonceHex(bytes) {
   const out = new Uint8Array(bytes);
-  if (typeof globalThis.crypto !== 'undefined' && globalThis.crypto.getRandomValues) {
-    globalThis.crypto.getRandomValues(out);
-  } else {
-    for (let i = 0; i < out.length; i += 1) out[i] = Math.floor(Math.random() * 256);
+  if (typeof globalThis.crypto === 'undefined' || !globalThis.crypto.getRandomValues) {
+    throw new Error('Cryptographic randomness not available in this environment');
   }
+  globalThis.crypto.getRandomValues(out);
   return Array.from(out, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
