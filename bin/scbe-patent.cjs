@@ -6,6 +6,7 @@ const crypto = require('node:crypto');
 const { execFileSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
+const PACKAGE_JSON = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
 const DEFAULT_WORKDIR = path.join(ROOT, 'docs', 'legal', 'patent-workbench');
 
 const OFFICIAL_SOURCES = [
@@ -163,9 +164,13 @@ Default workdir:
 }
 
 function parse(argv) {
-  const args = { command: '', workdir: DEFAULT_WORKDIR, json: false, help: false };
+  const args = { command: '', workdir: DEFAULT_WORKDIR, json: false, help: false, version: false };
   args.command = argv[2] || '';
-  for (let i = 3; i < argv.length; i += 1) {
+  const start = args.command.startsWith('-') ? 2 : 3;
+  if (args.command.startsWith('-')) {
+    args.command = '';
+  }
+  for (let i = start; i < argv.length; i += 1) {
     const token = argv[i];
     if (token === '--workdir') {
       args.workdir = path.resolve(argv[++i] || '');
@@ -173,6 +178,8 @@ function parse(argv) {
       args.json = true;
     } else if (token === '--help' || token === '-h') {
       args.help = true;
+    } else if (token === '--version' || token === '-v') {
+      args.version = true;
     }
   }
   return args;
@@ -479,9 +486,13 @@ function print(result, json) {
 
 function main() {
   const args = parse(process.argv);
+  if (args.version) {
+    process.stdout.write(`${PACKAGE_JSON.version}\n`);
+    return;
+  }
   if (args.help || !args.command) {
     usage();
-    process.exitCode = args.command ? 0 : 1;
+    process.exitCode = args.help ? 0 : 1;
     return;
   }
 

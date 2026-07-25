@@ -2975,12 +2975,12 @@ async function main() {
   const { positionals, flags } = parseArgs(argv);
   const command = positionals[0];
 
-  if (!command || command === "help" || flags.help) {
-    process.stdout.write(COMMAND_HELP);
+  if (command === "version" || flags.version) {
+    process.stdout.write(`${PACKAGE_JSON.version}\n`);
     return;
   }
-  if (command === "version") {
-    process.stdout.write(`${PACKAGE_JSON.version}\n`);
+  if (!command || command === "help" || flags.help) {
+    process.stdout.write(COMMAND_HELP);
     return;
   }
   if (SCBE_SPINE_COMMANDS.has(command)) {

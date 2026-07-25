@@ -79,6 +79,10 @@ function resolveGeoSealInvocations(options: RunOptions = {}): GeoSealInvocation[
   const repoRoot = findRepoRoot(options);
   const python = options.python || process.env.PYTHON || 'python';
 
+  if (options.geosealBin) {
+    invocations.push({ command: options.geosealBin, argsPrefix: [], cwd: repoRoot || process.cwd() });
+  }
+
   if (repoRoot) {
     invocations.push({
       command: python,
@@ -88,7 +92,6 @@ function resolveGeoSealInvocations(options: RunOptions = {}): GeoSealInvocation[
   }
 
   const binaryCandidates = [
-    options.geosealBin,
     process.env.SCBE_GEOSEAL_BIN,
     'geoseal',
     'scbe-geoseal',

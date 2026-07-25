@@ -3,8 +3,11 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
+const ROOT = path.resolve(__dirname, '..');
+const PACKAGE_JSON = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+
 function loadApi() {
-  const apiPath = path.resolve(__dirname, '..', 'dist', 'src', 'index.js');
+  const apiPath = path.join(ROOT, 'dist', 'src', 'index.js');
   try {
     return require(apiPath);
   } catch {
@@ -29,11 +32,13 @@ Options:
 }
 
 function parse(argv) {
-  const args = { json: false, batch: '', text: [], help: false };
+  const args = { json: false, batch: '', text: [], help: false, version: false };
   for (let i = 2; i < argv.length; i += 1) {
     const token = argv[i];
     if (token === '--help' || token === '-h') {
       args.help = true;
+    } else if (token === '--version' || token === '-v') {
+      args.version = true;
     } else if (token === '--json') {
       args.json = true;
     } else if (token === '--batch') {
@@ -66,6 +71,10 @@ function printRecord(record, json) {
 
 function main() {
   const args = parse(process.argv);
+  if (args.version) {
+    process.stdout.write(`${PACKAGE_JSON.version}\n`);
+    return;
+  }
   if (args.help) {
     help();
     return;

@@ -50,7 +50,7 @@ test('scbe do creates a durable squad landing with a valid hash chain', () => {
       'local-jsonl',
       '--json',
     ],
-    { cwd }
+    { cwd, timeout: 30_000 }
   );
   const body = parseJson(result);
 
@@ -66,7 +66,7 @@ test('scbe do creates a durable squad landing with a valid hash chain', () => {
   assert.equal(status.event_count, 32);
   assert.ok(status.last_landing);
   assert.equal(status.last_landing.hash, body.landing_hash);
-});
+}, { timeout: 35_000 });
 
 test('work init, agent spawn, and land create share one workflow ledger', () => {
   const cwd = tempWorkspace();

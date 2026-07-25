@@ -95,7 +95,7 @@ describe('compilePlan: semantic attachment', () => {
     expect(plan).toBeNull();
   });
 
-  it('falls back to an installed geoseal binary when repo-local compile fails', () => {
+  it('tries an explicit geoseal binary before repo-local fallback', () => {
     mockSpawnSync
       .mockReturnValueOnce(failResult())
       .mockReturnValueOnce(successResult(fakePlanJson()));
@@ -105,8 +105,8 @@ describe('compilePlan: semantic attachment', () => {
     });
     expect(plan).not.toBeNull();
     expect(mockSpawnSync).toHaveBeenCalledTimes(2);
-    expect(mockSpawnSync.mock.calls[1]?.[0]).toBe('mock-geoseal');
-    expect(mockSpawnSync.mock.calls[1]?.[1]).toEqual([
+    expect(mockSpawnSync.mock.calls[0]?.[0]).toBe('mock-geoseal');
+    expect(mockSpawnSync.mock.calls[0]?.[1]).toEqual([
       'compile',
       '--json',
       'compile this through installed geoseal',

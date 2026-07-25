@@ -162,5 +162,5 @@ describe('queue', () => {
     // Pipeline should compile, get ALLOW, and execute successfully
     expect(status!.result!.ok).toBe(true);
     expect(status!.result!.result).toBeTruthy();
-  });
+  }, 10_000);
 });

@@ -2,6 +2,7 @@
 
 const path = require('node:path');
 
+const PACKAGE_JSON = require('../package.json');
 const {
   createAgentWorkspace,
   exportAgentWorkspace,
@@ -173,6 +174,10 @@ async function main() {
   const baseUrl = String(
     flags['base-url'] || process.env.SCBE_AGENT_BUS_URL || 'http://127.0.0.1:8787'
   );
+  if (command === 'version' || flags.version) {
+    process.stdout.write(`${PACKAGE_JSON.version}\n`);
+    return;
+  }
   if (command === 'help' || flags.help) {
     printHelp();
     return;
