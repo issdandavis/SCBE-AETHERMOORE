@@ -308,9 +308,9 @@ function commandPath(command) {
   }
 }
 
-function resolveBrowserExecutable() {
+function resolveBrowserExecutables() {
   const envPath = String(process.env.SCBE_BROWSER_EXECUTABLE_PATH || '').trim();
-  if (envPath && fs.existsSync(envPath)) return envPath;
+  if (envPath && fs.existsSync(envPath)) return [envPath];
   const windowsCandidates = [
     'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
     'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
@@ -318,7 +318,7 @@ function resolveBrowserExecutable() {
     'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
   ];
   if (process.platform === 'win32') {
-    return windowsCandidates.find((candidate) => fs.existsSync(candidate)) || '';
+    return windowsCandidates.filter((candidate) => fs.existsSync(candidate));
   }
   const posixCandidates =
     process.platform === 'darwin'
@@ -334,7 +334,7 @@ function resolveBrowserExecutable() {
           commandPath('chromium'),
           commandPath('microsoft-edge'),
         ];
-  return posixCandidates.find((candidate) => candidate && fs.existsSync(candidate)) || '';
+  return posixCandidates.filter((candidate) => candidate && fs.existsSync(candidate));
 }
 
 function loadPlaywrightChromium() {
@@ -357,10 +357,9 @@ function loadPlaywrightChromium() {
 }
 
 async function launchBrowserRuntime(chromium) {
-  const executablePath = resolveBrowserExecutable();
+  const executablePaths = resolveBrowserExecutables();
   const attempts = [];
-  const options = [];
-  if (executablePath) options.push({ headless: true, executablePath });
+  const options = executablePaths.map((executablePath) => ({ headless: true, executablePath }));
   options.push({ headless: true });
   let lastError = null;
   for (const launchOptions of options) {

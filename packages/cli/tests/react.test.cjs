@@ -6,6 +6,7 @@ const path = require('node:path');
 const test = require('node:test');
 
 const CLI = path.resolve(__dirname, '..', 'bin', 'scbe.js');
+const LOCAL_OQS_ROOT = path.join(os.homedir(), '_oqs');
 
 function runCli(args, options = {}) {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-cli-react-'));
@@ -13,6 +14,9 @@ function runCli(args, options = {}) {
     ...process.env,
     HOME: home,
     USERPROFILE: home,
+    ...(process.env.OQS_INSTALL_PATH || fs.existsSync(path.join(LOCAL_OQS_ROOT, 'bin', 'oqs.dll'))
+      ? { OQS_INSTALL_PATH: process.env.OQS_INSTALL_PATH || LOCAL_OQS_ROOT }
+      : {}),
     NO_COLOR: '1',
   };
   return spawnSync(process.execPath, [CLI, ...args], {

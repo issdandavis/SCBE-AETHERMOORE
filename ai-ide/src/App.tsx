@@ -379,7 +379,7 @@ export default function App() {
       addLog('--------------------------------------------------');
       addLog('');
 
-      const categories = getLanguagesByCategory();
+      const categories: Record<string, string[]> = getLanguagesByCategory();
       for (const category of Object.keys(categories)) {
         addLog(`${category}:`);
         for (const ext of categories[category]) {
