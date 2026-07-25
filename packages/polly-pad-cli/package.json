@@ -19,5 +19,9 @@
     "url": "git+https://github.com/issdandavis/SCBE-AETHERMOORE.git",
     "directory": "packages/polly-pad-cli"
   },
+  "bugs": {
+    "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"
+  },
+  "homepage": "https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/packages/polly-pad-cli#readme",
   "publishConfig": { "access": "public" }
 }

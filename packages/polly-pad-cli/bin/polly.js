@@ -1458,6 +1458,10 @@ function findRepoRootForRouter() {
   return detectGitRoot(__dirname);
 }
 
+function needsWindowsCommandShell(executable) {
+  return process.platform === 'win32' && /\.(cmd|bat)$/i.test(String(executable || ''));
+}
+
 async function tryTerminalAiRouter(prompt) {
   if (process.env.POLLY_DISABLE_TERMINAL_ROUTER === '1') return null;
   if (!hasAnyEnv(['CEREBRAS_API_KEY', 'GROQ_API_KEY', 'HF_TOKEN'])) return null;
@@ -1468,8 +1472,9 @@ async function tryTerminalAiRouter(prompt) {
   if (!fs.existsSync(routerPath)) return null;
 
   try {
+    const pythonCommand = process.env.PYTHON || 'python';
     const result = spawnSync(
-      process.env.PYTHON || 'python',
+      pythonCommand,
       [
         routerPath,
         'call',
@@ -1487,6 +1492,7 @@ async function tryTerminalAiRouter(prompt) {
         timeout: 45000,
         maxBuffer: 1024 * 1024 * 4,
         env: Object.assign({}, process.env),
+        shell: needsWindowsCommandShell(pythonCommand),
       }
     );
     const text = String(result.stdout || '').trim();
