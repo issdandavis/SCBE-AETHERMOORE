@@ -6,7 +6,10 @@
  *
  * All battle moves, keyed by id. Each Sacred Tongue element has a tiered
  * ladder (jab ~35 / strike ~60 / burst ~90 / cataclysm ~120) with accuracy
- * falling as power rises, plus a few utility moves (drain, heal).
+ * falling as power rises, plus a utility move per tongue that fits its
+ * domain: KO commands (atk_up), AV rides the wind (spd_up), RU decays
+ * (def_down + drain), CA self-repairs (heal), UM breaks wards
+ * (guard_break), DR binds (stun).
  */
 
 import type { MoveDef } from './types.js';
@@ -45,6 +48,15 @@ const MOVE_LIST: readonly MoveDef[] = [
     accuracy: 0.75,
     description: 'An absolute order the world itself obeys.',
   },
+  {
+    id: 'rally_cry',
+    name: 'Rally Cry',
+    element: 'KO',
+    power: 0,
+    accuracy: 1.0,
+    effect: 'atk_up',
+    description: 'A commander’s roar — its own attack rises (once per battle).',
+  },
   // ── AV (Avali — Transport) ────────────────────────────────────────────
   {
     id: 'gale_jab',
@@ -77,6 +89,15 @@ const MOVE_LIST: readonly MoveDef[] = [
     power: 120,
     accuracy: 0.75,
     description: 'A hurricane condensed into a single halo.',
+  },
+  {
+    id: 'tailwind',
+    name: 'Tailwind',
+    element: 'AV',
+    power: 0,
+    accuracy: 1.0,
+    effect: 'spd_up',
+    description: 'Rides its own slipstream — speed rises (once per battle).',
   },
   // ── RU (Runethic — Entropy) ───────────────────────────────────────────
   {
@@ -120,6 +141,15 @@ const MOVE_LIST: readonly MoveDef[] = [
     effect: 'drain',
     description: 'Steals vitality — half the damage dealt is restored.',
   },
+  {
+    id: 'rust_hex',
+    name: 'Rust Hex',
+    element: 'RU',
+    power: 0,
+    accuracy: 0.9,
+    effect: 'def_down',
+    description: 'Entropy gnaws the foe’s guard — its defense crumbles.',
+  },
   // ── CA (Cassisivadan — Compute) ───────────────────────────────────────
   {
     id: 'bit_flick',
@@ -162,6 +192,14 @@ const MOVE_LIST: readonly MoveDef[] = [
     effect: 'heal',
     description: 'Self-repair routine — restores 35% of max HP.',
   },
+  {
+    id: 'bernoulli_sequence',
+    name: 'Bernoulli Sequence',
+    element: 'CA',
+    power: 95,
+    accuracy: 0.85,
+    description: 'The First Song — the oldest program in the realm, still running.',
+  },
   // ── UM (Umbroth — Security) ───────────────────────────────────────────
   {
     id: 'shade_tap',
@@ -195,6 +233,15 @@ const MOVE_LIST: readonly MoveDef[] = [
     accuracy: 0.75,
     description: 'The sky goes out. So does the opponent.',
   },
+  {
+    id: 'ward_shatter',
+    name: 'Ward Shatter',
+    element: 'UM',
+    power: 55,
+    accuracy: 0.9,
+    effect: 'guard_break',
+    description: 'A key turned in the foe’s own lock — cannot be blocked.',
+  },
   // ── DR (Draumric — Structure) ─────────────────────────────────────────
   {
     id: 'rune_tap',
@@ -227,6 +274,15 @@ const MOVE_LIST: readonly MoveDef[] = [
     power: 120,
     accuracy: 0.75,
     description: 'The architecture of reality, swung like a hammer.',
+  },
+  {
+    id: 'binding_lattice',
+    name: 'Binding Lattice',
+    element: 'DR',
+    power: 0,
+    accuracy: 0.7,
+    effect: 'stun',
+    description: 'Crystal bonds seize the foe — it loses its next action.',
   },
 ];
 

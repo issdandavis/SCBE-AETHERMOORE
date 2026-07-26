@@ -48,17 +48,28 @@ Source: `src/browser/evaluator.ts` THRESHOLDS
 Weight formula: `phi^n` where n is the tongue index.
 Source: `src/tokenizer/`, `src/spiralverse/`
 
-## Harmonic Wall Cost Function
+## Harmonic Formula Regimes
 
-```
-H(d, pd) = 1 / (1 + d_H + 2*pd)
-```
+These formulas coexist for different purposes and must be named in every
+benchmark receipt:
+
+| Regime | Formula | Runtime role |
+|---|---|---|
+| `BOUNDED_SCORE` | `H_score(d,pd) = 1 / (1 + d_H + 2*pd)` | Current L12 safety score in the Python reference and TypeScript `pipeline14`. |
+| `BOUNDED_WALL` | `H_wall(d*) = 1 + alpha*tanh(beta*d*)` | Bounded risk multiplier in theorem-oriented modules. |
+| `QUADRATIC_EXP_COST` | `H_cost(d,R) = R^(d^2)` | Public cost helper and stress-test surfaces. |
+| `PI_EXP_COST` | `H_pi(d,R) = R*pi^(phi*d)` | Resource and access-cost surfaces. |
 
 Where:
 - `d_H` = hyperbolic distance in Poincaré ball
 - `pd` = phase deviation (semantic injection penalty + control char penalty)
 
-Super-exponential wall: `phi^((phi * d*)^2)`
+The exported TypeScript helper `harmonicWall` uses the explicitly phi-scaled
+quadratic-exponent variant `phi^((phi*d*)^2)`. It is not interchangeable with
+the bounded L12 score. The complete regime registry is
+`docs/specs/CANONICAL_FORMULA_REGISTRY.md`.
+
+See [Core Axioms: Canonical Index](../CORE_AXIOMS_CANONICAL_INDEX.md).
 
 ## Hyperbolic Distance (Layer 5)
 
@@ -98,5 +109,5 @@ d_H = arcosh(1 + 2||u-v||² / ((1-||u||²)(1-||v||²)))
 
 ## Version
 
-Package: 4.0.3 (npm + PyPI)
+Package: 4.2.1 (npm + PyPI metadata in this checkout)
 Patent: USPTO #63/961,403

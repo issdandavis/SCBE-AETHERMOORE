@@ -14,6 +14,7 @@ import type { Combatant, EggState, GameState, MonsterState, ArenaRival, Stats } 
 import {
   HEIRLOOM_CAP,
   HEIRLOOM_FRACTION,
+  IDEAL_WEIGHT,
   STAGE_ORDER,
   STAT_KEYS,
   WARMTH_TO_HATCH,
@@ -53,7 +54,7 @@ export function newGame(tamerName: string, eggSpeciesId: string, seed: number): 
     throw new RangeError(`Not a starter egg: ${eggSpeciesId}`);
   }
   return {
-    version: 2,
+    version: 3,
     tamerName,
     egg: { speciesId: eggSpeciesId, warmth: 0, generation: 1 },
     monster: null,
@@ -288,21 +289,35 @@ function migrateV1(state: GameState): void {
   }
 }
 
+/** Migrate a version-2 save (pre-daily-life) in place. */
+function migrateV2(state: GameState): void {
+  const mutable = state as unknown as Record<string, unknown>;
+  mutable.version = 3;
+  if (state.monster !== null) {
+    const monster = state.monster as unknown as Record<string, unknown>;
+    const stage = getSpecies(state.monster.speciesId).stage;
+    monster.weightKb = monster.weightKb ?? IDEAL_WEIGHT[stage];
+    monster.residue = monster.residue ?? 0;
+    monster.glitched = monster.glitched ?? false;
+  }
+}
+
 /**
- * Parse and validate a save file. Version-1 saves are migrated forward.
- * Throws on malformed input.
+ * Parse and validate a save file. Version-1 and -2 saves are migrated
+ * forward. Throws on malformed input.
  */
 export function deserializeGame(json: string): GameState {
   const raw: unknown = JSON.parse(json);
   if (typeof raw !== 'object' || raw === null) throw new TypeError('Save is not an object');
   const state = raw as GameState;
   const version = state.version as number;
-  if (version !== 1 && version !== 2) {
+  if (version !== 1 && version !== 2 && version !== 3) {
     throw new TypeError(`Unsupported save version: ${String(version)}`);
   }
   if (typeof state.tamerName !== 'string') throw new TypeError('Save missing tamerName');
   if (typeof state.rngState !== 'number') throw new TypeError('Save missing rngState');
   if (version === 1) migrateV1(state);
+  if (version <= 2) migrateV2(state);
   getRegion(state.region); // validates region exists
   if (state.monster !== null) {
     getSpecies(state.monster.speciesId); // validates species exists

@@ -9,7 +9,7 @@ Post-quantum AI governance through geometric adversarial cost scaling.
 
 Adversarial inputs cost exponentially more the further they drift from safe operation. The mechanism is hyperbolic geometry applied to semantic embeddings — not heuristic classifiers or blocklists. The pipeline runs locally, produces audit receipts, and composes with upstream safety tools.
 
-**npm** · **PyPI** · **Patent pending: USPTO application #63/961,403** · **CAGE 1EXD5** · **SAM UEI J4NXHM6N5F59**
+**npm** · **PyPI** · **Patent pending: USPTO #19/691,526 (non-provisional, filed 2026-05-28), claiming priority to provisional #63/961,403 (2026-01-15)** · **CAGE 1EXD5** · **SAM UEI J4NXHM6N5F59**
 
 ---
 
@@ -209,7 +209,7 @@ In short: the lore terms are labels; the runtime surface is embeddings, weighted
 
 ## Engineering Overview
 
-The core mechanism: input text is embedded, projected onto six φ-weighted semantic axes, and placed in hyperbolic space. The hyperbolic distance from the safe operating region is the cost signal. Cost scales superexponentially with drift — making adversarial inputs computationally distinguishable without a blocklist.
+The core mechanism: input text is embedded, projected onto six phi-weighted semantic axes, and placed in hyperbolic space. The fourteen-layer decision profiles use the bounded score `1/(1+d+2*pd)`. Separate, explicitly named cost helpers provide quadratic-exponent or pi-exponent scaling; they are not interchangeable with the decision score.
 
 **14-layer pipeline:**
 
@@ -234,6 +234,12 @@ Layer 14:    Audio Axis (FFT telemetry)
 - **Symmetry** (L5, 9, 10, 12): gauge invariance
 - **Composition** (L1, 14): pipeline integrity
 
+Canonical definitions, formula-regime labels, evidence limits, and the
+five-dimensional `AxiomLens` node overlay:
+[docs/CORE_AXIOMS_CANONICAL_INDEX.md](docs/CORE_AXIOMS_CANONICAL_INDEX.md).
+These axioms verify named transforms under stated assumptions; they are not a
+claim that every possible agent behavior is mathematically proven safe.
+
 **Post-quantum cryptography:** ML-KEM-768, ML-DSA-65, AES-256-GCM envelope.
 
 Canonical formula lock: [docs/specs/SCBE_CANONICAL_CONSTANTS.md](docs/specs/SCBE_CANONICAL_CONSTANTS.md)
@@ -246,7 +252,33 @@ Canonical formula lock: [docs/specs/SCBE_CANONICAL_CONSTANTS.md](docs/specs/SCBE
 |---|---|---|---|---|
 | No defense | 0.000 | 0% | 0% | — |
 | DeBERTa PromptGuard | — | 76.7% | 0% | Fine-tuned classifier |
-| **SCBE (semantic projector)** | **0.813** | **74.2%** | tunable | Geometric cost + semantic embeddings |
+| **SCBE (semantic projector)** | **0.813** | **74.2%** | **0/15 clean prompts** | Geometric cost + semantic embeddings |
+
+**Read this before citing the table.** Four limits, none of them cosmetic:
+
+1. **The FPR denominator is 15.** `BASELINE_CLEAN` in
+   `tests/adversarial/attack_corpus.py` holds 15 clean prompts. Zero false
+   positives out of 15 is consistent with a true FPR anywhere up to roughly
+   20%. It is not a demonstrated 0%, and the earlier "tunable" in this cell
+   was worse — it read as an unreported number. Treat this as *not yet
+   measured at useful precision*.
+2. **The baseline lanes are simulated unless you turn them on.**
+   `scripts/benchmark/scbe_vs_industry.py` records
+   `model_lane_status: {"protectai": "simulated", "meta_prompt_guard":
+   "simulated"}` by default, because external model loading is off unless
+   `SCBE_BENCHMARK_EXTERNAL_LANES` is set. A default run therefore scores
+   SCBE against **stubs, not against DeBERTa or Meta Prompt Guard**, and any
+   cross-system number it prints is not a comparison. The 76.7% row above
+   came from a run with real models; reproducing it requires enabling those
+   lanes.
+3. **91 attacks, all ours.** The corpus lives in this repo and the pipeline
+   was developed against it. A high score on it measures fit to our own
+   test set, not generalization. On a default (simulated-baseline) run the
+   pipeline blocks 91/91 — which is a statement about the corpus, not a
+   result worth quoting.
+4. **Detection is below the baseline.** 74.2% vs 76.7%. The honest claim is
+   determinism, sub-8ms latency, and an auditable decision trace with no
+   model call — not superior detection.
 
 **Before/after the semantic projector upgrade:**
 
@@ -264,6 +296,16 @@ Canonical formula lock: [docs/specs/SCBE_CANONICAL_CONSTANTS.md](docs/specs/SCBE
 | Llama 3.2 (base) | 55.0% | 0 |
 | Gemini 2.5 Flash | 23.3% | 6 (all) |
 
+**This table does not show what it looks like it shows.** The metric is
+derived from our own tongue corpus, and the top scorer is the model trained
+on that corpus — so the ranking is partly circular and cannot be read as a
+general capability comparison. The Gemini row is the tell: a model scoring
+null on *all six* axes at once is more plausibly evidence that **the metric
+fails to transfer off-corpus** than that the model lacks six independent
+faculties. Use this table for tracking SCBE-trained models against each
+other over time; a cross-vendor claim would need a metric defined
+independently of our corpus.
+
 **Petri seed gate (Anthropic adversarial seeds):** 171/173 correctly denied or escalated at v7-matched config (1.16% false-allow). Notes: [docs/external/PETRI_FINDINGS_2026_05_08.md](docs/external/PETRI_FINDINGS_2026_05_08.md).
 
 **Opt-in model gate delta:** see [Detection performance (measured)](#detection-performance-measured) above — pure-Python **50%** → model **92.9%** recall on the held-out paraphrase corpus. Reproduce with `pip install .[ml-onnx]`, `SCBE_INJECTION_MODEL=1`, and `pytest tests/test_intent_model_benchmark.py -q`.
@@ -277,7 +319,14 @@ SCBE-AETHERMOORE has a government contracting surface.
 - **CAGE Code**: 1EXD5
 - **SAM UEI**: J4NXHM6N5F59
 - **SAM registration**: active as of 2026-04-13; verify current status at SAM.gov by UEI or CAGE
-- **Patent status**: patent pending, USPTO application #63/961,403
+- **Patent status**: patent pending. Non-provisional **#19/691,526** filed
+  2026-05-28 (micro entity, 35 USC 111(a), docket SCBE-2026-0001), claiming
+  priority to provisional **#63/961,403** filed 2026-01-15. **Neither is
+  examined.** No claims have been allowed or granted, no examiner or art unit
+  is assigned, and "patent pending" confers no enforceable rights. Publication
+  is expected ~2027-07; the application is not in the public USPTO API until
+  then. Note that `docs/legal/patent-workbench/` predates the 2026-07-24
+  receipt confirmation and still describes 19/691,526 as unconfirmed.
 - **Relevant federal opportunity**: DARPA MATHBAC — active opportunity DARPA-PA-26-05 (published 2026-04-07, proposal deadline 2026-06-16); Proposers Day reference DARPA-SN-26-59
 - **Capability docs**: [M5 Mesh Product & Service Blueprint](docs/M5_MESH_PRODUCT_SERVICE_BLUEPRINT.md)
 
@@ -303,7 +352,7 @@ Custom AI work is available for clients that need procurement-ready, clearance-s
 | Post-quantum crypto | Runtime component | ML-KEM-768, ML-DSA-65, AES-256-GCM envelope |
 | 5 quantum axioms | Formal constraints | Unitarity, Locality, Causality, Symmetry, Composition |
 | Aethermoor Outreach | Experimental / civic MVP | Workflow engine for navigating government processes |
-| 6,066 tests | Verification | 5,954 TypeScript + 112 Python; property-based with fast-check/Hypothesis |
+| ~19,170 tests | Verification | 5,954 TypeScript + **13,216 Python** (`pytest --collect-only`, 2026-07-25, all under `tests/`); property-based with fast-check/Hypothesis |
 
 ---
 
@@ -377,7 +426,7 @@ If you are reviewing the project seriously, start with:
 
 ## Lore and Worldbuilding
 
-This started as a DnD campaign on [Everweave.ai](https://everweave.ai). 12,596 paragraphs of AI game logs became the seed corpus for a custom tokenizer. That tokenizer became a 6-dimensional semantic coordinate system. That coordinate system became the 14-layer security pipeline. That pipeline became a patent (USPTO application #63/961,403). The game logs became a [141,000-word novel](https://www.amazon.com/dp/B0F28PHSPR) where the magic system is the real security architecture.
+This started as a DnD campaign on [Everweave.ai](https://everweave.ai). 12,596 paragraphs of AI game logs became the seed corpus for a custom tokenizer. That tokenizer became a 6-dimensional semantic coordinate system. That coordinate system became the 14-layer security pipeline. That pipeline became a patent application (provisional #63/961,403, now non-provisional #19/691,526 — filed, not examined). The game logs became a [141,000-word novel](https://www.amazon.com/dp/B0F28PHSPR) where the magic system is the real security architecture.
 
 The "Sacred Tongues" are the six φ-scaled semantic axes. "GeoSeal" is the governance gate. "Spiralverse" is the training corpus and the world. The lore is not decoration — it is the original encoding system. But it is also genuinely lore, and the two things are kept separate deliberately.
 

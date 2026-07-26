@@ -291,18 +291,18 @@ export function isSafe(text: string, threshold: Decision = 'QUARANTINE'): boolea
 }
 
 /**
- * Compute the superexponential harmonic wall cost: phi^((phi * d*)^2).
+ * Compute the quadratic-exponent harmonic cost: phi^((phi * d*)^2).
  *
  * The further from safe operation, the exponentially higher the cost.
  *
  * @param dStar - Hyperbolic distance (from scan().d_star).
  * @param phi   - Base parameter. Default: golden ratio (1.618...).
- * @returns Cost in [1, ∞). Grows superexponentially with d*.
+ * @returns Cost in [1, infinity). Exponential in squared distance.
  *
  * @example
  * ```ts
- * harmonicWall(0.5)  // ~1.89   mild drift
- * harmonicWall(2.0)  // >1000   adversarial
+ * harmonicWall(0.5)  // ~1.37   mild drift
+ * harmonicWall(2.0)  // ~154.36 adversarial
  * ```
  */
 export function harmonicWall(dStar: number, phi: number = PHI): number {
@@ -369,7 +369,7 @@ export * from './governance/offline_mode.js';
 export * from './operator/index.js';
 
 // Version and Metadata
-export const VERSION = '4.0.3';
+export const VERSION = '4.3.0';
 export const PATENT_NUMBER = 'USPTO #63/961,403';
 export const ARCHITECTURE_LAYERS = 14;
 

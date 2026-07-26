@@ -10,6 +10,22 @@ friendly commands.
 npm i -g scbe-aethermoore-cli
 ```
 
+## Governed Task API
+
+`scbe-task` talks to the local Clay task lab through the same fail-closed
+contract exported by `scbe-agent-bus`.
+
+```bash
+scbe-task capabilities
+scbe-task submit --objective "check this claim" --evidence-file evidence.json --wait --json
+scbe-task status trun_abc123 --json
+scbe-task validate saved-run.json --json
+```
+
+The default endpoint is `http://127.0.0.1:8766`. Loopback, private, and
+Tailscale IP literals are allowed; public hosts require explicit opt-in and
+HTTPS. A completed run is still marked `do_not_promote_to_fact` until reviewed.
+
 ## Commands
 
 ```bash

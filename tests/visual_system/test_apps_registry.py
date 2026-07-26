@@ -39,6 +39,7 @@ _ALLOWED_APP_IDS = {
     "knowledge",
     "pollypad",
     "service",
+    "htmlbridge",
     "appstore",
 }
 

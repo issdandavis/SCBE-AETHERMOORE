@@ -2,11 +2,16 @@
 title: SCBE-AETHERMOORE — Compressed Math Reference (All 14 Layers)
 version: 1.1.0
 date: 2026-04-13
-authority: Derived from CANONICAL_FORMULA_REGISTRY.md v1.0.0
+authority: Historical mixed-profile reference; superseded by CANONICAL_FORMULA_REGISTRY.md v2.0.0
 additions: Cauchy Core (L12 v2), adaptive κ (L10→L12 feedback)
 ---
 
 # SCBE 14-Layer Math Reference
+
+> **Historical mixed-profile document.** This page preserves experimental
+> formulas from multiple runtimes and must not be used as current formula
+> authority. Use `docs/specs/CANONICAL_FORMULA_REGISTRY.md`,
+> `docs/specs/LAYER_INDEX.md`, and a named runtime profile.
 
 > One block per layer. Input → formula → output → axiom → key parameters.
 > Full derivations: `docs/specs/CANONICAL_FORMULA_REGISTRY.md`

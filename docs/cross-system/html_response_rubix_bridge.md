@@ -1,6 +1,6 @@
 # HTML Response Rubix Bridge
 
-Source video request: `https://youtu.be/f39MnczcJZA?si=eC6znn9yMfGmnnFF`. The video page was not directly retrievable from the local shell because YouTube requests were blocked by the environment proxy, so this packet preserves the applied design interpretation rather than a verbatim transcript.
+Source video request: `https://youtu.be/f39MnczcJZA?si=eC6znn9yMfGmnnFF` (`What if AI replies in HTML not Markdown?`). The video page was not directly retrievable from the local shell because YouTube requests were blocked by the environment proxy, so this packet preserves the applied design interpretation rather than a verbatim transcript.
 
 ## Cross-system handoff packet
 
@@ -46,4 +46,4 @@ Use the Code Rubix Cube metaphor before accepting an artifact:
 
 ## Website behavior
 
-The GeoShell `HTML Bridge` app exposes two copy controls: one for the reusable HTML prompt and one for the JSON handoff packet. If the browser blocks clipboard access, operators can expand the handoff packet details block and copy the JSON manually.
+The GeoShell `HTML Bridge` app exposes separate copy controls for the reusable HTML prompt and the canonical JSON handoff packet. The packet rendered in the app uses the exact schema documented above. If clipboard access is unavailable, the app identifies the blocked target, keeps its source text visible, and expands the packet details for manual copying.

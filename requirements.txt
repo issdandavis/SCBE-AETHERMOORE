@@ -14,10 +14,10 @@ requests>=2.32.0
 jsonschema>=4.23.0
 # Post-Quantum Cryptography
 # Python bindings are pinned here; the native C library is installed by the
-# dedicated PQC Native liboqs workflow using liboqs 0.15.0. Normal PR CI may
+# dedicated PQC Native liboqs workflow using liboqs 0.16.0. Normal PR CI may
 # force the deterministic fallback path, but release/security validation must
 # pass native liboqs Tier 1.
-liboqs-python==0.15.0
+liboqs-python==0.16.0
 # python-oqs is currently unavailable in PyPI CI environments; use liboqs-python.
 pycryptodome>=3.20.0
 argon2-cffi>=23.1.0
@@ -34,7 +34,7 @@ psycopg[binary]>=3.3.4
 cryptography>=48.0.1
 urllib3>=2.7.0
 uv>=0.11.17
-pyasn1>=0.6.0
+pyasn1>=0.6.4
 protobuf>=5.28.0
 Werkzeug>=3.1.8
 certifi>=2026.5.20

@@ -13,6 +13,7 @@ npm install -g scbe-polly-pad-cli
 ```bash
 polly init my-project
 polly task add "first task"
+polly task submit "verify the current claim" --wait --json
 polly ask "what should I start with?"
 polly run plan --dry-run "ship a website"
 polly audit verify
@@ -29,6 +30,23 @@ Polly stores state under `.polly/` in the current project:
 - `.polly/runs/` — saved model or recipe runs
 - `.polly/snapshots/` — exported pad snapshots
 - `.polly/audit.jsonl` — append-only audit receipts
+
+## Governed Task Runs
+
+Polly can submit work to the Clay task lab while retaining the remote run ID,
+interaction ID, evidence disposition, and non-promotion flag in the workspace.
+
+```bash
+polly task submit "verify this claim" --evidence-file evidence.json --wait --json
+polly task status trun_abc123 --json
+polly task wait trun_abc123 --json
+```
+
+The default endpoint is `http://127.0.0.1:8766`; override it with
+`POLLY_TASK_API_URL` or `--url`. Loopback, private, and Tailscale IP literals
+are accepted by default. Public routing requires explicit opt-in and HTTPS.
+Unsupported output is retained as a negative example and is never promoted to
+fact by this command.
 
 ## Audit Trail
 

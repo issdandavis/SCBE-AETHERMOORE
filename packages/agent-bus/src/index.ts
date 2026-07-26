@@ -104,6 +104,24 @@ export {
   GovernanceDecisionContract,
 } from './contracts.js';
 
+// Governed async task API client and fail-closed training contract
+export {
+  GOVERNED_TASK_SCHEMA_VERSION,
+  TASK_API_DEFAULT_URL,
+  GovernedTaskRunSchema,
+  TaskCitationSchema,
+  TaskFieldBasisSchema,
+  TaskDispositionSchema,
+  type GovernedTaskRun,
+  type TaskFieldBasis,
+  type TaskRunParseResult,
+  type TaskApiClientOptions,
+  type WaitForTaskRunOptions,
+  parseTaskApiRun,
+  isOwnedTaskApiUrl,
+  TaskApiClient,
+} from './task-api.js';
+
 // Resilience (circuit breakers)
 export {
   type CircuitState,

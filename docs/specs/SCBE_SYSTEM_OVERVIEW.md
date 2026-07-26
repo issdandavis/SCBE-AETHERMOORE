@@ -1,5 +1,10 @@
 # SCBE-AETHERMOORE v2.1 - Complete System Overview
 
+> **Historical v2.1 snapshot.** Counts, patent-language summaries, and formulas
+> below are not current authority. Use `docs/CANONICAL_SYSTEM_STATE.md`,
+> `docs/specs/CANONICAL_FORMULA_REGISTRY.md`, and
+> `docs/specs/LAYER_INDEX.md`.
+
 ```
 ╔═══════════════════════════════════════════════════════════════════════════╗
 ║              SCBE-AETHERMOORE PATENT PORTFOLIO - COMPLETE                 ║

@@ -7,11 +7,12 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const readline = require('node:readline');
+const { TaskApiClient } = require('../lib/task-api-client');
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
-const VERSION = '0.1.0';
+const VERSION = '0.2.0';
 const SCHEMA_PAD = 'polly_pad_v1';
 const SCHEMA_RUN = 'polly_run_v1';
 const SCHEMA_AUDIT = 'polly_audit_receipt_v1';
@@ -1254,6 +1255,56 @@ function updateTask(pad, id, state) {
   return Object.assign({}, pad, { tasks });
 }
 
+function readTaskJsonFile(filePath, label) {
+  if (!filePath) return undefined;
+  const resolved = path.resolve(String(filePath));
+  try {
+    return JSON.parse(fs.readFileSync(resolved, 'utf8'));
+  } catch (err) {
+    throw new Error((label || 'JSON file') + ' ' + resolved + ': ' + err.message);
+  }
+}
+
+function taskApiClientFromFlags(flags) {
+  return new TaskApiClient({
+    baseUrl: flags.url,
+    timeoutMs: flags['timeout-ms'] ? Number(flags['timeout-ms']) : 15000,
+    allowPublicNetwork: flags['allow-public-network'] === true,
+  });
+}
+
+function recordRemoteTask(pad, text, run) {
+  const next = addTask(pad, text);
+  const index = next.tasks.length - 1;
+  const tasks = next.tasks.slice();
+  tasks[index] = Object.assign({}, tasks[index], {
+    remote_run_id: run.run_id,
+    interaction_id: run.interaction_id,
+    remote_status: run.status,
+    remote_disposition: run.disposition.status,
+    negative_example: run.disposition.negative_example,
+    do_not_promote_to_fact: true,
+  });
+  return Object.assign({}, next, { tasks });
+}
+
+function observeRemoteTask(pad, run) {
+  let changed = false;
+  const tasks = (pad.tasks || []).map((task) => {
+    if (task.remote_run_id !== run.run_id) return task;
+    changed = true;
+    return Object.assign({}, task, {
+      state: ['completed', 'failed', 'cancelled'].includes(run.status) ? 'done' : task.state,
+      remote_status: run.status,
+      remote_disposition: run.disposition.status,
+      negative_example: run.disposition.negative_example,
+      do_not_promote_to_fact: true,
+      updated_at: new Date().toISOString(),
+    });
+  });
+  return { changed, pad: Object.assign({}, pad, { tasks }) };
+}
+
 function printTasks(pad) {
   const pending = (pad.tasks || []).filter((t) => t.state !== 'done');
   const done = (pad.tasks || []).filter((t) => t.state === 'done');
@@ -1763,6 +1814,99 @@ const COMMANDS = {
       return;
     }
 
+    if (sub === 'submit') {
+      const requestFile = readTaskJsonFile(flags['request-file'], 'request file');
+      const objective = String(flags.objective || rest.join(' ')).trim();
+      let request;
+      if (requestFile !== undefined) {
+        if (!requestFile || typeof requestFile !== 'object' || Array.isArray(requestFile)) {
+          throw new Error('request file must contain a JSON object');
+        }
+        request = requestFile;
+      } else {
+        if (!objective) {
+          console.error('Usage: polly task submit <objective> [--wait] [--json]');
+          process.exit(1);
+        }
+        const evidence = readTaskJsonFile(flags['evidence-file'], 'evidence file');
+        if (evidence !== undefined && !Array.isArray(evidence)) {
+          throw new Error('evidence file must contain a JSON array');
+        }
+        request = {
+          objective,
+          processor: String(flags.processor || 'core'),
+          input: {},
+          ...(evidence ? { evidence } : {}),
+          source_policy: { include_domains: [], exclude_domains: [] },
+          tools: [],
+          budget: {
+            max_seconds: Number(flags['max-seconds'] || 60),
+            max_sources: Number(flags['max-sources'] || 20),
+            max_output_chars: Number(flags['max-output-chars'] || 20000),
+          },
+        };
+      }
+      const client = taskApiClientFromFlags(flags);
+      let run = await client.createRun(request);
+      if (flags.wait === true) {
+        run = await client.waitForRun(run.run_id, {
+          timeoutMs: Number(flags['wait-timeout-ms'] || 60000),
+          pollIntervalMs: Number(flags['poll-ms'] || 100),
+        });
+      }
+      let pad = readPad(ws);
+      pad = recordRemoteTask(pad, String(request.objective || objective), run);
+      writePad(ws, pad);
+      appendAudit(ws, 'task.remote.submit', run.run_id, {
+        interaction_id: run.interaction_id,
+        status: run.status,
+        disposition: run.disposition.status,
+        negative_example: run.disposition.negative_example,
+        do_not_promote_to_fact: true,
+        input_sha256: run.input_sha256,
+      });
+      if (flags.json) out(run, true);
+      else {
+        console.log('Submitted ' + run.run_id + ': ' + run.status);
+        console.log('Disposition: ' + run.disposition.status + ' (promotable: no)');
+      }
+      return;
+    }
+
+    if (sub === 'status' || sub === 'wait') {
+      const runId = rest[0];
+      if (!runId) {
+        console.error('Usage: polly task ' + sub + ' <run-id> [--json]');
+        process.exit(1);
+      }
+      const client = taskApiClientFromFlags(flags);
+      const run =
+        sub === 'wait'
+          ? await client.waitForRun(runId, {
+              timeoutMs: Number(flags['wait-timeout-ms'] || 60000),
+              pollIntervalMs: Number(flags['poll-ms'] || 100),
+            })
+          : await client.getRun(runId);
+      const observed = observeRemoteTask(readPad(ws), run);
+      if (observed.changed) {
+        writePad(ws, observed.pad);
+        appendAudit(ws, 'task.remote.observe', run.run_id, {
+          status: run.status,
+          disposition: run.disposition.status,
+          negative_example: run.disposition.negative_example,
+          do_not_promote_to_fact: true,
+        });
+      }
+      if (flags.json) out(run, true);
+      else {
+        console.log('Remote run  : ' + run.run_id);
+        console.log('Status      : ' + run.status);
+        console.log('Disposition : ' + run.disposition.status);
+        console.log('Promotable  : no');
+      }
+      return;
+    }
+
     if (sub === 'add') {
       const text = rest.join(' ');
       if (!text) {
@@ -1828,7 +1972,7 @@ const COMMANDS = {
       return;
     }
 
-    console.error('Unknown task subcommand: ' + sub + '. Use: add, list, done, rm');
+    console.error('Unknown task subcommand: ' + sub + '. Use: add, list, done, rm, submit, status, wait');
     process.exit(1);
   },
 
@@ -3048,6 +3192,9 @@ Commands:
   task list                List tasks (default subcommand)
   task done <id>           Mark task done
   task rm <id>             Remove task
+  task submit <objective>  Submit to the governed local task API
+  task status <run-id>     Read and validate a remote task run
+  task wait <run-id>       Wait for a terminal task state
   ask <prompt>             Send prompt to best available LLM, save run receipt
   run <recipe> [args...]   Run a named recipe through the LLM
   runs                     List all run receipts
@@ -3115,6 +3262,7 @@ Examples:
   polly init MyProject
   polly task add "Fix the login bug"
   polly task done task-001
+  polly task submit "Verify this claim" --wait --json
   polly ask "What is a Poincare ball model?"
   polly run research "hyperbolic geometry in AI safety"
   polly run review src/index.ts

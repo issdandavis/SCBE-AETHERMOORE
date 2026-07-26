@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.0
+
+- Add the typed `TaskApiClient` for queued task runs, status polling, evidence
+  basis retrieval, cancellation, groups, and interaction chains.
+- Add fail-closed Zod validation for evidence dispositions and negative
+  examples.
+- Restrict task endpoints to owned-network literals unless trusted public
+  HTTPS is explicitly enabled.
+
 ## 0.3.10
 
 - **Lineage walker recognizes `trap_dispatch` receipts**: `LineageEntry.kind` adds `'trap_dispatch'`, mapped from new schema `aethermoor.bus.workspace_trap_dispatch.v1`. Receipts written by `scbe trap-dispatch --workspace-root <path>` now show up in chronological lineage alongside formation/ingest/export entries.
