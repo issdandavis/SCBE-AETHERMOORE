@@ -20,23 +20,23 @@
     "test:serial": "vitest run --maxWorkers=1"
   },
   "dependencies": {
-    "@google/genai": "^2.12.0",
-    "lucide-react": "^1.25.0",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7"
+    "@google/genai": "^2.13.0",
+    "lucide-react": "^1.27.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
-    "@vitejs/plugin-react": "^6.0.3",
+    "@vitejs/plugin-react": "^6.0.4",
     "@vitest/coverage-v8": "^4.1.10",
-    "concurrently": "^9.2.4",
-    "electron": "^43.1.1",
+    "concurrently": "^10.0.4",
+    "electron": "^43.2.0",
     "electron-builder": "^26.15.3",
     "jsdom": "^29.1.1",
     "typescript": "~7.0.2",
     "vite": "^8.1.5",
     "vitest": "^4.1.7",
-    "wait-on": "^9.0.10"
+    "wait-on": "^9.1.0"
   },
   "overrides": {
     "tar": ">=7.0.0",
