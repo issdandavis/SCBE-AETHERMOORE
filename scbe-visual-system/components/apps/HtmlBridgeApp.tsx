@@ -4,6 +4,7 @@
  */
 import React, { useState } from 'react';
 import {
+  Activity,
   AlertTriangle,
   CheckCircle2,
   Code,
@@ -65,6 +66,111 @@ export const PROMPT_CARD = `<section class="scbe-artifact" data-format="html-res
   <button data-action="copy">Copy artifact</button>
 </section>`;
 
+export const STATE_DIMENSIONS = [
+  {
+    index: 0,
+    symbol: 'v1',
+    name: 'Identity',
+    status: 'evidence_bound',
+    detail: 'Packet source and app route are bound as identity evidence.',
+  },
+  {
+    index: 1,
+    symbol: 'v2',
+    name: 'Intent phase',
+    status: 'evidence_bound',
+    detail: 'Declared intent is bound; the numeric phase is derived by the gate.',
+  },
+  {
+    index: 2,
+    symbol: 'v3',
+    name: 'Trajectory',
+    status: 'runtime_required',
+    detail: 'The trusted runtime supplies trajectory history and its EWMA.',
+  },
+  {
+    index: 3,
+    symbol: 'v4',
+    name: 'Linear time',
+    status: 'runtime_required',
+    detail: 'The gate binds a real, monotonic time value.',
+  },
+  {
+    index: 4,
+    symbol: 'v5',
+    name: 'Commitment',
+    status: 'runtime_required',
+    detail: 'A key-derived commitment hash is generated outside the browser.',
+  },
+  {
+    index: 5,
+    symbol: 'v6',
+    name: 'Signature',
+    status: 'runtime_required',
+    detail: 'Signature validity comes from a trusted verifier.',
+  },
+  {
+    index: 6,
+    symbol: 'tau',
+    name: 'Time flow',
+    status: 'runtime_required',
+    detail: 'The state engine derives dilated time from the runtime clock.',
+  },
+  {
+    index: 7,
+    symbol: 'eta',
+    name: 'Entropy',
+    status: 'runtime_required',
+    detail: 'Entropy is computed from the completed context vector.',
+  },
+  {
+    index: 8,
+    symbol: 'q',
+    name: 'Quantum state',
+    status: 'runtime_required',
+    detail: 'The normalized complex state is evolved under Hamiltonian H.',
+  },
+] as const;
+
+export const STATE_VECTOR_REQUEST = {
+  schema: 'scbe_9d_state_request.v1',
+  status: 'runtime_required',
+  engine: 'src/symphonic_cipher/scbe_aethermoore/unified.py#SCBEAethermoore.create_state',
+  vector_layout: {
+    context: 'xi[0..5]',
+    time: 'xi[6]',
+    entropy: 'xi[7]',
+    quantum: 'xi[8]',
+  },
+  bound_evidence: {
+    identity: ['source', 'website_app', 'registry_tile'],
+    intent: ['principle', 'rubix_faces', 'governance_checks'],
+  },
+  runtime_inputs: [
+    'trajectory EWMA',
+    'monotonic Unix time t',
+    'key-derived commitment hash',
+    'trusted signature validity',
+    'Hamiltonian H',
+  ],
+  serialization: {
+    complex: '{ real, imag }',
+    python_dtype: 'object',
+  },
+  guardrails: [
+    'Preserve mixed real and complex values with dtype object.',
+    'Convert complex context values to magnitudes before entropy estimation.',
+    'Normalize q before governance evaluation.',
+    'Use real, monotonic runtime time for v4 and tau.',
+  ],
+  dimensions: STATE_DIMENSIONS.map(({ index, symbol, name, status }) => ({
+    index,
+    symbol,
+    name,
+    status,
+  })),
+  governance_decision: 'not_evaluated',
+} as const;
 export const HANDOFF_PACKET_SCHEMA = {
   packet: 'html_response_rubix_bridge',
   version: '2026-07-12',
@@ -79,6 +185,7 @@ export const HANDOFF_PACKET_SCHEMA = {
     'Scripts are sandboxed or removed before embedding.',
     'Copy/export affordances are explicit for cross-agent handoff.',
   ],
+  state_vector_request: STATE_VECTOR_REQUEST,
   website_app: 'scbe-visual-system/components/apps/HtmlBridgeApp.tsx',
   registry_tile: 'scbe-visual-system/apps-registry.json#ai-workspace/htmlbridge',
 };
@@ -127,7 +234,7 @@ export const HtmlBridgeApp: React.FC = () => {
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_#38bdf8,_transparent_28%),radial-gradient(circle_at_bottom_right,_#a855f7,_transparent_30%)] opacity-25"
         />
         <div className="relative z-10 grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
-          <div className="rounded-[2rem] border border-white/10 bg-black/55 p-5 shadow-2xl backdrop-blur sm:p-6">
+          <div className="min-w-0 rounded-[2rem] border border-white/10 bg-black/55 p-5 shadow-2xl backdrop-blur sm:p-6">
             <div className="mb-6 flex items-start gap-3">
               <div className="rounded-2xl bg-sky-400/15 p-3 text-sky-300">
                 <Code aria-hidden="true" size={28} />
@@ -160,7 +267,7 @@ export const HtmlBridgeApp: React.FC = () => {
             </ol>
           </div>
 
-          <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-5 shadow-2xl sm:p-6">
+          <div className="min-w-0 rounded-[2rem] border border-white/10 bg-white/[0.04] p-5 shadow-2xl sm:p-6">
             <div className="mb-5 flex items-center gap-3">
               <Layers3 aria-hidden="true" className="text-amber-300" />
               <div>
@@ -195,7 +302,64 @@ export const HtmlBridgeApp: React.FC = () => {
             </p>
           </div>
 
-          <div className="rounded-[2rem] border border-white/10 bg-zinc-950 p-5 xl:col-span-2 sm:p-6">
+          <div className="min-w-0 rounded-[2rem] border border-amber-300/20 bg-amber-300/[0.05] p-5 xl:col-span-2 sm:p-6">
+            <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <Activity aria-hidden="true" className="text-amber-300" />
+                <div>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-zinc-500">
+                    Evidence before evaluation
+                  </p>
+                  <h2 className="text-xl font-black uppercase tracking-widest">
+                    9D state preflight
+                  </h2>
+                </div>
+              </div>
+              <span className="rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-1 font-mono text-[10px] font-black uppercase tracking-widest text-amber-200">
+                Runtime evaluation required
+              </span>
+            </div>
+            <p className="max-w-4xl text-sm leading-relaxed text-zinc-300">
+              This packet binds identity and declared intent as evidence. It does not manufacture a
+              browser-side xi vector or governance score; the trusted SCBE runtime derives and
+              evaluates all numeric state.
+            </p>
+            <ol
+              className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"
+              aria-label="SCBE 9D state dimensions"
+            >
+              {STATE_DIMENSIONS.map((dimension) => {
+                const isBound = dimension.status === 'evidence_bound';
+                return (
+                  <li
+                    key={dimension.symbol}
+                    className="rounded-2xl border border-white/10 bg-black/40 p-3"
+                  >
+                    <div className="mb-2 flex items-center justify-between gap-2 font-mono text-[10px]">
+                      <span className="font-black text-zinc-400">D{dimension.index + 1}</span>
+                      <span className="text-amber-200">{dimension.symbol}</span>
+                    </div>
+                    <p className="text-xs font-black uppercase tracking-wide text-white">
+                      {dimension.name}
+                    </p>
+                    <p
+                      className={`mt-2 text-[10px] font-black uppercase tracking-wider ${isBound ? 'text-emerald-300' : 'text-amber-300'}`}
+                    >
+                      {isBound ? 'Evidence bound' : 'Gate runtime'}
+                    </p>
+                    <p className="mt-2 text-[11px] leading-relaxed text-zinc-500">
+                      {dimension.detail}
+                    </p>
+                  </li>
+                );
+              })}
+            </ol>
+            <p className="mt-4 break-all font-mono text-[11px] leading-relaxed text-zinc-400">
+              Decision: <span className="font-black text-amber-200">not_evaluated</span> | Engine:
+              SCBEAethermoore.create_state
+            </p>
+          </div>
+          <div className="min-w-0 rounded-[2rem] border border-white/10 bg-zinc-950 p-5 xl:col-span-2 sm:p-6">
             <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
               <div className="flex items-center gap-3">
                 <Sparkles aria-hidden="true" className="text-fuchsia-300" />

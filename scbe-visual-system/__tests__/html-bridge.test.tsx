@@ -5,6 +5,7 @@ import {
   HANDOFF_PACKET,
   HANDOFF_PACKET_SCHEMA,
   HtmlBridgeApp,
+  STATE_VECTOR_REQUEST,
 } from '../components/apps/HtmlBridgeApp';
 
 type ReactTestGlobal = typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean };
@@ -51,12 +52,28 @@ describe('HtmlBridgeApp', () => {
       'rubix_faces',
       'copy_targets',
       'governance_checks',
+      'state_vector_request',
       'website_app',
       'registry_tile',
     ]);
     expect(parsedPacket.copy_targets).toEqual(['prompt', 'handoff_packet']);
   });
 
+  it('fails closed until the trusted runtime constructs the 9D state', () => {
+    expect(STATE_VECTOR_REQUEST.status).toBe('runtime_required');
+    expect(STATE_VECTOR_REQUEST.dimensions).toHaveLength(9);
+    expect(STATE_VECTOR_REQUEST.dimensions.slice(0, 2).map(({ status }) => status)).toEqual([
+      'evidence_bound',
+      'evidence_bound',
+    ]);
+    expect(
+      STATE_VECTOR_REQUEST.dimensions.slice(2).every(({ status }) => status === 'runtime_required')
+    ).toBe(true);
+    expect(STATE_VECTOR_REQUEST.governance_decision).toBe('not_evaluated');
+    expect(STATE_VECTOR_REQUEST).not.toHaveProperty('xi');
+    expect(container.textContent).toContain('9D state preflight');
+    expect(container.textContent).toContain('Runtime evaluation required');
+  });
   it('copies the handoff packet and announces success', async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, 'clipboard', {
