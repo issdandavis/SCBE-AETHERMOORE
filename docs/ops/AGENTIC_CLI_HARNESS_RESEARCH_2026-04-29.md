@@ -39,6 +39,49 @@ Every future agent-facing CLI feature should answer four questions in JSON:
 
 That turns GeoSeal from a local operator command into a harness contract that other agents can use without needing hidden local context.
 
+## GLM-5.2 and OpenAI-Compatible Agent Adapters
+
+GLM-5.2 is integrated as an optional Z.ai proposal engine, not as a second harness and not as an executor. The same model-neutral GeoSeal contract can be consumed by GLM, Claude Code, Codex, OpenHands, a local Ollama model, or another controller.
+
+The stable boundary is:
+
+```text
+model/controller -> agent-harness manifest -> SCBE permission gate
+                 -> bounded tool execution -> validation -> receipt -> repair
+```
+
+Provider responsibilities:
+
+- The model proposes plans, code, and tool calls.
+- GeoSeal supplies explicit tool schemas and permission profiles.
+- SCBE decides whether execution is permitted.
+- Local tools perform filesystem, terminal, browser, test, and packaging work.
+- Validators and receipts determine whether the task actually succeeded.
+- Secret values never enter manifests, logs, or committed configuration.
+
+Z.ai uses an OpenAI-compatible API adapter with these environment variables:
+
+```powershell
+$env:ZAI_API_KEY = "<secret>"
+$env:ZAI_MODEL = "glm-5.2"
+$env:ZAI_BASE_URL = "https://api.z.ai/api/paas/v4"
+geoseal agent "refactor this module" --provider zai
+```
+
+The streaming SCBE controller can use the same provider:
+
+```powershell
+$env:SCBE_PROVIDER = "zai"
+$env:SCBE_MODEL = "glm-5.2"
+$env:ZAI_API_KEY = "<secret>"
+$env:ZAI_BASE_URL = "https://api.z.ai/api/paas/v4"
+scbe shell --agent-json
+```
+
+GLM remains outside automatic paid-provider routing unless `ZAI_API_KEY` is configured. `--small-first` reserves GLM and Claude for `ESCALATE` work so local, Ollama, and included-credit routes are attempted first.
+
+This adapter pattern is the extension point for future providers: implement the transport, declare capabilities and budget, then reuse the same harness, governance, verification, and receipt layers.
+
 ## Source Links
 
 - OpenAI Codex sandbox documentation: https://github.com/openai/codex/blob/main/docs/sandbox.md
@@ -49,3 +92,5 @@ That turns GeoSeal from a local operator command into a harness contract that ot
 - OpenHands repository: https://github.com/OpenHands/OpenHands
 - Aider repository: https://github.com/Aider-AI/aider
 - Model Context Protocol specification: https://modelcontextprotocol.io/specification
+- GLM-5.2 repository: https://github.com/zai-org/GLM-5
+- Z.ai chat-completion API: https://docs.z.ai/api-reference/llm/chat-completion

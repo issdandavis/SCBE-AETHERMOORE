@@ -127,7 +127,8 @@ const systems = [
 
 const apps = [
   { id: 'browser', name: 'Browser', sub: 'Research, docs, receipts' },
-  { id: 'terminal', name: 'Terminal', sub: 'Allowlisted commands' },
+  { id: 'terminal', name: 'Terminal', sub: 'Governed command deck' },
+  { id: 'clay', name: 'Clay Harness', sub: 'MIN / MID / MAX workers' },
   { id: 'powershell', name: 'PowerShell', sub: 'Windows operator lane' },
   { id: 'writer', name: 'Writer', sub: 'Book and guide drafting' },
   { id: 'compiler', name: 'Compiler', sub: 'Conlang and opcode lanes' },
@@ -176,7 +177,7 @@ const offerCards = [
   {
     title: 'Try the desk',
     price: 'free static demo',
-    body: 'Use Polly, play the music compiler, inspect receipts, and see the governed workbench flow.',
+    body: 'Talk to Polly or Clay, play the music compiler, inspect receipts, and see the governed workbench flow.',
     action: 'Open live desk',
     href: '#station',
   },
@@ -197,7 +198,7 @@ const offerCards = [
 ];
 
 const puddingSteps = [
-  ['Ask Polly', 'sidebar answers from page state and can speak'],
+  ['Ask the squad', 'Polly routes; Clay explains the selected worker contract'],
   ['Play notes', 'notes compile to Brainfuck and output 5'],
   ['Route a face', 'Machine Crystal selector changes the operation face'],
   ['Open receipt', 'proof links stay attached to each claim'],
@@ -254,12 +255,56 @@ const benchmarkRows = [
 
 const pollyModes = [
   ['operator', 'Operator'],
+  ['clay', 'Clay worker'],
   ['crystal', 'Crystal guide'],
   ['training', 'Training coach'],
 ];
 
+const clayContracts = [
+  {
+    id: 'MIN',
+    name: 'Scout Clay',
+    posture: 'Read-only reconnaissance',
+    description: 'Navigate, extract, screenshot, wait, and scroll. Every write-side browser action stays blocked.',
+    allowed: ['navigate', 'extract', 'screenshot', 'wait', 'scroll'],
+    boundary: 'No click, type, upload, submit, execute, delete, checkout, or publish.',
+    human: 'DENY / ESCALATE / QUARANTINE',
+    maxClays: 4,
+    maxActions: 8,
+    contract: 'policies/contracts/polly_clay_min.json',
+    tone: 'sage',
+  },
+  {
+    id: 'MID',
+    name: 'Operator Clay',
+    posture: 'Bounded routine automation',
+    description: 'Adds click, type, select, and keypress while Polly keeps uploads, downloads, and submits at human review.',
+    allowed: ['navigate', 'extract', 'click', 'type', 'select', 'press'],
+    boundary: 'Execute JS, delete, checkout, and publish remain blocked.',
+    human: 'REVIEW / DENY / ESCALATE / QUARANTINE',
+    maxClays: 4,
+    maxActions: 8,
+    contract: 'policies/contracts/polly_clay_mid.json',
+    tone: 'cobalt',
+  },
+  {
+    id: 'MAX',
+    name: 'Kiln Clay',
+    posture: 'High-impact, context-bound execution',
+    description: 'Unlocks the broad action vocabulary only when task, change ticket, and human approval metadata are present.',
+    allowed: ['navigate', 'type', 'upload', 'download', 'submit', 'execute_js'],
+    boundary: 'Upload, download, submit, execute, delete, checkout, and publish require human approval.',
+    human: 'task_id + change_ticket + human_approval_id',
+    maxClays: 6,
+    maxActions: 10,
+    contract: 'policies/contracts/polly_clay_max.json',
+    tone: 'terracotta',
+  },
+];
+
 const pollyQuickPrompts = [
   'What works on this page?',
+  'Clay, explain this contract.',
   'How do I run the music compiler?',
   'What is the knife test?',
   'What is the safest next step?',
@@ -303,9 +348,12 @@ function runBrainfuck(program) {
   return { ok: true, message: `ran ${steps} steps`, tape0: tape[0], output };
 }
 
-function buildPollyReply(input, mode, active, compiledProgram, programResult) {
+function buildPollyReply(input, mode, active, compiledProgram, programResult, clay) {
   const text = input.toLowerCase();
   if (!input.trim()) return 'Give me a concrete task. I can explain the active system, route you to a doc, or help run the music compiler.';
+  if (text.includes('clay') || text.includes('harness') || text.includes('contract') || mode === 'clay') {
+    return `Clay here. I am a governed browser-worker lane, not a general chat model. ${clay.id} is selected: ${clay.posture}. I can use up to ${clay.maxClays} workers and ${clay.maxActions} actions per request. Boundary: ${clay.boundary}`;
+  }
   if (text.includes('music') || text.includes('keyboard') || text.includes('song') || text.includes('compiler')) {
     return `Music compiler route: press a note, load a phrase, then compile and run. Current program is ${compiledProgram || '(empty)'}. Current result is ${programResult.ok ? `PASS, tape0 ${programResult.tape0}, output [${programResult.output.join(',')}]` : programResult.message}.`;
   }
@@ -341,21 +389,25 @@ function App() {
   const [playedNotes, setPlayedNotes] = useState(phraseBook.add23);
   const [programResult, setProgramResult] = useState(() => runBrainfuck(notesToProgram(phraseBook.add23)));
   const [activeAppId, setActiveAppId] = useState('browser');
-  const [deskCommand, setDeskCommand] = useState('help');
-  const [deskOutput, setDeskOutput] = useState(['AetherDesk terminal ready.', 'Try: help, status, compile add23, proof, polly']);
+  const [deskCommand, setDeskCommand] = useState('clay min');
+  const [deskOutput, setDeskOutput] = useState(['AetherDesk command deck ready.', 'POLICY MIN / browser demo / no host shell', 'Try: help, status, clay min, clay mid, clay max, proof, polly']);
   const [deskNote, setDeskNote] = useState('Morning objective: use AetherDesk as the live PC, run the thing, keep the receipt.');
+  const [clayTier, setClayTier] = useState('MIN');
+  const [clayReceipt, setClayReceipt] = useState('No Clay route previewed yet.');
   const [pollyOpen, setPollyOpen] = useState(false);
   const [pollyMode, setPollyMode] = useState('operator');
   const [pollyInput, setPollyInput] = useState('');
   const [pollyMessages, setPollyMessages] = useState([
     {
       role: 'assistant',
+      speaker: 'Polly',
       text: 'I am Polly. This sidebar now works locally: pick a mode, ask a question, and I will answer from the page state.',
     },
   ]);
   const active = useMemo(() => systems.find((s) => s.id === activeId) ?? systems[0], [activeId]);
   const activeApp = useMemo(() => apps.find((app) => app.id === activeAppId) ?? apps[0], [activeAppId]);
   const compiledMusicProgram = useMemo(() => notesToProgram(playedNotes), [playedNotes]);
+  const selectedClay = useMemo(() => clayContracts.find((contract) => contract.id === clayTier) ?? clayContracts[0], [clayTier]);
 
   function runRoute() {
     setBooted(true);
@@ -372,9 +424,15 @@ function App() {
     const cmd = raw.toLowerCase();
     let lines = [];
     if (!cmd || cmd === 'help') {
-      lines = ['commands: help, status, compile add23, proof, polly', 'static safety: this terminal updates the browser UI only'];
+      lines = ['commands: help, status, clay <min|mid|max>, compile add23, proof, polly', 'POLICY browser demo only / no host shell'];
     } else if (cmd === 'status') {
-      lines = [`active system: ${active.label}`, `active app: ${activeApp.name}`, `music program: ${compiledMusicProgram || '(empty)'}`];
+      lines = [`SYSTEM ${active.label} / ${active.status}`, `APP ${activeApp.name}`, `CLAY ${selectedClay.id} / ${selectedClay.maxClays} workers`, `PROGRAM ${compiledMusicProgram || '(empty)'}`];
+    } else if (cmd === 'clay' || /^clay\s+(min|mid|max)$/.test(cmd)) {
+      const requestedTier = (cmd.split(/\s+/)[1] || clayTier).toUpperCase();
+      const requested = clayContracts.find((contract) => contract.id === requestedTier) ?? selectedClay;
+      setClayTier(requested.id);
+      setActiveAppId('clay');
+      lines = [`CONTRACT ${requested.id} / ${requested.name}`, `POSTURE ${requested.posture}`, `WORKERS ${requested.maxClays} max / ${requested.maxActions} actions per request`, `BOUNDARY ${requested.boundary}`];
     } else if (cmd === 'compile add23') {
       loadPhrase('add23');
       lines = ['loaded add 2+3 phrase', 'program: ++>+++[<+>-]<.', 'expected browser output: [5]'];
@@ -389,6 +447,21 @@ function App() {
     }
     setDeskOutput([`$ ${raw || 'help'}`, ...lines]);
     setDeskCommand('');
+  }
+
+  function previewClayRun(contract = selectedClay) {
+    const stamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    setBooted(true);
+    setClayTier(contract.id);
+    setClayReceipt(`${stamp} / ${contract.id} / preview contained / receipt staged`);
+    setDeskOutput([
+      `$ clay ${contract.id.toLowerCase()} --preview`,
+      `CONTRACT ${contract.name} / ${contract.posture}`,
+      `QUEUE ${contract.maxClays} worker lanes / ${contract.maxActions} actions per request`,
+      'RESULT browser-only preview / no external action executed',
+      `RECEIPT ${contract.contract}`,
+    ]);
+    setLog((prev) => [{ stamp, label: `Clay ${contract.id}`, command: `clay ${contract.id.toLowerCase()} --preview`, result: 'contained preview' }, ...prev].slice(0, 6));
   }
 
   function renderDeskApp() {
@@ -408,13 +481,53 @@ function App() {
     if (activeAppId === 'terminal') {
       return (
         <div className="pc-terminal">
+          <div className="cli-context mono">
+            <span>SCBE / COMMAND DECK</span>
+            <b>policy {selectedClay.id}</b>
+            <i>{booted ? 'receipt live' : 'preview safe'}</i>
+          </div>
           <div className="terminal-lines mono live-lines">
-            {deskOutput.map((line) => <p key={line}><span>{line.startsWith('$') ? '$' : '>'}</span> {line.replace(/^\$ /, '')}</p>)}
+            {deskOutput.map((line, index) => (
+              <p key={`${line}-${index}`} className={line.startsWith('BOUNDARY') || line.startsWith('POLICY') ? 'policy-line' : line.startsWith('RESULT') || line.startsWith('RECEIPT') ? 'receipt-line' : ''}>
+                <span>{line.startsWith('$') ? '❯' : String(index).padStart(2, '0')}</span> {line.replace(/^\$ /, '')}
+              </p>
+            ))}
           </div>
           <form className="pc-command" onSubmit={runDeskCommand}>
-            <input value={deskCommand} onChange={(event) => setDeskCommand(event.target.value)} placeholder="help" />
-            <button type="submit">run</button>
+            <span className="pc-prompt mono">scbe</span>
+            <input value={deskCommand} onChange={(event) => setDeskCommand(event.target.value)} placeholder="clay min" aria-label="AetherDesk command" />
+            <button type="submit">route</button>
           </form>
+        </div>
+      );
+    }
+    if (activeAppId === 'clay') {
+      return (
+        <div className="pc-clay">
+          <div className="pc-clay-head">
+            <div>
+              <span className="system-line">POLLY LEADS / CLAY MOVES</span>
+              <b>{selectedClay.name}</b>
+            </div>
+            <span className={`clay-tier-badge ${selectedClay.tone}`}>{selectedClay.id}</span>
+          </div>
+          <div className="pc-clay-tabs" aria-label="Clay contract profiles">
+            {clayContracts.map((contract) => (
+              <button key={contract.id} className={clayTier === contract.id ? 'active' : ''} onClick={() => setClayTier(contract.id)}>
+                <b>{contract.id}</b><span>{contract.maxClays} lanes</span>
+              </button>
+            ))}
+          </div>
+          <p className="pc-copy">{selectedClay.description}</p>
+          <div className="clay-lanes" aria-label={`${selectedClay.maxClays} Clay worker lanes`}>
+            {Array.from({ length: selectedClay.maxClays }, (_, index) => <i key={index}>C{index + 1}</i>)}
+            <span>Polly</span>
+          </div>
+          <code className="clay-command">powershell -File scripts/run_polly_clay_squad.ps1 -RiskContract {selectedClay.id} -Clays {selectedClay.maxClays}</code>
+          <div className="pc-clay-actions">
+            <button className="pc-action" onClick={() => previewClayRun(selectedClay)}>preview contained route</button>
+            <a className="pc-source" href={`https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/${selectedClay.contract}`} target="_blank" rel="noreferrer">open contract source</a>
+          </div>
         </div>
       );
     }
@@ -502,11 +615,11 @@ function App() {
     window.speechSynthesis.speak(utterance);
   }
 
-  function sendPolly(message = pollyInput) {
+  function sendPolly(message = pollyInput, forcedMode = pollyMode) {
     const trimmed = message.trim();
     if (!trimmed) return;
-    const reply = buildPollyReply(trimmed, pollyMode, active, compiledMusicProgram, programResult);
-    setPollyMessages((prev) => [...prev, { role: 'user', text: trimmed }, { role: 'assistant', text: reply }].slice(-10));
+    const reply = buildPollyReply(trimmed, forcedMode, active, compiledMusicProgram, programResult, selectedClay);
+    setPollyMessages((prev) => [...prev, { role: 'user', text: trimmed }, { role: 'assistant', speaker: forcedMode === 'clay' ? 'Clay' : 'Polly', text: reply }].slice(-10));
     setPollyInput('');
     speakPolly(reply);
   }
@@ -561,14 +674,16 @@ function App() {
         <a className="brand" href="#top" aria-label="AetherDesk home"><span>AD</span>AetherDesk</a>
         <nav>
           <a href="#station">Station</a>
+          <a href="#clay-harness">Clay</a>
           <a href="#systems">Systems</a>
           <a href="#training">Training</a>
           <a href="#music-keyboard">Music</a>
           <a href="#offers">Use/Buy</a>
           <a href="#benchmark">Benchmark</a>
           <a href="payments.html">Pricing</a>
+          <a href="github-map.html">GitHub map</a>
         </nav>
-        <button className="pilot" onClick={() => setPollyOpen(true)}>Talk to Polly</button>
+        <button className="pilot" onClick={() => setPollyOpen(true)}>Talk to Polly + Clay</button>
       </header>
 
       <main id="top">
@@ -577,7 +692,7 @@ function App() {
           <div className="hero-copy">
             <p className="system-line">SCBE-AETHERMOORE / IN-WORLD WORKSTATION</p>
             <h1>A governed AI computer.<br />Use it, prove it,<br />then ship.</h1>
-            <p className="lede">AetherDesk gives AI a bounded desktop: browser, shell, writer, compiler, training room, and proof drawer. The pudding is the process: run the thing, keep the receipt.</p>
+            <p className="lede">AetherDesk gives AI a bounded desktop: Polly routes, Clay workers operate inside visible contracts, and every browser, shell, writer, compiler, and training-room action keeps a receipt.</p>
             <div className="hero-actions">
               <a className="primary" href="#station">Try the live desk</a>
               <button onClick={runRoute}>Boot selected system</button>
@@ -664,6 +779,57 @@ function App() {
               ))}
             </div>
             <p className="boundary">Boundary: n=10 and adapter-format caveat. This proves this gate saw no lift, not that the adapter learned nothing.</p>
+          </div>
+        </section>
+
+        <section className="clay-section" id="clay-harness">
+          <div className="section-head split clay-heading">
+            <div>
+              <p className="system-line">POLLY + CLAY GOVERNED BROWSER SQUAD</p>
+              <h2>Shape the worker before the worker touches the world.</h2>
+            </div>
+            <p className="section-note">Clay is a browser-worker harness with three execution contracts—not three language models. Polly leads the queue; each Clay gets a bounded action vocabulary; risky work stops at a human checkpoint.</p>
+          </div>
+          <div className="clay-workbench">
+            <div className="clay-profile-stack" role="tablist" aria-label="Clay execution profiles">
+              {clayContracts.map((contract) => (
+                <button
+                  key={contract.id}
+                  role="tab"
+                  aria-selected={clayTier === contract.id}
+                  className={`clay-profile ${contract.tone} ${clayTier === contract.id ? 'active' : ''}`}
+                  onClick={() => setClayTier(contract.id)}
+                >
+                  <span>{contract.id}</span>
+                  <div><b>{contract.name}</b><small>{contract.posture}</small></div>
+                  <i>{contract.maxClays} lanes</i>
+                </button>
+              ))}
+            </div>
+
+            <div className={`clay-vessel ${selectedClay.tone}`}>
+              <div className="clay-rings" aria-hidden="true"><i /><i /><i /><span>{selectedClay.id}</span></div>
+              <div className="clay-contract-copy">
+                <div className="window-title"><span>active contract</span><b>{selectedClay.contract}</b></div>
+                <p className="system-line">{selectedClay.name} / {selectedClay.posture}</p>
+                <h3>{selectedClay.description}</h3>
+                <div className="clay-facts mono">
+                  <div><span>workers</span><b>{selectedClay.maxClays}</b></div>
+                  <div><span>actions/request</span><b>{selectedClay.maxActions}</b></div>
+                  <div><span>human gate</span><b>{selectedClay.human}</b></div>
+                </div>
+                <div className="clay-allowlist">
+                  {selectedClay.allowed.map((action) => <span key={action}>{action}</span>)}
+                </div>
+                <p className="clay-boundary"><b>Boundary</b>{selectedClay.boundary}</p>
+                <div className="hero-actions">
+                  <button onClick={() => { setActiveAppId('clay'); previewClayRun(selectedClay); document.getElementById('station')?.scrollIntoView({ behavior: 'smooth' }); }}>Preview this contract</button>
+                  <button onClick={() => { setPollyMode('clay'); setPollyOpen(true); sendPolly(`Clay, explain the ${selectedClay.id} contract.`, 'clay'); }}>Talk to Clay</button>
+                  <a href={`https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/${selectedClay.contract}`} target="_blank" rel="noreferrer">View on GitHub</a>
+                </div>
+              </div>
+              <div className="clay-receipt mono"><span>latest preview</span><b>{clayReceipt}</b></div>
+            </div>
           </div>
         </section>
 
@@ -887,21 +1053,21 @@ function App() {
 
       <footer>
         <span>AetherDesk is a governed workbench surface for SCBE-AETHERMOORE.</span>
-        <nav><a href="llms.txt">llms.txt</a><a href="privacy.html">privacy</a><a href="terms.html">terms</a><a href="support.html">support</a></nav>
+        <nav><a href="github-map.html">GitHub map</a><a href="llms.txt">llms.txt</a><a href="privacy.html">privacy</a><a href="terms.html">terms</a><a href="support.html">support</a></nav>
       </footer>
 
       <button className={`polly-launcher ${pollyOpen ? 'hidden' : ''}`} onClick={() => setPollyOpen(true)}>
-        Polly
+        P+C
       </button>
-      <aside className={`polly-sidebar ${pollyOpen ? 'open' : ''}`} aria-label="Polly local assistant">
+      <aside className={`polly-sidebar ${pollyOpen ? 'open' : ''}`} aria-label="Polly and Clay local assistant">
         <div className="polly-head">
           <div>
-            <span className="system-line">POLLY LOCAL COPILOT</span>
-            <h3>Talk to the site.</h3>
+            <span className="system-line">POLLY LEADS / CLAY MOVES</span>
+            <h3>{pollyMode === 'clay' ? `Clay ${selectedClay.id}` : 'Talk to the site.'}</h3>
           </div>
           <button onClick={() => setPollyOpen(false)} aria-label="Close Polly">x</button>
         </div>
-        <div className="polly-model-row" aria-label="Polly model mode">
+        <div className="polly-model-row" aria-label="Assistant role mode">
           {pollyModes.map(([id, label]) => (
             <button key={id} className={pollyMode === id ? 'active' : ''} onClick={() => setPollyMode(id)}>
               {label}
@@ -910,13 +1076,14 @@ function App() {
         </div>
         <div className="polly-state mono">
           <p><span>active</span>{active.label}</p>
+          <p><span>clay</span>{selectedClay.id} / {selectedClay.posture}</p>
           <p><span>program</span>{compiledMusicProgram || '(empty)'}</p>
           <p><span>result</span>{programResult.ok ? `tape0 ${programResult.tape0}` : programResult.message}</p>
         </div>
         <div className="polly-messages" aria-live="polite">
           {pollyMessages.map((message, idx) => (
             <div key={`${message.role}-${idx}`} className={`polly-bubble ${message.role}`}>
-              <span>{message.role === 'assistant' ? 'Polly' : 'You'}</span>
+              <span>{message.role === 'assistant' ? message.speaker || 'Polly' : 'You'}</span>
               <p>{message.text}</p>
               {message.role === 'assistant' ? <button onClick={() => speakPolly(message.text)}>speak</button> : null}
             </div>
@@ -928,10 +1095,10 @@ function App() {
           ))}
         </div>
         <form className="polly-compose" onSubmit={(event) => { event.preventDefault(); sendPolly(); }}>
-          <textarea value={pollyInput} onChange={(event) => setPollyInput(event.target.value)} placeholder="Ask Polly about this page..." />
+          <textarea value={pollyInput} onChange={(event) => setPollyInput(event.target.value)} placeholder={pollyMode === 'clay' ? `Ask Clay ${selectedClay.id} about its boundary...` : 'Ask Polly about this page...'} />
           <button type="submit">send</button>
         </form>
-        <p className="polly-boundary">Local mode: no token, no paid model call. Polly answers from page state and uses browser speech when available.</p>
+        <p className="polly-boundary">Local explanation mode: no token and no remote model call. Clay describes the selected contract; real work still runs through the governed Python harness.</p>
       </aside>
     </div>
   );

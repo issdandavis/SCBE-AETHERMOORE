@@ -27,6 +27,9 @@ Machine-readable config:
 - Shopify Command Center live demo: https://shopify-command-center-165664533862.us-west2.run.app
 - LLM guidance: https://aethermoore.com/SCBE-AETHERMOORE/llms.txt
 - Sitemap: https://aethermoore.com/SCBE-AETHERMOORE/sitemap.xml
+- Public page-to-GitHub source map: https://aethermoore.com/github-map.html
+- Machine-readable page/source map: https://aethermoore.com/github-map.json
+- Clay governed browser-worker CLI: https://aethermoore.com/cli.html
 - Research library: https://aethermoore.com/SCBE-AETHERMOORE/research/
 - Research packet standard: https://aethermoore.com/SCBE-AETHERMOORE/research/RESEARCH_PACKET_STANDARD.md
 - M-TEF research compendium: https://aethermoore.com/SCBE-AETHERMOORE/research/mtef_research_compendium_2026-06-17.md

@@ -72,7 +72,11 @@ def _parse_opcode_bytes(spec: str) -> List[int]:
 
 
 def cmd_compile_ca(args: argparse.Namespace) -> int:
-    from python.scbe.tongue_isa import SUPPORTED_TARGETS, compile_ca_tokens, disassemble, runtime_prelude
+    from python.scbe.tongue_isa import (
+        compile_ca_tokens,
+        disassemble,
+        emit_compiled_program_source,
+    )
 
     tokens = _parse_opcode_bytes(args.opcodes)
     arg_names = [a for a in (args.args or "").split(",") if a.strip()]
@@ -82,70 +86,7 @@ def cmd_compile_ca(args: argparse.Namespace) -> int:
         fn_name=args.fn,
         arg_names=arg_names or None,
     )
-    source_lines = []
-    if not args.no_runtime:
-        prelude = runtime_prelude(args.target).rstrip()
-        if prelude:
-            source_lines.append(prelude)
-            source_lines.append("")
-    if args.target == "python":
-        sig = f"def {program.fn_name}({', '.join(program.arg_names)}):"
-        source_lines.append(sig)
-        for line in program.body_lines:
-            source_lines.append("    " + line)
-    elif args.target == "typescript":
-        sig = (
-            f"export function {program.fn_name}"
-            f"({', '.join(a + ': number' for a in program.arg_names)}): number | null {{"
-        )
-        source_lines.append(sig)
-        for line in program.body_lines:
-            source_lines.append("  " + line)
-        source_lines.append("}")
-    elif args.target == "go":
-        sig = f"func {program.fn_name}({', '.join(a + ' float64' for a in program.arg_names)}) interface{{}} {{"
-        source_lines.append(sig)
-        for line in program.body_lines:
-            source_lines.append("\t" + line)
-        source_lines.append("}")
-    elif args.target == "rust":
-        sig = f"pub fn {program.fn_name}({', '.join(a + ': f64' for a in program.arg_names)}) -> Option<f64> {{"
-        source_lines.append(sig)
-        for line in program.body_lines:
-            source_lines.append("    " + line)
-        source_lines.append("}")
-    elif args.target == "c":
-        sig = f"double {program.fn_name}({', '.join('double ' + a for a in program.arg_names)}) {{"
-        source_lines.append(sig)
-        for line in program.body_lines:
-            source_lines.append("    " + line)
-        source_lines.append("}")
-    elif args.target == "julia":
-        sig = f"function {program.fn_name}({', '.join(program.arg_names)})"
-        source_lines.append(sig)
-        for line in program.body_lines:
-            source_lines.append("    " + line)
-        source_lines.append("end")
-    elif args.target == "haskell":
-        args_sig = " -> ".join(["Double" for _ in program.arg_names] + ["Maybe Double"])
-        source_lines.append(f"{program.fn_name} :: {args_sig}")
-        source_lines.append(f"{program.fn_name} {' '.join(program.arg_names)} =")
-        source_lines.append("  let")
-        for line in program.body_lines:
-            source_lines.append("    " + line)
-        source_lines.append("  in result")
-    elif args.target == "zig":
-        sig = (
-            f"pub fn {program.fn_name}(allocator: std.mem.Allocator"
-            f"{', ' if program.arg_names else ''}{', '.join(a + ': f64' for a in program.arg_names)}) !?f64 {{"
-        )
-        source_lines.append(sig)
-        for line in program.body_lines:
-            source_lines.append("    " + line)
-        source_lines.append("}")
-    else:
-        raise ValueError(f"unsupported target {args.target!r}; pick one of {SUPPORTED_TARGETS}")
-    source = "\n".join(source_lines) + "\n"
+    source = emit_compiled_program_source(program, include_runtime=not args.no_runtime)
 
     bijection = disassemble(source)
     payload = {

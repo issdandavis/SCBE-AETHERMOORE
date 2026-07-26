@@ -41,6 +41,8 @@
  *   - harmonic/pipeline14.ts (per-layer drift capture)
  */
 
+import * as crypto from 'crypto';
+
 // ═══════════════════════════════════════════════════════════════
 // Constants
 // ═══════════════════════════════════════════════════════════════
@@ -50,6 +52,10 @@ const PHI = (1 + Math.sqrt(5)) / 2;
 
 /** Small epsilon for numerical stability */
 const EPSILON = 1e-15;
+
+function secureRandomUnit(): number {
+  return crypto.randomBytes(6).readUIntBE(0, 6) / 0x1000000000000;
+}
 
 /** Sacred Tongue harmonic frequencies: 440 * φ^k Hz */
 const TONGUE_HARMONICS = [
@@ -485,7 +491,7 @@ export function sonifyDrift(
   // If drift is non-genuine (too clean), add noise to make it "sound broken"
   if (!key.genuine) {
     for (let n = 0; n < samples; n++) {
-      signal[n] = signal[n] * 0.3 + (Math.random() * 2 - 1) * 0.7;
+      signal[n] = signal[n] * 0.3 + (secureRandomUnit() * 2 - 1) * 0.7;
     }
   }
 

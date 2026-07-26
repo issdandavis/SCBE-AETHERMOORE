@@ -35,6 +35,8 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 _LOCAL_MODEL_PATH = _REPO_ROOT / "artifacts" / "merged" / "polly-r8-merged-1.5b"
 _HF_MODEL_ID = "issdandavis/polly-r8-merged-qwen-1.5b"
 _CLAUDE_MODEL = "claude-sonnet-4-6"
+_ZAI_MODEL_DEFAULT = "glm-5.2"
+_ZAI_BASE_URL_DEFAULT = "https://api.z.ai/api/paas/v4"
 
 # Ollama defaults — override via OLLAMA_HOST / OLLAMA_MODEL env vars
 _OLLAMA_HOST_DEFAULT = "http://localhost:11434"
@@ -42,7 +44,7 @@ _OLLAMA_MODEL_DEFAULT = "qwen2.5-coder:1.5b"
 _OLLAMA_HEALTH_TIMEOUT = 1.5  # seconds — short so chain advances fast when down
 
 # Ordered list of provider tiers (cheapest/safest first).
-PROVIDER_TIERS = ("local", "ollama", "hf", "claude")
+PROVIDER_TIERS = ("local", "ollama", "hf", "zai", "claude")
 
 # System prompt template — filled with tongue/language at call time
 _SYSTEM_TEMPLATE = textwrap.dedent("""\
@@ -261,7 +263,64 @@ def _generate_hf(
 
 
 # ---------------------------------------------------------------------------
-# Provider 4 — Claude API fallback
+# Provider 4 - Z.ai OpenAI-compatible API (opt-in)
+# ---------------------------------------------------------------------------
+
+
+def _zai_api_key() -> str:
+    return os.environ.get("ZAI_API_KEY", "").strip()
+
+
+def _zai_model() -> str:
+    return os.environ.get("ZAI_MODEL", _ZAI_MODEL_DEFAULT).strip() or _ZAI_MODEL_DEFAULT
+
+
+def _zai_base_url() -> str:
+    return os.environ.get("ZAI_BASE_URL", _ZAI_BASE_URL_DEFAULT).strip().rstrip("/")
+
+
+def _generate_zai(
+    task: str,
+    system: str,
+    max_tokens: int = 1024,
+    timeout: float = 120.0,
+) -> tuple[str, int, int]:
+    """Call the Z.ai OpenAI-compatible chat-completions endpoint."""
+    api_key = _zai_api_key()
+    if not api_key:
+        raise RuntimeError("ZAI_API_KEY is not configured")
+    body = {
+        "model": _zai_model(),
+        "stream": False,
+        "max_tokens": max_tokens,
+        "temperature": 0.1,
+        "messages": [
+            {"role": "system", "content": system},
+            {"role": "user", "content": task},
+        ],
+    }
+    req = urllib.request.Request(
+        _zai_base_url() + "/chat/completions",
+        data=json.dumps(body).encode("utf-8"),
+        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        payload = json.loads(resp.read().decode("utf-8"))
+    choices = payload.get("choices") or []
+    first = choices[0] if choices and isinstance(choices[0], dict) else {}
+    message = first.get("message") if isinstance(first, dict) else {}
+    raw = message.get("content", "") if isinstance(message, dict) else ""
+    usage = payload.get("usage") if isinstance(payload.get("usage"), dict) else {}
+    return (
+        str(raw).strip(),
+        int(usage.get("prompt_tokens", 0) or 0),
+        int(usage.get("completion_tokens", 0) or 0),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Provider 5 - Claude API fallback
 # ---------------------------------------------------------------------------
 
 
@@ -298,6 +357,8 @@ def _provider_model(provider: str) -> str:
         return _ollama_model()
     if provider == "hf":
         return _HF_MODEL_ID
+    if provider == "zai":
+        return _zai_model()
     if provider == "claude":
         return _CLAUDE_MODEL
     return provider
@@ -310,6 +371,7 @@ def get_backend_registry() -> list[BackendDescriptor]:
         BackendDescriptor("local", str(_LOCAL_MODEL_PATH), lanes, local_only=True),
         BackendDescriptor("ollama", _ollama_model(), lanes, local_only=True),
         BackendDescriptor("hf", _HF_MODEL_ID, lanes, local_only=False),
+        BackendDescriptor("zai", _zai_model(), lanes, local_only=False),
         BackendDescriptor("claude", _CLAUDE_MODEL, lanes, local_only=False),
     ]
 
@@ -353,12 +415,16 @@ def _resolve_provider_chain(
         chain = []
         if _LOCAL_MODEL_PATH.exists():
             chain.append("local")
-        chain.extend(["ollama", "hf", "claude"])
+        chain.extend(["ollama", "hf"])
+        if _zai_api_key():
+            chain.append("zai")
+        chain.append("claude")
 
     forbid = set(forbidden_providers or [])
     if small_first and (governance_tier or "ALLOW") != "ESCALATE":
         # In small-first mode, Claude is reserved for ESCALATE-tier work
         forbid.add("claude")
+        forbid.add("zai")
 
     return [p for p in chain if p not in forbid]
 
@@ -370,7 +436,7 @@ def generate(
     tongue: str = "KO",
     tongue_name: str = "Kor'aelin",
     max_tokens: int = 1024,
-    force_provider: Optional[str] = None,  # "local" | "ollama" | "hf" | "claude"
+    force_provider: Optional[str] = None,  # "local" | "ollama" | "hf" | "zai" | "claude"
     forbidden_providers: Optional[list[str]] = None,
     small_first: bool = False,
     governance_tier: Optional[str] = None,
@@ -431,6 +497,8 @@ def generate(
                 raw, pt, ct = _generate_ollama(task, system, max_new_tokens=max_tokens)
             elif provider == "hf":
                 raw, pt, ct = _generate_hf(task, system, max_new_tokens=max_tokens)
+            elif provider == "zai":
+                raw, pt, ct = _generate_zai(task, system, max_tokens=max_tokens)
             elif provider == "claude":
                 raw, pt, ct = _generate_claude(task, system, max_tokens=max_tokens)
             else:

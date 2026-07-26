@@ -41,6 +41,32 @@ describe('gateway real behavior (no fakes)', () => {
     expect(a.riskFactors.compositeRisk).not.toBe(b.riskFactors.compositeRisk);
   });
 
+  it('ALLOW authorization tokens are HMAC signed, not timestamp-forgeable strings', async () => {
+    const gw = new UnifiedSCBEGateway({ riskThresholds: { allow: 1.0, deny: 2.0 } });
+    const res = await gw.authorize({ agentId: 'a1', action: 'read', target: 'doc/x' } as never);
+
+    expect(res.decision).toBe('ALLOW');
+    expect(res.token).toMatch(/^scbe_tok_[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/);
+
+    const [body, mac] = res.token!.slice('scbe_tok_'.length).split('.');
+    const key = crypto
+      .createHmac('sha256', 'gateway-real-test-secret')
+      .update('gateway-token-key')
+      .digest();
+    const expectedMac = crypto.createHmac('sha256', key).update(body).digest('base64url');
+    expect(mac).toBe(expectedMac);
+
+    const claims = JSON.parse(Buffer.from(body, 'base64url').toString('utf8'));
+    expect(claims.decisionId).toBe(res.decisionId);
+    expect(new Date(claims.exp).toISOString()).toBe(res.expiresAt);
+
+    const forgedBody = Buffer.from(
+      JSON.stringify({ ...claims, decisionId: 'dec_attacker_forged' })
+    ).toString('base64url');
+    const forgedMac = crypto.createHmac('sha256', key).update(forgedBody).digest('base64url');
+    expect(forgedMac).not.toBe(mac);
+  });
+
   it('envelope signatures round-trip and reject forgery (real HMAC)', async () => {
     const gw = new UnifiedSCBEGateway();
     const env = await gw.encodeRWP({ hello: 'world' }, ['KO']);

@@ -33,6 +33,7 @@ ALIAS_SYNC_MAP: dict[str, list[str]] = {
     "HF_TOKEN": ["HUGGINGFACE_TOKEN", "HUGGING_FACE_HUB_TOKEN"],
     "CEREBRAS_API_KEY": [],
     "GROQ_API_KEY": [],
+    "ZAI_API_KEY": [],
 }
 
 DEFAULT_PROVIDER_KEYS: dict[str, list[str]] = {
@@ -42,9 +43,10 @@ DEFAULT_PROVIDER_KEYS: dict[str, list[str]] = {
     "huggingface": ["HF_TOKEN", "HUGGINGFACE_TOKEN", "HUGGING_FACE_HUB_TOKEN"],
     "cerebras": ["CEREBRAS_API_KEY"],
     "groq": ["GROQ_API_KEY"],
+    "zai": ["ZAI_API_KEY"],
 }
 
-DEFAULT_PROVIDER_ORDER = ["cerebras", "groq", "huggingface", "openai", "anthropic", "xai"]
+DEFAULT_PROVIDER_ORDER = ["cerebras", "groq", "huggingface", "openai", "zai", "anthropic", "xai"]
 DEFAULT_COMPLEXITY_TIERS = {
     "easy": ["cheap"],
     "medium": ["cheap", "standard"],
@@ -59,6 +61,7 @@ DEFAULT_PROVIDER_HOSTS: dict[str, set[str]] = {
     "hf": {"huggingface.co", "router.huggingface.co"},
     "cerebras": {"api.cerebras.ai"},
     "groq": {"api.groq.com"},
+    "zai": {"api.z.ai"},
 }
 
 
@@ -470,6 +473,10 @@ def run_health(args: argparse.Namespace) -> int:
             status_map[provider] = _health_cerebras(provider_cfg)
         elif provider == "groq":
             status_map[provider] = _health_groq(provider_cfg)
+        elif provider == "zai":
+            status_map[provider] = _health_openai_like(
+                "zai", provider_cfg, "https://api.z.ai/api/paas/v4/models"
+            )
         else:
             status_map[provider] = {
                 "status": "degraded",
@@ -801,7 +808,7 @@ def run_call(args: argparse.Namespace) -> int:
                 )
                 continue
 
-            if provider in {"openai", "xai", "cerebras", "groq", "huggingface", "hf"}:
+            if provider in {"openai", "xai", "cerebras", "groq", "huggingface", "hf", "zai"}:
                 ok, text, http_status, body, error = _call_openai_like(
                     endpoint=endpoint,
                     api_key=api_key,

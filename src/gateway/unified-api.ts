@@ -198,7 +198,9 @@ export class UnifiedSCBEGateway {
 
     const decision = this.makeDecision(compositeRisk);
 
-    const decisionId = `dec_${Date.now().toString(36)}_${crypto.randomBytes(4).toString('hex')}`;
+    const now = Date.now();
+    const expiresAtMs = now + 300000;
+    const decisionId = `dec_${now.toString(36)}_${crypto.randomBytes(4).toString('hex')}`;
 
     return {
       decision,
@@ -213,8 +215,8 @@ export class UnifiedSCBEGateway {
         harmonicMagnification,
         compositeRisk,
       },
-      token: decision === 'ALLOW' ? this.generateToken(decisionId) : undefined,
-      expiresAt: decision === 'ALLOW' ? new Date(Date.now() + 300000).toISOString() : undefined,
+      token: decision === 'ALLOW' ? this.generateToken(decisionId, expiresAtMs, now) : undefined,
+      expiresAt: decision === 'ALLOW' ? new Date(expiresAtMs).toISOString() : undefined,
       explanation: {
         layers: this.buildLayerExplanation({
           hyperbolicDistance,
@@ -608,8 +610,15 @@ export class UnifiedSCBEGateway {
     return 'QUARANTINE';
   }
 
-  private generateToken(decisionId: string): string {
-    return `scbe_tok_${decisionId}_${Date.now().toString(36)}`;
+  private generateToken(decisionId: string, expiresAtMs: number, issuedAtMs: number): string {
+    const body = Buffer.from(
+      JSON.stringify({ decisionId, iat: issuedAtMs, exp: expiresAtMs })
+    ).toString('base64url');
+    const mac = crypto
+      .createHmac('sha256', this.gatewayTokenKey())
+      .update(body)
+      .digest('base64url');
+    return `scbe_tok_${body}.${mac}`;
   }
 
   private generateNonce(): string {
@@ -625,6 +634,16 @@ export class UnifiedSCBEGateway {
       throw new Error('SCBE_GATEWAY_HMAC_SECRET must be configured for RWP envelope signatures');
     }
     return crypto.createHmac('sha256', secret).update(`tongue-key:${tongue}`).digest();
+  }
+
+  private gatewayTokenKey(): Buffer {
+    const secret = process.env.SCBE_GATEWAY_HMAC_SECRET;
+    if (!secret) {
+      throw new Error(
+        'SCBE_GATEWAY_HMAC_SECRET must be configured for gateway authorization tokens'
+      );
+    }
+    return crypto.createHmac('sha256', secret).update('gateway-token-key').digest();
   }
 
   private async signWithTongue(payload: string, tongue: TongueID, nonce: string): Promise<string> {

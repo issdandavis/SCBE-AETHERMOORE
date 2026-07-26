@@ -38,6 +38,10 @@
 
 import * as crypto from 'crypto';
 
+function secureRandomUnit(): number {
+  return crypto.randomBytes(6).readUIntBE(0, 6) / 0x1000000000000;
+}
+
 // ═══════════════════════════════════════════════════════════════
 // Types
 // ═══════════════════════════════════════════════════════════════
@@ -540,8 +544,8 @@ export class PHDMDeviationDetector {
       switch (attackType) {
         case 'deviation':
           // Add random noise
-          state.x1 += (Math.random() - 0.5) * intensity;
-          state.x2 += (Math.random() - 0.5) * intensity;
+          state.x1 += (secureRandomUnit() - 0.5) * intensity;
+          state.x2 += (secureRandomUnit() - 0.5) * intensity;
           break;
 
         case 'skip':
@@ -787,7 +791,7 @@ export class PolyhedralHamiltonianDefenseManifold {
    * @param dim1 - Second dimension of rotation plane
    */
   executePhasonShift(theta?: number, dim0: number = 0, dim1: number = 1): void {
-    const angle = theta ?? Math.random() * 2 * Math.PI;
+    const angle = theta ?? secureRandomUnit() * 2 * Math.PI;
     this._projectionMatrix = phasonShift(this._projectionMatrix, angle, dim0, dim1);
   }
 

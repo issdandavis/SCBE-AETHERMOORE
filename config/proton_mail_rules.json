@@ -54,6 +54,7 @@
     }
   ],
   "trusted_senders": [
+    "aethermoregames@protonmail.com",
     "aethermoregames@pm.me"
   ]
 }

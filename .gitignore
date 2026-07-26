@@ -364,3 +364,5 @@ docs/proposals/*.zip
 
 # generated audit-receipt runs
 audit_attestation/
+# --- added by push_dev: keep git free of regenerable + oversized artifacts ---
+.ipynb_checkpoints/

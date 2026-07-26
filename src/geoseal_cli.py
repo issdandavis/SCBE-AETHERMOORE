@@ -98,6 +98,7 @@ from src.research_navigation import (
     build_youtube_navigation_packet,
 )
 from src.coding_board.pipeline import run_coding_trial
+from src.arc_token_process import build_arc_token_process
 from src.agentic.meet_in_the_middle import (
     CodeHalf,
     SeamContract,
@@ -4204,6 +4205,472 @@ def cmd_agent(args: argparse.Namespace) -> int:
     return 0
 
 
+def _arc_chart_error(message: str, *, code: int = 2) -> int:
+    payload = {
+        "schema_version": "geoseal_arc_chart_error_v1",
+        "ok": False,
+        "error": message,
+    }
+    print(json.dumps(payload, sort_keys=True, allow_nan=False), file=sys.stderr)
+    return code
+
+
+def _arc_tokenize_error(message: str, *, code: int = 2) -> int:
+    payload = {
+        "schema_version": "geoseal_arc_token_process_error_v1",
+        "ok": False,
+        "error": message,
+    }
+    print(json.dumps(payload, sort_keys=True, allow_nan=False), file=sys.stderr)
+    return code
+
+
+def cmd_arc_tokenize(args: argparse.Namespace) -> int:
+    """Call ARC synthesis and render its process through seven canonical faces."""
+
+    arc_root = Path(args.arc_root).expanduser().resolve()
+    collection_files = {
+        "arc-evaluation": "arc-agi_evaluation_challenges.json",
+        "arc-training": "arc-agi_training_challenges.json",
+        "arc-test": "arc-agi_test_challenges.json",
+    }
+    challenges = Path(args.challenges).expanduser().resolve() if args.challenges else (
+        arc_root / "data" / collection_files[args.collection]
+    )
+    try:
+        raw = json.loads(challenges.read_text(encoding="utf-8"))
+        if not isinstance(raw, dict):
+            raise ValueError("challenge file must contain one JSON object")
+        task = raw.get(args.task)
+        if not isinstance(task, dict):
+            raise ValueError(f"ARC task not found: {args.task}")
+        payload = build_arc_token_process(
+            task_id=args.task,
+            task=task,
+            arc_root=arc_root,
+            max_hypotheses=args.max_hypotheses,
+        )
+        payload["collection"] = args.collection
+        payload["challenges"] = str(challenges)
+        if args.receipt:
+            receipt = Path(args.receipt).expanduser().resolve()
+            receipt.parent.mkdir(parents=True, exist_ok=True)
+            receipt.write_text(
+                json.dumps(payload, indent=2, sort_keys=True, allow_nan=False),
+                encoding="utf-8",
+            )
+            payload["receipt"] = str(receipt)
+    except (ImportError, OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
+        return _arc_tokenize_error(str(exc))
+
+    if args.json:
+        print(json.dumps(payload, sort_keys=True, allow_nan=False))
+    else:
+        print(
+            f"ARC token process: {args.collection}:{args.task} "
+            f"gate={payload['promotion']['gate']} records={len(payload['records'])} "
+            f"reversible={payload['reversible']}"
+        )
+    return 0
+
+
+def _arc_flashcards_error(message: str, *, code: int = 2) -> int:
+    payload = {
+        "schema_version": "geoseal_arc_flashcards_error_v1",
+        "ok": False,
+        "error": message,
+    }
+    print(json.dumps(payload, sort_keys=True, allow_nan=False), file=sys.stderr)
+    return code
+
+
+def cmd_arc_flashcards(args: argparse.Namespace) -> int:
+    """Build ARC flashcards through the upstream deterministic generator."""
+
+    arc_root = Path(args.arc_root).expanduser().resolve()
+    flashcard_module = arc_root / "arc_prize_2026" / "arc_flashcards.py"
+    batch_module = arc_root / "arc_prize_2026" / "arc_token_batch.py"
+    if not flashcard_module.is_file():
+        return _arc_flashcards_error(f"ARC flashcard module not found: {flashcard_module}")
+
+    collection_files = {
+        "arc-evaluation": "arc-agi_evaluation_challenges.json",
+        "arc-training": "arc-agi_training_challenges.json",
+        "arc-test": "arc-agi_test_challenges.json",
+    }
+    artifact_root = arc_root / ".scratch" / "geoseal_arc_flashcards" / args.collection
+    tokens = Path(args.tokens).expanduser().resolve() if args.tokens else artifact_root / "tokens.jsonl"
+    output = Path(args.output).expanduser().resolve() if args.output else artifact_root / "cards.jsonl"
+    index = Path(args.index).expanduser().resolve() if args.index else output.with_suffix(
+        output.suffix + ".index.json"
+    )
+    token_summary: Dict[str, Any] | None = None
+    generated_tokens = False
+    try:
+        if not tokens.is_file():
+            if args.tokens:
+                raise ValueError(f"ARC token JSONL not found: {tokens}")
+            if not batch_module.is_file():
+                raise ValueError(f"ARC token batch module not found: {batch_module}")
+            challenges = arc_root / "data" / collection_files[args.collection]
+            if not challenges.is_file():
+                raise ValueError(f"ARC challenge file not found: {challenges}")
+            token_summary = _run_arc_chart_child(
+                [
+                    sys.executable,
+                    "-m",
+                    "arc_prize_2026.arc_token_batch",
+                    "--challenges",
+                    str(challenges),
+                    "--output",
+                    str(tokens),
+                    "--json",
+                ],
+                cwd=arc_root,
+                timeout=args.timeout,
+            )
+            generated_tokens = True
+
+        command = [
+            sys.executable,
+            "-m",
+            "arc_prize_2026.arc_flashcards",
+            "--tokens",
+            str(tokens),
+            "--output",
+            str(output),
+            "--index",
+            str(index),
+            "--json",
+        ]
+        if args.stages:
+            command.extend(["--stages", *args.stages])
+        generation = _run_arc_chart_child(command, cwd=arc_root, timeout=args.timeout)
+        if generation.get("task_ids_in_prompts") is not False:
+            raise ValueError("ARC flashcard generator did not prove task-ID-free prompts")
+        phase_routes = {
+            "OBS_TO_FEAT": ["OBS", "FEAT"],
+            "FEAT_REL_TO_HYP": ["FEAT", "REL", "HYP"],
+            "HYP_TO_ACT": ["HYP", "ACT"],
+            "ACT_TO_OUTPUT_DELTA": ["ACT", "OBS", "REL"],
+            "ASSERT": ["ASSERT", "MEM"],
+            "ASSERT_TO_COST": ["ASSERT", "ACT", "MEM"],
+        }
+        selected_routes = {
+            stage: phase_routes[stage]
+            for stage in generation.get("stage_counts", {})
+            if stage in phase_routes
+        }
+        payload = {
+            "schema_version": "geoseal_arc_flashcards_v1",
+            "ok": True,
+            "collection": args.collection,
+            "generated_tokens": generated_tokens,
+            "tokenization": token_summary,
+            "generation": generation,
+            "routing": {
+                "stage_phases": selected_routes,
+                "faces": ["KO", "AV", "RU", "CA", "UM", "DR", "ARC_ATOMIC"],
+                "opcode_registry": "python.scbe.ca_opcode_table.OP_TABLE",
+                "execution_phase": "ACT",
+            },
+            "paths": {
+                "arc_root": str(arc_root),
+                "tokens": str(tokens),
+                "output": str(output),
+                "index": str(index),
+            },
+        }
+    except (OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
+        return _arc_flashcards_error(str(exc))
+
+    if args.json:
+        print(json.dumps(payload, sort_keys=True, allow_nan=False))
+    else:
+        print(
+            f"ARC flashcards: {args.collection} cards={generation.get('card_count', 0)} "
+            f"bytes={generation.get('bytes', 0)} task_ids_in_prompts=False"
+        )
+        print(f"output={output}")
+        print(f"index={index}")
+    return 0
+
+
+def _run_arc_chart_child(command: List[str], *, cwd: Path, timeout: int) -> Dict[str, Any]:
+    try:
+        proc = subprocess.run(
+            command,
+            cwd=str(cwd),
+            shell=False,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise ValueError(f"ARC chart child timed out after {timeout}s") from exc
+    if proc.returncode != 0:
+        detail = (proc.stderr or proc.stdout or "unknown child error").strip()
+        raise ValueError(f"ARC chart child failed ({proc.returncode}): {detail[-2000:]}")
+    try:
+        payload = json.loads(proc.stdout)
+    except json.JSONDecodeError as exc:
+        raise ValueError("ARC chart child did not emit one strict JSON document") from exc
+    if not isinstance(payload, dict):
+        raise ValueError("ARC chart child JSON must be an object")
+    return payload
+
+
+def cmd_arc_chart(args: argparse.Namespace) -> int:
+    """Bridge GeoSeal to the ARC Aether Chart through a strict subprocess seam."""
+
+    arc_root = Path(args.arc_root).expanduser().resolve()
+    scbe_root = Path(args.scbe_root).expanduser().resolve()
+    chart_module = arc_root / "arc_prize_2026" / "puzzle_chart.py"
+    provider_module = arc_root / "arc_prize_2026" / "scbe_chart_provider.py"
+    if not chart_module.is_file() or not provider_module.is_file():
+        return _arc_chart_error(
+            f"ARC chart package not found under {arc_root}; set --arc-root or GEOSEAL_ARC_PRIZE_ROOT"
+        )
+    if not (scbe_root / "scbe.py").is_file():
+        return _arc_chart_error(f"SCBE root is invalid: {scbe_root}")
+
+    manifest = Path(args.manifest).expanduser().resolve() if args.manifest else (
+        arc_root / "research" / "arc_pixel_games" / "puzzle_box.example.json"
+    )
+    profile = Path(args.profile).expanduser().resolve() if args.profile else (
+        arc_root / "research" / "arc_pixel_games" / "aether_chart_profile.json"
+    )
+    collection_files = {
+        "arc-evaluation": "arc-agi_evaluation_challenges.json",
+        "arc-training": "arc-agi_training_challenges.json",
+        "arc-test": "arc-agi_test_challenges.json",
+    }
+    challenges = Path(args.challenges).expanduser().resolve() if args.challenges else (
+        arc_root / "data" / collection_files.get(args.collection, "arc-agi_evaluation_challenges.json")
+    )
+    cache_dir = Path(args.scbe_cache).expanduser().resolve() if args.scbe_cache else (
+        arc_root / ".scratch" / "aether_chart_cache"
+    )
+    receipt = Path(args.receipt).expanduser().resolve() if args.receipt else (
+        arc_root / ".scratch" / "geoseal_arc_chart" / f"{args.task}_{args.action}.json"
+    )
+    features_path = receipt.with_suffix(".features.json")
+
+    try:
+        if args.features:
+            features_path = Path(args.features).expanduser().resolve()
+            provider_payload = json.loads(features_path.read_text(encoding="utf-8"))
+            if not isinstance(provider_payload, dict):
+                raise ValueError("--features must contain one JSON object")
+        else:
+            if not challenges.is_file():
+                raise ValueError(f"challenge file not found: {challenges}")
+            features_path.parent.mkdir(parents=True, exist_ok=True)
+            provider_cmd = [
+                sys.executable,
+                "-m",
+                "arc_prize_2026.scbe_chart_provider",
+                "--scbe-root",
+                str(scbe_root),
+                "--challenges",
+                str(challenges),
+                "--task",
+                args.task,
+                "--cache-dir",
+                str(cache_dir),
+                "--output",
+                str(features_path),
+            ]
+            if args.rule_text:
+                provider_cmd.extend(["--rule-text", args.rule_text])
+            provider_payload = _run_arc_chart_child(provider_cmd, cwd=arc_root, timeout=args.timeout)
+
+        chart_payload: Dict[str, Any] | None = None
+        if args.action != "phase":
+            if not manifest.is_file():
+                raise ValueError(f"puzzle-box manifest not found: {manifest}")
+            chart_cmd = [
+                sys.executable,
+                "-m",
+                "arc_prize_2026.puzzle_chart",
+                args.action,
+                "--manifest",
+                str(manifest),
+                "--collection",
+                args.collection,
+                "--task",
+                args.task,
+                "--split",
+                args.split,
+                "--index",
+                str(args.index),
+                "--features",
+                str(features_path),
+            ]
+            if profile.is_file():
+                chart_cmd.extend(["--profile", str(profile)])
+            if args.family:
+                chart_cmd.extend(["--family", args.family])
+            if args.rule_text:
+                chart_cmd.extend(["--rule-text", args.rule_text])
+            if args.action == "rank":
+                if not args.actions:
+                    raise ValueError("arc-chart rank requires --actions")
+                actions = Path(args.actions).expanduser().resolve()
+                if not actions.is_file():
+                    raise ValueError(f"actions file not found: {actions}")
+                chart_cmd.extend(["--actions", str(actions)])
+            chart_payload = _run_arc_chart_child(chart_cmd, cwd=arc_root, timeout=args.timeout)
+
+        confidence = max(0.0, min(1.0, float(provider_payload.get("confidence", 0.0) or 0.0)))
+        coherence = max(0.0, min(1.0, float(provider_payload.get("coherence", 0.0) or 0.0)))
+        tongue_phase = provider_payload.get("tongue_phase", {})
+        if not isinstance(tongue_phase, dict):
+            tongue_phase = {}
+        roundtrip_error = float(tongue_phase.get("roundtrip_error", 1.0) or 0.0)
+        provider_errors = provider_payload.get("provider_errors", {})
+        phase_stable = abs(roundtrip_error) <= 1e-9 and not provider_errors
+        point = chart_payload.get("point") if isinstance(chart_payload, dict) else None
+        exact = bool(point.get("exact")) if isinstance(point, dict) else False
+        route = "accept" if exact else "rank" if phase_stable and confidence >= 0.55 else "research"
+        decision = {
+            "route": route,
+            "exact": exact,
+            "target_used": bool(chart_payload and chart_payload.get("target_known")),
+            "challenge_safe": args.split == "test" and not bool(chart_payload and chart_payload.get("target_known")),
+            "phase_stable": phase_stable,
+            "confidence": confidence,
+            "coherence": coherence,
+            "confidence_surprisal_bits": round(-math.log2(max(confidence, 1e-12)), 6),
+            "confidence_entropy_bits": round(
+                -confidence * math.log2(max(confidence, 1e-12))
+                - (1.0 - confidence) * math.log2(max(1.0 - confidence, 1e-12)),
+                6,
+            ),
+            "family_consensus": provider_payload.get("family_consensus", {}),
+        }
+        payload = {
+            "schema_version": "geoseal_arc_chart_v1",
+            "ok": True,
+            "action": args.action,
+            "puzzle": {
+                "collection": args.collection,
+                "task": args.task,
+                "split": args.split,
+                "index": args.index,
+            },
+            "decision": decision,
+            "chart": chart_payload,
+            "phase_packet": provider_payload,
+            "paths": {
+                "arc_root": str(arc_root),
+                "scbe_root": str(scbe_root),
+                "challenges": str(challenges),
+                "features": str(features_path),
+                "receipt": str(receipt),
+            },
+        }
+        receipt.parent.mkdir(parents=True, exist_ok=True)
+        receipt.write_text(json.dumps(payload, indent=2, sort_keys=True, allow_nan=False), encoding="utf-8")
+    except (OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
+        return _arc_chart_error(str(exc))
+
+    if args.json:
+        print(json.dumps(payload, sort_keys=True, allow_nan=False))
+    else:
+        print(
+            f"ARC chart {args.action}: {args.collection}:{args.task}:{args.split}:{args.index} "
+            f"route={decision['route']} confidence={confidence:.3f} "
+            f"surprisal={decision['confidence_surprisal_bits']:.3f} bits"
+        )
+        print(f"receipt={receipt}")
+    return 0
+
+
+def cmd_arc_prize_build(args: argparse.Namespace) -> int:
+    """Build and validate an ARC Prize submission using optional chart receipts."""
+
+    arc_root = Path(args.arc_root).expanduser().resolve()
+    if not (arc_root / "arc_prize_2026" / "cli.py").is_file():
+        return _arc_chart_error(
+            f"ARC Prize package not found under {arc_root}; set --arc-root or GEOSEAL_ARC_PRIZE_ROOT"
+        )
+    default_name = "arc-agi_test_challenges.json" if args.mode == "test" else "arc-agi_evaluation_challenges.json"
+    challenges = Path(args.challenges).expanduser().resolve() if args.challenges else arc_root / "data" / default_name
+    output = Path(args.output).expanduser().resolve() if args.output else (
+        arc_root / ".scratch" / f"geoseal_{args.mode}_submission.json"
+    )
+    chart_receipts = Path(args.chart_receipts).expanduser().resolve() if args.chart_receipts else (
+        arc_root / ".scratch" / "geoseal_arc_chart"
+    )
+    receipt = Path(args.receipt).expanduser().resolve() if args.receipt else (
+        arc_root / ".scratch" / f"geoseal_{args.mode}_build_receipt.json"
+    )
+    try:
+        if not challenges.is_file():
+            raise ValueError(f"challenge file not found: {challenges}")
+        output.parent.mkdir(parents=True, exist_ok=True)
+        build_cmd = [
+            sys.executable,
+            "-m",
+            "arc_prize_2026",
+            "generic",
+            "--challenges",
+            str(challenges),
+            "--output",
+            str(output),
+        ]
+        if chart_receipts.is_dir():
+            build_cmd.extend(["--chart-receipts", str(chart_receipts)])
+        elif args.chart_receipts:
+            raise ValueError(f"chart receipt directory not found: {chart_receipts}")
+        build_payload = _run_arc_chart_child(build_cmd, cwd=arc_root, timeout=args.timeout)
+        validate_payload = _run_arc_chart_child(
+            [
+                sys.executable,
+                "-m",
+                "arc_prize_2026",
+                "validate",
+                "--challenges",
+                str(challenges),
+                "--submission",
+                str(output),
+            ],
+            cwd=arc_root,
+            timeout=args.timeout,
+        )
+        payload = {
+            "schema_version": "geoseal_arc_prize_build_v1",
+            "ok": True,
+            "mode": args.mode,
+            "build": build_payload,
+            "validation": validate_payload,
+            "paths": {
+                "arc_root": str(arc_root),
+                "challenges": str(challenges),
+                "chart_receipts": str(chart_receipts) if chart_receipts.is_dir() else None,
+                "submission": str(output),
+                "receipt": str(receipt),
+            },
+        }
+        receipt.parent.mkdir(parents=True, exist_ok=True)
+        receipt.write_text(json.dumps(payload, indent=2, sort_keys=True, allow_nan=False), encoding="utf-8")
+    except (OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
+        return _arc_chart_error(str(exc))
+
+    if args.json:
+        print(json.dumps(payload, sort_keys=True, allow_nan=False))
+    else:
+        print(
+            f"ARC Prize {args.mode} build: tasks={validate_payload.get('task_count')} "
+            f"outputs={validate_payload.get('test_output_count')} attempts={validate_payload.get('attempt_count')}"
+        )
+        print(f"submission={output}")
+        print(f"receipt={receipt}")
+    return 0
+
+
 def cmd_arc(args: argparse.Namespace) -> int:
     """Load an ARC task, synthesize a program, and optionally export ONNX.
 
@@ -4429,7 +4896,7 @@ def cmd_cursor(args: argparse.Namespace) -> int:
 
 WORKFLOW_OP_KINDS = {"agent", "seal"}
 WORKFLOW_VALID_TIERS = {"ALLOW", "QUARANTINE", "ESCALATE"}
-WORKFLOW_VALID_PROVIDERS = {"local", "ollama", "hf", "claude"}
+WORKFLOW_VALID_PROVIDERS = {"local", "ollama", "hf", "zai", "claude"}
 _WORKFLOW_REF_PATTERN = re.compile(r"\$\{([a-zA-Z_][a-zA-Z0-9_.\-]*)\}")
 
 
@@ -5483,7 +5950,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_code_packet.add_argument("--source-file", default=None, help="Read source content from file")
     p_code_packet.add_argument("--source-name", default=None)
     p_code_packet.add_argument("--language", default="python")
-    p_code_packet.add_argument("--backend", default=None, choices=["local", "ollama", "hf", "claude"])
+    p_code_packet.add_argument("--backend", default=None, choices=["local", "ollama", "hf", "zai", "claude"])
     p_code_packet.set_defaults(func=cmd_code_packet)
 
     p_tongue_compile = sub.add_parser(
@@ -5590,13 +6057,13 @@ def build_parser() -> argparse.ArgumentParser:
     p_explain.add_argument("--source-name", default=None)
     p_explain.add_argument("--language", default="python")
     p_explain.add_argument("--tongue", default=None, help="Force tongue")
-    p_explain.add_argument("--provider", default=None, choices=["local", "ollama", "hf", "claude"])
+    p_explain.add_argument("--provider", default=None, choices=["local", "ollama", "hf", "zai", "claude"])
     p_explain.add_argument(
         "--forbid-provider",
         action="append",
         default=[],
         dest="forbid_provider",
-        choices=["local", "ollama", "hf", "claude"],
+        choices=["local", "ollama", "hf", "zai", "claude"],
     )
     p_explain.add_argument("--small-first", action="store_true", dest="small_first")
     p_explain.add_argument(
@@ -6165,8 +6632,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_agent.add_argument(
         "--provider",
         default=None,
-        choices=["local", "ollama", "hf", "claude"],
-        help="Force inference provider (default: local->ollama->hf->claude)",
+        choices=["local", "ollama", "hf", "zai", "claude"],
+        help="Force inference provider (default: local->ollama->hf->[configured zai]->claude)",
     )
     p_agent.add_argument("--max-tokens", type=int, default=1024, dest="max_tokens")
     p_agent.add_argument(
@@ -6187,14 +6654,14 @@ def build_parser() -> argparse.ArgumentParser:
         "--small-first",
         action="store_true",
         dest="small_first",
-        help="Reserve Claude for ESCALATE tier; prefer local/ollama/hf otherwise",
+        help="Reserve Z.ai and Claude for ESCALATE tier; prefer local/ollama/hf otherwise",
     )
     p_agent.add_argument(
         "--forbid-provider",
         action="append",
         default=[],
         dest="forbid_provider",
-        choices=["local", "ollama", "hf", "claude"],
+        choices=["local", "ollama", "hf", "zai", "claude"],
         help="Provider tier to exclude from routing (repeatable)",
     )
     p_agent.add_argument(
@@ -6217,6 +6684,95 @@ def build_parser() -> argparse.ArgumentParser:
     p_arc.add_argument("--ledger", default=str(DEFAULT_LEDGER))
     p_arc.add_argument("--verbose", "-v", action="store_true")
     p_arc.set_defaults(func=cmd_arc)
+
+    p_arc_tokenize = sub.add_parser(
+        "arc-tokenize",
+        aliases=["arc-process"],
+        help="Call ARC synthesis and emit phase-typed tokens through six tongues plus ARC atomic",
+    )
+    p_arc_tokenize.add_argument("--task", required=True, help="ARC task id")
+    p_arc_tokenize.add_argument(
+        "--collection",
+        choices=["arc-evaluation", "arc-training", "arc-test"],
+        default="arc-evaluation",
+    )
+    p_arc_tokenize.add_argument(
+        "--arc-root",
+        default=os.environ.get("GEOSEAL_ARC_PRIZE_ROOT", r"C:\dev\arc-prize-2026"),
+    )
+    p_arc_tokenize.add_argument("--challenges")
+    p_arc_tokenize.add_argument("--max-hypotheses", type=int, default=4)
+    p_arc_tokenize.add_argument("--receipt")
+    p_arc_tokenize.add_argument("--json", action="store_true", help="Emit one strict JSON object")
+    p_arc_tokenize.set_defaults(func=cmd_arc_tokenize)
+
+    p_arc_cards = sub.add_parser(
+        "arc-flashcards",
+        aliases=["arc-cards"],
+        help="Build task-ID-free staged ARC flashcard JSONL through the ARC package",
+    )
+    p_arc_cards.add_argument(
+        "--collection",
+        choices=["arc-evaluation", "arc-training", "arc-test"],
+        default="arc-test",
+    )
+    p_arc_cards.add_argument(
+        "--arc-root",
+        default=os.environ.get("GEOSEAL_ARC_PRIZE_ROOT", r"C:\dev\arc-prize-2026"),
+    )
+    p_arc_cards.add_argument("--tokens", help="Existing arc-token-batch JSONL")
+    p_arc_cards.add_argument("--output", help="Flashcard JSONL output")
+    p_arc_cards.add_argument("--index", help="Flashcard index JSON output")
+    p_arc_cards.add_argument("--stages", nargs="+", help="Generator stages to include")
+    p_arc_cards.add_argument("--timeout", type=int, default=600)
+    p_arc_cards.add_argument("--json", action="store_true", help="Emit one strict summary JSON object")
+    p_arc_cards.set_defaults(func=cmd_arc_flashcards)
+
+    p_arc_chart = sub.add_parser(
+        "arc-chart",
+        aliases=["arc-phase"],
+        help="Run the ARC Aether Chart and six phase tongues through a strict JSON bridge",
+    )
+    p_arc_chart.add_argument("action", choices=["phase", "state", "rank"])
+    p_arc_chart.add_argument("--task", required=True, help="ARC task id")
+    p_arc_chart.add_argument("--collection", default="arc-evaluation")
+    p_arc_chart.add_argument("--split", choices=["train", "test"], default="train")
+    p_arc_chart.add_argument("--index", type=int, default=0)
+    p_arc_chart.add_argument(
+        "--arc-root",
+        default=os.environ.get("GEOSEAL_ARC_PRIZE_ROOT", r"C:\dev\arc-prize-2026"),
+    )
+    p_arc_chart.add_argument("--scbe-root", default=str(Path(__file__).resolve().parent.parent))
+    p_arc_chart.add_argument("--manifest")
+    p_arc_chart.add_argument("--profile")
+    p_arc_chart.add_argument("--features")
+    p_arc_chart.add_argument("--challenges")
+    p_arc_chart.add_argument("--scbe-cache")
+    p_arc_chart.add_argument("--rule-text")
+    p_arc_chart.add_argument("--family")
+    p_arc_chart.add_argument("--actions", help="JSON action list required by rank mode")
+    p_arc_chart.add_argument("--receipt")
+    p_arc_chart.add_argument("--timeout", type=int, default=120)
+    p_arc_chart.add_argument("--json", action="store_true", help="Emit one strict JSON object")
+    p_arc_chart.set_defaults(func=cmd_arc_chart)
+
+    p_arc_build = sub.add_parser(
+        "arc-build",
+        aliases=["arc-prize-build"],
+        help="Build and validate a challenge submission using GeoSeal chart receipts",
+    )
+    p_arc_build.add_argument("--mode", choices=["eval", "test"], default="test")
+    p_arc_build.add_argument(
+        "--arc-root",
+        default=os.environ.get("GEOSEAL_ARC_PRIZE_ROOT", r"C:\dev\arc-prize-2026"),
+    )
+    p_arc_build.add_argument("--challenges")
+    p_arc_build.add_argument("--output")
+    p_arc_build.add_argument("--chart-receipts")
+    p_arc_build.add_argument("--receipt")
+    p_arc_build.add_argument("--timeout", type=int, default=300)
+    p_arc_build.add_argument("--json", action="store_true", help="Emit one strict JSON object")
+    p_arc_build.set_defaults(func=cmd_arc_prize_build)
 
     p_cursor = sub.add_parser("cursor", help="Delegate a bounded repo task to Cursor Agent")
     p_cursor.add_argument("task", help="Repo task to hand to Cursor Agent")

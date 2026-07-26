@@ -35,6 +35,8 @@ export const TARGETS = {
   kaggle: 'https://www.kaggle.com/',
   github: 'https://github.com/issdandavis/SCBE-AETHERMOORE',
   drive: 'https://drive.google.com/',
+  canvas: 'https://pencol.instructure.com/',
+  ctclink: 'https://myaccount.ctclink.us/',
   aetherdesk: 'http://127.0.0.1:5717/',
 };
 
@@ -340,7 +342,7 @@ export function buildMcpServer(options = {}) {
   server.registerTool(
     'aetherbrowser_targets',
     {
-      description: 'List named Aetherbrowser web targets such as github, colab, huggingface, kaggle, drive, and aetherdesk.',
+      description: 'List named Aetherbrowser web targets such as github, colab, huggingface, kaggle, drive, canvas, ctclink, and aetherdesk.',
       inputSchema: {},
     },
     async () => callAgentTool('targets', {}, options)

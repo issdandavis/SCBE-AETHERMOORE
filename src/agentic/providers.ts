@@ -18,7 +18,7 @@ import { createHmac } from 'crypto';
 // Types
 // ============================================================================
 
-export type ProviderName = 'anthropic' | 'openai' | 'google' | 'mistral' | 'cohere';
+export type ProviderName = 'anthropic' | 'openai' | 'google' | 'mistral' | 'cohere' | 'zai';
 
 export interface ProviderConfig {
   name: ProviderName;
@@ -81,6 +81,16 @@ function getProviderConfigs(): Map<ProviderName, ProviderConfig> {
     model: process.env.OPENAI_MODEL || 'gpt-4o',
     baseUrl: 'https://api.openai.com/v1',
     available: !!openaiKey && !openaiKey.includes('...'),
+  });
+
+  // Z.ai (OpenAI-compatible GLM endpoint)
+  const zaiKey = process.env.ZAI_API_KEY;
+  configs.set('zai', {
+    name: 'zai',
+    apiKey: zaiKey || '',
+    model: process.env.ZAI_MODEL || 'glm-5.2',
+    baseUrl: process.env.ZAI_BASE_URL || 'https://api.z.ai/api/paas/v4',
+    available: !!zaiKey && !zaiKey.includes('...'),
   });
 
   // Google
@@ -191,7 +201,7 @@ async function callOpenAI(
 
   if (!response.ok) {
     const error = await response.text();
-    throw new Error(`OpenAI API error: ${response.status} - ${error}`);
+    throw new Error(`${config.name} OpenAI-compatible API error: ${response.status} - ${error}`);
   }
 
   const data = await response.json();
@@ -200,7 +210,7 @@ async function callOpenAI(
   return {
     output: data.choices[0]?.message?.content || '',
     tokensUsed: data.usage?.total_tokens || 0,
-    provider: 'openai',
+    provider: config.name,
     model: config.model,
     latencyMs: latency,
   };
@@ -347,6 +357,7 @@ const PROVIDER_CALLERS: Record<
 > = {
   anthropic: callAnthropic,
   openai: callOpenAI,
+  zai: callOpenAI,
   google: callGoogle,
   mistral: callMistral,
   cohere: callCohere,

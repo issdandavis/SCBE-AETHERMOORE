@@ -4,19 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <title>SCBE Terminal - governed CLI workbench</title>
+    <title>Clay Command Deck - SCBE governed browser-worker CLI</title>
     <meta
       name="description"
-      content="Use the SCBE governed terminal frontend in your browser. Slash commands, bracket instructions, receipt summaries, status panels, and the real CLI renderer."
+      content="Choose Clay MIN, MID, or MAX execution contracts in the SCBE governed browser-worker command deck, then inspect human gates and receipt-first routes."
     />
     <meta name="robots" content="index, follow, max-image-preview:large" />
-    <meta property="og:title" content="SCBE Terminal" />
+    <meta property="og:title" content="Clay Command Deck — SCBE Terminal" />
     <meta
       property="og:description"
-      content="A governed CLI workbench for humans and AI agents: command routes, receipt summaries, status panels, and the real terminal renderer."
+      content="A governed browser-worker CLI for humans and AI agents: Clay contracts, command routes, human checkpoints, status panels, and receipts."
     />
     <meta property="og:type" content="website" />
-    <link rel="canonical" href="https://aethermoore.com/SCBE-AETHERMOORE/cli.html" />
+    <link rel="canonical" href="https://aethermoore.com/cli.html" />
     <style>
       :root {
         color-scheme: dark;
@@ -29,8 +29,10 @@
         --text: #f3f7fb;
         --muted: #8d9bab;
         --soft: #c2cbd6;
-        --accent: #38f7bf;
-        --accent-2: #69a7ff;
+        --accent: #d9825b;
+        --accent-2: #7f9ee8;
+        --sage: #8db39f;
+        --porcelain: #f4efe4;
         --warn: #f5b24a;
         --bad: #ff6b6b;
         --ok: #39d98a;
@@ -49,18 +51,22 @@
 
       html {
         min-height: 100%;
+        overflow-x: clip;
         background: var(--bg);
       }
 
       body {
         min-height: 100%;
         margin: 0;
+        overflow-x: clip;
         color: var(--text);
         font-family: var(--sans);
         background:
-          linear-gradient(rgba(255, 255, 255, 0.026) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-          linear-gradient(180deg, #080a0f 0%, #0b0f15 44%, #06080c 100%);
+          radial-gradient(circle at 8% 9%, rgba(217, 130, 91, 0.14), transparent 28rem),
+          radial-gradient(circle at 94% 82%, rgba(127, 158, 232, 0.09), transparent 30rem),
+          linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+          linear-gradient(180deg, #080a0f 0%, #10100f 44%, #06080c 100%);
         background-size:
           38px 38px,
           38px 38px,
@@ -80,6 +86,13 @@
 
       button {
         cursor: pointer;
+      }
+
+      button:focus-visible,
+      a:focus-visible,
+      input:focus-visible {
+        outline: 2px solid var(--warn);
+        outline-offset: 3px;
       }
 
       .topbar {
@@ -113,13 +126,14 @@
         height: 28px;
         place-items: center;
         border: 1px solid rgba(56, 247, 191, 0.34);
-        border-radius: 7px;
+        border-radius: 48% 42% 54% 46%;
         color: var(--accent);
         font-family: var(--mono);
         font-size: 12px;
         font-weight: 800;
-        background: rgba(56, 247, 191, 0.08);
-        box-shadow: 0 0 24px rgba(56, 247, 191, 0.14);
+        background: linear-gradient(145deg, rgba(217, 130, 91, 0.34), rgba(127, 158, 232, 0.12));
+        box-shadow: inset -4px -5px 10px rgba(0, 0, 0, 0.2), 0 0 24px rgba(217, 130, 91, 0.14);
+        transform: rotate(-5deg);
       }
 
       .brand-copy {
@@ -166,7 +180,7 @@
 
       .app-shell {
         display: grid;
-        grid-template-columns: 220px minmax(0, 1fr) 300px;
+        grid-template-columns: 250px minmax(0, 1fr) 320px;
         gap: 12px;
         min-height: calc(100svh - 54px);
         padding: 12px;
@@ -174,7 +188,7 @@
 
       .pane {
         border: 1px solid var(--line);
-        border-radius: 8px;
+        border-radius: 18px 12px 20px 14px;
         background: rgba(15, 20, 28, 0.86);
         box-shadow: 0 18px 54px rgba(0, 0, 0, 0.28);
       }
@@ -208,9 +222,10 @@
 
       .side h1 {
         margin: 0;
-        font-size: 26px;
-        letter-spacing: -0.03em;
-        line-height: 1;
+        color: var(--porcelain);
+        font-size: 31px;
+        letter-spacing: -0.055em;
+        line-height: 0.94;
       }
 
       .side .summary {
@@ -232,6 +247,79 @@
         font-family: var(--mono);
         font-size: 11px;
         background: rgba(56, 247, 191, 0.06);
+      }
+
+      .contract-switch {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 7px;
+      }
+
+      .contract-btn {
+        min-height: 58px;
+        border: 1px solid var(--line-soft);
+        border-radius: 14px 10px 15px 11px;
+        color: var(--muted);
+        background: rgba(255, 255, 255, 0.025);
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .contract-btn.active {
+        border-color: rgba(217, 130, 91, 0.52);
+        color: #ffd7c3;
+        background: rgba(217, 130, 91, 0.12);
+        box-shadow: inset 0 0 20px rgba(217, 130, 91, 0.06);
+      }
+
+      .contract-readout {
+        position: relative;
+        overflow: hidden;
+        margin-top: 9px;
+        border: 1px solid rgba(217, 130, 91, 0.2);
+        border-radius: 18px 12px 20px 14px;
+        padding: 12px;
+        background:
+          radial-gradient(circle at 100% 0%, rgba(217, 130, 91, 0.12), transparent 9rem),
+          rgba(0, 0, 0, 0.16);
+      }
+
+      .contract-readout strong,
+      .contract-readout span {
+        display: block;
+      }
+
+      .contract-readout strong {
+        color: var(--porcelain);
+        font-size: 13px;
+      }
+
+      .contract-readout span {
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.4;
+      }
+
+      .clay-lane-dots {
+        display: flex;
+        gap: 5px;
+        margin-top: 10px;
+      }
+
+      .clay-lane-dots i {
+        display: grid;
+        width: 25px;
+        height: 25px;
+        place-items: center;
+        border: 1px solid rgba(217, 130, 91, 0.28);
+        border-radius: 50% 44% 48% 42%;
+        color: #e9aa8b;
+        background: rgba(217, 130, 91, 0.08);
+        font-family: var(--mono);
+        font-size: 8px;
+        font-style: normal;
       }
 
       .led {
@@ -338,7 +426,7 @@
 
       .command-palette {
         border: 1px solid var(--line);
-        border-radius: 8px;
+        border-radius: 16px 11px 17px 12px;
         background: #080b10;
         min-width: min(100%, 520px);
       }
@@ -404,7 +492,10 @@
         min-height: 0;
         flex: 1;
         flex-direction: column;
-        background: var(--term);
+        background:
+          linear-gradient(rgba(217, 130, 91, 0.022) 1px, transparent 1px),
+          var(--term);
+        background-size: 100% 4px, auto;
       }
 
       .term-bar {
@@ -476,7 +567,7 @@
 
       .term-body .cmd-echo::before {
         color: var(--accent-2);
-        content: "scbe > ";
+        content: "scbe / clay > ";
       }
 
       .term-body .sys {
@@ -522,6 +613,30 @@
 
       .inspect-block:last-child {
         border-bottom: 0;
+      }
+
+      .contract-inspector {
+        display: grid;
+        gap: 8px;
+      }
+
+      .contract-inspector strong {
+        color: var(--porcelain);
+        font-size: 14px;
+      }
+
+      .contract-inspector p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .contract-source {
+        overflow-wrap: anywhere;
+        color: #f0b393;
+        font-family: var(--mono);
+        font-size: 10px;
       }
 
       .label {
@@ -901,18 +1016,20 @@
     <header class="topbar">
       <div class="topbar-inner">
         <a class="brand-lockup" href="index.html" aria-label="AetherMoore home">
-          <span class="mark">SC</span>
+          <span class="mark">CL</span>
           <span class="brand-copy">
-            <strong>SCBE Terminal</strong>
-            <span>governed command workbench</span>
+            <strong>Clay Command Deck</strong>
+            <span>SCBE governed browser-worker harness</span>
           </span>
         </a>
         <nav class="nav" aria-label="Primary navigation">
           <a href="index.html">Home</a>
           <a class="active" href="cli.html">Terminal</a>
+          <a href="#clay-contracts">Clay contracts</a>
           <a href="ai-agent-governance-toolkit.html">Toolkit</a>
           <a href="math-spine.html">Math</a>
           <a href="products.html">Products</a>
+          <a href="github-map.html">GitHub map</a>
         </nav>
       </div>
     </header>
@@ -920,28 +1037,42 @@
     <main class="app-shell" aria-label="SCBE terminal application">
       <aside class="pane side" aria-label="Terminal navigation">
         <section class="side-section">
-          <p class="kicker">Live browser demo</p>
-          <h1>Command, gate, receipt.</h1>
+          <p class="kicker">Polly leads / Clay moves</p>
+          <h1>Shape the run before it runs.</h1>
           <p class="summary">
-            A small terminal surface for humans and agents. Run commands, inspect routes, and keep
-            the receipt.
+            Choose a Clay contract, preview its action boundary, then route a command with the
+            receipt attached.
           </p>
           <span class="status-pill" id="modePill"><i class="led"></i><span id="modeText">demo mode</span></span>
         </section>
 
+        <section class="side-section" id="clay-contracts">
+          <p class="kicker">Contract model</p>
+          <div class="contract-switch" role="tablist" aria-label="Clay execution contract">
+            <button class="contract-btn active" role="tab" aria-selected="true" data-contract="MIN">MIN</button>
+            <button class="contract-btn" role="tab" aria-selected="false" data-contract="MID">MID</button>
+            <button class="contract-btn" role="tab" aria-selected="false" data-contract="MAX">MAX</button>
+          </div>
+          <div class="contract-readout">
+            <strong id="sideContractName">Scout Clay</strong>
+            <span id="sideContractPosture">Read-only reconnaissance</span>
+            <div class="clay-lane-dots" id="clayLaneDots" aria-label="Clay worker lanes"></div>
+          </div>
+        </section>
+
         <section class="side-section">
           <p class="kicker">Routes</p>
-          <button class="rail-link" data-cmd="scbe term"><b>Dashboard</b><span>term</span></button>
+          <button class="rail-link" data-cmd="clay min"><b>Clay harness</b><span>MIN</span></button>
           <button class="rail-link" data-cmd="scbe term --detail"><b>Details</b><span>--detail</span></button>
           <button class="rail-link" data-cmd="status"><b>Status</b><span>/status</span></button>
           <button class="rail-link" data-cmd="models"><b>Models</b><span>/models</span></button>
         </section>
 
         <section class="side-section">
-          <p class="kicker">Measured</p>
+          <p class="kicker">Harness shape</p>
           <div class="mini-grid">
-            <div class="metric"><strong>660ms</strong><span>JSON state</span></div>
-            <div class="metric"><strong>1.09s</strong><span>panel render</span></div>
+            <div class="metric"><strong>3</strong><span>contract profiles</span></div>
+            <div class="metric"><strong>6</strong><span>max Clay lanes</span></div>
           </div>
         </section>
       </aside>
@@ -949,8 +1080,8 @@
       <section class="pane workspace" aria-label="Command workspace">
         <div class="workspace-head">
           <div class="workspace-title">
-            <h2>Agent-ready terminal frontend</h2>
-            <p>Slash commands, bracket instructions, autocorrect vocabulary, and receipt-first output.</p>
+            <h2>Clay harness command deck</h2>
+            <p>Contract-first browser work, slash commands, human gates, and receipt-first output.</p>
           </div>
           <div class="command-palette">
             <div class="command-row">
@@ -960,7 +1091,7 @@
                 autocomplete="off"
                 autocapitalize="off"
                 spellcheck="false"
-                placeholder='try: [verify] npm test   or   /run npm test'
+                placeholder='try: clay min   or   [verify] npm test'
               />
               <button class="runbtn" id="runbtn">Run</button>
             </div>
@@ -972,16 +1103,16 @@
         <div class="terminal-frame">
           <div class="term-bar">
             <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-            <span class="term-title">sample workspace / real CLI renderer</span>
+            <span class="term-title" id="termTitle">Clay MIN / sample workspace / real CLI renderer</span>
             <span class="term-state" id="termState"><i class="led"></i><span id="termStateText">demo mode</span></span>
           </div>
           <div class="term-body" id="termBody" aria-live="polite"></div>
         </div>
 
         <div class="proof-strip" aria-label="Terminal proof points">
-          <div class="proof-item"><strong>real bundle</strong><span>uses the shipped terminal renderer</span></div>
-          <div class="proof-item"><strong>JSON safe</strong><span>same state for agents and humans</span></div>
-          <div class="proof-item"><strong>local first</strong><span>backend optional until you connect it</span></div>
+          <div class="proof-item"><strong>3 contracts</strong><span>MIN, MID, and context-bound MAX</span></div>
+          <div class="proof-item"><strong>HITL ready</strong><span>risky actions stop for a human</span></div>
+          <div class="proof-item"><strong>source mapped</strong><span>every public page links back to GitHub</span></div>
         </div>
       </section>
 
@@ -1003,10 +1134,20 @@
           </section>
 
           <section class="inspect-block">
+            <p class="label">Clay contract</p>
+            <div class="contract-inspector">
+              <strong id="contractInspectorName">MIN / Scout Clay</strong>
+              <p id="contractInspectorBoundary">Read-only reconnaissance. No write-side browser actions.</p>
+              <p><b id="contractInspectorLanes">4 workers</b> · <span id="contractInspectorActions">8 actions/request</span></p>
+              <a class="contract-source" id="contractSource" href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/policies/contracts/polly_clay_min.json">policies/contracts/polly_clay_min.json</a>
+            </div>
+          </section>
+
+          <section class="inspect-block">
             <p class="label">Workspace</p>
             <dl class="kv">
               <dt>branch</dt>
-              <dd id="gitBranch">feat/cli-ui-kit</dd>
+              <dd id="gitBranch">sample / connect backend</dd>
               <dt>runtime</dt>
               <dd id="runtimeRoute">ollama / llama3.2</dd>
               <dt>history</dt>
@@ -1023,6 +1164,7 @@
             <p class="label">Agent grammar</p>
             <div class="grammar-list">
               <code>/run npm test</code>
+              <code>clay min | clay mid | clay max</code>
               <code>[verify] npm run build</code>
               <code>fix the repo</code>
               <code>scbe term --json</code>
@@ -1095,6 +1237,7 @@
     </section>
 
     <footer class="page-foot">
+      Clay contracts are sourced from <code>policies/contracts/polly_clay_{min,mid,max}.json</code>.
       This page runs <code>packages/cli/lib/terminal-frontend.js</code> and
       <code>lib/ui.js</code> through <code>docs/static/scbe-terminal-web.js</code>. The workspace
       state is a sample. Connect a backend before using <code>/run</code> for real execution.
@@ -1119,7 +1262,82 @@
         var runtimeRoute = document.getElementById('runtimeRoute');
         var backendUrl = '';
 
+        var clayContracts = {
+          MIN: {
+            name: 'Scout Clay',
+            posture: 'Read-only reconnaissance',
+            boundary: 'Navigate, extract, screenshot, wait, and scroll. No write-side browser actions.',
+            workers: 4,
+            actions: 8,
+            source: 'policies/contracts/polly_clay_min.json',
+          },
+          MID: {
+            name: 'Operator Clay',
+            posture: 'Bounded routine automation',
+            boundary: 'Click, type, select, and press are allowed. Upload, download, and submit stop for human review.',
+            workers: 4,
+            actions: 8,
+            source: 'policies/contracts/polly_clay_mid.json',
+          },
+          MAX: {
+            name: 'Kiln Clay',
+            posture: 'High-impact, context-bound execution',
+            boundary: 'Requires task_id, change_ticket, and human_approval_id. High-impact actions stay human-gated.',
+            workers: 6,
+            actions: 10,
+            source: 'policies/contracts/polly_clay_max.json',
+          },
+        };
+        var selectedContract = 'MIN';
+
         var lastReceipt = null;
+
+        function selectContract(tier, announce) {
+          var nextTier = String(tier || 'MIN').toUpperCase();
+          if (!clayContracts[nextTier]) nextTier = 'MIN';
+          selectedContract = nextTier;
+          var profile = clayContracts[nextTier];
+
+          Array.prototype.forEach.call(document.querySelectorAll('[data-contract]'), function (button) {
+            var active = button.getAttribute('data-contract') === nextTier;
+            button.classList.toggle('active', active);
+            button.setAttribute('aria-selected', active ? 'true' : 'false');
+          });
+
+          document.getElementById('sideContractName').textContent = profile.name;
+          document.getElementById('sideContractPosture').textContent = profile.posture;
+          document.getElementById('contractInspectorName').textContent = nextTier + ' / ' + profile.name;
+          document.getElementById('contractInspectorBoundary').textContent = profile.boundary;
+          document.getElementById('contractInspectorLanes').textContent = profile.workers + ' workers';
+          document.getElementById('contractInspectorActions').textContent = profile.actions + ' actions/request';
+          document.getElementById('contractSource').textContent = profile.source;
+          document.getElementById('contractSource').href =
+            'https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/' + profile.source;
+          document.getElementById('termTitle').textContent =
+            'Clay ' + nextTier + ' / sample workspace / real CLI renderer';
+
+          var dots = document.getElementById('clayLaneDots');
+          dots.innerHTML = '';
+          for (var index = 1; index <= profile.workers; index += 1) {
+            var dot = document.createElement('i');
+            dot.textContent = 'C' + index;
+            dots.appendChild(dot);
+          }
+
+          if (announce) {
+            write(
+              '<span class="sys">contract ' +
+                nextTier +
+                ' selected / ' +
+                escapeHtml(profile.name) +
+                ' / ' +
+                profile.workers +
+                ' worker lanes</span>'
+            );
+            write(T.ansiToHtml(profile.boundary));
+          }
+          updateInspector();
+        }
 
         function readiness() {
           var lanes = [
@@ -1159,12 +1377,17 @@
               platform: 'linux',
             },
             git: {
-              branch: 'feat/cli-ui-kit',
-              commit: 'c0208af',
-              dirty: true,
-              upstream: 'origin/feat/cli-ui-kit',
+              branch: 'sample / connect backend',
+              commit: 'sample',
+              dirty: false,
+              upstream: 'origin/main',
             },
             shellConfig: { provider: 'ollama', model: 'llama3.2' },
+            clayHarness: {
+              contract: selectedContract,
+              profile: clayContracts[selectedContract],
+              leader: 'Polly',
+            },
             platform: { readiness: readiness() },
             naturalLanguage: {
               autocorrect: true,
@@ -1193,7 +1416,7 @@
             ' / ' +
             (payload.shell && payload.shell.model ? payload.shell.model : 'llama3.2');
 
-          var receipt = payload.last_receipt || lastReceipt;
+          var receipt = lastReceipt;
           if (receipt) {
             var ok = receipt.success !== false && receipt.exit_code !== 1;
             receiptSeal.textContent = ok ? 'ALLOW' : 'FAIL';
@@ -1315,6 +1538,7 @@
             ['scbe term bench', 'render benchmark'],
             ['status', 'JSON status'],
             ['models', 'local model route'],
+            ['clay min|mid|max', 'select browser-worker contract'],
             ['scbe run "<cmd>"', 'governed run'],
             ['[verify] <cmd>', 'instruction tag'],
             ['clear', 'clear screen'],
@@ -1438,9 +1662,15 @@
           if (/^(models|\/models|:models)$/.test(lc)) {
             return write(
               T.ansiToHtml(
-                'local model route\n  provider   ollama\n  model      llama3.2\n  url        http://127.0.0.1:11434\n  configure  scbe shell --ai'
+                'model and worker routes\n  inference  ollama / llama3.2\n  clay MIN   read-only reconnaissance\n  clay MID   bounded routine automation\n  clay MAX   context-bound + human approval\n\nClay profiles are execution contracts, not language models.'
               )
             );
+          }
+
+          var clayMatch = lc.match(/^clay\s+(min|mid|max)$/);
+          if (clayMatch) {
+            selectContract(clayMatch[1], true);
+            return;
           }
 
           if (/\bterm(inal)?\b/.test(lc) || lc === 'scbe') {
@@ -1497,8 +1727,16 @@
           });
         });
 
+        Array.prototype.forEach.call(document.querySelectorAll('[data-contract]'), function (button) {
+          button.addEventListener('click', function () {
+            selectContract(button.getAttribute('data-contract'), true);
+          });
+        });
+
         var chipCmds = [
-          ['scbe term', 'panel'],
+          ['clay min', 'scout'],
+          ['clay mid', 'operator'],
+          ['clay max', 'approval'],
           ['[verify] npm test', 'tag'],
           ['/run npm run build', 'run'],
           ['scbe term --json', 'json'],
@@ -1519,7 +1757,8 @@
         });
 
         if (T) {
-          write('<span class="sys">SCBE terminal frontend ready. Type help or use a route.</span>');
+          selectContract('MIN', false);
+          write('<span class="sys">Clay command deck ready. Select MIN, MID, or MAX before routing work.</span>');
           panel({ detail: false });
           updateInspector();
         } else {
@@ -1528,5 +1767,6 @@
         input.focus();
       })();
     </script>
-  </body>
+<script defer src="assets/source-map.js" data-aether-source="docs/cli.html"></script>
+</body>
 </html>

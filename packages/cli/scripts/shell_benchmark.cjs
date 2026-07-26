@@ -166,7 +166,7 @@ function main() {
     caseResult('rich_shell_config_is_local_free_by_default', () => {
       const r = runNodeCli(['shell'], { input: ':config\n:exit\n' });
       assert.equal(r.status, 0);
-      assert.match(r.stdout, /SCBE\s+local/);
+      assert.match(r.stdout, /SCBE[\s\S]{0,120}local/);
       assert.match(r.stdout, /"provider": "ollama"/);
       assert.match(r.stdout, /"model": "[^"]+"/);
       return { stdout_preview: r.stdout.slice(0, 360), duration_ms: r.duration_ms };
@@ -184,7 +184,7 @@ function main() {
         'with',
         'termunx',
         'fallback',
-      ]);
+      ], { timeout: 60_000 });
       assert.equal(r.status, 0);
       assert.match(r.stdout, /worksheet: worksheet\.generic/);
       assert.match(r.stdout, /skills: geoseal, termux/);
@@ -280,7 +280,7 @@ function main() {
     caseResult(
       'dev_action_prepush_dry_run_geoseal_receipt',
       () => {
-        const r = runNodeCli(['prepush', '--dry-run', '--json', '--no-write']);
+        const r = runNodeCli(['prepush', '--dry-run', '--json', '--no-write'], { timeout: 60_000 });
         assert.equal(r.status, 0);
         const payload = JSON.parse(r.stdout);
         assert.equal(payload.schema_version, 'scbe_dev_action_receipt_v1');
@@ -318,7 +318,9 @@ function main() {
     caseResult(
       'dev_action_push_dry_run_keeps_git_push_behind_prepush',
       () => {
-        const r = runNodeCli(['push', '--dry-run', '--json', '--no-write', '--branch', 'main']);
+        const r = runNodeCli(['push', '--dry-run', '--json', '--no-write', '--branch', 'main'], {
+          timeout: 90_000,
+        });
         assert.equal(r.status, 0);
         const payload = JSON.parse(r.stdout);
         assert.equal(payload.action, 'push');

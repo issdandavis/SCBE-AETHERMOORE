@@ -18,7 +18,13 @@ function fakeAgent(overrides = {}) {
       return { ok: true, command, exit_code: 0, stdout: { ok: true, reused: false }, stderr: '' };
     }
     if (command === 'open') {
-      return { ok: true, command, exit_code: 0, stdout: { ok: true, title: 'Example' }, stderr: '' };
+      return {
+        ok: true,
+        command,
+        exit_code: 0,
+        stdout: { ok: true, title: 'Example' },
+        stderr: '',
+      };
     }
     return { ok: false, command, exit_code: 1, stdout: null, stderr: 'unexpected command' };
   };
@@ -45,7 +51,9 @@ describe('aetherbrowser front door', () => {
   });
 
   it('rejects unsafe URL schemes before reaching the browser agent', () => {
-    expect(() => frontdoor.parseFrontdoorArgs(['--url', 'javascript:alert(1)'])).toThrow(/URL must start/i);
+    expect(() => frontdoor.parseFrontdoorArgs(['--url', 'javascript:alert(1)'])).toThrow(
+      /URL must start/i
+    );
   });
 
   it('reports not-running status without launching Chrome by default', async () => {
@@ -71,9 +79,21 @@ describe('aetherbrowser front door', () => {
       status() {
         statusCalls += 1;
         if (statusCalls === 1) {
-          return { ok: false, command: 'status', exit_code: 1, stdout: null, stderr: 'CDP not ready' };
+          return {
+            ok: false,
+            command: 'status',
+            exit_code: 1,
+            stdout: null,
+            stderr: 'CDP not ready',
+          };
         }
-        return { ok: true, command: 'status', exit_code: 0, stdout: { ok: true, tabs: [] }, stderr: '' };
+        return {
+          ok: true,
+          command: 'status',
+          exit_code: 0,
+          stdout: { ok: true, tabs: [] },
+          stderr: '',
+        };
       },
     });
 
@@ -85,7 +105,12 @@ describe('aetherbrowser front door', () => {
 
     expect(result.ok).toBe(true);
     expect(result.ready).toBe(true);
-    expect(agent.calls.map((call) => call.command)).toEqual(['doctor', 'status', 'start', 'status']);
+    expect(agent.calls.map((call) => call.command)).toEqual([
+      'doctor',
+      'status',
+      'start',
+      'status',
+    ]);
     expect(agent.calls[2].input.target).toBe('github');
   });
 
@@ -95,21 +120,42 @@ describe('aetherbrowser front door', () => {
       status() {
         statusCalls += 1;
         if (statusCalls === 1) {
-          return { ok: false, command: 'status', exit_code: 1, stdout: null, stderr: 'CDP not ready' };
+          return {
+            ok: false,
+            command: 'status',
+            exit_code: 1,
+            stdout: null,
+            stderr: 'CDP not ready',
+          };
         }
-        return { ok: true, command: 'status', exit_code: 0, stdout: { ok: true, tabs: [{ title: 'Example' }] }, stderr: '' };
+        return {
+          ok: true,
+          command: 'status',
+          exit_code: 0,
+          stdout: { ok: true, tabs: [{ title: 'Example' }] },
+          stderr: '',
+        };
       },
     });
 
-    const result = await frontdoor.runFrontdoor(['--open', '--url', 'https://example.com', '--no-receipt'], {
-      runAgentImpl: agent.impl,
-      mkdirImpl() {},
-      writeFileImpl() {},
-    });
+    const result = await frontdoor.runFrontdoor(
+      ['--open', '--url', 'https://example.com', '--no-receipt'],
+      {
+        runAgentImpl: agent.impl,
+        mkdirImpl() {},
+        writeFileImpl() {},
+      }
+    );
 
     expect(result.ok).toBe(true);
     expect(result.open_result.ok).toBe(true);
-    expect(agent.calls.map((call) => call.command)).toEqual(['doctor', 'status', 'start', 'open', 'status']);
+    expect(agent.calls.map((call) => call.command)).toEqual([
+      'doctor',
+      'status',
+      'start',
+      'open',
+      'status',
+    ]);
     expect(agent.calls[2].input.url).toBe('https://example.com');
     expect(agent.calls[3].input.url).toBe('https://example.com');
   });
@@ -117,10 +163,22 @@ describe('aetherbrowser front door', () => {
   it('fails the receipt when an open action fails', async () => {
     const agent = fakeAgent({
       status() {
-        return { ok: true, command: 'status', exit_code: 0, stdout: { ok: true, tabs: [] }, stderr: '' };
+        return {
+          ok: true,
+          command: 'status',
+          exit_code: 0,
+          stdout: { ok: true, tabs: [] },
+          stderr: '',
+        };
       },
       open() {
-        return { ok: false, command: 'open', exit_code: 1, stdout: null, stderr: 'navigation failed' };
+        return {
+          ok: false,
+          command: 'open',
+          exit_code: 1,
+          stdout: null,
+          stderr: 'navigation failed',
+        };
       },
     });
 

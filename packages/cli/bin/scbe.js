@@ -941,6 +941,26 @@ function fallbackGateCommand(command, source, extra = {}) {
   };
 }
 
+function agentJsonGovernanceFromCommandGate(gate, source) {
+  const tier = String(gate?.tier || (gate?.allowed ? 'ALLOW' : 'DENY')).toUpperCase();
+  const blockingTiers = new Set(['DENY', 'ESCALATE', 'QUARANTINE']);
+  const allowed = Boolean(gate?.allowed) && !blockingTiers.has(tier);
+  const finding = Array.isArray(gate?.findings) ? gate.findings[0] : null;
+  const reason =
+    (typeof finding === 'string' ? finding : finding?.rule || finding?.message) ||
+    gate?.fallback_source ||
+    source ||
+    'command-gate';
+  return {
+    decision: allowed ? 'ALLOW' : blockingTiers.has(tier) ? tier : 'DENY',
+    reason,
+    gate_tier: tier,
+    command_gate_source: gate?.fallback_source || source || 'command-gate',
+    parser_ok: Boolean(gate?.parser_ok),
+    findings: normalizeFindings(gate || {}),
+  };
+}
+
 function normalizeFindings(gate) {
   const findings = Array.isArray(gate.findings) ? gate.findings : [];
   return findings.map((finding) => {
@@ -2363,6 +2383,8 @@ function readShellConfig() {
     advisor_model: resolveOllamaModel('llama3.2'),
     advisor_url: 'http://localhost:11434',
     advisor_timeout_ms: 20000,
+    zai_model: 'glm-5.2',
+    zai_base_url: 'https://api.z.ai/api/paas/v4',
     stream: true,
     aliases: {},
     system_prompt:
@@ -2432,6 +2454,14 @@ function resolveAdvisorConfig(baseCfg = readShellConfig(), overrides = {}) {
   if (cfg.provider === 'ollama') {
     cfg.model = resolveOllamaModel(cfg.model);
     cfg.url = normalizeOllamaBaseUrl(cfg.url);
+  }
+  if (cfg.provider === 'zai') {
+    cfg.model = String(overrides.model || process.env.ZAI_MODEL || baseCfg.zai_model || 'glm-5.2');
+    cfg.zai_base_url = String(
+      overrides.base_url || process.env.ZAI_BASE_URL || baseCfg.zai_base_url || 'https://api.z.ai/api/paas/v4'
+    ).replace(/\/$/, '');
+    cfg.zai_api_key = process.env.ZAI_API_KEY || baseCfg.zai_api_key || '';
+    cfg.base_url = cfg.zai_base_url;
   }
   return cfg;
 }
@@ -5196,18 +5226,25 @@ async function streamLLM(prompt, cfg, history, onToken) {
   // Resolve Fireworks default model — swap out the ollama default if provider changed
   const FIREWORKS_DEFAULT_MODEL = 'accounts/fireworks/models/kimi-k2p5';
   const FIREWORKS_BASE_URL = 'https://api.fireworks.ai/inference/v1';
+  const ZAI_DEFAULT_MODEL = 'glm-5.2';
+  const ZAI_BASE_URL = 'https://api.z.ai/api/paas/v4';
   if (cfg.provider === 'fireworks' && (cfg.model === 'llama3.2' || !cfg.model)) {
     cfg.model = FIREWORKS_DEFAULT_MODEL;
+  }
+  if (cfg.provider === 'zai' && (cfg.model === 'llama3.2' || !cfg.model)) {
+    cfg.model = process.env.ZAI_MODEL || cfg.zai_model || ZAI_DEFAULT_MODEL;
   }
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), cfg.timeout_ms || 30000);
 
   const isFireworks = cfg.provider === 'fireworks';
+  const isZai = cfg.provider === 'zai';
   const isOllama =
     !isFireworks &&
+    !isZai &&
     (cfg.provider === 'ollama' ||
-      (!cfg.openai_api_key && !cfg.api_key && !cfg.groq_api_key && !cfg.fireworks_api_key));
+      (!cfg.openai_api_key && !cfg.api_key && !cfg.groq_api_key && !cfg.fireworks_api_key && !cfg.zai_api_key));
   let apiUrl, headers;
 
   if (isFireworks) {
@@ -5224,9 +5261,13 @@ async function streamLLM(prompt, cfg, history, onToken) {
     apiUrl = `${normalizeOllamaBaseUrl(cfg.url || 'http://localhost:11434')}/api/chat`;
     headers = { 'content-type': 'application/json' };
   } else {
-    const base = cfg.openai_base_url || cfg.base_url || 'https://api.openai.com/v1';
+    const base = isZai
+      ? cfg.zai_base_url || process.env.ZAI_BASE_URL || cfg.base_url || ZAI_BASE_URL
+      : cfg.openai_base_url || cfg.base_url || 'https://api.openai.com/v1';
     apiUrl = `${base.replace(/\/$/, '')}/chat/completions`;
-    const key = cfg.openai_api_key || cfg.groq_api_key || cfg.api_key || '';
+    const key = isZai
+      ? cfg.zai_api_key || process.env.ZAI_API_KEY || ''
+      : cfg.openai_api_key || cfg.groq_api_key || cfg.api_key || '';
     headers = { 'content-type': 'application/json', authorization: `Bearer ${key}` };
   }
 
@@ -5421,6 +5462,12 @@ function runInteractiveShell(flags = {}) {
     if (process.env.SCBE_URL) cfg.url = process.env.SCBE_URL;
     if (process.env.SCBE_API_KEY) cfg.api_key = process.env.SCBE_API_KEY;
     if (process.env.SCBE_BASE_URL) cfg.base_url = process.env.SCBE_BASE_URL;
+    if (cfg.provider === 'zai') {
+      cfg.model = process.env.ZAI_MODEL || cfg.zai_model || 'glm-5.2';
+      cfg.zai_base_url = process.env.ZAI_BASE_URL || cfg.zai_base_url || 'https://api.z.ai/api/paas/v4';
+      cfg.zai_api_key = process.env.ZAI_API_KEY || cfg.zai_api_key || '';
+      cfg.base_url = cfg.zai_base_url;
+    }
     // Fireworks: pick up key from env automatically when provider is fireworks
     if (cfg.provider === 'fireworks' && !cfg.fireworks_api_key && process.env.FIREWORKS_API_KEY) {
       cfg.fireworks_api_key = process.env.FIREWORKS_API_KEY;
@@ -5753,6 +5800,12 @@ function runInteractiveShell(flags = {}) {
         : { decision: 'DENY', reason: 'governance-unavailable' };
       let blocked = !skipGovernance;
 
+      const fallBackToCommandGate = (source) => {
+        const gate = gateCommand(translated, { shellContext: true });
+        governance = agentJsonGovernanceFromCommandGate(gate, source);
+        blocked = governance.decision !== 'ALLOW';
+      };
+
       if (busBin) {
         try {
           const r = spawnSync(
@@ -5771,13 +5824,13 @@ function runInteractiveShell(flags = {}) {
             }
             if (plan.semantic?.discourseProfile) governance.semantic = plan.semantic.discourseProfile;
           } else {
-            governance = { decision: 'DENY', reason: 'governance-empty-response' };
-            blocked = true;
+            fallBackToCommandGate('governance-empty-response');
           }
         } catch {
-          governance = { decision: 'DENY', reason: 'governance-parse-failed' };
-          blocked = true;
+          fallBackToCommandGate('governance-parse-failed');
         }
+      } else if (!skipGovernance) {
+        fallBackToCommandGate('governance-unavailable');
       }
 
       if (blocked) {
@@ -6600,6 +6653,7 @@ function runInteractiveShell(flags = {}) {
           if (display.api_key) display.api_key = '***';
           if (display.groq_api_key) display.groq_api_key = '***';
           if (display.fireworks_api_key) display.fireworks_api_key = '***';
+          if (display.zai_api_key) display.zai_api_key = '***';
           process.stdout.write(ansi('gray', `${JSON.stringify(display, null, 2)}\n`));
           process.stdout.write(ansi('gray', '  :config set <key> <value>  to change\n'));
         }

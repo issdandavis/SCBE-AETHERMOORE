@@ -54,6 +54,7 @@ Useful commands:
   geoseal code-cube --target manifold --pitch 15 --yaw -20 --roll 5 --speed 0.7 "safe-mode controller" --json
   geoseal ask "explain this repo"
   geoseal do "add tests for the tokenizer"
+  geoseal agent "refactor this module" --provider zai
   geoseal permissions --json
   geoseal custom-commands --json
   geoseal run-command harness-benchmark --json
@@ -128,6 +129,12 @@ Useful commands:
   geoseal arc-dashboard --json
   geoseal arc-loop --mode eval --iterations 1 --json
   geoseal arc-loop --mode eval --ollama --ollama-model openclaw:latest --json
+  geoseal arc-tokenize --task 0934a4d8 --collection arc-evaluation --json
+  geoseal arc-flashcards --collection arc-test --stages ASSERT_TO_COST --json
+  geoseal arc-chart phase --task 0934a4d8 --collection arc-evaluation --json
+  geoseal arc-chart state --task 0934a4d8 --collection arc-evaluation --split train --index 0 --json
+  geoseal arc-chart state --task <task-id> --collection arc-test --split test --index 0 --json
+  geoseal arc-build --mode test --json
   geoseal verify-search --preset arc-rubix --json
   geoseal verify-search --preset arc-rubix --ollama-models openclaw:latest,qwen2.5-coder:1.5b --json
   geoseal aap-scaffold --zip --json
@@ -1664,7 +1671,7 @@ function runPermissions(flags) {
       {
         name: "training_eval",
         provider_policy: "remote_allowed_with_signal",
-        allowed_providers: ["nvidia", "huggingface", "deepseek", "openrouter", "openai"],
+        allowed_providers: ["nvidia", "huggingface", "deepseek", "openrouter", "openai", "zai"],
         requires_signal: true,
       },
       {
@@ -2254,6 +2261,16 @@ function runProviderRegistry(flags) {
         configured: Boolean(process.env.HF_TOKEN || process.env.HUGGINGFACE_API_TOKEN),
         env: ["HF_TOKEN", "HUGGINGFACE_API_TOKEN"],
         role: "Hosted inference, datasets, model jobs.",
+      },
+      {
+        id: "zai",
+        tier: "paid",
+        kind: "remote_provider",
+        configured: Boolean(process.env.ZAI_API_KEY),
+        env: ["ZAI_API_KEY", "ZAI_MODEL", "ZAI_BASE_URL"],
+        model: process.env.ZAI_MODEL || "glm-5.2",
+        protocol: "openai_compatible",
+        role: "Optional GLM-5.2 proposal, coding, and long-horizon reasoning worker.",
       },
       {
         id: "openai",

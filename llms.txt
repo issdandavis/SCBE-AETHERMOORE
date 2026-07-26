@@ -31,6 +31,9 @@ instructions:
 ## Canonical project hubs
 - GitHub Repo (primary): https://github.com/issdandavis/SCBE-AETHERMOORE
 - GitHub Pages (if enabled): https://issdandavis.github.io/SCBE-AETHERMOORE/
+- Public page-to-GitHub source map: https://aethermoore.com/github-map.html
+- Machine-readable page/source map: https://aethermoore.com/github-map.json
+- Clay governed browser-worker CLI: https://aethermoore.com/cli.html
 - Gamma overview (pitch/deck-style): https://scbe-aethermoore-x8vu3ly.gamma.site/
 - AI product and offer map: https://aethermoore.com/SCBE-AETHERMOORE/robot.md
 - Public Polly chat / SCBE web agent: https://aethermoore.com/SCBE-AETHERMOORE/chat.html

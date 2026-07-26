@@ -1,14 +1,14 @@
 # SCBE Worktree Garden
 
-Generated: `2026-07-02T13:15:14+00:00`
-Digest: `736f4e7443a6b1e1`
+Generated: `2026-07-25T19:42:07+00:00`
+Digest: `ec3293708602e762`
 
 This is the local worktree garden map. Plots are workspaces or storage lanes. Agents attach by lease.
 
 ## Capacity
 
 - Plots: `5/12`
-- Active leases: `1`
+- Active leases: `0`
 - Missing plots: `0`
 - Over plot capacity: `False`
 
@@ -24,15 +24,15 @@ This is the local worktree garden map. Plots are workspaces or storage lanes. Ag
 
 | Plot | Zone | Health | Agents | Branch | Dirty | Path |
 | --- | --- | --- | ---: | --- | ---: | --- |
-| `house-scbe` | `house` | `growing-dirty` | 1 | `lane/tool-trajectory-harvester` | 177 | `C:\Users\issda\SCBE-AETHERMOORE` |
-| `homestead-aetherdesk` | `homestead` | `growing-dirty` | 0 | `main` | 47 | `C:\Users\issda\AetherDesk` |
+| `house-scbe` | `house` | `growing-dirty` | 0 | `codex/aap-raw-submit-error-20260716` | 173 | `C:\Users\issda\SCBE-AETHERMOORE` |
+| `homestead-aetherdesk` | `homestead` | `growing-dirty` | 0 | `main` | 29 | `C:\Users\issda\AetherDesk` |
 | `homestead-local-apps` | `homestead` | `ready` | 0 | `` |  | `C:\Users\issda\LocalOnly\Apps` |
 | `outsource-onedrive` | `outsource_storage` | `cloud-storage` | 0 | `` |  | `C:\Users\issda\OneDrive` |
 | `outsource-localonly` | `outsource_storage` | `ready` | 0 | `` |  | `C:\Users\issda\LocalOnly` |
 
 ## Active Agent Leases
 
-- `codex` on `house-scbe` as `work` until `2026-07-02T17:30:27+00:00`: build worktree garden tracker
+- No active leases.
 
 ## Agent Commands
 

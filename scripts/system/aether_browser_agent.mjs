@@ -38,6 +38,8 @@ const TARGETS = {
   kaggle: 'https://www.kaggle.com/',
   github: 'https://github.com/issdandavis/SCBE-AETHERMOORE',
   drive: 'https://drive.google.com/',
+  canvas: 'https://pencol.instructure.com/',
+  ctclink: 'https://myaccount.ctclink.us/',
   aetherdesk: 'http://127.0.0.1:5717/'
 };
 

@@ -4137,6 +4137,19 @@ def cmd_do(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_agent(args: argparse.Namespace) -> int:
+    """agent = Claude-Code-style local coding CLI: pick an Ollama/free-frontier model, then agentic REPL with tools."""
+    import subprocess as _sp
+    front = r"C:\dev\agent_workspace\scbe_code.py"
+    if not os.path.exists(front):
+        print(f"scbe agent front door missing: {front}", file=sys.stderr)
+        return 1
+    cmd = [sys.executable, front]
+    if getattr(args, "model", None):
+        cmd.append(args.model)
+    return _sp.call(cmd)
+
+
 def cmd_chat(args: argparse.Namespace) -> int:
     if not _interactive():
         print('scbe chat is interactive-only; use `scbe ask "..."` for one-shot Q&A.', file=sys.stderr)
@@ -4979,6 +4992,10 @@ Legacy (backward compat):
     do.add_argument("--model")
     do.add_argument("--json", dest="json_output", action="store_true")
     do.set_defaults(func=cmd_do)
+
+    codepilot = sub.add_parser("codepilot", aliases=["pilot"], help="Claude-Code-style local coding CLI — pick an Ollama/free-frontier model, then agentic REPL with tools")
+    codepilot.add_argument("model", nargs="?", help="model to use (skips the picker), e.g. qwen2.5-coder:3b")
+    codepilot.set_defaults(func=cmd_agent)
 
     sc = sub.add_parser("score", aliases=["s"], help='Score text through the pipeline ("scbe s <text>")')
     sc.add_argument("text", nargs="?", help="text to score (or pipe via stdin)")

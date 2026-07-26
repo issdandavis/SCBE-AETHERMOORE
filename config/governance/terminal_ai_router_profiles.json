@@ -1,5 +1,5 @@
 {
-  "version": "2026-05-30",
+  "version": "2026-07-16",
   "provider_order": [
     "cerebras",
     "groq",
@@ -114,6 +114,31 @@
         "cheap": {
           "model": "Qwen/Qwen2.5-Coder-32B-Instruct",
           "estimated_cents": 0.0
+        }
+      }
+    },
+    "zai": {
+      "enabled": true,
+      "env_keys": [
+        "ZAI_API_KEY"
+      ],
+      "health_endpoint": "https://api.z.ai/api/paas/v4/models",
+      "chat_endpoint": "https://api.z.ai/api/paas/v4/chat/completions",
+      "daily_cap_usd": 4.0,
+      "timeout_sec": 90,
+      "note": "Opt-in GLM-5.2 long-horizon coding worker. Cost estimates are routing caps, not provider quotes.",
+      "tiers": {
+        "cheap": {
+          "model": "glm-5.2",
+          "estimated_cents": 1.5
+        },
+        "standard": {
+          "model": "glm-5.2",
+          "estimated_cents": 4.0
+        },
+        "premium": {
+          "model": "glm-5.2",
+          "estimated_cents": 10.0
         }
       }
     },

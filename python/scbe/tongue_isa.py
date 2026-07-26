@@ -329,19 +329,62 @@ def emit_compiled_program_source(prog: CompiledProgram, *, include_runtime: bool
     This is the official plumbing point for CA opcode programs. Generic CA ops
     may emit helper calls such as ``ca_apply3(...)``; those helpers live in
     ``runtime_prelude(target)``. Callers that emit CA source should use this
-    helper instead of calling Code Prism directly, otherwise fallback opcodes can
-    produce syntactically valid but non-runnable source.
+    helper instead of routing the already target-specific body through Code
+    Prism again.
     """
 
-    from src.code_prism.emitter import emit_from_ir
+    source_lines: List[str] = []
+    if include_runtime:
+        prelude = runtime_prelude(prog.target).rstrip()
+        if prelude:
+            source_lines.extend((prelude, ""))
 
-    source = emit_from_ir(prog.to_prism_module(), target_language=prog.target)
-    if not include_runtime:
-        return source
-    prelude = runtime_prelude(prog.target).strip()
-    if not prelude:
-        return source
-    return prelude + "\n\n" + source
+    args = ", ".join(prog.arg_names)
+    if prog.target == "python":
+        source_lines.append(f"def {prog.fn_name}({args}):")
+        source_lines.extend(f"    {line}" for line in prog.body_lines)
+    elif prog.target == "typescript":
+        typed_args = ", ".join(f"{arg}: number" for arg in prog.arg_names)
+        source_lines.append(f"export function {prog.fn_name}({typed_args}): number | null {{")
+        source_lines.extend(f"  {line}" for line in prog.body_lines)
+        source_lines.append("}")
+    elif prog.target == "go":
+        typed_args = ", ".join(f"{arg} float64" for arg in prog.arg_names)
+        source_lines.append(f"func {prog.fn_name}({typed_args}) interface{{}} {{")
+        source_lines.extend(f"\t{line}" for line in prog.body_lines)
+        source_lines.append("}")
+    elif prog.target == "rust":
+        typed_args = ", ".join(f"{arg}: f64" for arg in prog.arg_names)
+        source_lines.append(f"pub fn {prog.fn_name}({typed_args}) -> Option<f64> {{")
+        source_lines.extend(f"    {line}" for line in prog.body_lines)
+        source_lines.append("}")
+    elif prog.target == "c":
+        typed_args = ", ".join(f"double {arg}" for arg in prog.arg_names)
+        source_lines.append(f"double {prog.fn_name}({typed_args}) {{")
+        source_lines.extend(f"    {line}" for line in prog.body_lines)
+        source_lines.append("}")
+    elif prog.target == "julia":
+        source_lines.append(f"function {prog.fn_name}({args})")
+        source_lines.extend(f"    {line}" for line in prog.body_lines)
+        source_lines.append("end")
+    elif prog.target == "haskell":
+        args_sig = " -> ".join(["Double" for _ in prog.arg_names] + ["Maybe Double"])
+        source_lines.append(f"{prog.fn_name} :: {args_sig}")
+        source_lines.append(f"{prog.fn_name} {' '.join(prog.arg_names)} =")
+        source_lines.append("  let")
+        source_lines.extend(f"    {line}" for line in prog.body_lines)
+        source_lines.append("  in result")
+    elif prog.target == "zig":
+        typed_args = ", ".join(f"{arg}: f64" for arg in prog.arg_names)
+        comma = ", " if typed_args else ""
+        source_lines.append(
+            f"pub fn {prog.fn_name}(allocator: std.mem.Allocator{comma}{typed_args}) !?f64 {{"
+        )
+        source_lines.extend(f"    {line}" for line in prog.body_lines)
+        source_lines.append("}")
+    else:
+        raise ValueError(f"unsupported target {prog.target!r}; pick one of {SUPPORTED_TARGETS}")
+    return "\n".join(source_lines) + "\n"
 
 
 def _stack_init(target: str, args: List[str]) -> str:

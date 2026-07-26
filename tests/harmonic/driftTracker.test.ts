@@ -13,7 +13,7 @@
  *   G: Synthetic vs genuine discrimination (7 tests)
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   captureStepDrift,
   estimateFractalDimension,
@@ -379,6 +379,19 @@ describe('E — Sonification', () => {
     const audio = sonifyDrift([]);
     expect(audio.signal.every((s) => s === 0)).toBe(true);
     expect(audio.harmonious).toBe(false);
+  });
+
+  it('E1b: non-genuine drift noise does not use Math.random', () => {
+    const randomSpy = vi.spyOn(Math, 'random').mockImplementation(() => {
+      throw new Error('Math.random must not feed drift-auth visualization noise');
+    });
+    try {
+      const captures = [captureStepDrift([0, 0, 0], [0.001, 0.001, 0.001], 0, 1)];
+      const audio = sonifyDrift(captures, 8000, 0.01);
+      expect(audio.signal).toHaveLength(80);
+    } finally {
+      randomSpy.mockRestore();
+    }
   });
 
   it('E2: signal length matches sample rate * duration', () => {

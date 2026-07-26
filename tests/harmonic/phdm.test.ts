@@ -13,7 +13,7 @@
  * - Complete PHDM system integration
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   CANONICAL_POLYHEDRA,
   CubicSpline6D,
@@ -693,6 +693,18 @@ describe('PHDM Flux + Phason Integration', () => {
       }
     }
     expect(anyDifferent).toBe(true);
+  });
+
+  it('default phason shift does not use Math.random for defensive rotation entropy', () => {
+    const randomSpy = vi.spyOn(Math, 'random').mockImplementation(() => {
+      throw new Error('Math.random must not feed phason shift entropy');
+    });
+    try {
+      const phdm = new PolyhedralHamiltonianDefenseManifold();
+      expect(() => phdm.executePhasonShift()).not.toThrow();
+    } finally {
+      randomSpy.mockRestore();
+    }
   });
 
   it('should project 6D points to 3D', () => {

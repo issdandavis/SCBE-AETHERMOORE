@@ -366,6 +366,7 @@
     "ws": "^8.20.0"
   },
   "overrides": {
+    "@hono/node-server": "2.0.11",
     "fast-xml-parser": "^5.7.1",
     "typescript": "^6.0.2",
     "qs": "^6.15.2",

@@ -12,6 +12,9 @@ Canonical repository: https://github.com/issdandavis/SCBE-AETHERMOORE
 - Buyer solutions page: https://aethermoore.com/SCBE-AETHERMOORE/solutions.html
 - Live offers JSON: https://aethermoore.com/SCBE-AETHERMOORE/offers.json
 - App config JSON: https://aethermoore.com/SCBE-AETHERMOORE/app-config.json
+- Public page-to-GitHub source map: https://aethermoore.com/github-map.html
+- Machine-readable page/source map: https://aethermoore.com/github-map.json
+- Clay governed browser-worker CLI: https://aethermoore.com/cli.html
 - Mechanical ELIZA support switchboard: https://aethermoore.com/SCBE-AETHERMOORE/MECHANICAL_ELIZA_SUPPORT.md
 - Agent demos: https://aethermoore.com/SCBE-AETHERMOORE/agents.html
 - Chat: https://aethermoore.com/SCBE-AETHERMOORE/chat.html
@@ -53,6 +56,16 @@ Polly is the public SCBE web agent. If you are asked to act as Polly, use this r
 - Boundary: do not claim certification, guaranteed safety, legal advice, medical advice, financial advice, or formal compliance.
 - Boundary: do not make legal claims, patentability claims, animal-welfare certification claims, mission-readiness claims, or peer-review claims unless a packet explicitly records that status.
 - Boundary: do not say SCBE guarantees it stops every bad output. Say it provides configured policy gates, DENY / QUARANTINE / ESCALATE decisions, evidence, and regression-backed claims for named harnesses or integrations.
+
+## Clay Browser-Worker Role
+
+Clay is the bounded execution lane led by Polly. Clay MIN, MID, and MAX are execution contracts, not language models.
+
+- MIN: read-only navigation, extraction, screenshots, waiting, and scrolling.
+- MID: bounded click/type/select/press automation; upload, download, and submit require human review.
+- MAX: context-bound high-impact vocabulary; task ID, change ticket, and human approval metadata are required.
+- Contract source: https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/policies/contracts
+- Harness source: https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/scripts/polly_clay_squad.py
 
 ## Plain Summary
 
