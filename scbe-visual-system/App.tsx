@@ -30,6 +30,7 @@ import { CryptoLabApp } from './components/apps/CryptoLabApp';
 import { AgentOrchestratorApp } from './components/apps/AgentOrchestratorApp';
 import { EntropicDefenseApp } from './components/apps/EntropicDefenseApp';
 import { KnowledgeBaseApp } from './components/apps/KnowledgeBaseApp';
+import { HtmlBridgeApp } from './components/apps/HtmlBridgeApp';
 import { OverseerControlPanelApp } from './components/apps/OverseerControlPanelApp';
 import { AppStoreApp } from './components/apps/AppStoreApp';
 import { ServiceApp } from './components/apps/ServiceApp';
@@ -178,6 +179,7 @@ export const App: React.FC = () => {
         if (item.appId === 'overseer') initialSize = { width: 1100, height: 720 };
         if (item.appId === 'fleet') initialSize = { width: 1000, height: 700 };
         if (item.appId === 'knowledge') initialSize = { width: 900, height: 700 };
+        if (item.appId === 'htmlbridge') initialSize = { width: 1040, height: 760 };
         if (item.appId === 'pollypad') initialSize = { width: 500, height: 700 };
         // Productivity
         if (item.appId === 'mail') initialSize = { width: 900, height: 700 };
@@ -314,6 +316,7 @@ export const App: React.FC = () => {
                     else if (win.item.appId === 'overseer') content = <OverseerControlPanelApp />;
                     else if (win.item.appId === 'fleet') content = <FleetDashboardApp />;
                     else if (win.item.appId === 'knowledge') content = <KnowledgeBaseApp />;
+                    else if (win.item.appId === 'htmlbridge') content = <HtmlBridgeApp />;
                     else if (win.item.appId === 'pollypad') content = <PollyPadApp />;
                     // Productivity
                     else if (win.item.appId === 'mail') content = <MailApp emails={emails} />;
