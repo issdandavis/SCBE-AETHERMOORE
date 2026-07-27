@@ -38,10 +38,13 @@ def modules_under(pkg_dir, pkg_name):
 
 datas = [('schemas', 'schemas')]
 hiddenimports = []
-# `python/` now carries an __init__.py, so this resolves as a real package on every
-# platform; the explicit walk is the belt to that braces.
+# `python/` now carries an __init__.py, so collect_data_files resolves it as a real package
+# and picks up the 3 data files (polyglot_dialects.json + data/) it previously skipped with
+# "not a package". Do NOT also add ('python/scbe', 'python/scbe') as a datas tree: that
+# duplicates these destinations, and the macOS onefile extractor then aborts with
+# "[PYI-1858:ERROR] Failed to create parent directory structure" because one entry wants
+# python/scbe/data as a file path while the other wants it as a directory.
 datas += collect_data_files('python.scbe')
-datas += [('python/scbe', 'python/scbe')]
 hiddenimports += collect_submodules('python.scbe')
 hiddenimports += modules_under(os.path.join('python', 'scbe'), 'python.scbe')
 hiddenimports += collect_submodules('src.crypto')
