@@ -30,7 +30,6 @@ from __future__ import annotations
 
 import csv
 import re
-from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 SCREEN_SCHEMA_VERSION = "scbe_controlled_substance_screen_v1"

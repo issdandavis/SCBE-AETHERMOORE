@@ -448,7 +448,6 @@ register(
 def _load_bundled_dialects() -> None:
     """Register the workflow-authored language tracks (data, no per-opcode code)."""
     import json
-    from pathlib import Path
 
     from ._bundled_data import data_path
 
