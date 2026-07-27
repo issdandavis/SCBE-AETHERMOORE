@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-07-27T15:36:00+00:00",
+  "versions": {
+    "declared_pyproject": "4.3.1",
+    "declared_dunder": "4.3.1",
+    "declared_package_json": "4.3.1",
+    "published_pypi": "4.3.1",
+    "published_npm": null,
+    "internally_coherent": true,
+    "publish_drift": [],
+    "checked_registries": true
+  },
+  "workflows": {
+    "total": 87,
+    "nightly": [
+      "daily-repo-stats.yml",
+      "daily-secret-scan.yml",
+      "nightly-python-full.yml",
+      "research-feed.yml"
+    ],
+    "nightly_count": 4,
+    "weekly_count": 13,
+    "branch_push_triggered": 17,
+    "missing_concurrency": 0
+  },
+  "git": {
+    "tracked_files": 7086,
+    "head_blob_count": 6811,
+    "pack_size": "507.17 MiB",
+    "head_sha": "9d6024289",
+    "branch": "codex/kaprekar-mirror-topology"
+  },
+  "hooks": {
+    "core_hooks_path": "packages/agent-bus/.husky",
+    "repo_hook_present": true,
+    "effective_hook_present": true,
+    "repo_hook_reachable": true
+  },
+  "tests": {
+    "test_files": 952,
+    "workflow_gate_tests": 2
+  },
+  "findings": [],
+  "clean": true
+}

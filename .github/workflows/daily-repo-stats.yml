@@ -99,12 +99,25 @@ jobs:
               print(f"  {k}: {v:,}" if isinstance(v, int) else f"  {k}: {v}")
           PYEOF
 
+      # Hygiene state: the numbers that would have caught this repo's invisible failures --
+      # publish drift, version incoherence, an unreachable pre-commit hook, CI run bloat.
+      # Writes docs/repo-state.json (the dashboard reads it) and appends one row to
+      # docs/repo-state-history.jsonl, which is the series Clay's repo_hygiene fold ingests.
+      # A snapshot cannot show a trend; every defect found on 2026-07-27 was a trend.
+      - name: Emit repo hygiene state
+        run: |
+          pip install pyyaml --quiet
+          python scripts/system/repo_state.py
+
       - uses: peter-evans/create-pull-request@v7
         with:
-          add-paths: "docs/static/badges/"
+          add-paths: |
+            docs/static/badges/
+            docs/repo-state.json
+            docs/repo-state-history.jsonl
           branch: "automation/daily-repo-stats"
-          commit-message: "chore(stats): update daily repo stats badges"
-          title: "chore(stats): update daily repo stats badges"
+          commit-message: "chore(stats): update daily repo stats badges + hygiene state"
+          title: "chore(stats): update daily repo stats badges + hygiene state"
           body: |
             Automated daily repo stats badge refresh.
 

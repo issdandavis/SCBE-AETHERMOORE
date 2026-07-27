@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SCBE-AETHERMOORE · Repo State</title>
+    <!--
+      Reads docs/repo-state.json at load. It is NOT a snapshot pasted into markup: the
+      numbers below are whatever scripts/system/repo_state.py last wrote, so this page
+      cannot quietly drift from the repo the way a hand-maintained status page does.
+
+      Every metric here is a failure that was live and INVISIBLE on 2026-07-27 --
+      publish drift, version incoherence, an unreachable pre-commit hook, CI run bloat.
+      There is deliberately no overall score: a scalar invites tuning the scalar.
+    -->
+    <style>
+      :root {
+        --bg: #fbfaf7;
+        --panel: #fff;
+        --ink: #1a1a1f;
+        --muted: #6b6b78;
+        --line: #e6e3dc;
+        --ok: #1f7a4d;
+        --warn: #8a5a00;
+        --bad: #a32020;
+        --accent: #2a4d8f;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #14141a;
+          --panel: #1c1c24;
+          --ink: #eceaf2;
+          --muted: #9a9aab;
+          --line: #2e2e3a;
+          --ok: #4fd08a;
+          --warn: #e0a340;
+          --bad: #ff6b6b;
+          --accent: #7aa2e8;
+        }
+      }
+      :root[data-theme='dark'] {
+        --bg: #14141a;
+        --panel: #1c1c24;
+        --ink: #eceaf2;
+        --muted: #9a9aab;
+        --line: #2e2e3a;
+        --ok: #4fd08a;
+        --warn: #e0a340;
+        --bad: #ff6b6b;
+        --accent: #7aa2e8;
+      }
+      :root[data-theme='light'] {
+        --bg: #fbfaf7;
+        --panel: #fff;
+        --ink: #1a1a1f;
+        --muted: #6b6b78;
+        --line: #e6e3dc;
+        --ok: #1f7a4d;
+        --warn: #8a5a00;
+        --bad: #a32020;
+        --accent: #2a4d8f;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 2rem 1.25rem 4rem;
+        background: var(--bg);
+        color: var(--ink);
+        font:
+          15px/1.55 ui-sans-serif,
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          sans-serif;
+      }
+      .wrap {
+        max-width: 60rem;
+        margin: 0 auto;
+      }
+      header {
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 1rem;
+        margin-bottom: 1.75rem;
+      }
+      h1 {
+        margin: 0 0 0.35rem;
+        font-size: 1.5rem;
+        letter-spacing: -0.01em;
+        text-wrap: balance;
+      }
+      .sub {
+        color: var(--muted);
+        font-size: 0.86rem;
+      }
+      .eyebrow {
+        text-transform: uppercase;
+        letter-spacing: 0.09em;
+        font-size: 0.68rem;
+        color: var(--muted);
+        margin: 2rem 0 0.6rem;
+        font-weight: 600;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+        gap: 0.75rem;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        padding: 0.85rem 0.95rem;
+      }
+      .k {
+        font-size: 0.72rem;
+        color: var(--muted);
+        letter-spacing: 0.02em;
+      }
+      .v {
+        font-size: 1.6rem;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        margin-top: 0.15rem;
+      }
+      .v.small {
+        font-size: 1.05rem;
+        font-weight: 500;
+      }
+      .note {
+        font-size: 0.72rem;
+        color: var(--muted);
+        margin-top: 0.2rem;
+      }
+      .ok {
+        color: var(--ok);
+      }
+      .warn {
+        color: var(--warn);
+      }
+      .bad {
+        color: var(--bad);
+      }
+      .banner {
+        border-radius: 9px;
+        padding: 0.9rem 1.1rem;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        display: flex;
+        gap: 0.7rem;
+        align-items: baseline;
+      }
+      .banner .dot {
+        width: 0.6rem;
+        height: 0.6rem;
+        border-radius: 50%;
+        flex: none;
+        background: var(--ok);
+      }
+      .banner.bad .dot {
+        background: var(--bad);
+      }
+      ul.findings {
+        list-style: none;
+        padding: 0;
+        margin: 0.5rem 0 0;
+      }
+      ul.findings li {
+        border-left: 3px solid var(--line);
+        padding: 0.4rem 0 0.4rem 0.7rem;
+        margin-bottom: 0.4rem;
+      }
+      li.high {
+        border-left-color: var(--bad);
+      }
+      li.medium {
+        border-left-color: var(--warn);
+      }
+      li.low {
+        border-left-color: var(--muted);
+      }
+      .sev {
+        font-size: 0.66rem;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: var(--muted);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+      }
+      .scroll {
+        overflow-x: auto;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 0.45rem 0.6rem;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+      }
+      th {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        font-weight: 600;
+      }
+      td.num {
+        font-variant-numeric: tabular-nums;
+      }
+      code {
+        font:
+          0.85em ui-monospace,
+          'Cascadia Code',
+          Consolas,
+          monospace;
+        background: color-mix(in srgb, var(--ink) 7%, transparent);
+        padding: 0.1em 0.35em;
+        border-radius: 4px;
+      }
+      footer {
+        margin-top: 2.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 0.78rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>Repo State</h1>
+        <div class="sub" id="stamp">loading <code>repo-state.json</code>…</div>
+      </header>
+      <div id="app"></div>
+      <footer>
+        Generated by <code>scripts/system/repo_state.py</code>, refreshed nightly. Every metric here
+        is a defect that was live and undetected on 2026-07-27. There is no overall score on purpose
+        — a single number invites tuning the number instead of the repo.
+      </footer>
+    </div>
+
+    <script>
+      const $ = (h) => {
+        const t = document.createElement('template');
+        t.innerHTML = h.trim();
+        return t.content.firstChild;
+      };
+      const esc = (s) =>
+        String(s).replace(
+          /[&<>"]/g,
+          (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]
+        );
+
+      function card(k, v, note, cls) {
+        return `<div class="card"><div class="k">${esc(k)}</div><div class="v ${cls || ''}">${esc(v)}</div>${
+          note ? `<div class="note">${esc(note)}</div>` : ''
+        }</div>`;
+      }
+
+      function render(s) {
+        const app = document.getElementById('app');
+        document.getElementById('stamp').innerHTML =
+          `generated <strong>${esc(s.generated_at_utc)}</strong> · branch <code>${esc(s.git.branch)}</code> · ` +
+          `<code>${esc(s.git.head_sha)}</code> · schema v${s.schema_version}`;
+
+        const f = s.findings || [];
+        const banner = f.length
+          ? `<div class="banner bad"><span class="dot"></span><div><strong>${f.length} finding${
+              f.length > 1 ? 's' : ''
+            }</strong><ul class="findings">${f
+              .map(
+                (x) =>
+                  `<li class="${esc(x.severity)}"><span class="sev">${esc(x.severity)} · ${esc(
+                    x.area
+                  )}</span><br>${esc(x.detail)}</li>`
+              )
+              .join('')}</ul></div></div>`
+          : `<div class="banner"><span class="dot"></span><div><strong>No findings.</strong>
+             <div class="note">Versions coherent, registries in sync, pre-commit hook reachable, CI within budget.</div></div></div>`;
+
+        const v = s.versions;
+        const drift = v.publish_drift.length ? 'bad' : v.checked_registries ? 'ok' : 'warn';
+        const w = s.workflows;
+
+        app.innerHTML = `
+        ${banner}
+        <div class="eyebrow">Publish — declared vs served</div>
+        <div class="grid">
+          ${card('pyproject', v.declared_pyproject)}
+          ${card('__init__', v.declared_dunder, null, v.declared_dunder === v.declared_pyproject ? 'ok' : 'bad')}
+          ${card('package.json', v.declared_package_json, null, v.declared_package_json === v.declared_pyproject ? 'ok' : 'bad')}
+          ${card('PyPI', v.published_pypi ?? 'unknown', v.published_pypi ? null : 'registry not reached', drift)}
+          ${card('npm', v.published_npm ?? 'unknown', v.published_npm ? null : 'registry not reached', drift)}
+        </div>
+
+        <div class="eyebrow">CI load</div>
+        <div class="grid">
+          ${card('nightly workflows', w.nightly_count, 'target ≤ 5', w.nightly_count <= 5 ? 'ok' : 'warn')}
+          ${card('weekly', w.weekly_count)}
+          ${card('run on branch push', w.branch_push_triggered, `of ${w.total} total`)}
+          ${card('missing concurrency', w.missing_concurrency, 'stale runs queue', w.missing_concurrency ? 'bad' : 'ok')}
+        </div>
+        <div class="scroll"><table><thead><tr><th>nightly job</th></tr></thead><tbody>
+          ${(w.nightly || []).map((n) => `<tr><td><code>${esc(n)}</code></td></tr>`).join('')}
+        </tbody></table></div>
+
+        <div class="eyebrow">Guards &amp; weight</div>
+        <div class="grid">
+          ${card('pre-commit reachable', s.hooks.repo_hook_reachable ? 'yes' : 'NO', s.hooks.core_hooks_path ? `hooksPath: ${s.hooks.core_hooks_path}` : 'default', s.hooks.repo_hook_reachable ? 'ok' : 'bad')}
+          ${card('tracked files', s.git.tracked_files)}
+          ${card('pack size', s.git.pack_size ?? '—', 'history, not working tree')}
+          ${card('test files', s.tests.test_files)}
+        </div>`;
+      }
+
+      fetch('repo-state.json', { cache: 'no-store' })
+        .then((r) => {
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          return r.json();
+        })
+        .then(render)
+        .catch((e) => {
+          document.getElementById('stamp').textContent = 'could not load repo-state.json';
+          document.getElementById('app').innerHTML =
+            `<div class="banner bad"><span class="dot"></span><div><strong>No data.</strong>
+             <div class="note">${esc(e.message)} — run <code>python scripts/system/repo_state.py</code>.
+             Showing nothing is correct here; a stale cached number would be worse than an empty page.</div></div></div>`;
+        });
+    </script>
+  </body>
+</html>
