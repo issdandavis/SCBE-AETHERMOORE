@@ -101,6 +101,12 @@ a = Analysis(
     hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
+    # A runtime hook seeding sys.modules['python'] with an empty __path__ was tried here to
+    # settle the parent package before macOS's case-insensitive filesystem could bind that
+    # name to the bundled `Python` shared library. It made things WORSE: an empty __path__
+    # gives PyInstaller's frozen importer no way to reach the submodules, so all four smoke
+    # commands broke on Windows too. Reverted. Do not re-add without testing on a platform
+    # that currently works.
     runtime_hooks=[],
     excludes=['matplotlib', 'torch', 'tensorflow'],
     noarchive=False,
