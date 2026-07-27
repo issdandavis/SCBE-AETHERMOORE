@@ -46,6 +46,7 @@ import math
 from typing import Any, Dict, List, Sequence
 
 from . import _intent_screen  # L13 pattern/concept screen + optional model gate
+from . import _locate  # maps every match back to a line/column in the ORIGINAL input
 
 __version__ = "3.3.0"
 __author__ = "Issac Daniel Davis"
@@ -286,7 +287,19 @@ def scan(text: str) -> Dict[str, Any]:
         phase_deviation : float — temporal coherence penalty
         x_poincare      : float — Poincaré ball coordinate (tanh projection)
         input_len       : int   — byte length of input
+        findings        : list  — WHERE each trigger is, see below
         digest          : str   — SHA-256 hex (for audit trail)
+
+    Each finding locates one trigger in the ORIGINAL text:
+
+        family   : which attack family fired ("instruction-override", ...)
+        trigger  : the literal text that matched
+        with     : co-occurring concept, for action×object semantic hits
+        channel  : how it was found — "text", "leet", "spaced-letters", "rot13",
+                   "base64", "unicode-tags". Anything but "text" means the payload
+                   was obfuscated and the location points at the carrier.
+        start/end, line/column, excerpt : position in the input; all None when the
+                   channel cannot be mapped back honestly (see _locate).
 
     Examples
     --------
@@ -315,6 +328,7 @@ def scan(text: str) -> Dict[str, Any]:
             "x_poincare": 0.0,
             "input_len": 0,
             "intent_flags": [],
+            "findings": [],
             "intent_model_prob": None,
             "digest": digest,
         }
@@ -327,11 +341,30 @@ def scan(text: str) -> Dict[str, Any]:
     # OPTIONAL model second pass. The penalty bypasses the natural-language discount so a
     # fluent paraphrased injection cannot read as benign. Off by default -- the model adds
     # nothing unless SCBE_INJECTION_MODEL is set, keeping the gate pure-Python.
-    intent_risk, intent_flags = _intent_screen.adversarial_intent(text)
+    # Flags come from the LOCATED findings rather than a parallel pass, so what raises d*
+    # and what the CLI points at are the same object by construction. Parity with the
+    # reference screen is pinned by tests/test_locate_parity.py.
+    findings = _locate.locate_intent(text)
+    intent_flags = [f["family"] for f in findings]
+    intent_risk = float(len(intent_flags))
     model_prob = _intent_screen.maybe_model_intent(text)
     if model_prob is not None and model_prob >= _intent_screen.MODEL_THRESHOLD:
         if "model:injection" not in intent_flags:
             intent_flags = intent_flags + ["model:injection"]
+            # a model verdict has no span -- it is a judgement about the whole input
+            findings = findings + [
+                {
+                    "family": "model:injection",
+                    "channel": "model",
+                    "trigger": None,
+                    "with": None,
+                    "start": None,
+                    "end": None,
+                    "line": None,
+                    "column": None,
+                    "excerpt": None,
+                }
+            ]
         intent_risk += 1.0
     d_star = d_star + _intent_screen.INTENT_PENALTY * intent_risk
     pd = _phase_deviation(profile, d_star, n, text.lower())
@@ -346,6 +379,9 @@ def scan(text: str) -> Dict[str, Any]:
     else:
         decision = DENY
 
+    findings = findings + _locate.locate_known_strings(text, _INJECTION_PATTERNS, findings)
+    findings = findings + _locate.locate_characters(text)
+
     return {
         "decision": decision,
         "score": round(H_eff, 6),
@@ -354,6 +390,7 @@ def scan(text: str) -> Dict[str, Any]:
         "x_poincare": round(math.tanh(d_star), 6),
         "input_len": n,
         "intent_flags": intent_flags,
+        "findings": findings,
         "intent_model_prob": round(model_prob, 4) if model_prob is not None else None,
         "digest": hashlib.sha256(raw).hexdigest(),
     }

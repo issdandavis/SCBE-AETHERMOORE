@@ -25,6 +25,12 @@ Usage:
 Options:
   --json   Emit full JSON records.
   --batch  Read one prompt per line from a UTF-8 file.
+
+Note: this Node CLI prints the numeric score line and uses the npm scorer,
+which does not yet include the L13 intent screen. The Python scbe-scan
+(pip install scbe-aethermoore) additionally reports WHERE each trigger
+sits (line, column, matched text) and decides with the intent screen, so
+its decisions can be stricter for the same input.
 `);
 }
 

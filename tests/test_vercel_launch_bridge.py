@@ -3,9 +3,22 @@ from __future__ import annotations
 from html.parser import HTMLParser
 import json
 from pathlib import Path
+import re
+import subprocess
 from urllib.parse import urlparse
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+ROUTER_DEST = re.compile(r"^/api/(?P<lane>agent|polly)/router\.js\?fn=(?P<handler>[^&]+)(?:&(?P<query>.*))?$")
+
+
+def _logical_route_dest(dest: str) -> str:
+    """Expand an internal router destination to the public handler it represents."""
+    match = ROUTER_DEST.fullmatch(dest)
+    if match is None:
+        return dest
+    query = match.group("query")
+    suffix = f"?{query}" if query else ""
+    return f"/api/{match.group('lane')}/{match.group('handler')}.js{suffix}"
 
 
 class _HrefParser(HTMLParser):
@@ -32,11 +45,22 @@ def _assert_url_present(html: str, expected: str) -> None:
 
 def test_vercel_launch_rewrites_root_and_launch_to_agent_page() -> None:
     config = json.loads((REPO_ROOT / "vercel.json").read_text(encoding="utf-8"))
-    routes = {(item["src"], item["dest"]) for item in config["routes"]}
+    routes = {(item["src"], _logical_route_dest(item["dest"])) for item in config["routes"]}
     ignore_script = REPO_ROOT / "scripts" / "vercel" / "ignore-build.cjs"
     ignore_source = ignore_script.read_text(encoding="utf-8")
 
-    assert {"src": "api/agent/*.js", "use": "@vercel/node"} in config["builds"]
+    assert config["builds"] == [
+        {"src": "api/agent/router.js", "use": "@vercel/node"},
+        {"src": "api/polly/router.js", "use": "@vercel/node"},
+        {"src": "api/billing/stripe_webhook.js", "use": "@vercel/node"},
+    ]
+    assert len(config["builds"]) <= 12
+    assert all("*" not in build["src"] for build in config["builds"])
+    assert all(
+        "/router.js?fn=" in item["dest"]
+        for item in config["routes"]
+        if item["dest"].startswith(("/api/agent/", "/api/polly/"))
+    )
     assert config["ignoreCommand"] == "node scripts/vercel/ignore-build.cjs"
     assert ignore_script.exists()
     assert "ref === 'main'" in ignore_source
@@ -144,6 +168,20 @@ def test_vercel_launch_rewrites_root_and_launch_to_agent_page() -> None:
     assert ("^/v1/polly/hosted-run/?$", "/api/polly/hosted-run.js") in routes
 
 
+def test_vercel_router_consolidation_smoke() -> None:
+    result = subprocess.run(
+        ["node", "scripts/vercel/verify-router.cjs"],
+        cwd=REPO_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "functions: 3" in result.stdout
+    assert "all checks passed" in result.stdout
+
+
 def test_vercelignore_ships_launch_handler_with_api_bridge() -> None:
     ignore = (REPO_ROOT / ".vercelignore").read_text(encoding="utf-8")
     handler = REPO_ROOT / "api" / "agent" / "launch.js"
@@ -162,6 +200,10 @@ def test_vercelignore_ships_launch_handler_with_api_bridge() -> None:
     assert (REPO_ROOT / "api" / "agent" / "hosted-run.js").exists()
     assert (REPO_ROOT / "api" / "agent" / "legal-privacy.js").exists()
     assert (REPO_ROOT / "api" / "agent" / "legal-terms.js").exists()
+    assert (REPO_ROOT / "api" / "agent" / "router.js").exists()
+    assert (REPO_ROOT / "api" / "polly" / "router.js").exists()
+    assert (REPO_ROOT / "scripts" / "vercel" / "generate-router.cjs").exists()
+    assert (REPO_ROOT / "scripts" / "vercel" / "verify-router.cjs").exists()
     assert "!api" in ignore
     assert "!api/**" in ignore
     assert "!docs/offers.json" in ignore

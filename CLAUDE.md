@@ -17,7 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | **Property Testing** | fast-check (TS), Hypothesis (Python) |
 | **API** | FastAPI + Uvicorn (Python), Express 5 (TypeScript) |
 | **TypeScript** | ^6.0.2, target ES2022, CommonJS (`ignoreDeprecations: "6.0"`) |
-| **Package Version** | 4.2.1 (npm + PyPI synced) |
+| **Package Version** | repo 4.3.0 · **PyPI is stuck at 4.2.1 and its wheel is broken** (4 of 5 console scripts dead — see docs/PUBLISHING.md) |
 | **Package Entry** | `./dist/src/index.js` |
 
 ## Common Commands
@@ -305,7 +305,9 @@ scbe-aethermoore/governance     # Governance module
 
 Installable packages from `src/`: `code_prism`, `symphonic_cipher`, `api`, `crypto`, `harmonic`, `spiralverse`, `minimal`, `storage`.
 
-CLI entry points: `scbe-convert-to-sft`, `scbe-code-prism`.
+CLI entry points: `scbe`, `scbe-scan`, `scbe-code-prism`, `scbe-convert-to-sft`. (`scbe-system` was removed 2026-07-27 — it targeted `scripts/`, which is excluded from packaging, so the installed command always raised ModuleNotFoundError.)
+
+**Verify before publishing:** `python -m pytest tests/test_packaging_entrypoints.py` checks every declared entry point imports AND is not excluded from the wheel. A source-tree import test cannot catch a packaging bug — that gap is what shipped the broken 4.2.1.
 
 ## Test Architecture
 

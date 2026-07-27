@@ -177,8 +177,9 @@ def test_vercel_routes_expose_openai_compatible_governed_proxy() -> None:
     config = json.loads((REPO_ROOT / "vercel.json").read_text(encoding="utf-8"))
     routes = {(item["src"], item["dest"]) for item in config["routes"]}
 
-    assert ("^/v1/chat/completions/?$", "/api/agent/governed-chat.js") in routes
-    assert ("^/v1/governed/chat/completions/?$", "/api/agent/governed-chat.js") in routes
+    router_dest = "/api/agent/router.js?fn=governed-chat"
+    assert ("^/v1/chat/completions/?$", router_dest) in routes
+    assert ("^/v1/governed/chat/completions/?$", router_dest) in routes
 
 
 def test_system_contract_advertises_governed_output_surface() -> None:

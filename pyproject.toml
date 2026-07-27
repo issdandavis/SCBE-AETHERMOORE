@@ -71,7 +71,12 @@ Supporter = "https://aethermoore.com/SCBE-AETHERMOORE/supporter.html"
 [project.scripts]
 scbe = "scbe:main"
 scbe-scan = "scbe_aethermoore.__main__:main"
-scbe-system = "scripts.scbe_system_cli:main"
+# scbe-system removed 2026-07-27: it pointed at scripts/scbe_system_cli.py, a REPO-LOCAL
+# dev script that is documented as `python scripts/scbe-system-cli.py` and is excluded from
+# packaging (SRC_EXCLUDE contains "scripts*"). The entry point therefore installed a command
+# that always died with ModuleNotFoundError. Shipping it is not the fix either: it would put
+# a top-level module named `scripts` into site-packages, squatting a name almost any other
+# project could also claim. Verified broken on published 4.2.1 and on a clean 4.3.0 wheel.
 scbe-convert-to-sft = "symphonic_cipher.scbe_aethermoore.convert_to_sft:main"
 scbe-code-prism = "code_prism.cli:main"
 

@@ -35,6 +35,12 @@
 !docs/service-credits.html
 !docs/supporter.html
 !docs/hosted-run.html
+# hire pages: hire.js/hire-b.js read docs/ FIRST, public/hire.html is the fallback.
+# Before these two lines, /hire silently served the stale public/ variant (the docs copy
+# never shipped) and /hire-b 500'd outright (docs copy not shipped, no public fallback
+# exists). Verified against the @vercel/nft trace 2026-07-27.
+!docs/hire.html
+!docs/hire-b.html
 !docs/robot.html
 !docs/robot.md
 !docs/llms.txt

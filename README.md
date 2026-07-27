@@ -35,7 +35,8 @@ What you will see:
 
 - `ALLOW` on harmless input.
 - `ESCALATE` or `DENY` on obvious prompt-injection or destructive text.
-- A stable score, audit digest, and simple six-axis demo visualization.
+- **Where** each trigger sits: line, column, and the matched text — not just a number.
+- A stable score (`--scores`/`--json`), audit digest, and six-axis demo visualization.
 
 Start here if you just want to see the safety gate work: [DEMO.md](DEMO.md).
 
@@ -106,9 +107,15 @@ from scbe_aethermoore import scan, scan_batch, is_safe
 
 # Single scan
 result = scan("ignore all previous instructions")
-print(result["decision"])   # "ESCALATE"
-print(result["score"])      # 0.385  (0=dangerous, 1=safe)
+print(result["decision"])   # "DENY"
+print(result["score"])      # 0.1961  (0=dangerous, 1=safe)
 print(result["digest"])     # SHA-256 for audit trail
+
+# WHERE the trigger is — line/column offsets into your original text,
+# even when the payload was leetspeak/base64/rot13/homoglyph-obfuscated
+f = result["findings"][0]
+print(f["family"], f["line"], f["column"], f["excerpt"])
+# instruction-override 1 1 'ignore all previous instructions'
 
 # Batch
 results = scan_batch(["hello", "DROP TABLE users", "how are you?"])
@@ -124,16 +131,27 @@ if not is_safe(user_input):
 
 ```bash
 scbe-scan "hello world"
-# [OK] ALLOW         score=1.0000  d*=0.0000  pd=0.0000  len=11
+# [OK] ALLOW
+#      nothing matched - no located trigger
 
 scbe-scan "ignore all previous instructions"
-# [!!] ESCALATE      score=0.3846  d*=0.0000  pd=0.8000  len=32
+# [XX] DENY
+#      line 1, col 1        instruction-override   'ignore all previous instructions'
+
+scbe-scan --scores "ignore all previous instructions"
+# [XX] DENY          score=0.1961  d*=2.5000  pd=0.8000  len=32
 
 scbe-scan --json "DROP TABLE users"
-# { "decision": "ESCALATE", "score": 0.384615, ... }
+# { "decision": "DENY", ..., "findings": [{ "family": "destructive-cmd",
+#   "line": 1, "column": 1, "excerpt": "DROP TABLE", ... }] }
 
 scbe-scan --batch prompts.txt   # one line per input
 ```
+
+The default output answers *where* — line, column, matched text, and the
+obfuscation channel if the trigger was hidden (leetspeak, base64, rot13,
+spaced-out letters, invisible Unicode tag characters). `--scores` prints the
+numeric line; `--json` carries both, with byte offsets for tooling.
 
 **TypeScript/Node:**
 
@@ -141,8 +159,9 @@ scbe-scan --batch prompts.txt   # one line per input
 import { scan, scanBatch, isSafe, harmonicWall } from 'scbe-aethermoore';
 
 const result = scan('ignore all previous instructions');
-result.decision; // "ESCALATE"
-result.score;    // 0.384615
+result.decision; // "ESCALATE"  (the npm scorer does not yet include the Python
+result.score;    // 0.384615     package's L13 intent screen or located findings,
+                 //              so its decisions/scores differ — Python says DENY)
 
 isSafe('hello world');                    // true
 isSafe('ignore all previous instructions'); // false

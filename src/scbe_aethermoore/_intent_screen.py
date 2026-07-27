@@ -409,9 +409,22 @@ def _normalize_for_intent(text: str) -> str:
     return re.sub(r"\s+", " ", normalized).strip()
 
 
-def _decoded_base64_candidates(text: str) -> List[str]:
-    candidates: List[str] = []
-    for token in _B64_TOKEN.findall(text)[:8]:
+def _b64_tokens(text: str) -> List[Tuple[str, int, int]]:
+    """Decoded payloads with the ENCODED token's span in `text`.
+
+    The span is what makes a base64 hit locatable: the decoded string has no offsets in the
+    original, but "the token at chars 45-89" is a real place a person can look.
+    """
+    out: List[Tuple[str, int, int]] = []
+    for m in list(_B64_TOKEN.finditer(text))[:8]:
+        token = m.group(0)
+        # The regex's trailing \b cannot sit between '=' and whitespace/EOL (both non-word),
+        # so a padded token matches WITHOUT its '=' padding. The decode below re-adds padding
+        # regardless; extend the reported span over it so the location covers the token a
+        # human actually sees.
+        end = m.end()
+        while end < len(text) and end - m.end() < 2 and text[end] == "=":
+            end += 1
         compact = token.replace("-", "+").replace("_", "/")
         compact += "=" * (-len(compact) % 4)
         try:
@@ -425,8 +438,12 @@ def _decoded_base64_candidates(text: str) -> List[str]:
         except UnicodeDecodeError:
             decoded = raw.decode("latin-1", errors="ignore")
         if decoded and any(ch.isalpha() for ch in decoded):
-            candidates.append(decoded)
-    return candidates
+            out.append((decoded, m.start(), end))
+    return out
+
+
+def _decoded_base64_candidates(text: str) -> List[str]:
+    return [decoded for decoded, _start, _end in _b64_tokens(text)]
 
 
 def _despace_runs(text: str) -> str:
