@@ -4,12 +4,20 @@ include README.md
 include pyproject.toml
 include scbe.py
 
-# Include only the packages we actually ship
+# Include only the packages we actually ship.
+# This list MUST match SRC_INCLUDE in setup.py: setup.py decides what the wheel
+# declares, MANIFEST.in decides what the sdist physically contains, and `python -m build`
+# builds the wheel FROM THE SDIST. A package named in one and not the other is declared
+# but not shipped -- the installed package then raises ModuleNotFoundError.
+# scbe_aethermoore and neurogolf were missing here through 4.2.1.
+# tests/test_manifest_covers_packages.py fails the build if they drift apart again.
 recursive-include src/code_prism *.py
 recursive-include src/crypto *.py
 recursive-include src/flow_router *.py
 recursive-include src/harmonic *.py
 recursive-include src/minimal *.py
+recursive-include src/neurogolf *.py
+recursive-include src/scbe_aethermoore *.py
 recursive-include src/spiralverse *.py
 recursive-include src/storage *.py
 recursive-include src/symphonic_cipher *.py
@@ -57,7 +65,12 @@ prune workflows
 # Exclude non-Python files from src
 recursive-exclude src *.ts *.js *.map *.d.ts *.json *.yaml *.yml *.md
 recursive-exclude src/build *
-recursive-exclude src *.egg-info *
+# WAS: `recursive-exclude src *.egg-info *` -- the trailing bare `*` is a catch-all that
+# matched EVERY file under src/, so the sdist contained no src/ packages at all. Because
+# `python -m build` (what the publish workflow runs) builds the wheel from the sdist, the
+# published wheel shipped only python/ and scbe.py. That is the whole 4.2.1 breakage:
+# `pip install scbe-aethermoore` succeeded and every console script died on import.
+recursive-exclude src *.egg-info
 recursive-exclude * __pycache__ *.py[cod] *.so *.egg-info
 
 # Exclude dev/build files

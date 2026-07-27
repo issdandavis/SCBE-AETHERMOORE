@@ -38,10 +38,28 @@ function parsePackJson(raw) {
   try {
     return JSON.parse(trimmed);
   } catch {
-    const start = trimmed.indexOf("[");
-    const end = trimmed.lastIndexOf("]");
-    if (start >= 0 && end > start) {
-      return JSON.parse(trimmed.slice(start, end + 1));
+    // Lifecycle scripts can print into pack's stdout (npm runs `prepare` during pack even
+    // with --ignore-scripts on some versions), so recover the JSON from a polluted stream.
+    //
+    // The previous recovery took indexOf("[") .. lastIndexOf("]") and re-threw. That is
+    // defeated by the exact noise it needs to survive: the offending line was
+    // `[hooks] installed pre-commit`, whose own bracket IS the first "[". It sliced from
+    // there and blew up with `Unexpected token 'h'` -- the recovery path reproduced the
+    // failure it existed to prevent.
+    //
+    // So try every plausible start, not just the first, and never throw: returning null
+    // lets the caller report "unparseable" instead of dying inside JSON.parse.
+    for (let i = 0; i < trimmed.length; i++) {
+      const ch = trimmed[i];
+      if (ch !== "[" && ch !== "{") continue;
+      const closer = ch === "[" ? "]" : "}";
+      for (let j = trimmed.lastIndexOf(closer); j > i; j = trimmed.lastIndexOf(closer, j - 1)) {
+        try {
+          return JSON.parse(trimmed.slice(i, j + 1));
+        } catch {
+          /* keep shrinking the candidate window */
+        }
+      }
     }
     return null;
   }
