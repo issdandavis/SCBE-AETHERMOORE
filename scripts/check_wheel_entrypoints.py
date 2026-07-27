@@ -32,6 +32,7 @@ import shutil
 import subprocess
 import sys
 import sysconfig
+import tarfile
 import tempfile
 import tomllib
 import zipfile
@@ -124,9 +125,6 @@ def main() -> int:
                 fail(f"entry point {cmd} targets {top!r}, absent from the wheel")
 
         if sdists:
-            sd = zipfile.ZipFile if False else None  # sdist is tar.gz; checked below
-            import tarfile
-
             with tarfile.open(sdists[0]) as tf:
                 members = tf.getnames()
             junk = [m for m in members if re.search(r"/(_tmp_|_verify_|\.env$)", m)]

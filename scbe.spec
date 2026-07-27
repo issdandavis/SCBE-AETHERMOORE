@@ -13,10 +13,23 @@ datas += collect_data_files('python.scbe')
 hiddenimports += collect_submodules('python.scbe')
 hiddenimports += collect_submodules('src.crypto')
 
+# scbe.py line ~67 does `from scbe_aethermoore import _intent_screen`, and that only
+# resolves because line ~64 inserts REPO_ROOT/src into sys.path AT RUNTIME. PyInstaller's
+# analysis is static and cannot follow a computed sys.path.insert, so with pathex=['.']
+# it never discovered the package and never bundled it -- the built binary died on its
+# first command with `ModuleNotFoundError: No module named 'scbe_aethermoore'`.
+#
+# The runtime shim cannot save it either: in a frozen app `Path(__file__).parent` is the
+# extraction dir, so REPO_ROOT/src does not exist and the insert is a no-op. The package
+# has to be frozen in as a real top-level module, which needs BOTH of these:
+#   - 'src' on pathex, so Analysis can import it at build time
+#   - collect_submodules, so lazily-imported submodules come along
+hiddenimports += collect_submodules('scbe_aethermoore')
+
 
 a = Analysis(
     ['scbe.py'],
-    pathex=['.'],
+    pathex=['.', 'src'],
     binaries=[],
     datas=datas,
     hiddenimports=hiddenimports,
