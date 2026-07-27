@@ -52,7 +52,7 @@ from . import _locate  # maps every match back to a line/column in the ORIGINAL 
 # fails the build if they drift. This read 3.3.0 while pyproject said 4.3.0, which would
 # have shipped a 4.3.0 wheel whose own `scbe-scan --version` reported 3.3.0. Worse than a
 # nonsense value: 3.3.0 is a REAL past release, so it reads as plausible.
-__version__ = "4.3.0"
+__version__ = "4.3.1"
 __author__ = "Issac Daniel Davis"
 __license__ = "MIT"
 
