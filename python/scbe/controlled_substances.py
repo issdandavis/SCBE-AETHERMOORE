@@ -34,7 +34,12 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 SCREEN_SCHEMA_VERSION = "scbe_controlled_substance_screen_v1"
-SCREEN_LIST_PATH = Path(__file__).resolve().parent / "data" / "chem_wep_smi.csv"
+from ._bundled_data import data_path  # noqa: E402  (frozen-build aware data lookup)
+
+# NOT Path(__file__).parent: in a PyInstaller onefile build this package's data is staged
+# under scbe_data/ rather than python/scbe/, because a directory named "python" cannot
+# coexist with the bundled "Python" shared library on case-insensitive macOS.
+SCREEN_LIST_PATH = data_path("data", "chem_wep_smi.csv")
 SCREEN_LIST_SOURCE = "chemcrow chem_wep_smi.csv (ur-whitelab/chemcrow-public, MIT)"
 # Published ControlChemCheck threshold: Tanimoto similarity above this flags
 # the input as a close analogue of a listed chemical.

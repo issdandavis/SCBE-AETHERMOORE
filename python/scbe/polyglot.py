@@ -450,7 +450,10 @@ def _load_bundled_dialects() -> None:
     import json
     from pathlib import Path
 
-    path = Path(__file__).with_name("polyglot_dialects.json")
+    from ._bundled_data import data_path
+
+    # frozen builds stage this under scbe_data/ (see _bundled_data)
+    path = data_path("polyglot_dialects.json")
     if not path.exists():
         return
     fields = set(Dialect.__dataclass_fields__)

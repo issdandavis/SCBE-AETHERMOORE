@@ -63,7 +63,18 @@ hiddenimports = []
 # duplicates these destinations, and the macOS onefile extractor then aborts with
 # "[PYI-1858:ERROR] Failed to create parent directory structure" because one entry wants
 # python/scbe/data as a file path while the other wants it as a directory.
-datas += collect_data_files('python.scbe')
+# Stage this package's data under a NEUTRAL prefix, never under 'python/'.
+#
+# collect_data_files('python.scbe') targets <_MEIPASS>/python/scbe/..., and the bundle root
+# also holds the CPython shared library -- named exactly 'Python' for a macOS Framework
+# build. macOS is case-insensitive by default, so a 'python' directory cannot coexist with a
+# 'Python' file and the bootloader aborted before running anything:
+#     [PYI-1903:ERROR] Failed to create parent directory structure.
+# Case-sensitive Linux and Windows never saw it. python/scbe/_bundled_data.py knows about
+# this prefix and is what the two load sites now go through.
+for _src, _dst in collect_data_files('python.scbe'):
+    _rel = os.path.relpath(_dst, os.path.join('python', 'scbe'))
+    datas.append((_src, os.path.join('scbe_data', _rel) if _rel != os.curdir else 'scbe_data'))
 hiddenimports += collect_submodules('python.scbe')
 hiddenimports += modules_under(os.path.join('python', 'scbe'), 'python.scbe')
 hiddenimports += collect_submodules('src.crypto')
