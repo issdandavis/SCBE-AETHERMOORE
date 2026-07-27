@@ -59,9 +59,7 @@ class FeatureBuilder:
 
     def __init__(self, records: Sequence[dict[str, Any]], *, seed: int) -> None:
         if any(int(record["width"]) != 4 for record in records):
-            raise ValueError(
-                "the benchmark feature contract requires four-digit records"
-            )
+            raise ValueError("the benchmark feature contract requires four-digit records")
         self.records = tuple(records)
         self.seed = seed
         self.by_state = {str(record["state"]): record for record in records}
@@ -76,9 +74,7 @@ class FeatureBuilder:
         for split, states in sorted(by_split.items()):
             ordered = sorted(
                 states,
-                key=lambda state: _stable_digest(
-                    self.seed, f"depth-donor:{split}", state
-                ),
+                key=lambda state: _stable_digest(self.seed, f"depth-donor:{split}", state),
             )
             rotated = ordered[1:] + ordered[:1]
             donors.update(zip(ordered, rotated))
@@ -174,9 +170,7 @@ def build_route_pairs(
         if record["is_repdigit"]:
             continue
         view = record["auxiliary_view"]
-        by_depth[(str(view["primary_bottom"]), int(view["primary_depth"]))].append(
-            record
-        )
+        by_depth[(str(view["primary_bottom"]), int(view["primary_depth"]))].append(record)
 
     pairs: list[dict[str, Any]] = []
     for source in records:
@@ -201,8 +195,7 @@ def build_route_pairs(
         negative_candidates = [
             candidate
             for candidate in by_depth[(basin, target_depth)]
-            if str(candidate["state"]) not in path
-            and str(candidate["family_id"]) != str(source["family_id"])
+            if str(candidate["state"]) not in path and str(candidate["family_id"]) != str(source["family_id"])
         ]
         if not negative_candidates:
             continue
@@ -238,12 +231,8 @@ def assert_route_pair_contract(pairs: Iterable[dict[str, Any]]) -> None:
         destination = pair["destination"]
         assert str(pair["source_family"]) == str(source["family_id"])
         assert str(pair["split"]) == str(source["split"])
-        assert int(pair["target_depth"]) == int(
-            destination["auxiliary_view"]["primary_depth"]
-        )
-        assert str(pair["basin"]) == str(
-            destination["auxiliary_view"]["primary_bottom"]
-        )
+        assert int(pair["target_depth"]) == int(destination["auxiliary_view"]["primary_depth"])
+        assert str(pair["basin"]) == str(destination["auxiliary_view"]["primary_bottom"])
         state = str(source["state"])
         labels_by_source[state].append(int(pair["label"]))
         destinations_by_source[state].append(destination)
@@ -306,16 +295,10 @@ def _condition_metrics(
         raise ValueError("family split produced an empty route train or test set")
 
     train_route_x = np.vstack(
-        [
-            _pair_vector(builder, pair["source"], pair["destination"], condition)
-            for pair in train_pairs
-        ]
+        [_pair_vector(builder, pair["source"], pair["destination"], condition) for pair in train_pairs]
     )
     test_route_x = np.vstack(
-        [
-            _pair_vector(builder, pair["source"], pair["destination"], condition)
-            for pair in test_pairs
-        ]
+        [_pair_vector(builder, pair["source"], pair["destination"], condition) for pair in test_pairs]
     )
     train_route_y = np.asarray([pair["label"] for pair in train_pairs], dtype=float)
     test_route_y = np.asarray([pair["label"] for pair in test_pairs], dtype=int)
@@ -323,35 +306,17 @@ def _condition_metrics(
     route_scores = _predict_ridge(test_route_x, route_model)
     route_predictions = (route_scores >= 0.5).astype(int)
 
-    train_records = [
-        record
-        for record in records
-        if record["split"] == "train" and not record["is_repdigit"]
-    ]
-    test_records = [
-        record
-        for record in records
-        if record["split"] == "test" and not record["is_repdigit"]
-    ]
-    train_transition_x = np.vstack(
-        [builder.vector(record, condition) for record in train_records]
-    )
-    test_transition_x = np.vstack(
-        [builder.vector(record, condition) for record in test_records]
-    )
+    train_records = [record for record in records if record["split"] == "train" and not record["is_repdigit"]]
+    test_records = [record for record in records if record["split"] == "test" and not record["is_repdigit"]]
+    train_transition_x = np.vstack([builder.vector(record, condition) for record in train_records])
+    test_transition_x = np.vstack([builder.vector(record, condition) for record in test_records])
     denominator = float(10 ** int(records[0]["width"]) - 1)
     train_transition_y = np.asarray(
-        [
-            int(record["labels"]["primary_next_state"]) / denominator
-            for record in train_records
-        ],
+        [int(record["labels"]["primary_next_state"]) / denominator for record in train_records],
         dtype=float,
     )
     test_transition_y = np.asarray(
-        [
-            int(record["labels"]["primary_next_state"]) / denominator
-            for record in test_records
-        ],
+        [int(record["labels"]["primary_next_state"]) / denominator for record in test_records],
         dtype=float,
     )
     transition_model = _fit_ridge(train_transition_x, train_transition_y)
@@ -360,9 +325,9 @@ def _condition_metrics(
         0.0,
         1.0,
     )
-    transition_exact = np.rint(transition_predictions * denominator).astype(
-        int
-    ) == np.rint(test_transition_y * denominator).astype(int)
+    transition_exact = np.rint(transition_predictions * denominator).astype(int) == np.rint(
+        test_transition_y * denominator
+    ).astype(int)
 
     return {
         "seed": seed,
@@ -374,9 +339,7 @@ def _condition_metrics(
         "route_accuracy": float(np.mean(route_predictions == test_route_y)),
         "route_f1": _f1_score(test_route_y, route_predictions),
         "transition_test_rows": len(test_records),
-        "transition_mae": float(
-            np.mean(np.abs(transition_predictions - test_transition_y))
-        ),
+        "transition_mae": float(np.mean(np.abs(transition_predictions - test_transition_y))),
         "transition_exact": float(np.mean(transition_exact)),
     }
 
@@ -422,24 +385,20 @@ def _lower_is_better_gate(
     noise_bar = 2.0 * pooled_sd
     binding_bar = max(relative_bar, noise_bar)
     paired_improvements = [
-        control_value - candidate_value
-        for candidate_value, control_value in zip(candidate, control)
+        control_value - candidate_value for candidate_value, control_value in zip(candidate, control)
     ]
     return {
         "candidate_mean": candidate_mean,
         "control_mean": control_mean,
         "absolute_improvement": delta,
-        "relative_improvement": (
-            0.0 if control_mean == 0.0 else delta / abs(control_mean)
-        ),
+        "relative_improvement": (0.0 if control_mean == 0.0 else delta / abs(control_mean)),
         "pooled_sd": pooled_sd,
         "relative_bar": relative_bar,
         "noise_bar": noise_bar,
         "binding_bar": binding_bar,
         "all_seeds_improve": all(value > 0.0 for value in paired_improvements),
         "paired_improvements": paired_improvements,
-        "passed": delta >= binding_bar
-        and all(value > 0.0 for value in paired_improvements),
+        "passed": delta >= binding_bar and all(value > 0.0 for value in paired_improvements),
     }
 
 
@@ -448,9 +407,7 @@ def apply_promotion_gate(
 ) -> dict[str, Any]:
     """Require mirror route-error lift over no-topology and strongest controls."""
 
-    candidate_errors = [
-        1.0 - value for value in aggregate["mirror"]["route_f1"]["values"]
-    ]
+    candidate_errors = [1.0 - value for value in aggregate["mirror"]["route_f1"]["values"]]
     control_names = (
         "raw",
         "digit_stats",
@@ -460,8 +417,7 @@ def apply_promotion_gate(
         "primary_random_pad",
     )
     control_errors = {
-        condition: [1.0 - value for value in aggregate[condition]["route_f1"]["values"]]
-        for condition in control_names
+        condition: [1.0 - value for value in aggregate[condition]["route_f1"]["values"]] for condition in control_names
     }
     strongest_control = min(control_names, key=lambda name: mean(control_errors[name]))
     comparisons = {
@@ -503,9 +459,7 @@ def apply_promotion_gate(
         comparisons["digit_stats"]["absolute_improvement"] > 0.0
         and comparisons["strongest_control"]["absolute_improvement"] > 0.0
     )
-    status = (
-        "QUALIFIED" if qualified else ("UNDERPOWERED" if positive_lift else "NO_LIFT")
-    )
+    status = "QUALIFIED" if qualified else ("UNDERPOWERED" if positive_lift else "NO_LIFT")
     return {
         "status": status,
         "qualified": qualified,
@@ -513,9 +467,7 @@ def apply_promotion_gate(
         "minimum_relative_gain": MIN_RELATIVE_GAIN,
         "comparisons": comparisons,
         "transition_guard": transition_guard,
-        "consistency_note": (
-            "All-seed direction is a consistency filter only; it is not significance evidence."
-        ),
+        "consistency_note": ("All-seed direction is a consistency filter only; it is not significance evidence."),
     }
 
 
@@ -564,9 +516,7 @@ def run_benchmark(
         "feature_access_contract": (
             "features use state and auxiliary_view only; labels and audit trajectories are excluded"
         ),
-        "route_pair_contract": (
-            "one positive and one negative per source; destination basin and depth are matched"
-        ),
+        "route_pair_contract": ("one positive and one negative per source; destination basin and depth are matched"),
         "pair_counts": pair_counts,
         "results": results,
         "aggregate": aggregate,

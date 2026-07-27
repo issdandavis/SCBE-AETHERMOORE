@@ -30,9 +30,7 @@ def test_all_feature_arms_have_identical_width(records: list[dict]) -> None:
     assert {vector.shape for vector in vectors.values()} == {(FEATURE_DIM,)}
     assert vectors["raw"][4:].tolist() == [0.0] * (FEATURE_DIM - 4)
     assert vectors["digit_stats"][10:].tolist() == [0.0] * (FEATURE_DIM - 10)
-    assert (
-        vectors["primary_random_pad"][:15].tolist() == vectors["primary"][:15].tolist()
-    )
+    assert vectors["primary_random_pad"][:15].tolist() == vectors["primary"][:15].tolist()
     assert vectors["primary_random_pad"][15:].tolist() != [0.0] * 5
 
 
@@ -66,9 +64,7 @@ def test_route_pairs_are_balanced_and_match_depth_and_basin(
 
     assert pairs
     assert_route_pair_contract(pairs)
-    assert sum(pair["label"] == 1 for pair in pairs) == sum(
-        pair["label"] == 0 for pair in pairs
-    )
+    assert sum(pair["label"] == 1 for pair in pairs) == sum(pair["label"] == 0 for pair in pairs)
 
 
 def _aggregate_for_gate(

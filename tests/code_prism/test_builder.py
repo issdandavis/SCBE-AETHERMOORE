@@ -23,7 +23,7 @@ def test_python_to_typescript_and_go_translation():
     assert go.valid
     assert "export function add" in ts.code
     assert "func Add(a float64, b float64) float64" in go.code
-    assert "return a + b;" in ts.code
+    assert "return (a + b);" in ts.code
     assert "return a + b" in go.code
     assert "TODO" not in ts.code
     assert "TODO" not in go.code
