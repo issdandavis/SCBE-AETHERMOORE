@@ -144,6 +144,18 @@ describe('polly rate limiter', () => {
     expect(cleanAllowed.allowed).toBe(true);
   });
 
+  it('isolates endpoint scopes that share the same limit policy', () => {
+    rateLimit.reset();
+    const req = { headers: { 'x-forwarded-for': '198.51.100.3' } };
+    const res = makeRes();
+    for (let i = 0; i < 60; i += 1) {
+      expect(rateLimit.enforce(req, res, 'feedback', 'feedback').allowed).toBe(true);
+    }
+    expect(rateLimit.enforce(req, res, 'feedback', 'feedback').allowed).toBe(false);
+    expect(rateLimit.enforce(req, res, 'feedback', 'funnel').allowed).toBe(true);
+    expect(rateLimit.enforce(req, res, 'feedback', 'stats').allowed).toBe(true);
+  });
+
   it('extracts the leftmost X-Forwarded-For value', () => {
     expect(
       rateLimit.clientIp({ headers: { 'x-forwarded-for': '203.0.113.5, 10.0.0.1, 10.0.0.2' } })

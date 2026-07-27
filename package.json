@@ -148,6 +148,8 @@
     "youtube:package": "node scripts/youtube/package.js",
     "youtube:upload": "node scripts/youtube/upload.js",
     "system:workcell-demo": "python scripts/system/agent_workcell_demo.py",
+    "vercel:router:generate": "node scripts/vercel/generate-router.cjs",
+    "vercel:router:verify": "node scripts/vercel/verify-router.cjs",
     "smoke:remote-app-config": "python scripts/system/remote_app_config_smoke.py",
     "smoke:remote-app-config:live": "python scripts/system/remote_app_config_smoke.py --live",
     "smoke:playwright:crosstalk": "node scripts/system/playwright_crosstalk_runner.mjs",

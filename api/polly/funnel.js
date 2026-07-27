@@ -60,7 +60,10 @@ function validate(body) {
   if (meta) {
     const serialized = JSON.stringify(meta);
     if (serialized.length > FIELD_CAPS.meta_serialized) {
-      return { ok: false, error: `meta too large (>${FIELD_CAPS.meta_serialized} chars serialized)` };
+      return {
+        ok: false,
+        error: `meta too large (>${FIELD_CAPS.meta_serialized} chars serialized)`,
+      };
     }
   }
   return { ok: true, event, page, session, meta: meta || null };
@@ -79,7 +82,7 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return sendJson(res, 405, { ok: false, error: 'POST only' });
 
-  const rl = rateLimit.enforce(req, res, 'feedback');
+  const rl = rateLimit.enforce(req, res, 'feedback', 'funnel');
   if (!rl.allowed) {
     return sendJson(res, 429, {
       ok: false,

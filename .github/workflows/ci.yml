@@ -129,6 +129,7 @@ jobs:
 
       - name: Verify checkout, delivery bridge, and buyer packages
         run: |
+          node scripts/vercel/verify-router.cjs
           python -m pytest \
             tests/test_vercel_launch_bridge.py \
             tests/smoke/test_app_deploy_config.py \

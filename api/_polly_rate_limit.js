@@ -40,10 +40,10 @@ function envLimit(name, fallback) {
   };
 }
 
-function check({ name, ip, now }) {
+function check({ name, ip, now, scope = name }) {
   const fallback = DEFAULTS[name] || DEFAULTS.chat;
   const cfg = envLimit(name, fallback);
-  const key = `${name}:${ip}`;
+  const key = `${scope}:${ip}`;
   const horizon = now - cfg.windowMs;
   const existing = buckets.get(key) || [];
   // Drop timestamps that fell out of the window.
@@ -76,9 +76,9 @@ function check({ name, ip, now }) {
   };
 }
 
-function enforce(req, res, name) {
+function enforce(req, res, name, scope = name) {
   const ip = clientIp(req);
-  const result = check({ name, ip, now: Date.now() });
+  const result = check({ name, ip, now: Date.now(), scope });
   res.setHeader('X-RateLimit-Limit', String(result.limit));
   res.setHeader('X-RateLimit-Remaining', String(Math.max(0, result.remaining)));
   if (!result.allowed) {

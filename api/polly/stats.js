@@ -114,7 +114,7 @@ module.exports = async function handler(req, res) {
     return sendJson(res, 405, { ok: false, error: 'GET only' });
   }
 
-  const limited = rateLimit.enforce(req, res, 'feedback');
+  const limited = rateLimit.enforce(req, res, 'feedback', 'stats');
   if (!limited.allowed) {
     return sendJson(res, 429, { ok: false, error: 'rate limited' });
   }
