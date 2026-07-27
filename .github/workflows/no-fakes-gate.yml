@@ -1,4 +1,11 @@
 name: No-New-Fakes Gate
+concurrency:
+  # One in-flight run per workflow per ref. A newer push supersedes an older run on a
+  # branch; on main nothing is cancelled, because interrupting a deploy or publish
+  # half-way is worse than letting a duplicate finish.
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 
 # Fails the build if stub/fake/placeholder code appears in the real product path
 # outside scripts/ci/no_fakes_baseline.txt. New fakes cannot land; existing ones
