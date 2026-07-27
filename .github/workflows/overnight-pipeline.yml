@@ -25,7 +25,9 @@ on:
           - full
   schedule:
     # Run full pipeline every night at 2 AM Pacific
-    - cron: '0 10 * * *'
+    # demoted from nightly to weekly 2026-07-27 -- 8-tier full pipeline (test/security/build/training/colab). Weekly is enough; it was
+    # the single most expensive nightly job and nothing downstream consumed it daily.
+    - cron: '0 10 * * 0'
 
 permissions:
   contents: read

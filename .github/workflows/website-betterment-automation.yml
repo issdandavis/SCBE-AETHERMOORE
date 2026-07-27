@@ -2,7 +2,9 @@ name: Website Betterment Automation
 
 on:
   schedule:
-    - cron: '35 10 * * *'
+    # demoted from nightly to weekly 2026-07-27 -- site audit -- weekly gives the same signal; a daily site audit on a site that changes
+    # weekly is just noise.
+    - cron: '35 10 * * 1'
   workflow_dispatch:
     inputs:
       live:

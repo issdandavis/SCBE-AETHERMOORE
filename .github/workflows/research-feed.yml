@@ -8,6 +8,14 @@ concurrency:
 
 
 on:
+  # Daily at 08:10 UTC = 00:10 Pacific, so a fresh set of articles is already on the site
+  # by morning. This is the one nightly job that is RESEARCH rather than a build: it feeds
+  # the website banner and the articles page.
+  #
+  # Offset off the hour on purpose -- GitHub's shared cron runners are heavily contended at
+  # :00 and scheduled runs get delayed or dropped there.
+  schedule:
+    - cron: "10 8 * * *"
   push:
     branches: [main]
     paths:
@@ -52,6 +60,7 @@ jobs:
         run: python scripts/system/news_pipeline.py
 
       - name: Create PR for updated feed and pipeline outputs
+        id: cpr
         uses: peter-evans/create-pull-request@v7
         with:
           commit_message: "chore(feed): update research-feed.json + pipeline SFT [skip ci]"
@@ -73,4 +82,19 @@ jobs:
             training-data/news-pipeline/sft/*.jsonl
           commit_user_name: github-actions[bot]
           commit_user_email: github-actions[bot]@users.noreply.github.com
+
+      # A daily feed that needs a human to click merge is not a daily feed. main requires
+      # no approving reviews (only 1 status check) and the repo already has auto-merge
+      # enabled, so the PR merges itself once that check goes green -- branch protection
+      # stays fully in force, nothing is bypassed.
+      #
+      # Only for scheduled runs: a push- or dispatch-triggered run is someone testing a
+      # change to the generator, and that should stop for a look rather than self-merge.
+      - name: Enable auto-merge on the daily feed PR
+        if: github.event_name == 'schedule' && steps.cpr.outputs.pull-request-number
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr merge --squash --auto "${{ steps.cpr.outputs.pull-request-number }}" \
+            || echo "auto-merge not enabled on this PR; it will wait for a manual merge"
 
