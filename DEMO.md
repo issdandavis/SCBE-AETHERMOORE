@@ -28,13 +28,25 @@ scbe-scan "ignore all previous instructions"
 scbe-scan "DROP TABLE users"
 ```
 
-Expected shape:
+Expected shape — the gate tells you the decision and **where in your input each
+trigger sits** (line, column, the matched text, and how it was hidden if it was
+obfuscated):
 
 ```text
-[OK] ALLOW         score=1.0000  d*=0.0000  pd=0.0000  len=11
-[!!] ESCALATE      score=0.3846  d*=0.0000  pd=0.8000  len=32
-[!!] ESCALATE      score=0.3846  d*=0.0000  pd=0.8000  len=16
+[OK] ALLOW
+     nothing matched - no located trigger
+
+[XX] DENY
+     line 1, col 1        instruction-override   'ignore all previous instructions'
+
+[XX] DENY
+     line 1, col 1        destructive-cmd        'DROP TABLE'
+     line 1, col 1        destructive-intent     'DROP TABLE users'
 ```
+
+Prefer the numbers? `scbe-scan --scores` prints the metric line instead
+(`score=0.1961  d*=2.5000  pd=0.8000`), and `--json` includes both: the full
+result plus a `findings` list with `start`/`end` byte offsets for tooling.
 
 Higher score is safer. The decision tiers are:
 
