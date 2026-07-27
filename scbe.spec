@@ -5,6 +5,25 @@
 # python/scbe data dir (collect_data_files) and the root schemas/ dir (ingestion_rights
 # validates against it at import). Cross-platform: datas are (src, dest) tuples.
 import os
+import sys
+
+# Put THIS repo at the front of the build-time import path before anything is collected.
+#
+# collect_data_files()/collect_submodules() resolve a package by importing it with the
+# build interpreter, so they follow whatever sys.path happens to be. The package here is
+# named `python`, which is the worst possible name to leave to path order: on the macOS
+# runner the interpreter is a Framework build rooted at
+# /Library/Frameworks/Python.framework/Versions/3.12/, whose own shared library is a file
+# literally named `Python`, and macOS filesystems are case-insensitive by default. `python`
+# resolved to something that was not this repo, PyInstaller logged
+# "skipping data collection for module 'python.scbe' as it is not a package", and the
+# resulting binary died at startup with `No module named 'python.scbe'` -- while Windows and
+# Linux, being case-sensitive, built the same spec correctly.
+#
+# Prepending the repo root removes the ambiguity at the only point where it matters. The
+# real cure is to stop shipping a top-level package called `python` at all, but that is a
+# breaking change to a public import path and belongs in a major version.
+sys.path.insert(0, os.path.abspath(os.getcwd()))
 
 from PyInstaller.utils.hooks import collect_data_files
 from PyInstaller.utils.hooks import collect_submodules
