@@ -29,19 +29,51 @@ jobs:
         run: python -m pip install --upgrade pip build
 
       - name: Verify pyproject version matches tag
+        # HARD FAIL, not a warning+skip. The previous version set skip_pypi=true and let
+        # every later step be skipped, so a run that published NOTHING still reported
+        # green. A release workflow that silently no-ops is worse than one that breaks:
+        # you only find out when someone reports `pip install` giving them the old version.
         run: |
-          PKG_VER=$(python -c "import tomllib,sys; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          PKG_VER=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
           TAG="${{ inputs.tag }}"
           TAG_VER="${TAG#v}"
           if [ "$PKG_VER" != "$TAG_VER" ]; then
-            echo "::warning::pyproject.toml version ($PKG_VER) does not match tag ($TAG_VER) — skipping PyPI publish."
-            echo "skip_pypi=true" >> "$GITHUB_ENV"
+            echo "::error::pyproject.toml version ($PKG_VER) does not match tag ($TAG_VER)."
+            exit 1
           fi
+          echo "version $PKG_VER matches tag $TAG"
 
       - name: Build distributions
-        if: env.skip_pypi != 'true'
         run: python -m build
 
-      - name: Publish to PyPI via Trusted Publisher (OIDC)
-        if: env.skip_pypi != 'true'
+      - name: Verify the built wheel actually contains the package
+        # 4.2.1 shipped a wheel with no src/ packages at all: MANIFEST.in excluded them
+        # from the sdist and `python -m build` builds the wheel FROM the sdist. It
+        # installed fine and every console script raised ModuleNotFoundError. PyPI does
+        # not allow re-uploading a version, so that mistake is permanent once pushed.
+        # This is the last point at which it is still cheap.
+        run: |
+          python - <<'PY'
+          import glob, sys, zipfile
+          whl = glob.glob("dist/*.whl")[0]
+          names = zipfile.ZipFile(whl).namelist()
+          tops = {n.split("/")[0] for n in names if "/" in n}
+          tops = {t for t in tops if not t.endswith((".dist-info", ".data"))}
+          print(whl, "->", sorted(tops))
+          if "scbe_aethermoore" not in tops:
+              sys.exit(f"FATAL: {whl} does not contain scbe_aethermoore/ — refusing to publish")
+          PY
+
+      - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          # Token first, OIDC as the fallback. This repo has NO PyPI Trusted Publisher
+          # entry for scbe-aethermoore: PR #1966 switched to OIDC-only on the assumption
+          # one existed, and every publish since has died with
+          # `invalid-publisher: valid token, but no corresponding publisher`.
+          # The token is a repo secret and never leaves GitHub.
+          # Trusted Publishing is the better long-term setup — configure it at
+          # https://pypi.org/manage/project/scbe-aethermoore/settings/publishing/
+          # (owner issdandavis, repo SCBE-AETHERMOORE, workflow pypi-publish.yml),
+          # then this `password:` line can be deleted.
+          password: ${{ secrets.PYPI_API_TOKEN }}
