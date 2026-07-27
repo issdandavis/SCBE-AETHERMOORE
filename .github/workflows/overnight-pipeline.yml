@@ -1,4 +1,14 @@
 name: SCBE Overnight Pipeline
+#
+# The `needs:` chain here (tier-2 -> tier-3 -> tier-4 -> tier-5 -> tier-6 -> summary) reads
+# like a failure cascade, where one broken tier would block every tier after it. It is not.
+# Every downstream job carries an `if: ${{ always() && ... }}` condition, so `needs:` is
+# acting purely as a SEQUENCER -- ordering the tiers and letting each read the previous
+# one's result -- while `always()` guarantees a failed tier still lets the rest run.
+#
+# That distinction is easy to lose. Noted here (2026-07-27) because an audit of CI coupling
+# flagged this as a 6-deep serial chain and was about to "fix" it; the always() conditions
+# are the fail-safe and must be kept if the chain is ever restructured.
 on:
   workflow_dispatch:
     inputs:
