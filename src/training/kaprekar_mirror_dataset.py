@@ -86,9 +86,7 @@ def build_records(
         primary_next = topology.kaprekar_step(pair.state)
         mirror_next = topology.mirror_step(pair.mirror_state)
         payload_sha = hashlib.sha256(pair.state.encode("ascii")).hexdigest()
-        record_id = hashlib.sha256(
-            f"{SCHEMA_VERSION}:{width}:{pair.state}".encode("ascii")
-        ).hexdigest()
+        record_id = hashlib.sha256(f"{SCHEMA_VERSION}:{width}:{pair.state}".encode("ascii")).hexdigest()
 
         records.append(
             {
@@ -101,21 +99,15 @@ def build_records(
                 "family_id": family_id,
                 "split": split,
                 "is_repdigit": is_repdigit,
-                "training_role": (
-                    "special_zero_basin" if is_repdigit else "synthetic_auxiliary_view"
-                ),
+                "training_role": ("special_zero_basin" if is_repdigit else "synthetic_auxiliary_view"),
                 "auxiliary_view": {
                     "mirror_state": pair.mirror_state,
                     "mirror_pair_id": pair.mirror_pair_id,
                     "is_mirror_seam": pair.is_mirror_seam,
                     "primary_depth": pair.primary_trace.depth,
                     "mirror_depth": pair.mirror_trace.depth,
-                    "primary_radial_depth": topology.radial_depth(
-                        pair.primary_trace.depth
-                    ),
-                    "mirror_radial_depth": topology.radial_depth(
-                        pair.mirror_trace.depth
-                    ),
+                    "primary_radial_depth": topology.radial_depth(pair.primary_trace.depth),
+                    "mirror_radial_depth": topology.radial_depth(pair.mirror_trace.depth),
                     "primary_point": list(pair.primary_point),
                     "mirror_point": list(pair.mirror_point),
                     "primary_bottom": pair.primary_bottom,
@@ -148,15 +140,9 @@ def assert_family_disjoint(records: Iterable[dict[str, Any]]) -> None:
 
     family_splits: dict[str, set[str]] = {}
     for record in records:
-        family_splits.setdefault(str(record["family_id"]), set()).add(
-            str(record["split"])
-        )
+        family_splits.setdefault(str(record["family_id"]), set()).add(str(record["split"]))
 
-    leaked = {
-        family: sorted(splits)
-        for family, splits in family_splits.items()
-        if len(splits) != 1
-    }
+    leaked = {family: sorted(splits) for family, splits in family_splits.items() if len(splits) != 1}
     if leaked:
         sample = dict(list(sorted(leaked.items()))[:5])
         raise ValueError(f"permutation families cross splits: {sample}")
@@ -191,9 +177,7 @@ def write_dataset(
 
     output_sha = hashlib.sha256(output.read_bytes()).hexdigest()
     split_counts = Counter(str(record["split"]) for record in records)
-    family_counts = Counter(
-        (str(record["split"]), str(record["family_id"])) for record in records
-    )
+    family_counts = Counter((str(record["split"]), str(record["family_id"])) for record in records)
     repdigit_count = sum(bool(record["is_repdigit"]) for record in records)
     topology_source = Path(__file__).with_name("kaprekar_mirror_topology.py")
 
@@ -216,9 +200,7 @@ def write_dataset(
         },
         "output_file": output.name,
         "output_sha256": output_sha,
-        "topology_source_sha256": hashlib.sha256(
-            topology_source.read_bytes()
-        ).hexdigest(),
+        "topology_source_sha256": hashlib.sha256(topology_source.read_bytes()).hexdigest(),
         "feature_allowlist": list(FEATURE_ALLOWLIST),
         "label_only_fields": list(LABEL_ONLY_FIELDS),
         "audit_only_fields": list(AUDIT_ONLY_FIELDS),

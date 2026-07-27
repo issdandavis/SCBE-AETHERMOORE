@@ -104,9 +104,7 @@ class KaprekarMirrorTopology:
         if not 0.0 <= realm_offset < 1.0:
             raise ValueError("realm_offset must be in [0, 1)")
         if math.hypot(max_planar_radius, realm_offset) >= 1.0:
-            raise ValueError(
-                "planar radius and realm offset must remain inside the unit ball"
-            )
+            raise ValueError("planar radius and realm offset must remain inside the unit ball")
         if max_steps < 1:
             raise ValueError("max_steps must be positive")
 
@@ -185,10 +183,7 @@ class KaprekarMirrorTopology:
 
         expected_mirror_path = tuple(self.mirror(item) for item in primary_trace.path)
         expected_mirror_cycle = tuple(self.mirror(item) for item in primary_trace.cycle)
-        if (
-            mirror_trace.path != expected_mirror_path
-            or mirror_trace.cycle != expected_mirror_cycle
-        ):
+        if mirror_trace.path != expected_mirror_path or mirror_trace.cycle != expected_mirror_cycle:
             raise RuntimeError("mirror conjugacy invariant failed")
 
         is_mirror_seam = state == mirror_state
@@ -216,9 +211,7 @@ class KaprekarMirrorTopology:
 
         if depth < 0:
             raise ValueError("depth cannot be negative")
-        return self.max_planar_radius * math.tanh(
-            self.radial_scale * float(depth) / 2.0
-        )
+        return self.max_planar_radius * math.tanh(self.radial_scale * float(depth) / 2.0)
 
     def _trace_transition(
         self,
@@ -231,9 +224,7 @@ class KaprekarMirrorTopology:
 
         while current not in seen:
             if len(path) >= self.max_steps:
-                raise RuntimeError(
-                    f"transition did not cycle within {self.max_steps} steps"
-                )
+                raise RuntimeError(f"transition did not cycle within {self.max_steps} steps")
             seen[current] = len(path)
             path.append(current)
             current = transition(current)

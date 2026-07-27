@@ -33,9 +33,7 @@ def test_mirror_realm_is_conjugate_and_bottoms_at_4716(
     pair = topology.pair("3524")
 
     assert pair.mirror_state == "4253"
-    assert pair.mirror_trace.path == tuple(
-        topology.mirror(state) for state in pair.primary_trace.path
-    )
+    assert pair.mirror_trace.path == tuple(topology.mirror(state) for state in pair.primary_trace.path)
     assert pair.primary_bottom == "6174"
     assert pair.mirror_bottom == "4716"
     assert pair.primary_trace.depth == pair.mirror_trace.depth == 3

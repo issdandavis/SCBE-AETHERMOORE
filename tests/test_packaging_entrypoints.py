@@ -85,9 +85,9 @@ def test_entry_point_target_is_importable(command, target):
             f"console script {command!r} targets {module_name!r}, which does not import: "
             f"{type(exc).__name__}: {exc}"
         )
-    assert hasattr(module, func_name), (
-        f"console script {command!r} targets {target!r} but {module_name} has no {func_name!r}"
-    )
+    assert hasattr(
+        module, func_name
+    ), f"console script {command!r} targets {target!r} but {module_name} has no {func_name!r}"
 
 
 @pytest.mark.parametrize("command,target", _declared_scripts())
