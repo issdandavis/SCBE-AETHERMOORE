@@ -358,3 +358,23 @@ audit_attestation/
 # --- run/eval output artifacts (never commit) ---
 _*.out
 _failuremap.json
+
+# --- history-bloat guard (added 2026-07-27) ---------------------------------
+# .git is 509 MB of PACKED history against 87 MB of tracked source. Every heavy blob
+# is history-only -- committed once, deleted later, and now permanently reachable:
+#   training/ledgered/*.jsonl        24.5 MB, 20.9 MB, 11.8 MB
+#   artifacts/research/*.json|csv    16.1 MB, 7.7 MB
+#   .n8n_local_iso/.cache/...        14.9 MB
+#   training/ingest/doc_chunks       13.5 MB
+#   node_modules/**                  10.8 MB esbuild.exe, 8.7 MB typescript.js
+# Reclaiming those needs a history rewrite. These rules stop the NEXT 500 MB instead:
+# artifacts/ alone is 199 MB on disk right now with a single tracked file in it.
+artifacts/
+!artifacts/projectors/
+!artifacts/projectors/tongue_projector.npz
+training/ledgered/
+training/ingest/
+training/sft_records/
+_kaggle_pull/**/*.jsonl
+_kaggle_pull/**/*.csv
+_kaggle_pull/**/*.zip
