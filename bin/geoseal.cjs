@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const fs = require("fs");
+const os = require("os");
 const path = require("path");
 const crypto = require("crypto");
 const { spawn, spawnSync } = require("child_process");
@@ -309,6 +310,17 @@ function availableStageExamples(roomId) {
   return Object.keys(STAGE_EXAMPLES[roomId] || {});
 }
 
+const BOOLEAN_FLAGS = new Set([
+  "json",
+  "help",
+  "detach",
+  "runtime",
+  "allow-demo-keys",
+  "probe-health",
+  "write-binary",
+  "from-binary",
+]);
+
 function parseArgs(argv) {
   const positionals = [];
   const flags = {};
@@ -319,6 +331,10 @@ function parseArgs(argv) {
       continue;
     }
     const key = token.slice(2);
+    if (BOOLEAN_FLAGS.has(key)) {
+      flags[key] = true;
+      continue;
+    }
     const next = argv[i + 1];
     if (!next || next.startsWith("--")) {
       flags[key] = true;
@@ -354,6 +370,26 @@ function terminalWidth(flags) {
 function stripAnsi(text) {
   return String(text).replace(/\x1b\[[0-9;]*m/g, "");
 }
+
+const ANSI_COLORS = { red: "31", green: "32", yellow: "33" };
+
+function colorEnabled(stream) {
+  if (process.env.NO_COLOR !== undefined && process.env.NO_COLOR !== "") return false;
+  const force = process.env.FORCE_COLOR;
+  if (force !== undefined && force !== "" && force !== "0" && force !== "false") return true;
+  return Boolean(stream && stream.isTTY);
+}
+
+function paint(text, color, { json = false, stream = process.stdout } = {}) {
+  if (json || !ANSI_COLORS[color] || !colorEnabled(stream)) return String(text);
+  return `\x1b[${ANSI_COLORS[color]}m${text}\x1b[0m`;
+}
+
+function escapeRegExp(text) {
+  return String(text).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+const HOME_DIR_PATTERN = new RegExp(`${escapeRegExp(os.homedir())}($|[\\\\/]|\\s|["'])`, "i");
 
 function visibleLength(text) {
   return stripAnsi(text).length;
@@ -617,7 +653,7 @@ function commandRisk(commandText) {
     /(^|\s|["'])\/($|\s|["'])/,
     /c:\\($|\s|["'])/i,
     /c:\\windows/i,
-    /c:\\users\\issda($|\\|\s|["'])/i,
+    HOME_DIR_PATTERN,
     /system32/i,
     /program files/i,
     /\bonedrive\b/i,
@@ -676,8 +712,9 @@ function runCommandCheck(positionals, flags) {
           : "Refuse execution. Change the target or use a non-destructive plan.",
   };
   const icon = risk.decision === "allow" ? "ALLOW" : risk.decision === "confirm" ? "CONFIRM" : "BLOCK";
+  const iconColor = risk.decision === "allow" ? "green" : risk.decision === "confirm" ? "yellow" : "red";
   const lines = boxed("command preflight", [
-    `${icon}: ${risk.safety}`,
+    `${paint(icon, iconColor, { json: Boolean(flags.json) })}: ${risk.safety}`,
     `command: ${commandText || "<none>"}`,
     ...risk.reasons.map((reason) => `reason: ${reason}`),
     payload.guidance,
@@ -1754,7 +1791,7 @@ function runDoctor(flags) {
     `Node: ${payload.node}`,
     `Active service: ${payload.active_service ? payload.active_service.api_base : "none"}`,
     `API commands: ${payload.api_commands.length}`,
-    `Python module src.geoseal_cli: ${payload.python_modules[0].ok ? "ok" : "fail"}`,
+    `Python module src.geoseal_cli: ${payload.python_modules[0].ok ? paint("ok", "green", { json: Boolean(flags.json) }) : paint("fail", "red", { json: Boolean(flags.json) })}`,
   ].join("\n");
   writeJsonOrText(flags, payload, text);
 }
@@ -2134,16 +2171,18 @@ function runPythonPassthrough(args) {
   for (const executable of pythonExecutables()) {
     for (const moduleName of moduleCandidates) {
       const result = spawnSync(executable, ["-m", moduleName, ...args], {
-        stdio: "inherit",
+        stdio: ["inherit", "inherit", "pipe"],
         shell: false,
         cwd: ROOT,
       });
       if (result.error) continue;
+      const stderrText = result.stderr ? String(result.stderr) : "";
       if (result.status === 0) {
+        if (stderrText) process.stderr.write(stderrText);
         process.exit(0);
       }
-      const stderrText = result.stderr ? String(result.stderr) : "";
       if (stderrText.includes("No module named")) continue;
+      if (stderrText) process.stderr.write(stderrText);
       process.exit(result.status === null ? 1 : result.status);
     }
   }
@@ -2301,6 +2340,7 @@ async function main() {
 }
 
 main().catch((err) => {
-  process.stderr.write(`${err && err.message ? err.message : String(err)}\n`);
+  const message = err && err.message ? err.message : String(err);
+  process.stderr.write(`${paint("error:", "red", { stream: process.stderr })} ${message}\n`);
   process.exit(1);
 });

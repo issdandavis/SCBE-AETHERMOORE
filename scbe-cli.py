@@ -46,12 +46,23 @@ SRC_PATH = REPO_ROOT / "src"
 if SRC_PATH.exists() and str(SRC_PATH) not in sys.path:
     sys.path.insert(0, str(SRC_PATH))
 
-from symphonic_cipher.scbe_aethermoore.turning_lane import (
-    execute_command_family,
-    prepare_execution_packet,
-    prove_execution_packet,
-    run_turning_suite,
-)
+# Import turning-lane execution helpers (guarded so --help works without the module)
+try:
+    from symphonic_cipher.scbe_aethermoore.turning_lane import (
+        execute_command_family,
+        prepare_execution_packet,
+        prove_execution_packet,
+        run_turning_suite,
+    )
+    TURNING_AVAILABLE = True
+    _TURNING_IMPORT_ERROR = None
+except Exception as exc:
+    execute_command_family = None
+    prepare_execution_packet = None
+    prove_execution_packet = None
+    run_turning_suite = None
+    TURNING_AVAILABLE = False
+    _TURNING_IMPORT_ERROR = exc
 
 # Import Sacred Tongues tokenizer
 try:
@@ -78,6 +89,11 @@ DEFAULT_FEATURES = {
     "stability": 0.9,
     "relationship_age": 0.85,
 }
+
+
+def _require_turning() -> None:
+    if _TURNING_IMPORT_ERROR is not None:
+        raise SystemExit(f"turning-lane commands unavailable: turning_lane import failed ({_TURNING_IMPORT_ERROR})")
 
 
 def _require_sacred() -> None:
@@ -542,6 +558,7 @@ def cmd_selftest(args) -> None:
 
 
 def cmd_turning_test(args) -> None:
+    _require_turning()
     summary = run_turning_suite()
     print(json.dumps(summary, indent=2, sort_keys=True))
     if summary["status"] != "PASS":
@@ -549,6 +566,7 @@ def cmd_turning_test(args) -> None:
 
 
 def cmd_turning_exec(args) -> None:
+    _require_turning()
     packet = prepare_execution_packet(args.family, args.arg or [])
     proof_modes = ("byte", "semantic") if args.mode == "both" else (args.mode,)
     witnesses = [entry.strip().upper() for entry in (args.witnesses or "").split(",") if entry.strip()]
