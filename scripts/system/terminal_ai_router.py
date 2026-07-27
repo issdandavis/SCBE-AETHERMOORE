@@ -517,6 +517,95 @@ def _provider_spend_cents(ledger: dict[str, Any], provider: str) -> float:
         return 0.0
 
 
+# Bump when the mapping below changes meaning. Stored on every attempt so a receipt
+# written by an older normalizer stays re-interpretable instead of silently comparable.
+USAGE_NORMALIZER_VERSION = "1"
+
+# provider family -> (canonical field, candidate provider keys in priority order)
+_USAGE_FIELD_MAP: dict[str, tuple[str, ...]] = {
+    "input_tokens": ("input_tokens", "prompt_tokens", "promptTokens"),
+    "output_tokens": ("output_tokens", "completion_tokens", "completionTokens"),
+    "total_tokens": ("total_tokens", "totalTokens"),
+    "cache_read_tokens": ("cache_read_input_tokens", "cached_tokens"),
+    "cache_write_tokens": ("cache_creation_input_tokens",),
+}
+
+
+def _normalize_usage(provider: str, body: Any) -> dict[str, Any]:
+    """Map a provider's own usage block onto canonical fields, without discarding it.
+
+    This runs INSIDE the router because it is the only place that still sees the provider
+    payload: by the time anything is persisted, `_safe_body_summary` has reduced the body to
+    {type,size,keys} and `_response_metadata` has replaced the text with a fingerprint.
+
+    Usage is METADATA, not content -- token counts carry no user text -- so the provider's
+    own object is kept verbatim under `provider_evidence` alongside the canonical mapping.
+    The completion text is content and still must not survive; `_scalar_only` enforces that
+    boundary rather than trusting providers to keep usage free of strings.
+
+    `unmapped_keys` is the point of the whole function. When a provider adds a usage field
+    this mapping does not know, the receipt records that it was not understood instead of
+    silently dropping it. Combined with USAGE_NORMALIZER_VERSION, an old receipt can be
+    re-read correctly after the mapping is fixed.
+    """
+    usage = body.get("usage") if isinstance(body, dict) else None
+    if not isinstance(usage, dict):
+        return {"normalizer_version": USAGE_NORMALIZER_VERSION, "reported": None, "provider_evidence": None}
+
+    reported: dict[str, int] = {}
+    consumed: set[str] = set()
+    for canonical, candidates in _USAGE_FIELD_MAP.items():
+        for key in candidates:
+            val = usage.get(key)
+            if isinstance(val, bool) or not isinstance(val, (int, float)):
+                continue
+            reported[canonical] = int(val)
+            consumed.add(key)
+            break
+
+    return {
+        "normalizer_version": USAGE_NORMALIZER_VERSION,
+        "provider": provider,
+        "reported": reported or None,
+        # verbatim, but scalars only -- a provider putting text in `usage` must not become a
+        # hole in the redaction boundary just because this field is nominally metadata.
+        "provider_evidence": _scalar_only(usage),
+        "unmapped_keys": sorted(k for k in usage if k not in consumed),
+    }
+
+
+def _scalar_only(value: Any, _depth: int = 0) -> Any:
+    """Keep numbers/bools; summarize strings and anything nested. Never store free text."""
+    if isinstance(value, bool) or isinstance(value, (int, float)):
+        return value
+    if isinstance(value, dict) and _depth < 2:
+        return {str(k): _scalar_only(v, _depth + 1) for k, v in list(value.items())[:16]}
+    if isinstance(value, str):
+        return {"type": "str", "length": len(value)}  # redacted: could be user-derived
+    if value is None:
+        return None
+    return {"type": type(value).__name__}
+
+
+def _reconcile_usage(estimated_cents: float, usage: dict[str, Any]) -> dict[str, Any]:
+    """Record estimate and provider report side by side; never let one overwrite the other.
+
+    A single "cost" field cannot be audited. Keeping both means a disagreement is visible,
+    and a disagreement is the signal that a provider changed its billing semantics -- which
+    is only detectable if the estimate was never clobbered by the report.
+    """
+    reported = usage.get("reported") or {}
+    return {
+        "estimated_cents": float(estimated_cents),
+        "reported_tokens": reported or None,
+        "reported_available": bool(reported),
+        # deliberately NOT a reported_cents: turning tokens into money needs a price table
+        # this router does not have. Asserting a number we cannot derive would be worse
+        # than admitting the gap.
+        "status": "reported" if reported else "estimate_only",
+    }
+
+
 def _record_spend(
     ledger: dict[str, Any],
     provider: str,
@@ -525,6 +614,7 @@ def _record_spend(
     tier: str,
     estimated_cents: float,
     response_ok: bool,
+    usage: dict[str, Any] | None = None,
 ) -> None:
     providers = ledger.setdefault("providers", {})
     row = providers.setdefault(provider, {"spent_cents_estimate": 0.0, "calls": 0, "successful_calls": 0})
@@ -532,16 +622,26 @@ def _record_spend(
     row["spent_cents_estimate"] = round(float(row.get("spent_cents_estimate", 0.0)) + float(estimated_cents), 4)
     if response_ok:
         row["successful_calls"] = int(row.get("successful_calls", 0)) + 1
-    ledger.setdefault("events", []).append(
-        {
-            "time_utc": _iso_now(),
-            "provider": provider,
-            "model": model,
-            "tier": tier,
-            "estimated_cents": float(estimated_cents),
-            "ok": bool(response_ok),
-        }
-    )
+    reported = (usage or {}).get("reported") or {}
+    if reported:
+        # accumulated separately from spent_cents_estimate -- the two must never merge into
+        # one "spend" number, or the estimate stops being auditable against the report.
+        tok = row.setdefault("reported_tokens", {})
+        for k, v in reported.items():
+            tok[k] = int(tok.get(k, 0)) + int(v)
+        row["calls_with_reported_usage"] = int(row.get("calls_with_reported_usage", 0)) + 1
+
+    event = {
+        "time_utc": _iso_now(),
+        "provider": provider,
+        "model": model,
+        "tier": tier,
+        "estimated_cents": float(estimated_cents),
+        "ok": bool(response_ok),
+    }
+    if usage:
+        event["usage"] = usage
+    ledger.setdefault("events", []).append(event)
 
 
 def _classify_complexity(prompt: str) -> str:
@@ -835,6 +935,11 @@ def run_call(args: argparse.Namespace) -> int:
                 )
                 continue
 
+            # Normalize here, at the only point the provider payload still exists. Every
+            # attempt carries it -- including failed ones, which is where a provider that
+            # bills for a rejected request shows up.
+            usage = _normalize_usage(provider, body)
+
             attempts.append(
                 {
                     "provider": provider,
@@ -845,6 +950,8 @@ def run_call(args: argparse.Namespace) -> int:
                     "status": "ok" if ok else "failed",
                     "http_status": http_status,
                     "error": error,
+                    "usage": usage,
+                    "cost": _reconcile_usage(est_cents, usage),
                 }
             )
 
@@ -855,6 +962,7 @@ def run_call(args: argparse.Namespace) -> int:
                 tier=tier,
                 estimated_cents=est_cents,
                 response_ok=ok,
+                usage=usage,
             )
 
             if ok:
@@ -864,6 +972,8 @@ def run_call(args: argparse.Namespace) -> int:
                     "model": model,
                     "http_status": http_status,
                     "estimated_cents": est_cents,
+                    "usage": usage,
+                    "cost": _reconcile_usage(est_cents, usage),
                 }
                 final_text = text.strip()
                 break
