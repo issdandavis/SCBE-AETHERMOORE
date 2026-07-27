@@ -19,12 +19,16 @@ print()
 # Example 1: Symphonic Cipher
 print("1. Symphonic Cipher Signing:")
 try:
-    from symphonic_cipher.core import SymphonicCipher
+    # Import from the package root, not symphonic_cipher.core. `core` is a PACKAGE
+    # (core/__init__.py -> CymaticVoxelStorage, HarmonicScalingLaw) and has never
+    # exported SymphonicCipher, so the old import raised ImportError every time. The
+    # try/except below swallowed it into a printed "Error:" line, so this example has
+    # been quietly broken rather than visibly failing.
+    from symphonic_cipher import SymphonicCipher
 
     cipher = SymphonicCipher()
     intent = '{"amount": 500, "to": "0x123..."}'
 
-    # Note: Actual API may differ, check core.py for exact methods
     print(f"  Intent: {intent}")
     print("  Cipher initialized successfully")
 except Exception as e:

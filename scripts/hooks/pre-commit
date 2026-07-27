@@ -92,6 +92,63 @@ def run_prettier(files: list[str]) -> bool:
     return True
 
 
+# ── python lint/format: run EXACTLY what CI runs ─────────────────────────────
+#
+# These four commands mirror .github/workflows. If they drift, the hook stops being
+# worth anything -- you pass locally and main still goes red. tests/test_precommit_
+# matches_ci.py fails the build if this list and the workflows disagree.
+#
+# black and flake8 deliberately cover DIFFERENT directory sets (flake8 adds hydra/),
+# which is exactly the kind of detail that makes "I ran black" insufficient. Both of
+# this session's red builds came from that gap: an F841 unused local, then trailing
+# whitespace -- black was clean for both.
+#
+# Scoped to STAGED files rather than whole directories: same verdict for what you are
+# about to commit, but fast enough that nobody reaches for --no-verify.
+CI_BLACK = ["--target-version", "py311", "--line-length", "120"]
+CI_FLAKE8 = ["--max-line-length", "120"]
+CI_RUFF = ["check", "--config", "ruff.toml"]
+LINTED_DIRS = ("src/", "tests/", "scripts/", "agents/", "hydra/")
+
+
+def _py_targets(files: list[str]) -> list[str]:
+    return [f for f in files if f.endswith(".py") and f.startswith(LINTED_DIRS) and Path(f).exists()]
+
+
+def run_python_checks(files: list[str]) -> bool:
+    targets = _py_targets(files)
+    if not targets:
+        return True
+
+    # black is a FORMATTER: fix and re-stage rather than making a human do it by hand.
+    fmt = subprocess.run([sys.executable, "-m", "black", *CI_BLACK, *targets], capture_output=True, text=True)
+    if fmt.returncode != 0:
+        print(f"[pre-commit] black failed:\n{fmt.stderr.strip()}")
+        return False
+    if "reformatted" in (fmt.stderr or ""):
+        subprocess.run(["git", "add", *targets], check=False)
+        print(f"[pre-commit] black reformatted {len(targets)} file(s) and re-staged them")
+
+    # flake8 and ruff are ANALYZERS: they find real defects (unused names, undefined
+    # references). Auto-"fixing" those would be guessing at intent, so they block.
+    for name, cmd in (
+        ("flake8", [sys.executable, "-m", "flake8", *CI_FLAKE8, *targets]),
+        ("ruff", [sys.executable, "-m", "ruff", *CI_RUFF, *targets]),
+    ):
+        proc = subprocess.run(cmd, capture_output=True, text=True)
+        if proc.returncode == 0:
+            continue
+        out = (proc.stdout or proc.stderr or "").strip()
+        if "No module named" in out:
+            print(f"[pre-commit] {name} not installed — skipping (CI WILL still run it)")
+            continue
+        print(f"\n{'='*60}\nBLOCKED: {name} found issues CI would also reject\n{'='*60}")
+        print(out[:2000])
+        print(f"{'='*60}\nFix these, or commit with --no-verify if you accept a red build.")
+        return False
+    return True
+
+
 # ── main ────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
@@ -99,6 +156,10 @@ if __name__ == "__main__":
 
     # 1. Format first so the secret scan sees the final content.
     if not run_prettier(files):
+        sys.exit(1)
+
+    # 1b. Python lint/format, same commands as CI.
+    if not run_python_checks(staged_files()):
         sys.exit(1)
 
     # 2. Secret scan on (potentially re-staged) files.

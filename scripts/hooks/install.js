@@ -22,6 +22,19 @@ if (!fs.existsSync(HOOKS_DST)) {
     process.exit(0);
 }
 
+// core.hooksPath REPLACES .git/hooks entirely -- git consults exactly one directory. If it
+// points elsewhere, everything below writes files git will never execute, and this script
+// still prints "installed", which is how the credential scanner sat dead without anyone
+// noticing. Say so loudly instead of reporting success.
+let hooksPath = '';
+try {
+    hooksPath = require('child_process')
+        .execSync('git config core.hooksPath', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+        .trim();
+} catch {
+    hooksPath = ''; // unset -> git uses .git/hooks, which is what we want
+}
+
 const hooks = fs.readdirSync(HOOKS_SRC).filter((f) => !f.endsWith('.js') && !f.endsWith('.md'));
 
 for (const hook of hooks) {
@@ -32,4 +45,14 @@ for (const hook of hooks) {
     console.error(`[hooks] installed ${hook}`);
 }
 
-console.error('[hooks] done');
+if (hooksPath) {
+    console.error('');
+    console.error(`[hooks] WARNING: core.hooksPath is set to "${hooksPath}".`);
+    console.error('[hooks] git reads ONLY that directory, so the hooks just written to .git/hooks');
+    console.error('[hooks] will NOT run -- including the credential scan.');
+    console.error(`[hooks] Either: git config --unset core.hooksPath`);
+    console.error(`[hooks]     or: have ${hooksPath}/pre-commit invoke scripts/hooks/pre-commit`);
+    console.error('[hooks]         (packages/agent-bus/.husky/pre-commit already chains it).');
+} else {
+    console.error('[hooks] done');
+}

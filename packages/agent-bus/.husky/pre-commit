@@ -1,10 +1,36 @@
 #!/bin/sh
+#
+# git uses ONE hooks directory. `core.hooksPath` in .git/config points here, at a
+# subpackage, so .git/hooks/ is never consulted -- which means the repo-wide hook that
+# `npm run hooks:install` writes there has never executed. That silently disabled the
+# CREDENTIAL SCANNER as well as the Python lint gate: scripts/hooks/pre-commit was
+# installed, reported "installed", and could not run. Verified 2026-07-27 by committing a
+# file with an unused import and an unused local -- it went straight through.
+#
+# Unsetting core.hooksPath would just break agent-bus's lint-staged the other way. A hook
+# directory is a single global slot, so whoever holds it has to call the rest. Repo-wide
+# checks run FIRST: a secret must never reach a commit object even if a package-level
+# formatter later fails.
 
 set -eu
 
 HOOK_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 PACKAGE_DIR="$(CDPATH= cd -- "$HOOK_DIR/.." && pwd)"
+REPO_ROOT="$(git rev-parse --show-toplevel)"
 
+# 1. Repo-wide: secret scan + prettier + the black/flake8/ruff set CI runs.
+if [ -f "$REPO_ROOT/scripts/hooks/pre-commit" ]; then
+  cd "$REPO_ROOT"
+  if command -v python >/dev/null 2>&1; then
+    python "$REPO_ROOT/scripts/hooks/pre-commit" || exit 1
+  elif command -v python3 >/dev/null 2>&1; then
+    python3 "$REPO_ROOT/scripts/hooks/pre-commit" || exit 1
+  else
+    echo "[pre-commit] python not found - SKIPPING secret scan and lint. CI will still run them." >&2
+  fi
+fi
+
+# 2. Package-level: agent-bus lint-staged, unchanged.
 if [ -x "$PACKAGE_DIR/node_modules/.bin/lint-staged" ]; then
   cd "$PACKAGE_DIR"
   ./node_modules/.bin/lint-staged
