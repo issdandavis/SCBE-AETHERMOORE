@@ -61,8 +61,23 @@ class HyperbolicPoint:
         return float(np.sqrt(self.x**2 + self.y**2))
 
 
+@dataclass(eq=False)
 class CFGEdge:
-    """Represents an edge in the control-flow graph."""
+    """Represents an edge in the control-flow graph.
+
+    Two decisions here are load-bearing and were previously wrong:
+
+    1. The ``@dataclass`` decorator is required. Without it the annotations
+       below are bare class-level hints rather than fields, and
+       ``CFGEdge(source=0, target=1, edge_type="jump")`` raises
+       ``TypeError: CFGEdge() takes no arguments`` — no edge can be built.
+    2. ``eq=False`` keeps dataclass from generating an ``__eq__`` over all three
+       fields. Identity is ``(source, target)``, matching ``__hash__``. With a
+       generated three-field ``__eq__``, two edges between the same pair of
+       blocks would hash alike but compare unequal, so ``ControlFlowGraph.edges``
+       (a ``Set``) would store both and inflate the degree counts that
+       :class:`HamiltonianTester` relies on.
+    """
 
     source: int
     target: int
@@ -70,6 +85,11 @@ class CFGEdge:
 
     def __hash__(self):
         return hash((self.source, self.target))
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, CFGEdge):
+            return NotImplemented
+        return (self.source, self.target) == (other.source, other.target)
 
 
 class ControlFlowGraph:
@@ -110,52 +130,206 @@ class ControlFlowGraph:
 
 
 class HamiltonianTester:
+    """Tests whether a control-flow graph admits a Hamiltonian path.
+
+    A control-flow graph is DIRECTED — its edges are jumps, calls, returns and
+    fallthroughs, all of which are one-way. Dirac's criterion and Ore's theorem
+    are theorems about simple UNDIRECTED graphs and are not valid on a digraph;
+    applying them here produced false positives (see ``EXACT_MAX_VERTICES`` note
+    and ``tests/test_topological_cfi_hamiltonian.py``).
+
+    The failure direction mattered: ``lift_to_hamiltonian`` is applied only when
+    a graph is found NON-Hamiltonian, so a false positive skipped the lift, left
+    no principal curve, and gave runtime deviation nothing to measure against —
+    the detector failed open.
+
+    Strategy, cheapest test first:
+
+    1. Necessary conditions (O(V+E)) — reject outright. A Hamiltonian path has
+       exactly one start and one end, so more than one source or more than one
+       sink is fatal, as is weak disconnection.
+    2. Ghouila-Houri (1960) (O(V+E)) — accept. A strongly connected digraph in
+       which EVERY vertex has in-degree >= n/2 AND out-degree >= n/2 has a
+       Hamiltonian circuit, which implies a Hamiltonian path. Note the two
+       degrees are constrained separately; summing them is strictly weaker and
+       is what admitted sinks.
+    3. Exact bitmask DP (O(2^n * n^2)) for small graphs — decide it properly.
+       Per-function CFGs are usually well inside this bound.
+    4. Otherwise report unknown, which routes the graph to the lift. Unknown
+       must fail CLOSED.
     """
-    Tests if a control-flow graph admits a Hamiltonian path.
-    Uses Dirac's and Ore's theorems as sufficient conditions.
-    """
+
+    #: Above this vertex count the exact DP is skipped (2^n state space).
+    EXACT_MAX_VERTICES = 20
 
     def __init__(self, cfg: ControlFlowGraph):
         self.cfg = cfg
 
-    def dirac_criterion(self) -> bool:
-        """
-        Dirac's theorem: If every vertex has degree >= n/2,
-        the graph is Hamiltonian.
-        """
-        n = self.cfg.vertex_count()
-        if n < 3:
-            return True
-        threshold = n / 2
-        return all(self.cfg.get_degree(v) >= threshold for v in self.cfg.vertices)
+    def _degrees(self) -> Tuple[Dict[int, int], Dict[int, int]]:
+        """Return (in_degree, out_degree) maps, counted separately."""
+        in_deg = {v: 0 for v in self.cfg.vertices}
+        out_deg = {v: 0 for v in self.cfg.vertices}
+        for edge in self.cfg.edges:
+            if edge.source in out_deg:
+                out_deg[edge.source] += 1
+            if edge.target in in_deg:
+                in_deg[edge.target] += 1
+        return in_deg, out_deg
 
-    def ore_criterion(self) -> bool:
+    def necessary_conditions(self) -> Tuple[bool, str]:
+        """Cheap structural conditions that a Hamiltonian path must satisfy.
+
+        Returns:
+            (still_possible, reason). ``False`` is a definitive NO.
         """
-        Ore's theorem: If deg(u) + deg(v) >= n for every
-        non-adjacent pair u,v, the graph is Hamiltonian.
+        n = self.cfg.vertex_count()
+        if n < 2:
+            return True, "trivial"
+
+        in_deg, out_deg = self._degrees()
+
+        # A path visits every vertex once and has exactly one final vertex, so at
+        # most one vertex may have no outgoing edge. Two sinks is unsatisfiable.
+        sinks = [v for v, d in out_deg.items() if d == 0]
+        if len(sinks) > 1:
+            return False, f"multiple_sinks({len(sinks)})"
+
+        sources = [v for v, d in in_deg.items() if d == 0]
+        if len(sources) > 1:
+            return False, f"multiple_sources({len(sources)})"
+
+        if not self._is_weakly_connected():
+            return False, "disconnected"
+
+        return True, "possible"
+
+    def _is_weakly_connected(self) -> bool:
+        """True if the underlying undirected graph is connected."""
+        vertices = list(self.cfg.vertices.keys())
+        if not vertices:
+            return True
+        undirected: Dict[int, Set[int]] = {v: set() for v in vertices}
+        for edge in self.cfg.edges:
+            if edge.source in undirected and edge.target in undirected:
+                undirected[edge.source].add(edge.target)
+                undirected[edge.target].add(edge.source)
+        seen = {vertices[0]}
+        stack = [vertices[0]]
+        while stack:
+            for nxt in undirected[stack.pop()]:
+                if nxt not in seen:
+                    seen.add(nxt)
+                    stack.append(nxt)
+        return len(seen) == len(vertices)
+
+    def _is_strongly_connected(self) -> bool:
+        """True if every vertex reaches every other following edge direction."""
+        vertices = list(self.cfg.vertices.keys())
+        if len(vertices) < 2:
+            return True
+        forward: Dict[int, Set[int]] = {v: set() for v in vertices}
+        reverse: Dict[int, Set[int]] = {v: set() for v in vertices}
+        for edge in self.cfg.edges:
+            if edge.source in forward and edge.target in forward:
+                forward[edge.source].add(edge.target)
+                reverse[edge.target].add(edge.source)
+
+        def reaches_all(adj: Dict[int, Set[int]]) -> bool:
+            seen = {vertices[0]}
+            stack = [vertices[0]]
+            while stack:
+                for nxt in adj[stack.pop()]:
+                    if nxt not in seen:
+                        seen.add(nxt)
+                        stack.append(nxt)
+            return len(seen) == len(vertices)
+
+        return reaches_all(forward) and reaches_all(reverse)
+
+    def ghouila_houri_criterion(self) -> bool:
+        """Ghouila-Houri sufficient condition for a Hamiltonian circuit.
+
+        A strongly connected digraph on n vertices in which every vertex has
+        in-degree >= n/2 and out-degree >= n/2 is Hamiltonian. The two degrees
+        are checked SEPARATELY — this is the directed replacement for the
+        previously-used Dirac criterion.
         """
         n = self.cfg.vertex_count()
         if n < 3:
-            return True
+            return False  # defer to the exact test
+        if not self._is_strongly_connected():
+            return False
+        in_deg, out_deg = self._degrees()
+        threshold = n / 2
+        return all(in_deg[v] >= threshold and out_deg[v] >= threshold for v in self.cfg.vertices)
+
+    def _exact_hamiltonian_path(self) -> Optional[bool]:
+        """Decide Hamiltonian-path existence exactly by bitmask DP.
+
+        Returns None if the graph is too large for the exact test.
+        """
         vertices = list(self.cfg.vertices.keys())
-        for i, u in enumerate(vertices):
-            for v in vertices[i + 1 :]:
-                # Check if non-adjacent
-                adjacent = v in self.cfg.adjacency.get(u, []) or u in self.cfg.adjacency.get(v, [])
-                if not adjacent:
-                    if self.cfg.get_degree(u) + self.cfg.get_degree(v) < n:
-                        return False
-        return True
+        n = len(vertices)
+        if n == 0:
+            return True
+        if n > self.EXACT_MAX_VERTICES:
+            return None
+
+        index = {v: i for i, v in enumerate(vertices)}
+        succ = [0] * n
+        for edge in self.cfg.edges:
+            if edge.source in index and edge.target in index and edge.source != edge.target:
+                succ[index[edge.source]] |= 1 << index[edge.target]
+
+        full = (1 << n) - 1
+        # reachable[mask] = bitset of vertices that can be the END of a path
+        # visiting exactly `mask`.
+        reachable = [0] * (1 << n)
+        for i in range(n):
+            reachable[1 << i] = 1 << i
+        for mask in range(1 << n):
+            ends = reachable[mask]
+            if not ends:
+                continue
+            if mask == full:
+                return True
+            e = ends
+            while e:
+                low = e & -e
+                i = low.bit_length() - 1
+                e ^= low
+                nxt = succ[i] & ~mask
+                while nxt:
+                    lown = nxt & -nxt
+                    j = lown.bit_length() - 1
+                    nxt ^= lown
+                    reachable[mask | lown] |= 1 << j
+        return bool(reachable[full])
 
     def is_hamiltonian(self) -> Tuple[bool, str]:
+        """Test whether the CFG admits a Hamiltonian path.
+
+        Returns:
+            (is_hamiltonian, reason). ``reason`` is one of ``trivial``,
+            ``ghouila_houri``, ``exact``, a ``necessary:*`` rejection, or
+            ``unknown``. ``unknown`` means undecided and MUST be treated as
+            non-Hamiltonian by callers so the dimensional lift still runs.
         """
-        Test if graph is Hamiltonian using sufficient conditions.
-        Returns (is_hamiltonian, reason).
-        """
-        if self.dirac_criterion():
-            return True, "dirac"
-        if self.ore_criterion():
-            return True, "ore"
+        n = self.cfg.vertex_count()
+        if n < 3:
+            return True, "trivial"
+
+        possible, why = self.necessary_conditions()
+        if not possible:
+            return False, f"necessary:{why}"
+
+        if self.ghouila_houri_criterion():
+            return True, "ghouila_houri"
+
+        exact = self._exact_hamiltonian_path()
+        if exact is not None:
+            return exact, "exact"
+
         return False, "unknown"
 
 
