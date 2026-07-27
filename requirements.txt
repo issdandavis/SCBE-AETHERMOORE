@@ -31,6 +31,14 @@ python-multipart>=0.0.32
 psycopg[binary]>=3.3.4
 
 # Security - pinned to secure versions
+#
+# The three below are TRANSITIVE (pillow and soupsieve arrive via the imaging and
+# beautifulsoup4 chains, bedrock-agentcore via the example agent). They are pinned to
+# patched versions in requirements-lock.txt already; these floors exist so a fresh
+# resolve of this file can never pick the vulnerable range back up.
+pillow>=12.3.0            # Dependabot #344-#356: OOB read/write, decompression-bomb bypasses
+soupsieve>=2.8.4          # Dependabot #315/#316: selector-parser ReDoS + memory exhaustion
+bedrock-agentcore>=1.18.1 # Dependabot #389/#393: argument-delimiter injection in install_packages()
 cryptography>=48.0.1
 urllib3>=2.7.0
 uv>=0.11.17
@@ -53,4 +61,8 @@ openpyxl==3.1.5
 z3-solver>=4.12
 
 # MCP SDK — for the SCBE CLI MCP server (tools/mcp/scbe_cli_server.py)
-mcp[cli]>=1.28
+# security floor: >=1.28 admitted 1.28.0, which is the version affected by the
+# WebSocket-transport Host/Origin validation advisory (Dependabot #322). First
+# patched 1.28.1 — the lockfile already had it; this floor stops a fresh resolve
+# from going back down.
+mcp[cli]>=1.28.1

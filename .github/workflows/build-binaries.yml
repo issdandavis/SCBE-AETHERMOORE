@@ -26,8 +26,30 @@ jobs:
             asset: scbe-linux-x64
           - os: windows-latest
             asset: scbe-windows-x64.exe
-          - os: macos-latest
-            asset: scbe-macos-arm64
+          # macOS is DELIBERATELY not built. It is not an oversight and not a flake.
+          #
+          # This repo ships a top-level package named `python` (python/scbe, imported as
+          # python.scbe). macOS runners use a CPython Framework build whose shared library
+          # is a file named exactly `Python`, and macOS filesystems are case-insensitive by
+          # default -- so `python` and `Python` are the same name inside the bundle. That
+          # collides at three separate stages, each verified on a real runner:
+          #   1. collection  -- "skipping data collection for module 'python.scbe' as it is
+          #                     not a package"        (fixed: python/__init__.py + pinned
+          #                     build-time sys.path)
+          #   2. extraction  -- "[PYI-1903:ERROR] Failed to create parent directory
+          #                     structure"            (fixed: data staged under scbe_data/)
+          #   3. import      -- "ModuleNotFoundError: No module named 'python.scbe'"
+          #                                           (NOT FIXED)
+          # A runtime hook seeding sys.modules['python'] was tried for (3) and reverted: it
+          # starved the frozen importer and broke the Windows build too.
+          #
+          # The real fix is renaming that package, which breaks a public import path and
+          # belongs in a major version. Until then a macOS job can only ever be red, and a
+          # permanently-red job trains everyone to ignore this workflow -- which is exactly
+          # how it went unnoticed that build-binaries had NEVER succeeded on any platform.
+          # Re-add this entry in the same change that renames the package:
+          #   - os: macos-latest
+          #     asset: scbe-macos-arm64
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
