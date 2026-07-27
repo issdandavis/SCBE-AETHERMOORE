@@ -84,10 +84,7 @@ def test_export_is_byte_deterministic_and_manifest_hashes_output(tmp_path) -> No
     assert first_output.read_bytes() == second_output.read_bytes()
     assert first_manifest_path.read_bytes() == second_manifest_path.read_bytes()
     assert first_manifest == second_manifest
-    assert (
-        first_manifest["output_sha256"]
-        == hashlib.sha256(first_output.read_bytes()).hexdigest()
-    )
+    assert first_manifest["output_sha256"] == hashlib.sha256(first_output.read_bytes()).hexdigest()
     assert first_manifest["family_disjoint"] is True
     assert first_manifest["promotion_state"] == "shadow_only"
 
