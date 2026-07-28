@@ -181,8 +181,14 @@ function mengerCurvature(p1: number[], p2: number[], p3: number[]): number {
  * Detect deviating paths via curvature accumulation in hyperbolic space.
  *
  * Honest agents follow smooth geodesics (low curvature). Adversarial agents
- * exhibit erratic path changes (high curvature). In hyperbolic space, this
- * separation is 2.45x better than Euclidean due to the exponential metric.
+ * exhibit erratic path changes (high curvature).
+ *
+ * Curvature is accumulated in whichever metric the caller has embedded in;
+ * the exponential metric changes the SCALE of accumulated cost, not the
+ * ranking of trajectories. Hyperbolic and Euclidean distance are monotonically
+ * related through arctanh and separate benign from adversarial trajectories
+ * equivalently (AUC 0.667 both, docs/REPO_REPORT.md). Do not describe this
+ * function as detecting better in hyperbolic space — it does not.
  *
  * @param trajectory - Agent trajectory points
  * @param windowSize - Sliding window size for curvature analysis

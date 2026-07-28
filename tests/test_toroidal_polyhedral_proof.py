@@ -283,7 +283,12 @@ class TestExponentialCost:
         result = prove_exponential_cost_scaling()
         assert len(result.deviations) > 0
 
-    def test_hyperbolic_exceeds_euclidean(self):
+    def test_hyperbolic_cost_dominates_euclidean_cost(self):
+        # COST, not detection. H grows super-linearly in the drift term by
+        # construction, so hyperbolic cost dominates at every deviation. This
+        # is arithmetic about the cost function, not a claim that hyperbolic
+        # geometry DETECTS better -- measured AUC is 0.667 for both metrics
+        # (docs/REPO_REPORT.md). Keep those two axes separate.
         result = prove_exponential_cost_scaling()
         for i in range(len(result.deviations)):
             assert result.hyperbolic_costs[i] >= result.euclidean_costs[i]

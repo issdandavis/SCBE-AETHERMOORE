@@ -918,13 +918,20 @@ def test_edge_cases() -> Dict[str, Any]:
 
 def test_f1_hierarchical_vs_euclidean() -> Dict[str, Any]:
     """
-    Demonstrate hyperbolic advantage on hierarchical threat detection.
+    Compare hyperbolic and Euclidean EMBEDDING of hierarchical structure.
 
     Simulation: Generate tree-structured threat data where:
     - Valid: core + first-level children (low threat depth)
     - Invalid: deep tree branches (high threat depth)
 
-    Hyperbolic excels because tree depth maps to exponential distance.
+    Hyperbolic space embeds tree depth with low distortion because volume
+    grows exponentially with radius. That is a REPRESENTATIONAL property,
+    not a detection result: measured detection AUC is equivalent between the
+    two metrics (0.667 both, docs/REPO_REPORT.md), since they are related
+    monotonically through arctanh. Do not cite this function as evidence
+    that hyperbolic geometry detects threats better -- it does not test that,
+    and the pass condition below deliberately tolerates hyperbolic scoring
+    slightly worse.
     """
     np.random.seed(42)
     hyper = HyperbolicEngine(alpha=1.5)

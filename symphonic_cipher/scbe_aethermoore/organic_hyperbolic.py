@@ -36,13 +36,14 @@ from enum import Enum
 # =============================================================================
 
 PHI = (1 + np.sqrt(5)) / 2  # Golden ratio φ ≈ 1.618
-EPSILON = 1e-9              # Numerical safety
-BALL_RADIUS = 0.999         # Poincaré ball clamp (< 1)
+EPSILON = 1e-9  # Numerical safety
+BALL_RADIUS = 0.999  # Poincaré ball clamp (< 1)
 
 
 # =============================================================================
 # PILLAR 1: INPUT MODULE (A1-A2)
 # =============================================================================
+
 
 class InputEncoder:
     """
@@ -91,7 +92,7 @@ class InputEncoder:
             return np.zeros(n_features)
 
         # Energy (RMS)
-        energy = np.sqrt(np.mean(signal ** 2))
+        energy = np.sqrt(np.mean(signal**2))
 
         # Zero-crossing rate
         zc = np.sum(np.abs(np.diff(np.sign(signal)))) / (2 * len(signal))
@@ -102,7 +103,7 @@ class InputEncoder:
         if np.sum(magnitude) > EPSILON:
             freqs = np.arange(len(magnitude))
             centroid = np.sum(freqs * magnitude) / np.sum(magnitude)
-            spread = np.sqrt(np.sum((freqs - centroid)**2 * magnitude) / np.sum(magnitude))
+            spread = np.sqrt(np.sum((freqs - centroid) ** 2 * magnitude) / np.sum(magnitude))
         else:
             centroid, spread = 0.0, 0.0
 
@@ -110,16 +111,18 @@ class InputEncoder:
         mid = len(magnitude) // 2
         hf_ratio = np.sum(magnitude[mid:]) / (np.sum(magnitude) + EPSILON)
 
-        features = np.array([
-            energy,
-            zc,
-            centroid / (len(magnitude) + 1),  # Normalize
-            spread / (len(magnitude) + 1),
-            hf_ratio,
-            np.max(np.abs(signal)),  # Peak
-            np.std(signal),          # Variance proxy
-            float(len(signal)) / 1000  # Duration proxy
-        ])
+        features = np.array(
+            [
+                energy,
+                zc,
+                centroid / (len(magnitude) + 1),  # Normalize
+                spread / (len(magnitude) + 1),
+                hf_ratio,
+                np.max(np.abs(signal)),  # Peak
+                np.std(signal),  # Variance proxy
+                float(len(signal)) / 1000,  # Duration proxy
+            ]
+        )
 
         return features[:n_features]
 
@@ -127,6 +130,7 @@ class InputEncoder:
 # =============================================================================
 # PILLAR 2: STATE MODULE (A1-A4)
 # =============================================================================
+
 
 @dataclass
 class State9D:
@@ -141,6 +145,7 @@ class State9D:
         x[5]    - Quantum coherence q
         x[6:9]  - Langues metric (3D)
     """
+
     x: np.ndarray = field(default_factory=lambda: np.zeros(9))
     timestamp: float = 0.0
 
@@ -181,16 +186,13 @@ class StateGenerator:
     """
 
     def __init__(self, omega: float = 1.0, alpha_t: float = 0.3):
-        self.omega = omega      # Phase angular frequency
+        self.omega = omega  # Phase angular frequency
         self.alpha_t = alpha_t  # Time coupling strength
 
         # Pre-compute golden weights for 9 dimensions
         self.phi_weights = np.array([PHI ** (-k) for k in range(9)])
 
-    def from_input(self,
-                   command_vec: np.ndarray,
-                   audio_vec: np.ndarray,
-                   t: float = 0.0) -> State9D:
+    def from_input(self, command_vec: np.ndarray, audio_vec: np.ndarray, t: float = 0.0) -> State9D:
         """
         Generate 9D state from input vectors.
 
@@ -201,7 +203,7 @@ class StateGenerator:
         # Hyperbolic dims from command (trust-related)
         if len(command_vec) >= 2:
             state.x[0] = np.tanh(command_vec[0] - command_vec[1])  # Allow-Deny balance
-            state.x[1] = np.tanh(np.sum(command_vec[2:]) * 0.5)   # Other commands
+            state.x[1] = np.tanh(np.sum(command_vec[2:]) * 0.5)  # Other commands
 
         # Phase from time
         state.x[2] = (self.omega * t) % (2 * np.pi)
@@ -267,6 +269,7 @@ class StateGenerator:
 # PILLAR 3: HYPERBOLIC MODULE (A4-A7)
 # =============================================================================
 
+
 class HyperbolicEngine:
     """
     Organic hyperbolic embedding and transformations.
@@ -277,10 +280,12 @@ class HyperbolicEngine:
     scaling - close to center = low risk, near boundary = high risk.
     """
 
-    def __init__(self,
-                 alpha: float = 1.0,      # Embedding scale
-                 beta_breath: float = 0.5, # Breathing intensity
-                 curvature: float = -1.0): # Hyperbolic curvature (negative)
+    def __init__(
+        self,
+        alpha: float = 1.0,  # Embedding scale
+        beta_breath: float = 0.5,  # Breathing intensity
+        curvature: float = -1.0,
+    ):  # Hyperbolic curvature (negative)
         self.alpha = alpha
         self.beta = beta_breath
         self.curvature = curvature
@@ -360,8 +365,8 @@ class HyperbolicEngine:
         v_norm_sq = np.dot(v, v)
         uv_dot = np.dot(u, v)
 
-        num = (1 + 2*uv_dot + v_norm_sq) * u + (1 - u_norm_sq) * v
-        den = 1 + 2*uv_dot + u_norm_sq * v_norm_sq
+        num = (1 + 2 * uv_dot + v_norm_sq) * u + (1 - u_norm_sq) * v
+        den = 1 + 2 * uv_dot + u_norm_sq * v_norm_sq
 
         return self.clamp_to_ball(num / max(den, EPSILON))
 
@@ -380,8 +385,8 @@ class HyperbolicEngine:
         v_norm_sq = np.dot(v, v)
 
         # Numerical safety
-        u_norm_sq = min(u_norm_sq, BALL_RADIUS ** 2)
-        v_norm_sq = min(v_norm_sq, BALL_RADIUS ** 2)
+        u_norm_sq = min(u_norm_sq, BALL_RADIUS**2)
+        v_norm_sq = min(v_norm_sq, BALL_RADIUS**2)
 
         diff_norm_sq = np.dot(u - v, u - v)
 
@@ -408,8 +413,10 @@ class HyperbolicEngine:
 # PILLAR 4: GOVERNANCE MODULE (A8-A12)
 # =============================================================================
 
+
 class GovernanceDecision(Enum):
     """Governance decisions from risk assessment."""
+
     ALLOW = "ALLOW"
     QUARANTINE = "QUARANTINE"
     DENY = "DENY"
@@ -418,6 +425,7 @@ class GovernanceDecision(Enum):
 @dataclass
 class RealmConfig:
     """Configuration for trust realms."""
+
     name: str
     centroid: np.ndarray  # μ_k in Poincaré ball
     weight: float = 1.0
@@ -434,17 +442,19 @@ class GovernanceEngine:
 
     # Default realms (can be customized)
     DEFAULT_REALMS = [
-        RealmConfig("CORE", np.array([0.0, 0.0]), 1.0),      # Origin = safest
+        RealmConfig("CORE", np.array([0.0, 0.0]), 1.0),  # Origin = safest
         RealmConfig("TRUSTED", np.array([0.3, 0.0]), 0.8),
         RealmConfig("STANDARD", np.array([0.5, 0.3]), 0.6),
         RealmConfig("EDGE", np.array([0.7, 0.5]), 0.4),
         RealmConfig("BOUNDARY", np.array([0.9, 0.0]), 0.2),
     ]
 
-    def __init__(self,
-                 hyperbolic: HyperbolicEngine,
-                 realms: Optional[List[RealmConfig]] = None,
-                 risk_weights: Optional[Dict[str, float]] = None):
+    def __init__(
+        self,
+        hyperbolic: HyperbolicEngine,
+        realms: Optional[List[RealmConfig]] = None,
+        risk_weights: Optional[Dict[str, float]] = None,
+    ):
         self.hyper = hyperbolic
         self.realms = realms or self.DEFAULT_REALMS
 
@@ -468,7 +478,7 @@ class GovernanceEngine:
 
         Returns: (distance, realm_name)
         """
-        min_dist = float('inf')
+        min_dist = float("inf")
         nearest_realm = "UNKNOWN"
 
         # Pad u to match realm dimension if needed
@@ -476,9 +486,9 @@ class GovernanceEngine:
             mu = realm.centroid
             if len(u) < len(mu):
                 u_padded = np.zeros(len(mu))
-                u_padded[:len(u)] = u
+                u_padded[: len(u)] = u
             elif len(u) > len(mu):
-                u_padded = u[:len(mu)]
+                u_padded = u[: len(mu)]
             else:
                 u_padded = u
 
@@ -519,11 +529,13 @@ class GovernanceEngine:
         mean_phasor = np.mean(phasors)
         return float(np.abs(mean_phasor))
 
-    def triadic_distance(self,
-                         d_realm: float,
-                         d_auth: float = 0.0,
-                         d_config: float = 0.0,
-                         lambdas: Tuple[float, float, float] = (0.4, 0.3, 0.3)) -> float:
+    def triadic_distance(
+        self,
+        d_realm: float,
+        d_auth: float = 0.0,
+        d_config: float = 0.0,
+        lambdas: Tuple[float, float, float] = (0.4, 0.3, 0.3),
+    ) -> float:
         """
         Compute weighted triadic distance (A11).
 
@@ -545,16 +557,12 @@ class GovernanceEngine:
             - d*=0 → H=1 (no amplification)
             - d* increases → H grows exponentially
         """
-        exponent = d_star ** 2
+        exponent = d_star**2
         # Clamp to prevent overflow
         exponent = min(exponent, 700 / np.log(R_base + EPSILON))
-        return float(R_base ** exponent)
+        return float(R_base**exponent)
 
-    def composite_risk(self,
-                       d_tri: float,
-                       s_spec: float,
-                       s_spin: float,
-                       d_star: float) -> float:
+    def composite_risk(self, d_tri: float, s_spec: float, s_spin: float, d_star: float) -> float:
         """
         Compute composite normalized risk (A12).
 
@@ -569,9 +577,7 @@ class GovernanceEngine:
         # Base risk from coherence deficits
         w = self.weights
         R_base = (
-            w["spectral"] * (1 - s_spec) +
-            w["spin"] * (1 - s_spin) +
-            w["triadic"] * np.tanh(d_tri)  # Soft saturation
+            w["spectral"] * (1 - s_spec) + w["spin"] * (1 - s_spin) + w["triadic"] * np.tanh(d_tri)  # Soft saturation
         )
 
         # Harmonic amplification
@@ -597,10 +603,7 @@ class GovernanceEngine:
         else:
             return GovernanceDecision.DENY
 
-    def evaluate(self,
-                 state: State9D,
-                 audio_features: np.ndarray,
-                 t: float) -> Dict[str, Any]:
+    def evaluate(self, state: State9D, audio_features: np.ndarray, t: float) -> Dict[str, Any]:
         """
         Complete organic governance evaluation.
 
@@ -644,6 +647,7 @@ class GovernanceEngine:
 # INTEGRATED SYSTEM: ORGANIC SCBE
 # =============================================================================
 
+
 class OrganicSCBE:
     """
     Complete organic SCBE system with hyperbolic backbone.
@@ -656,10 +660,7 @@ class OrganicSCBE:
         print(result["decision"])  # "ALLOW", "QUARANTINE", or "DENY"
     """
 
-    def __init__(self,
-                 alpha: float = 1.0,
-                 beta: float = 0.5,
-                 omega: float = 1.0):
+    def __init__(self, alpha: float = 1.0, beta: float = 0.5, omega: float = 1.0):
         # Pillar 1: Input
         self.encoder = InputEncoder()
 
@@ -672,10 +673,7 @@ class OrganicSCBE:
         # Pillar 4: Governance
         self.govern = GovernanceEngine(self.hyper)
 
-    def process(self,
-                command: str,
-                audio_signal: Optional[np.ndarray] = None,
-                t: float = 0.0) -> Dict[str, Any]:
+    def process(self, command: str, audio_signal: Optional[np.ndarray] = None, t: float = 0.0) -> Dict[str, Any]:
         """
         Process input through organic pipeline.
 
@@ -702,10 +700,9 @@ class OrganicSCBE:
 
         return result
 
-    def process_batch(self,
-                      commands: List[str],
-                      audio_signals: Optional[List[np.ndarray]] = None,
-                      times: Optional[List[float]] = None) -> List[Dict[str, Any]]:
+    def process_batch(
+        self, commands: List[str], audio_signals: Optional[List[np.ndarray]] = None, times: Optional[List[float]] = None
+    ) -> List[Dict[str, Any]]:
         """Process multiple inputs."""
         n = len(commands)
         if audio_signals is None:
@@ -713,15 +710,13 @@ class OrganicSCBE:
         if times is None:
             times = [float(i) for i in range(n)]
 
-        return [
-            self.process(cmd, audio, t)
-            for cmd, audio, t in zip(commands, audio_signals, times)
-        ]
+        return [self.process(cmd, audio, t) for cmd, audio, t in zip(commands, audio_signals, times)]
 
 
 # =============================================================================
 # SELF-TESTS AND VALIDATION
 # =============================================================================
+
 
 def test_organic_monotonicity() -> Dict[str, Any]:
     """
@@ -736,12 +731,7 @@ def test_organic_monotonicity() -> Dict[str, Any]:
 
     for d in d_vals:
         # Fixed coherence, varying distance
-        r = govern.composite_risk(
-            d_tri=d,
-            s_spec=0.8,
-            s_spin=0.9,
-            d_star=d
-        )
+        r = govern.composite_risk(d_tri=d, s_spec=0.8, s_spin=0.9, d_star=d)
         risks.append(r)
 
     # Check monotonicity
@@ -914,10 +904,7 @@ def test_edge_cases() -> Dict[str, Any]:
         "inside_ball": np.linalg.norm(u_large) < 1.0,
     }
 
-    all_passed = (
-        results["zero_input"]["is_origin"] and
-        results["large_input"]["inside_ball"]
-    )
+    all_passed = results["zero_input"]["is_origin"] and results["large_input"]["inside_ball"]
 
     return {
         "test": "edge_cases",
@@ -928,13 +915,20 @@ def test_edge_cases() -> Dict[str, Any]:
 
 def test_f1_hierarchical_vs_euclidean() -> Dict[str, Any]:
     """
-    Demonstrate hyperbolic advantage on hierarchical threat detection.
+    Compare hyperbolic and Euclidean EMBEDDING of hierarchical structure.
 
     Simulation: Generate tree-structured threat data where:
     - Valid: core + first-level children (low threat depth)
     - Invalid: deep tree branches (high threat depth)
 
-    Hyperbolic excels because tree depth maps to exponential distance.
+    Hyperbolic space embeds tree depth with low distortion because volume
+    grows exponentially with radius. That is a REPRESENTATIONAL property,
+    not a detection result: measured detection AUC is equivalent between the
+    two metrics (0.667 both, docs/REPO_REPORT.md), since they are related
+    monotonically through arctanh. Do not cite this function as evidence
+    that hyperbolic geometry detects threats better -- it does not test that,
+    and the pass condition below deliberately tolerates hyperbolic scoring
+    slightly worse.
     """
     np.random.seed(42)
     hyper = HyperbolicEngine(alpha=1.5)
@@ -996,7 +990,9 @@ def test_f1_hierarchical_vs_euclidean() -> Dict[str, Any]:
 
     improvement = (f1_h - f1_e) / max(f1_e, EPSILON) * 100
 
-    # Hyperbolic should have better separation due to exponential distance growth
+    # Parity check, not a superiority check: the 0.95 factor below passes when
+    # hyperbolic F1 is within 5% of Euclidean, INCLUDING when it is lower. The
+    # two metrics are expected to perform equivalently on detection.
     return {
         "test": "f1_hierarchical_comparison",
         "passed": f1_h >= f1_e * 0.95,  # Allow 5% tolerance
@@ -1053,6 +1049,7 @@ def self_test() -> Dict[str, Any]:
 # =============================================================================
 # DEMONSTRATION
 # =============================================================================
+
 
 def demonstrate_organic_flow():
     """

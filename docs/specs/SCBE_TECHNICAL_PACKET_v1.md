@@ -37,7 +37,14 @@ Agentic AI systems communicate. They communicate with humans, with other agents,
 
 **The MATHBAC question:** *what mathematics makes agentic communication reliably safe?*
 
-SCBE's position: **classification is the wrong primitive.** The right primitive is a *governance-weighted distance* from a safe manifold, computed in a geometry where adversarial drift compounds exponentially. In Euclidean space, adversarial and benign trajectories have similar cost profiles and the defender has no structural advantage. In hyperbolic space, the defender has a geometric advantage that is not an accident of model weights — it is a property of the metric.
+SCBE's position: **classification is the wrong primitive.** The right primitive is a *governance-weighted distance* from a safe manifold, fed into a cost function that compounds with drift.
+
+Two things are asserted here, and they are deliberately kept apart:
+
+- **Cost compounding is structural, not empirical.** `H` grows super-linearly in the drift term by construction. This is arithmetic about the cost function, not a benchmark result, and it holds regardless of which metric supplies the drift term.
+- **Detection accuracy is not claimed to favour any one geometry.** Under seal, hyperbolic and Euclidean distance are monotonically related through `arctanh` and separate benign from adversarial trajectories equivalently (AUC 0.667 both; see `docs/REPO_REPORT.md`). SCBE does **not** assert that hyperbolic geometry detects better, and no claim depends on it doing so.
+
+What hyperbolic space contributes is *representational*: hierarchical and tree-like relations embed with lower distortion, because volume grows exponentially with radius. That is a property of the embedding, not a detection score.
 
 This packet specifies the geometry, the metric, the projection into a bounded safety score, the empirical evidence that the metric separates benign and adversarial trajectories under seal, and the scope of claims.
 
@@ -47,11 +54,19 @@ This packet specifies the geometry, the metric, the projection into a bounded sa
 
 Four design decisions are load-bearing. Each is justified briefly here; each has a canonical reference implementation and a numerical tolerance in the constants file.
 
-### 2.1 Hyperbolic geometry, not Euclidean
+### 2.1 Metric selection: hyperbolic, Euclidean, or composed
 
 Hyperbolic space grows exponentially. In the Poincaré-ball model, the volume within radius `r` is `O(sinh(r)) ≈ O(eʳ)`. This means a drift that takes the system beyond a "safe" radius `r₀` must *cross more structure per unit distance* than the same drift in Euclidean space.
 
 Operationally, `d_H(u, v) = arcosh(1 + 2‖u − v‖² / ((1 − ‖u‖²)(1 − ‖v‖²)))` — the standard Poincaré-ball distance. This is the distance used by L5 and everywhere H-CORE is evaluated.
+
+**The metric is a configuration parameter, not a fixed commitment.** It is selected to fit the structure of the domain being governed: hierarchical or tree-like relations admit lower-distortion embedding in hyperbolic space, while flat or locally isotropic relations are represented adequately — and more cheaply — in Euclidean space. Neither is superior in the general case.
+
+The two also compose within a single evaluation, and the pipeline already does this:
+
+- **Per-element assignment.** Entities may be embedded hyperbolically so hierarchy is preserved, while pairwise edge weights are computed in the Euclidean tangent space. This is the standard gyrovector pattern — `log_x` to the tangent space, apply a Euclidean map, `exp_x` back.
+- **Trajectory in one metric, containment boundary in the other.** A path may be tracked flat while the tube around it — the deviation budget — is measured hyperbolically. This is the radial term `r_eff(x)`, with its core and membrane modes.
+- **Per-layer assignment across the 14-layer stack.** L3–L4 weighted transform and Poincaré embedding, L5 hyperbolic distance, L9–L10 spectral coherence over a flat FFT space, L12 the bounded harmonic wall. The stack is already mixed-metric; describing it wholesale as "hyperbolic" understates it.
 
 ### 2.2 Golden-ratio (φ) weighting of the symmetry layer
 
