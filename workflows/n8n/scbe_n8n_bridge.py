@@ -112,11 +112,15 @@ app = FastAPI(
 # CORS — allow the mobile app (Capacitor webview) and local dev
 from starlette.middleware.cors import CORSMiddleware
 
+# allow_origins=["*"] was the live drive-by: with a wildcard the browser preflight succeeds, so
+# ANY page you visited could POST to this bridge on your own machine and reach /v1/execute.
+# Machine-to-machine callers (n8n, the peer PC over Tailscale) send no Origin header and are
+# unaffected by tightening this, so the two-PC path keeps working with the list empty.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=[o.strip() for o in os.environ.get("SCBE_ALLOWED_ORIGINS", "").split(",") if o.strip()],
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type", "X-API-Key"],
 )
 
 # Shared instances
@@ -130,7 +134,15 @@ for plat in Platform:
     _buffer.register_publisher(PlatformPublisher(plat))
 
 # API key validation
-_API_KEYS = set(k.strip() for k in os.environ.get("SCBE_API_KEYS", "scbe-dev-key,test-key").split(",") if k.strip())
+# FAIL CLOSED. This previously defaulted to "scbe-dev-key,test-key" -- two literals sitting in
+# a PUBLIC repo, which means the default credentials were the published credentials. Unset now
+# yields an empty set, and routes that matter refuse to serve rather than accepting a known key.
+_API_KEYS = set(k.strip() for k in os.environ.get("SCBE_API_KEYS", "").split(",") if k.strip())
+
+# Browser origins permitted to call this bridge. Empty by default: machine-to-machine callers
+# (n8n, the peer PC over Tailscale) do not send Origin and are unaffected, while a web page you
+# happen to visit can no longer POST here. Set SCBE_ALLOWED_ORIGINS only if a browser UI needs it.
+_ALLOWED_ORIGINS = [o.strip() for o in os.environ.get("SCBE_ALLOWED_ORIGINS", "").split(",") if o.strip()]
 _BROWSER_SERVICE_URL = os.environ.get(
     "SCBE_BROWSER_SERVICE_URL",
     "http://127.0.0.1:8011",
@@ -236,6 +248,20 @@ def _check_key(api_key: Optional[str] = None):
     if api_key and api_key in _API_KEYS:
         return
     raise HTTPException(status_code=401, detail="Invalid or missing API key")
+
+
+def _require_key_strict(api_key: Optional[str]) -> None:
+    """For routes that execute code. No dev-mode bypass exists here on purpose.
+
+    With no keys configured this returns 503 rather than running anything, so a fresh checkout
+    is inert instead of open. Configure SCBE_API_KEYS on both machines to enable it.
+    """
+    if not _API_KEYS:
+        raise HTTPException(
+            status_code=503,
+            detail="Code execution disabled: set SCBE_API_KEYS to a secret value to enable.",
+        )
+    _check_key(api_key)
 
 
 # ---------------------------------------------------------------------------
@@ -893,14 +919,19 @@ _KERNEL_RUNNER_URL = os.getenv("KERNEL_RUNNER_URL", "http://127.0.0.1:4242")
 
 
 @app.post("/v1/execute")
-async def execute_code(req: CodeExecRequest):
+async def execute_code(req: CodeExecRequest, x_api_key: Optional[str] = Header(None)):
     """Delegate code execution to the Docker-sandboxed kernel-runner service.
+
+    AUTH: this route had no key check at all -- not a weak one, none. The _check_key call lived
+    on /v1/govern/check while the route that actually runs code was open. It is strict now:
+    no key configured means 503, wrong key means 401.
 
     Instead of running user-supplied code in a local subprocess (command-injection
     risk), we POST to the kernel-runner at ``_KERNEL_RUNNER_URL/api/run`` which
     executes inside a constrained Docker container with no network, capped CPU/
     memory, and a governance preflight gate.
     """
+    _require_key_strict(x_api_key)
     if req.language not in ("python", "javascript"):
         raise HTTPException(400, detail=f"Unsupported language: {req.language}")
     timeout = max(1, min(req.timeout, 30))
@@ -1143,7 +1174,7 @@ async def govern_check(req: GoverCheckRequest, x_api_key: Optional[str] = Header
     component distances so callers can log full governance provenance.
     No API key required in dev mode (SCBE_API_KEYS not set); required in prod.
     """
-    if _API_KEYS - {"scbe-dev-key", "test-key"}:
+    if _API_KEYS:   # dev mode is now "no keys configured", not "the published keys"
         _check_key(x_api_key)
     if not _GOV_CORE_AVAILABLE:
         raise HTTPException(status_code=503, detail="scbe_governance_core not importable")
@@ -1166,7 +1197,7 @@ async def govern_check(req: GoverCheckRequest, x_api_key: Optional[str] = Header
 @app.post("/v1/govern/batch")
 async def govern_batch(req: GoverBatchRequest, x_api_key: Optional[str] = Header(None)):
     """Score a list of commands in one call. Returns list in same order."""
-    if _API_KEYS - {"scbe-dev-key", "test-key"}:
+    if _API_KEYS:   # dev mode is now "no keys configured", not "the published keys"
         _check_key(x_api_key)
     if not _GOV_CORE_AVAILABLE:
         raise HTTPException(status_code=503, detail="scbe_governance_core not importable")
