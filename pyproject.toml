@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=83.0.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -17,6 +17,11 @@ dependencies = [
     # patched 2.14.2). Transitive today and already pinned in requirements-lock.txt, but constrained here
     # so the manifest itself can never resolve the vulnerable range.
     "pydantic-settings>=2.14.2",
+    # security floors for transitive deps still attributed to this manifest by Dependabot
+    # (Pillow PDF/CMS DoS; pyasn1 REAL/OID DoS). Already pinned in requirements-lock.txt.
+    "pillow>=12.3.0",
+    "pyasn1>=0.6.4",
+    "soupsieve>=2.8.4",
 ]
 authors = [
     {name = "Issac Daniel Davis", email = "issdandavis@users.noreply.github.com"},

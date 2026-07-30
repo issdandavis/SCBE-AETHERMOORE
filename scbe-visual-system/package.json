@@ -46,17 +46,13 @@
     "js-yaml": "^4.3.0",
     "fast-uri": "^3.1.4",
     "protobufjs": "^7.6.5",
-    "brace-expansion@1.1.15": "1.1.16",
-    "brace-expansion@2.0.3": "2.1.2",
-    "brace-expansion@5.0.6": "5.0.7",
-    "minimatch@10.2.5": {
-      "brace-expansion": "^5.0.7"
-    }
+    "postcss": ">=8.5.18",
+    "brace-expansion": "5.0.9"
   },
   "build": {
     "appId": "com.aethermoorgames.scbe",
     "productName": "SCBE Visual System",
-    "copyright": "Copyright \u00a9 2026 Aethermoor Games - USPTO #63/961,403",
+    "copyright": "Copyright © 2026 Aethermoor Games - USPTO #63/961,403",
     "directories": {
       "output": "release"
     },
