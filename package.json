@@ -319,7 +319,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.26.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "@netlify/blobs": "^10.7.9",
     "@noble/hashes": "^2.0.1",
     "@noble/post-quantum": "^0.6.0",
@@ -349,12 +349,12 @@
     "fast-xml-parser": "^5.7.1",
     "typescript": "^6.0.2",
     "qs": "^6.15.2",
-    "minimatch@10.2.5": {
-      "brace-expansion": "^5.0.6"
-    },
     "@opentelemetry/core": "2.8.0",
     "@opentelemetry/resources": "2.8.0",
     "@opentelemetry/sdk-trace-base": "2.8.0",
-    "@opentelemetry/sdk-trace-node": "2.8.0"
+    "@opentelemetry/sdk-trace-node": "2.8.0",
+    "@hono/node-server": "^2.0.5",
+    "postcss": ">=8.5.18",
+    "brace-expansion": "5.0.9"
   }
 }
