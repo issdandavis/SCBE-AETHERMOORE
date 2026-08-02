@@ -32,7 +32,7 @@
     "concurrently": "^10.0.4",
     "electron": "^43.2.0",
     "electron-builder": "^26.15.3",
-    "jsdom": "^29.1.1",
+    "jsdom": "^30.0.1",
     "typescript": "~7.0.2",
     "vite": "^8.1.5",
     "vitest": "^4.1.7",
