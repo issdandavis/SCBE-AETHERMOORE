@@ -1,0 +1,164 @@
+{
+  "schema": "scbe.langues-weighting-system.profiles.v1",
+  "status": "multiple-versioned-profiles",
+  "canonical_kernel_runtime": "kernel-v1",
+  "public_cost_profiles": ["kernel-v1", "spacetor-v1"],
+  "profiles": {
+    "lws-linear-v1": {
+      "state": "implemented-tested-weight-profile",
+      "scope": "base operations, tokenizer metadata, and seed derivation",
+      "weights": {
+        "kind": "rounded_just_intonation_ratios",
+        "values": [1.0, 1.125, 1.25, 1.333, 1.5, 1.667]
+      },
+      "code_paths": [
+        "src/symphonic_cipher/scbe_aethermoore/cli_toolkit.py",
+        "src/crypto/aetherlex-seed.ts",
+        "src/spaceTor/trust-manager.ts"
+      ],
+      "test_paths": ["tests/specs/test_langues_weighting_system_spec.py"]
+    },
+    "kernel-v1": {
+      "state": "implemented-tested",
+      "weight_profile": "phdm-golden",
+      "deviation": "caller_supplied_nonnegative_coordinate",
+      "weights": {
+        "kind": "golden_ratio_powers",
+        "formula": "phi^l",
+        "l": [0, 1, 2, 3, 4, 5]
+      },
+      "beta": {
+        "kind": "golden_ratio_half_powers",
+        "formula": "beta_base * phi^(l/2)"
+      },
+      "frequency": {
+        "kind": "integer_modes",
+        "formula": "omega_base * (l + 1)"
+      },
+      "phase": {
+        "formula": "2*pi*l/6",
+        "amplitude": 1.0
+      },
+      "clamp_max": null,
+      "code_paths": ["packages/kernel/src/languesMetric.ts", "src/harmonic/languesMetric.ts"],
+      "test_paths": ["tests/harmonic/languesMetric.test.ts"]
+    },
+    "spacetor-v1": {
+      "state": "implemented-tested",
+      "weight_profile": "lws-linear",
+      "deviation": "abs(x_l - mu_l)",
+      "weights": {
+        "kind": "rounded_just_intonation_ratios",
+        "values": [1.0, 1.125, 1.25, 1.333, 1.5, 1.667]
+      },
+      "beta": {
+        "kind": "explicit_vector",
+        "default_values": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+      },
+      "frequency": {
+        "kind": "integer_modes",
+        "values": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
+      },
+      "phase": {
+        "formula": "2*pi*l/6",
+        "amplitude": 1.0
+      },
+      "normalization_domain": "x_l is validated in [0,1] and the default mu_l is in [0,1], hence d_l <= 1; custom mu is caller-validated",
+      "clamp_max": null,
+      "ideal_point_derivative": "zero_subgradient",
+      "code_paths": ["src/spaceTor/trust-manager.ts"],
+      "test_paths": [
+        "tests/spaceTor/trust-manager.test.ts",
+        "tests/specs/test_langues_weighting_system_spec.py"
+      ]
+    },
+    "python-axiom-v1": {
+      "state": "implemented-tested",
+      "weight_profile": "phdm-golden",
+      "deviation": "abs(x_l - mu_l)",
+      "weights": {
+        "kind": "golden_ratio_powers",
+        "formula": "phi^l",
+        "l": [0, 1, 2, 3, 4, 5]
+      },
+      "beta": {
+        "kind": "phase_offset",
+        "formula": "beta_base + 0.1*cos(2*pi*l/6)"
+      },
+      "frequency": {
+        "kind": "just_intonation_ratios",
+        "values": ["1/1", "9/8", "5/4", "4/3", "3/2", "5/3"]
+      },
+      "phase": {
+        "formula": "2*pi*l/6",
+        "amplitude": 0.1
+      },
+      "clamp_max": 1000000.0,
+      "ideal_point_derivative": "zero_subgradient",
+      "code_paths": [
+        "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/langues_metric.py",
+        "symphonic_cipher/scbe_aethermoore/axiom_grouped/langues_metric.py"
+      ],
+      "test_paths": [
+        "tests/book/ai_governance_fundamentals/test_chapter_04_sacred_tongues.py",
+        "tests/specs/test_langues_weighting_system_spec.py"
+      ]
+    },
+    "notebook-2026-01": {
+      "state": "historical-executable",
+      "weight_profile": "lws-linear",
+      "deviation": "abs(x_l - mu_l)",
+      "weights": {
+        "kind": "rounded_just_intonation_ratios",
+        "values": [1.0, 1.125, 1.25, 1.333, 1.5, 1.667]
+      },
+      "beta": {
+        "kind": "explicit_vector",
+        "default_values": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+      },
+      "frequency": {
+        "kind": "integer_modes",
+        "values": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
+      },
+      "phase": {
+        "formula": "2*pi*l/6",
+        "amplitude": 1.0
+      },
+      "clamp_max": null,
+      "code_paths": ["notebooks/scbe_langues_metric_colab.ipynb"],
+      "test_paths": ["tests/specs/test_langues_weighting_system_spec.py"]
+    }
+  },
+  "claim_states": [
+    {
+      "claim": "The six weights are powers of the golden ratio.",
+      "state": "profile-dependent",
+      "notes": "True for kernel-v1 and python-axiom-v1; false for spacetor-v1 and notebook-2026-01."
+    },
+    {
+      "claim": "The scalar cost is C-infinity in x.",
+      "state": "false-for-absolute-deviation-profiles",
+      "notes": "abs(x_l-mu_l) creates a cusp at x_l=mu_l. The cost is continuous and piecewise smooth in x."
+    },
+    {
+      "claim": "The cost is strictly increasing in every deviation.",
+      "state": "conditional",
+      "notes": "True before clamping when beta_l, w_l, and nu_l are positive; collapsed dimensions and saturation remove strictness."
+    },
+    {
+      "claim": "Normalization by the d_l=1, sin=1 bound is always in (0,1].",
+      "state": "conditional",
+      "notes": "Only when every deviation is at most one and the denominator uses the same parameters. SpaceTor validates x and its default mu satisfies the bound; custom mu and the standalone notebook formula must enforce it separately."
+    },
+    {
+      "claim": "Runtime frequencies satisfy maximal-polytonic rational independence.",
+      "state": "false",
+      "notes": "Both the integer modes and just-intonation ratios are rationally dependent."
+    },
+    {
+      "claim": "The maximal-polytonic matrix construction is production implemented.",
+      "state": "unmapped",
+      "notes": "No LWS runtime code or focused test establishes this construction."
+    }
+  ]
+}

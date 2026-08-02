@@ -1,0 +1,811 @@
+{
+  "schema_version": "1.2.0",
+  "map_id": "scbe-clay-multiplane-layer-map-v1",
+  "title": "SCBE-Clay Multiplane Layer Map",
+  "updated_at": "2026-07-31",
+  "status": "implementation_crosswalk",
+  "training_authorized": false,
+  "scope": [
+    "SCBE deterministic governance runtime",
+    "Hodge structural assurance overlay",
+    "Clay curriculum",
+    "Clay neural and representation overlays",
+    "multiplex cross-plane identity/thread bridge",
+    "evidence and promotion control"
+  ],
+  "authority_order": [
+    "executed code and tests for the named profile",
+    "docs/specs/CANONICAL_FORMULA_REGISTRY.md",
+    "docs/specs/LAYER_INDEX.md",
+    "docs/CORE_AXIOMS_CANONICAL_INDEX.md",
+    "revision-pinned configuration and receipts",
+    "public maps and research notes",
+    "historical descriptions"
+  ],
+  "status_vocabulary": {
+    "implementation_status": [
+      "active",
+      "experimental",
+      "compatibility",
+      "historical",
+      "missing",
+      "blocked",
+      "local_uncommitted"
+    ],
+    "verification_status": [
+      "passing_at_revision",
+      "test_defined",
+      "untested",
+      "failing",
+      "skipped",
+      "unobserved",
+      "stale"
+    ],
+    "claim_class": [
+      "invariant",
+      "implementation_guarantee",
+      "measured",
+      "design_hypothesis",
+      "metaphor"
+    ]
+  },
+  "planes": [
+    {
+      "id": "SCBE_GOVERNANCE",
+      "namespace": "SCBE.L",
+      "kind": "deterministic_runtime",
+      "canonical": true
+    },
+    {
+      "id": "HODGE_ASSURANCE",
+      "namespace": "HODGE.H",
+      "kind": "non_mutating_structural_overlay",
+      "canonical": false
+    },
+    {
+      "id": "CLAY_CURRICULUM",
+      "namespace": "TRAIN.T",
+      "kind": "data_and_training_order",
+      "canonical": false
+    },
+    {
+      "id": "GEOMETRY_REPRESENTATION",
+      "namespace": "GEOM.",
+      "kind": "representation_overlay",
+      "canonical": false
+    },
+    {
+      "id": "CLAY_NEURAL",
+      "namespace": "CLAY.",
+      "kind": "neural_components",
+      "canonical": false
+    },
+    {
+      "id": "EVIDENCE_CONTROL",
+      "namespace": "EVIDENCE.",
+      "kind": "receipts_and_promotion_gates",
+      "canonical": false
+    },
+    {
+      "id": "MULTIPLEX_THREAD",
+      "namespace": "MULTIPLEX.",
+      "kind": "cross_plane_identity_thread_bridge",
+      "canonical": false,
+      "not_runtime_layer": true,
+      "not_scbe_l15": true
+    }
+  ],
+  "profiles": {
+    "TS_PIPELINE14": {
+      "implementation": "packages/kernel/src/pipeline14.ts",
+      "layer11_regime": "normalized_quadratic_mean",
+      "layer12_regime": "BOUNDED_SCORE",
+      "layer13_regime": "risk_divided_by_score",
+      "decision_enum": [
+        "ALLOW",
+        "QUARANTINE",
+        "DENY"
+      ],
+      "execution_note": "Layer 14 executes before Layer 13"
+    },
+    "PY_REFERENCE14": {
+      "implementation": "src/scbe_14layer_reference.py",
+      "layer11_regime": "normalized_phi_power_mean",
+      "layer12_regime": "BOUNDED_SCORE",
+      "layer13_regime": "weighted_risk_composition",
+      "execution_note": "Layer 14 executes before Layer 13"
+    },
+    "PY_FULL14": {
+      "implementation": "src/symphonic_cipher/scbe_aethermoore/layers/fourteen_layer_pipeline.py",
+      "layer11_regime": "feature_space_euclidean_aggregate",
+      "layer12_regime": "BOUNDED_SCORE",
+      "layer13_regime": "distance_threshold",
+      "decision_enum": [
+        "ALLOW",
+        "REVIEW",
+        "DENY"
+      ],
+      "execution_note": "Layer 13 executes before Layer 14"
+    }
+  },
+  "layers": [
+    {
+      "id": "SCBE.L01",
+      "plane": "SCBE_GOVERNANCE",
+      "ordinal": 1,
+      "name": "Complex context state",
+      "axiom": "Composition",
+      "input": "t: R^D",
+      "output": "phase-aware complex state",
+      "symbols": [
+        "layer1ComplexState",
+        "layer_1_complex_state",
+        "layer_1_complex_context"
+      ]
+    },
+    {
+      "id": "SCBE.L02",
+      "plane": "SCBE_GOVERNANCE",
+      "ordinal": 2,
+      "name": "Realification",
+      "axiom": "Unitarity",
+      "input": "C^D",
+      "output": "R^(2D)",
+      "invariant": "represented complex norm is preserved",
+      "symbols": [
+        "layer2Realification",
+        "layer_2_realification",
+        "layer_2_realify"
+      ]
+    },
+    {
+      "id": "SCBE.L03",
+      "plane": "SCBE_GOVERNANCE",
+      "ordinal": 3,
+      "name": "SPD weighted transform",
+      "axiom": "Locality",
+      "input": "x: R^n, G: SPD(n)",
+      "output": "x_G: R^n",
+      "known_gap": "TypeScript general-SPD wording exceeds the tested/default diagonal implementation",
+      "symbols": [
+        "layer3WeightedTransform",
+        "layer_3_weighted_transform",
+        "layer_3_weighted"
+      ]
+    },
+    {
+      "id": "SCBE.L04",
+      "plane": "SCBE_GOVERNANCE",
+      "ordinal": 4,
+      "name": "Poincare-ball embedding",
+      "axiom": "Unitarity",
+      "input": "R^n",
+      "output": "B^n",
+      "invariant": "finite and norm strictly below one",
+      "symbols": [
+        "layer4PoincareEmbedding",
+        "layer_4_poincare_embedding",
+        "layer_4_poincare"
+      ]
+    },
+    {
+      "id": "SCBE.L05",
+      "plane": "SCBE_GOVERNANCE",
+      "ordinal": 5,
+      "name": "Hyperbolic distance",
+      "axiom": "Symmetry",
+      "input": "u,v in B^n",
+      "output": "d_H >= 0",
+      "formula_id": "G1",
+      "symbols": [
+        "layer5HyperbolicDistance",
+        "layer_5_hyperbolic_distance"
+      ]
+    },
+    {
+      "id": "SCBE.L06",
+      "plane": "SCBE_GOVERNANCE",
+      "ordinal": 6,
+      "name": "Breathing transform",
+      "axiom": "Causality",
+      "input": "ball state and time/radial factor",
+      "output": "ball state",
+      "invariant": "radial diffeomorphism, not an isometry",
+      "symbols": [
+        "layer6BreathingTransform",
+        "layer_6_breathing_transform",
+        "layer_6_breathing"
+      ]
+    },
+    {
+      "id": "SCBE.L07",
+      "plane": "SCBE_GOVERNANCE",
+      "ordinal": 7,
+      "name": "Phase transform",
+      "axiom": "Unitarity",
+      "input": "ball state plus supported translation/rotation",
+      "output": "ball state",
+      "symbols": [
+        "layer7PhaseTransform",
+        "layer_7_phase_transform",
+        "layer_7_phase"
+      ]
+    },
+    {
+      "id": "SCBE.L08",
+      "plane": "SCBE_GOVERNANCE",
+      "ordinal": 8,
+      "name": "Realm distance",
+      "axiom": "Locality",
+      "input": "state and realm centers",
+      "output": "minimum distance and realm identity",
+      "symbols": [
+        "layer8RealmDistance",
+        "layer_8_realm_distance",
+        "layer_8_multi_well"
+      ]
+    },
+    {
+      "id": "SCBE.L09",
+      "plane": "SCBE_GOVERNANCE",
+      "ordinal": 9,
+      "name": "Spectral coherence",
+      "axiom": "Symmetry",
+      "input": "real signal",
+      "output": "scalar [0,1]",
+      "symbols": [
+        "layer9SpectralCoherence",
+        "layer_9_spectral_coherence"
+      ]
+    },
+    {
+      "id": "SCBE.L10",
+      "plane": "SCBE_GOVERNANCE",
+      "ordinal": 10,
+      "name": "Spin coherence",
+      "axiom": "Symmetry",
+      "input": "phases or phasors",
+      "output": "normalized coherence",
+      "symbols": [
+        "layer10SpinCoherence",
+        "layer_10_spin_coherence"
+      ]
+    },
+    {
+      "id": "SCBE.L11",
+      "plane": "SCBE_GOVERNANCE",
+      "ordinal": 11,
+      "name": "Triadic temporal aggregation",
+      "axiom": "Causality",
+      "input": "short, mid, and long evidence",
+      "output": "non-negative aggregate",
+      "profile_specific": true,
+      "symbols": [
+        "layer11TriadicTemporal",
+        "layer_11_triadic_temporal",
+        "layer_11_triadic_distance"
+      ]
+    },
+    {
+      "id": "SCBE.L12",
+      "plane": "SCBE_GOVERNANCE",
+      "ordinal": 12,
+      "name": "Harmonic score",
+      "axiom": "Symmetry",
+      "input": "d >= 0, pd >= 0",
+      "output": "(0,1]",
+      "formula_id": "BOUNDED_SCORE",
+      "equation": "1/(1+d+2*pd)",
+      "symbols": [
+        "layer12HarmonicScaling",
+        "layer_12_harmonic_scaling"
+      ]
+    },
+    {
+      "id": "SCBE.L13",
+      "plane": "SCBE_GOVERNANCE",
+      "ordinal": 13,
+      "name": "Risk decision",
+      "axiom": "Causality",
+      "input": "profile-specific risk evidence and bounded score",
+      "output": "decision and risk receipt",
+      "profile_specific": true,
+      "symbols": [
+        "layer13RiskDecision",
+        "layer_13_risk_decision",
+        "layer_13_decision"
+      ]
+    },
+    {
+      "id": "SCBE.L14",
+      "plane": "SCBE_GOVERNANCE",
+      "ordinal": 14,
+      "name": "Audio and telemetry output",
+      "axiom": "Composition",
+      "input": "signal and cross-system state",
+      "output": "profile-specific scalar coherence or waveform",
+      "profile_specific": true,
+      "symbols": [
+        "layer14AudioAxis",
+        "layer_14_audio_axis"
+      ]
+    }
+  ],
+  "hodge_grades": [
+    {
+      "id": "HODGE.H0",
+      "artifact_layer": 1,
+      "lives_on": "vertices",
+      "detects": "connected components",
+      "operator": "L0=d1*d1^T"
+    },
+    {
+      "id": "HODGE.H1",
+      "artifact_layer": 2,
+      "lives_on": "edges",
+      "detects": "loops",
+      "operator": "L1=d1^T*d1+d2*d2^T"
+    },
+    {
+      "id": "HODGE.H2",
+      "artifact_layer": 3,
+      "lives_on": "triangles",
+      "detects": "voids",
+      "operator": "L2=d2^T*d2+d3*d3^T"
+    },
+    {
+      "id": "HODGE.H3",
+      "artifact_layer": 4,
+      "lives_on": "tetrahedra",
+      "detects": "3-cavities",
+      "operator": "L3=d3^T*d3"
+    }
+  ],
+  "hodge_gates": [
+    {
+      "id": "closure",
+      "invariant": "d_k*d_(k+1)=0",
+      "failure": "refuse a higher simplex with any missing face"
+    },
+    {
+      "id": "soft_fill",
+      "equation": "beta_k(sigma)=count(eigenvalue(L_k)<=sigma)",
+      "claim_class": "measured"
+    },
+    {
+      "id": "hodge_cospectral_limit",
+      "scope": "HODGE_ASSURANCE",
+      "rule": "Equal Hodge-Laplacian eigenvalue multisets do not establish simplicial-complex or graph isomorphism.",
+      "runtime_effect": "None in canonical SCBE profiles; no active Hodge-to-L13 adapter is documented.",
+      "not_applicable_to": [
+        "SCBE.L05 coordinate-distance computation",
+        "SCBE.L09 signal FFT-energy coherence"
+      ],
+      "mitigation": "For Hodge identity claims, retain multiple probe sites and blind-site outcomes."
+    }
+  ],
+  "split_tracks": {
+    "canonical_runtime_adapter": "none",
+    "results": {
+      "cospectral_pair": {
+        "adjacency_coordinate_d_h": 0.6650305662785375,
+        "spectrum_coordinate_d_h": 0.0,
+        "hodge_spectrum_separates": false,
+        "tangential_probes": 6,
+        "separating_probes": 4,
+        "blind_probes": 2
+      },
+      "isomorphic_relabel_control": {
+        "adjacency_coordinate_d_h": 1.2680303279222387,
+        "spectrum_max_abs_diff": 2.220446049250313e-15
+      },
+      "layer9_signal_control": {
+        "constant_signal_coherence": 0.9999998437500244,
+        "alternating_signal_coherence": 0.0
+      },
+      "python_tlcfi": {
+        "cospectral_pairwise_embedding_signature_max_diff": 0.2298493106160432,
+        "isomorphic_relabel_pairwise_embedding_signature_max_diff": 0.3712145176886614,
+        "known_node_nonedge_exists": false,
+        "known_node_nonedge_runtime_result": "valid",
+        "symbolic_nonedge_path_valid": true
+      }
+    },
+    "rules": [
+      "Layer 5 measures supplied coordinates and is not a graph-shape invariant.",
+      "Layer 9 measures signal-frequency content and is independent of graph-Laplacian identity.",
+      "Use exact directed edge/path membership for legal-transition claims.",
+      "Use Hodge plus multi-site probes only for declared topological identity claims.",
+      "Do not average the track verdicts into an uncalibrated scalar."
+    ]
+  },
+  "curriculum": [
+    {
+      "id": "TRAIN.T0",
+      "name": "foundation"
+    },
+    {
+      "id": "TRAIN.T1",
+      "name": "skills"
+    },
+    {
+      "id": "TRAIN.T2",
+      "name": "reasoning"
+    },
+    {
+      "id": "TRAIN.T3",
+      "name": "knowledge"
+    },
+    {
+      "id": "TRAIN.T4",
+      "name": "identity"
+    }
+  ],
+  "tool_specializations": {
+    "schema": "clay.plot.v1",
+    "stage": "TRAIN.T3",
+    "layer_namespace_policy": "external adapters receive no SCBE.L*, HODGE.H*, GEOM.*, or Transformer-block number",
+    "prerequisites": [
+      "TRAIN.T1 talk PASS",
+      "TRAIN.T1 code/execution PASS",
+      "TRAIN.T2 canonical call -> executor -> tokenized result -> inverse/cycle PASS"
+    ],
+    "call_ingress": "canonical_serializer/frozen_tokenizer/<|tool_call|>",
+    "result_egress": "<|tool_result|>/same_serializer/same_frozen_tokenizer",
+    "hidden_tensor_ingress": false,
+    "t0_t1_desmos_raw_training_weight": 0,
+    "raw_docs_or_api_payload_retention": "forbidden_unless_separately_admitted_with_license_and_provenance",
+    "runtime_result_policy": "only Clay's canonical neutral result envelope may re-enter the tokenizer",
+    "forward_contract": "tokenized intent -> canonical neutral call -> external executor -> canonical tokenized result -> response",
+    "inverse_contract": "canonical serialized state or tokenizer-visible sampled geometry -> canonical equivalent construction plus explanation",
+    "adapters": [
+      {
+        "id": "ADAPTER.DESMOS.GRAPHING",
+        "neutral_surface": "CLAY.PLOT.2D",
+        "implementation_status": "blocked",
+        "verification_status": "untested",
+        "claim_class": "design_hypothesis"
+      },
+      {
+        "id": "ADAPTER.DESMOS.GEOMETRY",
+        "neutral_surface": "CLAY.GEOMETRY.2D",
+        "implementation_status": "blocked",
+        "verification_status": "untested",
+        "claim_class": "design_hypothesis"
+      },
+      {
+        "id": "ADAPTER.DESMOS.3D",
+        "neutral_surface": "CLAY.PLOT.3D",
+        "implementation_status": "blocked",
+        "verification_status": "untested",
+        "claim_class": "design_hypothesis"
+      }
+    ]
+  },
+  "overlays": [
+    {
+      "id": "GEOM.CUBE_PINSTRIPE",
+      "implementation_status": "experimental",
+      "verification_status": "untested",
+      "claim_class": "measured",
+      "path": "C:\\dev\\loom\\cube_pinstripe.py",
+      "result": "distortion 5.15545 to 1.22463",
+      "known_gaps": [
+        "no automated signed-Jacobian/foldover/seam test",
+        "no neural ablation"
+      ]
+    },
+    {
+      "id": "CLAY.STATE21",
+      "implementation_status": "experimental",
+      "verification_status": "passing_at_revision",
+      "path": "C:\\dev\\clay-repo\\home\\training\\clay_state21.py"
+    },
+    {
+      "id": "CLAY.HARMONIC_TRACE",
+      "implementation_status": "experimental",
+      "verification_status": "passing_at_revision",
+      "path": "C:\\dev\\clay-repo\\home\\training\\clay_harmonic_trace.py",
+      "known_gap": "unified training gain is unmeasured"
+    },
+    {
+      "id": "CLAY.CROSS_PRIMARY_BRAID",
+      "implementation_status": "blocked",
+      "verification_status": "skipped",
+      "path": "scripts/experiments/cross_primary_braid_consistency.py"
+    },
+    {
+      "id": "CLAY.SPLIT_INVARIANT_TRACKS",
+      "implementation_status": "experimental",
+      "verification_status": "passing_at_revision",
+      "claim_class": "measured",
+      "path": "C:\\dev\\loom\\clay_split_invariant_tracks.py",
+      "receipt": "C:\\dev\\clay_home\\evaluations\\split_invariant_tracks_20260730.json"
+    },
+    {
+      "id": "CLAY.INERT_BUFFER_CAPTURE",
+      "implementation_status": "experimental",
+      "verification_status": "passing_at_revision",
+      "claim_class": "measured",
+      "path": "C:\\dev\\loom\\clay_inert_buffer_gate.py",
+      "receipt": "C:\\dev\\clay_home\\evaluations\\inert_buffer_gate_20260730.json",
+      "contract": {
+        "trainable_parameters": 0,
+        "default_release_gate": 0.0,
+        "default_data_path": "bit_exact_no_op",
+        "lane_identity": "main_output + quarantined + removed == input",
+        "buffer_removes_inventory": false,
+        "pump_is_only_removal_path": true,
+        "mask_authority": "external_detached"
+      },
+      "measured": {
+        "shape": [
+          512,
+          32
+        ],
+        "inert_only_exposure": 0.25,
+        "pump_only_exposure": 0.25,
+        "matched_output_max_abs_diff": 0.0,
+        "inert_quarantined_abs": 9819.4599609375,
+        "inert_removed_abs": 0.0,
+        "pump_quarantined_abs": 0.0,
+        "pump_removed_abs": 9819.4599609375,
+        "combined_exposure": 0.0625
+      },
+      "known_gaps": [
+        "probe uses a known reactive mask rather than a learned detector",
+        "not wired into a live model, ingestion path, or command runtime",
+        "mechanical MSE recovery is not downstream capability gain"
+      ]
+    },
+    {
+      "id": "MULTIPLEX.IDENTITY_THREAD",
+      "implementation_status": "local_uncommitted",
+      "verification_status": "passing_at_revision",
+      "claim_class": "measured",
+      "path": "C:\\dev\\loom\\clay_multiplex.py",
+      "sha256": "9C36D2EBCE51A284F7B191E94532A792F6AA46A13137EB7D02D40A7C7E501FCF",
+      "contract": {
+        "operator": "L_supra=[[L1+wI,-wI],[-wI,L2+wI]]",
+        "binding": "equal ordered vertex sets coupled by explicit identity",
+        "w_zero_is_blind": true,
+        "commuting_reference_is_reject_control": true,
+        "noncommutation_guarantees_separation": false,
+        "direct_neural_ingress": false,
+        "result_reentry": "canonical serializer then frozen tokenizer then Wafer A",
+        "is_scbe_l15": false
+      },
+      "measured_controls": {
+        "empty_reference_separating_threads": "0/720",
+        "complete_reference_separating_threads": "0/720",
+        "noncommuting_blind_path_permutation": [0, 2, 5, 3, 1, 4],
+        "noncommuting_blind_separation": 1.776e-15,
+        "noncommuting_blind_commutators": [3.0, 2.0]
+      }
+    },
+    {
+      "id": "TLCFI.PY_INSTALLED",
+      "implementation_status": "active",
+      "verification_status": "failing",
+      "claim_class": "implementation_guarantee",
+      "path": "src/symphonic_cipher/topological_cfi.py",
+      "known_gaps": [
+        "runtime check accepts an absent transition edge when both endpoint nodes are known",
+        "3D spectral embedding signature changes under an isomorphic relabelling",
+        "symbolic compatibility path checks repetition rather than CFG adjacency"
+      ]
+    }
+  ],
+  "circuit_board_contract": {
+    "schema": "clay.stista-multiplane-circuit.v1",
+    "path": "C:\\dev\\loom\\experiments\\clay_open_core_20260730\\clay_stista_multiplane_circuit_v1.json",
+    "sha256": "3E6BE912DFBD7443C105C340222DFB5E2F99913ABD2D1EBBBC8F5632BDE3C272",
+    "training_authorized": false,
+    "shared_identity": "semantic_joint_id",
+    "single_tokenizer_sha256": "6C14A5CD26188678F920273CFF49483F535E340CAA98E3A7EB4D3285286C37C6",
+    "tokenizer_boundary": "every source view and external-plane result is canonically serialized and tokenized before learned-state ingress or re-entry",
+    "internal_identity_carrier": "B256 fixed coordinates derived from the same token IDs",
+    "counts": {
+      "planes": 7,
+      "components": 14,
+      "nets": 17,
+      "routes": 6
+    },
+    "validation": "8 passed; three exact tokenizer envelope round trips; local artifact hashes pass",
+    "validation_receipt": {
+      "path": "C:\\dev\\loom\\experiments\\clay_open_core_20260730\\CLAY_STISTA_MULTIPLANE_CIRCUIT_VALIDATION.json",
+      "sha256": "8740684AED761AB3C6B2B1D30563B5CDBF111C4A03B1998DF500CF08DB25383B"
+    }
+  },
+  "promotion_gate": {
+    "minimum_seeds": 3,
+    "effect_gate": "greater than 2x pooled standard deviation",
+    "required_controls": [
+      "no intervention",
+      "size-matched control"
+    ],
+    "required_checks": [
+      "evaluator validation",
+      "source-disjoint downstream gain",
+      "protected-skill retention",
+      "revision and checkpoint hashes"
+    ]
+  },
+  "validation_receipt": {
+    "date": "2026-07-30",
+    "hodge_selftests": {
+      "clay_hodge.py": "PASS",
+      "clay_hypergraph.py": "PASS"
+    },
+    "scbe_python": {
+      "result": "42 passed",
+      "tests": [
+        "tests/industry_standard/test_formal_axioms_reference.py",
+        "tests/test_l11_canonical_aggregation.py",
+        "tests/harmonic/test_pipeline14_governance.py"
+      ]
+    },
+    "scbe_typescript": {
+      "result": "32 passed",
+      "tests": [
+        "tests/harmonic/pipeline14.test.ts"
+      ]
+    },
+    "tlcfi_python_existing": {
+      "result": "33 passed",
+      "tests": [
+        "tests/test_topological_cfi_hamiltonian.py",
+        "src/symphonic_cipher/tests/test_patent_modules.py"
+      ],
+      "coverage_gap": "Does not test an absent transition edge between two known nodes."
+    },
+    "tlcfi_typescript_existing": {
+      "result": "40 passed",
+      "tests": [
+        "tests/harmonic/hamiltonianCFI.test.ts"
+      ],
+      "scope": "TypeScript Hamiltonian CFI is behaviorally distinct from the installed Python TLCFI."
+    },
+    "clay_components": {
+      "result": "24 passed",
+      "tests": [
+        "C:\\dev\\clay-repo\\home\\training\\test_clay_state21.py",
+        "C:\\dev\\clay-repo\\home\\training\\test_clay_harmonic_trace.py"
+      ],
+      "warning": "pytest cache write permission warning after tests passed"
+    },
+    "split_invariant_tracks": {
+      "result": "7 passed; Ruff clean",
+      "tests": [
+        "C:\\dev\\loom\\test_clay_split_invariant_tracks.py"
+      ],
+      "receipt": "C:\\dev\\clay_home\\evaluations\\split_invariant_tracks_20260730.json"
+    },
+    "inert_buffer_capture": {
+      "result": "13 passed; Ruff clean; py_compile pass",
+      "tests": [
+        "C:\\dev\\loom\\test_clay_inert_buffer_gate.py"
+      ],
+      "receipt": "C:\\dev\\clay_home\\evaluations\\inert_buffer_gate_20260730.json"
+    },
+    "stista_multiplane_circuit": {
+      "result": "8 passed; local artifact hashes pass; three exact tokenizer round trips",
+      "tests": [
+        "C:\\dev\\loom\\experiments\\clay_open_core_20260730\\test_validate_clay_stista_multiplane_circuit.py"
+      ],
+      "contract": "C:\\dev\\loom\\experiments\\clay_open_core_20260730\\clay_stista_multiplane_circuit_v1.json",
+      "training_authorized": false
+    },
+    "multiplex_identity_thread": {
+      "result": "PASS",
+      "tests": [
+        "C:\\dev\\loom\\clay_multiplex.py"
+      ],
+      "controls": [
+        "w=0 blind",
+        "empty reference 0/720",
+        "complete reference 0/720",
+        "noncommuting path permutation remains blind"
+      ]
+    }
+  },
+  "source_revisions": [
+    {
+      "path": "C:\\dev\\loom\\experiments\\clay_open_core_20260730\\DESMOS_TOOL_BOUNDARY.md",
+      "sha256": "C1F2D467C9933C76530AF210BBDB1709F8B28123D83171FBFF9C8C047EE1DFBD",
+      "claim_class": "implementation_guarantee",
+      "status": "planned_terms_gated_adapter"
+    },
+    {
+      "path": "C:\\dev\\loom\\LAYER_LADDER_ARTIFACT.md",
+      "sha256": "3A8319071BA51653C00190596A53159A7A3170EA67FBE8ABFADB9A909E779ED3"
+    },
+    {
+      "path": "C:\\dev\\loom\\clay_hodge.py",
+      "sha256": "2FCFCEC31C712D4370A708504C10705C94C9F3C3E28FD372250772EA1BB8F629",
+      "source_commit": "a99bdeb"
+    },
+    {
+      "path": "C:\\dev\\loom\\clay_hypergraph.py",
+      "sha256": "661E4B377F495F8B89CD5F4AD99CE952FA84A80666A07EDEFF75A657B67BAE38",
+      "source_commit": "47e85c6"
+    },
+    {
+      "path": "docs/specs/LAYER_INDEX.md",
+      "source_commit": "e44cb29fa"
+    },
+    {
+      "path": "DESKTOP-K2JGGGI:C:\\Users\\ddavi\\dev\\clay\\CLAY_TRAINING_LAYERS.md",
+      "sha256": "F9195B4D16EFC06727910C70E816302E746B2EB46D5110966BF01C984D7BAC90"
+    },
+    {
+      "path": "DESKTOP-K2JGGGI:C:\\Users\\ddavi\\dev\\clay\\home\\writings\\FORMULA_polymorphic_j_space_training_20260730.md",
+      "sha256": "4682760562852BAD59D2C29BCAB963BE2C833742B4E04EBCE8B3CCCFEB70AD00",
+      "claim_class": "design_hypothesis"
+    },
+    {
+      "path": "DESKTOP-K2JGGGI:C:\\Users\\ddavi\\dev\\SCBE-AETHERMOORE\\docs\\SCBE_FULL_SYSTEM_MAP.md",
+      "sha256": "2FA33427F7B52F2563D7A0614E2678F169C76D0BBE4AC5376FC812525F49C59B",
+      "claim_class": "design_hypothesis",
+      "status": "supporting_map"
+    },
+    {
+      "path": "DESKTOP-K2JGGGI:C:\\Users\\ddavi\\dev\\SCBE-AETHERMOORE\\notes\\sphere-grid\\hodge",
+      "sha256": "7F1F576CFA6CC3D247E98B9EDFC8D0E68054E05F1B89A009030CEA9A513F63B0",
+      "claim_class": "design_hypothesis",
+      "status": "provisional_unmeasured_overlay"
+    },
+    {
+      "path": "C:\\dev\\dataset-index\\clay_hf_layer_manifest_v1.json",
+      "sha256": "2014B4C241B64F2207D33BBEF91D24BCD84305B7A58D91F67313D9D6F2B18BF0",
+      "status": "BLOCKED_PENDING_TRANSFORMS",
+      "training_authorized": false
+    },
+    {
+      "path": "C:\\dev\\loom\\clay_split_invariant_tracks.py",
+      "sha256": "2A219376E50304EEAE2ACC5C2B36C94AB815FFBB29C4D565820E91C101415749",
+      "claim_class": "measured"
+    },
+    {
+      "path": "C:\\dev\\clay_home\\evaluations\\split_invariant_tracks_20260730.json",
+      "sha256": "CF9254883C3511218137465AAF851836EBC37D571DF17EF771F43C8E0C7E9434",
+      "claim_class": "measured"
+    },
+    {
+      "path": "C:\\dev\\loom\\clay_inert_buffer_gate.py",
+      "sha256": "1B14C439BB6D41B98F1F2E3B9F4442B09BD3F28072F876A83998C2361154CB5A",
+      "claim_class": "measured"
+    },
+    {
+      "path": "C:\\dev\\clay_home\\evaluations\\inert_buffer_gate_20260730.json",
+      "sha256": "72A131DF25030E29A2C46E2AF8E3FF23F23A445C9D5999120D0685362030B2D9",
+      "claim_class": "measured"
+    },
+    {
+      "path": "C:\\dev\\loom\\clay_multiplex.py",
+      "sha256": "9C36D2EBCE51A284F7B191E94532A792F6AA46A13137EB7D02D40A7C7E501FCF",
+      "claim_class": "measured",
+      "status": "local_modified_evidence"
+    },
+    {
+      "path": "C:\\dev\\loom\\experiments\\clay_open_core_20260730\\clay_stista_multiplane_circuit_v1.json",
+      "sha256": "3E6BE912DFBD7443C105C340222DFB5E2F99913ABD2D1EBBBC8F5632BDE3C272",
+      "claim_class": "implementation_guarantee",
+      "training_authorized": false
+    }
+  ],
+  "limitations": [
+    "No active Hodge-to-L13 adapter is documented in the canonical SCBE profiles.",
+    "The optional TLCFI implementations are behaviorally different and must be named per receipt.",
+    "The installed Python TLCFI cannot currently be the sole legal-transition gate.",
+    "Runtime profiles are not numerically equivalent.",
+    "Geometric measurements do not establish neural gain.",
+    "The inert-buffer probe uses an externally supplied known reactive mask and establishes only mechanical routing/accounting.",
+    "Multiplex identity coupling is implemented only for equal ordered vertex sets; non-bijective incidence coupling is unimplemented.",
+    "Noncommutation does not guarantee that a multiplex thread separates two graphs.",
+    "The pinned O64 graph has 64 nodes while the live node catalog has 65; rebuilding O64 or foundation bundles from the live catalog is blocked pending explicit migration.",
+    "The multiplane circuit proves wiring and tokenizer-visible re-entry, not neural gain or training authorization.",
+    "The corpus manifest currently forbids training promotion.",
+    "Remote architecture notes are evidence inputs, not canonical authorities."
+  ]
+}
