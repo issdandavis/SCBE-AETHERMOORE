@@ -1,25 +1,39 @@
-"""SCBE code evaluation harness.
+"""Syntax + security smoke harness for generated code.
 
-Purpose
--------
-Benchmark whether a governance pass through SCBE improves generated code
-outcomes compared with a baseline output.
+WHAT THIS MEASURES, PLAINLY
+---------------------------
+Whether a retry prompted by a **local syntax parse and a regex security scan**
+improves generated code compared with the baseline output.
 
-This harness is intentionally lightweight:
-- it does not require a new executor endpoint
-- it targets the existing /v1/authorize API contract in api.main
-- it supports a pluggable model adapter via a simple callable
-- it performs local syntax, runtime, and assertion checks on generated code
+WHAT THIS DOES NOT MEASURE
+--------------------------
+**SCBE.** Nothing in this file touches the 14-layer pipeline, hyperbolic
+distance, PBHG, TLCFI, the Langues metric, or ``/v1/authorize``. The gate is
+``ast.parse`` plus ``detect_security_flags``, and the score it emits takes
+exactly two values. Any figure produced here is a syntax checker's figure.
+
+This file was renamed from ``scbe_code_eval.py`` on 2026-08-03 for that reason.
+It shipped in PR #989 carrying ``scbe_`` in its module name, its function name,
+and three record fields, which made its output read as SCBE evidence. It is a
+useful smoke harness; it was mislabelled. Two independent reviews reached that
+conclusion the same day.
+
+To make this an actual SCBE benchmark, replace ``syntax_security_check`` with a
+call to the real authorize path -- either the validation helpers behind
+``/v1/authorize`` or live requests against the running API -- and rename the
+module back at that point, not before.
 
 Usage examples
 --------------
-1) Dry-run with built-in stub model:
-    python scripts/benchmark/scbe_code_eval.py --dry-run
+1) Dry-run with built-in stub model::
 
-2) Emit JSON results using fixture prompts:
-    python scripts/benchmark/scbe_code_eval.py \
+    python scripts/benchmark/syntax_security_smoke.py --dry-run
+
+2) Emit JSON results using fixture prompts::
+
+    python scripts/benchmark/syntax_security_smoke.py \
         --prompts tests/fixtures/code_eval_prompts.json \
-        --output artifacts/scbe_code_eval_results.json
+        --output artifacts/syntax_security_smoke_results.json
 
 The default stub model intentionally returns imperfect but valid code for some
 cases so the harness path can be exercised before wiring a real provider.
@@ -61,9 +75,9 @@ class EvalRecord:
     prompt: str
     baseline_output: str
     baseline_checks: Dict[str, Any]
-    scbe_decision: str
-    scbe_score: float
-    scbe_explanation: Dict[str, Any]
+    smoke_decision: str
+    smoke_score: float
+    smoke_explanation: Dict[str, Any]
     retry_used: bool
     final_output: str
     final_checks: Dict[str, Any]
@@ -205,10 +219,10 @@ class StubModel:
                 "    return n * factorial(n - 1)\n"
             )
         if "run_expr" in prompt_lower or ("eval" in prompt_lower and "revise" not in prompt_lower):
-            # Intentionally insecure — triggers SCBE security flag, forces retry
+            # Intentionally insecure - triggers the regex security flag, forces retry
             return "def run_expr(expr: str) -> object:\n    return eval(expr)\n"
         if "run_expr" in prompt_lower and "revise" in prompt_lower:
-            # After SCBE retry: sandboxed version
+            # After the smoke-gate retry: sandboxed version
             return (
                 "def run_expr(expr: str) -> object:\n"
                 "    _ALLOWED = {'__builtins__': {}}\n"
@@ -217,8 +231,14 @@ class StubModel:
         return "def placeholder():\n    return None\n"
 
 
-def authorize_generated_code(code: str, prompt: str) -> Dict[str, Any]:
-    """Offline approximation of the existing /v1/authorize surface.
+def syntax_security_check(code: str, prompt: str) -> Dict[str, Any]:
+    """Local syntax parse + regex security scan. NOT an SCBE authorize call.
+
+    Emits the same field shape as ``/v1/authorize`` (decision / score /
+    explanation) so a caller can be swapped over later, but the decision comes
+    from ``ast.parse`` and ``detect_security_flags`` only, and ``score`` takes
+    exactly two values. Do not report anything from this function as an SCBE
+    result.
 
     This keeps the benchmark usable without a running API server while preserving
     the same key fields that matter for evaluation.
@@ -252,16 +272,16 @@ def evaluate_case(case: PromptCase, model: Any) -> EvalRecord:
     baseline_output = model.generate(case.prompt)
     baseline_checks = asdict(run_code_checks(baseline_output, case.assertions))
 
-    scbe_result = authorize_generated_code(baseline_output, case.prompt)
-    retry_used = scbe_result["decision"] != "ALLOW"
+    smoke_result = syntax_security_check(baseline_output, case.prompt)
+    retry_used = smoke_result["decision"] != "ALLOW"
 
     final_output = baseline_output
     if retry_used:
         revised_prompt = (
             case.prompt
             + "\nRevise for safety, correctness, and edge-case handling."
-            + f"\nSCBE decision: {scbe_result['decision']}"
-            + f"\nSCBE explanation: {json.dumps(scbe_result['explanation'], sort_keys=True)}"
+            + f"\nsmoke decision: {smoke_result['decision']}"
+            + f"\nsmoke explanation: {json.dumps(smoke_result['explanation'], sort_keys=True)}"
         )
         final_output = model.generate(revised_prompt)
 
@@ -273,9 +293,9 @@ def evaluate_case(case: PromptCase, model: Any) -> EvalRecord:
         prompt=case.prompt,
         baseline_output=baseline_output,
         baseline_checks=baseline_checks,
-        scbe_decision=scbe_result["decision"],
-        scbe_score=float(scbe_result["score"]),
-        scbe_explanation=scbe_result["explanation"],
+        smoke_decision=smoke_result["decision"],
+        smoke_score=float(smoke_result["score"]),
+        smoke_explanation=smoke_result["explanation"],
         retry_used=retry_used,
         final_output=final_output,
         final_checks=final_checks,
@@ -287,9 +307,9 @@ def summarize(records: List[EvalRecord]) -> Dict[str, Any]:
     baseline_pass = sum(1 for r in records if r.baseline_checks["tests_passed"])
     final_pass = sum(1 for r in records if r.final_checks["tests_passed"])
     retries = sum(1 for r in records if r.retry_used)
-    quarantines = sum(1 for r in records if r.scbe_decision == "QUARANTINE")
-    denies = sum(1 for r in records if r.scbe_decision == "DENY")
-    allows = sum(1 for r in records if r.scbe_decision == "ALLOW")
+    quarantines = sum(1 for r in records if r.smoke_decision == "QUARANTINE")
+    denies = sum(1 for r in records if r.smoke_decision == "DENY")
+    allows = sum(1 for r in records if r.smoke_decision == "ALLOW")
 
     return {
         "total": total,
@@ -305,7 +325,7 @@ def summarize(records: List[EvalRecord]) -> Dict[str, Any]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run SCBE code evaluation harness")
+    parser = argparse.ArgumentParser(description="Run syntax + security smoke harness (NOT an SCBE evaluation)")
     parser.add_argument(
         "--prompts",
         default="tests/fixtures/code_eval_prompts.json",
@@ -313,7 +333,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--output",
-        default="artifacts/scbe_code_eval_results.json",
+        default="artifacts/syntax_security_smoke_results.json",
         help="Path to write JSON results",
     )
     parser.add_argument(

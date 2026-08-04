@@ -15,7 +15,7 @@ The harness then concatenates B's body into A's signature and runs the
 fixture's `assertions` against the composed module.
 
 Reuses `tests/fixtures/code_eval_prompts.json` and the safe-exec sandbox in
-`scripts/benchmark/scbe_code_eval.py` so the source-truth tasks stay aligned
+`scripts/benchmark/syntax_security_smoke.py` so the source-truth tasks stay aligned
 with the bijective gate.
 
 Usage:
@@ -50,10 +50,12 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _load_eval_module():
-    name = "scbe_code_eval"
+    name = "syntax_security_smoke"
     if name in sys.modules:
         return sys.modules[name]
-    spec = importlib.util.spec_from_file_location(name, REPO_ROOT / "scripts" / "benchmark" / "scbe_code_eval.py")
+    spec = importlib.util.spec_from_file_location(
+        name, REPO_ROOT / "scripts" / "benchmark" / "syntax_security_smoke.py"
+    )
     assert spec is not None and spec.loader is not None
     mod = importlib.util.module_from_spec(spec)
     sys.modules[name] = mod

@@ -1,4 +1,4 @@
-from scripts.benchmark.scbe_code_eval import (
+from scripts.benchmark.syntax_security_smoke import (
     StubModel,
     evaluate_case,
     load_prompt_cases,
@@ -6,7 +6,7 @@ from scripts.benchmark.scbe_code_eval import (
 )
 
 
-def test_scbe_code_eval_smoke():
+def test_syntax_security_smoke():
     cases = load_prompt_cases("tests/fixtures/code_eval_prompts.json")
     model = StubModel()
 

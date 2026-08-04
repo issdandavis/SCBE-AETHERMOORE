@@ -177,7 +177,7 @@ Three patterns are recognized:
 
 - **Pattern A** (binary-gate, `tongue_challenge_harness`): `raw` contains `{overall_ok, checks, summary}`.
 - **Pattern B** (aggregate-breakdown, `polly_structural_benchmark`): `raw` contains `{summary, by_stage, by_map, by_tongue}`.
-- **Pattern C** (per-record, `scbe_code_eval`): `raw` contains an array of `EvalRecord` dataclasses.
+- **Pattern C** (per-record, `syntax_security_smoke`): `raw` contains an array of `EvalRecord` dataclasses.
 
 Readers MUST NOT rely on `raw` shape. All decisions flow through `metrics`, `gates`, and `failures`.
 
