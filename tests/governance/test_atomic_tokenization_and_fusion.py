@@ -6,6 +6,7 @@ import pytest
 from python.scbe.atomic_tokenization import (
     TONGUES,
     atomic_drift_scale,
+    classify_token_semantic_with_evidence,
     element_to_tau,
     map_token_to_atomic_state,
     map_token_to_element,
@@ -17,6 +18,23 @@ def test_atomic_mapping_is_deterministic():
     e1 = map_token_to_element("the")
     e2 = map_token_to_element("the")
     assert e1 == e2
+
+
+def test_semantic_classifier_exposes_resolution_evidence():
+    known = classify_token_semantic_with_evidence("build")
+    synthetic = classify_token_semantic_with_evidence("feature_0")
+
+    assert known.semantic_class == "ACTION"
+    assert known.resolved is True
+    assert synthetic.resolved is False
+    assert synthetic.source == "synthetic-or-nonlexical"
+
+
+def test_unresolved_atomic_state_is_not_silently_observed_semantics():
+    state = map_token_to_atomic_state("cat_1")
+
+    assert state.semantic_resolved is False
+    assert state.semantic_source == "synthetic-or-nonlexical"
 
 
 def test_language_aware_mapping_aligns_articles():

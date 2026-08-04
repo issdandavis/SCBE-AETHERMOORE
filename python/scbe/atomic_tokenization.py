@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from functools import lru_cache
 from hashlib import sha256
 from typing import Dict, Literal, Optional, Sequence, Tuple
 
@@ -71,6 +72,22 @@ SemanticClass = Literal[
 
 
 @dataclass(frozen=True, slots=True)
+class SemanticClassification:
+    """A semantic class together with evidence that the class was resolved.
+
+    ``semantic_class`` retains the historical fallback value so existing atomic
+    consumers remain compatible.  ``resolved`` is the important boundary: a
+    caller must not treat the fallback element/trits as observed semantics when
+    no lexical, language, context, or morphological evidence exists.
+    """
+
+    semantic_class: SemanticClass
+    resolved: bool
+    source: str
+    lexical_domains: Tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
 class AtomicTokenState:
     token: str
     language: Language
@@ -85,6 +102,9 @@ class AtomicTokenState:
     resilience: float
     adaptivity: float
     trust_baseline: float
+    semantic_resolved: bool = True
+    semantic_source: str = "explicit"
+    lexical_domains: Tuple[str, ...] = ()
 
     @property
     def witness_state(self) -> int:
@@ -151,6 +171,44 @@ TOKEN_CLASS_OVERRIDES: Dict[str, SemanticClass] = {
     "later": "TEMPORAL",
     "before": "TEMPORAL",
     "after": "TEMPORAL",
+    "always": "TEMPORAL",
+    "during": "TEMPORAL",
+    # Temporal subordinators. Without these, "when"/"until"/"since" fell through
+    # to the WordNet path and resolved to ENTITY, and "meanwhile" to MODIFIER --
+    # so TEMPORAL/Si existed as a class but almost nothing routed to it.
+    "when": "TEMPORAL",
+    "whenever": "TEMPORAL",
+    "until": "TEMPORAL",
+    "till": "TEMPORAL",
+    "since": "TEMPORAL",
+    "meanwhile": "TEMPORAL",
+    "eventually": "TEMPORAL",
+    "previously": "TEMPORAL",
+    "already": "TEMPORAL",
+    "ago": "TEMPORAL",
+    "next": "TEMPORAL",
+    "recently": "TEMPORAL",
+    # ENTITY had NO overrides at all -- every other class had them, so any noun
+    # that WordNet also knows as a verb ("file", "key", "run") resolved to
+    # ACTION. These are the nouns this codebase actually tokenizes.
+    "file": "ENTITY",
+    "server": "ENTITY",
+    "user": "ENTITY",
+    "agent": "ENTITY",
+    "system": "ENTITY",
+    "data": "ENTITY",
+    "code": "ENTITY",
+    "model": "ENTITY",
+    "token": "ENTITY",
+    "key": "ENTITY",
+    "record": "ENTITY",
+    "node": "ENTITY",
+    "path": "ENTITY",
+    "request": "ENTITY",
+    "response": "ENTITY",
+    "schema": "ENTITY",
+    "policy": "ENTITY",
+    "ledger": "ENTITY",
     "run": "ACTION",
     "go": "ACTION",
     "eat": "ACTION",
@@ -232,41 +290,119 @@ def _normalized_context(context_class: ContextClass) -> str:
     return (context_class or "").strip().lower()
 
 
-def classify_token_semantic(
+_SYNTHETIC_IDENTIFIER = re.compile(r"(?:^|[_-])\d+$|[_-].*\d|\d.*[_-]")
+_LEXICAL_TOKEN = re.compile(r"^[^\W\d_]+(?:['’-][^\W\d_]+)*$", re.UNICODE)
+
+
+@lru_cache(maxsize=8192)
+def _wordnet_semantic_evidence(token: str) -> Optional[SemanticClassification]:
+    """Resolve ordinary English words through the installed offline WordNet.
+
+    WordNet is an optional local organ, not a network dependency.  If either
+    NLTK or its corpus is absent, the caller receives no evidence and must
+    expose the token as unresolved instead of silently inventing a class.
+    """
+    try:
+        from nltk.corpus import wordnet as wn
+
+        synsets = wn.synsets(token)
+    except (ImportError, LookupError, OSError):
+        return None
+
+    if not synsets:
+        return None
+
+    pos_counts: Dict[str, int] = {}
+    for synset in synsets:
+        pos = synset.pos()
+        pos_counts[pos] = pos_counts.get(pos, 0) + 1
+
+    class_counts: Dict[SemanticClass, int] = {
+        "ACTION": pos_counts.get("v", 0),
+        "MODIFIER": pos_counts.get("a", 0) + pos_counts.get("s", 0) + pos_counts.get("r", 0),
+        "ENTITY": pos_counts.get("n", 0),
+    }
+    # Deterministic tie order: verbs are operational, modifiers condition them,
+    # nouns supply the entity fallback only when they have at least as much
+    # lexical support as the other readings.
+    order: Tuple[SemanticClass, ...] = ("ACTION", "MODIFIER", "ENTITY")
+    semantic_class = max(order, key=lambda cls: (class_counts[cls], -order.index(cls)))
+    if class_counts[semantic_class] <= 0:
+        return None
+
+    domains = tuple(sorted({synset.lexname() for synset in synsets}))
+    return SemanticClassification(
+        semantic_class=semantic_class,
+        resolved=True,
+        source="wordnet",
+        lexical_domains=domains,
+    )
+
+
+def classify_token_semantic_with_evidence(
     token: str,
     *,
     language: Language = None,
     context_class: ContextClass = None,
-) -> SemanticClass:
+) -> SemanticClassification:
     """
-    Deterministic semantic classifier implementing the runtime approximation of
-    phi: V x L x C -> P.
+    Resolve ``phi: V x L x C -> P`` without disguising absence of evidence.
+
+    The old implementation returned ``ENTITY`` for every unmatched token.  That
+    made anonymous identifiers look like real semantic observations
+    (``ENTITY -> Fe -> ALLOW``).  This function keeps that historical class only
+    as a compatibility fallback and marks it unresolved.
     """
     t = _normalized_token(token)
     lang = _normalized_language(language)
     context = _normalized_context(context_class)
 
     if not t:
-        return "INERT_WITNESS"
+        return SemanticClassification("INERT_WITNESS", False, "empty")
 
     context_overrides = CONTEXT_TOKEN_OVERRIDES.get(context)
     if context_overrides and t in context_overrides:
-        return context_overrides[t]
+        return SemanticClassification(context_overrides[t], True, f"context:{context}")
 
     language_overrides = LANGUAGE_TOKEN_OVERRIDES.get(lang)
     if language_overrides and t in language_overrides:
-        return language_overrides[t]
+        return SemanticClassification(language_overrides[t], True, f"language:{lang}")
 
     if t in TOKEN_CLASS_OVERRIDES:
-        return TOKEN_CLASS_OVERRIDES[t]
+        return SemanticClassification(TOKEN_CLASS_OVERRIDES[t], True, "token-override")
+
+    # Identifiers such as feature_0 and cat_1 are byte strings, not lexical
+    # evidence.  Check this before morphology so a synthetic suffix cannot
+    # accidentally light a semantic face.
+    if _SYNTHETIC_IDENTIFIER.search(t) or not _LEXICAL_TOKEN.fullmatch(t):
+        return SemanticClassification("ENTITY", False, "synthetic-or-nonlexical")
 
     if t.endswith("ing") or t.endswith("ed"):
-        return "ACTION"
+        return SemanticClassification("ACTION", True, "morphology:verb")
 
     if t.endswith("ly"):
-        return "MODIFIER"
+        return SemanticClassification("MODIFIER", True, "morphology:adverb")
 
-    return "ENTITY"
+    if lang in ("", "en"):
+        wordnet = _wordnet_semantic_evidence(t)
+        if wordnet is not None:
+            return wordnet
+
+    return SemanticClassification("ENTITY", False, "unresolved")
+
+
+def classify_token_semantic(
+    token: str,
+    *,
+    language: Language = None,
+    context_class: ContextClass = None,
+) -> SemanticClass:
+    """Backward-compatible class-only view of the evidence-bearing classifier."""
+    return classify_token_semantic_with_evidence(
+        token,
+        language=language,
+        context_class=context_class,
+    ).semantic_class
 
 
 def map_token_to_element(
@@ -519,7 +655,12 @@ def map_token_to_atomic_state(
     element_table: Optional[Dict[SemanticClass, Element]] = None,
     thresholds: Optional[Dict[Tongue, Tuple[float, float]]] = None,
 ) -> AtomicTokenState:
-    semantic_class = classify_token_semantic(token, language=language, context_class=context_class)
+    classification = classify_token_semantic_with_evidence(
+        token,
+        language=language,
+        context_class=context_class,
+    )
+    semantic_class = classification.semantic_class
     element = (element_table or DEFAULT_ELEMENTS)[semantic_class]
     tau = element_to_trit_vector(element, thresholds=thresholds)
     negative_state = is_negative_atomic_state(semantic_class, element)
@@ -547,6 +688,9 @@ def map_token_to_atomic_state(
         resilience=resilience,
         adaptivity=adaptivity,
         trust_baseline=trust_baseline,
+        semantic_resolved=classification.resolved,
+        semantic_source=classification.source,
+        lexical_domains=classification.lexical_domains,
     )
 
 
