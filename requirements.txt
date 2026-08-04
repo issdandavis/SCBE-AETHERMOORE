@@ -31,7 +31,7 @@ python-multipart>=0.0.32
 psycopg[binary]>=3.3.4
 
 # Security - pinned to secure versions
-cryptography>=48.0.1
+cryptography>=50.0.0
 urllib3>=2.7.0
 uv>=0.11.17
 pyasn1>=0.6.4
@@ -53,4 +53,4 @@ openpyxl==3.1.5
 z3-solver>=4.12
 
 # MCP SDK — for the SCBE CLI MCP server (tools/mcp/scbe_cli_server.py)
-mcp[cli]>=1.28
+mcp[cli]>=2.0.0
