@@ -17,6 +17,23 @@ dependencies = [
     # patched 2.14.2). Transitive today and already pinned in requirements-lock.txt, but constrained here
     # so the manifest itself can never resolve the vulnerable range.
     "pydantic-settings>=2.14.2",
+    # Security floors, same reasoning, added 2026-08-05. All of these are
+    # TRANSITIVE -- none is imported directly by this package -- but Dependabot
+    # resolves pyproject.toml and reported 24 open pip alerts against it, every
+    # one of them here. requirements.txt already floors most of them; a
+    # requirements file does not constrain what `pip install scbe-aethermoore`
+    # resolves, so the floor has to live in the manifest too.
+    #
+    # Floors, not pins: >= lets a consumer take anything newer and keeps this
+    # from fighting their solver. Each is the FIRST PATCHED version from the
+    # advisory, so nothing below is reachable.
+    "pillow>=12.3.0",           # 13 alerts: OOB read/write + decompression-bomb bypass
+    "aiohttp>=3.14.3",          # 6 alerts, high+medium
+    "cryptography>=50.0.0",     # vulnerable range is >=44.0.0,<50.0.0 -- see note below
+    "pyasn1>=0.6.4",            # 3 alerts, high
+    "soupsieve>=2.8.4",         # 2 alerts: selector-parser ReDoS + memory exhaustion
+    "mcp>=1.28.1",              # 1 alert, high
+    "bedrock-agentcore>=1.18.1",  # argument-delimiter injection in install_packages()
 ]
 authors = [
     {name = "Issac Daniel Davis", email = "issdandavis@users.noreply.github.com"},

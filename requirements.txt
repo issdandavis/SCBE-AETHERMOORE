@@ -39,7 +39,7 @@ psycopg[binary]>=3.3.4
 pillow>=12.3.0            # Dependabot #344-#356: OOB read/write, decompression-bomb bypasses
 soupsieve>=2.8.4          # Dependabot #315/#316: selector-parser ReDoS + memory exhaustion
 bedrock-agentcore>=1.18.1 # Dependabot #389/#393: argument-delimiter injection in install_packages()
-cryptography>=48.0.1
+cryptography>=50.0.0      # 48.0.1 was INSIDE the vulnerable range >=44.0.0,<50.0.0
 urllib3>=2.7.0
 uv>=0.11.17
 pyasn1>=0.6.4
