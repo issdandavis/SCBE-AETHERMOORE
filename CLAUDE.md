@@ -17,7 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | **Property Testing** | fast-check (TS), Hypothesis (Python) |
 | **API** | FastAPI + Uvicorn (Python), Express 5 (TypeScript) |
 | **TypeScript** | ^6.0.2, target ES2022, CommonJS (`ignoreDeprecations: "6.0"`) |
-| **Package Version** | repo 4.3.0 · **PyPI is stuck at 4.2.1 and its wheel is broken** (4 of 5 console scripts dead — see docs/PUBLISHING.md) |
+| **Package Version** | repo 4.3.1 · npm 4.3.1 · PyPI 4.3.1 — all three in sync. The 4.2.1 broken-wheel state is RESOLVED (verified 2026-08-05, see below) |
 | **Package Entry** | `./dist/src/index.js` |
 
 ## Common Commands
@@ -308,6 +308,19 @@ Installable packages from `src/`: `code_prism`, `symphonic_cipher`, `api`, `cryp
 CLI entry points: `scbe`, `scbe-scan`, `scbe-code-prism`, `scbe-convert-to-sft`. (`scbe-system` was removed 2026-07-27 — it targeted `scripts/`, which is excluded from packaging, so the installed command always raised ModuleNotFoundError.)
 
 **Verify before publishing:** `python -m pytest tests/test_packaging_entrypoints.py` checks every declared entry point imports AND is not excluded from the wheel. A source-tree import test cannot catch a packaging bug — that gap is what shipped the broken 4.2.1.
+
+**Status verified 2026-08-05 against the live PyPI wheel** (`scbe_aethermoore-4.3.1-py3-none-any.whl`, downloaded and inspected, not assumed). All four declared console scripts resolve to modules actually packaged:
+
+| entry point | target | in wheel |
+|---|---|---|
+| `scbe` | `scbe:main` | yes |
+| `scbe-scan` | `scbe_aethermoore.__main__:main` | yes |
+| `scbe-code-prism` | `code_prism.cli:main` | yes |
+| `scbe-convert-to-sft` | `symphonic_cipher.scbe_aethermoore.convert_to_sft:main` | yes |
+
+Packaged top-level: `code_prism crypto flow_router harmonic minimal neurogolf python scbe_aethermoore spiralverse storage symphonic_cipher`.
+
+The broken-wheel era was 4.2.1; 4.3.0 and 4.3.1 both shipped since and the defect is gone. Re-check with the command above before the next release rather than trusting this table — it is a point-in-time reading.
 
 ## Test Architecture
 
