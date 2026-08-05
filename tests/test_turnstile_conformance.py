@@ -17,7 +17,7 @@ import pytest
 
 yaml = pytest.importorskip("yaml")
 
-from hydra.turnstile import resolve_turnstile  # noqa: E402
+from hydra.turnstile import allowed_actions_for, resolve_turnstile  # noqa: E402
 
 MATRIX_PATH = (
     Path(__file__).resolve().parents[1]
@@ -28,17 +28,17 @@ MATRIX_PATH = (
 )
 
 DECISIONS = ["ALLOW", "DENY", "ESCALATE", "QUARANTINE"]
-IMPLEMENTED_DOMAINS = ["browser", "vehicle", "fleet", "antivirus"]
 
 
 def _matrix():
     return yaml.safe_load(MATRIX_PATH.read_text(encoding="utf-8"))["domains"]
 
 
-@pytest.mark.parametrize("domain", IMPLEMENTED_DOMAINS)
+@pytest.mark.parametrize("domain", sorted(_matrix()))
 @pytest.mark.parametrize("decision", DECISIONS)
 @pytest.mark.parametrize("suspicion,geometry_norm", [(0.0, 0.0), (0.5, 0.5), (0.95, 0.995)])
-def test_action_is_permitted_by_the_matrix(domain, decision, suspicion, geometry_norm):
+@pytest.mark.parametrize("quorum_ok", [False, True])
+def test_action_is_permitted_by_the_matrix(domain, decision, suspicion, geometry_norm, quorum_ok):
     """Whatever the turnstile returns must be in that domain's allowed list."""
     allowed = set(_matrix()[domain]["allowed_actions"])
     out = resolve_turnstile(
@@ -47,7 +47,7 @@ def test_action_is_permitted_by_the_matrix(domain, decision, suspicion, geometry
         suspicion=suspicion,
         geometry_norm=geometry_norm,
         previous_antibody_load=suspicion,
-        quorum_ok=True,
+        quorum_ok=quorum_ok,
     )
     assert out.action in allowed, (
         f"{domain}/{decision} -> {out.action!r}, which the matrix does not permit "
@@ -87,19 +87,54 @@ def test_domain_is_actually_read():
     assert a.action != b.action, "domain is being ignored again"
 
 
-def test_every_matrix_domain_is_either_implemented_or_declared_default():
-    """Domains in the matrix that the code does not implement fall to default.
+@pytest.mark.parametrize("domain", sorted(_matrix()))
+def test_runtime_policy_matches_declared_matrix(domain):
+    """The runtime guard and the declarative matrix must be the same set."""
 
-    arxiv and patent are declared but not branched on; they resolve through the
-    default path. That is only acceptable while the default action is inside
-    their allowed list -- this test fails the day that stops being true.
-    """
-    m = _matrix()
-    for name in m:
-        if name in IMPLEMENTED_DOMAINS:
-            continue
-        out = resolve_turnstile(decision="DENY", domain=name, suspicion=0.0, geometry_norm=0.0)
-        assert out.action in set(m[name]["allowed_actions"]), (
-            f"{name} is declared in the matrix, is not implemented, and its default "
-            f"action {out.action!r} is not in {sorted(m[name]['allowed_actions'])}"
-        )
+    assert set(allowed_actions_for(domain)) == set(_matrix()[domain]["allowed_actions"])
+
+
+@pytest.mark.parametrize("domain", sorted(_matrix()))
+def test_every_declared_action_is_reachable(domain):
+    """Allowed actions are an executable policy, not decorative vocabulary."""
+
+    observed = set()
+    for decision in DECISIONS:
+        for suspicion, geometry_norm in ((0.0, 0.0), (0.95, 1.0)):
+            for quorum_ok in (False, True):
+                observed.add(
+                    resolve_turnstile(
+                        decision=decision,
+                        domain=domain,
+                        suspicion=suspicion,
+                        previous_antibody_load=suspicion,
+                        geometry_norm=geometry_norm,
+                        quorum_ok=quorum_ok,
+                    ).action
+                )
+    assert observed == set(_matrix()[domain]["allowed_actions"])
+
+
+def test_unknown_domain_fails_closed_even_under_honeypot_pressure():
+    out = resolve_turnstile(
+        decision="DENY",
+        domain="not-a-domain",
+        suspicion=1.0,
+        previous_antibody_load=1.0,
+        geometry_norm=1.0,
+    )
+    assert out.action == "STOP"
+    assert out.continue_execution is False
+    assert out.deploy_honeypot is False
+
+
+@pytest.mark.parametrize("domain", sorted(_matrix()))
+@pytest.mark.parametrize("decision", DECISIONS)
+def test_outcome_flags_agree_with_action(domain, decision):
+    out = resolve_turnstile(decision=decision, domain=domain, suspicion=0.0, geometry_norm=0.0)
+    assert out.deploy_honeypot is (out.action == "HONEYPOT")
+    assert out.require_human is (out.action == "HOLD")
+    if out.action in {"ALLOW", "PIVOT", "DEGRADE", "HONEYPOT"}:
+        assert out.continue_execution is True
+    if out.action in {"HOLD", "STOP"}:
+        assert out.continue_execution is False

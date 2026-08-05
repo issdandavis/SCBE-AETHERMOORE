@@ -45,7 +45,7 @@ import math
 from typing import Literal
 
 Decision = Literal["ALLOW", "DENY", "ESCALATE", "QUARANTINE"]
-Domain = Literal["browser", "vehicle", "fleet", "antivirus", "default"]
+Domain = Literal["browser", "vehicle", "fleet", "antivirus", "arxiv", "patent", "default"]
 Action = Literal["ALLOW", "HOLD", "PIVOT", "DEGRADE", "ISOLATE", "HONEYPOT", "STOP"]
 
 
@@ -61,9 +61,81 @@ class TurnstileOutcome:
     membrane_stress: float
 
 
-# Domains whose turnstile-matrix.yaml entry lists HONEYPOT as an allowed action.
-# vehicle does not (ALLOW/PIVOT/DEGRADE, "No stall"), nor do arxiv/patent.
-_HONEYPOT_DOMAINS = frozenset({"browser", "fleet", "antivirus", "default"})
+# Runtime copy of the declarative turnstile contract.  The conformance suite
+# compares every entry to turnstile-matrix.yaml, so changing either side alone
+# fails.  Every outcome is constructed through _outcome(), which refuses an
+# action outside its domain's declared set.
+_DOMAIN_ALLOWED_ACTIONS: dict[Domain, frozenset[Action]] = {
+    "browser": frozenset({"ALLOW", "HOLD", "HONEYPOT"}),
+    "vehicle": frozenset({"ALLOW", "PIVOT", "DEGRADE"}),
+    "fleet": frozenset({"ALLOW", "ISOLATE", "DEGRADE", "HONEYPOT"}),
+    "antivirus": frozenset({"ALLOW", "ISOLATE", "HONEYPOT"}),
+    "arxiv": frozenset({"ALLOW", "HOLD", "STOP"}),
+    "patent": frozenset({"ALLOW", "HOLD", "STOP"}),
+    "default": frozenset({"ALLOW", "STOP"}),
+}
+
+# The input decision is not itself a turnstile action.  This table is the
+# complete low-stress dispatch for every non-ALLOW decision.  Keeping it data-
+# shaped makes both coverage and reachability testable.
+_DOMAIN_DECISION_ACTIONS: dict[Domain, dict[Decision, Action]] = {
+    "browser": {"DENY": "HOLD", "ESCALATE": "HOLD", "QUARANTINE": "HOLD"},
+    "vehicle": {"DENY": "PIVOT", "ESCALATE": "DEGRADE", "QUARANTINE": "PIVOT"},
+    "fleet": {"DENY": "ISOLATE", "ESCALATE": "DEGRADE", "QUARANTINE": "ISOLATE"},
+    "antivirus": {"DENY": "ISOLATE", "ESCALATE": "ISOLATE", "QUARANTINE": "ISOLATE"},
+    "arxiv": {"DENY": "STOP", "ESCALATE": "HOLD", "QUARANTINE": "HOLD"},
+    "patent": {"DENY": "STOP", "ESCALATE": "HOLD", "QUARANTINE": "HOLD"},
+    "default": {"DENY": "STOP", "ESCALATE": "STOP", "QUARANTINE": "STOP"},
+}
+
+_ACTION_TRAITS: dict[Action, tuple[bool, bool, bool, bool]] = {
+    # require_human, isolate, deploy_honeypot, continue_execution
+    "ALLOW": (False, False, False, True),
+    "HOLD": (True, False, False, False),
+    "PIVOT": (False, False, False, True),
+    "DEGRADE": (False, False, False, True),
+    "ISOLATE": (False, True, False, False),
+    "HONEYPOT": (False, True, True, True),
+    "STOP": (False, False, False, False),
+}
+
+
+def _normalize_domain(domain: str) -> Domain:
+    normalized = domain.lower() if isinstance(domain, str) else "default"
+    return normalized if normalized in _DOMAIN_ALLOWED_ACTIONS else "default"  # type: ignore[return-value]
+
+
+def allowed_actions_for(domain: str) -> frozenset[Action]:
+    """Return the executable policy boundary for a declared domain."""
+
+    return _DOMAIN_ALLOWED_ACTIONS[_normalize_domain(domain)]
+
+
+def _outcome(
+    *,
+    domain: Domain,
+    action: Action,
+    reason: str,
+    antibody_load: float,
+    membrane_stress: float,
+    isolate: bool | None = None,
+    continue_execution: bool | None = None,
+) -> TurnstileOutcome:
+    allowed = _DOMAIN_ALLOWED_ACTIONS[domain]
+    if action not in allowed:
+        raise AssertionError(f"turnstile policy violation: {domain} cannot emit {action}; allowed={sorted(allowed)}")
+
+    require_human, default_isolate, deploy_honeypot, default_continue = _ACTION_TRAITS[action]
+    return TurnstileOutcome(
+        action=action,
+        require_human=require_human,
+        isolate=default_isolate if isolate is None else isolate,
+        deploy_honeypot=deploy_honeypot,
+        continue_execution=default_continue if continue_execution is None else continue_execution,
+        reason=reason,
+        antibody_load=antibody_load,
+        membrane_stress=membrane_stress,
+    )
 
 
 def _clamp01(x: float) -> float:
@@ -102,9 +174,7 @@ def resolve_turnstile(
     if normalized_decision not in {"ALLOW", "DENY", "ESCALATE", "QUARANTINE"}:
         normalized_decision = "DENY"
 
-    normalized_domain: Domain = domain.lower() if isinstance(domain, str) else "default"
-    if normalized_domain not in {"browser", "vehicle", "fleet", "antivirus", "default"}:
-        normalized_domain = "default"
+    normalized_domain = _normalize_domain(domain)
 
     antibody = compute_antibody_load(suspicion, previous_antibody_load)
     stress = compute_membrane_stress(geometry_norm)
@@ -112,109 +182,55 @@ def resolve_turnstile(
     # Last line of defense: geometrically suspicious or immune-overloaded contexts
     # are rerouted to a honeypot execution lane.
     #
-    # GATED ON DOMAIN, and it was not in the archived original. That short-circuit
-    # returned before the domain dispatch, so it overrode every per-domain rule --
-    # including vehicle's, whose matrix entry is ALLOW/PIVOT/DEGRADE with the note
-    # "No stall; choose safe maneuver." Caught by test_turnstile_conformance:
-    # vehicle/DENY at stress 0.995 returned HONEYPOT, which the matrix forbids.
-    # Domains whose matrix entry lists HONEYPOT: browser, fleet, antivirus.
+    # This used to be a hardcoded domain allowlist.  Membership now comes from
+    # the same executable policy checked against the matrix, so a newly declared
+    # domain cannot inherit HONEYPOT through the default branch.
     if (
         normalized_decision != "ALLOW"
-        and normalized_domain in _HONEYPOT_DOMAINS
+        and "HONEYPOT" in _DOMAIN_ALLOWED_ACTIONS[normalized_domain]
         and (stress >= 0.9 or antibody >= 0.85)
     ):
-        return TurnstileOutcome(
+        return _outcome(
+            domain=normalized_domain,
             action="HONEYPOT",
-            require_human=False,
-            isolate=True,
-            deploy_honeypot=True,
-            continue_execution=True,
             reason="honeypot triggered by membrane stress / antibody load",
             antibody_load=antibody,
             membrane_stress=stress,
         )
 
     if normalized_decision == "ALLOW":
-        return TurnstileOutcome(
+        return _outcome(
+            domain=normalized_domain,
             action="ALLOW",
-            require_human=False,
-            isolate=False,
-            deploy_honeypot=False,
-            continue_execution=True,
             reason="decision allow",
             antibody_load=antibody,
             membrane_stress=stress,
         )
 
-    if normalized_domain == "browser":
-        # Browser can pause for user review safely.
-        return TurnstileOutcome(
-            action="HOLD",
-            require_human=True,
-            isolate=normalized_decision == "QUARANTINE",
-            deploy_honeypot=False,
-            continue_execution=False,
-            reason="browser turnstile hold for review",
-            antibody_load=antibody,
-            membrane_stress=stress,
-        )
+    action = _DOMAIN_DECISION_ACTIONS[normalized_domain][normalized_decision]
+    reasons = {
+        "browser": "browser turnstile hold for review",
+        "vehicle": "vehicle domain continues through a safe maneuver",
+        "fleet": "fleet containment without global stall",
+        "antivirus": "antivirus domain isolates suspicious artifact",
+        "arxiv": "arxiv submission requires human review or stop",
+        "patent": "patent filing requires attorney review or stop",
+        "default": "default hard stop",
+    }
+    # A failed fleet quorum always isolates the node and keeps the rest of the
+    # swarm alive.  ISOLATE in antivirus remains a terminal containment action.
+    if normalized_domain == "fleet" and not quorum_ok:
+        action = "ISOLATE"
+        reason = "fleet quorum failed; isolate node and continue"
+    else:
+        reason = reasons[normalized_domain]
 
-    if normalized_domain == "vehicle":
-        # Real-time systems cannot stall; always pivot to safe maneuver.
-        return TurnstileOutcome(
-            action="PIVOT",
-            require_human=False,
-            isolate=False,
-            deploy_honeypot=False,
-            continue_execution=True,
-            reason="vehicle domain requires immediate pivot",
-            antibody_load=antibody,
-            membrane_stress=stress,
-        )
-
-    if normalized_domain == "fleet":
-        if not quorum_ok:
-            return TurnstileOutcome(
-                action="ISOLATE",
-                require_human=False,
-                isolate=True,
-                deploy_honeypot=False,
-                continue_execution=True,
-                reason="fleet quorum failed; isolate node and continue",
-                antibody_load=antibody,
-                membrane_stress=stress,
-            )
-        return TurnstileOutcome(
-            action="DEGRADE" if normalized_decision == "ESCALATE" else "ISOLATE",
-            require_human=False,
-            isolate=normalized_decision != "ESCALATE",
-            deploy_honeypot=False,
-            continue_execution=True,
-            reason="fleet containment without global stall",
-            antibody_load=antibody,
-            membrane_stress=stress,
-        )
-
-    if normalized_domain == "antivirus":
-        return TurnstileOutcome(
-            action="ISOLATE",
-            require_human=False,
-            isolate=True,
-            deploy_honeypot=False,
-            continue_execution=False,
-            reason="antivirus domain isolates suspicious artifact",
-            antibody_load=antibody,
-            membrane_stress=stress,
-        )
-
-    # Default strict behavior.
-    return TurnstileOutcome(
-        action="STOP",
-        require_human=False,
-        isolate=False,
-        deploy_honeypot=False,
-        continue_execution=False,
-        reason="default hard stop",
+    return _outcome(
+        domain=normalized_domain,
+        action=action,
+        isolate=(normalized_decision == "QUARANTINE") if normalized_domain == "browser" else None,
+        continue_execution=True if normalized_domain == "fleet" and action == "ISOLATE" else None,
+        reason=reason,
         antibody_load=antibody,
         membrane_stress=stress,
     )
