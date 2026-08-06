@@ -1,7 +1,7 @@
 {
   "name": "scbe-aethermoore-cli",
   "version": "4.5.0",
-  "description": "SCBE Aethermoor CLI — governed AI operations platform with 60+ governed commands: 14-layer harmonic pipeline, Sacred Tongues tokenizer, post-quantum receipts (ML-KEM-768 + ML-DSA-65), multi-agent bus with audit-chain workspaces, deterministic BigInt governance abacus, SCONE-class Solidity contract scanner, adversarial prompt inspector, squad routing with multi-provider cross-validation, flow operator loop, and AI-first governed shell.",
+  "description": "SCBE Aethermoor CLI \u2014 governed AI operations platform with 60+ governed commands: 14-layer harmonic pipeline, Sacred Tongues tokenizer, post-quantum receipts (ML-KEM-768 + ML-DSA-65), multi-agent bus with audit-chain workspaces, deterministic BigInt governance abacus, SCONE-class Solidity contract scanner, adversarial prompt inspector, squad routing with multi-provider cross-validation, flow operator loop, and AI-first governed shell.",
   "author": "Issac Daniel Davis <issdandavis@gmail.com>",
   "license": "MIT OR Apache-2.0",
   "type": "commonjs",
@@ -90,6 +90,9 @@
   "overrides": {
     "@hono/node-server": "^2.0.5",
     "postcss": ">=8.5.18",
-    "brace-expansion": "5.0.9"
+    "brace-expansion": "5.0.9",
+    "fast-uri": "3.1.5",
+    "hono": "4.12.34",
+    "ip-address": "10.2.2"
   }
 }
