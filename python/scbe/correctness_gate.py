@@ -24,6 +24,7 @@ traps): `a%b` sign on negatives (-7%3 = 2 vs -1); floor-div via `(a/b)|0` trunca
 `"5"+3` and `str*int` coercion (py TypeError/repeat vs js). PORTABLE (idiomatic faces agree): + - *,
 floor-div via Math.floor, & | ^, abs, min/max, comparisons (int-coerced), string concat, len.
 """
+
 from __future__ import annotations
 import json
 import subprocess
@@ -43,6 +44,7 @@ _JS_HARNESS = (
     "console.log(JSON.stringify(_o));\n"
 )
 
+
 def _run(face_src, entry, inputs, lang, timeout=8):
     if lang == "python":
         src = _PY_HARNESS % (face_src, entry, repr([list(i) for i in inputs]))
@@ -58,7 +60,9 @@ def _run(face_src, entry, inputs, lang, timeout=8):
     except Exception:
         return None
 
+
 _OPS = ["+", "-", "*", "/"]
+
 
 def _resample(col, rng, d=0):
     v = col[0]
@@ -81,27 +85,41 @@ def _resample(col, rng, d=0):
         return rng.choice(toks) if toks else ""
     return v
 
+
 def _grammar(bases, rng, cap=60):
     out = []
     arity = len(bases[0])
     for i in range(arity):
         col = [b[i] for b in bases]
-        if not any(isinstance(v, list) and any(isinstance(e, (int, float)) and not isinstance(e, bool) for e in v) for v in col):
+        if not any(
+            isinstance(v, list) and any(isinstance(e, (int, float)) and not isinstance(e, bool) for e in v) for v in col
+        ):
             continue
-        nums = [e for v in col if isinstance(v, list) for e in v if isinstance(e, (int, float)) and not isinstance(e, bool)] or [1.0, 2.0, 3.0]
+        nums = [
+            e for v in col if isinstance(v, list) for e in v if isinstance(e, (int, float)) and not isinstance(e, bool)
+        ] or [1.0, 2.0, 3.0]
+
         def tree(d=0):
             if d >= 4 or (d > 0 and rng.random() < 0.45):
                 return ("n", rng.choice(nums))
             return ("o", rng.choice(_OPS), tree(d + 1), tree(d + 1))
-        def rpn(t): return [t[1]] if t[0] == "n" else rpn(t[2]) + rpn(t[3]) + [t[1]]
-        def infx(t): return [t[1]] if t[0] == "n" else infx(t[2]) + [t[1]] + infx(t[3])
+
+        def rpn(t):
+            return [t[1]] if t[0] == "n" else rpn(t[2]) + rpn(t[3]) + [t[1]]
+
+        def infx(t):
+            return [t[1]] if t[0] == "n" else infx(t[2]) + [t[1]] + infx(t[3])
+
         for _ in range(cap):
             t = tree()
             for toks in (rpn(t), infx(t)):
-                b = list(bases[rng.randrange(len(bases))]); b[i] = toks; out.append(tuple(b))
+                b = list(bases[rng.randrange(len(bases))])
+                b[i] = toks
+                out.append(tuple(b))
             if len(out) >= cap:
                 break
     return out
+
 
 def _battery(seeds, n=40, rng_seed=0):
     rng = random.Random(rng_seed)
@@ -109,22 +127,33 @@ def _battery(seeds, n=40, rng_seed=0):
     if not bases:
         return []
     out, seen = list(bases), set(repr(b) for b in bases)
+
     def add(t):
         try:
             k = repr(t)
         except Exception:
             return
         if k not in seen:
-            seen.add(k); out.append(t)
+            seen.add(k)
+            out.append(t)
+
     EDGES = [0, 1, -1, 2, 10, -10, 100]
     for base in bases:
         for i in range(len(base)):
             v = base[i]
-            cands = EDGES if isinstance(v, int) and not isinstance(v, bool) else (
-                ["", v[:1], v + v[:1]] if isinstance(v, str) else
-                ([[], [v[0]] if v else [0], list(reversed(v))] if isinstance(v, list) else []))
+            cands = (
+                EDGES
+                if isinstance(v, int) and not isinstance(v, bool)
+                else (
+                    ["", v[:1], v + v[:1]]
+                    if isinstance(v, str)
+                    else ([[], [v[0]] if v else [0], list(reversed(v))] if isinstance(v, list) else [])
+                )
+            )
             for e in cands:
-                t = list(base); t[i] = e; add(tuple(t))
+                t = list(base)
+                t[i] = e
+                add(tuple(t))
     for _ in range(n):
         b = list(rng.choice(bases))
         for i in range(len(b)):
@@ -137,11 +166,54 @@ def _battery(seeds, n=40, rng_seed=0):
         add(t)
     return out
 
+
+def _localise(faces, entry, failing_input, langs, runs_ref):
+    """Reduce a REJECT witness to the sub-expression that caused it.
+
+    The disagreement predicate here is deliberately the SAME comparison the gate itself
+    uses -- including the symmetric error rule (skip only when ALL faces error). If the
+    shrinker judged divergence differently from the gate, it would localise onto a
+    disagreement the gate does not consider one.
+    """
+    from .gate_witness import localise_reject
+
+    def disagree_batch(inputs):
+        runs = {}
+        for lang, src in faces.items():
+            out = _run(src, entry, list(inputs), lang)
+            if out is None:
+                return [False] * len(inputs)
+            runs[lang] = out
+        verdicts = []
+        for i in range(len(inputs)):
+            b = runs[langs[0]][i]
+            others = [runs[o][i] for o in langs[1:]]
+            if b[0] == "err" and all(o[0] == "err" for o in others):
+                verdicts.append(False)
+                continue
+            bad = False
+            for o in others:
+                ok_match = (o[0] == "ok" and b[0] == "ok" and _norm(o[1]) == _norm(b[1])) or (
+                    o[0] == "err" and b[0] == "err"
+                )
+                if not ok_match:
+                    bad = True
+                    break
+            verdicts.append(bad)
+        return verdicts
+
+    return localise_reject(faces, entry, failing_input, disagree_batch)
+
+
 def correctness_gate(faces, entry, seeds, min_inputs=6):
     """faces = {'python': src, 'javascript': src, ...}. Returns SEAL / REJECT / FLAG with a reason."""
     inputs = _battery(seeds)
     if len(inputs) < min_inputs:
-        return {"verdict": "FLAG", "reason": "too few inputs to verify (low coverage) -> AI review", "route": "ai_review"}
+        return {
+            "verdict": "FLAG",
+            "reason": "too few inputs to verify (low coverage) -> AI review",
+            "route": "ai_review",
+        }
     runs = {}
     for lang, src in faces.items():
         out = _run(src, entry, inputs, lang)
@@ -163,23 +235,52 @@ def correctness_gate(faces, entry, seeds, min_inputs=6):
             continue
         compared += 1
         for other, o in zip(langs[1:], others):
-            ok_match = (o[0] == "ok" and base[0] == "ok" and _norm(o[1]) == _norm(base[1])) or (o[0] == "err" and base[0] == "err")
+            ok_match = (o[0] == "ok" and base[0] == "ok" and _norm(o[1]) == _norm(base[1])) or (
+                o[0] == "err" and base[0] == "err"
+            )
             if not ok_match:
-                return {"verdict": "REJECT", "reason": "faces DISAGREE -> generation bug",
-                        "witness": {"input": list(inp), ref: base, other: o}, "route": "block_seal"}
+                result = {
+                    "verdict": "REJECT",
+                    "reason": "faces DISAGREE -> generation bug",
+                    "witness": {"input": list(inp), ref: base, other: o},
+                    "route": "block_seal",
+                }
+                # Back-propagate the verdict down the grammar. The input came from
+                # _grammar, so which sub-expression diverged is knowable -- returning the
+                # whole failing tuple names the disagreement without naming its cause.
+                # Best-effort: a REJECT is already correct and must never be downgraded
+                # because localisation had trouble, so any failure is recorded, not raised.
+                try:
+                    result["minimal_witness"] = _localise(faces, entry, inp, langs, runs_ref=ref)
+                except Exception as exc:  # noqa: BLE001 - see above
+                    result["minimal_witness"] = {"status": "error", "reason": "%s: %s" % (type(exc).__name__, exc)}
+                return result
     if compared < min_inputs:
-        return {"verdict": "FLAG", "reason": "faces agreed but on too few in-domain inputs -> AI review", "route": "ai_review"}
-    return {"verdict": "SEAL", "reason": "all %d faces agree on %d in-domain inputs -> verified" % (len(langs), compared),
-            "checked": compared, "route": "seal"}
+        return {
+            "verdict": "FLAG",
+            "reason": "faces agreed but on too few in-domain inputs -> AI review",
+            "route": "ai_review",
+        }
+    return {
+        "verdict": "SEAL",
+        "reason": "all %d faces agree on %d in-domain inputs -> verified" % (len(langs), compared),
+        "checked": compared,
+        "route": "seal",
+    }
+
 
 def _norm(s):
     t = s.strip()
     low = t.lower()
     if low in ("true", "false"):
         return low
-    if len(t) >= 2 and t[0] in "\"'" and t[-1] == t[0]:   # a quoted string (py repr ' vs js JSON ") -> quote-agnostic inner
-        return "str:" + t[1:-1]                            # ('5' the string stays DISTINCT from number 5 -> no conflation)
+    if (
+        len(t) >= 2 and t[0] in "\"'" and t[-1] == t[0]
+    ):  # a quoted string (py repr ' vs js JSON ") -> quote-agnostic inner
+        return "str:" + t[1:-1]  # ('5' the string stays DISTINCT from number 5 -> no conflation)
     try:
-        return repr(round(float(t), 9) + 0.0)   # +0.0 canonicalizes -0.0 -> 0.0 (py repr '-0.0' vs js '0' was a false REJECT)
+        return repr(
+            round(float(t), 9) + 0.0
+        )  # +0.0 canonicalizes -0.0 -> 0.0 (py repr '-0.0' vs js '0' was a false REJECT)
     except Exception:
         return t
