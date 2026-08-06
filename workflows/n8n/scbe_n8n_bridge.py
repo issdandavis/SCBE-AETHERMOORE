@@ -857,8 +857,15 @@ def _arena_chat_anthropic_sdk(messages: List[Dict], api_key: str, model: str) ->
 
 
 @app.post("/v1/chat")
-async def arena_chat(req: ArenaChatRequest):
-    """AetherCode Arena chat — routes to the right AI provider via SDK (no Cloudflare blocks)."""
+async def arena_chat(req: ArenaChatRequest, x_api_key: Optional[str] = Header(None)):
+    """AetherCode Arena chat — routes to the right AI provider via SDK (no Cloudflare blocks).
+
+    AUTH: this route spends money on somebody else's API keys, so it is gated the
+    same way /v1/execute is. The earlier hardening pass covered execute and missed
+    this one entirely -- caught by the tests from PR #2702, which is why both fixes
+    are needed rather than either alone.
+    """
+    _require_key_strict(x_api_key)
     t0 = time.time()
     seat = req.tentacle.lower().strip()
     cfg = _ARENA_PROVIDERS.get(seat)
