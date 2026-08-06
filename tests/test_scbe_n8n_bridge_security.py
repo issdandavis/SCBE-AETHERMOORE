@@ -138,12 +138,23 @@ async def test_execute_code_requires_api_key(monkeypatch) -> None:
 async def test_execute_code_allows_valid_api_key(monkeypatch) -> None:
     monkeypatch.setattr(bridge, "_API_KEYS", {"test-key"})
 
-    class _Proc:
-        stdout = "ok\n"
-        stderr = ""
-        returncode = 0
+    # execute_code does NOT shell out. Its docstring is explicit: "Instead of running
+    # user-supplied code in a local subprocess (command-injection risk), we POST to the
+    # kernel-runner". The module never imports subprocess, so the old
+    # `monkeypatch.setattr(bridge.subprocess, "run", ...)` raised AttributeError and this
+    # test could never assert the thing it was written to assert -- the positive half of
+    # the auth fix was unverified. Patch the call the code actually makes.
+    class _Resp:
+        def read(self):
+            return json.dumps({"ok": True, "execute": {"stdout": "ok\n", "stderr": "", "exit_code": 0}}).encode("utf-8")
 
-    monkeypatch.setattr(bridge.subprocess, "run", lambda *args, **kwargs: _Proc())
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc_info):
+            return False
+
+    monkeypatch.setattr(bridge.urllib_request, "urlopen", lambda *args, **kwargs: _Resp())
 
     req = bridge.CodeExecRequest.model_validate(
         {
@@ -156,6 +167,9 @@ async def test_execute_code_allows_valid_api_key(monkeypatch) -> None:
 
     assert result["exit_code"] == 0
     assert result["stdout"] == "ok\n"
+    # A valid key must reach the SANDBOXED path, not merely avoid the 401. Without this
+    # the test would still pass if execute_code silently fell back to local execution.
+    assert result["sandboxed"] is True
 
 
 def test_dispatch_single_provider_hides_exception_text(monkeypatch) -> None:
@@ -183,9 +197,7 @@ async def test_execute_code_hides_kernel_runner_exception_text(monkeypatch) -> N
     # thing it was written to assert.
     monkeypatch.setattr(bridge, "_API_KEYS", {"test-key"})
 
-    result = await bridge.execute_code(
-        bridge.CodeExecRequest(code="print('hi')"), x_api_key="test-key"
-    )
+    result = await bridge.execute_code(bridge.CodeExecRequest(code="print('hi')"), x_api_key="test-key")
 
     assert result["stderr"] == "kernel-runner request failed"
     assert "secret kernel-runner details" not in json.dumps(result)
