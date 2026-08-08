@@ -7,6 +7,8 @@ the full SaaS/billing/search API stack during startup.
 
 from __future__ import annotations
 
+import os
+import secrets
 import time
 from typing import Any, Optional
 
@@ -34,7 +36,6 @@ GEOSEAL_CLI_COMMANDS = frozenset(
 )
 
 STARTED_AT = time.time()
-DEMO_API_KEY = "demo_key_12345"
 
 app = FastAPI(
     title="GeoSeal CLI Service",
@@ -86,10 +87,26 @@ class AgentHarnessRequest(BaseModel):
     permission_mode: str = Field(default="observe", max_length=64)
 
 
-async def verify_api_key(x_api_key: str = Header(...)) -> str:
-    if x_api_key != DEMO_API_KEY:
-        raise HTTPException(status_code=401, detail="Invalid API key")
-    return "demo"
+def _configured_api_keys() -> dict[str, str]:
+    """Load shared keys plus the single-key CLI compatibility setting."""
+    from src.api.auth_config import load_api_keys
+
+    keys = dict(load_api_keys())
+    single_key = (os.environ.get("SCBE_GEOSEAL_API_KEY", "") or os.environ.get("SCBE_API_KEY", "")).strip()
+    if single_key:
+        keys[single_key] = "geoseal_operator"
+    return keys
+
+
+async def verify_api_key(x_api_key: Optional[str] = Header(default=None)) -> str:
+    configured_keys = _configured_api_keys()
+    if not configured_keys:
+        raise HTTPException(status_code=503, detail="GeoSeal authentication is not configured")
+    if x_api_key is not None:
+        for configured_key, identity in configured_keys.items():
+            if secrets.compare_digest(x_api_key, configured_key):
+                return identity
+    raise HTTPException(status_code=401, detail="Invalid or missing API key")
 
 
 def _runtime_inspect_packet(payload: dict[str, Any]) -> dict[str, Any]:

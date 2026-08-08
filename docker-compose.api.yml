@@ -8,9 +8,9 @@ services:
       context: .
       dockerfile: Dockerfile.api
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     environment:
-      - SCBE_API_KEY=${SCBE_API_KEY:-sk_test_demo_key_12345}
+      - "SCBE_API_KEY=${SCBE_API_KEY:?Set SCBE_API_KEY to a strong secret before starting the API stack}"
       - SCBE_LOG_LEVEL=INFO
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/v1/health')"]

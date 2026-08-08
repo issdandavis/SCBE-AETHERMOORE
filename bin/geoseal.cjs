@@ -1504,8 +1504,7 @@ function resolveActiveServiceBase(flags) {
   const pid = Number(state.pid);
   if (!base || !Number.isFinite(pid) || pid <= 0) return null;
   if (!isPidAlive(pid)) return null;
-  const headers = state.runtime_headers && typeof state.runtime_headers === "object" ? state.runtime_headers : {};
-  return { apiBase: base, pid, authHeaders: headers, statePath };
+  return { apiBase: base, pid, authHeaders: serviceRuntimeHeaders(flags), statePath };
 }
 
 function probePythonModule(moduleName) {
@@ -1637,7 +1636,7 @@ async function runService(flags) {
     pid: child.pid,
     started_at: new Date().toISOString(),
     command: [executable, ...args],
-    runtime_headers: serviceRuntimeHeaders(flags),
+    auth_mode: flags["allow-demo-keys"] ? "explicit_demo" : apiKey(flags) ? "configured" : "none",
   };
   fs.writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`, "utf8");
 

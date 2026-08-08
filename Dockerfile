@@ -81,7 +81,7 @@ COPY src/ ./src/
 COPY scbe-cli.py ./
 
 # Stage 4: Final runtime image
-FROM python:3.11-slim
+FROM python:3.11-slim AS production
 
 WORKDIR /app
 
