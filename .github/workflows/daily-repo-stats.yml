@@ -114,9 +114,9 @@ jobs:
             This workflow updates the generated badge JSON files under `docs/static/badges/`
             through a pull request so it complies with branch protection on `main`.
 
-      # Pull requests created with GITHUB_TOKEN require manual approval before
-      # their pull_request workflows run. Dispatch the one required branch
-      # check explicitly, then let GitHub merge after that check succeeds.
+      # Pull requests created with GITHUB_TOKEN require approval before their
+      # pull_request workflows run. Approve only the required guard for the
+      # generated commit, then let GitHub merge after that guard succeeds.
       - name: Validate and auto-merge stats update
         if: >-
           steps.stats_pr.outputs.pull-request-url != '' &&
@@ -124,11 +124,38 @@ jobs:
           steps.stats_pr.outputs.pull-request-operation != 'none'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_BRANCH: ${{ steps.stats_pr.outputs.pull-request-branch }}
+          PR_SHA: ${{ steps.stats_pr.outputs.pull-request-head-sha }}
           PR_URL: ${{ steps.stats_pr.outputs.pull-request-url }}
         run: |
           set -euo pipefail
-          gh workflow run conflict-marker-guard.yml --ref "$PR_BRANCH"
+
+          guard_run=""
+          for attempt in {1..10}; do
+            guard_run="$(
+              gh api "repos/${GITHUB_REPOSITORY}/actions/runs?event=pull_request&per_page=100" |
+                jq -r --arg sha "$PR_SHA" '
+                  .workflow_runs[] |
+                  select(
+                    .head_sha == $sha and
+                    .name == "Conflict Marker Guard" and
+                    .conclusion == "action_required"
+                  ) |
+                  .id
+                ' |
+                head -n 1
+            )"
+            if [ -n "$guard_run" ]; then
+              break
+            fi
+            sleep 2
+          done
+
+          if [ -z "$guard_run" ]; then
+            echo "Required Conflict Marker Guard approval run was not found for $PR_SHA" >&2
+            exit 1
+          fi
+
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/actions/runs/${guard_run}/approve"
 
           rc=0
           out="$(gh pr merge --auto --squash "$PR_URL" 2>&1)" || rc=$?
