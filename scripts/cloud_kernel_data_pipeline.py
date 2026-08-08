@@ -62,11 +62,28 @@ HARMFUL_PATTERNS = (
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Build, verify, and ship kernel training datasets to cloud sinks.")
-    parser.add_argument("--config", default=DEFAULT_CONFIG, help=f"Config path (default: {DEFAULT_CONFIG})")
-    parser.add_argument("--run-root", default=DEFAULT_RUN_ROOT, help=f"Run root (default: {DEFAULT_RUN_ROOT})")
-    parser.add_argument("--glob", action="append", default=[], help="Extra source glob pattern (repeatable).")
-    parser.add_argument("--sync-notion", action="store_true", help="Sync Notion docs before ingest.")
+    parser = argparse.ArgumentParser(
+        description="Build, verify, and ship kernel training datasets to cloud sinks."
+    )
+    parser.add_argument(
+        "--config",
+        default=DEFAULT_CONFIG,
+        help=f"Config path (default: {DEFAULT_CONFIG})",
+    )
+    parser.add_argument(
+        "--run-root",
+        default=DEFAULT_RUN_ROOT,
+        help=f"Run root (default: {DEFAULT_RUN_ROOT})",
+    )
+    parser.add_argument(
+        "--glob",
+        action="append",
+        default=[],
+        help="Extra source glob pattern (repeatable).",
+    )
+    parser.add_argument(
+        "--sync-notion", action="store_true", help="Sync Notion docs before ingest."
+    )
     parser.add_argument(
         "--notion-config-key",
         action="append",
@@ -78,8 +95,12 @@ def parse_args() -> argparse.Namespace:
         default="",
         help="Override shipping targets as CSV subset of: hf,github,dropbox.",
     )
-    parser.add_argument("--no-upload", action="store_true", help="Disable all cloud upload steps.")
-    parser.add_argument("--keep-runs", type=int, default=0, help="Override local retention run count.")
+    parser.add_argument(
+        "--no-upload", action="store_true", help="Disable all cloud upload steps."
+    )
+    parser.add_argument(
+        "--keep-runs", type=int, default=0, help="Override local retention run count."
+    )
     parser.add_argument(
         "--allow-quarantine",
         action="store_true",
@@ -203,19 +224,40 @@ def infer_source_system_from_path(path: Path) -> str:
     return "external"
 
 
-def normalize_external_item(item: Dict[str, Any], source_file: Path, index: int) -> Dict[str, Any] | None:
+def normalize_external_item(
+    item: Dict[str, Any], source_file: Path, index: int
+) -> Dict[str, Any] | None:
     text = extract_text_from_object(item)
     if not text:
         return None
 
-    source_system = as_text(item.get("source_system") or item.get("tool") or item.get("app")).strip().lower()
+    source_system = (
+        as_text(item.get("source_system") or item.get("tool") or item.get("app"))
+        .strip()
+        .lower()
+    )
     if not source_system:
         source_system = infer_source_system_from_path(source_file)
 
-    source_id = as_text(item.get("id") or item.get("record_id") or item.get("task_id") or item.get("thread_id"))
-    event_type = as_text(item.get("event_type") or item.get("type") or item.get("status") or "external_record")
-    created_at = as_text(item.get("created_at") or item.get("created_at_utc") or item.get("timestamp"))
-    category = as_text(item.get("category") or item.get("kind")).strip().lower() or source_system
+    source_id = as_text(
+        item.get("id")
+        or item.get("record_id")
+        or item.get("task_id")
+        or item.get("thread_id")
+    )
+    event_type = as_text(
+        item.get("event_type")
+        or item.get("type")
+        or item.get("status")
+        or "external_record"
+    )
+    created_at = as_text(
+        item.get("created_at") or item.get("created_at_utc") or item.get("timestamp")
+    )
+    category = (
+        as_text(item.get("category") or item.get("kind")).strip().lower()
+        or source_system
+    )
 
     return {
         "event_type": event_type,
@@ -232,7 +274,9 @@ def normalize_external_item(item: Dict[str, Any], source_file: Path, index: int)
     }
 
 
-def load_external_intake(globs_in: List[str]) -> Tuple[List[Dict[str, Any]], Dict[str, int]]:
+def load_external_intake(
+    globs_in: List[str],
+) -> Tuple[List[Dict[str, Any]], Dict[str, int]]:
     rows: List[Dict[str, Any]] = []
     stats = {"files_seen": 0, "records_emitted": 0}
     resolved_files: List[Path] = []
@@ -337,14 +381,28 @@ def anomaly_score(text: str) -> float:
     entropy_norm = min(1.0, shannon_entropy(text) / 6.0)
     symbol_norm = min(1.0, ratio_symbols(text) / 0.35)
     short_penalty = 1.0 if len(text.strip()) < 60 else 0.0
-    secret_hit = 1.0 if any(re.search(pattern, text, flags=re.IGNORECASE) for pattern in SECRET_PATTERNS) else 0.0
-    uncertainty_pen = 1.0 if any(marker in lower for marker in UNCERTAINTY_MARKERS) else 0.0
+    secret_hit = (
+        1.0
+        if any(
+            re.search(pattern, text, flags=re.IGNORECASE) for pattern in SECRET_PATTERNS
+        )
+        else 0.0
+    )
+    uncertainty_pen = (
+        1.0 if any(marker in lower for marker in UNCERTAINTY_MARKERS) else 0.0
+    )
     return clamp01(
-        0.35 * entropy_norm + 0.2 * symbol_norm + 0.2 * short_penalty + 0.15 * secret_hit + 0.1 * uncertainty_pen
+        0.35 * entropy_norm
+        + 0.2 * symbol_norm
+        + 0.2 * short_penalty
+        + 0.15 * secret_hit
+        + 0.1 * uncertainty_pen
     )
 
 
-def compute_truth_score(text: str, source_path: str, verified_sources: set[str]) -> Tuple[float, List[str]]:
+def compute_truth_score(
+    text: str, source_path: str, verified_sources: set[str]
+) -> Tuple[float, List[str]]:
     reasons: List[str] = []
     score = 0.0
     lower = text.lower()
@@ -364,7 +422,12 @@ def compute_truth_score(text: str, source_path: str, verified_sources: set[str])
     else:
         score += 0.1
         reasons.append("no_uncertainty_markers")
-    if "http://" in lower or "https://" in lower or source_path.startswith("docs/") or source_path.startswith("src/"):
+    if (
+        "http://" in lower
+        or "https://" in lower
+        or source_path.startswith("docs/")
+        or source_path.startswith("src/")
+    ):
         score += 0.05
         reasons.append("traceable_source_hint")
 
@@ -412,10 +475,15 @@ def compute_harmful_score(text: str, anomaly: float) -> Tuple[float, List[str]]:
     reasons: List[str] = []
     score = 0.0
 
-    if any(re.search(pattern, text, flags=re.IGNORECASE) for pattern in SECRET_PATTERNS):
+    if any(
+        re.search(pattern, text, flags=re.IGNORECASE) for pattern in SECRET_PATTERNS
+    ):
         score += 0.55
         reasons.append("secret_pattern_detected")
-    if any(re.search(pattern, text, flags=re.IGNORECASE | re.DOTALL) for pattern in HARMFUL_PATTERNS):
+    if any(
+        re.search(pattern, text, flags=re.IGNORECASE | re.DOTALL)
+        for pattern in HARMFUL_PATTERNS
+    ):
         score += 0.35
         reasons.append("harmful_instruction_pattern")
 
@@ -439,7 +507,9 @@ def annotate_records(
     rows: List[Dict[str, Any]],
     verified_sources: set[str],
     thresholds: Dict[str, float],
-) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]], Dict[str, int]]:
+) -> Tuple[
+    List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]], Dict[str, int]
+]:
     all_rows: List[Dict[str, Any]] = []
     allowed: List[Dict[str, Any]] = []
     quarantined: List[Dict[str, Any]] = []
@@ -531,7 +601,9 @@ def write_categories(path: Path, records: List[Dict[str, Any]]) -> Dict[str, int
     return counts
 
 
-def upload_to_hf(run_dir: Path, repo_id: str, path_prefix: str, run_id: str) -> Dict[str, Any]:
+def upload_to_hf(
+    run_dir: Path, repo_id: str, path_prefix: str, run_id: str
+) -> Dict[str, Any]:
     token = os.environ.get("HF_TOKEN", "").strip()
     if not token:
         raise RuntimeError("HF_TOKEN is required for Hugging Face upload.")
@@ -579,9 +651,14 @@ def upload_to_github_release(
     if not shutil.which("gh"):
         raise RuntimeError("GitHub CLI (gh) is required for GitHub release upload.")
 
-    token = os.environ.get("GH_TOKEN", "").strip() or os.environ.get("GITHUB_TOKEN", "").strip()
+    token = (
+        os.environ.get("GH_TOKEN", "").strip()
+        or os.environ.get("GITHUB_TOKEN", "").strip()
+    )
     if not token:
-        raise RuntimeError("GH_TOKEN or GITHUB_TOKEN is required for GitHub release upload.")
+        raise RuntimeError(
+            "GH_TOKEN or GITHUB_TOKEN is required for GitHub release upload."
+        )
 
     env = dict(os.environ)
     env["GH_TOKEN"] = token
@@ -603,14 +680,32 @@ def upload_to_github_release(
         check=False,
     )
     if view_proc.returncode != 0:
-        run_gh_command(["gh", "release", "create", tag, "--repo", repo, "--title", title, "--notes", notes], env)
+        run_gh_command(
+            [
+                "gh",
+                "release",
+                "create",
+                tag,
+                "--repo",
+                repo,
+                "--title",
+                title,
+                "--notes",
+                notes,
+            ],
+            env,
+        )
 
-    upload_cmd = ["gh", "release", "upload", tag, "--repo", repo, "--clobber"] + [str(p) for p in files]
+    upload_cmd = ["gh", "release", "upload", tag, "--repo", repo, "--clobber"] + [
+        str(p) for p in files
+    ]
     run_gh_command(upload_cmd, env)
     return {"status": "ok", "repo": repo, "tag": tag, "assets": [p.name for p in files]}
 
 
-def upload_file_dropbox(local_file: Path, dropbox_path: str, token: str) -> Dict[str, Any]:
+def upload_file_dropbox(
+    local_file: Path, dropbox_path: str, token: str
+) -> Dict[str, Any]:
     url = "https://content.dropboxapi.com/2/files/upload"
     content = local_file.read_bytes()
     args = {
@@ -633,7 +728,11 @@ def upload_file_dropbox(local_file: Path, dropbox_path: str, token: str) -> Dict
         raise RuntimeError(f"Dropbox upload failed ({exc.code}): {detail}") from exc
 
     payload = json.loads(raw)
-    return {"name": payload.get("name"), "path_display": payload.get("path_display"), "id": payload.get("id")}
+    return {
+        "name": payload.get("name"),
+        "path_display": payload.get("path_display"),
+        "id": payload.get("id"),
+    }
 
 
 def upload_to_dropbox(run_id: str, base_path: str, files: List[Path]) -> Dict[str, Any]:
@@ -689,7 +788,9 @@ def main() -> int:
 
     commands_executed: List[str] = []
     source_globs = [str(x) for x in config.get("sources", [])] + list(args.glob)
-    source_globs = [g for i, g in enumerate(source_globs) if g and g not in source_globs[:i]]
+    source_globs = [
+        g for i, g in enumerate(source_globs) if g and g not in source_globs[:i]
+    ]
     external_globs = [str(x) for x in config.get("external_intake_globs", [])]
     thresholds = dict(config.get("thresholds", {}))
 
@@ -707,17 +808,31 @@ def main() -> int:
     if args.sync_notion:
         if args.notion_config_key:
             for key in args.notion_config_key:
-                run_command(["node", "scripts/notion-sync.js", "--config-key", key], commands_executed)
+                run_command(
+                    ["node", "scripts/notion-sync.js", "--config-key", key],
+                    commands_executed,
+                )
         else:
             run_command(["node", "scripts/notion-sync.js", "--all"], commands_executed)
 
-    ingest_cmd = [sys.executable, "scripts/ingest_docs_to_training_jsonl.py", "--out", str(raw_jsonl)]
+    ingest_cmd = [
+        sys.executable,
+        "scripts/ingest_docs_to_training_jsonl.py",
+        "--out",
+        str(raw_jsonl),
+    ]
     for pattern in source_globs:
         ingest_cmd.extend(["--glob", pattern])
     run_command(ingest_cmd, commands_executed)
 
     attest = as_text(config.get("attest", "claude,gpt,sonar")).strip()
-    manifest_cmd = [sys.executable, "training/doc_verifier.py", "--json", "--out", str(manifest_json)]
+    manifest_cmd = [
+        sys.executable,
+        "training/doc_verifier.py",
+        "--json",
+        "--out",
+        str(manifest_json),
+    ]
     if attest:
         manifest_cmd.extend(["--attest", attest])
     run_command(manifest_cmd, commands_executed)
@@ -729,7 +844,9 @@ def main() -> int:
     if external_rows:
         raw_rows.extend(external_rows)
     write_jsonl(raw_combined_jsonl, raw_rows)
-    all_rows, allowed_rows, quarantine_rows, category_counts = annotate_records(raw_rows, verified_sources, thresholds)
+    all_rows, allowed_rows, quarantine_rows, category_counts = annotate_records(
+        raw_rows, verified_sources, thresholds
+    )
 
     total_rows = len(all_rows)
     allowed_count = write_jsonl(curated_allowed_jsonl, allowed_rows)
@@ -785,8 +902,12 @@ def main() -> int:
             "truth_min": float(thresholds.get("truth_min", 0.62)),
             "useful_min": float(thresholds.get("useful_min", 0.58)),
             "harmful_max": float(thresholds.get("harmful_max", 0.25)),
-            "dataset_anomaly_threshold": float(thresholds.get("dataset_anomaly_threshold", 0.78)),
-            "dataset_max_flagged_ratio": float(thresholds.get("dataset_max_flagged_ratio", 0.08)),
+            "dataset_anomaly_threshold": float(
+                thresholds.get("dataset_anomaly_threshold", 0.78)
+            ),
+            "dataset_max_flagged_ratio": float(
+                thresholds.get("dataset_max_flagged_ratio", 0.08)
+            ),
         },
         "counts": {
             "input_records": total_rows,
@@ -807,7 +928,9 @@ def main() -> int:
         "state_vector": state_vector,
         "decision_record": decision_record,
     }
-    verification_json.write_text(json.dumps(verification_report, indent=2) + "\n", encoding="utf-8")
+    verification_json.write_text(
+        json.dumps(verification_report, indent=2) + "\n", encoding="utf-8"
+    )
 
     archive_file = run_dir.with_suffix(".zip")
     if archive_file.exists():
@@ -818,11 +941,17 @@ def main() -> int:
     selected_targets = (
         parse_ship_targets(args.ship_targets)
         if args.ship_targets
-        else {k for k, v in ship_config.items() if isinstance(v, dict) and bool(v.get("enabled"))}
+        else {
+            k
+            for k, v in ship_config.items()
+            if isinstance(v, dict) and bool(v.get("enabled"))
+        }
     )
     shipping_results: Dict[str, Any] = {}
     shipping_errors: Dict[str, str] = {}
-    can_ship = (not args.no_upload) and (dataset_audit.get("status") == "ALLOW" or args.ship_on_quarantine)
+    can_ship = (not args.no_upload) and (
+        dataset_audit.get("status") == "ALLOW" or args.ship_on_quarantine
+    )
 
     if can_ship:
         if "hf" in selected_targets:
@@ -842,8 +971,15 @@ def main() -> int:
                 shipping_results["github"] = upload_to_github_release(
                     repo=as_text(gh_cfg.get("repo")),
                     run_id=run_id,
-                    release_prefix=as_text(gh_cfg.get("release_prefix", "kernel-data-sync")),
-                    files=[archive_file, curated_allowed_jsonl, audit_json, verification_json],
+                    release_prefix=as_text(
+                        gh_cfg.get("release_prefix", "kernel-data-sync")
+                    ),
+                    files=[
+                        archive_file,
+                        curated_allowed_jsonl,
+                        audit_json,
+                        verification_json,
+                    ],
                 )
             except Exception as exc:  # noqa: BLE001
                 shipping_errors["github"] = str(exc)
@@ -852,17 +988,30 @@ def main() -> int:
             try:
                 shipping_results["dropbox"] = upload_to_dropbox(
                     run_id=run_id,
-                    base_path=as_text(dbx_cfg.get("base_path", "/SCBE/kernel-data-sync")),
-                    files=[archive_file, curated_allowed_jsonl, audit_json, verification_json],
+                    base_path=as_text(
+                        dbx_cfg.get("base_path", "/SCBE/kernel-data-sync")
+                    ),
+                    files=[
+                        archive_file,
+                        curated_allowed_jsonl,
+                        audit_json,
+                        verification_json,
+                    ],
                 )
             except Exception as exc:  # noqa: BLE001
                 shipping_errors["dropbox"] = str(exc)
 
     pointer_path = REPO_ROOT / LATEST_POINTER
     pointer_path.parent.mkdir(parents=True, exist_ok=True)
-    pointer_path.write_text(str(run_dir.relative_to(REPO_ROOT)).replace("\\", "/") + "\n", encoding="utf-8")
+    pointer_path.write_text(
+        str(run_dir.relative_to(REPO_ROOT)).replace("\\", "/") + "\n", encoding="utf-8"
+    )
 
-    keep_runs = args.keep_runs if args.keep_runs > 0 else int(config.get("retention", {}).get("keep_local_runs", 30))
+    keep_runs = (
+        args.keep_runs
+        if args.keep_runs > 0
+        else int(config.get("retention", {}).get("keep_local_runs", 30))
+    )
     cleanup = cleanup_old_runs(run_root, keep_runs)
 
     summary = {
@@ -870,14 +1019,28 @@ def main() -> int:
         "run_dir": str(run_dir.relative_to(REPO_ROOT)).replace("\\", "/"),
         "artifacts": {
             "raw_ingest": str(raw_jsonl.relative_to(REPO_ROOT)).replace("\\", "/"),
-            "raw_combined": str(raw_combined_jsonl.relative_to(REPO_ROOT)).replace("\\", "/"),
-            "doc_manifest": str(manifest_json.relative_to(REPO_ROOT)).replace("\\", "/"),
-            "curated_all": str(curated_all_jsonl.relative_to(REPO_ROOT)).replace("\\", "/"),
-            "curated_allowed": str(curated_allowed_jsonl.relative_to(REPO_ROOT)).replace("\\", "/"),
-            "curated_quarantine": str(curated_quarantine_jsonl.relative_to(REPO_ROOT)).replace("\\", "/"),
-            "categories_dir": str(categories_dir.relative_to(REPO_ROOT)).replace("\\", "/"),
+            "raw_combined": str(raw_combined_jsonl.relative_to(REPO_ROOT)).replace(
+                "\\", "/"
+            ),
+            "doc_manifest": str(manifest_json.relative_to(REPO_ROOT)).replace(
+                "\\", "/"
+            ),
+            "curated_all": str(curated_all_jsonl.relative_to(REPO_ROOT)).replace(
+                "\\", "/"
+            ),
+            "curated_allowed": str(
+                curated_allowed_jsonl.relative_to(REPO_ROOT)
+            ).replace("\\", "/"),
+            "curated_quarantine": str(
+                curated_quarantine_jsonl.relative_to(REPO_ROOT)
+            ).replace("\\", "/"),
+            "categories_dir": str(categories_dir.relative_to(REPO_ROOT)).replace(
+                "\\", "/"
+            ),
             "dataset_audit": str(audit_json.relative_to(REPO_ROOT)).replace("\\", "/"),
-            "verification_report": str(verification_json.relative_to(REPO_ROOT)).replace("\\", "/"),
+            "verification_report": str(
+                verification_json.relative_to(REPO_ROOT)
+            ).replace("\\", "/"),
             "archive": str(archive_file.relative_to(REPO_ROOT)).replace("\\", "/"),
         },
         "latest_pointer": LATEST_POINTER,
