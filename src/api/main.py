@@ -17,7 +17,7 @@ from fastapi import FastAPI, HTTPException, Depends, Request, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.security import APIKeyHeader
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, StrictInt, field_validator
 from typing import List, Optional, Dict, Any
 import json
 import logging
@@ -259,6 +259,37 @@ class MetricsStore:
 
 metrics_store = MetricsStore()
 storage_backend = get_storage_backend()
+SEALED_BLOB_MASTER_KEY_ENV = "SCBE_SEALED_BLOB_MASTER_KEY"
+
+
+class SealedBlobKeyError(RuntimeError):
+    """Raised when sealed-memory encryption is not safely configured."""
+
+
+def _load_sealed_blob_master_key() -> bytes:
+    master_key = os.getenv(SEALED_BLOB_MASTER_KEY_ENV, "").encode("utf-8")
+    if len(master_key) < 32:
+        raise SealedBlobKeyError(f"{SEALED_BLOB_MASTER_KEY_ENV} must contain at least 32 bytes")
+    return master_key
+
+
+def _sealed_blob_aad(owner: str, position: List[int], agent: str, topic: str) -> bytes:
+    return json.dumps(
+        {
+            "version": 2,
+            "owner": owner,
+            "position": position,
+            "agent": agent,
+            "topic": topic,
+        },
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+
+
+def _sealed_blob_password(master_key: bytes, aad: bytes) -> bytes:
+    return hmac.new(master_key, b"scbe-sealed-blob-v2\x00" + aad, hashlib.sha256).digest()
+
 
 # Mobile autonomy goal control plane (in-memory MVP store).
 GOAL_STORE: Dict[str, Dict[str, Any]] = {}
@@ -273,20 +304,22 @@ class SealRequest(BaseModel):
     plaintext: str = Field(..., max_length=4096, description="Data to seal (max 4KB)")
     agent: str = Field(..., min_length=1, max_length=256, description="Agent identifier")
     topic: str = Field(..., min_length=1, max_length=256, description="Topic/category")
-    position: List[int] = Field(..., min_length=6, max_length=6, description="6D position vector")
+    position: List[StrictInt] = Field(..., min_length=6, max_length=6, description="6D position vector")
 
     @field_validator("position")
     @classmethod
     def validate_position(cls, v):
         if len(v) != 6:
             raise ValueError("Position must contain exactly 6 integers")
-        if not all(isinstance(x, int) for x in v):
+        if any(isinstance(x, bool) or not isinstance(x, int) for x in v):
             raise ValueError("Position must contain integers")
+        if any(x < -(2**63) or x > 2**63 - 1 for x in v):
+            raise ValueError("Position integers must fit in a signed 64-bit coordinate")
         return v
 
 
 class RetrieveRequest(BaseModel):
-    position: List[int] = Field(..., min_length=6, max_length=6)
+    position: List[StrictInt] = Field(..., min_length=6, max_length=6)
     agent: str = Field(..., min_length=1, max_length=256)
     context: str = Field(..., pattern="^(internal|external|untrusted)$")
 
@@ -295,8 +328,10 @@ class RetrieveRequest(BaseModel):
     def validate_position(cls, v):
         if len(v) != 6:
             raise ValueError("Position must contain exactly 6 integers")
-        if not all(isinstance(x, int) for x in v):
+        if any(isinstance(x, bool) or not isinstance(x, int) for x in v):
             raise ValueError("Position must contain integers")
+        if any(x < -(2**63) or x > 2**63 - 1 for x in v):
+            raise ValueError("Position integers must fit in a signed 64-bit coordinate")
         return v
 
 
@@ -960,13 +995,15 @@ async def seal_memory(request: SealRequest, user: str = Depends(verify_api_key))
         result = scbe_14layer_pipeline(t=position_array, D=6)
 
         # Seal with RWP v3 (quantum-resistant)
+        aad = _sealed_blob_aad(user, request.position, request.agent, request.topic)
+        password = _sealed_blob_password(_load_sealed_blob_master_key(), aad)
         rwp = RWPv3Protocol()
-        password = f"{request.agent}:{request.topic}".encode()
-        envelope = rwp.encrypt(plaintext=request.plaintext.encode(), password=password)
+        envelope = rwp.encrypt(plaintext=request.plaintext.encode(), password=password, aad=aad)
         sealed_blob_bytes = json.dumps(envelope.to_dict()).encode("utf-8")
 
         storage_backend.save(
             SealedBlobRecord(
+                owner=user,
                 position=request.position,
                 agent=request.agent,
                 topic=request.topic,
@@ -992,6 +1029,9 @@ async def seal_memory(request: SealRequest, user: str = Depends(verify_api_key))
 
     except HTTPException:
         raise
+    except SealedBlobKeyError:
+        logger.error("seal-memory rejected because %s is missing or too short", SEALED_BLOB_MASTER_KEY_ENV)
+        raise HTTPException(503, "Sealed storage encryption is not configured")
     except ImportError as exc:
         logger.error("seal-memory missing dependency: %s", exc)
         raise HTTPException(503, f"Service unavailable: {exc}")
@@ -1063,7 +1103,7 @@ async def retrieve_memory(request: RetrieveRequest, user: str = Depends(verify_a
 
         # ALLOW or QUARANTINE - retrieve and unseal plaintext
         try:
-            record = storage_backend.load(request.position)
+            record = storage_backend.load(request.position, owner=user)
         except BlobNotFoundError as exc:
             raise HTTPException(404, str(exc)) from exc
 
@@ -1076,8 +1116,9 @@ async def retrieve_memory(request: RetrieveRequest, user: str = Depends(verify_a
         except (json.JSONDecodeError, UnicodeDecodeError, KeyError) as exc:
             raise HTTPException(500, "Stored sealed blob is corrupted") from exc
 
+        aad = _sealed_blob_aad(user, request.position, record.agent, record.topic)
+        password = _sealed_blob_password(_load_sealed_blob_master_key(), aad)
         rwp = RWPv3Protocol()
-        password = f"{record.agent}:{record.topic}".encode()
         try:
             plaintext = rwp.decrypt(password=password, envelope=envelope)
         except ValueError as exc:
@@ -1100,6 +1141,9 @@ async def retrieve_memory(request: RetrieveRequest, user: str = Depends(verify_a
 
     except HTTPException:
         raise
+    except SealedBlobKeyError:
+        logger.error("retrieve-memory rejected because %s is missing or too short", SEALED_BLOB_MASTER_KEY_ENV)
+        raise HTTPException(503, "Sealed storage encryption is not configured")
     except ImportError as exc:
         logger.error("retrieve-memory missing dependency: %s", exc)
         raise HTTPException(503, f"Service unavailable: {exc}")
