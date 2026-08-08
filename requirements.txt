@@ -58,5 +58,6 @@ openpyxl==3.1.5
 # matplotlib>=3.5.0
 z3-solver>=4.12
 
-# MCP SDK — for the SCBE CLI MCP server (tools/mcp/scbe_cli_server.py)
-mcp[cli]>=2.0.0
+# MCP SDK — current servers use the FastMCP v1 API. Keep the patched security
+# floor while preventing an incompatible v2 resolve in clean CI environments.
+mcp[cli]>=1.28.1,<2.0.0

@@ -653,6 +653,7 @@ function commandRisk(commandText) {
     /(^|\s|["'])\/($|\s|["'])/,
     /c:\\($|\s|["'])/i,
     /c:\\windows/i,
+    /\bc:\\users\\[^\\\s"']+/i,
     HOME_DIR_PATTERN,
     /system32/i,
     /program files/i,

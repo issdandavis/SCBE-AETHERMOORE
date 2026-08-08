@@ -29,7 +29,7 @@ jobs:
           # model/dataset/video dumps this gate exists to stop.
           MAX_BYTES: '5242880'
           # Paths that legitimately carry large assets. Extend deliberately.
-          ALLOW_PREFIXES: 'kindle-app/ docs/proposals/'
+          ALLOW_PREFIXES: 'docs/proposals/'
         run: |
           set -euo pipefail
           # The checkout above used fetch-depth: 0, so full history is already present.
