@@ -112,7 +112,9 @@ class EphemeralFeed:
         if self._spent:
             raise RuntimeError("ephemeral feed already consumed (and deleted)")
         raw = open(self.path, encoding="utf-8").read()
-        os.remove(self.path)  # ingested -> gone, and spent, BEFORE the parse -- so a malformed-JSON parse
+        os.remove(
+            self.path
+        )  # ingested -> gone, and spent, BEFORE the parse -- so a malformed-JSON parse
         self._spent = True  # error can't leave the file cached or the feed re-consumable (exactly once)
         return json.loads(raw)
 
@@ -124,7 +126,9 @@ class EphemeralFeed:
 class AIBrowser:
     """A bounded, abstraction-first browser the AI steers by moves, not selectors."""
 
-    def __init__(self, headless: bool = True, channel: str = "chrome", cdp: Optional[str] = None):
+    def __init__(
+        self, headless: bool = True, channel: str = "chrome", cdp: Optional[str] = None
+    ):
         self.headless = headless
         self.channel = channel
         self.cdp = cdp  # e.g. "http://127.0.0.1:9222" to attach instead of launching
@@ -135,11 +139,27 @@ class AIBrowser:
         from playwright.sync_api import sync_playwright
 
         self._pw = sync_playwright().start()
-        if self.cdp:
-            self._browser = self._pw.chromium.connect_over_cdp(self.cdp)
-        else:
-            # launch our OWN isolated Chrome (fresh profile) -- never touches the user's real browser
-            self._browser = self._pw.chromium.launch(headless=self.headless, channel=self.channel)
+        try:
+            if self.cdp:
+                self._browser = self._pw.chromium.connect_over_cdp(self.cdp)
+            else:
+                # launch our OWN isolated Chrome (fresh profile) -- never touches the user's real browser
+                self._browser = self._pw.chromium.launch(
+                    headless=self.headless, channel=self.channel
+                )
+        except BaseException:
+            # sync_playwright() owns an asyncio loop in the calling thread.  A
+            # failed browser launch must stop it here because __exit__ is never
+            # entered when __enter__ raises.  Otherwise every later asyncio
+            # caller in this process sees a phantom running loop.
+            playwright = self._pw
+            self._pw = None
+            self._browser = None
+            try:
+                playwright.stop()
+            except Exception:
+                pass
+            raise
         return self
 
     def __exit__(self, *exc) -> None:
@@ -175,7 +195,11 @@ class AIBrowser:
         ]
         for e in feed.get("elements", []):
             if e.get("editable"):
-                mv.append(Move("type", ref=e["ref"], label=e.get("name") or e["tag"], value=""))
+                mv.append(
+                    Move(
+                        "type", ref=e["ref"], label=e.get("name") or e["tag"], value=""
+                    )
+                )
             else:
                 mv.append(Move("click", ref=e["ref"], label=e.get("name") or e["tag"]))
         return mv
@@ -196,7 +220,8 @@ class AIBrowser:
             # scroll a target into view -- the SC2 camera move. By ref (an element) or "x,y" doc coords.
             if move.ref:
                 page.eval_on_selector(
-                    "[data-aibref='%s']" % move.ref, "e => e.scrollIntoView({block: 'center', inline: 'center'})"
+                    "[data-aibref='%s']" % move.ref,
+                    "e => e.scrollIntoView({block: 'center', inline: 'center'})",
                 )
             elif move.value:
                 xy = [int(v) for v in str(move.value).split(",")]
