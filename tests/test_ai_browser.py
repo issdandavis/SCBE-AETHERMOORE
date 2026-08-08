@@ -26,9 +26,7 @@ def test_ephemeral_consume_is_exactly_once_even_on_malformed_json(tmp_path):
     with pytest.raises(Exception):  # noqa: B017 -- malformed -> json parse error
         ef.consume()
     assert not p.exists()  # deleted despite the parse failure (no over-cache)
-    with pytest.raises(
-        RuntimeError
-    ):  # spent -> 'already consumed', not a second parse attempt
+    with pytest.raises(RuntimeError):  # spent -> 'already consumed', not a second parse attempt
         ef.consume()
 
 
@@ -66,9 +64,7 @@ def test_failed_launch_stops_playwright(monkeypatch):
 def test_real_failed_launch_does_not_poison_asyncio():
     """Exercise Playwright itself: a launch error must leave asyncio usable."""
     browser = AIBrowser(headless=True, channel="scbe-missing-browser")
-    with pytest.raises(
-        Exception
-    ):  # noqa: B017 -- Playwright owns the concrete error type
+    with pytest.raises(Exception):  # noqa: B017 -- Playwright owns the concrete error type
         browser.__enter__()
 
     assert browser._pw is None
@@ -102,9 +98,7 @@ def test_feed_is_structured_and_bounded(browser):
     feed = browser.read(page)
     assert feed["url"].startswith("data:text/html")
     refs = {e["ref"] for e in feed["elements"]}
-    assert (
-        len(refs) == len(feed["elements"]) == 3
-    )  # button, input, link -- a small bounded surface
+    assert len(refs) == len(feed["elements"]) == 3  # button, input, link -- a small bounded surface
     by_tag = {e["tag"] for e in feed["elements"]}
     assert {"button", "input", "a"} <= by_tag
     assert next(e for e in feed["elements"] if e["tag"] == "input")["editable"] is True
@@ -115,9 +109,7 @@ def test_control_surface_is_legal_moves_only(browser):
     moves = browser.moves(browser.read(page))
     kinds = [m.kind for m in moves]
     assert "read" in kinds and "scroll" in kinds and "back" in kinds
-    assert any(m.kind == "click" for m in moves) and any(
-        m.kind == "type" for m in moves
-    )
+    assert any(m.kind == "click" for m in moves) and any(m.kind == "type" for m in moves)
     # every element-bound move carries a ref (the model steers by ref, never a CSS selector)
     assert all(m.ref for m in moves if m.kind in ("click", "type"))
 
@@ -128,12 +120,8 @@ def test_steer_by_ref_changes_page_state(browser):
     typ = next(m for m in moves if m.kind == "type")
     typ.value = "Issac"
     browser.act(page, typ)
-    browser.act(
-        page, next(m for m in moves if m.kind == "click" and "Press" in m.label)
-    )
-    assert (
-        page.eval_on_selector("[data-aibref='%s']" % typ.ref, "e=>e.value") == "Issac"
-    )
+    browser.act(page, next(m for m in moves if m.kind == "click" and "Press" in m.label))
+    assert page.eval_on_selector("[data-aibref='%s']" % typ.ref, "e=>e.value") == "Issac"
     assert "CLICKED" in browser.read(page)["text"]
 
 
