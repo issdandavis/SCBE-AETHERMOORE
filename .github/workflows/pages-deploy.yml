@@ -4,7 +4,7 @@ name: Deploy GitHub Pages (Static HTML)
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, site-publish-v4]
     paths:
       - 'docs/**'
       - 'scripts/site/build_github_map.py'

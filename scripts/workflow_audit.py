@@ -80,6 +80,25 @@ RULES = [
 ADVISORY_MARKER = "audit: advisory"
 
 
+# Each retired alias duplicated a live workflow or was an inert compatibility
+# placeholder. Keep this list in the audit so a future bulk workflow import
+# cannot silently recreate the overlap.
+RETIRED_WORKFLOWS = {
+    "auto-triage.yml": "issue-triage.yml + labeler.yml + auto-approve-trusted.yml",
+    "ci-auto-fix.yml": "auto-format.yml + pr-format-gate.yml",
+    "codeql-analysis.yml": "codeql.yml",
+    "daily-dep-audit.yml": "weekly-security-scan.yml",
+    "daily-tests.yml": "ci.yml + nightly-python-full.yml + scbe-tests.yml",
+    "full-system-stack-smoke.yml": "ci.yml + scbe-tests.yml",
+    "manual.yml": "the canonical workflows' workflow_dispatch triggers",
+    "pages-auto-deploy.yml": "pages-deploy.yml",
+    "pages.yml": "pages-deploy.yml",
+    "pr-triage-compat.yml": "premerge-triage.yml",
+    "security-pipeline.yml": "security-checks.yml + weekly-security-scan.yml",
+    "weekly-security-audit.yml": "weekly-security-scan.yml",
+}
+
+
 def has_advisory_marker(lines: List[str], index: int) -> bool:
     """Return True when a risky line is explicitly marked advisory nearby."""
 
@@ -108,6 +127,17 @@ def scan_workflows(workspace: Path) -> List[WorkflowResult]:
         issues: List[Issue] = []
         text = workflow.read_text(encoding="utf-8", errors="replace")
         lines = text.splitlines()
+        replacement = RETIRED_WORKFLOWS.get(workflow.name)
+        if replacement:
+            issues.append(
+                Issue(
+                    workflow=workflow.name,
+                    rule=f"RETIRED_REDUNDANT_WORKFLOW (use {replacement})",
+                    severity="high",
+                    line=1,
+                    text=workflow.name,
+                )
+            )
         for rule in RULES:
             needle = rule["pattern"]
             for idx, line in enumerate(lines, start=1):
