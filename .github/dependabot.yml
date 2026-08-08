@@ -56,6 +56,8 @@ updates:
     # ships a dependency line that no longer contains that vulnerable parser.
     ignore:
       - dependency-name: "@netlify/blobs"
+        versions:
+          - ">=9.1.6 <10.0.0"
         update-types:
           - "version-update:semver-major"
     groups:
