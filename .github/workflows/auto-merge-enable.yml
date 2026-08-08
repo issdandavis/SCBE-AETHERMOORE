@@ -12,10 +12,11 @@ jobs:
   enable-auto-merge:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Dependabot remains auto-approved, but must not auto-merge: without branch
+    # protection requirements GitHub merges it immediately, before audit/CI.
     if: >-
       github.event.pull_request.draft == false &&
-      (github.actor == 'dependabot[bot]' ||
-      github.actor == 'copilot-swe-agent' ||
+      (github.actor == 'copilot-swe-agent' ||
       github.actor == 'issdandavis')
     steps:
       - name: Enable auto-merge (squash)
