@@ -28,12 +28,13 @@ from contextlib import asynccontextmanager
 # Add project root to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from fastapi import FastAPI, HTTPException, Request, Header
+from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Any, Dict, Optional
 
 from agents.browser_tools import call_tool, list_tools, shutdown
+from src.api.local_service_security import require_api_key
 
 logger = logging.getLogger("scbe.agents.browser_api")
 
@@ -41,13 +42,10 @@ logger = logging.getLogger("scbe.agents.browser_api")
 # Auth
 # ---------------------------------------------------------------------------
 
-_API_KEY = os.getenv("SCBE_BROWSER_API_KEY", "")
-
 
 def _check_auth(key: Optional[str]) -> None:
-    """Check API key if configured."""
-    if _API_KEY and key != _API_KEY:
-        raise HTTPException(status_code=401, detail="Invalid or missing API key")
+    """Require a configured browser API key and compare it in constant time."""
+    require_api_key("SCBE_BROWSER_API_KEY", key, "Browser API")
 
 
 # ---------------------------------------------------------------------------
@@ -91,7 +89,7 @@ app.add_middleware(
 
 class ToolUseRequest(BaseModel):
     name: str
-    arguments: Dict[str, Any] = {}
+    arguments: Dict[str, Any] = Field(default_factory=dict)
 
 
 class ToolCallRequest(BaseModel):
@@ -289,7 +287,8 @@ if __name__ == "__main__":
     import uvicorn
 
     port = int(os.environ.get("BROWSER_API_PORT", "8003"))
-    print(f"SCBE Browser Tools API starting on http://localhost:{port}")
+    host = os.environ.get("BROWSER_API_HOST", "127.0.0.1")
+    print(f"SCBE Browser Tools API starting on http://{host}:{port}")
     print(f"Tools: {len(list_tools())}")
-    print(f"Auth: {'enabled' if _API_KEY else 'disabled (set SCBE_BROWSER_API_KEY)'}")
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    print(f"Auth: {'configured' if os.getenv('SCBE_BROWSER_API_KEY', '').strip() else 'not configured'}")
+    uvicorn.run(app, host=host, port=port)

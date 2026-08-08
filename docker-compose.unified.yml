@@ -22,10 +22,10 @@ services:
       dockerfile: Dockerfile.api
     container_name: scbe-core
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     environment:
       - SCBE_MODE=production
-      - SCBE_API_KEY=${SCBE_API_KEY:-dev-key-change-me}
+      - "SCBE_API_KEY=${SCBE_API_KEY:?Set SCBE_API_KEY to a strong secret before starting the unified stack}"
       - REDIS_URL=redis://redis:6379
       - LOG_LEVEL=INFO
       - PORT=8000
@@ -52,7 +52,7 @@ services:
       target: production
     container_name: scbe-gateway
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     environment:
       - NODE_ENV=production
       - SCBE_CORE_URL=http://scbe-core:8000
@@ -77,7 +77,7 @@ services:
     image: redis:7-alpine
     container_name: scbe-redis
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - redis-data:/data
     command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
@@ -97,7 +97,7 @@ services:
     image: prom/prometheus:v2.47.0
     container_name: scbe-prometheus
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
     volumes:
       - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus-data:/prometheus
@@ -116,10 +116,10 @@ services:
     image: grafana/grafana:10.1.0
     container_name: scbe-grafana
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - "GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:?Set GRAFANA_PASSWORD before starting the unified stack}"
       - GF_USERS_ALLOW_SIGN_UP=false
     volumes:
       - grafana-data:/var/lib/grafana
@@ -140,7 +140,7 @@ services:
       target: production
     container_name: scbe-unity-bridge
     ports:
-      - "8081:8081"
+      - "127.0.0.1:8081:8081"
     environment:
       - NODE_ENV=production
       - SCBE_CORE_URL=http://scbe-core:8000

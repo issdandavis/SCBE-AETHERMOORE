@@ -20,10 +20,11 @@ from pathlib import Path
 
 import torch
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from peft import PeftModel
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from src.api.local_service_security import comma_separated_env, configured_api_key, require_api_key
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
 # Detect which model size to serve (set via --model flag or MODEL_SIZE env var)
@@ -63,13 +64,35 @@ BASE_MODEL = BASE_MODELS[_MODEL_SIZE]
 ADAPTER_CONFIGS = _build_adapter_configs(_MODEL_SIZE)
 
 app = FastAPI(title="SCBE Model Server")
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+
+def _allowed_origins() -> list[str]:
+    return comma_separated_env("SCBE_MODEL_SERVER_ALLOWED_ORIGINS")
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_allowed_origins(),
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type", "x-api-key"],
+)
 
 # Global state
 _base_model = None
 _tokenizer = None
 _active_adapter = None
 _model_with_adapter = None
+
+MAX_PROMPT_CHARS = 32_768
+MAX_GENERATION_TOKENS = 2_048
+
+
+def _configured_api_key() -> str:
+    return configured_api_key("SCBE_MODEL_SERVER_API_KEY")
+
+
+def _check_auth(x_api_key: str | None) -> None:
+    require_api_key("SCBE_MODEL_SERVER_API_KEY", x_api_key, "Model server")
 
 
 def get_available_adapters() -> list[str]:
@@ -165,13 +188,15 @@ def generate(adapter_name: str, prompt: str, max_tokens: int = 256) -> str:
 
 
 class GenerateRequest(BaseModel):
-    adapter: str = "base"
-    prompt: str
-    max_tokens: int = 256
+    adapter: str = Field(default="base", min_length=1, max_length=64)
+    prompt: str = Field(..., min_length=1, max_length=MAX_PROMPT_CHARS)
+    max_tokens: int = Field(default=256, ge=1, le=MAX_GENERATION_TOKENS, strict=True)
 
 
 @app.on_event("startup")
 async def startup():
+    if not _configured_api_key():
+        raise RuntimeError("SCBE_MODEL_SERVER_API_KEY must be set before starting the model server")
     load_base()
     # Pre-load first available trained adapter
     available = get_available_adapters()
@@ -192,7 +217,8 @@ def health():
 
 
 @app.get("/adapters")
-def list_adapters():
+def list_adapters(x_api_key: str | None = Header(default=None)):
+    _check_auth(x_api_key)
     result = {}
     for name in get_available_adapters():
         result[name] = {"system": ADAPTER_CONFIGS[name]["system"]}
@@ -200,7 +226,8 @@ def list_adapters():
 
 
 @app.post("/generate")
-def generate_endpoint(req: GenerateRequest):
+def generate_endpoint(req: GenerateRequest, x_api_key: str | None = Header(default=None)):
+    _check_auth(x_api_key)
     if req.adapter not in ADAPTER_CONFIGS:
         raise HTTPException(400, f"Unknown adapter '{req.adapter}'. Available: {get_available_adapters()}")
 
@@ -229,6 +256,9 @@ def main():
         "--model", choices=["360m", "7b"], default=_MODEL_SIZE, help="Which base model to serve (default: 360m)"
     )
     args = parser.parse_args()
+
+    if not _configured_api_key():
+        parser.error("SCBE_MODEL_SERVER_API_KEY must be set")
 
     if args.model != _MODEL_SIZE:
         _MODEL_SIZE = args.model

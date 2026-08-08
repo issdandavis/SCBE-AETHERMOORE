@@ -5,12 +5,12 @@ services:
       dockerfile: Dockerfile.research
     command: uvicorn src.api.main:app --host 0.0.0.0 --port 8000
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
-      - SCBE_API_KEY=${SCBE_API_KEY:-demo_key_12345}
+      - "SCBE_API_KEY=${SCBE_API_KEY:?Set SCBE_API_KEY to a strong secret before starting the research stack}"
     volumes:
       - hydra_data:/app/artifacts/hydra
     restart: unless-stopped
