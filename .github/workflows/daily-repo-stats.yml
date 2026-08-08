@@ -2,10 +2,11 @@ name: Daily Repo Stats
 
 on:
   schedule:
-    - cron: '0 5 * * *'  # Daily at 5 AM UTC
+    - cron: '0 5 * * *' # Daily at 5 AM UTC
   workflow_dispatch:
 
 permissions:
+  actions: write
   contents: write
   pull-requests: write
 
@@ -99,14 +100,43 @@ jobs:
               print(f"  {k}: {v:,}" if isinstance(v, int) else f"  {k}: {v}")
           PYEOF
 
-      - uses: peter-evans/create-pull-request@v7
+      - name: Create stats update pull request
+        id: stats_pr
+        uses: peter-evans/create-pull-request@v7
         with:
-          add-paths: "docs/static/badges/"
-          branch: "automation/daily-repo-stats"
-          commit-message: "chore(stats): update daily repo stats badges"
-          title: "chore(stats): update daily repo stats badges"
+          add-paths: 'docs/static/badges/'
+          branch: 'automation/daily-repo-stats'
+          commit-message: 'chore(stats): update daily repo stats badges'
+          title: 'chore(stats): update daily repo stats badges'
           body: |
             Automated daily repo stats badge refresh.
 
             This workflow updates the generated badge JSON files under `docs/static/badges/`
             through a pull request so it complies with branch protection on `main`.
+
+      # Pull requests created with GITHUB_TOKEN require manual approval before
+      # their pull_request workflows run. Dispatch the one required branch
+      # check explicitly, then let GitHub merge after that check succeeds.
+      - name: Validate and auto-merge stats update
+        if: >-
+          steps.stats_pr.outputs.pull-request-url != '' &&
+          steps.stats_pr.outputs.pull-request-operation != 'closed' &&
+          steps.stats_pr.outputs.pull-request-operation != 'none'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_BRANCH: ${{ steps.stats_pr.outputs.pull-request-branch }}
+          PR_URL: ${{ steps.stats_pr.outputs.pull-request-url }}
+        run: |
+          set -euo pipefail
+          gh workflow run conflict-marker-guard.yml --ref "$PR_BRANCH"
+
+          rc=0
+          out="$(gh pr merge --auto --squash "$PR_URL" 2>&1)" || rc=$?
+          echo "$out"
+          if [ "$rc" -eq 0 ]; then
+            exit 0
+          fi
+          if echo "$out" | grep -Eq "Merge already in progress|Base branch was modified"; then
+            exit 0
+          fi
+          exit "$rc"
