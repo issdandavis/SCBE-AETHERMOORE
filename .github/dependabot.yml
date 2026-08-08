@@ -51,6 +51,13 @@ updates:
     labels:
       - "dependencies"
       - "security"
+    # v10 currently pulls image-size 2.0.2, whose ICNS/JXL/HEIF infinite-loop
+    # advisories have no patched release. Keep the tested v9 API until Netlify
+    # ships a dependency line that no longer contains that vulnerable parser.
+    ignore:
+      - dependency-name: "@netlify/blobs"
+        update-types:
+          - "version-update:semver-major"
     groups:
       npm-security:
         applies-to: security-updates
