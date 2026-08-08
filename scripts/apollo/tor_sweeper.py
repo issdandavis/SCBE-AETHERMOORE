@@ -136,7 +136,7 @@ def sandboxed_fetch(url: str, timeout: int = 30) -> dict:
         {ok, status, content_hash, content_length, title, snippet, governance_decision, scrubbed_items}
     """
     import requests
-    from scripts.apollo.apollo_core import scrub_text, vault_secrets
+    from scripts.apollo.apollo_core import record_scrub_event, scrub_text
 
     result = {
         "url": url,
@@ -180,7 +180,7 @@ def sandboxed_fetch(url: str, timeout: int = 30) -> dict:
         clean_text, scrubbed_items = scrub_text(raw_text)
         result["scrubbed_items"] = len(scrubbed_items)
         if scrubbed_items:
-            vault_secrets(scrubbed_items, context=f"tor_sweep:{url[:80]}")
+            record_scrub_event("tor_sweep")
 
         # SANDBOX 2: Governance gate — check for blocked content
         # Multi-word phrases to reduce false positives on news/research sites

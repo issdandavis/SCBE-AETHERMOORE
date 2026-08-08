@@ -104,10 +104,10 @@ def scrub_text(text: str) -> tuple[str, list[dict]]:
     return clean, scrubbed_items
 
 
-def vault_secrets(scrubbed_items: list[dict], context: str = ""):
-    """Store counts and secret categories without retaining secret-derived identifiers."""
+def record_scrub_event(source_kind: str = "other"):
+    """Record that redaction occurred without accepting or storing secret-derived data."""
     VAULT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    source_kind = context.partition(":")[0].strip().lower()
+    source_kind = source_kind.strip().lower()
     if source_kind not in {"email", "field_trip", "tor_sweep", "youtube"}:
         source_kind = "other"
 
@@ -120,8 +120,7 @@ def vault_secrets(scrubbed_items: list[dict], context: str = ""):
         {
             "timestamp": datetime.datetime.now().isoformat(),
             "source_kind": source_kind,
-            "count": len(scrubbed_items),
-            "types": list(set(s["pattern_type"] for s in scrubbed_items)),
+            "redaction_performed": True,
         }
     )
 
@@ -304,7 +303,7 @@ def collect_training_context(days: int = 7) -> dict:
         items = s1 + s2 + s3
         total_scrubbed += len(items)
         if items:
-            vault_secrets(items, context=f"email:{d.msg_id}")
+            record_scrub_event("email")
 
     print(f"Scrubbed {total_scrubbed} secret items (audit metadata vaulted)")
 

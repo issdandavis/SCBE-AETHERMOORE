@@ -109,7 +109,7 @@ def rotate_tor_identity() -> bool:
 def fetch_hop(url: str, use_tor: bool, hop_num: int) -> Hop:
     """Fetch a single URL and classify it."""
     import requests
-    from scripts.apollo.apollo_core import scrub_text, vault_secrets
+    from scripts.apollo.apollo_core import record_scrub_event, scrub_text
 
     start = time.time()
     exit_ip = "direct"
@@ -140,7 +140,7 @@ def fetch_hop(url: str, use_tor: bool, hop_num: int) -> Hop:
         clean, items = scrub_text(raw)
         scrubbed = len(items)
         if items:
-            vault_secrets(items, context=f"field_trip:hop{hop_num}:{url[:60]}")
+            record_scrub_event("field_trip")
 
         content = clean
 
