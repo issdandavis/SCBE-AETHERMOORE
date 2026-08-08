@@ -27,7 +27,7 @@ dependencies = [
     "cryptography>=50.0.0",     # the vulnerable range is >=44.0.0,<50.0.0
     "pyasn1>=0.6.4",
     "soupsieve>=2.8.4",         # selector-parser ReDoS + memory exhaustion
-    "mcp>=1.28.1",              # floor only; main already runs mcp[cli]>=2.0.0
+    "mcp>=1.28.1,<2.0.0",       # patched floor; FastMCP v1 API compatibility
     "bedrock-agentcore>=1.18.1",  # arg-delimiter injection in install_packages()
 ]
 authors = [

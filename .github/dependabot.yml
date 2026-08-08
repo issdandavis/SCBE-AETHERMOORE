@@ -3,18 +3,19 @@
 #
 # This is a monorepo: ~25 Python manifests and ~15 npm lockfiles live in nested
 # sub-apps (packages/*, apps/*, game/*, conference-app, examples/*, ...). The old
-# config used singular `directory: "/"` (root only) plus an `exclude-paths:` key
-# that Dependabot does not recognize, so the nested lockfiles were never watched —
-# their advisories just sat open. `directories: ["/**"]` watches every manifest
-# recursively; `groups` batches the bumps so we get a few PRs per ecosystem, not
-# dozens. Vendored / archived lanes are excluded with `!` negation globs.
+# config used singular `directory: "/"` (root only), so nested lockfiles were
+# never watched and their advisories just sat open. `directories: ["/**"]`
+# watches every manifest recursively; `groups` batches the bumps so we get a few
+# PRs per ecosystem, not dozens. Vendored / archived lanes are excluded with the
+# supported `exclude-paths` option.
 version: 2
 updates:
   # ── Python (every manifest, recursively) ──────────────────────────────────
   - package-ecosystem: "pip"
     directories:
       - "/**"
-      - "!/archive/**"
+    exclude-paths:
+      - "archive/**"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
@@ -35,14 +36,15 @@ updates:
   - package-ecosystem: "npm"
     directories:
       - "/**"
-      - "!/external/**"
-      - "!/external_repos/**"
-      - "!/archive/**"
-      - "!/spiralverse-protocol/**"
-      - "!/aws-lambda-simple-web-app/**"
-      - "!/hioujhn/**"
-      - "!/scbe-aethermoore/**"
-      - "!/packages/six-tongues-geoseal/**"
+    exclude-paths:
+      - "external/**"
+      - "external_repos/**"
+      - "archive/**"
+      - "spiralverse-protocol/**"
+      - "aws-lambda-simple-web-app/**"
+      - "hioujhn/**"
+      - "scbe-aethermoore/**"
+      - "packages/six-tongues-geoseal/**"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
