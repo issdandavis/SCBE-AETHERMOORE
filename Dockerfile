@@ -39,8 +39,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Clone and build liboqs (NIST FIPS 203/204 compliant)
-RUN wget -q https://github.com/open-quantum-safe/liboqs/archive/refs/tags/0.14.0.tar.gz -O liboqs.tar.gz && tar xzf liboqs.tar.gz && mv liboqs-0.14.0 liboqs && \
+# Clone and build the native release matching requirements.txt/liboqs-python.
+RUN wget -q https://github.com/open-quantum-safe/liboqs/archive/refs/tags/0.16.0.tar.gz -O liboqs.tar.gz && tar xzf liboqs.tar.gz && mv liboqs-0.16.0 liboqs && \
     cd liboqs && \
     mkdir build && cd build && \
     cmake -GNinja \
@@ -73,8 +73,7 @@ RUN ldconfig
 
 # Install Python dependencies including liboqs-python
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt && \
-        pip install --no-cache-dir liboqs-python==0.14.1
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy Python source
 COPY src/ ./src/
