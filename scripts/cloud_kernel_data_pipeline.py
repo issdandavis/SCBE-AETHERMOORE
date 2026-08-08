@@ -760,6 +760,55 @@ def main() -> int:
         for key in means:
             means[key] = round(means[key] / float(total_rows), 6)
 
+    # Build the verification artifact before archiving or shipping. The weekly
+    # workflow uploads this file to GitHub/Hugging Face/Dropbox; creating it after
+    # the upload step made every GitHub shipment fail with "no matches found".
+    state_vector = {
+        "worker_id": "codex-agent",
+        "task_id": "cloud-kernel-data-pipeline",
+        "role": "implementer",
+        "status": "completed",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+    decision = "ALLOW" if dataset_audit.get("status") == "ALLOW" else "QUARANTINE"
+    decision_record = {
+        "action": decision,
+        "signature": f"codex-agent:cloud-kernel-data-pipeline:{run_id}",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "reason": "Curated dataset scored for truth/useful/harmful and audited for anomalies.",
+        "confidence": 0.97 if decision == "ALLOW" else 0.88,
+    }
+
+    verification_report = {
+        "run_id": run_id,
+        "thresholds": {
+            "truth_min": float(thresholds.get("truth_min", 0.62)),
+            "useful_min": float(thresholds.get("useful_min", 0.58)),
+            "harmful_max": float(thresholds.get("harmful_max", 0.25)),
+            "dataset_anomaly_threshold": float(thresholds.get("dataset_anomaly_threshold", 0.78)),
+            "dataset_max_flagged_ratio": float(thresholds.get("dataset_max_flagged_ratio", 0.08)),
+        },
+        "counts": {
+            "input_records": total_rows,
+            "external_records": len(external_rows),
+            "allowed_records": allowed_count,
+            "quarantine_records": quarantined_count,
+            "verified_sources": len(verified_sources),
+        },
+        "external_intake": {
+            "globs": external_globs,
+            "files_seen": external_stats.get("files_seen", 0),
+            "records_emitted": external_stats.get("records_emitted", 0),
+        },
+        "means": means,
+        "category_counts_input": category_counts,
+        "category_counts_allowed": category_allowed_counts,
+        "dataset_audit": dataset_audit,
+        "state_vector": state_vector,
+        "decision_record": decision_record,
+    }
+    verification_json.write_text(json.dumps(verification_report, indent=2) + "\n", encoding="utf-8")
+
     archive_file = run_dir.with_suffix(".zip")
     if archive_file.exists():
         archive_file.unlink()
@@ -815,52 +864,6 @@ def main() -> int:
 
     keep_runs = args.keep_runs if args.keep_runs > 0 else int(config.get("retention", {}).get("keep_local_runs", 30))
     cleanup = cleanup_old_runs(run_root, keep_runs)
-
-    state_vector = {
-        "worker_id": "codex-agent",
-        "task_id": "cloud-kernel-data-pipeline",
-        "role": "implementer",
-        "status": "completed",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-    }
-    decision = "ALLOW" if dataset_audit.get("status") == "ALLOW" else "QUARANTINE"
-    decision_record = {
-        "action": decision,
-        "signature": f"codex-agent:cloud-kernel-data-pipeline:{run_id}",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "reason": "Curated dataset scored for truth/useful/harmful and audited for anomalies.",
-        "confidence": 0.97 if decision == "ALLOW" else 0.88,
-    }
-
-    verification_report = {
-        "run_id": run_id,
-        "thresholds": {
-            "truth_min": float(thresholds.get("truth_min", 0.62)),
-            "useful_min": float(thresholds.get("useful_min", 0.58)),
-            "harmful_max": float(thresholds.get("harmful_max", 0.25)),
-            "dataset_anomaly_threshold": float(thresholds.get("dataset_anomaly_threshold", 0.78)),
-            "dataset_max_flagged_ratio": float(thresholds.get("dataset_max_flagged_ratio", 0.08)),
-        },
-        "counts": {
-            "input_records": total_rows,
-            "external_records": len(external_rows),
-            "allowed_records": allowed_count,
-            "quarantine_records": quarantined_count,
-            "verified_sources": len(verified_sources),
-        },
-        "external_intake": {
-            "globs": external_globs,
-            "files_seen": external_stats.get("files_seen", 0),
-            "records_emitted": external_stats.get("records_emitted", 0),
-        },
-        "means": means,
-        "category_counts_input": category_counts,
-        "category_counts_allowed": category_allowed_counts,
-        "dataset_audit": dataset_audit,
-        "state_vector": state_vector,
-        "decision_record": decision_record,
-    }
-    verification_json.write_text(json.dumps(verification_report, indent=2) + "\n", encoding="utf-8")
 
     summary = {
         "run_id": run_id,

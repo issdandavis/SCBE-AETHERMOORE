@@ -40,17 +40,17 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Install dependencies
         run: |
@@ -122,4 +122,3 @@ jobs:
           echo "- Run dir: \`${{ steps.latest.outputs.run_dir }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- Ship targets: \`${{ github.event.inputs.ship_targets || 'hf,github' }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- Trigger: \`${{ github.event_name }}\`" >> "$GITHUB_STEP_SUMMARY"
-

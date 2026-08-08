@@ -1,44 +1,57 @@
 from __future__ import annotations
 
 from pathlib import Path
-from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
-WWW = ROOT / "kindle-app" / "www"
+PWA = ROOT / "apps" / "mobile" / "pwa"
 
 
-def test_mobile_entrypoint_is_aethermoor_bus_not_legacy_browser_redirect() -> None:
-    body = (WWW / "index.html").read_text(encoding="utf-8")
-    assert "Aethermoor Bus" in body
-    assert "aetherbrowser.html" not in body
-    assert '<meta http-equiv="refresh"' not in body
+def _read(relative_path: str) -> str:
+    path = PWA / relative_path
+    assert path.exists(), f"missing mobile PWA source: {path}"
+    return path.read_text(encoding="utf-8")
 
 
-def test_mobile_chat_is_backend_proxy_not_token_first_hf_form() -> None:
-    body = (WWW / "chat.html").read_text(encoding="utf-8")
-    assert "/api/agent/chat" in body
-    assert "/api/agent/search" in body
-    assert "/api/agent/storage" in body
-    forbidden = [
-        "HF token",
-        "Hugging Face token",
-        "pollyToken",
-        "router.huggingface.co",
-        "static/polly-hf-chat.js",
-    ]
-    for phrase in forbidden:
-        assert phrase not in body
+def test_mobile_entrypoint_is_the_aethermoor_bus_pwa() -> None:
+    index = _read("index.html")
+    app = _read("src/App.tsx")
+    assert "Aethermoor Bus" in index
+    assert "Aethermoor Bus" in app
+    assert 'id="root"' in index
+    assert 'src="/src/main.tsx"' in index
+    assert '<meta http-equiv="refresh"' not in index
 
 
-def test_native_phone_shell_defaults_to_public_backend_not_emulator_loopback() -> None:
-    body = (WWW / "static" / "phone-shell.js").read_text(encoding="utf-8")
-    assert "if (isKindleApp)" in body
-    public_backend = "https://scbe-agent-bridge-vercel.vercel.app"
-    assert urlparse(public_backend).hostname in body
-    assert "aethermoor.agentApiBase" in body
+def test_mobile_uses_the_governed_v1_agent_bus_routes() -> None:
+    sources = "\n".join(
+        _read(path)
+        for path in [
+            "src/components/AgentList.tsx",
+            "src/components/BusFeed.tsx",
+            "src/components/TriggerPanel.tsx",
+        ]
+    )
+    assert "/v1/agents" in sources
+    assert "/v1/bus/events?limit=50" in sources
+    assert "/v1/agents/dispatch" in sources
+    assert "router.huggingface.co" not in sources
+
+
+def test_mobile_backend_is_operator_configured_without_loopback_defaults() -> None:
+    auth = _read("src/state/auth.ts")
+    assert "aethermoor.backend_url" in auth
+    assert "Authorization" in auth
+    assert "Bearer ${token}" in auth
+    for loopback in ["localhost", "127.0.0.1", "10.0.2.2"]:
+        assert loopback not in auth
 
 
 def test_manifest_uses_aethermoor_bus_branding() -> None:
-    body = (WWW / "manifest.json").read_text(encoding="utf-8")
-    assert '"name": "Aethermoor Bus"' in body
-    assert '"short_name": "AetherBus"' in body
+    config = _read("vite.config.ts")
+    twa = (ROOT / "apps" / "mobile" / "twa" / "twa-manifest.json").read_text(
+        encoding="utf-8"
+    )
+    assert "VitePWA" in config
+    assert "name: 'Aethermoor Bus'" in config
+    assert '"name": "Aethermoor Bus"' in twa
+    assert '"packageId": "io.aethermoor.bus"' in twa
