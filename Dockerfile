@@ -6,14 +6,17 @@ FROM node:20-alpine AS ts-builder
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files and the lifecycle hook required by `npm install`.
 COPY package*.json tsconfig*.json ./
+COPY scripts/hooks/install.js ./scripts/hooks/install.js
 
-# Install dependencies
-RUN npm install --legacy-peer-deps
+# Install the exact dependency graph from package-lock.json.
+RUN npm ci --legacy-peer-deps
 
-# Copy source code
+# Copy every input consumed by tsconfig.json and the post-build declaration step.
 COPY src/ ./src/
+COPY packages/kernel/src/ ./packages/kernel/src/
+COPY scripts/write_root_index_dts.mjs ./scripts/write_root_index_dts.mjs
 
 # Build TypeScript — fail the image build on a broken build instead of
 # silently shipping an incomplete image ("|| true" masked tsc failures).
