@@ -60,6 +60,11 @@ updates:
           - ">=9.1.6 <10.0.0"
         update-types:
           - "version-update:semver-major"
+      # TypeScript 7 removes moduleResolution=node10. Keep compatible 6.x
+      # updates flowing until the repository's module-resolution migration.
+      - dependency-name: "typescript"
+        update-types:
+          - "version-update:semver-major"
     groups:
       npm-security:
         applies-to: security-updates
