@@ -21,8 +21,10 @@ def test_docker_liboqs_matches_python_requirement() -> None:
     assert dockerfile.count("pip install --no-cache-dir liboqs-python") == 0
 
 
-def test_docker_python_runtime_includes_top_level_api_package() -> None:
+def test_docker_python_runtime_includes_local_import_packages() -> None:
     dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
 
     assert "COPY api/ ./api/" in dockerfile
     assert "COPY --from=py-builder /app/api ./api" in dockerfile
+    assert "COPY packages/agent-bus-py/src/scbe_agent_bus/ ./packages/agent-bus-py/src/scbe_agent_bus/" in dockerfile
+    assert "COPY --from=py-builder /app/packages/agent-bus-py ./packages/agent-bus-py" in dockerfile
