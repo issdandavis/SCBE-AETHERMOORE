@@ -48,9 +48,7 @@ def test_mobile_backend_is_operator_configured_without_loopback_defaults() -> No
 
 def test_manifest_uses_aethermoor_bus_branding() -> None:
     config = _read("vite.config.ts")
-    twa = (ROOT / "apps" / "mobile" / "twa" / "twa-manifest.json").read_text(
-        encoding="utf-8"
-    )
+    twa = (ROOT / "apps" / "mobile" / "twa" / "twa-manifest.json").read_text(encoding="utf-8")
     assert "VitePWA" in config
     assert "name: 'Aethermoor Bus'" in config
     assert '"name": "Aethermoor Bus"' in twa
