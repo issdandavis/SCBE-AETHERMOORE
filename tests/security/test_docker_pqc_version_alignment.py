@@ -19,3 +19,10 @@ def test_docker_liboqs_matches_python_requirement() -> None:
     assert native_match is not None, "Dockerfile must pin the native liboqs source release"
     assert native_match.group("version") == python_match.group("version")
     assert dockerfile.count("pip install --no-cache-dir liboqs-python") == 0
+
+
+def test_docker_python_runtime_includes_top_level_api_package() -> None:
+    dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
+
+    assert "COPY api/ ./api/" in dockerfile
+    assert "COPY --from=py-builder /app/api ./api" in dockerfile

@@ -77,6 +77,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy Python source
 COPY src/ ./src/
+COPY api/ ./api/
 COPY scbe-cli.py ./
 
 # Stage 4: Final runtime image
@@ -102,6 +103,7 @@ RUN ldconfig
 COPY --from=py-builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=py-builder /usr/local/bin /usr/local/bin
 COPY --from=py-builder /app/src ./src
+COPY --from=py-builder /app/api ./api
 COPY --from=py-builder /app/scbe-cli.py ./
 
 # Copy TypeScript build
