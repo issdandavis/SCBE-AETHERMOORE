@@ -67,6 +67,7 @@ os.environ["TMPDIR"] = str(_PYTEST_TEMP_ROOT)
 os.environ["TEMP"] = str(_PYTEST_TEMP_ROOT)
 os.environ["TMP"] = str(_PYTEST_TEMP_ROOT)
 os.environ.setdefault("SCBE_ALLOW_DEMO_KEYS", "1")
+os.environ.setdefault("SCBE_SEALED_BLOB_MASTER_KEY", "test-only-sealed-blob-master-key-32-bytes")
 
 
 def _repo_local_mkdtemp(suffix=None, prefix=None, dir=None):

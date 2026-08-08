@@ -13,6 +13,7 @@ class BlobNotFoundError(FileNotFoundError):
 
 @dataclass(frozen=True)
 class SealedBlobRecord:
+    owner: str
     position: List[int]
     agent: str
     topic: str
@@ -27,5 +28,5 @@ class SealedBlobStorage(ABC):
         """Persist a sealed blob record."""
 
     @abstractmethod
-    def load(self, position: List[int]) -> SealedBlobRecord:
-        """Load a sealed blob record by its 6D position."""
+    def load(self, position: List[int], owner: str) -> SealedBlobRecord:
+        """Load a sealed blob record owned by a principal at its 6D position."""

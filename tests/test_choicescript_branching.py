@@ -89,6 +89,14 @@ class TestSafeContextEval:
         ctx = {"topic": {"domain": "academic"}}
         assert SafeContextEval.evaluate("topic.domain == 'academic'", ctx) is True
 
+    def test_mapping_get(self):
+        ctx = {"_last_result": {"chunks": 3}}
+        assert SafeContextEval.evaluate("_last_result.get('chunks', 0) > 0", ctx) is True
+
+    def test_rejects_object_traversal_and_arbitrary_calls(self):
+        assert SafeContextEval.evaluate("().__class__.__base__.__subclasses__()", {}) is False
+        assert SafeContextEval.evaluate("__import__('os').system('whoami')", {}) is False
+
     def test_invalid_expression(self):
         # Should return False on error, not raise
         assert SafeContextEval.evaluate("import os", {}) is False
@@ -217,6 +225,13 @@ class TestPrebuiltGraphs:
         assert result.graph_name == "research_pipeline"
         assert len(result.paths) > 0
         assert result.coverage > 0.5
+
+    def test_research_topic_is_always_a_literal_expression(self):
+        topic = "x'; __import__('os').system('whoami'); '"
+        graph = build_research_pipeline_graph(topic)
+
+        expression = graph.scenes["start"].set_vars["query"]
+        assert SafeContextEval.evaluate(expression, {}) == topic
 
     def test_content_publisher_runs(self):
         g = build_content_publishing_graph()

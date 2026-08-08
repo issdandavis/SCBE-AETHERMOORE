@@ -23,7 +23,6 @@ from __future__ import annotations
 
 import argparse
 import datetime
-import hashlib
 import imaplib
 import json
 import os
@@ -81,22 +80,20 @@ SECRET_PATTERNS = [
     (re.compile(r"account\s*#?\s*:?\s*\d{6,}", re.I), "account [SCRUBBED:acct_num]"),
 ]
 
-# Secrets vault — stores scrubbed secrets securely with fingerprints
+# Secrets vault — stores non-sensitive scrub event metadata only
 VAULT_PATH = ROOT / "config" / "apollo" / ".secrets_vault.json"
 
 
 def scrub_text(text: str) -> tuple[str, list[dict]]:
-    """Scrub secrets from text. Returns (clean_text, list of scrubbed items with fingerprints)."""
+    """Scrub secrets from text and return non-sensitive match metadata."""
     scrubbed_items = []
     clean = text
 
     for pattern, replacement in SECRET_PATTERNS:
         for match in pattern.finditer(clean):
             original = match.group()
-            fingerprint = hashlib.blake2s(original.encode(), digest_size=8).hexdigest()
             scrubbed_items.append(
                 {
-                    "fingerprint": fingerprint,
                     "pattern_type": replacement.split(":")[1].rstrip("]") if ":" in replacement else "generic",
                     "position": match.start(),
                     "length": len(original),
@@ -108,8 +105,11 @@ def scrub_text(text: str) -> tuple[str, list[dict]]:
 
 
 def vault_secrets(scrubbed_items: list[dict], context: str = ""):
-    """Store secret fingerprints in vault for audit trail (never the actual secrets)."""
+    """Store counts and secret categories without retaining secret-derived identifiers."""
     VAULT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    source_kind = context.partition(":")[0].strip().lower()
+    if source_kind not in {"email", "field_trip", "tor_sweep", "youtube"}:
+        source_kind = "other"
 
     vault = {}
     if VAULT_PATH.exists():
@@ -119,9 +119,8 @@ def vault_secrets(scrubbed_items: list[dict], context: str = ""):
     entries.append(
         {
             "timestamp": datetime.datetime.now().isoformat(),
-            "context": context,
+            "source_kind": source_kind,
             "count": len(scrubbed_items),
-            "fingerprints": [s["fingerprint"] for s in scrubbed_items],
             "types": list(set(s["pattern_type"] for s in scrubbed_items)),
         }
     )
@@ -307,7 +306,7 @@ def collect_training_context(days: int = 7) -> dict:
         if items:
             vault_secrets(items, context=f"email:{d.msg_id}")
 
-    print(f"Scrubbed {total_scrubbed} secret items (fingerprints vaulted)")
+    print(f"Scrubbed {total_scrubbed} secret items (audit metadata vaulted)")
 
     # Phase 2: Apply feedback corrections
     feedback = load_feedback()

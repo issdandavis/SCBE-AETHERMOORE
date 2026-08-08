@@ -33,9 +33,11 @@ Bridge endpoint:
 
 from __future__ import annotations
 
+import ast
 import copy
 import hashlib
 import json
+import operator
 import time
 import uuid
 from dataclasses import asdict, dataclass, field
@@ -335,11 +337,35 @@ class SceneGraph:
 class SafeContextEval:
     """Evaluate ChoiceScript conditions against a workflow context dict.
 
-    Only allows attribute access, comparisons, and basic math — no imports,
-    no builtins, no exec/eval abuse.
+    Expressions are interpreted from a small AST allowlist. Arbitrary Python
+    calls, object attributes, comprehensions, imports, and dunder traversal are
+    rejected instead of being passed to Python's ``eval``.
     """
 
     ALLOWED_BUILTINS = {"len", "int", "float", "str", "bool", "abs", "min", "max", "sum", "any", "all"}
+    MAX_EXPRESSION_LENGTH = 2048
+    MAX_AST_NODES = 128
+    MAX_COLLECTION_ITEMS = 128
+    MAX_RESULT_STRING_LENGTH = 4096
+
+    _BINARY_OPERATORS = {
+        ast.Add: operator.add,
+        ast.Sub: operator.sub,
+        ast.Mult: operator.mul,
+        ast.Div: operator.truediv,
+        ast.FloorDiv: operator.floordiv,
+        ast.Mod: operator.mod,
+    }
+    _COMPARISON_OPERATORS = {
+        ast.Eq: operator.eq,
+        ast.NotEq: operator.ne,
+        ast.Lt: operator.lt,
+        ast.LtE: operator.le,
+        ast.Gt: operator.gt,
+        ast.GtE: operator.ge,
+        ast.In: lambda left, right: left in right,
+        ast.NotIn: lambda left, right: left not in right,
+    }
 
     @classmethod
     def evaluate(cls, expression: str, context: Dict[str, Any]) -> Any:
@@ -347,27 +373,170 @@ class SafeContextEval:
             return True
         if expression.strip() == "False":
             return False
-
-        # Flatten nested dict access: "topic.domain" -> context["topic"]["domain"]
-        safe_globals: Dict[str, Any] = {"__builtins__": {k: __builtins__[k] for k in cls.ALLOWED_BUILTINS if k in __builtins__}} if isinstance(__builtins__, dict) else {"__builtins__": {}}
-        # Add allowed builtins
-        import builtins as _b
-        safe_globals["__builtins__"] = {k: getattr(_b, k) for k in cls.ALLOWED_BUILTINS if hasattr(_b, k)}
-
-        # Create a dotdict wrapper so "topic.domain" works
-        class DotDict(dict):
-            def __getattr__(self, key):
-                val = self.get(key)
-                if isinstance(val, dict):
-                    return DotDict(val)
-                return val
-
-        safe_locals = {k: DotDict(v) if isinstance(v, dict) else v for k, v in context.items()}
-
         try:
-            return eval(expression, safe_globals, safe_locals)  # noqa: S307
-        except Exception:
+            if len(expression) > cls.MAX_EXPRESSION_LENGTH:
+                return False
+            parsed = ast.parse(expression, mode="eval")
+            if sum(1 for _ in ast.walk(parsed)) > cls.MAX_AST_NODES:
+                return False
+            return cls._evaluate_node(parsed.body, context)
+        except (ArithmeticError, KeyError, TypeError, ValueError, SyntaxError):
             return False
+
+    @classmethod
+    def _evaluate_node(cls, node: ast.AST, context: Dict[str, Any]) -> Any:
+        if isinstance(node, ast.Constant):
+            return cls._checked_value(node.value)
+
+        if isinstance(node, ast.Name):
+            if node.id.startswith("__") or node.id not in context:
+                raise ValueError("Unknown expression name")
+            return cls._checked_value(context[node.id])
+
+        if isinstance(node, ast.Attribute):
+            if node.attr.startswith("_"):
+                raise ValueError("Private attributes are not allowed")
+            value = cls._evaluate_node(node.value, context)
+            if not isinstance(value, dict) or node.attr not in value:
+                raise ValueError("Only mapping field access is allowed")
+            return cls._checked_value(value[node.attr])
+
+        if isinstance(node, ast.Subscript):
+            value = cls._evaluate_node(node.value, context)
+            key = cls._evaluate_node(node.slice, context)
+            if not isinstance(value, (dict, list, tuple)) or not isinstance(key, (str, int)):
+                raise ValueError("Unsafe subscript")
+            return cls._checked_value(value[key])
+
+        if isinstance(node, ast.List):
+            return cls._checked_value([cls._evaluate_node(item, context) for item in node.elts])
+
+        if isinstance(node, ast.Tuple):
+            return cls._checked_value(tuple(cls._evaluate_node(item, context) for item in node.elts))
+
+        if isinstance(node, ast.Dict):
+            if any(key is None for key in node.keys):
+                raise ValueError("Dictionary unpacking is not allowed")
+            result = {
+                cls._evaluate_node(key, context): cls._evaluate_node(value, context)
+                for key, value in zip(node.keys, node.values)
+            }
+            return cls._checked_value(result)
+
+        if isinstance(node, ast.UnaryOp):
+            operand = cls._evaluate_node(node.operand, context)
+            if isinstance(node.op, ast.Not):
+                return not operand
+            if isinstance(node.op, (ast.UAdd, ast.USub)) and cls._is_number(operand):
+                result = operand if isinstance(node.op, ast.UAdd) else -operand
+                return cls._checked_value(result)
+            raise ValueError("Unsupported unary operator")
+
+        if isinstance(node, ast.BoolOp):
+            if isinstance(node.op, ast.And):
+                result: Any = True
+                for item in node.values:
+                    result = cls._evaluate_node(item, context)
+                    if not result:
+                        return result
+                return result
+            if isinstance(node.op, ast.Or):
+                result = False
+                for item in node.values:
+                    result = cls._evaluate_node(item, context)
+                    if result:
+                        return result
+                return result
+            raise ValueError("Unsupported boolean operator")
+
+        if isinstance(node, ast.BinOp):
+            operation = cls._BINARY_OPERATORS.get(type(node.op))
+            left = cls._evaluate_node(node.left, context)
+            right = cls._evaluate_node(node.right, context)
+            if operation is None or not cls._is_number(left) or not cls._is_number(right):
+                raise ValueError("Only bounded numeric arithmetic is allowed")
+            return cls._checked_value(operation(left, right))
+
+        if isinstance(node, ast.Compare):
+            left = cls._evaluate_node(node.left, context)
+            for op_node, comparator in zip(node.ops, node.comparators):
+                operation = cls._COMPARISON_OPERATORS.get(type(op_node))
+                right = cls._evaluate_node(comparator, context)
+                if operation is None or not operation(left, right):
+                    return False
+                left = right
+            return True
+
+        if isinstance(node, ast.Call):
+            if node.keywords:
+                raise ValueError("Keyword arguments are not allowed")
+            args = [cls._evaluate_node(arg, context) for arg in node.args]
+            if isinstance(node.func, ast.Name):
+                return cls._call_builtin(node.func.id, args)
+            if isinstance(node.func, ast.Attribute) and node.func.attr == "get":
+                mapping = cls._evaluate_node(node.func.value, context)
+                if not isinstance(mapping, dict) or not 1 <= len(args) <= 2:
+                    raise ValueError("Only mapping.get(key[, default]) is allowed")
+                return cls._checked_value(mapping.get(*args))
+            raise ValueError("Arbitrary function calls are not allowed")
+
+        raise ValueError(f"Unsupported expression node: {type(node).__name__}")
+
+    @classmethod
+    def _call_builtin(cls, name: str, args: List[Any]) -> Any:
+        if name not in cls.ALLOWED_BUILTINS:
+            raise ValueError("Builtin is not allowed")
+        if name == "len" and len(args) == 1 and isinstance(args[0], (str, list, tuple, dict)):
+            return len(args[0])
+        if name in {"int", "float", "str", "bool"} and len(args) == 1:
+            converters = {"int": int, "float": float, "str": str, "bool": bool}
+            return cls._checked_value(converters[name](args[0]))
+        if name == "abs" and len(args) == 1 and cls._is_number(args[0]):
+            return cls._checked_value(abs(args[0]))
+        if name in {"min", "max"} and args:
+            values = list(args[0]) if len(args) == 1 and isinstance(args[0], (list, tuple)) else args
+            if not values or not all(cls._is_number(value) or isinstance(value, str) for value in values):
+                raise ValueError("min/max require primitive values")
+            return cls._checked_value((min if name == "min" else max)(values))
+        if name == "sum" and len(args) == 1 and isinstance(args[0], (list, tuple)):
+            if not all(cls._is_number(value) for value in args[0]):
+                raise ValueError("sum requires numeric values")
+            return cls._checked_value(sum(args[0]))
+        if name in {"any", "all"} and len(args) == 1 and isinstance(args[0], (list, tuple)):
+            return (any if name == "any" else all)(args[0])
+        raise ValueError("Invalid builtin arguments")
+
+    @classmethod
+    def _checked_value(cls, value: Any) -> Any:
+        if value is None or isinstance(value, (bool, float)):
+            return value
+        if isinstance(value, int):
+            if value.bit_length() > 256:
+                raise ValueError("Integer result is too large")
+            return value
+        if isinstance(value, str):
+            if len(value) > cls.MAX_RESULT_STRING_LENGTH:
+                raise ValueError("String result is too large")
+            return value
+        if isinstance(value, (list, tuple)):
+            if len(value) > cls.MAX_COLLECTION_ITEMS:
+                raise ValueError("Collection is too large")
+            for item in value:
+                cls._checked_value(item)
+            return value
+        if isinstance(value, dict):
+            if len(value) > cls.MAX_COLLECTION_ITEMS:
+                raise ValueError("Mapping is too large")
+            for key, item in value.items():
+                if not isinstance(key, (str, int)):
+                    raise ValueError("Mapping keys must be strings or integers")
+                cls._checked_value(item)
+            return value
+        raise ValueError("Expression value type is not allowed")
+
+    @staticmethod
+    def _is_number(value: Any) -> bool:
+        return isinstance(value, (int, float)) and not isinstance(value, bool)
 
 
 # ---------------------------------------------------------------------------
@@ -657,7 +826,7 @@ def build_research_pipeline_graph(topic: str = "chladni modes") -> SceneGraph:
     g = SceneGraph("research_pipeline")
 
     # Entry: classify the topic
-    g.add_scene("start", action="noop", set_vars={"query": f"'{topic}'"})
+    g.add_scene("start", action="noop", set_vars={"query": repr(topic)})
     g.add_choice("start", [
         Choice("arxiv_deep", label="Deep academic search", condition="True", weight=2.0),
         Choice("web_scan", label="Web intelligence scan", condition="True", weight=1.5),
