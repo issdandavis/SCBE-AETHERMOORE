@@ -1255,7 +1255,17 @@ def _load_task_ball_database() -> dict[str, dict]:
 
 
 def _load_arc_task_from_args(task_id: str | None, task_json: str | None):
-    from src.neurogolf.arc_io import load_arc_task
+    # neurogolf is an ARC competition lane, not platform code, and it now lives in its own
+    # repo (github.com/issdandavis/neurogolf). Guarded so a checkout without it gives a
+    # readable reason instead of an ImportError traceback -- geoseal_cli.py already guards
+    # its three call sites the same way; this one was the only bare import.
+    try:
+        from src.neurogolf.arc_io import load_arc_task
+    except ImportError as exc:  # pragma: no cover - depends on optional lane
+        raise RuntimeError(
+            "ARC task loading needs the neurogolf lane, which is not installed here. "
+            "Clone github.com/issdandavis/neurogolf onto the path to enable it."
+        ) from exc
 
     if bool(task_id) == bool(task_json):
         raise ValueError("Provide exactly one of --task-id or --task-json")

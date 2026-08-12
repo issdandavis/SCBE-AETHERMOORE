@@ -9,14 +9,14 @@ include scbe.py
 # declares, MANIFEST.in decides what the sdist physically contains, and `python -m build`
 # builds the wheel FROM THE SDIST. A package named in one and not the other is declared
 # but not shipped -- the installed package then raises ModuleNotFoundError.
-# scbe_aethermoore and neurogolf were missing here through 4.2.1.
+# scbe_aethermoore and neurogolf were missing here through 4.2.1. neurogolf was
+# removed entirely 2026-08-12 -- it moved to github.com/issdandavis/neurogolf.
 # tests/test_manifest_covers_packages.py fails the build if they drift apart again.
 recursive-include src/code_prism *.py
 recursive-include src/crypto *.py
 recursive-include src/flow_router *.py
 recursive-include src/harmonic *.py
 recursive-include src/minimal *.py
-recursive-include src/neurogolf *.py
 recursive-include src/scbe_aethermoore *.py
 recursive-include src/spiralverse *.py
 recursive-include src/storage *.py

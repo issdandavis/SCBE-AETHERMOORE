@@ -10,7 +10,7 @@ duplicate root packages (symphonic_cipher/, api/), so we run two finds and merge
 from setuptools import find_namespace_packages, find_packages, setup
 
 SRC_INCLUDE = [
-    "neurogolf*", "scbe_aethermoore*", "code_prism*", "flow_router*",
+    "scbe_aethermoore*", "code_prism*", "flow_router*",
     "symphonic_cipher*", "api*", "crypto*", "harmonic*", "spiralverse*",
     "minimal*", "storage*",
 ]
