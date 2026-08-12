@@ -69,14 +69,14 @@ Each axiom has a Python implementation in `src/symphonic_cipher/scbe_aethermoore
 
 ## 2. Swarm protocol surface
 
-Source: `docs/research/DEFENSECLAW_TO_SCBE_SWARM_CAPABILITY_MAP.md` and the swarm skills under `.claude/skills/` and `external/codex-skills-live/`.
+Source: `docs/research/DEFENSECLAW_TO_SCBE_SWARM_CAPABILITY_MAP.md` and the swarm skills under `.claude/skills/` and `https://github.com/issdandavis/codex-skills-live/blob/master/`.
 
 ### What's coherent [reported, partially verified]
 
 - **Six Sacred Tongues map to swarm roles.** Functional naming convention used in swarm docs is *role-first*: `COMMAND / QUERY / NEGOTIATE / STATUS / SIGNAL / LEARN`. The role mapping is real; the tongue *names* must stay canonical (Kor'aelin / Avali / Runethic / Cassisivadan / Umbroth / Draumric — anything else is drift, like the `Aelindra/Voxmara/...` set we just fixed in the demo files).
 - **Spatial indexing**: octree-based proximity routing (`hydra/lattice25d_ops.py` exists [verified]; `src/octree_sphere_grid.py` claimed by an agent — file does **not** exist [verified missing]).
 - **Safety governance**: `src/agent_comms/swarm_defense.py` + `tests/agent_comms/test_swarm_defense.py` [verified exist] — deterministic ALLOW/WARN/QUARANTINE/DENY verdicts with audit trails.
-- **Multi-agent relay**: baton handoffs with overwatcher gates (`external/codex-skills-live/scbe-overwatch-relay-swarm/SKILL.md`).
+- **Multi-agent relay**: baton handoffs with overwatcher gates (`https://github.com/issdandavis/codex-skills-live/blob/master/scbe-overwatch-relay-swarm/SKILL.md`).
 - **Headless browser swarm**: 6 agents (Scout-KO, Reader-AV, Binder-RU, Compute-CA, Guard-UM, Synth-DR) with membrane enforcement (HONEYPOT/ISOLATE/DEGRADE).
 
 ### What's paper-only [reported]

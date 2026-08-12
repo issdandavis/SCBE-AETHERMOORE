@@ -122,7 +122,7 @@ stealth -> isolate risky or private lanes
 adjutant -> validate receipts and command chain
 ```
 
-`src/ai_brain/swarm-formation.ts` is the runtime formation manager. It tracks formation type, position, role, health, coherence, and trust-weighted votes. `external/codex-skills-live/scbe-github-sweep-sorter/references/formations.md` adds the practical collaboration formations, with an explicit note that they are for software collaboration, not literal military automation.
+`src/ai_brain/swarm-formation.ts` is the runtime formation manager. It tracks formation type, position, role, health, coherence, and trust-weighted votes. `https://github.com/issdandavis/codex-skills-live/blob/master/scbe-github-sweep-sorter/references/formations.md` adds the practical collaboration formations, with an explicit note that they are for software collaboration, not literal military automation.
 
 The actual flight-specific modules are:
 

@@ -1,4 +1,0 @@
-interface:
-  display_name: "SCBE GitHub + Systems"
-  short_description: "GitHub workflow + SCBE-AETHERMOORE guidance"
-  default_prompt: "Use -github-systems to navigate SCBE repos and handle PRs."

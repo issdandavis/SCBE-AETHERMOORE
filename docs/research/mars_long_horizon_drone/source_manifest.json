@@ -144,7 +144,7 @@
     },
     {
       "id": "skill_formations_reference",
-      "path_or_url": "external/codex-skills-live/scbe-github-sweep-sorter/references/formations.md",
+      "path_or_url": "https://github.com/issdandavis/codex-skills-live/blob/master/scbe-github-sweep-sorter/references/formations.md",
       "retrieved_at": "2026-06-20",
       "hash_or_commit": "sha256:68038B320C7EF79FD4DEF4569AFEEF4FB10492166398F1A56F631DF750594F8B"
     },
