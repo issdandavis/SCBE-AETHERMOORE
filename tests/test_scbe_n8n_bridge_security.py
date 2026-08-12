@@ -116,12 +116,20 @@ def test_dispatch_single_provider_hides_exception_text(monkeypatch) -> None:
 
 @pytest.mark.asyncio
 async def test_execute_code_hides_kernel_runner_exception_text(monkeypatch) -> None:
+    # AUTHENTICATE FIRST, or this tests nothing. `execute_code` calls `_require_key_strict`
+    # before it ever reaches the kernel-runner call, so without a configured key the route
+    # raises 503 at the gate and the leakage assertion below is never evaluated. The guard was
+    # added after this test was written, and the test has been failing at the door ever since
+    # -- meaning the property it exists to protect (an upstream exception's text must not reach
+    # the caller) has been UNTESTED, not merely red.
+    monkeypatch.setattr(bridge, "_API_KEYS", {"test-key"})
+
     def fake_urlopen(*args, **kwargs):
         raise RuntimeError("secret kernel-runner details")
 
     monkeypatch.setattr(bridge.urllib_request, "urlopen", fake_urlopen)
 
-    result = await bridge.execute_code(bridge.CodeExecRequest(code="print('hi')"))
+    result = await bridge.execute_code(bridge.CodeExecRequest(code="print('hi')"), x_api_key="test-key")
 
     assert result["stderr"] == "kernel-runner request failed"
     assert "secret kernel-runner details" not in json.dumps(result)

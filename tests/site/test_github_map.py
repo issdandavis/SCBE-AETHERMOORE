@@ -19,7 +19,14 @@ def test_every_html_page_has_one_live_and_source_mapping():
         f"docs/{path.relative_to(build_github_map.DOCS).as_posix()}" for path in build_github_map.DOCS.rglob("*.html")
     }
 
-    assert len(items) == 81
+    # The set comparison below is the real check -- it proves every HTML page under docs/ has
+    # exactly one mapping. A hard-coded count adds nothing on top of it and goes stale the
+    # moment a page is added: this asserted 81 and failed at 82 when docs/repo-state.html
+    # landed, blaming the generator for correct behaviour. Same failure mode as the version
+    # literal in tests/test_cli_version.py. Derive the count, and keep a floor so a generator
+    # that returns nothing still fails loudly.
+    assert len(items) == len(actual)
+    assert len(items) > 50, f"generator returned only {len(items)} pages; it is probably broken"
     assert {item.path for item in items} == actual
     assert len({item.live_url for item in items}) == len(items)
     assert len({item.source_url for item in items}) == len(items)
