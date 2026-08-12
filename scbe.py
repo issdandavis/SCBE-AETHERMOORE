@@ -48,14 +48,17 @@ from typing import Any, Dict, List, Optional, Tuple
 
 
 def _resolve_version() -> str:
-    # Single source of truth: the installed package metadata (pyproject = 4.3.0).
-    # Falls back to the literal when running from a source tree that isn't installed.
+    # Single source of truth: the installed package metadata, which tracks pyproject.
+    # The literal below is only reached from a source tree with no installed distribution;
+    # keep it equal to pyproject.toml `version` on every bump. It had gone stale at 4.3.0
+    # after the 4.3.1 bump -- harmless while the metadata path resolves, but it is the value
+    # anyone gets from an uninstalled checkout, so it should not lie.
     try:
         from importlib.metadata import version as _pkg_version
 
         return _pkg_version("scbe-aethermoore")
     except Exception:
-        return "4.3.0"
+        return "4.3.1"
 
 
 VERSION = _resolve_version()

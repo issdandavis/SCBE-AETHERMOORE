@@ -9,10 +9,17 @@ from __future__ import annotations
 
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-EXPECTED = "4.3.0"
+
+# Read the expected version from pyproject rather than hard-coding it. A literal here went
+# stale at 4.3.0 across the 4.3.1 bump and failed three tests against correct code, which
+# points the blame at the package instead of the test. Deriving it means a bump cannot
+# desynchronise this file. pyproject is the single source of truth (see scbe._resolve_version).
+with (REPO / "pyproject.toml").open("rb") as _fh:
+    EXPECTED = tomllib.load(_fh)["project"]["version"]
 
 
 def _run(*args: str) -> subprocess.CompletedProcess:

@@ -107,6 +107,8 @@ PYTHONPATH=. python -m pytest tests/ -x -q \
 - **Black formatting**: Always run `black --target-version py311 --line-length 120` on new Python files. CI rejects unformatted code.
 - **Prettier formatting**: Always run `npm run format` on new TypeScript files. CI rejects unformatted code.
 - **Unused imports/variables**: TypeScript compilation catches these. Run `npm run build` before pushing.
+- **A partially-extracted zig fails 27 polyglot tests and `zig version` will not tell you** (measured 2026-08-12). `tests/test_polyglot_execution.py` compiles all 8 CA targets; zig is one of them. A WinGet zig install had `lib/compiler_rt/` **empty** and `lib/libc/` at **213 of 16,659 files** — 2,421 files present out of 19,542 — while `zig.exe` was intact and `zig version` answered `0.16.0` correctly. Every cheap check passed; every compile failed with `unable to load 'absv.zig': FileNotFound`. Diagnose by compiling, not by asking for a version: `printf 'pub fn main() void {}' > h.zig && zig build-exe h.zig`. Fix with `winget install --id zig.zig --force`; afterwards `lib/` should hold **13 directories and ~19,500 files**. Suite went 110/137 → **137/137**.
+- **Version literals must come from `pyproject.toml`, not be typed twice.** `tests/test_cli_version.py` hard-coded `EXPECTED = "4.3.0"` and stayed there across the 4.3.1 bump, failing three tests against entirely correct code and pointing the blame at the package. It now reads `pyproject.toml` via `tomllib`. `scbe.py::_resolve_version`'s uninstalled-source fallback is the one remaining literal — keep it equal to pyproject on every bump.
 
 ## Critical Gotcha: Dual `symphonic_cipher` Packages
 

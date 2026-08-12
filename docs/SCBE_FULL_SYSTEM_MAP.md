@@ -9,7 +9,14 @@ generated evidence.
 
 ## Authority Chain
 
-Use these first when files disagree:
+> **SUPERSEDED, 2026-08-12.** `docs/CANONICAL_SYSTEM_STATE.md` v2.0.0 (2026-07-24) defines the
+> authority order and puts **executed code and tests first**, above the formula registry. It is
+> newer than this map and it is the document that owns the rule, so where the two disagree the
+> canonical state doc wins — and by its own rule a lower authority that conflicts is stale, which
+> includes the list below. Read it there. The ordering kept here is the 2026-06-14 reading, left
+> in place for provenance rather than deleted.
+
+Historical (2026-06-14) ordering:
 
 1. `docs/specs/CANONICAL_FORMULA_REGISTRY.md`
 2. `docs/CANONICAL_SYSTEM_STATE.md`
@@ -17,6 +24,11 @@ Use these first when files disagree:
 4. Tests and benchmark lanes
 5. Public docs
 6. Notes, articles, archive, generated artifacts
+
+Also note the canonical state doc's other load-bearing claim, absent here: **there is no single
+byte-identical 14-layer runtime.** Four profiles (`TS_PIPELINE14`, `PY_REFERENCE14`, `PY_FULL14`,
+`PUBLIC_SCAN`) diverge at Layer 11 aggregation and Layer 13 decisions, so a result must name its
+profile.
 
 The formula registry separates the unbounded harmonic wall
 `H(d*, R) = R^((phi * d*)^2)` from the bounded compatibility scorer
@@ -49,6 +61,16 @@ Key paths:
   sacred tongue, and geometry modules
 - `src/governance/`: runtime gates, negative tongue lattice, trichromatic
   governance, chemical bonds, bijective tamper checks
+- `src/governance/trichromatic_state_chain.py`: the AUTHENTICATION half of the
+  trichromatic surface — a 256-bit keyed BLAKE2s tag over a length-prefixed
+  (session, counter, nonce, state digest, previous tag, tongue, orientation),
+  chained so replay and reordering fail. Distinct from the trichromatic overlay
+  above, which is DETECTION: 63 channels of anomaly features, measured in
+  dimensions, never in bits of security. Keeping the two apart is the point;
+  `security_report()` names the overstatements it refuses.
+- `src/governance/orientation.py`: multi-sign orientation, one sign per axis from
+  `{+, 0, -}`. Bound under the tag but outside the state digest, so a direction
+  change leaves the value provably untouched. Default arity 6, one axis per tongue.
 - `src/crypto/`: GeoSeal, PQC, Sacred Tongues, chromatics, code lattice,
   AetherLex seed material
 
