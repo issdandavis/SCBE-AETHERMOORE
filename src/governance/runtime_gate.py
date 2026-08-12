@@ -1111,6 +1111,9 @@ class RuntimeGate:
         trichromatic_lattice_score = 0.0
         trichromatic_anomaly = 0.0
         trichromatic_risk = 0.0
+        # Holds the full three-field measurement when one was taken, so the veto's corroboration
+        # gate can stain it. None means no reading exists and the gate must not pretend otherwise.
+        tri_scores = None
         trichromatic_flagged = False
         trichromatic_state_hash = ""
         trichromatic_strongest_bridge = ""
@@ -1577,10 +1580,34 @@ class RuntimeGate:
                         self._immune.add(action_hash)
                         noise = _fail_to_noise(action_hash)
                     elif escalated == Decision.QUARANTINE:
-                        signals.append(
-                            "trichromatic_veto_quarantine("
-                            f"{trichromatic_risk:.2f}>{self._trichromatic_quarantine_threshold:.2f})"
-                        )
+                        # CORROBORATION GATE. The blended risk score's safe and attack
+                        # distributions OVERLAP -- measured on the validation set, the highest
+                        # benign score (0.532) sits above the lowest attack score (0.444). Five
+                        # ways of reading those three fields differently were tried and all
+                        # failed to separate them (threshold move, per-field partition, adaptive
+                        # scale, tare, longer ruler), because the overlap is in the features and
+                        # not in the reading. So an overlapping score is not on its own grounds
+                        # to overturn the rest of the stack.
+                        #
+                        # A dye dot is. Each dye binds one localized condition whose threshold
+                        # sits above EVERY benign reading measured and below a real slice of the
+                        # attack set, so a bind is independent evidence rather than the same
+                        # number re-read. Require at least one before this veto may escalate.
+                        # The DENY path above is deliberately untouched -- it is a far higher bar
+                        # and weakening it is not in scope here.
+                        plate = self._trichromatic_engine.stain(tri_scores) if tri_scores is not None else None
+                        if plate is not None and plate.count == 0:
+                            signals.append(
+                                f"trichromatic_veto_witheld(no_dye|{plate.pattern}|" f"risk={trichromatic_risk:.2f})"
+                            )
+                            escalated = decision
+                        else:
+                            marks = ",".join(plate.names) if plate is not None else "unstained"
+                            signals.append(
+                                "trichromatic_veto_quarantine("
+                                f"{trichromatic_risk:.2f}>{self._trichromatic_quarantine_threshold:.2f}"
+                                f"|dye={marks})"
+                            )
                     decision = escalated
 
             # Council manifold overlay — third tier, escalate-only
