@@ -7,7 +7,20 @@ from python.scbe.cube_faces import all_faces
 
 def test_all_faces_present():
     f = all_faces("loop")
-    assert set(f["faces"]) == {"bits", "chemistry", "roles", "audio", "code", "governance", "wolfram"}
+    # color, affect and address were added after this list was written; the face set
+    # is 10, not 7. address is the byte<->(cell,orientation) placement face.
+    assert set(f["faces"]) == {
+        "bits",
+        "chemistry",
+        "roles",
+        "audio",
+        "code",
+        "governance",
+        "wolfram",
+        "color",
+        "affect",
+        "address",
+    }
 
 
 def test_bits_and_audio_faces():
@@ -49,6 +62,15 @@ def test_roles_come_from_chemistry_trit():
     active = [t for t in ("KO", "AV", "RU", "CA", "UM", "DR") if trit.get(t, 0) > 0]
     # one role label per positively-lit tongue channel
     assert len(f["faces"]["roles"]) == len(active)
+
+
+def test_unresolved_identifier_does_not_light_semantic_faces():
+    faces = all_faces("feature_0")["faces"]
+
+    assert faces["chemistry"]["semantic_resolved"] is False
+    assert faces["chemistry"]["element"] is None
+    assert faces["roles"] == []
+    assert faces["governance"]["tier"] == "ABSTAIN"
 
 
 def test_real_chemistry_recognized():
