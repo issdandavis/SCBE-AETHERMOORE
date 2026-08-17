@@ -150,7 +150,10 @@ jobs:
       - name: Install and audit
         id: pip_audit
         run: |
-          pip install pip-audit
+          # pip-audit scans the installed environment, including the runner's
+          # build toolchain. Keep setuptools above the audited security floor
+          # so runner packages are not reported as project vulnerabilities.
+          pip install --upgrade "setuptools>=83.0.0" pip-audit
           # Install from requirements.txt if it exists, otherwise scan installed
           if [ -f requirements.txt ]; then
             pip install -r requirements.txt
