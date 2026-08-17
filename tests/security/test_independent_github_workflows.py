@@ -33,3 +33,10 @@ def test_daily_dependency_audit_uses_one_rolling_issue_not_daily_issue_spam() ->
     assert "Dependency Vulnerabilities - ${today}" not in text
     assert "issues.update" in text
     assert "updates one rolling issue" in text
+
+
+def test_weekly_security_scan_updates_the_audited_build_toolchain() -> None:
+    text = _workflow_text("weekly-security-scan.yml")
+    yaml.safe_load(text)
+
+    assert 'pip install --upgrade "setuptools>=83.0.0" pip-audit' in text
