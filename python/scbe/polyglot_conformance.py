@@ -47,12 +47,34 @@ _RUNNER_TOOL = {
 
 
 def _toolchain_ok(lang: str) -> bool:
+    if lang == "c":
+        return _c_compiler_prefix() is not None
     tool = _RUNNER_TOOL.get(lang, "<none>")
     if tool is None:
         return True  # python runs in-process
     if tool == "<none>":
         return False  # no runner implemented for this backend
     return shutil.which(tool) is not None
+
+
+def _c_compiler_prefix() -> Optional[List[str]]:
+    """Return the first usable C compiler command, preferring a native ``cc``.
+
+    Zig ships a real C compiler behind a two-argument command prefix (``zig cc``).
+    Keeping the prefix as argv lets the harness use it directly on Windows, where a
+    ``cc.cmd`` wrapper cannot be launched reliably by ``subprocess``/CreateProcess.
+    """
+    if shutil.which("cc") is not None:
+        return ["cc"]
+    if shutil.which("zig") is not None:
+        return ["zig", "cc"]
+    return None
+
+
+def _missing_toolchain_note(lang: str) -> str:
+    if lang == "c":
+        return "emitted; neither cc nor zig cc is available on PATH"
+    return "emitted; %s not on PATH" % _RUNNER_TOOL[lang]
 
 
 def _close(x: Optional[float], r: Optional[float]) -> bool:
@@ -74,6 +96,7 @@ _SPECIAL = {
     "rust": ("f64::NAN", "f64::INFINITY"),
     "c": ("NAN", "INFINITY"),
     "go": ("math.NaN()", "math.Inf(1)"),
+    "zig": ("std.math.nan(f64)", "std.math.inf(f64)"),
 }
 
 
@@ -134,7 +157,16 @@ def run_c(prog: Sequence[int], args: Sequence[float]) -> Optional[float]:
         f = Path(td) / "prog.c"
         f.write_text(src, encoding="utf-8")
         exe = Path(td) / ("prog.exe" if shutil.which("cmd") else "prog")
-        subprocess.run(["cc", str(f), "-lm", "-o", str(exe)], capture_output=True, text=True, timeout=120, check=True)
+        compiler = _c_compiler_prefix()
+        if compiler is None:
+            raise RuntimeError("neither cc nor zig cc is available on PATH")
+        subprocess.run(
+            [*compiler, str(f), "-lm", "-o", str(exe)],
+            capture_output=True,
+            text=True,
+            timeout=120,
+            check=True,
+        )
         return _run_subprocess_float([str(exe)])
 
 
@@ -238,7 +270,7 @@ def conformance(prog: Sequence[int], cases: Sequence[Sequence[float]]) -> dict:
             results.append(BackendResult(lang, "NO_RUNNER", note="emitted; no runner implemented"))
             continue
         if not _toolchain_ok(lang):
-            results.append(BackendResult(lang, "NO_TOOLCHAIN", note="emitted; %s not on PATH" % _RUNNER_TOOL[lang]))
+            results.append(BackendResult(lang, "NO_TOOLCHAIN", note=_missing_toolchain_note(lang)))
             continue
         try:
             vals = [_RUNNERS[lang](prog, c) for c in cases]

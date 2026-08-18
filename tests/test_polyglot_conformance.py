@@ -11,6 +11,7 @@ import shutil
 import pytest
 
 from python.scbe import polyglot as P
+from python.scbe import polyglot_conformance as C
 from python.scbe.polyglot_conformance import conformance
 
 _HAVE_NODE = shutil.which("node") is not None
@@ -22,6 +23,38 @@ def _status(rep, lang):
 
 def _values(rep, lang):
     return next(r.values for r in rep["results"] if r.lang == lang)
+
+
+def test_c_compiler_prefers_native_cc_over_zig(monkeypatch):
+    found = {"cc": "C:/toolchains/cc.exe", "zig": "C:/toolchains/zig.exe"}
+    monkeypatch.setattr(C.shutil, "which", found.get)
+
+    assert C._c_compiler_prefix() == ["cc"]
+    assert C._toolchain_ok("c") is True
+
+
+def test_c_runner_uses_zig_cc_when_native_cc_is_absent(monkeypatch):
+    found = {"zig": "C:/toolchains/zig.exe"}
+    monkeypatch.setattr(C.shutil, "which", found.get)
+    compile_commands = []
+
+    def fake_compile(cmd, **kwargs):
+        compile_commands.append(list(cmd))
+        return C.subprocess.CompletedProcess(cmd, 0)
+
+    monkeypatch.setattr(C.subprocess, "run", fake_compile)
+    monkeypatch.setattr(C, "_run_subprocess_float", lambda cmd: 5.0)
+
+    assert C.run_c(P.program_bytes("add"), (0.0, 2.0, 3.0)) == 5.0
+    assert compile_commands[0][:2] == ["zig", "cc"]
+
+
+def test_c_toolchain_is_absent_only_when_cc_and_zig_are_absent(monkeypatch):
+    monkeypatch.setattr(C.shutil, "which", lambda tool: None)
+
+    assert C._c_compiler_prefix() is None
+    assert C._toolchain_ok("c") is False
+    assert C._missing_toolchain_note("c") == "emitted; neither cc nor zig cc is available on PATH"
 
 
 def test_python_reference_is_computed_in_process():
