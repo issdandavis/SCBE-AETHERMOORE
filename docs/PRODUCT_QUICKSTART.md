@@ -1,43 +1,42 @@
 # Product Quickstart
 
-This is the shortest real path from clone to a working SCBE-AETHERMOORE product surface.
+Users send agent traffic through SCBE. SCBE PQC-seals it, gates it, writes a receipt, and bills provider cost + 2%.
 
-Use this file when the question is:
-
-- what should I run first
-- what is the actual product lane
-- how do I prove the repo is working without reading the full theory stack
+See `RELEASE.md` at the repo root. That is the product door. This file is the short run path.
 
 ## Official First-Run Lane
 
-The current product-first lane is the AetherBrowser local service path:
+```powershell
+python -m uvicorn src.api.main:app --port 8000
+```
 
-- backend service on `127.0.0.1:8002`
-- Chrome DevTools Protocol on `127.0.0.1:9222`
-- verification script that proves both surfaces are alive
+- API: `http://127.0.0.1:8000`
+- Docs: `http://127.0.0.1:8000/docs`
+- Health: `GET /v1/health`
+- Billing: `/billing` (Stripe checkout + webhooks from `src/api/stripe_billing.py`)
 
-This is the cleanest operational surface because it already has:
+Fee rule: `billed_cents = provider_cost_cents + ceil(provider_cost_cents * 0.02)`.
 
-- one start command
-- one verify command
-- one stop command
+Crypto on this path: ML-KEM-768 (session), ML-DSA-65 (receipts).
+
+## Optional clients
+
+- AetherDesk (separate repo): `npm run aetherdesk` → `http://127.0.0.1:5717`
+- AetherBrowse (in this repo, later): `src/browser/`
 
 ## Prerequisites
 
-- Node.js `18+`
-- Python available as `python`
-- Google Chrome installed
-- repo dependencies installed with `npm install`
+- Python 3.11+
+- Node.js 18+ if you run AetherDesk or the TypeScript package
+- Stripe keys only if you are testing checkout (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`)
 
-## Fast Path
-
-From the repo root:
+## Prove it
 
 ```powershell
-npm install
-npm run aetherbrowser:service:start
-npm run aetherbrowser:service:verify
+pytest tests/api/test_provider_pass_through_fee.py -q
 ```
+
+The AetherBrowser local service (`npm run aetherbrowser:service:start`) is a client lane, not the product API.
 
 What those do:
 

@@ -30,6 +30,7 @@ import hashlib
 import hmac
 import json
 import logging
+import math
 import os
 import secrets
 import time
@@ -79,6 +80,46 @@ PLANS: Dict[str, Dict[str, Any]] = {
 }
 
 LOGGER = logging.getLogger("scbe.billing")
+
+# Pass-through markup on provider/model spend. Policy range is 2-5% in
+# docs/offers.json; the product default is 2%.
+SERVICE_FEE_RATE = 0.02
+
+
+def meter_provider_usage(
+    provider_cost_cents: int,
+    *,
+    provider: str,
+    model: str,
+    fee_rate: float = SERVICE_FEE_RATE,
+) -> Dict[str, Any]:
+    """Bill provider spend plus a coordination fee.
+
+    ``billed_cents = provider_cost_cents + ceil(provider_cost_cents * fee_rate)``.
+    Zero or negative provider cost is a no-op line (no fee on nothing).
+    """
+    if fee_rate < 0 or fee_rate > 0.05:
+        raise ValueError("fee_rate must be in [0, 0.05]")
+    cost = int(provider_cost_cents)
+    if cost <= 0:
+        return {
+            "provider": provider,
+            "model": model,
+            "provider_cost_cents": 0,
+            "fee_cents": 0,
+            "billed_cents": 0,
+            "fee_rate": fee_rate,
+        }
+    fee_cents = int(math.ceil(cost * fee_rate))
+    return {
+        "provider": provider,
+        "model": model,
+        "provider_cost_cents": cost,
+        "fee_cents": fee_cents,
+        "billed_cents": cost + fee_cents,
+        "fee_rate": fee_rate,
+    }
+
 
 _KEYS_FILE = Path(__file__).resolve().parents[2] / "artifacts" / "revenue" / "api_keys.jsonl"
 

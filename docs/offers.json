@@ -6,7 +6,8 @@
     "name": "SCBE Service Credits",
     "model": "mostly-free local tools with pay-as-you-go credits only for hosted routing, reports, delivery, storage, and provider/model usage",
     "service_fee_percent_range": [2, 5],
-    "fee_note": "Provider/model costs are passed through with a small 2-5% SCBE coordination fee where usage is billable.",
+    "service_fee_percent_default": 2,
+    "fee_note": "Provider/model costs are passed through with a 2% SCBE coordination fee by default (policy cap 5%) where usage is billable.",
     "preferred_routing": "local/Ollama and deterministic harness first; paid providers only when needed"
   },
   "payment_methods": {

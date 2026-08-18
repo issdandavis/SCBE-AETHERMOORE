@@ -7,6 +7,8 @@
 
 Post-quantum AI governance through geometric adversarial cost scaling.
 
+**Product door:** `RELEASE.md`. One process (`src.api.main:app` on port 8000). Users stream agent traffic through SCBE; SCBE PQC-seals it (ML-KEM-768 / ML-DSA-65), gates it, and bills provider cost + 2%. AetherDesk is the optional operator client. Dataset `kernel-data-sync-*` tags are not the product.
+
 Adversarial inputs cost exponentially more the further they drift from safe operation. The mechanism is hyperbolic geometry applied to semantic embeddings — not heuristic classifiers or blocklists. The pipeline runs locally, produces audit receipts, and composes with upstream safety tools.
 
 **npm** · **PyPI** · **Patent pending: USPTO #19/691,526 (non-provisional, filed 2026-05-28), claiming priority to provisional #63/961,403 (2026-01-15)** · **CAGE 1EXD5** · **SAM UEI J4NXHM6N5F59**

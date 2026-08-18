@@ -603,7 +603,22 @@ def upload_to_github_release(
         check=False,
     )
     if view_proc.returncode != 0:
-        run_gh_command(["gh", "release", "create", tag, "--repo", repo, "--title", title, "--notes", notes], env)
+        run_gh_command(
+            [
+                "gh",
+                "release",
+                "create",
+                tag,
+                "--repo",
+                repo,
+                "--title",
+                title,
+                "--notes",
+                notes,
+                "--prerelease",
+            ],
+            env,
+        )
 
     upload_cmd = ["gh", "release", "upload", tag, "--repo", repo, "--clobber"] + [str(p) for p in files]
     run_gh_command(upload_cmd, env)
