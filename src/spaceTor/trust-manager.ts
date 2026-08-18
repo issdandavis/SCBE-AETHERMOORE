@@ -26,8 +26,17 @@ export enum SacredTongue {
 /**
  * Langues Weighting System parameters
  */
+export type LanguesWeightProfile = 'lws-linear' | 'phdm-golden' | 'custom';
+export type LanguesCostProfile = 'spacetor-v1' | 'spacetor-custom';
+
 export interface LanguesParams {
-  /** Harmonic weights for each tongue (golden ratio scaling) */
+  /** Named cost profile. Omitted custom parameter sets are reported as custom. */
+  costProfile?: LanguesCostProfile;
+
+  /** Named weight profile. Omitted custom parameter sets are reported as custom. */
+  weightProfile?: LanguesWeightProfile;
+
+  /** Harmonic weights for each tongue */
   w: number[];
 
   /** Growth coefficients (β_l) */
@@ -50,6 +59,12 @@ export interface LanguesParams {
  * Trust score result
  */
 export interface TrustScore {
+  /** Cost profile that produced this receipt */
+  costProfile: LanguesCostProfile;
+
+  /** Weight profile that produced this receipt */
+  weightProfile: LanguesWeightProfile;
+
   /** Raw Langues metric L(x,t) */
   raw: number;
 
@@ -87,10 +102,12 @@ export interface NodeTrust {
 }
 
 /**
- * Default Langues parameters (production-ready)
+ * Default SpaceTor Langues parameters
  */
 export const DEFAULT_LANGUES_PARAMS: LanguesParams = {
-  // Golden ratio scaling: w_l = φ^(l-1) where φ ≈ 1.618
+  // Rounded just-intonation ratios: 1/1, 9/8, 5/4, 4/3, 3/2, 5/3.
+  costProfile: 'spacetor-v1',
+  weightProfile: 'lws-linear',
   w: [1.0, 1.125, 1.25, 1.333, 1.5, 1.667],
 
   // Growth coefficients (moderate amplification)
@@ -121,7 +138,11 @@ export class TrustManager {
   private maxScore: number;
 
   constructor(params: LanguesParams = DEFAULT_LANGUES_PARAMS) {
-    this.params = params;
+    this.params = {
+      ...params,
+      costProfile: params.costProfile ?? 'spacetor-custom',
+      weightProfile: params.weightProfile ?? 'custom',
+    };
     this.nodes = new Map();
     this.maxScore = this.computeMaxScore();
   }
@@ -268,6 +289,8 @@ export class TrustManager {
     this.updateNodeTrust(nodeId, trustVector, raw);
 
     return {
+      costProfile: this.params.costProfile ?? 'spacetor-custom',
+      weightProfile: this.params.weightProfile ?? 'custom',
       raw,
       normalized,
       contributions,

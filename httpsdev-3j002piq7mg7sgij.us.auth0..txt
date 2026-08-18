@@ -1,0 +1,2 @@
+https://dev-3j002piq7mg7sgij.us.auth0.com/api/v2/
+https://dev-3j002piq7mg7sgij.us.auth0.com/me/

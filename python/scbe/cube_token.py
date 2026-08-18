@@ -188,8 +188,24 @@ class CubeToken:
             from python.scbe.atomic_tokenization import map_token_to_atomic_state
 
             st = map_token_to_atomic_state(self.token, language=language)
+            if not st.semantic_resolved:
+                return {
+                    "semantic_class": "UNRESOLVED",
+                    "fallback_semantic_class": st.semantic_class,
+                    "semantic_resolved": False,
+                    "semantic_source": st.semantic_source,
+                    "lexical_domains": [],
+                    "element": None,
+                    "Z": None,
+                    "valence": None,
+                    "trit_vector": {tongue: 0 for tongue in TONGUES},
+                    "negative_state": False,
+                }
             return {
                 "semantic_class": st.semantic_class,
+                "semantic_resolved": True,
+                "semantic_source": st.semantic_source,
+                "lexical_domains": list(st.lexical_domains),
                 "element": st.element.symbol,
                 "Z": st.element.Z,
                 "valence": st.element.valence,
@@ -197,14 +213,31 @@ class CubeToken:
                 "negative_state": st.negative_state,
             }
         except Exception as e:  # chem face is optional
-            return {"error": f"{type(e).__name__}: {e}"}
+            return {
+                "error": f"{type(e).__name__}: {e}",
+                "semantic_class": "UNRESOLVED",
+                "semantic_resolved": False,
+                "semantic_source": "classifier-error",
+                "trit_vector": {tongue: 0 for tongue in TONGUES},
+                "negative_state": False,
+            }
 
     # ---- governance face ----
     def gov_face(self) -> Dict[str, Any]:
         chem = self.chem_face()
+        if not chem.get("semantic_resolved", False):
+            return {
+                "semantic_class": "UNRESOLVED",
+                "tier": "ABSTAIN",
+                "semantic_resolved": False,
+                "semantic_source": chem.get("semantic_source", "unresolved"),
+            }
         return {
             "semantic_class": chem.get("semantic_class", "UNKNOWN"),
             "tier": "ALLOW" if not chem.get("negative_state") else "QUARANTINE",
+            "semantic_resolved": True,
+            "semantic_source": chem.get("semantic_source", "explicit"),
+            "lexical_domains": chem.get("lexical_domains", []),
         }
 
     # ---- the bijection: recover the whole cube from any single face ----

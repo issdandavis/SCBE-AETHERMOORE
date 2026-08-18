@@ -36,9 +36,7 @@ describe('Trust Manager - Layer 3 (Langues Metric Tensor)', () => {
 
       const L = languesMetric(x, mu, w, beta, omega, phi, t);
 
-      // Should be approximately 13.1 (within 10% tolerance)
-      expect(L).toBeGreaterThan(11.0);
-      expect(L).toBeLessThan(15.0);
+      expect(L).toBeCloseTo(12.647736189185094, 12);
     });
 
     it('Property 1: Positivity - L(x,t) > 0 for all valid inputs', () => {
@@ -171,11 +169,30 @@ describe('Trust Manager - Layer 3 (Langues Metric Tensor)', () => {
       const score = manager.computeTrustScore('node-1', trustVector);
 
       expect(score.raw).toBeGreaterThan(0);
+      expect(score.costProfile).toBe('spacetor-v1');
+      expect(score.weightProfile).toBe('lws-linear');
       expect(score.normalized).toBeGreaterThan(0);
       expect(score.normalized).toBeLessThanOrEqual(1);
       expect(score.level).toBe('HIGH'); // Ideal values = high trust
       expect(score.contributions).toHaveLength(6);
       expect(score.gradient).toHaveLength(6);
+    });
+
+    it('labels unlabeled custom parameter sets instead of guessing their profile', () => {
+      const customParams = {
+        ...DEFAULT_LANGUES_PARAMS,
+        costProfile: undefined,
+        weightProfile: undefined,
+      };
+      const manager = new TrustManager({
+        ...customParams,
+        w: [...customParams.w],
+      });
+
+      const score = manager.computeTrustScore('node-custom', [0.5, 0.5, 0.5, 0.5, 0.5, 0.5], 0);
+
+      expect(score.costProfile).toBe('spacetor-custom');
+      expect(score.weightProfile).toBe('custom');
     });
 
     it('should reject invalid trust vector length', () => {
@@ -403,16 +420,17 @@ describe('Trust Manager - Layer 3 (Langues Metric Tensor)', () => {
       expect(SacredTongue.DRAUMRIC).toBe(5);
     });
 
-    it('should have golden ratio scaling in weights', () => {
-      const { w } = DEFAULT_LANGUES_PARAMS;
+    it('should use the labeled rounded just-intonation weight profile', () => {
+      const { w, weightProfile } = DEFAULT_LANGUES_PARAMS;
+      const justIntonation = [1, 9 / 8, 5 / 4, 4 / 3, 3 / 2, 5 / 3];
 
-      // Verify golden ratio progression
-      expect(w[0]).toBe(1.0);
-      expect(w[1]).toBeCloseTo(1.125, 2);
-      expect(w[2]).toBeCloseTo(1.25, 2);
-      expect(w[3]).toBeCloseTo(1.333, 2);
-      expect(w[4]).toBeCloseTo(1.5, 2);
-      expect(w[5]).toBeCloseTo(1.667, 2);
+      expect(weightProfile).toBe('lws-linear');
+      w.forEach((weight, index) => {
+        expect(weight).toBeCloseTo(justIntonation[index], 3);
+      });
+
+      const goldenRatio = (1 + Math.sqrt(5)) / 2;
+      expect(w[5]).not.toBeCloseTo(goldenRatio ** 5, 1);
     });
   });
 

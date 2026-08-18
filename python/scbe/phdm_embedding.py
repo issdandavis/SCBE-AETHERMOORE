@@ -84,6 +84,13 @@ class PoincareBall:
         self.radius = radius
         self.origin = np.zeros(6)
 
+    # Projection strategies. `clamp` is PRIMARY and claim-bearing: it is the
+    # behaviour on file for the harmonic-wall / d_H authorization mechanism, and
+    # it is not removed. `n_bounded` is a labelled ALTERNATIVE, appended, never
+    # substituted. Both remain callable and every projection records which fired.
+    PROJECTION_PRIMARY = "clamp"
+    PROJECTION_ALTERNATIVES = ("n_bounded",)
+
     def embed(self, vector: np.ndarray) -> np.ndarray:
         """Project vector into Poincare Ball"""
         norm = np.linalg.norm(vector)
@@ -91,6 +98,128 @@ class PoincareBall:
             # Clamp to ball boundary with small margin
             vector = vector * (self.radius - 1e-5) / norm
         return vector
+
+    def n_bounded_radius(self, depth: float) -> float:
+        """Euclidean radius for a point at hyperbolic depth `depth`.
+
+        r(n) = tanh(n / 2)  inverts  d_H(0, r) = 2 * atanh(r)
+
+        In exact arithmetic the result approaches `radius` without reaching it.
+        Float64 has a finite open-ball limit, so depths that round onto the
+        boundary fail closed instead of silently erasing depth:
+
+            n=1 -> 0.4621   n=2 -> 0.7616   n=3 -> 0.9051   n=4 -> 0.9640
+            n=10 -> 0.9999092043             n=20 -> 0.9999999959
+        """
+        try:
+            depth_value = float(depth)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"depth must be a finite real number, got {depth!r}") from exc
+        if not np.isfinite(depth_value) or depth_value < 0.0:
+            raise ValueError(f"depth must be a finite non-negative number, got {depth!r}")
+
+        radius = float(self.radius)
+        if not np.isfinite(radius) or radius <= 0.0:
+            raise ValueError(f"radius must be finite and positive, got {self.radius!r}")
+
+        target = float(radius * np.tanh(depth_value / 2.0))
+        if target >= radius:
+            max_depth = float(2.0 * np.arctanh(np.nextafter(1.0, 0.0)))
+            raise ValueError(
+                f"depth {depth_value!r} is not representable inside the open "
+                f"Poincare ball in float64; maximum is below {max_depth:.12g}"
+            )
+        return target
+
+    def embed_n_bounded(
+        self,
+        vector: np.ndarray,
+        depth: float,
+    ) -> np.ndarray:
+        """ALTERNATIVE projection: direction from `vector`, radius from `depth`.
+
+        The clamp maps every point at or past the boundary onto a single shell
+        at `radius - 1e-5`, erasing any input magnitude beyond the boundary.
+        This alternative preserves a caller-supplied structural depth in the
+        output norm while retaining the input direction.
+
+        `harmonic_wall_cost(r, d=14)` below is the legacy bounded PHDM radial
+        power gate `r**196`. Giving it a depth-sensitive radius restores
+        variation, but does not turn it into the registered unbounded Harmonic
+        Wall cost. Downstream gains require a controlled task with an honest
+        structural depth source; this projection alone is not a model gain. See
+        `docs/research/PHDM_N_BOUNDED_ADDITIVE_ABLATION_2026-07-29.md`.
+
+        NOT CLAIMED: this does not implement inversion at the tangent point of
+        the radial curve (horospheres / Busemann coordinates). No `horosphere`
+        or `busemann` implementation exists in this tree. This only replaces a
+        pinned radius with a depth-derived one; it is not the full boundary
+        treatment.
+        """
+        target = self.n_bounded_radius(depth)
+        direction = np.asarray(vector, dtype=np.float64)
+        if not np.all(np.isfinite(direction)):
+            raise ValueError("vector must contain only finite values")
+
+        norm = float(np.linalg.norm(direction))
+        if norm == 0.0:
+            if target == 0.0:
+                return np.zeros_like(direction)
+            raise ValueError("a non-zero direction vector is required when depth is positive")
+
+        projected = direction * (target / norm)
+        projected_norm = float(np.linalg.norm(projected))
+        if not np.isfinite(projected_norm) or projected_norm >= float(self.radius):
+            raise ValueError("projected vector is not representable inside the open Poincare ball")
+        return projected
+
+    def project(
+        self,
+        vector: np.ndarray,
+        *,
+        strategy: str = PROJECTION_PRIMARY,
+        depth: float | None = None,
+    ) -> tuple[np.ndarray, dict]:
+        """Project and return a decision record naming which strategy fired.
+
+        Callers that require projection provenance should use this wrapper.
+        The lower-level projection methods remain available for compatibility.
+        """
+        depth_applied = False
+        depth_requested = None
+        if strategy == "clamp":
+            out = self.embed(vector)
+        elif strategy == "n_bounded":
+            if depth is None:
+                raise ValueError("strategy 'n_bounded' requires depth")
+            out = self.embed_n_bounded(vector, depth)
+            depth_applied = True
+            depth_requested = float(depth)
+        else:
+            raise ValueError(
+                f"unknown projection strategy {strategy!r}; "
+                f"primary={self.PROJECTION_PRIMARY!r} "
+                f"alternatives={self.PROJECTION_ALTERNATIVES!r}"
+            )
+        r = float(np.linalg.norm(out))
+        normalized_radius = r / float(self.radius)
+        return out, {
+            "schema": "scbe_poincare_projection_record_v1",
+            "strategy_fired": strategy,
+            "is_primary": strategy == self.PROJECTION_PRIMARY,
+            "input_norm": float(np.linalg.norm(vector)),
+            "output_radius": r,
+            "depth_requested": depth_requested,
+            "depth_applied": depth_applied,
+            "hyperbolic_distance_from_origin": (
+                float(2.0 * np.arctanh(min(normalized_radius, np.nextafter(1.0, 0.0))))
+            ),
+            "clamped_at_boundary": bool(
+                strategy == "clamp" and np.linalg.norm(vector) >= self.radius
+            ),
+            "harmonic_wall_cost": self.harmonic_wall_cost(normalized_radius),
+            "harmonic_profile": "PHDM_LEGACY_RADIAL_POWER_GATE_UNREGISTERED",
+        }
 
     def hyperbolic_distance(self, u: np.ndarray, v: np.ndarray) -> float:
         """Calculate hyperbolic distance in Poincare Ball"""

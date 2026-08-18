@@ -1,0 +1,455 @@
+
+Productive math talk: a simple reference solution for Trace the Ace
+A simple scikit-learn reference solution for predicting whether a student answers their next assessment question correctly from tutoring session transcripts in the Trace the Ace challenge.
+
+
+Peter Bull
+Co-founder
+On this page
+Productive math talk: a small reference solution for Trace the Ace
+Background
+Step 0: Set up
+Step 1: Load the data
+What a session looks like
+Step 2: Build three session features
+Drop sessions with almost no student talk
+How much do students actually say?
+Do the features track correctness on their own?
+Step 3: Fit the model
+Step 4: Read the sessions
+Where the pattern fails
+What this does and doesn't tell us
+What I would try next
+Share this page
+Productive math talk: a small reference solution for Trace the Ace
+This notebook builds a transcript-only reference solution for the Trace the Ace challenge. You will need to sign up for the competition to access the data.
+
+The task is knowledge tracing from dialogue: predict whether a student will answer the next assessment question correctly using only the tutoring session that came before it. There are plenty of ways to attack this problem, including fine-tuned transformers, LLM judges, and turn-level tracing models. This notebook starts smaller. We describe what productive tutoring might sound like, reduce that idea to three things we can measure per session, and see whether the data agrees.
+
+This is not a leaderboard model. The point of using three features and logistic regression is that we can inspect every moving part and get more insight into thinking about what makes good tutoring.
+
+Background
+One-to-one tutoring can work well, but it is expensive and difficult to review at scale. Trace the Ace takes its name from knowledge tracing: inferring what a student knows from the record of their work. In this competition, that record is a conversation. A useful transcript model may help a tutoring program find sessions worth reviewing or help identify what works for certain students.
+
+The data contain turn-by-turn records of live math lessons. Each utterance has a speaker role and text. A row in train_features.csv pairs a session with one learning objective through a response_id; the outcome is whether the student answered the next assessment question for that objective correctly. The metric is log loss, so a well-calibrated probability beats a bold guess.
+
+The competition asks for insight into tutoring effectiveness so we test a few hypotheses framed around when and how students talk about numbers.
+
+Step 0: Set up
+The notebook uses the standard PyData stack and scikit-learn. It runs on a laptop in a few minutes.
+
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+import re
+
+from cloudpathlib import CloudPath
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import log_loss, roc_auc_score
+from sklearn.model_selection import GroupShuffleSplit
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+
+plt.style.use(CloudPath("s3://drivendata-public-assets/gregplotlib.mplstyle").fspath)
+pd.set_option("display.max_colwidth", None)
+
+DATA = Path("../data/drivendata-competition-nto-student-correctness/final/public")
+TRANSCRIPTS = DATA / "train_transcripts"
+MIN_STUDENT_WORDS = 100
+Step 1: Load the data
+train_features.csv has one row per response, along with its session and learning objective. train_labels.csv contains the outcomes. Point DATA to the directory where you downloaded the competition files.
+
+df = pd.read_csv(DATA / "train_features.csv").merge(
+    pd.read_csv(DATA / "train_labels.csv"), on="response_id"
+)
+df.head()
+response_id	session_id	learning_objective_id	learning_objective	is_correct
+0	aaaavsh	bcaufvc	dqibnvd	Knowing the value of each digit in numbers with up to 2 decimal places.	1.0
+1	aaabhzi	eyutanf	eukmzxl	Adding and subtracting tens to a 2-digit number.	1.0
+2	aaahpnz	juptkxd	fjbqcsv	Comparing and ordering fractions by finding a common denominator.	0.0
+3	aaajpom	ntwkcfj	acvbcev	Comparing fractions using reasoning.	0.0
+4	aaamwux	jqriibm	krfuudx	Counting in multiples.	0.0
+print("responses           ", len(df))
+print("sessions            ", df.session_id.nunique())
+print("learning objectives ", df.learning_objective.nunique())
+print("share correct       ", round(df.is_correct.mean(), 3))
+responses            35072
+sessions             22821
+learning objectives  398
+share correct        0.702
+What a session looks like
+Start with a transcript before inventing features. This excerpt comes from the middle of a lesson while the student works through a problem.
+
+example = pd.read_csv(TRANSCRIPTS / "eupclok.csv")
+example[["role", "content"]].iloc[92:102]
+role	content
+92	student	We can get 2,000.
+93	tutor	Uh-huh.
+94	student	2,000 plus 725 would be 2,725.
+95	tutor	Uh-huh.
+96	student	And I want to get 2,725.
+97	tutor	Uh-huh.
+98	student	You would minus 25, which would make it 2,600.
+99	student	75.
+100	tutor	But by the way, 2,675 is not the right answer.
+101	student	Hmm? Oh, wait, wait, wait, wait, wait, wait. So if I'm adding 25 onto it—
+Most of what the student says across those ten turns is thinking out loud. "2,000 plus 725 would be 2,725." "You would minus 25, which would make it 2,600." The numbers sit inside a chain of reasoning that the tutor can follow and correct. Then one turn is just "75."
+
+Both kinds of turn contain digits, but they operate differently in this tutoring context. Narrating a calculation is something that both shows us that a student is reasoning and gives the tutor something to respond to. Simply saying a digit may just be casting about for the right answer. We'll build features based on these kinds of turns.
+
+Step 2: Build three session features
+We'll start with three claims we can test.
+
+First, students who do more of the work tend to say more. Explanations, half-formed guesses, questions, and narrated calculations all produce words. A student who is lost or checked out may let the tutor fill the time instead. The first feature is simply the number of words the student says: n_student_words.
+
+A turn containing only a number is different from a sentence that uses a number. "75." is an answer, but it gives the tutor no reasoning to respond to. If most of a student's contribution looks like that, the session resembles a quiz more than a lesson. The second feature counts student turns containing a digit and divides by total student words: numeric_turns_per_word.
+
+Several numbers inside a longer turn may signal something else. In "2,000 plus 725 would be 2,725," the digits sit inside an explanation. Counting digit characters within a turn catches that difference: digit_chars_per_word.
+
+n_student_words	total words the student says	baseline engagement
+numeric_turns_per_word	student turns with a digit / student words	proportion of turns with student doing any math
+digit_chars_per_word	digit characters / student words	increase if student does more math within a turn
+The last two features share a denominator and both rise when a student uses numbers. They differ in what they count: turns versus characters. If bare answers and narrated calculations are genuinely different behaviors, the fitted coefficients should pull apart.
+
+WORD_RE = re.compile(r"[a-z0-9]+(?:'[a-z]+)?", re.I)
+DIGIT_RE = re.compile(r"\d")
+FEATURES = ["n_student_words", "numeric_turns_per_word", "digit_chars_per_word"]
+
+
+def session_features(session_id):
+    turns = pd.read_csv(TRANSCRIPTS / f"{session_id}.csv")
+    student = turns.content.fillna("").astype(str)[turns.role.eq("student")]
+    text = " ".join(student)
+    n_words = len(WORD_RE.findall(text)) or np.nan
+    return {
+        "session_id": session_id,
+        "n_turns": len(turns),
+        "n_student_words": n_words,
+        "numeric_turns_per_word": student.str.contains(r"\d").sum() / n_words,
+        "digit_chars_per_word": len(DIGIT_RE.findall(text)) / n_words,
+    }
+
+
+with ThreadPoolExecutor(32) as pool:
+    sessions = pd.DataFrame(pool.map(session_features, df.session_id.unique()))
+df = df.merge(sessions, on="session_id")
+df[FEATURES].describe()
+n_student_words	numeric_turns_per_word	digit_chars_per_word
+count	35062.000000	35062.000000	35062.000000
+mean	1003.214534	0.044799	0.200411
+std	430.687493	0.019231	0.084626
+min	1.000000	0.000000	0.000000
+25%	698.000000	0.032669	0.144805
+50%	963.000000	0.042214	0.192166
+75%	1260.000000	0.053979	0.246817
+max	3385.000000	1.000000	2.000000
+Drop sessions with almost no student talk
+The min row above reveals a session with only one student word. In this case there is no conversation to measure. Since we are asking if the way a student talks carries signal, some conversations have too little evidence for these features.
+
+We therefore require at least MIN_STUDENT_WORDS = 100, compared with a median near 960. The cutoff removes few sessions, and their correctness rate is close to the overall base rate. That suggests a sensible fallback prediction for them at submission time.
+
+keep = sessions.n_student_words >= MIN_STUDENT_WORDS
+quiet = ~df.session_id.isin(sessions.loc[keep, "session_id"])
+print("dropping sessions   ", int((~keep).sum()))
+print("dropping responses  ", int(quiet.sum()))
+print("their correct rate  ", round(df.loc[quiet].is_correct.mean(), 3))
+
+sessions, df = sessions[keep], df[~quiet]
+dropping sessions    107
+dropping responses   159
+their correct rate   0.717
+How much do students actually say?
+The first claim depends on n_student_words, so inspect its distribution before fitting anything.
+
+ax = sessions.n_student_words.plot.hist(bins=np.logspace(2, 3.6, 40), figsize=(8, 3.5))
+ax.set_xscale("log")
+ax.set_xlabel("student words per session (log scale)")
+ax.set_ylabel("sessions")
+ax.set_title("Student talk volume")
+plt.show()
+
+The histogram gives us enough spread to test the idea. Student talk ranges from a few hundred words to well over two thousand, with most sessions near one thousand. These are long conversations, with a median of 267 turns, so even students at the quiet end had many chances to speak.
+
+Do the features track correctness on their own?
+A quick first check is to divide each continuous feature into quintiles and plot the observed correctness rate. The dashed line marks the overall base rate.
+
+fig, axes = plt.subplots(1, 3, figsize=(13, 3.5), sharey=True)
+
+for ax, feature in zip(axes, FEATURES):
+    quintile = pd.qcut(df[feature], 5, labels=range(1, 6))
+    df.groupby(quintile, observed=True).is_correct.mean().plot.bar(ax=ax, rot=0)
+    ax.axhline(df.is_correct.mean(), ls="--", color="gray")
+    ax.set_title(feature)
+    ax.set_xlabel("quintile (low to high)")
+
+axes[0].set_ylabel("share correct")
+axes[0].set_ylim(0.6, 0.76)
+plt.tight_layout()
+plt.show()
+
+When we look at the y-axis, the overall correctness rate is 70%, and every bar falls between 64% and 74%. It is worth noting that for these features, the patterns are visible, but none is large.
+
+Correctness rises with n_student_words, from 66.5% in the quietest fifth of sessions to 74.0% in the talkiest. That is consistent with the first claim.
+
+The pattern for numeric_turns_per_word runs the other way, from 74.0% down to 64.3%, and the slope is steeper. At first that sounds odd: a student producing many number-bearing turns must be doing math. But a high value often means many short turns made mostly of answers: "12." "Is it 4?" "6?" The transcript starts to look like a quiz, or perhaps repeated guessing.
+
+digit_chars_per_word is almost flat. It moves around the base rate and dips in the top quintile. On its own, it does not look useful. We keep it because its job is to distinguish sentences containing several numbers from a stream of short numeric answers. That distinction can only appear after the model holds numeric_turns_per_word fixed.
+
+Step 3: Fit the model
+The validation design matters more here than the choice of classifier.
+
+We split by session, not by response row. One session can produce several responses, one for each learning objective, while all three predictors remain fixed at the session level. If a session appears in both training and validation, the model sees the same feature vector on both sides and the score becomes misleading. GroupShuffleSplit keeps each session_id intact.
+
+We also compare the model with a constant prediction equal to the training-set correctness rate. Because the metric is log loss, this simple baseline is harder to beat than it may look.
+
+train_idx, val_idx = next(
+    GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=3).split(
+        df, df.is_correct, groups=df.session_id
+    )
+)
+tr, va = df.iloc[train_idx], df.iloc[val_idx]
+X_tr = tr[FEATURES].fillna(tr[FEATURES].median())
+X_va = va[FEATURES].fillna(tr[FEATURES].median())
+
+model = make_pipeline(StandardScaler(), LogisticRegression(max_iter=1000))
+model.fit(X_tr, tr.is_correct)
+p_va = model.predict_proba(X_va)[:, 1]
+
+base = tr.is_correct.mean()
+print("base log loss ", round(log_loss(va.is_correct, np.full(len(va), base)), 4))
+print("model log loss", round(log_loss(va.is_correct, p_va), 4))
+print("model auc     ", round(roc_auc_score(va.is_correct, p_va), 4))
+base log loss  0.6089
+model log loss 0.6054
+model auc      0.5473
+pd.Series(
+    model.named_steps["logisticregression"].coef_[0], index=FEATURES, name="coef_per_sd"
+).round(3)
+n_student_words           0.068
+numeric_turns_per_word   -0.211
+digit_chars_per_word      0.076
+Name: coef_per_sd, dtype: float64
+The three counting features reduce validation log loss from 0.6089 to 0.6054; validation AUC is 0.547. That is a modest gain, which is about what I would expect after discarding the tutor's words, the learning objective, and nearly every lexical detail in the transcript. Think of this as a rough transcript baseline, not an estimate of the best possible score.
+
+The standardized coefficients are more interesting than the aggregate metric. numeric_turns_per_word dominates at -0.211. digit_chars_per_word is +0.076, while n_student_words is +0.068.
+
+The positive coefficient on digit_chars_per_word is a surprise because its quintile plot looked flat. What it means is that after the model accounts for how often numeric turns occur, extra digits within those turns point in the other direction (that is, extra digits in a turn make it more likely a student gets the next answer correct). The scatterplot below shows how the two features can disagree.
+
+uniq = df.drop_duplicates("session_id")
+r = uniq.numeric_turns_per_word.corr(uniq.digit_chars_per_word)
+
+ax = uniq.sample(3000, random_state=0).plot.scatter(
+    x="numeric_turns_per_word", y="digit_chars_per_word", alpha=0.2, figsize=(5.5, 5)
+)
+ax.set_title(f"Two ways of counting numbers (r = {r:.2f})")
+plt.show()
+
+The two features are correlated because every digit character must occur in a number-bearing turn. Still, the cloud is wide. Within a narrow vertical slice, where numeric_turns_per_word is nearly fixed, sessions can differ by a factor of two or more in digit_chars_per_word. That spread is what the positive coefficient uses.
+
+Consider two students with the same rate of number-bearing turns. One says, "2,000 plus 725 would be 2,725." Several numbers appear inside a longer explanation. The other says "75" and stops. The model gives the first pattern more credit, especially when the student also talks more overall.
+
+Step 4: Read the sessions
+Coefficients only tell us what the model associates with higher or lower scores. To see whether that interpretation matches the transcripts, we read sessions from both ends of the score distribution. Each block shows the session features and outcome, followed by the student turns containing a digit.
+
+def show_sessions(session_ids, n=6):
+    rows = va[va.session_id.isin(session_ids)].drop_duplicates("session_id")
+    rows = rows.sort_values("score", ascending=False)
+    display(rows[["session_id", "is_correct", "p_hat", *FEATURES]].round(3))
+    for session_id in rows.session_id:
+        turns = pd.read_csv(TRANSCRIPTS / f"{session_id}.csv")
+        student = turns.loc[turns.role.eq("student"), ["utterance_id", "content"]]
+        student = student[student.content.fillna("").str.contains(r"\d")]
+        print(f"session {session_id} — {len(student)} student turns with a digit")
+        display(student.head(n))
+
+
+show_sessions(["jatpixm", "kmqmwdo"])
+session_id	is_correct	p_hat	n_student_words	numeric_turns_per_word	digit_chars_per_word
+15214	jatpixm	1.0	0.822	3007.0	0.019	0.237
+28076	kmqmwdo	0.0	0.447	660.0	0.145	0.402
+session jatpixm — 58 student turns with a digit
+utterance_id	content
+15	15	No. I just turned, tried to turn up and I put it to zero and I put it back to 100 and it just [UNCLEAR].
+32	32	Alright. Alright, let me do that. Alright, so it's 5 [UNCLEAR]. So, The common denominator is 10, so we'll put 10 there.
+34	34	Oh, okay. [unclear] So basically, like, I think, like, so the common denominator is 6, so we put the 6.
+35	35	So, and then we do 6T minus 1, which is 1.
+37	37	Um, maybe, um, take away 6 from 3, that's 3.
+39	39	Because 4 is in the 6 times table.
+session kmqmwdo — 96 student turns with a digit
+utterance_id	content
+39	39	3 times 5, 15.
+41	41	Do I write it in, um, the one next to 5, or— wait, no.
+49	49	24.
+52	52	3.
+57	57	3 times 1.
+60	60	6.
+These two transcripts make the coefficient story concrete.
+
+jatpixm contains 3,007 student words across 93 turns, about thirty words each time the student speaks. The numbers appear inside the reasoning: "The common denominator is 10, so we'll put 10 there." "Because 4 is in the 6 times table." Digits are dense within sentences, but number-bearing turns are not especially frequent. The model assigns 0.82, and the student answers the next question correctly.
+
+kmqmwdo contains 660 student words across 195 turns, fewer than four words per turn over the whole lesson: "24." "3." "6." "3 times 5, 15." The tutor asks and the student answers, with little explanation in between. The model assigns 0.45, and the next answer is wrong.
+
+The subject and lesson format are similar. The student's contribution is not, and these simple counts pick up the difference.
+
+Where the pattern fails
+The next two sessions come from the same score extremes, but their outcomes run against the model.
+
+show_sessions(["iehytnv", "mmfkgqn"])
+session_id	is_correct	p_hat	n_student_words	numeric_turns_per_word	digit_chars_per_word
+27240	iehytnv	0.0	0.852	1450.0	0.037	0.995
+2562	mmfkgqn	1.0	0.303	173.0	0.185	0.324
+session iehytnv — 54 student turns with a digit
+utterance_id	content
+44	44	Ah, yeah, yeah, yeah, yeah, yeah, yes, yes, sir. All right, so, so I will have 5 here.
+53	53	45, maybe?
+89	89	56. Alright.
+91	91	So, um, pretend I do not know how to get, like, 56. So, um, We only have 7 times 8. How are we going to do 7 times 8? Okay. Four. Yes. Is our calculation seven multiplied by 56. Is that what. Is that what we're trying to find? [unclear]
+97	97	So 56, we split it up into it— into— no, we do not know 56 yet. We only have 7 times 8. How are we going to do 7 times 8?
+99	99	So is our calculation 7 multiplied by 56? Is that what we're trying to find?
+session mmfkgqn — 32 student turns with a digit
+utterance_id	content
+22	22	16.
+40	40	5.
+42	42	8.
+44	44	8.
+46	46	58.
+85	85	6.
+iehytnv looks like productive math talk by every measure used here: 1,450 student words and several digits inside worked reasoning. "And then we added up 35 and 21, our little answers, and then we turned it into 56." The student still misses the next question. mmfkgqn sits at the other extreme, with answers such as "16." "5." "8." "8." "58." "6." That student gets the next question right.
+
+This is what an AUC of 0.55 looks like when you read individual cases. The style of the conversation is only one input. Prior knowledge matters. So do assessment difficulty and whether the lesson covered what the next question tested. None of those variables appears in these three features.
+
+The counts move probabilities a few points across roughly thirty thousand responses; they are not verdicts about a particular student. Reading sessions is still useful because it checks whether a feature captures the behavior its name implies. It does not explain every prediction.
+
+What this does and doesn't tell us
+The useful result is the contrast between two kinds of numeric talk. Sessions tend to end better when the student says more and places numbers inside longer explanations. They tend to end worse when the same amount of student language is split across many short, numeric turns. The distinction only appears when both numeric features enter the model together.
+
+Impotanyly, this is an association, not evidence that changing a student's speaking style will improve learning. The coefficients fit several explanations:
+
+Stronger students may already talk and explain more, then answer the assessment correctly regardless of what happened in the lesson.
+Harder material may produce both halting, answer-only exchanges and lower assessment scores.
+Explaining reasoning aloud may help the student learn, and the tutor may influence whether that explanation happens.
+Only the last explanation would directly support a change in tutoring practice, and this notebook cannot separate it from the first two. A stronger follow-up would adjust for learning-objective difficulty, compare the same student across sessions, and test whether earlier tutor behavior predicts later student talk.
+
+There are simpler things we might take into account as well:
+
+Digits are an incomplete proxy for numbers. "Twenty-four" contains no digits, so this code treats it as nonnumeric.
+Features live at the session level while labels live at the response level. If one session covers two learning objectives, both responses receive identical feature values.
+The quietest sessions are excluded from fitting but still require predictions at submission time.
+The model ignores every tutor utterance.
+What I would try next
+This notebook stops at validation. A competition submission also needs packaging: Trace the Ace runs submitted feature code and fitted models inside an offline container rather than accepting a prediction file. The code-submission documentation and runtime repository describe that interface. This particular pipeline is easy to port because it depends only on regex counts and scikit-learn.
+
+My next experiments would be:
+
+Handle the filtered sessions explicitly. They still occur in the test set. The training base rate is a reasonable log-loss fallback; 0.5 is more conservative but usually costs a little. I would also tune MIN_STUDENT_WORDS rather than keep the visually chosen cutoff of 100.
+Add tutor features. Praise, question types, and whether the tutor reuses the student's language are countable. Tutor behavior is also the part a program could plausibly change.
+Recognize number words as well as digits. "Twenty-four" should count as numeric language.
+Preserve some timing. An hourly average hides whether reasoning appears near the end of the lesson or immediately after a correction.
+Use an LLM as an annotator, not the final predictor. Turn-level labels for explanation quality could feed a small regression model and keep the last step interpretable.
+
+Code submission format
+This benchmark uses code execution to evaluate models. Rather than submitting your predicted labels, you'll package everything needed to perform inference and submit that for containerized execution. The runtime repository contains the complete specification for the runtime.
+
+All submissions for inference must run on Python 3.12. No other languages or versions of Python are supported.
+
+What to submit
+Testing your submission
+Submission requirements and runtime environment specification
+What to submit
+Your final submission should be a zip archive named with the extension .zip (for example, submission.zip). The root level of the submission.zip file must contain a main.py which performs inference on the test data and writes the predictions to a file named submission.csv in the same directory as main.py.
+
+Here's an example of the unpacked contents of a zipped submission:
+
+submission root directory
+├── assets/
+│   └── ... (all assets needed for inference, e.g., model weights)
+└── main.py         # Inference script
+Be sure that when you unzip the submission, main.py exists in the folder where you unzip. This file must be present at the root level of the zip archive. There should be no folder that contains it.
+
+During code execution, your submission will be unzipped in our cloud compute cluster. In that cluster, your inference code in main.py will be run on the test set features to generate test set predictions. While your submission is running, logging output will be limited to a max of 500 lines, with a max of 500 characters per line.
+
+Available data
+During inference, your script will have access to the following directory structure:
+
+code_execution/
+│   ## Provided in the runtime
+├── data/
+│   ├── submission_format.csv
+│   ├── test_features.csv
+│   └── test_transcripts
+│       ├── {session_id_1}.csv
+│       ├── ...
+│       └── {session_id_n}.csv
+├── huggingface_models/
+│   └── {org}/{model_name}/
+│
+│   ## Uploaded by you
+├── main.py
+└── <additional assets included in the submission archive>
+The structure of data/test_features.csv and data/test_transcripts/ exactly matches that of the training data features.
+
+data/submission_format.csv demonstrates what response IDs and columns should be included in your predictions. Participants must submit predictions as probabilities between 0 and 1 representing the likelihood that the student answered the next question correctly. For example, the first few rows of your submission might be:
+
+response_id,probability
+aaafrcy,0.5
+aabbmio,0.1
+aabpxat,0.9
+huggingface_models/ makes some pre-loaded HuggingFace model weights available in the runtime, so these models can be used without needing to include the model weights in your submission. Each model is available in its own folder under huggingface_models/{org}/{model_name}/, e.g., huggingface_models/sentence-transformers/all-MiniLM-L6-v2/. See the runtime repository for instructions about how to see what models are available, request additional models, and load models from the huggingface_models directory during inference.
+
+Final structure
+At the end of inference, your submission root directory should look like this:
+
+code_execution/
+├── data/
+│   ├── submission_format.csv
+│   ├── test_features.csv
+│   └── test_transcripts
+│       ├── {session_id_1}.csv
+│       ├── ...
+│       └── {session_id_n}.csv
+├── huggingface_models/
+│   └── {org}/{model_name}/
+│
+├── main.py
+├── submission.csv   # NEW FILE GENERATED BY YOUR SUBMISSION
+└── <additional assets included in the submission archive>
+Testing your submission
+The machines for executing your inference code are a shared resource across competitors, so please be conscientious in your use of them. Before you make a full submission, you should:
+
+Test locally
+Test in the limited smoke test environment
+Once your submission runs successfully both locally and in the smoke test environment, go to the "Code jobs" tab to make a full competition submission
+Make sure to cancel any jobs that will run longer than the allowed time. The allowed time is 6 hours for a full submission, and 20 minutes for a smoke test submission. Smoke tests, cancelled jobs, and failed jobs won't count against your submission limit. You will be limited to three full submissions per week.
+
+Testing your submission locally
+In order to ensure that your submission runs inference successfully and to debug any issues, you should first and foremost test your submission locally using the just test-submission command in the runtime container repository. This is a great way to work out any bugs locally and ensure that your model will run quickly enough.
+
+Smoke tests
+For additional debugging, we provide a "smoke test" environment that replicates the test inference runtime but runs only on a small set of responses. In the smoke test environment, the test data structure is the same (test_features.csv, test_transcripts/, and submission_format.csv). But the available data represents a sample of 100 responses drawn from the training set, rather than the full test set data of roughly 10,500 samples.
+
+Use the smoke test to estimate how long your submission will take to run on the full test set. Check that your inference code will likely run in the alloted time before making a full submission.
+
+Submission requirements
+Key requirements checklist
+Submission includes main.py in the root directory of the zip. There can be extra files with more code that is called (see assets folder in the example).
+Submission contains any model weights that need to be loaded. There will be no network access inside the runtime environment.
+Submission does not print or log any information about the test dataset, including excerpts of transcripts, learning objective descriptions, and/or aggregations such as sums, means, or token counts. Doing so may be grounds for disqualification based on the requirement that test samples are processed independently.
+The main.py script loads the data for inference from the data folder. This folder is read-only.
+The main.py script writes submission.csv to the root directory when inference is finished. The format of this file must match the submission format exactly: each row corresponds to one response, with columns for response_id and probability.
+Runtime details
+Your code is executed within a container that is defined in our runtime repository. The limits are as follows:
+
+Your submission must be written in Python and run Python 3.12 using the packages defined in the runtime repository.
+The submission must complete execution in 6 hours or less. We expect most submissions will complete much more quickly and computation time per participant will be monitored to prevent abuse. If you find yourself requiring more time than this limit allows, open a GitHub issue in the repository to let us know. Smoke test submissions must complete in 20 minutes or less.
+The container will not have network access. All necessary files (code and model assets) must be included in your submission.
+Your submission zip archive should not exceed 60GB, including all code and model assets. Larger submissions are likely to fail. This size limit may be increased in the future. Any updates will be reflected here.
+The container runtime has access to a single GPU. All of your code should run within the GPU environments in the container, even if actual computation happens on the CPU.
+The container has access to 24 vCPUs powered by an AMD EPYC™ 7V13 chip and 220GB RAM.
+The container has 1 NVIDIA A100 GPU with 80GB VRAM.
+The container execution will not have root access to the filesystem.
+Requesting package installations
+Since the Docker container will not have network access, all packages must be pre-installed. The runtime is built using uv, PyTorch, and vLLM backed by CUDA 12.9. We are happy to add packages as long as they do not conflict and can build successfully. Packages must be available through the supported build process for Python 3.12. To request an additional package be added to the Docker image, follow the instructions in the runtime repository.
+
+Happy building! Once again, if you have any questions or issues you can always head on over to the user forum!

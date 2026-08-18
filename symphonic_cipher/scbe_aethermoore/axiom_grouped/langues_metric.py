@@ -14,15 +14,19 @@ for intent/time multipliers across 6 dimensions:
   - R (risk)
   - h (entropy)
 
-Canonical Equation:
-  L(x,t) = Σ w_l exp(β_l · (d_l + sin(ω_l t + φ_l)))
+Python axiom-profile equation:
+  L(x,t) = Σ w_l exp(β_l · (d_l + a sin(ω_l t + φ_l))), a = 0.1
 
 Where:
   - d_l = |x_l - μ_l| (deviation in dimension l)
   - w_l = φ^l (tongue weight from golden ratio)
   - β_l > 0 (growth rate, phase-shifted by tongue)
-  - ω_l = 2π / T_l (frequency from harmonic periods)
+  - ω_l = one of the just-intonation ratios (1, 9/8, 5/4, 4/3, 3/2, 5/3)
   - φ_l = 2πk/6, k=0..5 (tongue phases: 0°, 60°, 120°, etc.)
+
+This is the named ``python-axiom-v1`` profile.  It is intentionally distinct
+from the public TypeScript kernel profile and the historical Colab notebook.
+See docs/specs/LANGUES_WEIGHTING_SYSTEM_CORRECTED.md.
 
 This makes L a governance tool:
   - High L = high "cost" (friction/resistance)
@@ -46,16 +50,19 @@ TONGUE_WEIGHTS = [PHI ** k for k in range(6)]
 # Tongue phases: 0°, 60°, 120°, 180°, 240°, 300° (radians)
 TONGUE_PHASES = [TAU * k / 6 for k in range(6)]
 
-# Default frequencies (based on harmonic intervals)
-# From the "Sacred Tongues" harmonic ratios
-TONGUE_FREQUENCIES = [
+# Default frequencies: just-intonation interval ratios.
+JUST_INTONATION_RATIOS = (
     1.0,      # KO - root (unison)
     9/8,      # AV - major second
     5/4,      # RU - major third
     4/3,      # CA - perfect fourth
     3/2,      # UM - perfect fifth
     5/3,      # DR - major sixth
-]
+)
+TONGUE_FREQUENCIES = list(JUST_INTONATION_RATIOS)
+
+# The Python axiom profile attenuates the temporal phase term.
+PHASE_AMPLITUDE = 0.1
 
 # Dimension names for the 6D hyperspace
 DIMENSIONS = ["time", "intent", "policy", "trust", "risk", "entropy"]
@@ -100,7 +107,8 @@ class LanguesMetric:
     """
     The Langues Metric - 6D phase-shifted exponential cost function.
 
-    Computes L(x,t) = Σ w_l exp(β_l · (d_l + sin(ω_l t + φ_l)))
+    Computes L(x,t) = Σ w_l exp(β_l · (d_l + a sin(ω_l t + φ_l)))
+    with a = PHASE_AMPLITUDE = 0.1.
     """
 
     def __init__(
@@ -166,7 +174,7 @@ class LanguesMetric:
 
             # Phase-shifted deviation
             phase_shift = math.sin(omega_l * t + phi_l)
-            shifted_d = d_l + 0.1 * phase_shift  # Bounded phase contribution
+            shifted_d = d_l + PHASE_AMPLITUDE * phase_shift
 
             # Exponential cost
             exp_term = math.exp(beta_l * shifted_d)
@@ -177,9 +185,10 @@ class LanguesMetric:
 
     def compute_gradient(self, x: HyperspacePoint, t: float = 0.0) -> List[float]:
         """
-        Compute gradient ∂L/∂x_l for each dimension.
+        Compute the piecewise gradient ∂L/∂x_l for each dimension.
 
-        Returns direction of maximum cost increase.
+        Because d_l = |x_l - μ_l|, the classical derivative is undefined at
+        x_l = μ_l.  This method returns the valid zero subgradient there.
         """
         deviations = self.compute_deviations(x)
         x_vec = x.to_vector()
@@ -194,12 +203,14 @@ class LanguesMetric:
             d_l = deviations[l]
 
             phase_shift = math.sin(omega_l * t + phi_l)
-            shifted_d = d_l + 0.1 * phase_shift
+            shifted_d = d_l + PHASE_AMPLITUDE * phase_shift
 
-            # Sign of deviation direction
-            sign = 1.0 if x_vec[l] >= mu_vec[l] else -1.0
+            # Piecewise derivative of |x_l - μ_l|.  At the cusp, choose the
+            # zero subgradient rather than claiming a one-sided derivative.
+            delta = x_vec[l] - mu_vec[l]
+            sign = 1.0 if delta > 0.0 else -1.0 if delta < 0.0 else 0.0
 
-            # ∂L/∂x_l = w_l * β_l * exp(β_l * d_l) * sign
+            # ∂L/∂x_l = w_l * β_l * exp(β_l * shifted_d) * sign
             grad_l = w_l * beta_l * math.exp(beta_l * shifted_d) * sign
             grad.append(grad_l)
 
@@ -328,7 +339,8 @@ class FluxingLanguesMetric:
     Langues Metric with fractional (fluxing) dimensions.
 
     Extended equation:
-      L_f(x,t) = Σ νᵢ(t) wᵢ exp[βᵢ(dᵢ + sin(ωᵢt + φᵢ))]
+      L_f(x,t) = Σ νᵢ(t) wᵢ exp[βᵢ(dᵢ + a sin(ωᵢt + φᵢ))],
+      where a = PHASE_AMPLITUDE = 0.1.
 
     Flux dynamics ODE:
       ν̇ᵢ = κᵢ(ν̄ᵢ - νᵢ) + σᵢ sin(Ωᵢt)
@@ -374,7 +386,7 @@ class FluxingLanguesMetric:
         """
         Compute fluxed langues metric L_f(x,t).
 
-        L_f = Σ νᵢ wᵢ exp[βᵢ(dᵢ + sin(ωᵢt + φᵢ))]
+        L_f = Σ νᵢ wᵢ exp[βᵢ(dᵢ + a sin(ωᵢt + φᵢ))]
         """
         x_vec = x.to_vector()
         mu_vec = self.ideal.to_vector()
@@ -389,7 +401,7 @@ class FluxingLanguesMetric:
             d_l = abs(x_vec[l] - mu_vec[l])
 
             phase_shift = math.sin(omega_l * t + phi_l)
-            shifted_d = d_l + 0.1 * phase_shift
+            shifted_d = d_l + PHASE_AMPLITUDE * phase_shift
 
             # Fractional dimension scales contribution
             L += nu_l * w_l * math.exp(beta_l * shifted_d)
@@ -443,7 +455,7 @@ def verify_flux_bounded() -> bool:
     """
     flux = DimensionFlux.default()
     metric = FluxingLanguesMetric(flux=flux)
-    x = HyperspacePoint()
+    HyperspacePoint()
 
     for _ in range(1000):
         metric.update_flux(dt=0.01)
@@ -462,7 +474,7 @@ def verify_dimension_conservation() -> bool:
     """
     flux = DimensionFlux.default()
     metric = FluxingLanguesMetric(flux=flux)
-    x = HyperspacePoint()
+    HyperspacePoint()
 
     D_f_sum = 0.0
     steps = 1000
@@ -674,10 +686,10 @@ if __name__ == "__main__":
     print()
 
     print("=" * 70)
-    print("LANGUES METRIC: L(x,t) = Σ w_l exp(β_l · (d_l + sin(ω_l t + φ_l)))")
-    print("FLUXED METRIC:  L_f(x,t) = Σ νᵢ(t) wᵢ exp[βᵢ(dᵢ + sin(ωᵢt + φᵢ))]")
+    print("LANGUES METRIC: L(x,t) = Σ w_l exp(β_l · (d_l + 0.1 sin(ω_l t + φ_l)))")
+    print("FLUXED METRIC:  L_f(x,t) = Σ νᵢ(t) wᵢ exp[βᵢ(dᵢ + 0.1 sin(ωᵢt + φᵢ))]")
     print()
-    print("  6 dimensions × 6 tongues × golden ratio weights × phase shifts")
+    print("  Profile: python-axiom-v1")
+    print("  6 dimensions × 6 tongues × golden-ratio weights × just-intonation frequencies")
     print("  + Fractional dimensions (polly/quasi/demi) for breathing")
-    print("  Unique to SCBE - no other AI safety system has this geometry.")
     print("=" * 70)

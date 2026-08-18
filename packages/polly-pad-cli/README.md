@@ -1,6 +1,24 @@
-# Polly Pad CLI
+# scbe-polly-pad-cli
 
-Polly is a governed terminal workpad for AI operators. It gives a shell session persistent task state, LLM routing, recipe prompts, run receipts, handoff packets, snapshots, and a hash-chained audit trail.
+> A terminal workspace that remembers. Task state, model routing, and a tamper-evident record of everything an AI operator did in your project.
+
+[![npm](https://img.shields.io/npm/v/scbe-polly-pad-cli.svg)](https://www.npmjs.com/package/scbe-polly-pad-cli)
+[![node](https://img.shields.io/node/v/scbe-polly-pad-cli.svg)](https://nodejs.org)
+[![license](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](#license)
+
+## What it does
+
+Shell sessions forget. Polly does not.
+
+- **Keeps task state across sessions** — close the terminal, come back, the work is still there.
+- **Routes prompts to whichever model you want** — local, free, or your own key.
+- **Writes a hash-chained audit trail** — every run leaves a receipt, and tampering breaks the chain.
+
+Use it when you want a record of what an AI actually did in a repo, not just what it said.
+
+## Requirements
+
+- **Node.js >= 20**
 
 ## Install
 
@@ -8,86 +26,73 @@ Polly is a governed terminal workpad for AI operators. It gives a shell session 
 npm install -g scbe-polly-pad-cli
 ```
 
-## Quick Start
+Installs one command: `polly`.
+
+## Quick start — 60 seconds
 
 ```bash
-polly init my-project
-polly task add "first task"
-polly task submit "verify the current claim" --wait --json
+polly init my-project          # create the workspace
+polly task add "first task"    # add work
 polly ask "what should I start with?"
-polly run plan --dry-run "ship a website"
-polly audit verify
-polly cross pack --text "def add(x, y): return x + y" --lang python
-polly cross op add --json
-polly shell
+polly audit verify             # prove nothing was tampered with
 ```
 
-## Workspace
+Expected output from `polly audit verify`:
 
-Polly stores state under `.polly/` in the current project:
-
-- `.polly/pad.json` — pad metadata, tasks, and attached repo
-- `.polly/runs/` — saved model or recipe runs
-- `.polly/snapshots/` — exported pad snapshots
-- `.polly/audit.jsonl` — append-only audit receipts
-
-## Governed Task Runs
-
-Polly can submit work to the Clay task lab while retaining the remote run ID,
-interaction ID, evidence disposition, and non-promotion flag in the workspace.
-
-```bash
-polly task submit "verify this claim" --evidence-file evidence.json --wait --json
-polly task status trun_abc123 --json
-polly task wait trun_abc123 --json
+```
+audit chain OK — 4 entries, head 9f2c1a...
 ```
 
-The default endpoint is `http://127.0.0.1:8766`; override it with
-`POLLY_TASK_API_URL` or `--url`. Loopback, private, and Tailscale IP literals
-are accepted by default. Public routing requires explicit opt-in and HTTPS.
-Unsupported output is retained as a negative example and is never promoted to
-fact by this command.
+If that says anything other than OK, the record was altered. That is the whole point of the command.
 
-## Audit Trail
+## Where state lives
 
-Every state-changing command appends a receipt to `.polly/audit.jsonl`. Receipts are canonical JSON records with a SHA-256 event hash and previous event hash.
+Everything is under `.polly/` in the current project — plain files, no database, safe to commit or gitignore as you prefer:
 
-```bash
-polly audit list
-polly audit verify
-polly audit export --json
-```
+| path | holds |
+|---|---|
+| `.polly/pad.json` | pad metadata, tasks, attached repo |
+| `.polly/runs/` | saved model and recipe runs |
+| `.polly/snapshots/` | exported pad snapshots |
+| `.polly/audit.jsonl` | append-only, hash-chained receipts |
 
-If a receipt is edited after it is written, `polly audit verify` exits non-zero and reports the first broken receipt.
+## Command reference
 
-## Cross-Language Packets
+| command | does | example |
+|---|---|---|
+| `polly init` | create a workspace | `polly init my-project` |
+| `polly task add` | add a task | `polly task add "write tests"` |
+| `polly task submit` | submit a governed run | `polly task submit "verify claim" --wait --json` |
+| `polly ask` | one-shot model question | `polly ask "what next?"` |
+| `polly run` | run a recipe | `polly run plan --dry-run "ship a website"` |
+| `polly audit verify` | verify the hash chain | `polly audit verify` |
+| `polly cross pack` | cross-language packet | `polly cross pack --text "def add(x,y): return x+y" --lang python` |
+| `polly shell` | interactive session | `polly shell` |
 
-Polly can decompose text or source files into lossless UTF-8 hex/binary packets with SHA-256 receipts and lightweight semantic route evidence.
+## Security
 
-```bash
-polly cross pack --file src/index.ts
-polly cross pack --text "const result = x + y;" --lang javascript
-polly cross unpack --hex 636f6e737420726573756c74203d2078202b20793b
-polly cross op add --json
-polly cross exec add --x 5 --y 3 --lang javascript --json
-polly cross bench pathfinding --json
-polly cross patch --file src/index.py --text "result = x + y" --json
-polly cross bundle --files src/index.py,src/index.js --out bundle.json
-```
+- **Local by default.** State is files in your project; nothing is uploaded unless you route a prompt to a remote model.
+- **`--dry-run` shows the plan without executing it.** Use it before anything destructive.
+- **The audit chain is append-only.** `polly audit verify` fails loudly if history was edited — it cannot be silently rewritten.
+- **Model keys** come from your environment, never from `.polly/`. Do not commit keys into the workspace.
 
-`cross pack` is lossless at the byte layer. `cross op` is intentionally bounded to known operation templates; it is not advertised as arbitrary AST translation.
+## For AI agents
 
-`cross patch` creates a reversible line patch packet with before/after SHA-256 hashes and can apply the patch only after verifying the reconstructed target. `cross bundle` packages multiple source files as per-file hex packets plus an aggregate deployment hash.
+1. **`polly task submit --json`** is the machine surface. Parse that, not the human output.
+2. **`--dry-run` first** on anything with side effects, then run for real.
+3. **Cite the receipt id** from the run when you report completion — it is checkable.
+4. **`polly audit verify` before you trust prior state.** If the chain is broken, previous session claims are not reliable.
+5. **Runs are marked non-promotable until reviewed.** Do not restate their output as fact.
 
-`cross exec` runs bounded operation templates through available runtimes and compares outputs. `cross bench pathfinding` scores Dijkstra, A*, and a semantic/geometric compass A* over the same multi-field map so route changes can be evaluated by behavior.
+## Troubleshooting
 
-## Model Routing
+| symptom | cause | fix |
+|---|---|---|
+| `Unsupported engine` | Node < 20 | upgrade Node |
+| `no pad found` | not initialised here | `polly init <name>` |
+| `audit chain BROKEN` | `.polly/audit.jsonl` was edited | restore from a snapshot; do not hand-repair |
+| model call fails | key not in environment | export the provider key, then retry |
 
-Polly tries model providers in this order:
+## License
 
-1. Ollama at `localhost:11434`
-2. `ANTHROPIC_API_KEY`
-3. `OPENAI_API_KEY`
-4. Template fallback with no model required
-
-The fallback keeps Polly usable even when no external model is configured.
+MIT OR Apache-2.0

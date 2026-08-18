@@ -13,12 +13,22 @@ class TestCubeFaces:
         assert all(f["tokens"] for f in faces.values())
 
     def test_chem_face(self):
-        chem = CubeToken("bind").chem_face()
+        chem = CubeToken("build").chem_face()
         assert "element" in chem and "trit_vector" in chem
         assert set(chem["trit_vector"]) == set(TONGUES)
+        assert chem["semantic_resolved"] is True
 
     def test_gov_face(self):
-        assert CubeToken("bind").gov_face()["tier"] in ("ALLOW", "QUARANTINE")
+        assert CubeToken("build").gov_face()["tier"] in ("ALLOW", "QUARANTINE")
+
+    def test_unresolved_identifier_abstains(self):
+        cube = CubeToken("feature_0")
+        chem = cube.chem_face()
+
+        assert chem["semantic_class"] == "UNRESOLVED"
+        assert chem["element"] is None
+        assert set(chem["trit_vector"].values()) == {0}
+        assert cube.gov_face()["tier"] == "ABSTAIN"
 
 
 class TestBijective:

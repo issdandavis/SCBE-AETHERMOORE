@@ -1,0 +1,97 @@
+pgrade to Enterprise
+
+API key budgeting is an Enterprise feature. Upgrade to set spending limits on your API keys.
+
+Free
+
+$0
+
+Students, researchers, hobbyists
+
+Choose Free
+
+
+up to 30 credits
+
+Key features
+
+1 free active Studio (4 hour restarts)
+
+32 core CPU Studios
+
+Single GPUs (L40S, A100, H100, H200...)
+
+80% off on interruptible (spot)
+
+Up to 2 concurrent GPUs
+
+Pro
+
+Current
+Monthly
+Annual
+$50
+
+-60%
+
+$20
+
+/user, per month
+
+(billed annually)
+
+Developers, researchers, scientists
+
+Stay on Pro plan
+
+
+240 annual credits
+
+Everything in Free, plus:
+
+1 active Studio (no restarts)
+
+64 core CPU
+
+Multi-GPU (T4, L4, L40S)
+
+Multi-node training (6 GPUs max)
+
+Up to 6 concurrent GPUs
+
+Teams
+
+Monthly
+Annual
+$140
+
+-15%
+
+$119
+
+/user, per month
+
+(billed annually)
+
+Research labs, small teams
+
+Choose Teams
+
+
+600 annual credits
+
+Everything in Pro, plus:
+
+1 active Studio (no restarts)
+
+96 core CPU
+
+Full-node A100, H100, H200
+
+Multi-node training (12 GPUs max)
+
+Up to 12 concurrent GPUs
+
+Enterprise
+
+Custom

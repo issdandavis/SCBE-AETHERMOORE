@@ -378,3 +378,8 @@ training/sft_records/
 _kaggle_pull/**/*.jsonl
 _kaggle_pull/**/*.csv
 _kaggle_pull/**/*.zip
+
+# DARPA proposal -- NEVER publish. This repo is PUBLIC.
+# Contains a price workbook and full proposal packet. Untracked is not
+# protected: a bare `git add -A` was verified to sweep it in.
+docs/proposals/DARPA_CLARA_CURE/

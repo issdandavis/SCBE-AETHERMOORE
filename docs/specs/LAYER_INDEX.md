@@ -101,6 +101,9 @@ Source:
 - PQC modules provide cryptographic primitives to integrated call paths. Their
   presence does not prove that every action or layer is cryptographically
   sealed.
+- External tool adapters are catalogued in
+  `docs/specs/SCBE_CLAY_MULTIPLANE_LAYER_MAP.md`; they are not numbered SCBE
+  layers.
 
 ## Focused Verification
 

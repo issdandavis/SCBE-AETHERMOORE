@@ -1,0 +1,16 @@
+from lightning_sdk.sandbox import Sandbox, SandboxConfig
+
+sandbox = Sandbox.create(
+  config = SandboxConfig(api_key="<sk-lit-995091a1-3efc-44d5-a3a8-4c3f430eabe9>"),
+  name="my-sandbox",
+  instance_type="cpu-1",
+  runtime="node24",
+  persistent=True,
+)
+
+result = sandbox.run_command("echo", ["Hello from Lightning AI!"])
+
+print(result.stdout())
+   
+
+c90f8031-4246-4c9c-9251-97f6b605bd39

@@ -1,0 +1,49 @@
+{
+  "agent_dir": "C:\\Users\\issda\\kaggle\\aap\\competition\\submissions\\scbe_tabular_v11_wide_select_20260716",
+  "competition": "autonomous-agent-prediction-beta",
+  "competition_dir": "C:\\Users\\issda\\kaggle\\aap\\competition",
+  "ok": false,
+  "out_zip": "C:\\Users\\issda\\kaggle\\aap\\competition\\submissions\\submission.zip",
+  "steps": {
+    "package": {
+      "file_count": 3,
+      "first_files": [
+        "agent.yaml",
+        "configs/sampling.yaml",
+        "prompts/system.md"
+      ],
+      "has_root_agent_yaml": true,
+      "zip": "C:\\Users\\issda\\kaggle\\aap\\competition\\submissions\\submission.zip"
+    },
+    "submit": {
+      "cmd": [
+        "kaggle",
+        "competitions",
+        "submit",
+        "autonomous-agent-prediction-beta",
+        "-f",
+        "C:\\Users\\issda\\kaggle\\aap\\competition\\submissions\\submission.zip",
+        "-m",
+        "scbe aap v11 wide select"
+      ],
+      "cwd": "C:\\Users\\issda\\kaggle\\aap\\competition",
+      "returncode": 1,
+      "seconds": 3.04,
+      "stderr_tail": "\n  0%|          | 0.00/4.62k [00:00<?, ?B/s]\n100%|##########| 4.62k/4.62k [00:00<00:00, 12.7kB/s]\n100%|##########| 4.62k/4.62k [00:01<00:00, 4.49kB/s]\n400 Client Error: Bad Request for url: https://api.kaggle.com/v1/competitions.CompetitionApiService/CreateSubmission\n",
+      "stdout_tail": ""
+    },
+    "validate": {
+      "cmd": [
+        "C:\\Users\\issda\\AppData\\Local\\Programs\\Python\\Python312\\python3.exe",
+        "C:\\Users\\issda\\kaggle\\aap\\competition\\validate_submission.py",
+        "--agent-dir",
+        "submissions\\scbe_tabular_v11_wide_select_20260716"
+      ],
+      "cwd": "C:\\Users\\issda\\kaggle\\aap\\competition",
+      "returncode": 0,
+      "seconds": 5.542,
+      "stderr_tail": "",
+      "stdout_tail": "\n=== Pre-flight Validation: submissions\\scbe_tabular_v11_wide_select_20260716 ===\n\n[Check 1] Found agent.yaml at C:\\Users\\issda\\kaggle\\aap\\competition\\submissions\\scbe_tabular_v11_wide_select_20260716\\agent.yaml\n[Check 2] YAML syntax and !include prompt files are valid.\n[Check 3] Required top-level keys present for LlmAgent (Name: scbe_tabular_auc_agent_v11_wide_select).\n[Check 4] All requested models are fully valid and permitted in models.yaml.\n[Check 5] Performing dry-run compilation of ADK agent...\n[Success] Agent 'scbe_tabular_auc_agent_v11_wide_select' compiled successfully with 5 tools.\n\n>>> VALIDATION SUCCESSFUL: Submission is ready for Kaggle upload! <<<\n\n"
+    }
+  }
+}
