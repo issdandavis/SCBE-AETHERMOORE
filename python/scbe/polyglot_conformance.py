@@ -42,6 +42,7 @@ _RUNNER_TOOL = {
     "ruby": "ruby",
     "php": "php",
     "lua": "lua",
+    "zig": "zig",
 }
 
 
@@ -169,8 +170,43 @@ def run_lua(prog: Sequence[int], args: Sequence[float]) -> Optional[float]:
         return _run_subprocess_float(["lua", str(f)])
 
 
+def run_zig(prog: Sequence[int], args: Sequence[float]) -> Optional[float]:
+    """Run the zig face.
+
+    TWO ZIG-SPECIFIC FACTS, measured on zig 0.16.0 rather than assumed:
+
+    1. The result arrives on STDERR, not stdout. `std.io.getStdOut()` and
+       `std.fs.File.stdout()` both fail to COMPILE on 0.16 -- that API was reorganised -- and
+       `std.debug.print` is the one form that works, which writes to stderr by design. A runner
+       reading stdout would report zig as permanently unverifiable while it was in fact
+       computing the right answer.
+
+    2. The source must be written with LF endings. A CR inside the format string is a hard
+       compile error ("string literal contains invalid byte"), and Windows' default newline
+       translation inserts them.
+    """
+    body = 'pub fn main() void {{ std.debug.print("{{d:.17}}", .{{tongue_fn({0})}}); }}'
+    src_zig = P.emit(prog, "zig") + "\n" + body.format(_arglist(args, "zig")) + "\n"
+    with tempfile.TemporaryDirectory() as td:
+        f = Path(td) / "prog.zig"
+        with open(f, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(src_zig)
+        proc = subprocess.run(["zig", "run", str(f)], capture_output=True, text=True,
+                              timeout=300, cwd=td)
+        if proc.returncode != 0:
+            return None
+        text = (proc.stderr or "").strip()
+        if not text:
+            return None
+        try:
+            return float(text.splitlines()[-1].strip())
+        except ValueError:
+            return None
+
+
 _RUNNERS = {
     "python": run_python,
+    "zig": run_zig,
     "javascript": run_node,
     "rust": run_rust,
     "c": run_c,
