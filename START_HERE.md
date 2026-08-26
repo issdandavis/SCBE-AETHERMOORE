@@ -6,16 +6,23 @@ Do not start by browsing the root at random.
 
 ## Fast Path
 
-If you are new here, use this order:
+Run the active product surface before exploring the monorepo:
 
-1. [README.md](README.md)
-2. [docs/PRODUCT_QUICKSTART.md](docs/PRODUCT_QUICKSTART.md)
-3. [docs/ops/INVESTOR_AND_OPERATOR_QUICKSTART_2026-05-02.md](docs/ops/INVESTOR_AND_OPERATOR_QUICKSTART_2026-05-02.md)
-4. [docs/ops/DISTRIBUTION_PACKAGE_MAP_2026-05-02.md](docs/ops/DISTRIBUTION_PACKAGE_MAP_2026-05-02.md)
-5. [CANONICAL_SYSTEM_STATE.md](CANONICAL_SYSTEM_STATE.md)
-6. [docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md](docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md)
-7. [docs/REPO_SURFACE_MAP.md](docs/REPO_SURFACE_MAP.md)
-8. [config/repo_consolidation_inventory.json](config/repo_consolidation_inventory.json)
+```bash
+npm install
+npm run product:release-gate
+```
+
+Then use this order:
+
+1. [Product Quickstart](docs/PRODUCT_QUICKSTART.md)
+2. [Aether Workspace Architecture](docs/product/AETHER_WORKSPACE_ARCHITECTURE.md)
+3. [Repo Surface Map](docs/REPO_SURFACE_MAP.md)
+4. [Canonical System State](CANONICAL_SYSTEM_STATE.md)
+5. [Monorepo Consolidation Authority](docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md)
+
+The gate is the release proof: it starts AetherBrowser and AetherDesk, verifies
+both, executes one bounded action, and emits a consolidated receipt.
 
 ## What To Expect
 
@@ -26,13 +33,12 @@ This repo currently has four real zones:
 - `research`
 - `archive`
 
-The current primary product lane is the browser-and-local-API path centered on:
+The current primary product lane is the AetherBrowser + AetherDesk workspace:
 
-- `public/`
-- `app/`
-- `api/`
-- `products/`
-- `scripts/aetherbrowser/`
+- `src/aetherbrowser/` and `scripts/aetherbrowser/` — governed browser/model runtime
+- `src/extension/` — shared browser viewport
+- `aetherdesk/` — local operator shell, approvals, tasks, and receipts
+- `scripts/system/product_surface_release_gate.py` — end-to-end release proof
 
 The shared platform that supports that lane currently lives mainly in:
 

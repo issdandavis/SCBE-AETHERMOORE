@@ -1,114 +1,111 @@
 # Product Quickstart
 
-This is the shortest real path from clone to a working SCBE-AETHERMOORE product surface.
+This is the supported first-run path for the active SCBE-AETHERMOORE product
+lane: **AetherBrowser + AetherDesk**.
 
-Use this file when the question is:
+## One-command release proof
 
-- what should I run first
-- what is the actual product lane
-- how do I prove the repo is working without reading the full theory stack
+Prerequisites: Node.js 18+, Python, Chrome or Chromium, and `npm install`.
 
-## Official First-Run Lane
-
-The current product-first lane is the AetherBrowser local service path:
-
-- backend service on `127.0.0.1:8002`
-- Chrome DevTools Protocol on `127.0.0.1:9222`
-- verification script that proves both surfaces are alive
-
-This is the cleanest operational surface because it already has:
-
-- one start command
-- one verify command
-- one stop command
-
-## Prerequisites
-
-- Node.js `18+`
-- Python available as `python`
-- Google Chrome installed
-- repo dependencies installed with `npm install`
-
-## Fast Path
-
-From the repo root:
-
-```powershell
-npm install
-npm run aetherbrowser:service:start
-npm run aetherbrowser:service:verify
+```bash
+npm run product:release-gate
 ```
 
-What those do:
+The gate:
 
-- `aetherbrowser:service:start`
-  - starts the backend service and Chrome debug session
-- `aetherbrowser:service:verify`
-  - checks backend health
-  - checks Chrome CDP
-  - writes a report under `artifacts/smokes/`
+1. starts the AetherBrowser backend and isolated Chrome/CDP session;
+2. verifies backend health, CDP, the extension worker, and backend smoke;
+3. starts AetherDesk on `127.0.0.1:5717`;
+4. runs the allowlisted, read-only `token_lookup` action;
+5. confirms AetherDesk emitted an audit receipt;
+6. writes a consolidated PASS/FAIL receipt under
+   `artifacts/product_surface/`; and
+7. shuts down processes it started.
 
-## Expected Proof
+Use `npm run product:release-gate -- --keep-running` to leave a successful
+stack running.
 
-The lane is considered working when:
+## What each app does
 
-- `http://127.0.0.1:8002/health` responds
-- `http://127.0.0.1:9222/json/list` responds
-- the verify script emits a report under:
-  - `artifacts/smokes/aetherbrowser-service-verify-*/service_verify_report.json`
+| Surface | Role | Default endpoint | Evidence |
+|---|---|---|---|
+| AetherBrowser | Governed browser viewport, extension automation, agent/model execution | backend `127.0.0.1:8002`, CDP `127.0.0.1:9222` | `artifacts/smokes/aetherbrowser-service-verify-*/service_verify_report.json` |
+| AetherDesk | Local operator shell for visible tasks, files, browser tools, bounded commands, provider status, and receipts | `http://127.0.0.1:5717` | `artifacts/aetherdesk_receipts/` |
+| Product gate | Proves both surfaces work together | command line | `artifacts/product_surface/product_surface_release_gate_*.json` |
 
-## Stop
+## Manual operation
 
-```powershell
+```bash
+npm run aetherbrowser:service:start
+npm run aetherbrowser:service:verify
+npm run aetherdesk
+# open http://127.0.0.1:5717
 npm run aetherbrowser:service:stop
 ```
 
-## Secondary Public Surfaces
+AetherDesk remains in the foreground. Stop it with Ctrl+C.
 
-If you are evaluating package or API surfaces after the browser lane proves out, use these next.
+## Connect a model
 
-### TypeScript package lane
+The product uses a provider adapter instead of binding the UI to one model.
 
-```powershell
-npm run build
-npm run typecheck
-npm test
+### Local/free model with Ollama
+
+```bash
+npm run ollama:start
+npm run ollama:health
+npm run ollama:list
+npm run aetherbrowser:model:cli -- --provider ollama --model <installed-model> --prompt "hello"
 ```
 
-### Python governance API lane
+Install/pull the Ollama model separately before selecting it. Local execution
+keeps prompts on the machine unless the selected tool itself uses a network
+service.
 
-```powershell
-python -m uvicorn api.main:app --host 127.0.0.1 --port 8080
+### Remote API
+
+Set only the credential required by the selected provider, then select that
+provider through the AetherBrowser model CLI or AetherDesk provider status
+surface. Supported provider names and environment variables are reported by
+the runtime; do not place keys in source files, command receipts, or screenshots.
+
+```bash
+npm run aetherbrowser:model:cli -- --help
+npm run aetherbrowser:model:cli -- --provider <provider> --model <model> --prompt "hello"
 ```
 
-### Newer control-plane API lane
+A missing credential or unavailable local endpoint must remain visibly
+unavailable; the router must not silently substitute a paid remote model.
 
-```powershell
-python -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000
-```
+## Control and governance boundary
 
-Those are real lanes, but they are not the official first-run path for a new reviewer. The browser-and-local-service loop is the current top-level product entry.
+The AI may browse through the managed browser lane and invoke commands exposed
+by AetherDesk's allowlists. It does not receive arbitrary host command authority
+from the UI. Read-only actions can run directly; write, external-send,
+credential, destructive, or otherwise elevated actions require an explicit
+approval surface before execution. Every completed bounded command writes a
+receipt with command identity, risk tier, timestamps, exit status, and bounded
+output. See [Aether Workspace Architecture](product/AETHER_WORKSPACE_ARCHITECTURE.md).
 
-## Open These After The Quickstart
+## Product inventory
 
-Once the service loop is up, the next useful files are:
+| Classification | Surfaces | First-run status |
+|---|---|---|
+| Active product | `src/aetherbrowser/`, `src/extension/`, `aetherdesk/`, product gate | Supported path |
+| Shared platform | `src/governance/`, `src/crypto/`, `src/tokenizer/`, `python/scbe/`, APIs | Used by product; not separate apps |
+| Experimental/research | `research/`, `notes/`, `notebooks/`, exploratory scripts | Optional; claims require their own evidence |
+| Training/generated/archive | `training/`, `training-data/`, `models/`, `artifacts/`, `dist/`, `build/`, `archive/` | Excluded from first run |
 
-1. `README.md`
-2. `START_HERE.md`
-3. `docs/REPO_SURFACE_MAP.md`
-4. `docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md`
-5. `CANONICAL_SYSTEM_STATE.md`
+## Failure interpretation
 
-## Boundary
+- No Chrome/Chromium: provide `--ChromePath` to the underlying start script.
+- Backend health failure: inspect the gate receipt and AetherBrowser service output.
+- Extension not loaded: inspect `src/extension/` and the isolated Chrome profile.
+- Provider unavailable: start the local provider or set the selected remote
+  provider credential.
+- A gate failure is not releasable merely because one HTTP endpoint responds;
+  the consolidated receipt must say `PASS`.
 
-Do not treat the following as required for first-run success:
-
-- `training/`
-- `training-data/`
-- `notes/`
-- `notebooks/`
-- `archive/`
-- proposal packets
-- historical screenshots or generated reports
-
-Those stay useful, but they are not the product quickstart.
+The monorepo is not claimed to be one polished frontend. This quickstart names
+the supported workspace lane and deliberately excludes corpora, notebooks,
+generated artifacts, and unrelated experiments.
