@@ -163,6 +163,7 @@
     "aetherbrowser:service:start": "node ./scripts/system/start_aetherbrowser_extension_service.mjs",
     "aetherbrowser:service:verify": "python scripts/verify_aetherbrowser_extension_service.py --run-backend-smoke",
     "aetherbrowser:service:stop": "node ./scripts/system/stop_aetherbrowser_extension_service.mjs",
+    "product:release-gate": "python scripts/system/product_surface_release_gate.py",
     "demo": "npx open-cli demos/site-demos/customer-demo.html",
     "agentic:demo": "ts-node src/agentic/demo-runner.ts",
     "game:debug-ts": "node scripts/run_typescript_debug_scenario.cjs",

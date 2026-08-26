@@ -13,6 +13,24 @@ Adversarial inputs cost exponentially more the further they drift from safe oper
 
 ---
 
+## Run the AI workspace first
+
+The active application lane is **AetherBrowser + AetherDesk**: a local-first,
+governed workbench for browser automation, files, bounded tools, model routing,
+approvals, and audit receipts.
+
+```bash
+npm install
+npm run product:release-gate
+```
+
+That one release gate starts both surfaces, verifies the browser/backend loop,
+runs one allowlisted AetherDesk action, confirms its receipt, writes a
+consolidated receipt under `artifacts/product_surface/`, and shuts down what it
+started. For manual operation and model setup, use
+[Product Quickstart](docs/PRODUCT_QUICKSTART.md). For the layout and trust
+boundaries, see [Aether Workspace Architecture](docs/product/AETHER_WORKSPACE_ARCHITECTURE.md).
+
 ## 2-minute local demo
 
 You do not need Docker, a GPU, an API key, or a model.
