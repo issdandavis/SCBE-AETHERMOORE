@@ -2,6 +2,8 @@
 
 ## Project Structure & Module Organization
 
+Read [SYSTEM_MAP.md](SYSTEM_MAP.md) and [SYSTEM_FLOW.mmd](SYSTEM_FLOW.mmd) before browsing the root. Load order is core math → governance board → packages/CLIs → control planes → Aether workspace → fleet/MCP extensions → research/archive. Do not physically reshuffle those trees in a drive-by change.
+
 This is a mixed TypeScript, Python, and Rust repository for SCBE-AETHERMOORE. Core TypeScript packages live in `src/`, with public entry points exported through `package.json` and built into `dist/`. Python packages are also under `src/`, with root CLIs such as `scbe.py`, `scbe-cli.py`, and `six-tongues-cli.py`. Tests are organized in `tests/` by domain (`tests/crypto/`, `tests/api/`, `tests/L2-unit/`, etc.). Supporting apps and packages live in `apps/`, `packages/`, and `services/`; scripts and automation live in `scripts/`; docs, references, and research material live in `docs/`, `research/`, and `references/`. Avoid committing generated output from `dist/`, `artifacts/`, or caches unless a release process explicitly requires it.
 
 ## Build, Test, and Development Commands
