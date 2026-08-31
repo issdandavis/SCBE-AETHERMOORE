@@ -86,20 +86,20 @@ Tracked manifests include:
 
 ## GitHub Actions
 
-Tracked workflows: 76 under `.github/workflows/`.
+Tracked workflows: 81 under `.github/workflows/`.
 
 Major workflow categories:
 
-- CI/test: `ci.yml`, `scbe-tests.yml`, `daily-tests.yml`,
-  `nightly-python-full.yml`
-- Security: `codeql.yml`, `codeql-analysis.yml`, `security-checks.yml`,
-  `weekly-security-audit.yml`, `daily-secret-scan.yml`
+- CI/test: `ci.yml`, `scbe-tests.yml`, `nightly-python-full.yml`
+- Security: `codeql.yml`, `security-checks.yml`,
+  `weekly-security-scan.yml`, `daily-secret-scan.yml`
 - Publishing: `npm-publish.yml`, `npm-publish-cli.yml`,
   `npm-publish-agent-bus.yml`, `pypi-publish.yml`,
   `pypi-publish-agent-bus.yml`, `release.yml`
-- Docs/pages: `docs.yml`, `pages-deploy.yml`, `pages-auto-deploy.yml`
-- Automation: `auto-triage.yml`, `auto-changelog.yml`, `auto-merge.yml`,
-  `auto-rebase-prs.yml`, `workflow-audit.yml`
+- Docs/pages: `docs.yml`, `pages-deploy.yml`
+- Automation: `issue-triage.yml`, `labeler.yml`, `auto-approve-trusted.yml`,
+  `auto-changelog.yml`, `auto-merge.yml`, `auto-rebase-prs.yml`,
+  `workflow-audit.yml`
 - Research/training: `weekly-hf-sync.yml`, `daily-training-validator.yml`,
   `research-feed.yml`, `overnight-pipeline.yml`
 - Benchmarks/product: `public-agentic-benchmarks.yml`,
