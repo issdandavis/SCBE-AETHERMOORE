@@ -1,6 +1,6 @@
 # SCBE-AETHERMOORE Repo Surface Map
 
-**Last Updated:** 2026-04-21
+**Last Updated:** 2026-08-26
 
 ## Purpose
 
@@ -39,6 +39,19 @@ If you do not know where to start, use this order:
 9. `src/api/main.py`
 10. `api/main.py`
 
+## Product surface classification
+
+| Class | Current contents | Operator rule |
+|---|---|---|
+| Active product | AetherBrowser (`src/aetherbrowser/`, `src/extension/`) and AetherDesk (`aetherdesk/`) | Start here; release through `npm run product:release-gate` |
+| Shared platform | governance, crypto, tokenizer, Python/TypeScript package and API layers | Product dependencies, not competing apps |
+| Experimental | research, eval, proposal, and exploratory operator lanes | Opt-in; do not place in first-run instructions |
+| Archived/noisy | generated artifacts, corpora, models, notebooks, caches, historical captures | Preserve as needed, but keep out of the product path |
+
+The active app is a shared human+AI workspace, not every executable in the
+monorepo. Its layout and authority boundaries are defined in
+`docs/product/AETHER_WORKSPACE_ARCHITECTURE.md`.
+
 ## Active Lanes
 
 ### 1. Governance Core
@@ -62,14 +75,19 @@ Use this lane when the task is about sealed-blind proof points, reviewer-facing 
 - `artifacts/collab/dava_blind_v1/permutation_test_report.json`
 - `artifacts/collab/dava_blind_v1/kl_capacity_ci_report.json`
 
-### 2. Product / MVP Runtime
+### 2. Active Product — AetherBrowser + AetherDesk
 
-Use this lane when the task is about running a user-facing API, SaaS behavior, search, HYDRA, memory sealing, or newer runtime additions.
+Use this lane for the installable local-first workspace.
 
-- `src/api/main.py` — newer MVP / control-plane lane
-- `src/api/search_routes.py`
-- `src/api/llm_routes.py`
-- `src/api/stripe_billing.py`
+- `src/aetherbrowser/` — browser, agent, and model-provider runtime
+- `src/extension/` — managed browser surface
+- `aetherdesk/` — operator UI, allowlisted tools, provider status, and receipts
+- `scripts/system/product_surface_release_gate.py` — start/verify/receipt release proof
+- `docs/PRODUCT_QUICKSTART.md` — supported install and run story
+- `docs/product/AETHER_WORKSPACE_ARCHITECTURE.md` — UI and authority map
+
+The newer APIs under `src/api/` and stable governance APIs under `api/` are
+shared platform surfaces. They are not alternate first-run products.
 
 ### Product-First Monorepo Boundary
 
@@ -245,8 +263,7 @@ Do **not** start with repo splitting.
 
 ```powershell
 npm install
-npm run aetherbrowser:service:start
-npm run aetherbrowser:service:verify
+npm run product:release-gate
 ```
 
 ### TypeScript package lane
