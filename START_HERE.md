@@ -4,6 +4,14 @@ This repository is a large monorepo with real product code, shared platform code
 
 Do not start by browsing the root at random.
 
+## Load order
+
+1. [SYSTEM_MAP.md](SYSTEM_MAP.md) — core → extension map
+2. [SYSTEM_FLOW.mmd](SYSTEM_FLOW.mmd) — mermaid flow of the same order
+3. [docs/CANONICAL_SYSTEM_STATE.md](docs/CANONICAL_SYSTEM_STATE.md)
+4. [docs/REPO_SURFACE_MAP.md](docs/REPO_SURFACE_MAP.md)
+5. Named runtime code for the profile you are changing
+
 ## Fast Path
 
 Run the active product surface before exploring the monorepo:
@@ -33,6 +41,9 @@ This repo currently has four real zones:
 - `research`
 - `archive`
 
+Those zones are **not** four top-level folders. They are load-order layers.
+See [SYSTEM_MAP.md](SYSTEM_MAP.md).
+
 The current primary product lane is the AetherBrowser + AetherDesk workspace:
 
 - `src/aetherbrowser/` and `scripts/aetherbrowser/` — governed browser/model runtime
@@ -53,12 +64,13 @@ The shared platform that supports that lane currently lives mainly in:
 
 Open these first:
 
-1. [README.md](README.md)
-2. [docs/PRODUCT_QUICKSTART.md](docs/PRODUCT_QUICKSTART.md)
-3. [docs/ops/INVESTOR_AND_OPERATOR_QUICKSTART_2026-05-02.md](docs/ops/INVESTOR_AND_OPERATOR_QUICKSTART_2026-05-02.md)
-4. [docs/ops/DISTRIBUTION_PACKAGE_MAP_2026-05-02.md](docs/ops/DISTRIBUTION_PACKAGE_MAP_2026-05-02.md)
-5. [docs/REPO_SURFACE_MAP.md](docs/REPO_SURFACE_MAP.md)
-6. [docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md](docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md)
+1. [SYSTEM_MAP.md](SYSTEM_MAP.md)
+2. [README.md](README.md)
+3. [docs/PRODUCT_QUICKSTART.md](docs/PRODUCT_QUICKSTART.md)
+4. [docs/ops/INVESTOR_AND_OPERATOR_QUICKSTART_2026-05-02.md](docs/ops/INVESTOR_AND_OPERATOR_QUICKSTART_2026-05-02.md)
+5. [docs/ops/DISTRIBUTION_PACKAGE_MAP_2026-05-02.md](docs/ops/DISTRIBUTION_PACKAGE_MAP_2026-05-02.md)
+6. [docs/REPO_SURFACE_MAP.md](docs/REPO_SURFACE_MAP.md)
+7. [docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md](docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md)
 
 ## If You Want Canonical Definitions
 

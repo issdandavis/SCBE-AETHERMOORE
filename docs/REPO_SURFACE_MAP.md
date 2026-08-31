@@ -1,6 +1,12 @@
 # SCBE-AETHERMOORE Repo Surface Map
 
-**Last Updated:** 2026-08-26
+**Last Updated:** 2026-08-31
+
+Root load-order map: [SYSTEM_MAP.md](../SYSTEM_MAP.md)  
+Root mermaid flow: [SYSTEM_FLOW.mmd](../SYSTEM_FLOW.mmd)
+
+This file remains the operator surface map. The root files own *boot order*.
+Do not physically reshape the monorepo from this document.
 
 ## Purpose
 
@@ -28,16 +34,18 @@ That is why the repo feels bigger than a normal app repo. It is currently doing 
 
 If you do not know where to start, use this order:
 
-1. `START_HERE.md`
-2. `README.md`
-3. `docs/PRODUCT_QUICKSTART.md`
-4. `docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md`
-5. `CANONICAL_SYSTEM_STATE.md`
-6. `package.json`
-7. `scripts/system/start_aetherbrowser_extension_service.mjs`
-8. `scripts/verify_aetherbrowser_extension_service.py`
-9. `src/api/main.py`
-10. `api/main.py`
+1. `SYSTEM_MAP.md`
+2. `SYSTEM_FLOW.mmd`
+3. `START_HERE.md`
+4. `README.md`
+5. `docs/PRODUCT_QUICKSTART.md`
+6. `docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md`
+7. `CANONICAL_SYSTEM_STATE.md`
+8. `package.json`
+9. `scripts/system/start_aetherbrowser_extension_service.mjs`
+10. `scripts/verify_aetherbrowser_extension_service.py`
+11. `src/api/main.py`
+12. `api/main.py`
 
 ## Product surface classification
 
@@ -98,6 +106,7 @@ Use this lane when the task is about making the repository clone experience clea
 - `config/repo_consolidation_inventory.json`
 - `README.md`
 - `START_HERE.md`
+- `SYSTEM_MAP.md`
 
 ### 3. Governance API
 
@@ -135,6 +144,7 @@ Use this lane when the task is about DARPA, SAM.gov, DIBBS, DLA supplier access,
 Use this lane when the task is about document authority, note consolidation, repo drift cleanup, or deciding whether a file is canonical, operational, public, exploratory, historical, or generated.
 
 - `START_HERE.md`
+- `SYSTEM_MAP.md`
 - `CANONICAL_SYSTEM_STATE.md`
 - `docs/README_INDEX.md`
 - `docs/archive/cleanup_notes.md`
@@ -242,6 +252,7 @@ This is already underway.
 
 Protect the main entrypoints:
 
+- `SYSTEM_MAP.md`
 - `README.md`
 - `CANONICAL_SYSTEM_STATE.md`
 - `REPO_SURFACE_MAP.md`
