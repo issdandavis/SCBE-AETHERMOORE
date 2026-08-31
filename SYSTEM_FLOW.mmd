@@ -1,0 +1,76 @@
+---
+title: SCBE-AETHERMOORE load order — core to extension
+---
+flowchart TB
+    subgraph L0["0. Authority"]
+        SPEC["docs/specs/SPEC.md"]
+        FORMULA["docs/specs/CANONICAL_FORMULA_REGISTRY.md"]
+        STATE["docs/CANONICAL_SYSTEM_STATE.md"]
+        MAP["SYSTEM_MAP.md"]
+        SPEC --> FORMULA --> STATE --> MAP
+    end
+
+    subgraph L1["1. Core math and crypto"]
+        KERNEL["packages/kernel · TS_PIPELINE14"]
+        REF14["src/scbe_14layer_reference.py"]
+        FULL14["src/symphonic_cipher/.../fourteen_layer_pipeline.py"]
+        RUST["rust/scbe_core"]
+        CRYPTO["src/crypto · src/pqc · python/pqc"]
+        HARM["src/harmonic · src/spectral · src/lattice"]
+        KERNEL --- REF14 --- FULL14
+        RUST --- CRYPTO --- HARM
+    end
+
+    subgraph L2["2. Governance board"]
+        GOV["src/governance"]
+        TONGUES["src/tongues · src/tokenizer"]
+        SPIRAL["src/spiralverse · src/spiralauth"]
+        L13["L13 decision ALLOW / QUARANTINE / ESCALATE / DENY"]
+        RECEIPT["audit digest · receipts"]
+        GOV --> TONGUES --> SPIRAL --> L13 --> RECEIPT
+    end
+
+    subgraph L3["3. Runtime packages and CLIs"]
+        IDX["src/index.ts · PUBLIC_SCAN"]
+        PYPKG["python/scbe · src/scbe_aethermoore"]
+        CLI["bin/ · scbe-cli.py · packages/cli"]
+        IDX --- PYPKG --- CLI
+    end
+
+    subgraph L4["4. Control planes"]
+        APIOLD["api/ · /v1/authorize"]
+        APINEW["src/api/"]
+        GATE["src/gateway · Dockerfile.gateway"]
+        NETLIFY["netlify/functions"]
+        VERCEL["vercel.json"]
+        APIOLD --- APINEW --- GATE
+        NETLIFY --- VERCEL
+    end
+
+    subgraph L5["5. Product workspace"]
+        AB["src/aetherbrowser"]
+        EXT["src/extension"]
+        DESK["aetherdesk"]
+        GATEPY["scripts/system/product_surface_release_gate.py"]
+        AB --> EXT --> DESK --> GATEPY
+    end
+
+    subgraph L6["6. Operator and fleet extensions"]
+        FLEET["src/fleet · src/agentic · src/operator"]
+        MCP["mcp/ · mcp_context_server · src/mcp"]
+        HYDRA["hydra/ · scripts/"]
+        VIS["scbe-visual-system · conference-app"]
+        FLEET --- MCP --- HYDRA --- VIS
+    end
+
+    subgraph L7["7. Research, training, archive"]
+        RES["research/ · notebooks/ · notes/"]
+        TRAIN["training/ · training-data/"]
+        ARCH["archive/ · artifacts/ · models/"]
+        RES --- TRAIN --- ARCH
+    end
+
+    L0 --> L1 --> L2 --> L3 --> L4 --> L5 --> L6 --> L7
+
+    INPUT["proposed action / scan text"] --> L2
+    L2 --> CLIENTS["npm · PyPI · workspace · hosted run"]
