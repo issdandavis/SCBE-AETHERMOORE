@@ -26,11 +26,14 @@ def test_claude_workflows_are_local_only_and_do_not_call_external_ai_actions() -
 
 
 def test_daily_dependency_audit_uses_one_rolling_issue_not_daily_issue_spam() -> None:
-    text = _workflow_text("daily-dep-audit.yml")
+    # daily-dep-audit.yml was retired into weekly-security-scan.yml (#2784).
+    # The rolling-issue policy still applies to the surviving owner.
+    assert not (WORKFLOWS / "daily-dep-audit.yml").exists()
+    text = _workflow_text("weekly-security-scan.yml")
     yaml.safe_load(text)
 
-    assert "Dependency Vulnerabilities - rolling" in text
-    assert "Dependency Vulnerabilities - ${today}" not in text
+    assert "Security Scan - rolling" in text
+    assert "Security Scan - ${today}" not in text
     assert "issues.update" in text
     assert "updates one rolling issue" in text
 

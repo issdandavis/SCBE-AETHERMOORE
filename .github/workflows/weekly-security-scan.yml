@@ -222,15 +222,16 @@ jobs:
         with:
           script: |
             const today = new Date().toISOString().slice(0, 10);
-            const title = `Security Scan - ${today}`;
+            const title = 'Security Scan - rolling';
 
-            // Close previous
+            // updates one rolling issue rather than opening a new dated issue each week
             const existing = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
               labels: 'security-scan',
               state: 'open',
             });
+            const rolling = existing.data.find((issue) => issue.title === title);
             for (const issue of existing.data) {
               if (issue.title.startsWith('Security Scan -') && issue.title !== title) {
                 await github.rest.issues.update({
@@ -253,28 +254,47 @@ jobs:
             const hasIssues = hasCritical || trivyHigh > 0 || npmHigh > 0 || pipVulns > 0;
             const status = hasCritical ? 'CRITICAL' : hasIssues ? 'WARNINGS' : 'CLEAN';
 
-            let body = `## Weekly Security Scan\n\n**Status:** ${status}\n\n`;
-            body += `| Scanner | Finding | Count |\n|---------|---------|-------|\n`;
-            body += `| check_secrets.py | Leaked tokens | ${leaked ? 'YES' : 'None'} |\n`;
-            body += `| Trivy | Critical CVEs | ${trivyCrit} |\n`;
-            body += `| Trivy | High CVEs | ${trivyHigh} |\n`;
-            body += `| npm audit | Critical | ${npmCrit} |\n`;
-            body += `| npm audit | High | ${npmHigh} |\n`;
-            body += `| pip-audit | Vulnerable packages | ${pipVulns} |\n\n`;
+            let body = [
+              '## Weekly Security Scan',
+              '',
+              '**Status:** ' + status,
+              '**Date:** ' + today,
+              '',
+              '| Scanner | Finding | Count |',
+              '|---------|---------|-------|',
+              '| check_secrets.py | Leaked tokens | ' + (leaked ? 'YES' : 'None') + ' |',
+              '| Trivy | Critical CVEs | ' + trivyCrit + ' |',
+              '| Trivy | High CVEs | ' + trivyHigh + ' |',
+              '| npm audit | Critical | ' + npmCrit + ' |',
+              '| npm audit | High | ' + npmHigh + ' |',
+              '| pip-audit | Vulnerable packages | ' + pipVulns + ' |',
+              '',
+            ].join('\n');
 
             if (leaked) {
-              body += `### Secret Leak Detected\nReview the secrets-report artifact immediately.\n\n`;
+              body += '\n### Secret Leak Detected\nReview the secrets-report artifact immediately.\n';
             }
             if (hasCritical) {
-              body += `### Action Required\nCritical issues found. Run \`npm audit fix\` / \`pip-audit --fix\`.\n\n`;
+              body += '\n### Action Required\nCritical issues found. Run `npm audit fix` / `pip-audit --fix`.\n';
             }
-            body += `---\n*Automated by weekly-security-scan*`;
+            body += '\n---\n*Automated by weekly-security-scan*';
 
             const labels = ['security-scan', 'automated'];
             if (hasCritical) labels.push('critical');
 
-            await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title, body, labels,
-            });
+            if (rolling) {
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: rolling.number,
+                body,
+                state: 'open',
+                labels,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title, body, labels,
+              });
+            }
