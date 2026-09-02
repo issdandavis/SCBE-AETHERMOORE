@@ -271,6 +271,52 @@
         color: var(--muted);
         font-size: 14px;
       }
+      .hero-shot {
+        margin-top: 16px;
+        overflow: hidden;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: #0b1114;
+      }
+      .hero-shot img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .deliverables {
+        margin: 12px 0 18px;
+        padding-left: 18px;
+      }
+      .deliverables li {
+        margin: 6px 0;
+      }
+      .faq-list {
+        display: grid;
+        gap: 12px;
+      }
+      .faq-list details {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 16px 18px;
+        background: rgba(18, 25, 29, 0.94);
+      }
+      .faq-list summary {
+        cursor: pointer;
+        font-weight: 800;
+      }
+      .faq-list details p {
+        margin: 10px 0 0;
+        color: var(--muted);
+      }
+      .win-step {
+        color: var(--green);
+        display: block;
+        margin-bottom: 6px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
       ul {
         margin: 0;
         padding-left: 20px;
@@ -305,6 +351,8 @@
         <nav aria-label="Primary navigation">
           <a href="#pilot">Free pilot</a>
           <a href="#offer">What you get</a>
+          <a href="#first-win">First win</a>
+          <a href="#faq">FAQ</a>
           <a href="#proof">Proof</a>
           <a href="products.html">Products</a>
           <a href="packages.html">Packages</a>
@@ -365,6 +413,14 @@
                 <span>Receipt</span><strong>What ran, what changed, what still needs review</strong>
               </div>
             </div>
+            <figure class="hero-shot">
+              <img
+                src="hero.svg"
+                width="960"
+                height="540"
+                alt="Product visual of an AetherMoore workflow catalog: intent, route, checkpoints, named files, and a run receipt."
+              />
+            </figure>
           </aside>
         </div>
       </section>
@@ -419,6 +475,11 @@
                 One workflow, one concise build map: intent, stages, outputs, unsafe tool paths,
                 missing receipts, and three next fixes.
               </p>
+              <ul class="deliverables">
+                <li>Intent sheet and stage map for the named workflow</li>
+                <li>Deliverable catalog (files, links, logs, gaps)</li>
+                <li>Three next fixes ranked by drift risk</li>
+              </ul>
               <a class="btn btn-primary" href="workflow-snapshot.html">Start snapshot</a>
             </article>
             <article class="card">
@@ -430,6 +491,11 @@
                 high-stakes internal pressure. Still scoped to workflow design, evidence, and
                 delivery.
               </p>
+              <ul class="deliverables">
+                <li>Multi-tier review notes tied to one system</li>
+                <li>Evidence index for each checkpoint decision</li>
+                <li>Buyer-ready packet outline and residual risks</li>
+              </ul>
               <a class="btn" href="governance-snapshot.html">Compare scope</a>
             </article>
             <article class="card">
@@ -440,6 +506,11 @@
                 Templates, training material, and manuals for people who want to build their own
                 routed workflow, catalog, and receipt path instead of buying a review.
               </p>
+              <ul class="deliverables">
+                <li>Reusable route, catalog, and receipt templates</li>
+                <li>Training notes for the first self-run</li>
+                <li>Manual pages for checkpoints and recovery</li>
+              </ul>
               <a class="btn" href="ai-agent-governance-toolkit.html">Open toolkit</a>
             </article>
             <article class="card">
@@ -450,6 +521,11 @@
                 A small writing-process packet: prompts, humanization pass, guide files, and
                 delivery notes. Process material, not the KDP manuscripts.
               </p>
+              <ul class="deliverables">
+                <li>Prompt set and humanization pass</li>
+                <li>Guide files and delivery notes</li>
+                <li>Not the KDP manuscripts</li>
+              </ul>
               <a class="btn" href="https://buy.stripe.com/14AbJ20hQ79ZboYfWSdby0n"
                 >Buy process pack</a
               >
@@ -542,6 +618,104 @@
               <br />
               <a href="packages.html">Open packages</a>
             </article>
+          </div>
+        </div>
+      </section>
+
+
+      <section id="first-win">
+        <div class="wrap">
+          <div class="section-head">
+            <p class="eyebrow">First win</p>
+            <h2>You will know it worked when these four things exist.</h2>
+            <p class="plain">
+              The success check is not a vibe. After a pilot or Snapshot you should be able to
+              point at named artifacts, not a longer chat log.
+            </p>
+          </div>
+          <div class="grid-2">
+            <article class="card">
+              <span class="win-step">1. Named intent</span>
+              <h3>One sentence the run is allowed to finish.</h3>
+              <p>
+                Example: "Build a buyer-ready support guardrail." If the agent cannot restate this
+                without drifting, the run is not controlled yet.
+              </p>
+            </article>
+            <article class="card">
+              <span class="win-step">2. Stage map</span>
+              <h3>A route with checkpoints, not a pile of prompts.</h3>
+              <p>
+                Research, policy map, test prompts, report. Each stage has an approval or skip
+                rule so a later step cannot silently rewrite an earlier one.
+              </p>
+            </article>
+            <article class="card">
+              <span class="win-step">3. Catalog</span>
+              <h3>Files, links, logs, decisions, and gaps in one place.</h3>
+              <p>
+                If a deliverable is not named in the catalog, it did not ship. Missing items stay
+                visible instead of disappearing into the thread.
+              </p>
+            </article>
+            <article class="card">
+              <span class="win-step">4. Receipt</span>
+              <h3>What ran, what changed, what still needs a human.</h3>
+              <p>
+                The receipt is the audit trail for the next run. It is not a certificate, a
+                platform, or a guarantee of business outcome.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="faq">
+        <div class="wrap">
+          <div class="section-head">
+            <p class="eyebrow">FAQ</p>
+            <h2>Objections we would rather answer up front.</h2>
+          </div>
+          <div class="faq-list">
+            <details>
+              <summary>Is this another AI chatbot or a platform I have to install?</summary>
+              <p>
+                No. The paid products are scoped packets for one workflow: a map, a catalog, and a
+                receipt. You keep the files. There is no mystery platform lock-in and no "just
+                trust the agent" layer.
+              </p>
+            </details>
+            <details>
+              <summary>What do I actually receive from a $99 Snapshot?</summary>
+              <p>
+                A concise build map for one named workflow: intent, stages, outputs, unsafe tool
+                paths, missing receipts, and three next fixes. If those four first-win artifacts
+                are not in the packet, the Snapshot is incomplete.
+              </p>
+            </details>
+            <details>
+              <summary>Does a free pilot lock me into a contract?</summary>
+              <p>
+                No. First pilots are free while the offer is being validated. Keep the workflow
+                map, catalog, and receipts if they help. You can stop after the packet.
+              </p>
+            </details>
+            <details>
+              <summary>Are you selling safety certification or legal cover?</summary>
+              <p>
+                No. Outputs are scoped workflow artifacts, not guarantees of business, safety,
+                certification, or dispute outcomes. The honest boundary is on this page because
+                overclaiming is how these offers rot.
+              </p>
+            </details>
+            <details>
+              <summary>How fast is a first win?</summary>
+              <p>
+                A Snapshot is one workflow. A free pilot is the same shape: send one messy run,
+                get a bounded plan and catalog. If we cannot name the four first-win artifacts,
+                we do not call it done.
+              </p>
+            </details>
           </div>
         </div>
       </section>
