@@ -349,7 +349,7 @@
   "overrides": {
     "fast-xml-parser": "^5.7.1",
     "typescript": "$typescript",
-    "qs": "^6.15.2",
+    "qs": "^6.16.0",
     "@opentelemetry/core": "2.8.0",
     "@opentelemetry/resources": "2.8.0",
     "@opentelemetry/sdk-trace-base": "2.8.0",
