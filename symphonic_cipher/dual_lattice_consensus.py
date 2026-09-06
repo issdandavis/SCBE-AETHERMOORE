@@ -408,7 +408,7 @@ def run_dual_lattice_demo():
     print(f"  Threat Level: {context.threat_level}")
     
     # Create token
-    token = dlc.create_authorization_token(context, "ALLOW")
+    token = dlc.create_authorization_token(auth_context=context, decision="ALLOW")
     print(f"\nCreated Authorization Token:")
     print(f"  Decision: {token['payload']['decision']}")
     print(f"  Consensus Hash: {token['consensus_hash']}")
