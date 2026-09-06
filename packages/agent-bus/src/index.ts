@@ -2293,3 +2293,37 @@ export {
   allocateParallelSearchLanes,
   mergeSearchResults,
 } from './search-space-router.js';
+
+// Public reasoning-artifact DAG: reversible views, immutable rollback, and
+// branch x feature x time telemetry. It stores public artifacts, not private CoT.
+export {
+  REASONING_TONGUES,
+  type ReasoningTongue,
+  type ArtifactPolicy,
+  type ReasoningEventKind,
+  type BijectiveViewCodec,
+  type SyntaxDelta,
+  type TypedEquivalenceReceipt,
+  type EquivalenceVerifier,
+  type MergeAuthority,
+  type ReasoningArtifactNode,
+  type ReasoningGraphEvent,
+  type ReasoningArtifactGraph,
+  type ReasoningArtifactInput,
+  type ForkArtifactInput,
+  type MergeArtifactInput,
+  type MergeOptions,
+  type GraphVerificationOptions,
+  type GraphVerificationResult,
+  type TubalPairwiseDistance,
+  type TubalBranchTelemetry,
+  hashReasoningValue,
+  hashReasoningBytes,
+  createReasoningArtifactGraph,
+  appendReasoningArtifact,
+  forkReasoningArtifact,
+  mergeReasoningArtifacts,
+  backtrackReasoningGraph,
+  verifyReasoningArtifactGraph,
+  computeTubalBranchTelemetry,
+} from './reasoning-artifact-graph.js';
