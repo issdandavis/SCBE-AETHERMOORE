@@ -19,7 +19,7 @@ def test_every_html_page_has_one_live_and_source_mapping():
         f"docs/{path.relative_to(build_github_map.DOCS).as_posix()}" for path in build_github_map.DOCS.rglob("*.html")
     }
 
-    assert len(items) == 81
+    assert len(items) == 82
     assert {item.path for item in items} == actual
     assert len({item.live_url for item in items}) == len(items)
     assert len({item.source_url for item in items}) == len(items)

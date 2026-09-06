@@ -1,37 +1,58 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="AetherMoore Governed AI Toolkit">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="AetherMoore — AI systems that can show their work">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0b0d12"/>
-      <stop offset="100%" stop-color="#141a2a"/>
-    </linearGradient>
-    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#7aa2ff"/>
-      <stop offset="100%" stop-color="#b07aff"/>
-    </linearGradient>
-    <radialGradient id="glow" cx="0.78" cy="0.5" r="0.55">
-      <stop offset="0%" stop-color="#7aa2ff" stop-opacity="0.35"/>
-      <stop offset="70%" stop-color="#7aa2ff" stop-opacity="0.0"/>
-    </radialGradient>
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M24 0H0V24" fill="none" stroke="#dce5ed" stroke-width="1"/>
+    </pattern>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="m0 0 10 5-10 5Z" fill="#135fbd"/>
+    </marker>
   </defs>
-  <rect width="1200" height="630" fill="url(#bg)"/>
-  <rect width="1200" height="630" fill="url(#glow)"/>
-  <g transform="translate(935 315)" fill="none" stroke="url(#ring)" stroke-width="3" opacity="0.85">
-    <circle r="240"/>
-    <circle r="148"/>
-    <circle r="92"/>
-    <circle r="57"/>
-    <circle r="35"/>
-    <circle r="22"/>
+  <rect width="1200" height="630" fill="#ffffff"/>
+  <path d="M0 82h1200M0 548h1200" stroke="#cbd5df"/>
+
+  <g transform="translate(48 21)" fill="none" stroke="#10233a" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.4">
+    <path d="M20 0 38 10.5v21L20 42 2 31.5v-21Z"/>
+    <path d="m20 0 10.5 18L20 42 9.5 18ZM2 10.5h36L20 42Z"/>
   </g>
-  <g transform="translate(935 315)" stroke="url(#ring)" stroke-width="3" stroke-linecap="round" opacity="0.75">
-    <line x1="-260" y1="0" x2="260" y2="0"/>
-    <line x1="0" y1="-260" x2="0" y2="260"/>
+  <text x="102" y="50" fill="#10233a" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" letter-spacing="5">AETHERMOORE</text>
+  <text x="948" y="50" fill="#135fbd" font-family="Consolas, monospace" font-size="14">VERIFIABLE AI SYSTEMS</text>
+
+  <g font-family="Arial, Helvetica, sans-serif" fill="#10233a">
+    <text x="52" y="190" font-size="66" font-weight="750" letter-spacing="-3">AI systems that</text>
+    <text x="52" y="256" font-size="66" font-weight="750" letter-spacing="-3">can show their work<tspan fill="#135fbd">.</tspan></text>
   </g>
-  <g font-family="Segoe UI, Inter, system-ui, sans-serif" fill="#f4f6fb">
-    <text x="90" y="200" font-size="64" font-weight="700" letter-spacing="-1">AetherMoore</text>
-    <text x="90" y="260" font-size="38" font-weight="400" fill="#b6c0d9">Governed AI Toolkit</text>
-    <text x="90" y="360" font-size="24" fill="#9aa7c2">Hyperbolic geometry. Six tongues.</text>
-    <text x="90" y="392" font-size="24" fill="#9aa7c2">Exponential cost for adversarial intent.</text>
-    <text x="90" y="500" font-size="20" fill="#7b86a3">aethermoore.com &#183; Issac Davis &#183; SAM.gov J4NXHM6N5F59</text>
+  <g font-family="Consolas, monospace" fill="#536477" font-size="19">
+    <text x="55" y="318">Verifiable agent infrastructure,</text>
+    <text x="55" y="352">exact multi-view languages, and</text>
+    <text x="55" y="386">measured small-model research.</text>
   </g>
+  <rect x="55" y="444" width="210" height="52" fill="#135fbd"/>
+  <text x="81" y="477" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700">Explore the system  →</text>
+
+  <g transform="translate(586 112)">
+    <rect width="564" height="396" fill="#f5f8fb" stroke="#8798aa"/>
+    <rect x="1" y="1" width="562" height="394" fill="url(#grid)"/>
+    <text x="22" y="31" fill="#10233a" font-family="Consolas, monospace" font-size="13" font-weight="700">MISSION MAP · v1.0</text>
+    <text x="22" y="51" fill="#536477" font-family="Consolas, monospace" font-size="10">MODEL → BOUNDARY → RECEIPT</text>
+    <path d="M22 206h520M282 72v296" fill="none" stroke="#10233a" stroke-width="1"/>
+    <path d="M32 124h78c22 0 20-32 50-32h18v88c0 22 18 28 36 28h66c22 0 28 18 28 40v38c0 28 22 34 44 34h50c22 0 32-16 32-38v-56h66v-82h62" fill="none" stroke="#135fbd" stroke-width="3" marker-end="url(#arrow)"/>
+    <path d="M308 270c-62 0-79 28-79 59 0 38 92 44 153 26 25-8 34-23 48-40" fill="none" stroke="#135fbd" stroke-width="2.4" stroke-dasharray="8 7"/>
+    <path d="M32 124h66" fill="none" stroke="#b8442e" stroke-width="2.5" stroke-dasharray="6 7"/>
+    <g font-family="Consolas, monospace" text-anchor="middle">
+      <g transform="translate(178 92)"><circle r="18" fill="#ffffff" stroke="#b8442e" stroke-width="2"/><text y="6" fill="#10233a" font-size="15">1</text></g>
+      <g transform="translate(308 256)"><circle r="18" fill="#ffffff" stroke="#135fbd" stroke-width="4"/><text y="6" fill="#10233a" font-size="15">2</text></g>
+      <g transform="translate(414 320)"><circle r="18" fill="#ffffff" stroke="#10233a" stroke-width="2"/><text y="6" fill="#10233a" font-size="15">3</text></g>
+      <g transform="translate(480 226)"><circle r="18" fill="#ffffff" stroke="#b8442e" stroke-width="2"/><text y="6" fill="#10233a" font-size="15">4</text></g>
+      <g transform="translate(480 144)"><circle r="18" fill="#ffffff" stroke="#b8442e" stroke-width="2"/><text y="6" fill="#10233a" font-size="15">5</text></g>
+    </g>
+    <g fill="#10233a" font-family="Consolas, monospace" font-size="10">
+      <text x="203" y="88">PROPOSAL</text>
+      <text x="333" y="252">CAPABILITY</text>
+      <text x="352" y="350">ISOLATION</text>
+      <text x="456" y="262">ACTION</text>
+      <text x="503" y="140">RECEIPT</text>
+      <text x="260" y="383" fill="#135fbd">RE-ROUTE / RE-CHECK</text>
+    </g>
+  </g>
+  <text x="55" y="584" fill="#536477" font-family="Consolas, monospace" font-size="13">MODELS PROPOSE · HOST CONTROLS AUTHORIZE · RESULTS LEAVE RECEIPTS</text>
 </svg>
