@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ffffff" />
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+    <link rel="stylesheet" href="../static/site/aethermore.css" />
+    <title>Evidence Ledger | AetherMoore</title>
+    <meta
+      name="description"
+      content="A scoped ledger of AetherMoore test campaigns, research status, reproduction notes, and known limits."
+    />
+    <script defer src="../static/site/aethermore.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#ledger-content">Skip to content</a>
+    <header class="site-header">
+      <div class="site-shell header-inner">
+        <a class="brand" href="../index.html" aria-label="AetherMoore home">
+          <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true">
+            <path d="M24 2.75 42.4 13.4v21.2L24 45.25 5.6 34.6V13.4Z" />
+            <path d="m24 2.75 10.6 18.4L24 45.25 13.4 21.15Zm-18.4 10.65h36.8L24 45.25Z" />
+          </svg>
+          <span>AetherMoore</span>
+        </a>
+        <button
+          class="menu-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="site-navigation"
+          data-menu-toggle
+        >
+          Menu
+        </button>
+        <nav class="site-nav" id="site-navigation" aria-label="Primary navigation" data-site-nav>
+          <a href="../index.html#work">Work</a>
+          <a href="../index.html#research">Research</a>
+          <a href="../index.html#about">About</a>
+          <a class="nav-source" href="https://github.com/issdandavis/SCBE-AETHERMOORE"
+            >GitHub <span aria-hidden="true">↗</span></a
+          >
+        </nav>
+      </div>
+    </header>
+
+    <main class="ledger-page" id="ledger-content">
+      <section class="ledger-intro">
+        <div class="site-shell">
+          <p class="ledger-coordinate">Evidence ledger · 2026-09-06 · revision 1</p>
+          <h1>What the tests show.<br /><span>What they do not.</span></h1>
+          <p class="ledger-lead">
+            This page records named local campaigns and their limits. A passing campaign proves the
+            behavior it exercised on that version. It is not an external audit, a production
+            certification, or proof of every claim in the broader research archive.
+          </p>
+          <div class="ledger-actions">
+            <a class="button button-primary" href="https://github.com/issdandavis/SCBE-AETHERMOORE"
+              >Open source <span aria-hidden="true">↗</span></a
+            >
+            <a class="button button-secondary" href="../index.html#evidence"
+              >Return to overview <span aria-hidden="true">←</span></a
+            >
+          </div>
+        </div>
+      </section>
+
+      <section class="campaigns" aria-labelledby="campaign-title">
+        <div class="site-shell">
+          <div class="ledger-section-title">
+            <h2 id="campaign-title">Measured campaigns</h2>
+            <p>Counts are exact for the recorded run; scope and version travel with the count.</p>
+          </div>
+
+          <article class="campaign">
+            <div class="campaign-index">01</div>
+            <div class="campaign-title">
+              <p class="status status-proven">
+                <span aria-hidden="true"></span> Reproduced locally
+              </p>
+              <h3>Canonical languages and compiler core</h3>
+            </div>
+            <dl class="campaign-measures">
+              <div>
+                <dt>9,216</dt>
+                <dd>transitive cross-view checks</dd>
+              </div>
+              <div>
+                <dt>256</dt>
+                <dd>quine walks</dd>
+              </div>
+              <div>
+                <dt>1,536</dt>
+                <dd>byte/word checks</dd>
+              </div>
+              <div>
+                <dt>2,934</dt>
+                <dd>CA → RV32IM differential cases</dd>
+              </div>
+            </dl>
+            <div class="campaign-scope">
+              <p>
+                <strong>Shows:</strong> exact round trips and matching finite compiler outputs
+                across the exercised transforms.
+              </p>
+              <p>
+                <strong>Does not show:</strong> general semantic understanding, completed control
+                flow, or a finished 18-language toolchain. Ten Rosetta runners remain unfinished.
+              </p>
+              <a class="text-link" href="https://github.com/issdandavis/scbe-tongues-toolchain"
+                >Inspect the public toolchain <span aria-hidden="true">↗</span></a
+              >
+            </div>
+          </article>
+
+          <article class="campaign">
+            <div class="campaign-index">02</div>
+            <div class="campaign-title">
+              <p class="status status-proven"><span aria-hidden="true"></span> Passed locally</p>
+              <h3>GeoSeal CLI and Agent Bus harness</h3>
+            </div>
+            <dl class="campaign-measures">
+              <div>
+                <dt>728 / 728</dt>
+                <dd>Agent Bus tests</dd>
+              </div>
+              <div>
+                <dt>209</dt>
+                <dd>CLI tests passed</dd>
+              </div>
+              <div>
+                <dt>38 / 38</dt>
+                <dd>shell protocol cases</dd>
+              </div>
+            </dl>
+            <div class="campaign-scope">
+              <p>
+                <strong>Shows:</strong> local command correlation, capability propagation,
+                structured denial, bounded output, and descendant timeout behavior in the tested
+                harness.
+              </p>
+              <p>
+                <strong>Does not show:</strong> universal CLI superiority, production
+                penetration-test coverage, broad hosted-provider quality, or multi-machine
+                coordination.
+              </p>
+              <a class="text-link" href="../packages/scbe-agent-bus.html"
+                >Inspect the Agent Bus surface <span aria-hidden="true">↗</span></a
+              >
+            </div>
+          </article>
+
+          <article class="campaign">
+            <div class="campaign-index">03</div>
+            <div class="campaign-title">
+              <p class="status status-proven"><span aria-hidden="true"></span> Exact control</p>
+              <h3>Prime/exponent coordinate</h3>
+            </div>
+            <dl class="campaign-measures">
+              <div>
+                <dt>5,000 / 5,000</dt>
+                <dd>product composition checks</dd>
+              </div>
+              <div>
+                <dt>5,000 / 5,000</dt>
+                <dd>decoded L1 checks</dd>
+              </div>
+              <div>
+                <dt>5,000 / 5,000</dt>
+                <dd>prime-permutation controls</dd>
+              </div>
+            </dl>
+            <div class="campaign-scope">
+              <p>
+                <strong>Shows:</strong> exact, invertible, compositional arithmetic under the tested
+                prime-power encoding.
+              </p>
+              <p>
+                <strong>Does not show:</strong> a task-level advantage over a direct exponent
+                vector. The representation is classical unique-factorization machinery used as a
+                coordinate sidecar.
+              </p>
+            </div>
+          </article>
+
+          <article class="campaign">
+            <div class="campaign-index">04</div>
+            <div class="campaign-title">
+              <p class="status status-experimental">
+                <span aria-hidden="true"></span> Experimental
+              </p>
+              <h3>Topology on learned states</h3>
+            </div>
+            <dl class="campaign-measures">
+              <div>
+                <dt>Underpowered</dt>
+                <dd>current statistical conclusion</dd>
+              </div>
+              <div>
+                <dt>3+</dt>
+                <dd>seeds required per claim</dd>
+              </div>
+              <div>
+                <dt>2 controls</dt>
+                <dd>size-matched and no-intervention</dd>
+              </div>
+            </dl>
+            <div class="campaign-scope">
+              <p>
+                <strong>Shows:</strong> a concrete experimental program for testing topology-guided
+                routing and representation ideas.
+              </p>
+              <p>
+                <strong>Does not show:</strong> that geometry caused a model gain. Current results
+                need stronger held-out evaluation, controls, and independent replication.
+              </p>
+              <a class="text-link" href="KAPREKAR_MIRROR_TOPOLOGY_RESULT_2026-07-26.md"
+                >Read an underpowered result <span aria-hidden="true">↗</span></a
+              >
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="method" aria-labelledby="method-title">
+        <div class="site-shell method-grid">
+          <div>
+            <h2 id="method-title">The rule for promoting a claim</h2>
+            <p>
+              Multiple seeds, a verified evaluator, dispersion large enough to judge the effect, and
+              wins against both a size-matched control and the no-intervention baseline.
+            </p>
+          </div>
+          <ol>
+            <li><span>1</span> Run at least three independent seeds.</li>
+            <li>
+              <span>2</span> Verify the evaluator against known-positive and known-negative cases.
+            </li>
+            <li>
+              <span>3</span> Report dispersion; below twice pooled standard deviation stays
+              underpowered.
+            </li>
+            <li>
+              <span>4</span> Preserve failed and refuted branches so later work cannot rewrite
+              history.
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="closing" aria-labelledby="ledger-closing-title">
+        <div class="site-shell closing-top">
+          <h2 id="ledger-closing-title">
+            Trace a claim back to its boundary<span aria-hidden="true">.</span>
+          </h2>
+          <div class="button-row">
+            <a class="button button-light" href="../proof-workbench.html"
+              >Open proof workbench <span aria-hidden="true">→</span></a
+            >
+            <a class="button button-outline-light" href="mailto:ai@aethermoore.com"
+              >Ask about a result <span aria-hidden="true">↗</span></a
+            >
+          </div>
+        </div>
+        <footer class="site-shell site-footer">
+          <nav aria-label="Footer navigation">
+            <a href="../index.html">Home</a>
+            <a href="index.html">Research</a>
+            <a href="../start-here.html">Documentation</a>
+            <a href="../privacy.html">Privacy</a>
+            <a href="mailto:ai@aethermoore.com">Contact</a>
+          </nav>
+          <p>© 2026 AetherMoore · Scope travels with every result</p>
+        </footer>
+      </section>
+    </main>
+  </body>
+</html>
