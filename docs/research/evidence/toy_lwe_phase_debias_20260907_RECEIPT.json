@@ -1,0 +1,90 @@
+{
+  "artifacts": {
+    "docs/research/evidence/toy_lwe_phase_debias_20260907.json": {
+      "bytes": 1685841,
+      "sha256": "cf6c90a1dbd23a1b69cf97331536f4581870e3160e22357a1115f6bd6fe4649e"
+    },
+    "docs/research/evidence/toy_lwe_phase_debias_20260907.png": {
+      "bytes": 176437,
+      "sha256": "00852010e8297221adfc156ad51c57ff855c03af4451c08f2f985f91e84b2053"
+    },
+    "docs/security/DUAL_TRIT_PHASE_DEBIAS_RESULT.md": {
+      "bytes": 4089,
+      "sha256": "91fb629988228af610a0cafd8bef615fdb918374cc0de3eb077b60fb49e578be"
+    },
+    "scripts/benchmark/plot_toy_lwe_phase_debias.py": {
+      "bytes": 4137,
+      "sha256": "7feda2b26d700501e1b789aafb829abfaad085b21a0a35d8f794add5151ff52d"
+    },
+    "scripts/benchmark/toy_lwe_phase_debias_benchmark.py": {
+      "bytes": 14859,
+      "sha256": "b3b281e4db9b8bbe528e602b92bbc81877ef06c539926cbadf9053e55fe0d766"
+    },
+    "src/crypto/toy_lwe_phase_debias.py": {
+      "bytes": 9676,
+      "sha256": "b5b175a11864aa07e5575a439cf58fa0e5f669c884c6166c428a35dc50572ef9"
+    },
+    "src/crypto/toy_lwe_seeded_bound.py": {
+      "bytes": 4182,
+      "sha256": "b91697d713d7fff8d74318a357535f4393a287308946ce2eafc031106a66bd57"
+    },
+    "tests/crypto/test_toy_lwe_phase_debias.py": {
+      "bytes": 3422,
+      "sha256": "2e7e78fcdce58a1363178e6dc60db27dee6dbd84edc52b2c3ebdbf7c0e0fd33c"
+    },
+    "tests/crypto/test_toy_lwe_phase_debias_benchmark.py": {
+      "bytes": 1556,
+      "sha256": "f2f1fa06c3e9ab08028ed9f676b23b0f3637dd7f7cf03bd424fca0fecce43f0c"
+    },
+    "tests/crypto/test_toy_lwe_seeded_bound.py": {
+      "bytes": 1840,
+      "sha256": "36401a3fc4f9d5f7dcdd1492effb168962ddaed7b6a738a62e5719229e75e6d9"
+    }
+  },
+  "benchmark_command": "python scripts/benchmark/toy_lwe_phase_debias_benchmark.py --seed-start 10000 --seeds 300 --dimension 8 --samples 14 --budget 360 --bound-seeds 60 --random-coverage-controls 100 --exhaustive-audit-seeds 12 --output docs/research/evidence/toy_lwe_phase_debias_20260907.json",
+  "claim_boundary": "finite_balanced_trit_geometry_and_toy_LWE_only",
+  "created_utc": "2026-09-07T05:10:43.942754+00:00",
+  "decisions": {
+    "deploy_phase_as_LWE_prepass": false,
+    "measured_LWE_objective_advantage": false,
+    "measured_total_exact_bound_speedup": false,
+    "phase_projection_interference_removed": true
+  },
+  "measurements": {
+    "bound_only_mean_total_evaluations": 526.6066666666667,
+    "legacy_coordinate_max_deviation": 76.0,
+    "legacy_mean_nearest_hamming": 1.562109434537418,
+    "legacy_pair_max_deviation": 66.0,
+    "orbit_coordinate_max_deviation": 2.0,
+    "orbit_cover_mean_nearest_hamming": 1.1975308641975309,
+    "orbit_exact_hits": 15,
+    "orbit_pair_max_deviation": 4.0,
+    "orbit_seeded_bound_mean_total_evaluations": 580.47,
+    "random_exact_hits": 21,
+    "random_mean_nearest_hamming": 1.3279073311995122,
+    "random_seeded_bound_mean_total_evaluations": 579.13
+  },
+  "prior_evidence_preserved": {
+    "path": "docs/research/evidence/toy_lwe_dual_trit_torus_20260907.json",
+    "sha256": "a2688bb403927205e2e669f20a5077d4eb779817f7d2216e81b4a6b13b56adce"
+  },
+  "schema": "scbe.toy-lwe-phase-debias-validation.v1",
+  "status": "INTERFERENCE_REMOVED_OBJECTIVE_UNDERPOWERED",
+  "validation": {
+    "black_ci_profile": "PASS",
+    "flake8": "PASS",
+    "focused_test_command": "python -m pytest -q tests/crypto/test_toy_lwe_phase_debias.py tests/crypto/test_toy_lwe_seeded_bound.py tests/crypto/test_toy_lwe_phase_debias_benchmark.py tests/crypto/test_toy_lwe_phase_search.py tests/crypto/test_toy_lwe_dual_trit_torus_benchmark.py tests/crypto/test_toy_lwe_box_field.py tests/crypto/test_integer_phase_shards.py tests/test_torus.py tests/test_rubix_cubit.py",
+    "focused_tests": {
+      "passed": 106,
+      "seconds": 5.88
+    },
+    "git_diff_check": "PASS",
+    "loom_relation_tests": {
+      "passed": 7,
+      "seconds": 0.98
+    },
+    "ruff": "PASS",
+    "source_hash_mismatches": [],
+    "source_hashes_checked": 8
+  }
+}
