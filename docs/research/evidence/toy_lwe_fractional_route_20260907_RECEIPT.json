@@ -1,0 +1,83 @@
+{
+  "artifacts": {
+    "docs/research/evidence/toy_lwe_fractional_route_20260907.json": {
+      "bytes": 1606359,
+      "sha256": "b2d5e39e1095dbc1342b6ea876ffddb95f627ec234f04e143d347bb3bb556ac2"
+    },
+    "docs/research/evidence/toy_lwe_fractional_route_20260907.png": {
+      "bytes": 95400,
+      "sha256": "0e2a4f4842240a2389ad4cb7a8967237cd33aa702d65444b2ff06410b9eb2d32"
+    },
+    "docs/security/MATRIX_FRACTIONAL_ZERO_ROUTE_RESULT.md": {
+      "bytes": 6701,
+      "sha256": "3442a271b1cf7ce03a7317aee6b9aef6eeedd754af4c61a818e782e7f9eb0aa3"
+    },
+    "scripts/benchmark/plot_toy_lwe_fractional_route.py": {
+      "bytes": 2434,
+      "sha256": "cd891e2d799510795eb5037b18ca8bea49c122af5fcfcc28f89f3cc5ae4e8023"
+    },
+    "scripts/benchmark/toy_lwe_fractional_route_benchmark.py": {
+      "bytes": 15636,
+      "sha256": "521e408d888742dddf07535cea6b7d94e45fd140c824cac9fedab195886d6ec3"
+    },
+    "src/crypto/toy_lwe_fractional_route.py": {
+      "bytes": 13203,
+      "sha256": "5b21b9259207e5bee16de679aa6ec8b2978316a4d515735e8088511baa0c1a4a"
+    },
+    "tests/crypto/test_toy_lwe_fractional_route.py": {
+      "bytes": 4506,
+      "sha256": "cb5d3559052ca9d540d1225b5c8812ea828ac3c28b374872a4c7381e4d632188"
+    },
+    "tests/crypto/test_toy_lwe_fractional_route_benchmark.py": {
+      "bytes": 1136,
+      "sha256": "2321bba24d9755c12dd48fe5dba298643fdee8faf4e5ec699368971b68e6cc38"
+    }
+  },
+  "benchmark_command": "python scripts/benchmark/toy_lwe_fractional_route_benchmark.py --seed-start 20000 --seeds 300 --dimension 8 --samples 14 --locality-candidates 128 --exhaustive-audit-seeds 12 --output docs/research/evidence/toy_lwe_fractional_route_20260907.json",
+  "claim_boundary": "exact_integer_toy_LWE_only",
+  "created_utc": "2026-09-07T05:52:04.013520+00:00",
+  "decisions": {
+    "deploy_fractional_route": false,
+    "fractional_route_adds_measured_interference": false,
+    "fractional_route_beats_exact_bound_and_random": false,
+    "matrix_induced_hidden_target_locality_observed": true,
+    "public_foothold_locality_observed": true
+  },
+  "measurements": {
+    "exact_bound_mean_total_evaluations": 521.14,
+    "fractional_exact_acquisition_hits": 0,
+    "fractional_mean_total_evaluations": 526.3066666666666,
+    "hidden_target_hamming_gamma": -0.002498273298031871,
+    "hidden_target_matrix_gamma": 0.9599699245282864,
+    "public_foothold_matrix_gamma": 0.20967673788510566,
+    "random_route_mean_total_evaluations": 526.5766666666667,
+    "zero_anchor_matrix_gamma": 0.01723016078146603
+  },
+  "prior_evidence_preserved": {
+    "path": "docs/research/evidence/toy_lwe_phase_debias_20260907_RECEIPT.json",
+    "sha256": "90d2167f8a4fd473cc687aebf0cc281e93e592968ef992461768990762c1b70f"
+  },
+  "schema": "scbe.toy-lwe-fractional-route-validation.v1",
+  "status": "FRACTIONAL_ROUTE_UNDERPOWERED",
+  "validation": {
+    "black_ci_profile": "PASS",
+    "flake8": "PASS",
+    "focused_test_command": "python -m pytest -q tests/crypto/test_toy_lwe_fractional_route.py tests/crypto/test_toy_lwe_fractional_route_benchmark.py tests/crypto/test_toy_lwe_phase_debias.py tests/crypto/test_toy_lwe_seeded_bound.py tests/crypto/test_toy_lwe_phase_debias_benchmark.py tests/crypto/test_toy_lwe_phase_search.py tests/crypto/test_toy_lwe_dual_trit_torus_benchmark.py tests/crypto/test_toy_lwe_box_field.py tests/crypto/test_integer_phase_shards.py tests/test_torus.py tests/test_rubix_cubit.py",
+    "focused_tests": {
+      "passed": 123,
+      "seconds": 6.2
+    },
+    "git_diff_check": "PASS",
+    "ruff": "PASS",
+    "source_hash_mismatches": [],
+    "source_hashes_checked": 6,
+    "symbolic_signed_zero": {
+      "equal_order_lhopital_exact": "330/330",
+      "limit_class_correct": "1000/1000",
+      "limit_order_correct": "1000/1000",
+      "limit_sign_correct": "1000/1000",
+      "neutral_zero_division_refused": true
+    },
+    "symbolic_signed_zero_command": "python signed_zero_division.py --trials 1000 --seed 20260907"
+  }
+}
