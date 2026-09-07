@@ -1,0 +1,25 @@
+{
+  "schema": "scbe.defensive-lattice-research-validation.v1",
+  "created_utc": "2026-09-07T06:54:53.443144+00:00",
+  "status": "PASS_RESEARCH_MAP_AND_EXISTING_CONTROLS",
+  "git_parent": "7d0326429d08035f1174e95b7784b7c4b7675fe2",
+  "test_command": "python -m pytest -q tests/crypto/test_dual_lattice_real_pqc.py tests/crypto/test_dual_lattice_integration.py tests/crypto/test_toy_lwe_box_field.py tests/crypto/test_toy_lwe_seeded_bound.py tests/crypto/test_toy_lwe_phase_search.py tests/crypto/test_toy_lwe_phase_debias.py tests/crypto/test_toy_lwe_phase_debias_benchmark.py tests/crypto/test_toy_lwe_dual_trit_torus_benchmark.py tests/crypto/test_toy_lwe_fractional_route.py tests/crypto/test_toy_lwe_fractional_route_benchmark.py tests/crypto/test_oriented_zero_hybrid.py tests/crypto/test_oriented_zero_hybrid_benchmark.py tests/test_dual_lattice_contract.py",
+  "tests_collected": 297,
+  "tests_passed": 297,
+  "pytest_seconds": 12.32,
+  "new_attack_executed": false,
+  "production_keys_used": false,
+  "deployment_crypto_changed": false,
+  "preregistered_scheduler_run": false,
+  "conclusion": "Exact control and toy-search evidence remain valid; adaptive lattice scheduler is preregistered and not yet measured.",
+  "sha256": {
+    "docs/security/LATTICE_INVERSE_RESEARCH_MAP_20260907.md": "42971f2b3d908d02dfc4ac7ace92a3fc5b45e3c9a74664bcc6066127b3ec21fd",
+    "docs/research/evidence/lattice_inverse_sources_20260907.json": "fe6686dc6427921afb1012f87bf8eb74406c71bc3184f830bbd4aa21f8917135",
+    "docs/research/evidence/lattice_scheduler_preregistration_20260907.json": "3ba6efb08a10c4a1d0eb77800f3337d2fc4920a1ddfed3778a33c2adf97c1453",
+    "docs/research/evidence/mlkem_seed_locality_20260907.json": "396cf648273085d04c8c894d6fbf32e61281d815cb416f92f7340449ae3b7e65",
+    "docs/research/evidence/toy_lwe_box_field_20260907.json": "82239108e2a2806c8ea63983ff1857f388d92b78d00154ae090aee9e7eca9f85",
+    "docs/research/evidence/toy_lwe_dual_trit_torus_20260907.json": "a2688bb403927205e2e669f20a5077d4eb779817f7d2216e81b4a6b13b56adce",
+    "docs/research/evidence/toy_lwe_phase_debias_20260907.json": "cf6c90a1dbd23a1b69cf97331536f4581870e3160e22357a1115f6bd6fe4649e",
+    "docs/research/evidence/oriented_zero_hybrid_20260907.json": "b3365e1645849fa0edd250383e9e33da65ebc6be9ffd82f26c9d260e5a2b4a36"
+  }
+}

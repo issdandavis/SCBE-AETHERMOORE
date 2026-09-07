@@ -1,0 +1,128 @@
+{
+  "schema": "scbe.lwe-adaptive-scheduler-preregistration.v1",
+  "created_utc": "2026-09-07T06:55:00Z",
+  "status": "PREREGISTERED_NOT_RUN",
+  "purpose": "Defensive evaluation on generated and public challenge LWE instances only.",
+  "prohibited_scope": [
+    "production keys",
+    "third-party targets",
+    "undeclared side-channel collection",
+    "claims of an ML-KEM or ML-DSA break without independent reproduction"
+  ],
+  "hypothesis": "An exact dual-trit scheduler driven by algebraic reduction telemetry lowers total exact-recovery cost versus matched controls on held-out LWE challenge distributions.",
+  "null_hypothesis": "After full compute and memory accounting, the scheduler does not beat both the no-intervention baseline and matched controls by more than two pooled standard deviations.",
+  "instance_families": [
+    {
+      "tier": "A",
+      "dimensions": [64, 96, 128],
+      "purpose": "debugging, exhaustive or independently checkable ground truth"
+    },
+    {
+      "tier": "B",
+      "dimensions": [256, 350, 512],
+      "purpose": "held-out sparse binary, sparse ternary, and narrow-Gaussian challenge tests"
+    },
+    {
+      "tier": "C",
+      "dimensions": [512, 768, 1024],
+      "purpose": "cost estimation and public synthetic benchmarks; no deployed keys"
+    }
+  ],
+  "minimum_independent_seeds_per_condition": 3,
+  "train_test_separation": [
+    "random seeds",
+    "dimensions",
+    "moduli",
+    "secret distributions",
+    "matrix instances"
+  ],
+  "solver_families": [
+    "primal-uSVP",
+    "primal-drop-and-solve",
+    "dual-distinguisher",
+    "dual-hybrid-meet-in-the-middle",
+    "BKZ-preprocessed recovery"
+  ],
+  "controller_observations": [
+    "Gram-Schmidt profile and slope",
+    "column variance",
+    "projected residual moments",
+    "BKZ block size and completed tours",
+    "dropped coordinates",
+    "retained samples",
+    "estimated remaining operations",
+    "CPU seconds",
+    "GPU seconds",
+    "peak memory bytes",
+    "restart count",
+    "duplicate proposal count"
+  ],
+  "controller_actions": {
+    "encoding": "balanced trit",
+    "states": {
+      "-1": "decrease one declared solver parameter",
+      "0": "hold or quarantine when evidence is absent or conflicting",
+      "+1": "increase one declared solver parameter"
+    },
+    "restrictions": [
+      "one parameter changes per decision",
+      "deterministic bounds checker",
+      "finite jump budget",
+      "hysteresis before reversing a change",
+      "all illegal actions charged and rejected"
+    ]
+  },
+  "controls": [
+    "solver default with no intervention",
+    "fixed expert schedule",
+    "uniformly random legal scheduler",
+    "compute-matched learned policy without trit topology",
+    "best applicable established primal or dual attack"
+  ],
+  "charged_costs": [
+    "sample generation",
+    "basis reduction and preprocessing",
+    "feature extraction",
+    "policy training",
+    "all solver operations",
+    "failed restarts",
+    "duplicate proposals",
+    "checkpointing",
+    "CPU and GPU wall time",
+    "peak and integrated memory"
+  ],
+  "primary_outcomes": [
+    "exact planted-secret recovery",
+    "declared decision-game advantage",
+    "total normalized operation count",
+    "wall-clock and CPU/GPU seconds",
+    "peak memory",
+    "sample count"
+  ],
+  "secondary_outcomes": [
+    "basis quality",
+    "residual score",
+    "number of legal decisions",
+    "quarantine rate",
+    "restart rate"
+  ],
+  "success_rule": [
+    "exact recovery or a win in the declared decision game",
+    "beats no-intervention and matched random or learned controls",
+    "paired effect exceeds two pooled standard deviations",
+    "effect persists on held-out dimensions and secret distributions",
+    "complete compute and memory accounting is published"
+  ],
+  "failure_labels": {
+    "insufficient_power": "UNDERPOWERED",
+    "adequate_power_without_advantage": "NO_ADVANTAGE",
+    "incorrect_recovery_or_verifier_failure": "INVALID"
+  },
+  "publication_gate": [
+    "recognized public challenges",
+    "open seeds and reproducible scripts",
+    "license-compatible implementation",
+    "independent reproduction",
+    "no extrapolation from sparse secrets to ordinary ML-KEM secrets"
+  ]
+}

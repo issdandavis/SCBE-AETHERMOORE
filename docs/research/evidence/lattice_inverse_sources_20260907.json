@@ -1,0 +1,134 @@
+{
+  "schema": "scbe.defensive-lattice-research-sources.v1",
+  "created_utc": "2026-09-07T06:55:00Z",
+  "scope": "Primary and authoritative sources for a defensive LWE scheduler study; no deployed-key attack authorization.",
+  "sources": [
+    {
+      "id": "fips203",
+      "title": "FIPS 203: Module-Lattice-Based Key-Encapsulation Mechanism Standard",
+      "url": "https://doi.org/10.6028/NIST.FIPS.203",
+      "authority": "NIST",
+      "supports": [
+        "ML-KEM key-generation data flow",
+        "Module-LWE security basis",
+        "implementation conformance is not a complete security guarantee"
+      ]
+    },
+    {
+      "id": "fips204",
+      "title": "FIPS 204: Module-Lattice-Based Digital Signature Standard",
+      "url": "https://doi.org/10.6028/NIST.FIPS.204",
+      "authority": "NIST",
+      "supports": [
+        "ML-DSA has a signature role distinct from ML-KEM",
+        "key pairs are restricted to their intended purpose",
+        "conforming arithmetic avoids floating-point calculations"
+      ]
+    },
+    {
+      "id": "salsa",
+      "title": "SALSA: Attacking Lattice Cryptography with Transformers",
+      "url": "https://arxiv.org/abs/2207.04785",
+      "authority": "authors and NeurIPS paper",
+      "supports": [
+        "learned recovery on selected small and sparse-secret LWE regimes"
+      ],
+      "does_not_support": [
+        "generic ML-KEM key recovery"
+      ]
+    },
+    {
+      "id": "picante",
+      "title": "PICANTE: Private Key Recovery in LWE Based Cryptosystems Using Deep Learning",
+      "url": "https://arxiv.org/abs/2303.04178",
+      "authority": "authors and ACM CCS paper",
+      "supports": [
+        "lattice preprocessing can expose signal for neural recovery of sparse binary secrets"
+      ],
+      "does_not_support": [
+        "a break of standardized ML-KEM parameters"
+      ]
+    },
+    {
+      "id": "salsa_verde",
+      "title": "SALSA VERDE",
+      "url": "https://arxiv.org/abs/2306.11641",
+      "authority": "authors and NeurIPS paper",
+      "supports": [
+        "learned attacks extend to selected sparse binary, ternary, and narrow-Gaussian LWE secrets"
+      ]
+    },
+    {
+      "id": "lwe_benchmarking",
+      "title": "Benchmarking Attacks on Learning with Errors",
+      "url": "https://arxiv.org/abs/2408.00882",
+      "authority": "authors and IEEE Symposium on Security and Privacy paper",
+      "supports": [
+        "common-cost comparison of neural, primal, dual, and hybrid attacks",
+        "recovery results for very sparse secrets at Kyber-like dimensions"
+      ],
+      "does_not_support": [
+        "recovery of ordinary full ML-KEM secret distributions"
+      ],
+      "license_note": "The linked research code is CC-BY-NC; review before any commercial reuse."
+    },
+    {
+      "id": "lwe_estimator",
+      "title": "LWE Estimator",
+      "url": "https://github.com/malb/lattice-estimator",
+      "authority": "maintained research implementation",
+      "supports": [
+        "standard estimated-cost baselines for LWE attacks"
+      ],
+      "does_not_support": [
+        "measured recovery by itself"
+      ]
+    },
+    {
+      "id": "cool_cruel_dual",
+      "title": "Cool and Cruel is Dual",
+      "url": "https://eprint.iacr.org/2025/1002.pdf",
+      "authority": "IACR Cryptology ePrint author manuscript",
+      "supports": [
+        "comparison of variance-based sparse-secret attacks with known dual and primal methods"
+      ]
+    },
+    {
+      "id": "kyberslash",
+      "title": "KyberSlash",
+      "url": "https://eprint.iacr.org/2024/1049.pdf",
+      "authority": "IACR Cryptology ePrint author manuscript",
+      "supports": [
+        "practical timing leakage from secret-dependent divisions in affected Kyber implementations"
+      ],
+      "does_not_support": [
+        "a mathematical break of Module-LWE"
+      ]
+    },
+    {
+      "id": "keccak_faults",
+      "title": "Fault attacks on Keccak-based ML-KEM and ML-DSA implementations",
+      "url": "https://eprint.iacr.org/2024/1522.pdf",
+      "authority": "IACR Cryptology ePrint author manuscript",
+      "supports": [
+        "fault-injection risk at implementation and control-flow boundaries"
+      ]
+    },
+    {
+      "id": "kyber_power",
+      "title": "Power side-channel analysis of Kyber implementations",
+      "url": "https://eprint.iacr.org/2024/2051.pdf",
+      "authority": "IACR Cryptology ePrint author manuscript",
+      "supports": [
+        "removing timing variation does not automatically remove physical leakage"
+      ]
+    }
+  ],
+  "local_evidence": [
+    "docs/research/evidence/mlkem_seed_locality_20260907.json",
+    "docs/research/evidence/toy_lwe_box_field_20260907.json",
+    "docs/research/evidence/toy_lwe_dual_trit_torus_20260907.json",
+    "docs/research/evidence/toy_lwe_phase_debias_20260907.json",
+    "docs/research/evidence/oriented_zero_hybrid_20260907.json"
+  ]
+}
