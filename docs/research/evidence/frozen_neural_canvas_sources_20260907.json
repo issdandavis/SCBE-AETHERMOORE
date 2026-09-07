@@ -1,0 +1,28 @@
+{
+  "schema": "scbe.frozen-neural-canvas-sources.v1",
+  "created_utc": "2026-09-07T07:20:00Z",
+  "sources": [
+    {
+      "title": "Random Features for Large-Scale Kernel Machines",
+      "url": "https://papers.nips.cc/paper/3182-random-features-for-large-scale-kernel-machines.pdf",
+      "supports": "A frozen randomized feature map can preserve or approximate a declared similarity structure without learning its internal features."
+    },
+    {
+      "title": "Neural Tangent Kernel: Convergence and Generalization in Neural Networks",
+      "url": "https://papers.nips.cc/paper/2018/file/5a4be1fa34e62bb8a6ec6b91d2462f5a-Paper.pdf",
+      "supports": "Random initialization already induces measurable kernel structure; a blank neural canvas is not assumption-free."
+    },
+    {
+      "title": "Echo state networks are universal",
+      "url": "https://arxiv.org/abs/1806.00797",
+      "supports": "Reservoir systems provide established theory for fixed neural state maps with separate readouts."
+    }
+  ],
+  "local_preexisting_work": [
+    "C:/dev/clay-wafer-net/NEURAL_STRIP_MINE_LAYER_MAP.md",
+    "C:/dev/loom/case_direction_probe.py",
+    "C:/dev/loom/chain_accelerator.py",
+    "notes/round-table/2026-03-19-phase-tunnel-resonance-finding.md"
+  ],
+  "claim_boundary": "The local experiment validates a fixed response instrument and reports no target-estimation advantage. It does not claim a cryptographic break or a novel random-feature theory."
+}

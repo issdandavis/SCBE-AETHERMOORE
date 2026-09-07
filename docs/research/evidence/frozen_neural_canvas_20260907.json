@@ -1,0 +1,850 @@
+{
+  "schema": "scbe.frozen-neural-canvas-toy-lwe-benchmark.v1",
+  "status": "NO_ADVANTAGE",
+  "scope": "Fixed untrained response mapping on synthetic toy LWE; no production keys or training.",
+  "instance_start": 10000,
+  "instances_per_canvas_seed": 300,
+  "canvas_seeds": [
+    11,
+    29,
+    47
+  ],
+  "probe_policy": "all eight coordinate directions, baseline and both signs, fixed before any response",
+  "network": {
+    "input_width": 14,
+    "layer_widths": [
+      24,
+      24
+    ],
+    "weights": "deterministic balanced ternary",
+    "nonlinear_activation": "integer clip at +/-97",
+    "matched_control": "same weights and biases with identity activation",
+    "optimizer_steps": 0,
+    "learned_readout": false,
+    "adaptive_selection": false
+  },
+  "rows": [
+    {
+      "canvas_seed": 11,
+      "weight_sha256": "83bb9910f3d8f4a3734ab941c47e80d0ead498d230b8c21d23bfaf1d6f6a6d8d",
+      "clipped_canvas_sha256": "b2f76e0249e718a1677e8475385d3d012cbb939a3091d202f2e3cd9135cd1a93",
+      "linear_canvas_sha256": "53dce38e408478974e5ecdaf835b42c51f4862966e2649525223ecc7203f52cb",
+      "instances": 300,
+      "coordinate_targets": 2400,
+      "methods": {
+        "direct_residual": {
+          "correct": 824,
+          "emitted": 2400,
+          "total": 2400,
+          "accuracy_all": {
+            "numerator": 824,
+            "denominator": 2400,
+            "decimal": 0.3433333333333333
+          },
+          "accuracy_when_emitted": {
+            "numerator": 824,
+            "denominator": 2400,
+            "decimal": 0.3433333333333333
+          },
+          "coverage": {
+            "numerator": 2400,
+            "denominator": 2400,
+            "decimal": 1.0
+          }
+        },
+        "linear_canvas": {
+          "correct": 796,
+          "emitted": 2400,
+          "total": 2400,
+          "accuracy_all": {
+            "numerator": 796,
+            "denominator": 2400,
+            "decimal": 0.33166666666666667
+          },
+          "accuracy_when_emitted": {
+            "numerator": 796,
+            "denominator": 2400,
+            "decimal": 0.33166666666666667
+          },
+          "coverage": {
+            "numerator": 2400,
+            "denominator": 2400,
+            "decimal": 1.0
+          }
+        },
+        "clipped_canvas": {
+          "correct": 817,
+          "emitted": 2400,
+          "total": 2400,
+          "accuracy_all": {
+            "numerator": 817,
+            "denominator": 2400,
+            "decimal": 0.34041666666666665
+          },
+          "accuracy_when_emitted": {
+            "numerator": 817,
+            "denominator": 2400,
+            "decimal": 0.34041666666666665
+          },
+          "coverage": {
+            "numerator": 2400,
+            "denominator": 2400,
+            "decimal": 1.0
+          }
+        },
+        "random": {
+          "correct": 819,
+          "emitted": 2400,
+          "total": 2400,
+          "accuracy_all": {
+            "numerator": 819,
+            "denominator": 2400,
+            "decimal": 0.34125
+          },
+          "accuracy_when_emitted": {
+            "numerator": 819,
+            "denominator": 2400,
+            "decimal": 0.34125
+          },
+          "coverage": {
+            "numerator": 2400,
+            "denominator": 2400,
+            "decimal": 1.0
+          }
+        }
+      },
+      "mean_slope_rank": [
+        {
+          "numerator": 2400,
+          "denominator": 300,
+          "decimal": 8.0
+        },
+        {
+          "numerator": 2400,
+          "denominator": 300,
+          "decimal": 8.0
+        }
+      ],
+      "mean_curvature_rank": [
+        {
+          "numerator": 2400,
+          "denominator": 300,
+          "decimal": 8.0
+        },
+        {
+          "numerator": 2400,
+          "denominator": 300,
+          "decimal": 8.0
+        }
+      ],
+      "mean_dead_nodes": [
+        {
+          "numerator": 0,
+          "denominator": 300,
+          "decimal": 0.0
+        },
+        {
+          "numerator": 0,
+          "denominator": 300,
+          "decimal": 0.0
+        }
+      ],
+      "dual_trit_state_counts": [
+        [
+          {
+            "state": [
+              -1,
+              -1
+            ],
+            "count": 11918
+          },
+          {
+            "state": [
+              -1,
+              0
+            ],
+            "count": 3464
+          },
+          {
+            "state": [
+              -1,
+              1
+            ],
+            "count": 12340
+          },
+          {
+            "state": [
+              0,
+              -1
+            ],
+            "count": 898
+          },
+          {
+            "state": [
+              0,
+              0
+            ],
+            "count": 397
+          },
+          {
+            "state": [
+              0,
+              1
+            ],
+            "count": 894
+          },
+          {
+            "state": [
+              1,
+              -1
+            ],
+            "count": 11993
+          },
+          {
+            "state": [
+              1,
+              0
+            ],
+            "count": 3517
+          },
+          {
+            "state": [
+              1,
+              1
+            ],
+            "count": 12179
+          }
+        ],
+        [
+          {
+            "state": [
+              -1,
+              -1
+            ],
+            "count": 10367
+          },
+          {
+            "state": [
+              -1,
+              0
+            ],
+            "count": 19
+          },
+          {
+            "state": [
+              -1,
+              1
+            ],
+            "count": 10691
+          },
+          {
+            "state": [
+              0,
+              -1
+            ],
+            "count": 4882
+          },
+          {
+            "state": [
+              0,
+              0
+            ],
+            "count": 5726
+          },
+          {
+            "state": [
+              0,
+              1
+            ],
+            "count": 4957
+          },
+          {
+            "state": [
+              1,
+              -1
+            ],
+            "count": 10374
+          },
+          {
+            "state": [
+              1,
+              0
+            ],
+            "count": 24
+          },
+          {
+            "state": [
+              1,
+              1
+            ],
+            "count": 10560
+          }
+        ]
+      ],
+      "fixed_forward_calls": 10200
+    },
+    {
+      "canvas_seed": 29,
+      "weight_sha256": "60ced6b615c29e2c638e6bacbd97b3de5d840f7f274a54b607167f041ad9b3df",
+      "clipped_canvas_sha256": "060653da7ff5aee5ce2b15529402876aa03a4273317cd6e724c833bde71bf90c",
+      "linear_canvas_sha256": "068db8196afd43e2f2ab00b790e71d46a071c570e3f597c32a0fb9fa8cfa77aa",
+      "instances": 300,
+      "coordinate_targets": 2400,
+      "methods": {
+        "direct_residual": {
+          "correct": 824,
+          "emitted": 2400,
+          "total": 2400,
+          "accuracy_all": {
+            "numerator": 824,
+            "denominator": 2400,
+            "decimal": 0.3433333333333333
+          },
+          "accuracy_when_emitted": {
+            "numerator": 824,
+            "denominator": 2400,
+            "decimal": 0.3433333333333333
+          },
+          "coverage": {
+            "numerator": 2400,
+            "denominator": 2400,
+            "decimal": 1.0
+          }
+        },
+        "linear_canvas": {
+          "correct": 821,
+          "emitted": 2400,
+          "total": 2400,
+          "accuracy_all": {
+            "numerator": 821,
+            "denominator": 2400,
+            "decimal": 0.34208333333333335
+          },
+          "accuracy_when_emitted": {
+            "numerator": 821,
+            "denominator": 2400,
+            "decimal": 0.34208333333333335
+          },
+          "coverage": {
+            "numerator": 2400,
+            "denominator": 2400,
+            "decimal": 1.0
+          }
+        },
+        "clipped_canvas": {
+          "correct": 788,
+          "emitted": 2400,
+          "total": 2400,
+          "accuracy_all": {
+            "numerator": 788,
+            "denominator": 2400,
+            "decimal": 0.3283333333333333
+          },
+          "accuracy_when_emitted": {
+            "numerator": 788,
+            "denominator": 2400,
+            "decimal": 0.3283333333333333
+          },
+          "coverage": {
+            "numerator": 2400,
+            "denominator": 2400,
+            "decimal": 1.0
+          }
+        },
+        "random": {
+          "correct": 743,
+          "emitted": 2400,
+          "total": 2400,
+          "accuracy_all": {
+            "numerator": 743,
+            "denominator": 2400,
+            "decimal": 0.3095833333333333
+          },
+          "accuracy_when_emitted": {
+            "numerator": 743,
+            "denominator": 2400,
+            "decimal": 0.3095833333333333
+          },
+          "coverage": {
+            "numerator": 2400,
+            "denominator": 2400,
+            "decimal": 1.0
+          }
+        }
+      },
+      "mean_slope_rank": [
+        {
+          "numerator": 2400,
+          "denominator": 300,
+          "decimal": 8.0
+        },
+        {
+          "numerator": 2400,
+          "denominator": 300,
+          "decimal": 8.0
+        }
+      ],
+      "mean_curvature_rank": [
+        {
+          "numerator": 2400,
+          "denominator": 300,
+          "decimal": 8.0
+        },
+        {
+          "numerator": 2400,
+          "denominator": 300,
+          "decimal": 8.0
+        }
+      ],
+      "mean_dead_nodes": [
+        {
+          "numerator": 0,
+          "denominator": 300,
+          "decimal": 0.0
+        },
+        {
+          "numerator": 0,
+          "denominator": 300,
+          "decimal": 0.0
+        }
+      ],
+      "dual_trit_state_counts": [
+        [
+          {
+            "state": [
+              -1,
+              -1
+            ],
+            "count": 12213
+          },
+          {
+            "state": [
+              -1,
+              0
+            ],
+            "count": 3342
+          },
+          {
+            "state": [
+              -1,
+              1
+            ],
+            "count": 12151
+          },
+          {
+            "state": [
+              0,
+              -1
+            ],
+            "count": 915
+          },
+          {
+            "state": [
+              0,
+              0
+            ],
+            "count": 399
+          },
+          {
+            "state": [
+              0,
+              1
+            ],
+            "count": 917
+          },
+          {
+            "state": [
+              1,
+              -1
+            ],
+            "count": 12129
+          },
+          {
+            "state": [
+              1,
+              0
+            ],
+            "count": 3411
+          },
+          {
+            "state": [
+              1,
+              1
+            ],
+            "count": 12123
+          }
+        ],
+        [
+          {
+            "state": [
+              -1,
+              -1
+            ],
+            "count": 10840
+          },
+          {
+            "state": [
+              -1,
+              0
+            ],
+            "count": 13
+          },
+          {
+            "state": [
+              -1,
+              1
+            ],
+            "count": 10505
+          },
+          {
+            "state": [
+              0,
+              -1
+            ],
+            "count": 4865
+          },
+          {
+            "state": [
+              0,
+              0
+            ],
+            "count": 5523
+          },
+          {
+            "state": [
+              0,
+              1
+            ],
+            "count": 4697
+          },
+          {
+            "state": [
+              1,
+              -1
+            ],
+            "count": 10617
+          },
+          {
+            "state": [
+              1,
+              0
+            ],
+            "count": 13
+          },
+          {
+            "state": [
+              1,
+              1
+            ],
+            "count": 10527
+          }
+        ]
+      ],
+      "fixed_forward_calls": 10200
+    },
+    {
+      "canvas_seed": 47,
+      "weight_sha256": "e5b41191fd3911dea0e053dcc43f4b92d80dbe9f17b65dda58cde1b66989dd88",
+      "clipped_canvas_sha256": "06e53c23c3705c72e67f5d06bd56ad8bcd8b771d09f204e39067deea9ae73a2d",
+      "linear_canvas_sha256": "2a4b9e868c488034d502a0257b4bb8768e81831bc1e051223b61d1fa69866f6a",
+      "instances": 300,
+      "coordinate_targets": 2400,
+      "methods": {
+        "direct_residual": {
+          "correct": 824,
+          "emitted": 2400,
+          "total": 2400,
+          "accuracy_all": {
+            "numerator": 824,
+            "denominator": 2400,
+            "decimal": 0.3433333333333333
+          },
+          "accuracy_when_emitted": {
+            "numerator": 824,
+            "denominator": 2400,
+            "decimal": 0.3433333333333333
+          },
+          "coverage": {
+            "numerator": 2400,
+            "denominator": 2400,
+            "decimal": 1.0
+          }
+        },
+        "linear_canvas": {
+          "correct": 772,
+          "emitted": 2400,
+          "total": 2400,
+          "accuracy_all": {
+            "numerator": 772,
+            "denominator": 2400,
+            "decimal": 0.32166666666666666
+          },
+          "accuracy_when_emitted": {
+            "numerator": 772,
+            "denominator": 2400,
+            "decimal": 0.32166666666666666
+          },
+          "coverage": {
+            "numerator": 2400,
+            "denominator": 2400,
+            "decimal": 1.0
+          }
+        },
+        "clipped_canvas": {
+          "correct": 796,
+          "emitted": 2399,
+          "total": 2400,
+          "accuracy_all": {
+            "numerator": 796,
+            "denominator": 2400,
+            "decimal": 0.33166666666666667
+          },
+          "accuracy_when_emitted": {
+            "numerator": 796,
+            "denominator": 2399,
+            "decimal": 0.3318049187161317
+          },
+          "coverage": {
+            "numerator": 2399,
+            "denominator": 2400,
+            "decimal": 0.9995833333333334
+          }
+        },
+        "random": {
+          "correct": 808,
+          "emitted": 2400,
+          "total": 2400,
+          "accuracy_all": {
+            "numerator": 808,
+            "denominator": 2400,
+            "decimal": 0.33666666666666667
+          },
+          "accuracy_when_emitted": {
+            "numerator": 808,
+            "denominator": 2400,
+            "decimal": 0.33666666666666667
+          },
+          "coverage": {
+            "numerator": 2400,
+            "denominator": 2400,
+            "decimal": 1.0
+          }
+        }
+      },
+      "mean_slope_rank": [
+        {
+          "numerator": 2400,
+          "denominator": 300,
+          "decimal": 8.0
+        },
+        {
+          "numerator": 2400,
+          "denominator": 300,
+          "decimal": 8.0
+        }
+      ],
+      "mean_curvature_rank": [
+        {
+          "numerator": 2400,
+          "denominator": 300,
+          "decimal": 8.0
+        },
+        {
+          "numerator": 2400,
+          "denominator": 300,
+          "decimal": 8.0
+        }
+      ],
+      "mean_dead_nodes": [
+        {
+          "numerator": 0,
+          "denominator": 300,
+          "decimal": 0.0
+        },
+        {
+          "numerator": 0,
+          "denominator": 300,
+          "decimal": 0.0
+        }
+      ],
+      "dual_trit_state_counts": [
+        [
+          {
+            "state": [
+              -1,
+              -1
+            ],
+            "count": 12079
+          },
+          {
+            "state": [
+              -1,
+              0
+            ],
+            "count": 3178
+          },
+          {
+            "state": [
+              -1,
+              1
+            ],
+            "count": 12292
+          },
+          {
+            "state": [
+              0,
+              -1
+            ],
+            "count": 982
+          },
+          {
+            "state": [
+              0,
+              0
+            ],
+            "count": 382
+          },
+          {
+            "state": [
+              0,
+              1
+            ],
+            "count": 974
+          },
+          {
+            "state": [
+              1,
+              -1
+            ],
+            "count": 12080
+          },
+          {
+            "state": [
+              1,
+              0
+            ],
+            "count": 3138
+          },
+          {
+            "state": [
+              1,
+              1
+            ],
+            "count": 12495
+          }
+        ],
+        [
+          {
+            "state": [
+              -1,
+              -1
+            ],
+            "count": 10819
+          },
+          {
+            "state": [
+              -1,
+              0
+            ],
+            "count": 20
+          },
+          {
+            "state": [
+              -1,
+              1
+            ],
+            "count": 10495
+          },
+          {
+            "state": [
+              0,
+              -1
+            ],
+            "count": 4750
+          },
+          {
+            "state": [
+              0,
+              0
+            ],
+            "count": 5341
+          },
+          {
+            "state": [
+              0,
+              1
+            ],
+            "count": 4810
+          },
+          {
+            "state": [
+              1,
+              -1
+            ],
+            "count": 10669
+          },
+          {
+            "state": [
+              1,
+              0
+            ],
+            "count": 17
+          },
+          {
+            "state": [
+              1,
+              1
+            ],
+            "count": 10679
+          }
+        ]
+      ],
+      "fixed_forward_calls": 10200
+    }
+  ],
+  "aggregate_accuracy": {
+    "direct_residual": {
+      "mean": 0.3433333333333333,
+      "population_sd": 0.0
+    },
+    "linear_canvas": {
+      "mean": 0.3318055555555555,
+      "population_sd": 0.008335647826735376
+    },
+    "clipped_canvas": {
+      "mean": 0.3334722222222222,
+      "population_sd": 0.005095537868845593
+    },
+    "random": {
+      "mean": 0.32916666666666666,
+      "population_sd": 0.013973354272673036
+    }
+  },
+  "comparisons": {
+    "direct_residual": {
+      "mean_accuracy_difference": -0.009861111111111098,
+      "two_pooled_population_sd": 0.0072061787617071354,
+      "exceeds_required_effect": false,
+      "wins_every_canvas_seed": false
+    },
+    "linear_canvas": {
+      "mean_accuracy_difference": 0.0016666666666667052,
+      "two_pooled_population_sd": 0.013816477906050999,
+      "exceeds_required_effect": false,
+      "wins_every_canvas_seed": false
+    },
+    "random": {
+      "mean_accuracy_difference": 0.0043055555555555625,
+      "two_pooled_population_sd": 0.021034216686269508,
+      "exceeds_required_effect": false,
+      "wins_every_canvas_seed": false
+    }
+  },
+  "conclusion": "The blank canvas produced a reproducible node-response tensor but did not beat every direct, linear, and random control under the registered effect rule.",
+  "elapsed_seconds": 20.653155000065453,
+  "sources": {
+    "C:\\dev\\_wt_integer_phase_shards_20260906\\src\\crypto\\frozen_neural_canvas.py": "75098c4cef6ede92e47a7233cdc46c3ede45090659149a2713d5593e1e6aa144",
+    "C:\\dev\\_wt_integer_phase_shards_20260906\\src\\crypto\\toy_lwe_box_field.py": "c8163e366e6815471a936bc61b435eedbb008937f4aa6672b7d0213b1ce3d227",
+    "C:\\dev\\_wt_integer_phase_shards_20260906\\scripts\\benchmark\\frozen_neural_canvas_benchmark.py": "a98943e67e6f9d8da9b68689cf5d9bea487704ca1e8fb9f177ad64ec53fbe796"
+  }
+}

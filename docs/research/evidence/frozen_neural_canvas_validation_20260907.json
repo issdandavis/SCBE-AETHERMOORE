@@ -1,0 +1,49 @@
+{
+  "schema": "scbe.frozen-neural-canvas-validation.v1",
+  "created_utc": "2026-09-07T07:46:05.826629+00:00",
+  "status": "PASS_MEASUREMENT_NO_ADVANTAGE",
+  "scope": "Fixed untrained exact-integer response instrument on synthetic toy LWE.",
+  "validation": {
+    "ruff": {
+      "status": "PASS",
+      "files": 5
+    },
+    "focused_tests": {
+      "status": "PASS",
+      "passed": 23,
+      "module_statement_coverage_percent": 98
+    },
+    "related_regression": {
+      "status": "PASS",
+      "passed": 322,
+      "seconds": 12.43
+    },
+    "full_replay": {
+      "status": "EXACT_MATCH_EXCEPT_ELAPSED_SECONDS",
+      "canvas_seeds": 3,
+      "instances_per_seed": 300,
+      "coordinate_targets": 7200,
+      "frozen_canvas_forward_calls": 30600
+    },
+    "evidence_links": "PASS",
+    "benchmark_source_hashes": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "claim_boundary": {
+    "measured": "Full-rank fixed node response and nonlinear curvature under the declared probes.",
+    "not_measured": "No target-estimation improvement beyond direct, same-weight linear, and random controls.",
+    "production_crypto_attack": false,
+    "training_or_adaptive_readout": false
+  },
+  "artifacts_sha256": {
+    "src/crypto/frozen_neural_canvas.py": "75098c4cef6ede92e47a7233cdc46c3ede45090659149a2713d5593e1e6aa144",
+    "scripts/benchmark/frozen_neural_canvas_benchmark.py": "a98943e67e6f9d8da9b68689cf5d9bea487704ca1e8fb9f177ad64ec53fbe796",
+    "scripts/benchmark/plot_frozen_neural_canvas.py": "20524cee6f0dd4cc8c34a941085931d858c450269dbfe7659e207e6a23fa15ae",
+    "tests/crypto/test_frozen_neural_canvas.py": "7400f7388ba1801ceb1aca8bbd3a7addbaff6e63d1c8cbc75c07803744b28c8f",
+    "tests/crypto/test_frozen_neural_canvas_benchmark.py": "c08ad3ed75f7ddc72fae62e66bbd28b7370a79ad6dc528715568bcb773a0cea9",
+    "docs/research/evidence/frozen_neural_canvas_20260907.json": "9c00b80ab80b077500827b1bfd4a57a1f60adc2e6061f5deb4739800f45d72c2",
+    "docs/research/evidence/frozen_neural_canvas_20260907.png": "3a1f16cd9b8a08d1299ac84fb2e9f3a49f92815804025b9a90b5fd6c310d99c1",
+    "docs/research/evidence/frozen_neural_canvas_sources_20260907.json": "cfda9e92d04471a06354a9e27fab5224ed45e563bcfd9d4fa379f15ba27f1bf8",
+    "docs/security/FROZEN_NEURAL_CANVAS_RESULT_20260907.md": "b082bfb1d2d52eb20273a6be15ffd2d4bd8b80d06efc844569ed5ee44275bfc3"
+  }
+}
