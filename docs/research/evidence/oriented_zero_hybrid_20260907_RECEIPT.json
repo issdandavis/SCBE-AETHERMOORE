@@ -1,0 +1,41 @@
+{
+  "plot": {
+    "path": "C:\\dev\\_wt_integer_phase_shards_20260906\\docs\\research\\evidence\\oriented_zero_hybrid_20260907.png",
+    "sha256": "048465843993559a03f260ac5037d4c1eca79044fce841351e2746c336408387"
+  },
+  "report": {
+    "path": "C:\\dev\\_wt_integer_phase_shards_20260906\\docs\\research\\evidence\\oriented_zero_hybrid_20260907.json",
+    "sha256": "b3365e1645849fa0edd250383e9e33da65ebc6be9ffd82f26c9d260e5a2b4a36"
+  },
+  "schema": "scbe.oriented-zero-hybrid-artifact-receipt.v1",
+  "sources": {
+    "benchmark_driver": {
+      "path": "C:\\dev\\_wt_integer_phase_shards_20260906\\scripts\\benchmark\\oriented_zero_hybrid_benchmark.py",
+      "sha256": "9327f82153f8b18eba9a84f46a6f5b99b6b4d075bb958b06194da9d383303f7d"
+    },
+    "existing_fsgs_hybrid": {
+      "path": "C:\\dev\\_wt_integer_phase_shards_20260906\\src\\symphonic_cipher\\scbe_aethermoore\\ai_brain\\fsgs.py",
+      "sha256": "e1a542303eac84ed0dc2047da38d219680b1e705914537e1c9392b04c23e6c1d"
+    },
+    "existing_hysteresis": {
+      "path": "C:\\dev\\_wt_integer_phase_shards_20260906\\src\\spiralverse\\proximity_optimizer.py",
+      "sha256": "1f72444c1fb0be58483b0e37ee6a0251ef9f04d27aa073d2f1bd6725679810db"
+    },
+    "existing_topological_cfi": {
+      "path": "C:\\dev\\_wt_integer_phase_shards_20260906\\src\\symphonic_cipher\\topological_cfi.py",
+      "sha256": "f8ee738bdbcdec72dc347358776b67950b9be7b04037c3e8c1265d7bcb1a6576"
+    },
+    "oriented_zero_hybrid": {
+      "path": "C:\\dev\\_wt_integer_phase_shards_20260906\\src\\crypto\\oriented_zero_hybrid.py",
+      "sha256": "14da6652ee452b58a27f3d254b1fd715631c490a32f0b5f523e8ca6d483dadb9"
+    },
+    "prior_signed_zero_limits": {
+      "path": "C:\\dev\\loom\\signed_zero_division.py",
+      "sha256": "fe1e83768ed18221bbed47e6d2fddfbb0faef9e40f1b95192636f426de3cd810"
+    },
+    "toy_lwe_objective": {
+      "path": "C:\\dev\\_wt_integer_phase_shards_20260906\\src\\crypto\\toy_lwe_box_field.py",
+      "sha256": "c8163e366e6815471a936bc61b435eedbb008937f4aa6672b7d0213b1ce3d227"
+    }
+  }
+}
