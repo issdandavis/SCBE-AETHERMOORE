@@ -1,0 +1,526 @@
+{
+  "schema": "codex.system-inventory.v1",
+  "generated_at": "2026-09-07T04:30:35.864924+00:00",
+  "read_only": true,
+  "roots": [
+    {
+      "root": "C:\\dev\\_wt_integer_phase_shards_20260906\\src\\crypto",
+      "exists": true,
+      "immediate_directories": [],
+      "file_count": 69,
+      "total_bytes": 1308124,
+      "truncated": false,
+      "categories": {
+        "entrypoints": {
+          "count": 1,
+          "paths": [
+            "physics_domains.py"
+          ],
+          "paths_truncated": false
+        }
+      },
+      "largest_files": [
+        {
+          "path": "quantum_frequency_bundle.py",
+          "bytes": 96380
+        },
+        {
+          "path": "flight_dynamics.py",
+          "bytes": 43928
+        },
+        {
+          "path": "manifold_mirror.py",
+          "bytes": 40898
+        },
+        {
+          "path": "dual_lattice_integration.py",
+          "bytes": 39578
+        },
+        {
+          "path": "pqc.ts",
+          "bytes": 35385
+        },
+        {
+          "path": "third_thread.py",
+          "bytes": 33376
+        },
+        {
+          "path": "geo_seal.py",
+          "bytes": 33195
+        },
+        {
+          "path": "dual_lattice.py",
+          "bytes": 32405
+        }
+      ],
+      "git": {
+        "root": "C:/dev/_wt_integer_phase_shards_20260906",
+        "status_available": true,
+        "status_lines": [],
+        "status_truncated": false
+      }
+    },
+    {
+      "root": "C:\\dev\\_wt_integer_phase_shards_20260906\\src\\symphonic_cipher\\scbe_aethermoore\\ai_brain",
+      "exists": true,
+      "immediate_directories": [],
+      "file_count": 14,
+      "total_bytes": 210459,
+      "truncated": false,
+      "categories": {},
+      "largest_files": [
+        {
+          "path": "circuit_flow.py",
+          "bytes": 29833
+        },
+        {
+          "path": "governance_adapter.py",
+          "bytes": 19781
+        },
+        {
+          "path": "hamiltonian_braid.py",
+          "bytes": 19117
+        },
+        {
+          "path": "fsgs.py",
+          "bytes": 17331
+        },
+        {
+          "path": "dual_ternary.py",
+          "bytes": 16381
+        },
+        {
+          "path": "dual_lattice.py",
+          "bytes": 15662
+        },
+        {
+          "path": "cymatic_voxel_net.py",
+          "bytes": 15541
+        },
+        {
+          "path": "mirror_shift.py",
+          "bytes": 15228
+        }
+      ],
+      "git": {
+        "root": "C:/dev/_wt_integer_phase_shards_20260906",
+        "status_available": true,
+        "status_lines": [],
+        "status_truncated": false
+      }
+    },
+    {
+      "root": "C:\\dev\\loom",
+      "exists": true,
+      "immediate_directories": [
+        ".agents",
+        ".benchmarks",
+        ".claude",
+        ".github",
+        "_bundle",
+        "_surface_receipts",
+        "_verify_bin",
+        "aap_competition",
+        "arc_full",
+        "arc_tasks",
+        "artifacts",
+        "autonomy_vault",
+        "browser_neural",
+        "clay_art",
+        "clay_glyph_out",
+        "clay_guides",
+        "clay_local_state",
+        "clay_speak",
+        "cluster",
+        "config",
+        "data",
+        "docs",
+        "dual_game_code",
+        "experiment_commitments",
+        "experiments",
+        "game_engine",
+        "hf_trit_model",
+        "kaggle_clay_adapter_merge",
+        "kaggle_clay_foundation",
+        "kaggle_connectx",
+        "lightning_recovery_20260725",
+        "lightning_system_pipeline",
+        "mnist",
+        "notebooks",
+        "npm",
+        "ops",
+        "pokeslice",
+        "receipts",
+        "run_data",
+        "scripts",
+        "tongues",
+        "visuals",
+        "vscode_wrapper_kimi",
+        "weights"
+      ],
+      "file_count": 1400,
+      "total_bytes": 589071578,
+      "truncated": true,
+      "categories": {
+        "checkpoints_and_receipts": {
+          "count": 6,
+          "paths": [
+            "CLAY_FIXES_HANDOFF.md",
+            "HANDOFF_CLAY_TOKENIZER_20260811.md",
+            "clay_lightning_consolidation_receipt.py",
+            "clay_lightning_recovery_receipt.py",
+            "model_handoff.py",
+            "receipt.py"
+          ],
+          "paths_truncated": false
+        },
+        "dataset_artifacts": {
+          "count": 21,
+          "paths": [
+            "CLAY_COUNTER_BALANCE_ANCHORS_20260724.jsonl",
+            "block_puzzle_curriculum.jsonl",
+            "block_repair_trajectories.jsonl",
+            "block_training_pack.jsonl",
+            "clay_acoustic_pairs.jsonl",
+            "clay_apollonian_pairs.jsonl",
+            "clay_fix_ledger.jsonl",
+            "clay_graph_pairs.jsonl",
+            "clay_move_ledger.jsonl",
+            "clay_orchestrator_pairs.jsonl",
+            "clay_tool_data.jsonl",
+            "clay_tool_holdout.jsonl",
+            "clay_tool_sequence_curriculum.jsonl",
+            "clay_value_tokenizer_pairs.jsonl",
+            "clay_vault.jsonl",
+            "curriculum_training_pairs.jsonl",
+            "drift_pairs.jsonl",
+            "easy_arc.jsonl",
+            "scheme_training_pairs.jsonl",
+            "sovereign_metrics.csv",
+            "sparse_event_table.jsonl"
+          ],
+          "paths_truncated": false
+        },
+        "entrypoints": {
+          "count": 47,
+          "paths": [
+            "_lightning_fix_and_train.py",
+            "_lightning_poll_train.py",
+            "block_cli.py",
+            "build_training_tongue_workbook.py",
+            "clay_browser_ops_cli.py",
+            "clay_cli.py",
+            "clay_cluster_train.py",
+            "clay_dual_game_code_eval.py",
+            "clay_hf_train.py",
+            "clay_kaggle_native_train.py",
+            "clay_kaggle_train.py",
+            "clay_kaggle_training.py",
+            "clay_linked_speech_train.py",
+            "clay_memory_palace_train.py",
+            "clay_move_trainer.py",
+            "clay_multicosine_retrieval.py",
+            "clay_remote_lineage_train.py",
+            "clay_scratch_bpe_eval.py",
+            "clay_scratch_bpe_train.py",
+            "clay_scratch_train.py",
+            "clay_selftrain.py",
+            "clay_tool_sequence_evaluate.py",
+            "clay_tool_sequence_train.py",
+            "clay_tool_train.py",
+            "clay_train.py",
+            "clay_train_all.py",
+            "clay_train_pipeline.py",
+            "clay_training_assembly.py",
+            "clay_training_backup.py",
+            "clay_training_lineage.py",
+            "clay_training_state.py",
+            "clay_trainset_build.py",
+            "clay_vscode_server.py",
+            "clay_wafer_coding_train.py",
+            "clay_wafer_semantic_eval.py",
+            "clay_waterfall_train.py",
+            "clifford_sig.py",
+            "eval_polly.py",
+            "fold_train.py",
+            "inventory_training_universe.py",
+            "lightning_foundation_train.py",
+            "lightning_sequence_train.py",
+            "multiview_train.py",
+            "octopus_train.py",
+            "train_clay_tensor_core.py",
+            "train_sovereign_4h.py",
+            "transfer_eval.py"
+          ],
+          "paths_truncated": false
+        },
+        "instructions": {
+          "count": 1,
+          "paths": [
+            "AGENTS.md"
+          ],
+          "paths_truncated": false
+        },
+        "maps": {
+          "count": 3,
+          "paths": [
+            "SYSTEM_MAP_ROUTER.md",
+            "clay_system_map_audit.py",
+            "test_clay_system_map_audit.py"
+          ],
+          "paths_truncated": false
+        },
+        "model_and_tokenizer_artifacts": {
+          "count": 38,
+          "paths": [
+            "clay_all.pt",
+            "clay_banded_banded.pt",
+            "clay_banded_banded0.pt",
+            "clay_banded_frozen.pt",
+            "clay_banded_full.pt",
+            "clay_banded_verified_banded.pt",
+            "clay_banded_verified_core_frozen.pt",
+            "clay_banded_verified_full.pt",
+            "clay_banded_verified_old_done_control.pt",
+            "clay_banded_verified_phase1.pt",
+            "clay_colors.pt",
+            "clay_count_code.pt",
+            "clay_count_core.pt",
+            "clay_count_deep.pt",
+            "clay_curriculum_ladder.pt",
+            "clay_geo.pt",
+            "clay_longmul.pt",
+            "clay_merged.pt",
+            "clay_mnist.pt",
+            "clay_move_predictor.pt",
+            "clay_shape_lang.pt",
+            "clay_shape_lang_fed.pt",
+            "clay_tool_router.pt",
+            "clay_triforce.pt",
+            "clay_triforce_h2o.pt",
+            "clay_triforce_skew.pt",
+            "clay_writing.pt",
+            "grown_all.pt",
+            "grown_bind.pt",
+            "grown_layer.pt",
+            "reversed_core.pt",
+            "scratch_coder.pt",
+            "scratch_coder_pyramid.pt",
+            "scratch_coder_ratio.pt",
+            "scratch_coder_vars.pt",
+            "scratch_coder_wide.pt",
+            "sovereign_ckpt.pt",
+            "sovereign_model.pt"
+          ],
+          "paths_truncated": false
+        },
+        "tests": {
+          "count": 137,
+          "paths": [
+            "test_auto_coder_trust.py",
+            "test_bijective_flow_circuit.py",
+            "test_build_clay_gutendex_human_pack.py",
+            "test_build_clay_human_book_overlay.py",
+            "test_build_clay_speech_curriculum_v2.py",
+            "test_build_clay_wafer_colab_bundle.py",
+            "test_build_clay_wafer_colab_notebook.py",
+            "test_caption_utils.cjs",
+            "test_caustic_ca_challenge.py",
+            "test_clay_accuplacer.py",
+            "test_clay_activation_desmos.py",
+            "test_clay_agent_prime.py",
+            "test_clay_agentic_benchmark.py",
+            "test_clay_anchored_memory_model.py",
+            "test_clay_b256_token_carrier.py",
+            "test_clay_banded_paired.py",
+            "test_clay_banded_verified.py",
+            "test_clay_bijective_router.py",
+            "test_clay_bowed_cells.py",
+            "test_clay_chain.py",
+            "test_clay_choicescript_holdout.py",
+            "test_clay_code_lanes.py",
+            "test_clay_code_transform.py",
+            "test_clay_coding_agent.py",
+            "test_clay_connectx_curriculum.py",
+            "test_clay_connectx_tool.py",
+            "test_clay_context_growth.py",
+            "test_clay_counterpattern_corpus.py",
+            "test_clay_cross_system_packet.py",
+            "test_clay_crosspoint_index.py",
+            "test_clay_data_flower.py",
+            "test_clay_dcss.py",
+            "test_clay_docs.py",
+            "test_clay_dual_game_code_curriculum.py",
+            "test_clay_email.py",
+            "test_clay_face_lattice.py",
+            "test_clay_focus_graph.py",
+            "test_clay_forced_geometry.py",
+            "test_clay_fractal_modality.py",
+            "test_clay_fretted_weave.py",
+            "test_clay_function_autoroute.py",
+            "test_clay_guide.py",
+            "test_clay_index_hitk.py",
+            "test_clay_inert_buffer_gate.py",
+            "test_clay_instinct_router.py",
+            "test_clay_kaggle_native_judge.py",
+            "test_clay_kaggle_native_train.py",
+            "test_clay_kaggle_research.py",
+            "test_clay_kaggle_training.py",
+            "test_clay_layered_grid.py",
+            "test_clay_linked_speech_train.py",
+            "test_clay_linked_utility.py",
+            "test_clay_luminance_gate.py",
+            "test_clay_memory_palace.py",
+            "test_clay_multicosine_retrieval.py",
+            "test_clay_multimodal_kernel.py",
+            "test_clay_muscle_stretch.py",
+            "test_clay_nested_watcher.py",
+            "test_clay_nightly.py",
+            "test_clay_obsidian.py",
+            "test_clay_one_model.py",
+            "test_clay_orchestrator.py",
+            "test_clay_pc_distribution_multiview.py",
+            "test_clay_perspective_attention.py",
+            "test_clay_portal_tools.py",
+            "test_clay_primering_phase.py",
+            "test_clay_python_verify.py",
+            "test_clay_readiness_service.py",
+            "test_clay_reasoning_local_probe.py",
+            "test_clay_reasoning_protocols.py",
+            "test_clay_reasoning_room.py",
+            "test_clay_rebound_ab_experiment.py",
+            "test_clay_relation_hypergraph.py",
+            "test_clay_remember_crosspoint.py",
+            "test_clay_repo_ingest.py",
+            "test_clay_rope.py",
+            "test_clay_run_atlas.py",
+            "test_clay_run_replay.py",
+            "test_clay_scratch_bpe_eval.py",
+            "test_clay_scratch_bpe_train.py",
+            "test_clay_semantic_substrate.py",
+            "test_clay_signed_phase_stack.py",
+            "test_clay_split_invariant_tracks.py",
+            "test_clay_study_suite.py",
+            "test_clay_teacher.py",
+            "test_clay_tensor_core.py",
+            "test_clay_terminal.py",
+            "test_clay_token_ir.py",
+            "test_clay_tongue_turn_tape.py",
+            "test_clay_tool_sandbox.py",
+            "test_clay_tool_sequence_curriculum.py",
+            "test_clay_tool_sequence_loss_report.py",
+            "test_clay_tool_sequence_train.py",
+            "test_clay_training_assembly.py",
+            "test_clay_training_backup.py",
+            "test_clay_training_lineage.py",
+            "test_clay_tri_loss.py",
+            "test_clay_triadic_decision_gate.py",
+            "test_clay_update.py",
+            "test_clay_wafer_coding_train.py"
+          ],
+          "paths_truncated": true
+        }
+      },
+      "largest_files": [
+        {
+          "path": "clay_vault.jsonl",
+          "bytes": 90228342
+        },
+        {
+          "path": "sovereign_ckpt.pt",
+          "bytes": 66752894
+        },
+        {
+          "path": "reversed_core.pt",
+          "bytes": 42713499
+        },
+        {
+          "path": "clay_triforce_skew.pt",
+          "bytes": 24848154
+        },
+        {
+          "path": "clay_geo.pt",
+          "bytes": 22374788
+        },
+        {
+          "path": "sovereign_model.pt",
+          "bytes": 22289632
+        },
+        {
+          "path": "clay_curriculum_ladder.pt",
+          "bytes": 21542958
+        },
+        {
+          "path": "grown_all.pt",
+          "bytes": 19100681
+        }
+      ],
+      "git": {
+        "root": "C:/dev/loom",
+        "status_available": true,
+        "status_lines": [
+          "M SYSTEM_MAP_ROUTER.md",
+          " M bijective_circuit.py",
+          " M bijective_flow_circuit.py",
+          " M clay_activation_desmos.py",
+          " M clay_anchored_memory_model.py",
+          " M clay_index_hitk.py",
+          " M clay_rubix_surface.py",
+          " M clay_switchboard.py",
+          " M clay_system_map_audit.py",
+          " M clay_tensor_core.py",
+          " M experiments/clay_open_core_20260730/frontier_kernel_v1/build_system_logic_candidate.py",
+          " M language_binary_map.py",
+          " M loom_multiplex.py",
+          " M opcode_vectors.py",
+          " M ops/staged_deletion/StagedDeletion.psm1",
+          " M test_bijective_flow_circuit.py",
+          " M test_clay_anchored_memory_model.py",
+          " M test_clay_system_map_audit.py",
+          " M test_clay_tensor_core.py",
+          " M test_train_clay_tensor_core.py",
+          " M train_clay_tensor_core.py",
+          " M visuals/loom_multiplex_scene.json",
+          "?? clay_fretted_weave.py",
+          "?? clay_multicosine_retrieval.py",
+          "?? experiment_commitments/",
+          "?? experiments/clay_build_v4_repair_20260825/",
+          "?? experiments/clay_corkscrew_algebra_20260824/",
+          "?? experiments/clay_droid_streaming_tts_20260824/",
+          "?? experiments/clay_electrical_semantic_field_20260829/",
+          "?? experiments/clay_exact_forward_sequence_20260829/",
+          "?? experiments/clay_hybrid_retrieval_20260820/",
+          "?? experiments/clay_kaggle_benchmark_20260824/",
+          "?? experiments/clay_linked_speech_20260823/runs/pilot100_permuted_s11_20260823/",
+          "?? experiments/clay_linked_speech_20260823/runs/pilot100_structured_s11_20260823/",
+          "?? experiments/clay_linked_speech_20260823/runs/smoke_structured_s11_20260823a/",
+          "?? experiments/clay_linked_speech_20260823/runs/smoke_structured_s11_20260823b/",
+          "?? experiments/clay_linked_speech_20260823/runs/stage2_300_structured_s11_20260823/",
+          "?? experiments/clay_linked_speech_20260823/runs/stage2b_300_structured_s11_20260823/",
+          "?? experiments/clay_linked_speech_20260823/runs/v2pilot50_permuted_s11_20260823/",
+          "?? experiments/clay_linked_speech_20260823/runs/v2pilot50_structured_s11_20260823/",
+          "?? experiments/clay_masked_linear_equations_20260824/",
+          "?? experiments/clay_masked_linear_equations_v2_20260824/",
+          "?? experiments/clay_python_oer_20260824/",
+          "?? experiments/clay_quine_wafer_cellular_automata_20260824/",
+          "?? experiments/clay_realm_breath_algebra_fallback_20260824/",
+          "?? experiments/clay_rung0d_harness_policy_20260824/",
+          "?? experiments/clay_rung0d_harness_policy_v2_20260824/",
+          "?? experiments/clay_signed_exponent_holonomy_20260824/",
+          "?? experiments/clay_signed_exponent_tower_20260824/",
+          "?? experiments/clay_six_face_contraction_20260824/",
+          "?? experiments/clay_typed_python_controller_20260824/",
+          "?? experiments/clay_warp_weft_wafer_20260824/",
+          "?? experiments/clay_world_controller_20260823/",
+          "?? restore_foundation_bundles.py",
+          "?? test_clay_fretted_weave.py",
+          "?? test_clay_index_hitk.py",
+          "?? test_clay_multicosine_retrieval.py",
+          "?? test_zeta_hexaphase.py",
+          "?? zeta_hexaphase.py"
+        ],
+        "status_truncated": false
+      }
+    }
+  ]
+}

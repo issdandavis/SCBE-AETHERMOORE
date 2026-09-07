@@ -1,0 +1,73 @@
+{
+  "artifacts": {
+    "docs/research/evidence/dual_trit_torus_inventory_20260907.json": {
+      "bytes": 17879,
+      "sha256": "ae142b0405cbeb4a40b00eefb15c4fee1b2a5866f9c2d753d2d98c8e2b2ed92f"
+    },
+    "docs/research/evidence/toy_lwe_dual_trit_torus_20260907.json": {
+      "bytes": 525242,
+      "sha256": "a2688bb403927205e2e669f20a5077d4eb779817f7d2216e81b4a6b13b56adce"
+    },
+    "docs/research/evidence/toy_lwe_dual_trit_torus_20260907.png": {
+      "bytes": 123721,
+      "sha256": "7a8ae6c071fb87b3f45c2b77fdab29feab2cafaea26e83d82ef26f7929f131ff"
+    },
+    "docs/security/DUAL_TRIT_TORUS_LWE_RESULT.md": {
+      "bytes": 4020,
+      "sha256": "b45024460ce622d425e503ad4a1a161b1502fd0052e761197297b6a0ed0fa2f4"
+    },
+    "docs/security/DUAL_TRIT_TORUS_SEARCH_MAP.md": {
+      "bytes": 4379,
+      "sha256": "f6f56bf29d77b8da5b7d10c9f71aaeee3501aab9e79f4f0d675fc6ff997a817c"
+    },
+    "docs/security/MULTISCALE_LWE_BOX_FIELD_RESEARCH.md": {
+      "bytes": 8542,
+      "sha256": "c56c94c907c54568efadfd5936fc99b7d90850fa82152b686600a55f8a620a94"
+    }
+  },
+  "benchmark": {
+    "any_preferred_effect_exceeded_two_population_sd": false,
+    "dimension": 8,
+    "exact_interval_bound_exact_hits": 100,
+    "exact_interval_bound_mean_objective_evaluations": {
+      "denominator": 100,
+      "numerator": 51661
+    },
+    "modulus": 97,
+    "objective_evaluations_per_heuristic": 360,
+    "phase_torus_exact_hits": 9,
+    "phase_wheel_exact_hits": 5,
+    "random_torus_exact_hits": 10,
+    "samples": 14,
+    "seeds": 100,
+    "uniform_random_exact_hits": 5
+  },
+  "created_utc": "2026-09-07T04:52:45.794340+00:00",
+  "reuse": [
+    "exact integer 30-degree phase rotation",
+    "existing nine-state dual ternary table",
+    "existing hypercube neighbor support",
+    "existing toy-LWE objective and exact interval-bound control",
+    "existing Loom D4 x dual-trit relation representation"
+  ],
+  "schema": "scbe.dual-trit-torus-toy-lwe-validation.v1",
+  "scope": "Bounded toy-LWE search benchmark; no production PQC key recovery and no cryptographic security claim.",
+  "status": "UNDERPOWERED",
+  "validation": {
+    "flake8": "PASS",
+    "focused_test_command": "python -m pytest -q tests/crypto/test_toy_lwe_phase_search.py tests/crypto/test_toy_lwe_dual_trit_torus_benchmark.py tests/crypto/test_toy_lwe_box_field.py tests/crypto/test_integer_phase_shards.py tests/test_torus.py tests/test_rubix_cubit.py",
+    "focused_tests": {
+      "passed": 82,
+      "seconds": 4.72
+    },
+    "git_diff_check": "PASS",
+    "loom_relation_test_command": "python -m pytest -q -p no:cacheprovider test_clay_relation_hypergraph.py (working directory C:/dev/loom)",
+    "loom_relation_tests": {
+      "passed": 7,
+      "seconds": 0.93
+    },
+    "ruff": "PASS",
+    "source_hash_mismatches": [],
+    "source_hashes_checked": 7
+  }
+}

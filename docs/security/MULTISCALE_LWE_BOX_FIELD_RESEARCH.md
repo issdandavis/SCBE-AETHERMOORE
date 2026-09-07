@@ -158,6 +158,12 @@ with a cheaper learned or adaptive branching policy, then compare it against the
 same exact bound, random ordering, exhaustive search, and a standard lattice
 baseline. The current four-anchor rule should not be integrated into GeoSeal.
 
+The requested dual-trit 360-field and hyper-torus/hypercube follow-up has now
+been run. It also showed no measured advantage over matched random controls;
+see [`DUAL_TRIT_TORUS_LWE_RESULT.md`](DUAL_TRIT_TORUS_LWE_RESULT.md). The key
+diagnostic was near-zero correlation between trit distance and the modular
+objective, even when a sampled foothold was physically close to the optimum.
+
 ## Primary sources
 
 - [NIST FIPS 203 — ML-KEM](https://doi.org/10.6028/NIST.FIPS.203)
