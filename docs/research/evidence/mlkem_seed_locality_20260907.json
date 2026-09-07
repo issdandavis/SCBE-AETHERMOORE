@@ -1,0 +1,35 @@
+{
+  "absolute_effect_exceeds_two_pooled_population_sd": false,
+  "adjacent_integer_seeds": {
+    "maximum": 296,
+    "mean_hamming": {
+      "denominator": 4096,
+      "numerator": 1049530
+    },
+    "minimum": 212
+  },
+  "adjacent_minus_random_mean": {
+    "denominator": 4096,
+    "numerator": 2192
+  },
+  "exact_variance_accounting": {
+    "adjacent_scaled_squared_deviations": 9234444828672,
+    "random_scaled_squared_deviations": 8456082931712,
+    "shared_denominator": 68719476736
+  },
+  "interpretation": "Integer adjacency at the seed input did not imply adjacency at this cryptographic expansion boundary.",
+  "operation": "SHA3-512(d || k), corresponding to FIPS 203 K-PKE.KeyGen G expansion",
+  "output_bits": 512,
+  "pairs": 4096,
+  "parameter_k": 3,
+  "random_seed_pairs": {
+    "maximum": 298,
+    "mean_hamming": {
+      "denominator": 4096,
+      "numerator": 1047338
+    },
+    "minimum": 214
+  },
+  "schema": "scbe.mlkem-g-seed-locality-probe.v1",
+  "status": "FIPS_203_BOUNDARY_PROBE_NOT_SECURITY_ESTIMATE"
+}

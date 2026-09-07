@@ -130,3 +130,7 @@ The focused test suite checks exhaustive small-domain injectivity, randomized
 constants, keyed primed-anchor reconstruction and tamper rejection,
 source/context binding, RFC 5869 HKDF vectors, tree separation, and two-of-two
 reconstruction.
+
+The follow-up [multiscale toy-LWE box-field study](MULTISCALE_LWE_BOX_FIELD_RESEARCH.md)
+tests the proposed near/far geometry against exhaustive ground truth and records
+where it helps, where it does not, and why it is not an ML-KEM or ML-DSA break.

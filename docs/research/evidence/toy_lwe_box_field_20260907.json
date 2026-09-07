@@ -1,0 +1,3057 @@
+{
+  "aggregate_candidate_reduction": {
+    "exhaustive_over_bound_only": {
+      "denominator": 51661,
+      "numerator": 656100
+    },
+    "exhaustive_over_multiscale": {
+      "denominator": 52509,
+      "numerator": 656100
+    }
+  },
+  "ground_truth_agreement": true,
+  "integer_arithmetic_only": true,
+  "interpretation": "Paired exact work counts; no deployed-cryptography claim follows.",
+  "mean_evaluated_candidates": {
+    "bound_only": {
+      "denominator": 100,
+      "numerator": 51661
+    },
+    "exhaustive": {
+      "denominator": 100,
+      "numerator": 656100
+    },
+    "multiscale": {
+      "denominator": 100,
+      "numerator": 52509
+    }
+  },
+  "multiscale_minus_bound_only": {
+    "absolute_effect_exceeds_two_population_sd": false,
+    "losses": 87,
+    "mean_saved_candidates": {
+      "denominator": 100,
+      "numerator": -848
+    },
+    "scaled_deviation_denominator": 1000000,
+    "scaled_squared_deviations_sum": 1049909600,
+    "ties": 1,
+    "wins": 12
+  },
+  "parameters": {
+    "dimension": 8,
+    "modulus": 97,
+    "samples": 14,
+    "secret_values": [
+      -1,
+      0,
+      1
+    ],
+    "seeds": 100
+  },
+  "planted_secret_recoveries": 100,
+  "rows": [
+    {
+      "boxes_opened": {
+        "bound_only": 246,
+        "multiscale": 246
+      },
+      "boxes_pruned": {
+        "bound_only": 245,
+        "multiscale": 245
+      },
+      "evaluated_candidates": {
+        "bound_only": 355,
+        "exhaustive": 6561,
+        "multiscale": 358
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          1,
+          1,
+          0,
+          1,
+          1,
+          0,
+          1
+        ],
+        "score": 9
+      },
+      "planted_recovered": true,
+      "seed": 0
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 336,
+        "multiscale": 336
+      },
+      "boxes_pruned": {
+        "bound_only": 335,
+        "multiscale": 335
+      },
+      "evaluated_candidates": {
+        "bound_only": 307,
+        "exhaustive": 6561,
+        "multiscale": 367
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          1,
+          -1,
+          -1,
+          -1,
+          1,
+          1,
+          -1
+        ],
+        "score": 8
+      },
+      "planted_recovered": true,
+      "seed": 1
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 622,
+        "multiscale": 622
+      },
+      "boxes_pruned": {
+        "bound_only": 621,
+        "multiscale": 621
+      },
+      "evaluated_candidates": {
+        "bound_only": 747,
+        "exhaustive": 6561,
+        "multiscale": 758
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          0,
+          1,
+          -1,
+          -1,
+          1,
+          -1,
+          -1
+        ],
+        "score": 12
+      },
+      "planted_recovered": true,
+      "seed": 2
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 410,
+        "multiscale": 410
+      },
+      "boxes_pruned": {
+        "bound_only": 409,
+        "multiscale": 409
+      },
+      "evaluated_candidates": {
+        "bound_only": 557,
+        "exhaustive": 6561,
+        "multiscale": 560
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          1,
+          1,
+          0,
+          1,
+          0,
+          1,
+          -1
+        ],
+        "score": 10
+      },
+      "planted_recovered": true,
+      "seed": 3
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 559,
+        "multiscale": 559
+      },
+      "boxes_pruned": {
+        "bound_only": 558,
+        "multiscale": 558
+      },
+      "evaluated_candidates": {
+        "bound_only": 706,
+        "exhaustive": 6561,
+        "multiscale": 708
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          1,
+          -1,
+          0,
+          1,
+          1,
+          0,
+          -1
+        ],
+        "score": 7
+      },
+      "planted_recovered": true,
+      "seed": 4
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 352,
+        "multiscale": 352
+      },
+      "boxes_pruned": {
+        "bound_only": 351,
+        "multiscale": 351
+      },
+      "evaluated_candidates": {
+        "bound_only": 498,
+        "exhaustive": 6561,
+        "multiscale": 502
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          -1,
+          1,
+          1,
+          0,
+          0,
+          -1,
+          0
+        ],
+        "score": 9
+      },
+      "planted_recovered": true,
+      "seed": 5
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 348,
+        "multiscale": 348
+      },
+      "boxes_pruned": {
+        "bound_only": 347,
+        "multiscale": 347
+      },
+      "evaluated_candidates": {
+        "bound_only": 490,
+        "exhaustive": 6561,
+        "multiscale": 493
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          1,
+          0,
+          -1,
+          0,
+          -1,
+          -1,
+          1
+        ],
+        "score": 7
+      },
+      "planted_recovered": true,
+      "seed": 6
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 473,
+        "multiscale": 473
+      },
+      "boxes_pruned": {
+        "bound_only": 472,
+        "multiscale": 472
+      },
+      "evaluated_candidates": {
+        "bound_only": 623,
+        "exhaustive": 6561,
+        "multiscale": 647
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          1,
+          1,
+          -1,
+          -1,
+          1,
+          1,
+          0
+        ],
+        "score": 8
+      },
+      "planted_recovered": true,
+      "seed": 7
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 539,
+        "multiscale": 539
+      },
+      "boxes_pruned": {
+        "bound_only": 538,
+        "multiscale": 538
+      },
+      "evaluated_candidates": {
+        "bound_only": 691,
+        "exhaustive": 6561,
+        "multiscale": 706
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          1,
+          0,
+          -1,
+          -1,
+          1,
+          -1,
+          -1
+        ],
+        "score": 8
+      },
+      "planted_recovered": true,
+      "seed": 8
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 260,
+        "multiscale": 260
+      },
+      "boxes_pruned": {
+        "bound_only": 259,
+        "multiscale": 259
+      },
+      "evaluated_candidates": {
+        "bound_only": 360,
+        "exhaustive": 6561,
+        "multiscale": 362
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          -1,
+          1,
+          0,
+          1,
+          1,
+          1,
+          1
+        ],
+        "score": 9
+      },
+      "planted_recovered": true,
+      "seed": 9
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 521,
+        "multiscale": 521
+      },
+      "boxes_pruned": {
+        "bound_only": 520,
+        "multiscale": 520
+      },
+      "evaluated_candidates": {
+        "bound_only": 670,
+        "exhaustive": 6561,
+        "multiscale": 678
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          1,
+          1,
+          -1,
+          0,
+          0,
+          -1,
+          -1
+        ],
+        "score": 7
+      },
+      "planted_recovered": true,
+      "seed": 10
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 227,
+        "multiscale": 227
+      },
+      "boxes_pruned": {
+        "bound_only": 226,
+        "multiscale": 226
+      },
+      "evaluated_candidates": {
+        "bound_only": 309,
+        "exhaustive": 6561,
+        "multiscale": 312
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          1,
+          -1,
+          0,
+          1,
+          0,
+          -1,
+          0
+        ],
+        "score": 10
+      },
+      "planted_recovered": true,
+      "seed": 11
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 433,
+        "multiscale": 433
+      },
+      "boxes_pruned": {
+        "bound_only": 432,
+        "multiscale": 432
+      },
+      "evaluated_candidates": {
+        "bound_only": 597,
+        "exhaustive": 6561,
+        "multiscale": 606
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          0,
+          -1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "score": 7
+      },
+      "planted_recovered": true,
+      "seed": 12
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 467,
+        "multiscale": 467
+      },
+      "boxes_pruned": {
+        "bound_only": 466,
+        "multiscale": 466
+      },
+      "evaluated_candidates": {
+        "bound_only": 648,
+        "exhaustive": 6561,
+        "multiscale": 651
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          0,
+          1,
+          1,
+          1,
+          -1,
+          1,
+          1
+        ],
+        "score": 12
+      },
+      "planted_recovered": true,
+      "seed": 13
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 434,
+        "multiscale": 434
+      },
+      "boxes_pruned": {
+        "bound_only": 433,
+        "multiscale": 433
+      },
+      "evaluated_candidates": {
+        "bound_only": 573,
+        "exhaustive": 6561,
+        "multiscale": 592
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          1,
+          -1,
+          0,
+          1,
+          0,
+          1,
+          0
+        ],
+        "score": 6
+      },
+      "planted_recovered": true,
+      "seed": 14
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 456,
+        "multiscale": 456
+      },
+      "boxes_pruned": {
+        "bound_only": 455,
+        "multiscale": 455
+      },
+      "evaluated_candidates": {
+        "bound_only": 617,
+        "exhaustive": 6561,
+        "multiscale": 619
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          0,
+          0,
+          -1,
+          1,
+          -1,
+          0,
+          -1
+        ],
+        "score": 10
+      },
+      "planted_recovered": true,
+      "seed": 15
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 402,
+        "multiscale": 402
+      },
+      "boxes_pruned": {
+        "bound_only": 401,
+        "multiscale": 401
+      },
+      "evaluated_candidates": {
+        "bound_only": 451,
+        "exhaustive": 6561,
+        "multiscale": 508
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          -1,
+          -1,
+          0,
+          1,
+          -1,
+          -1,
+          1
+        ],
+        "score": 12
+      },
+      "planted_recovered": true,
+      "seed": 16
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 515,
+        "multiscale": 515
+      },
+      "boxes_pruned": {
+        "bound_only": 514,
+        "multiscale": 514
+      },
+      "evaluated_candidates": {
+        "bound_only": 686,
+        "exhaustive": 6561,
+        "multiscale": 690
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          1,
+          1,
+          0,
+          -1,
+          1,
+          1,
+          1
+        ],
+        "score": 10
+      },
+      "planted_recovered": true,
+      "seed": 17
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 586,
+        "multiscale": 586
+      },
+      "boxes_pruned": {
+        "bound_only": 585,
+        "multiscale": 585
+      },
+      "evaluated_candidates": {
+        "bound_only": 743,
+        "exhaustive": 6561,
+        "multiscale": 746
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          0,
+          0,
+          -1,
+          0,
+          1,
+          0,
+          1
+        ],
+        "score": 9
+      },
+      "planted_recovered": true,
+      "seed": 18
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 443,
+        "multiscale": 443
+      },
+      "boxes_pruned": {
+        "bound_only": 442,
+        "multiscale": 442
+      },
+      "evaluated_candidates": {
+        "bound_only": 615,
+        "exhaustive": 6561,
+        "multiscale": 616
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          0,
+          -1,
+          0,
+          1,
+          0,
+          1,
+          -1
+        ],
+        "score": 9
+      },
+      "planted_recovered": true,
+      "seed": 19
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 400,
+        "multiscale": 400
+      },
+      "boxes_pruned": {
+        "bound_only": 399,
+        "multiscale": 399
+      },
+      "evaluated_candidates": {
+        "bound_only": 567,
+        "exhaustive": 6561,
+        "multiscale": 569
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          0,
+          1,
+          0,
+          -1,
+          -1,
+          1,
+          1
+        ],
+        "score": 11
+      },
+      "planted_recovered": true,
+      "seed": 20
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 426,
+        "multiscale": 426
+      },
+      "boxes_pruned": {
+        "bound_only": 425,
+        "multiscale": 425
+      },
+      "evaluated_candidates": {
+        "bound_only": 524,
+        "exhaustive": 6561,
+        "multiscale": 431
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          1,
+          0,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "score": 11
+      },
+      "planted_recovered": true,
+      "seed": 21
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 463,
+        "multiscale": 463
+      },
+      "boxes_pruned": {
+        "bound_only": 462,
+        "multiscale": 462
+      },
+      "evaluated_candidates": {
+        "bound_only": 381,
+        "exhaustive": 6561,
+        "multiscale": 405
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          -1,
+          1,
+          -1,
+          1,
+          1,
+          -1,
+          1
+        ],
+        "score": 11
+      },
+      "planted_recovered": true,
+      "seed": 22
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 372,
+        "multiscale": 372
+      },
+      "boxes_pruned": {
+        "bound_only": 371,
+        "multiscale": 371
+      },
+      "evaluated_candidates": {
+        "bound_only": 529,
+        "exhaustive": 6561,
+        "multiscale": 532
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          1,
+          -1,
+          1,
+          0,
+          1,
+          -1,
+          0
+        ],
+        "score": 8
+      },
+      "planted_recovered": true,
+      "seed": 23
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 339,
+        "multiscale": 339
+      },
+      "boxes_pruned": {
+        "bound_only": 338,
+        "multiscale": 338
+      },
+      "evaluated_candidates": {
+        "bound_only": 492,
+        "exhaustive": 6561,
+        "multiscale": 495
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          0,
+          0,
+          -1,
+          -1,
+          -1,
+          0,
+          1
+        ],
+        "score": 5
+      },
+      "planted_recovered": true,
+      "seed": 24
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 418,
+        "multiscale": 418
+      },
+      "boxes_pruned": {
+        "bound_only": 417,
+        "multiscale": 417
+      },
+      "evaluated_candidates": {
+        "bound_only": 561,
+        "exhaustive": 6561,
+        "multiscale": 563
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          -1,
+          0
+        ],
+        "score": 11
+      },
+      "planted_recovered": true,
+      "seed": 25
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 376,
+        "multiscale": 376
+      },
+      "boxes_pruned": {
+        "bound_only": 375,
+        "multiscale": 375
+      },
+      "evaluated_candidates": {
+        "bound_only": 502,
+        "exhaustive": 6561,
+        "multiscale": 500
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          1
+        ],
+        "score": 10
+      },
+      "planted_recovered": true,
+      "seed": 26
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 455,
+        "multiscale": 455
+      },
+      "boxes_pruned": {
+        "bound_only": 454,
+        "multiscale": 454
+      },
+      "evaluated_candidates": {
+        "bound_only": 607,
+        "exhaustive": 6561,
+        "multiscale": 614
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          0,
+          -1,
+          0,
+          1,
+          1,
+          1,
+          -1
+        ],
+        "score": 10
+      },
+      "planted_recovered": true,
+      "seed": 27
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 469,
+        "multiscale": 469
+      },
+      "boxes_pruned": {
+        "bound_only": 468,
+        "multiscale": 468
+      },
+      "evaluated_candidates": {
+        "bound_only": 383,
+        "exhaustive": 6561,
+        "multiscale": 481
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          0,
+          1,
+          1,
+          0,
+          0,
+          -1,
+          1
+        ],
+        "score": 10
+      },
+      "planted_recovered": true,
+      "seed": 28
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 353,
+        "multiscale": 353
+      },
+      "boxes_pruned": {
+        "bound_only": 352,
+        "multiscale": 352
+      },
+      "evaluated_candidates": {
+        "bound_only": 470,
+        "exhaustive": 6561,
+        "multiscale": 473
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          -1,
+          -1,
+          1,
+          0,
+          0,
+          -1,
+          -1
+        ],
+        "score": 11
+      },
+      "planted_recovered": true,
+      "seed": 29
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 531,
+        "multiscale": 531
+      },
+      "boxes_pruned": {
+        "bound_only": 530,
+        "multiscale": 530
+      },
+      "evaluated_candidates": {
+        "bound_only": 706,
+        "exhaustive": 6561,
+        "multiscale": 710
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          0,
+          1,
+          -1,
+          1,
+          -1,
+          0,
+          1
+        ],
+        "score": 10
+      },
+      "planted_recovered": true,
+      "seed": 30
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 361,
+        "multiscale": 361
+      },
+      "boxes_pruned": {
+        "bound_only": 360,
+        "multiscale": 360
+      },
+      "evaluated_candidates": {
+        "bound_only": 512,
+        "exhaustive": 6561,
+        "multiscale": 513
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          1,
+          1,
+          -1,
+          0,
+          -1,
+          1,
+          -1
+        ],
+        "score": 9
+      },
+      "planted_recovered": true,
+      "seed": 31
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 418,
+        "multiscale": 418
+      },
+      "boxes_pruned": {
+        "bound_only": 417,
+        "multiscale": 417
+      },
+      "evaluated_candidates": {
+        "bound_only": 573,
+        "exhaustive": 6561,
+        "multiscale": 575
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          0,
+          1,
+          1,
+          0,
+          -1,
+          1,
+          -1
+        ],
+        "score": 11
+      },
+      "planted_recovered": true,
+      "seed": 32
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 371,
+        "multiscale": 371
+      },
+      "boxes_pruned": {
+        "bound_only": 370,
+        "multiscale": 370
+      },
+      "evaluated_candidates": {
+        "bound_only": 495,
+        "exhaustive": 6561,
+        "multiscale": 512
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          1,
+          1,
+          0,
+          -1,
+          1,
+          -1,
+          1
+        ],
+        "score": 4
+      },
+      "planted_recovered": true,
+      "seed": 33
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 534,
+        "multiscale": 534
+      },
+      "boxes_pruned": {
+        "bound_only": 533,
+        "multiscale": 533
+      },
+      "evaluated_candidates": {
+        "bound_only": 728,
+        "exhaustive": 6561,
+        "multiscale": 739
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          -1
+        ],
+        "score": 11
+      },
+      "planted_recovered": true,
+      "seed": 34
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 216,
+        "multiscale": 216
+      },
+      "boxes_pruned": {
+        "bound_only": 215,
+        "multiscale": 215
+      },
+      "evaluated_candidates": {
+        "bound_only": 297,
+        "exhaustive": 6561,
+        "multiscale": 302
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          1,
+          0,
+          1,
+          0,
+          -1,
+          1,
+          0
+        ],
+        "score": 9
+      },
+      "planted_recovered": true,
+      "seed": 35
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 492,
+        "multiscale": 492
+      },
+      "boxes_pruned": {
+        "bound_only": 491,
+        "multiscale": 491
+      },
+      "evaluated_candidates": {
+        "bound_only": 657,
+        "exhaustive": 6561,
+        "multiscale": 659
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          1,
+          0,
+          1,
+          1,
+          -1,
+          0,
+          -1
+        ],
+        "score": 7
+      },
+      "planted_recovered": true,
+      "seed": 36
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 359,
+        "multiscale": 359
+      },
+      "boxes_pruned": {
+        "bound_only": 358,
+        "multiscale": 358
+      },
+      "evaluated_candidates": {
+        "bound_only": 497,
+        "exhaustive": 6561,
+        "multiscale": 500
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          -1,
+          1,
+          -1,
+          1,
+          0,
+          -1,
+          -1
+        ],
+        "score": 11
+      },
+      "planted_recovered": true,
+      "seed": 37
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 418,
+        "multiscale": 418
+      },
+      "boxes_pruned": {
+        "bound_only": 417,
+        "multiscale": 417
+      },
+      "evaluated_candidates": {
+        "bound_only": 583,
+        "exhaustive": 6561,
+        "multiscale": 585
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          0,
+          -1
+        ],
+        "score": 10
+      },
+      "planted_recovered": true,
+      "seed": 38
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 221,
+        "multiscale": 221
+      },
+      "boxes_pruned": {
+        "bound_only": 220,
+        "multiscale": 220
+      },
+      "evaluated_candidates": {
+        "bound_only": 319,
+        "exhaustive": 6561,
+        "multiscale": 320
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          1,
+          0,
+          1,
+          -1,
+          1,
+          -1,
+          1
+        ],
+        "score": 11
+      },
+      "planted_recovered": true,
+      "seed": 39
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 462,
+        "multiscale": 462
+      },
+      "boxes_pruned": {
+        "bound_only": 461,
+        "multiscale": 461
+      },
+      "evaluated_candidates": {
+        "bound_only": 578,
+        "exhaustive": 6561,
+        "multiscale": 443
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          -1,
+          0,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "score": 9
+      },
+      "planted_recovered": true,
+      "seed": 40
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 270,
+        "multiscale": 270
+      },
+      "boxes_pruned": {
+        "bound_only": 269,
+        "multiscale": 269
+      },
+      "evaluated_candidates": {
+        "bound_only": 412,
+        "exhaustive": 6561,
+        "multiscale": 415
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          -1,
+          -1,
+          0,
+          0,
+          1,
+          0,
+          1
+        ],
+        "score": 8
+      },
+      "planted_recovered": true,
+      "seed": 41
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 374,
+        "multiscale": 374
+      },
+      "boxes_pruned": {
+        "bound_only": 373,
+        "multiscale": 373
+      },
+      "evaluated_candidates": {
+        "bound_only": 518,
+        "exhaustive": 6561,
+        "multiscale": 520
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          -1,
+          1,
+          1,
+          0,
+          -1,
+          1,
+          0
+        ],
+        "score": 9
+      },
+      "planted_recovered": true,
+      "seed": 42
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 303,
+        "multiscale": 303
+      },
+      "boxes_pruned": {
+        "bound_only": 302,
+        "multiscale": 302
+      },
+      "evaluated_candidates": {
+        "bound_only": 387,
+        "exhaustive": 6561,
+        "multiscale": 359
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          1,
+          -1
+        ],
+        "score": 8
+      },
+      "planted_recovered": true,
+      "seed": 43
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 330,
+        "multiscale": 330
+      },
+      "boxes_pruned": {
+        "bound_only": 329,
+        "multiscale": 329
+      },
+      "evaluated_candidates": {
+        "bound_only": 458,
+        "exhaustive": 6561,
+        "multiscale": 467
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          -1,
+          -1,
+          -1,
+          1,
+          1,
+          -1,
+          1
+        ],
+        "score": 10
+      },
+      "planted_recovered": true,
+      "seed": 44
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 350,
+        "multiscale": 350
+      },
+      "boxes_pruned": {
+        "bound_only": 349,
+        "multiscale": 349
+      },
+      "evaluated_candidates": {
+        "bound_only": 469,
+        "exhaustive": 6561,
+        "multiscale": 472
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          0,
+          0,
+          -1,
+          0,
+          0,
+          -1,
+          1
+        ],
+        "score": 11
+      },
+      "planted_recovered": true,
+      "seed": 45
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 291,
+        "multiscale": 291
+      },
+      "boxes_pruned": {
+        "bound_only": 290,
+        "multiscale": 290
+      },
+      "evaluated_candidates": {
+        "bound_only": 426,
+        "exhaustive": 6561,
+        "multiscale": 429
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          0,
+          1,
+          -1,
+          -1,
+          0,
+          1,
+          0
+        ],
+        "score": 8
+      },
+      "planted_recovered": true,
+      "seed": 46
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 531,
+        "multiscale": 531
+      },
+      "boxes_pruned": {
+        "bound_only": 530,
+        "multiscale": 530
+      },
+      "evaluated_candidates": {
+        "bound_only": 715,
+        "exhaustive": 6561,
+        "multiscale": 715
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          1,
+          1,
+          1,
+          0,
+          1,
+          1,
+          0
+        ],
+        "score": 11
+      },
+      "planted_recovered": true,
+      "seed": 47
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 518,
+        "multiscale": 518
+      },
+      "boxes_pruned": {
+        "bound_only": 517,
+        "multiscale": 517
+      },
+      "evaluated_candidates": {
+        "bound_only": 676,
+        "exhaustive": 6561,
+        "multiscale": 681
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          1,
+          1,
+          0,
+          1,
+          0,
+          1,
+          1
+        ],
+        "score": 11
+      },
+      "planted_recovered": true,
+      "seed": 48
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 353,
+        "multiscale": 353
+      },
+      "boxes_pruned": {
+        "bound_only": 352,
+        "multiscale": 352
+      },
+      "evaluated_candidates": {
+        "bound_only": 470,
+        "exhaustive": 6561,
+        "multiscale": 473
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          -1,
+          0,
+          0,
+          1,
+          1,
+          -1,
+          1
+        ],
+        "score": 9
+      },
+      "planted_recovered": true,
+      "seed": 49
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 441,
+        "multiscale": 441
+      },
+      "boxes_pruned": {
+        "bound_only": 440,
+        "multiscale": 440
+      },
+      "evaluated_candidates": {
+        "bound_only": 623,
+        "exhaustive": 6561,
+        "multiscale": 625
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          0,
+          -1,
+          0,
+          -1,
+          -1,
+          -1,
+          0
+        ],
+        "score": 9
+      },
+      "planted_recovered": true,
+      "seed": 50
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 437,
+        "multiscale": 437
+      },
+      "boxes_pruned": {
+        "bound_only": 436,
+        "multiscale": 436
+      },
+      "evaluated_candidates": {
+        "bound_only": 522,
+        "exhaustive": 6561,
+        "multiscale": 525
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          1,
+          0,
+          0,
+          0,
+          -1,
+          1,
+          1
+        ],
+        "score": 10
+      },
+      "planted_recovered": true,
+      "seed": 51
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 402,
+        "multiscale": 402
+      },
+      "boxes_pruned": {
+        "bound_only": 401,
+        "multiscale": 401
+      },
+      "evaluated_candidates": {
+        "bound_only": 562,
+        "exhaustive": 6561,
+        "multiscale": 564
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          1,
+          -1,
+          0,
+          0,
+          -1,
+          0,
+          -1
+        ],
+        "score": 11
+      },
+      "planted_recovered": true,
+      "seed": 52
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 326,
+        "multiscale": 326
+      },
+      "boxes_pruned": {
+        "bound_only": 325,
+        "multiscale": 325
+      },
+      "evaluated_candidates": {
+        "bound_only": 442,
+        "exhaustive": 6561,
+        "multiscale": 448
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          0,
+          0,
+          0,
+          -1,
+          -1,
+          -1,
+          1
+        ],
+        "score": 9
+      },
+      "planted_recovered": true,
+      "seed": 53
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 563,
+        "multiscale": 563
+      },
+      "boxes_pruned": {
+        "bound_only": 562,
+        "multiscale": 562
+      },
+      "evaluated_candidates": {
+        "bound_only": 488,
+        "exhaustive": 6561,
+        "multiscale": 596
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          1,
+          1,
+          -1,
+          -1,
+          1,
+          1,
+          0
+        ],
+        "score": 8
+      },
+      "planted_recovered": true,
+      "seed": 54
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 397,
+        "multiscale": 397
+      },
+      "boxes_pruned": {
+        "bound_only": 396,
+        "multiscale": 396
+      },
+      "evaluated_candidates": {
+        "bound_only": 511,
+        "exhaustive": 6561,
+        "multiscale": 522
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          -1,
+          -1,
+          1,
+          1,
+          0,
+          0,
+          0
+        ],
+        "score": 9
+      },
+      "planted_recovered": true,
+      "seed": 55
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 394,
+        "multiscale": 394
+      },
+      "boxes_pruned": {
+        "bound_only": 393,
+        "multiscale": 393
+      },
+      "evaluated_candidates": {
+        "bound_only": 495,
+        "exhaustive": 6561,
+        "multiscale": 501
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          -1,
+          1,
+          -1,
+          1,
+          0,
+          1,
+          1
+        ],
+        "score": 12
+      },
+      "planted_recovered": true,
+      "seed": 56
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 388,
+        "multiscale": 388
+      },
+      "boxes_pruned": {
+        "bound_only": 387,
+        "multiscale": 387
+      },
+      "evaluated_candidates": {
+        "bound_only": 365,
+        "exhaustive": 6561,
+        "multiscale": 345
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          1,
+          -1
+        ],
+        "score": 11
+      },
+      "planted_recovered": true,
+      "seed": 57
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 379,
+        "multiscale": 379
+      },
+      "boxes_pruned": {
+        "bound_only": 378,
+        "multiscale": 378
+      },
+      "evaluated_candidates": {
+        "bound_only": 329,
+        "exhaustive": 6561,
+        "multiscale": 430
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          1,
+          1,
+          0,
+          1,
+          0,
+          1,
+          1
+        ],
+        "score": 9
+      },
+      "planted_recovered": true,
+      "seed": 58
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 380,
+        "multiscale": 380
+      },
+      "boxes_pruned": {
+        "bound_only": 379,
+        "multiscale": 379
+      },
+      "evaluated_candidates": {
+        "bound_only": 337,
+        "exhaustive": 6561,
+        "multiscale": 438
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          0,
+          -1,
+          -1,
+          1,
+          0,
+          -1,
+          0
+        ],
+        "score": 7
+      },
+      "planted_recovered": true,
+      "seed": 59
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 333,
+        "multiscale": 333
+      },
+      "boxes_pruned": {
+        "bound_only": 332,
+        "multiscale": 332
+      },
+      "evaluated_candidates": {
+        "bound_only": 342,
+        "exhaustive": 6561,
+        "multiscale": 408
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          1,
+          1,
+          1,
+          -1,
+          -1,
+          -1,
+          0
+        ],
+        "score": 10
+      },
+      "planted_recovered": true,
+      "seed": 60
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 454,
+        "multiscale": 454
+      },
+      "boxes_pruned": {
+        "bound_only": 453,
+        "multiscale": 453
+      },
+      "evaluated_candidates": {
+        "bound_only": 651,
+        "exhaustive": 6561,
+        "multiscale": 653
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          1,
+          -1,
+          0,
+          1,
+          0,
+          0,
+          0
+        ],
+        "score": 8
+      },
+      "planted_recovered": true,
+      "seed": 61
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 400,
+        "multiscale": 400
+      },
+      "boxes_pruned": {
+        "bound_only": 399,
+        "multiscale": 399
+      },
+      "evaluated_candidates": {
+        "bound_only": 518,
+        "exhaustive": 6561,
+        "multiscale": 526
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          0,
+          -1,
+          0,
+          -1,
+          0,
+          1,
+          0
+        ],
+        "score": 10
+      },
+      "planted_recovered": true,
+      "seed": 62
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 309,
+        "multiscale": 309
+      },
+      "boxes_pruned": {
+        "bound_only": 308,
+        "multiscale": 308
+      },
+      "evaluated_candidates": {
+        "bound_only": 430,
+        "exhaustive": 6561,
+        "multiscale": 432
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          -1,
+          1,
+          0,
+          -1,
+          -1,
+          0,
+          1
+        ],
+        "score": 9
+      },
+      "planted_recovered": true,
+      "seed": 63
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 424,
+        "multiscale": 424
+      },
+      "boxes_pruned": {
+        "bound_only": 423,
+        "multiscale": 423
+      },
+      "evaluated_candidates": {
+        "bound_only": 359,
+        "exhaustive": 6561,
+        "multiscale": 460
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          1,
+          -1,
+          -1,
+          1,
+          1,
+          1,
+          0
+        ],
+        "score": 9
+      },
+      "planted_recovered": true,
+      "seed": 64
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 460,
+        "multiscale": 460
+      },
+      "boxes_pruned": {
+        "bound_only": 459,
+        "multiscale": 459
+      },
+      "evaluated_candidates": {
+        "bound_only": 627,
+        "exhaustive": 6561,
+        "multiscale": 629
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "score": 11
+      },
+      "planted_recovered": true,
+      "seed": 65
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 339,
+        "multiscale": 339
+      },
+      "boxes_pruned": {
+        "bound_only": 338,
+        "multiscale": 338
+      },
+      "evaluated_candidates": {
+        "bound_only": 473,
+        "exhaustive": 6561,
+        "multiscale": 475
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          1,
+          1,
+          1,
+          -1,
+          1,
+          -1,
+          1
+        ],
+        "score": 10
+      },
+      "planted_recovered": true,
+      "seed": 66
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 410,
+        "multiscale": 410
+      },
+      "boxes_pruned": {
+        "bound_only": 409,
+        "multiscale": 409
+      },
+      "evaluated_candidates": {
+        "bound_only": 579,
+        "exhaustive": 6561,
+        "multiscale": 583
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          0,
+          -1,
+          1,
+          -1,
+          0,
+          -1,
+          1
+        ],
+        "score": 10
+      },
+      "planted_recovered": true,
+      "seed": 67
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 362,
+        "multiscale": 362
+      },
+      "boxes_pruned": {
+        "bound_only": 361,
+        "multiscale": 361
+      },
+      "evaluated_candidates": {
+        "bound_only": 503,
+        "exhaustive": 6561,
+        "multiscale": 498
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          -1,
+          -1,
+          -1,
+          1,
+          0,
+          1,
+          -1
+        ],
+        "score": 7
+      },
+      "planted_recovered": true,
+      "seed": 68
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 406,
+        "multiscale": 406
+      },
+      "boxes_pruned": {
+        "bound_only": 405,
+        "multiscale": 405
+      },
+      "evaluated_candidates": {
+        "bound_only": 523,
+        "exhaustive": 6561,
+        "multiscale": 528
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          0,
+          -1,
+          -1,
+          0,
+          0,
+          1,
+          -1
+        ],
+        "score": 9
+      },
+      "planted_recovered": true,
+      "seed": 69
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 301,
+        "multiscale": 301
+      },
+      "boxes_pruned": {
+        "bound_only": 300,
+        "multiscale": 300
+      },
+      "evaluated_candidates": {
+        "bound_only": 431,
+        "exhaustive": 6561,
+        "multiscale": 434
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          1,
+          1,
+          0,
+          1,
+          1,
+          0,
+          -1
+        ],
+        "score": 9
+      },
+      "planted_recovered": true,
+      "seed": 70
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 434,
+        "multiscale": 434
+      },
+      "boxes_pruned": {
+        "bound_only": 433,
+        "multiscale": 433
+      },
+      "evaluated_candidates": {
+        "bound_only": 588,
+        "exhaustive": 6561,
+        "multiscale": 586
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "score": 8
+      },
+      "planted_recovered": true,
+      "seed": 71
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 395,
+        "multiscale": 395
+      },
+      "boxes_pruned": {
+        "bound_only": 394,
+        "multiscale": 394
+      },
+      "evaluated_candidates": {
+        "bound_only": 543,
+        "exhaustive": 6561,
+        "multiscale": 545
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          -1,
+          0,
+          0,
+          -1,
+          0,
+          1,
+          1
+        ],
+        "score": 10
+      },
+      "planted_recovered": true,
+      "seed": 72
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 558,
+        "multiscale": 558
+      },
+      "boxes_pruned": {
+        "bound_only": 557,
+        "multiscale": 557
+      },
+      "evaluated_candidates": {
+        "bound_only": 505,
+        "exhaustive": 6561,
+        "multiscale": 614
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          -1,
+          -1,
+          1,
+          0,
+          -1,
+          1,
+          -1
+        ],
+        "score": 12
+      },
+      "planted_recovered": true,
+      "seed": 73
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 374,
+        "multiscale": 374
+      },
+      "boxes_pruned": {
+        "bound_only": 373,
+        "multiscale": 373
+      },
+      "evaluated_candidates": {
+        "bound_only": 513,
+        "exhaustive": 6561,
+        "multiscale": 520
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          0,
+          1,
+          -1,
+          -1,
+          1,
+          1,
+          1
+        ],
+        "score": 10
+      },
+      "planted_recovered": true,
+      "seed": 74
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 409,
+        "multiscale": 409
+      },
+      "boxes_pruned": {
+        "bound_only": 408,
+        "multiscale": 408
+      },
+      "evaluated_candidates": {
+        "bound_only": 556,
+        "exhaustive": 6561,
+        "multiscale": 558
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          0,
+          0,
+          -1,
+          1,
+          1,
+          0,
+          0
+        ],
+        "score": 10
+      },
+      "planted_recovered": true,
+      "seed": 75
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 255,
+        "multiscale": 255
+      },
+      "boxes_pruned": {
+        "bound_only": 254,
+        "multiscale": 254
+      },
+      "evaluated_candidates": {
+        "bound_only": 302,
+        "exhaustive": 6561,
+        "multiscale": 293
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          0,
+          0,
+          1,
+          -1,
+          1,
+          -1,
+          -1
+        ],
+        "score": 6
+      },
+      "planted_recovered": true,
+      "seed": 76
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 354,
+        "multiscale": 354
+      },
+      "boxes_pruned": {
+        "bound_only": 353,
+        "multiscale": 353
+      },
+      "evaluated_candidates": {
+        "bound_only": 458,
+        "exhaustive": 6561,
+        "multiscale": 395
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          0,
+          -1,
+          -1,
+          1,
+          -1,
+          -1,
+          -1
+        ],
+        "score": 10
+      },
+      "planted_recovered": true,
+      "seed": 77
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 337,
+        "multiscale": 337
+      },
+      "boxes_pruned": {
+        "bound_only": 336,
+        "multiscale": 336
+      },
+      "evaluated_candidates": {
+        "bound_only": 472,
+        "exhaustive": 6561,
+        "multiscale": 465
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          -1,
+          -1,
+          1,
+          -1,
+          0,
+          0,
+          -1
+        ],
+        "score": 10
+      },
+      "planted_recovered": true,
+      "seed": 78
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 287,
+        "multiscale": 287
+      },
+      "boxes_pruned": {
+        "bound_only": 286,
+        "multiscale": 286
+      },
+      "evaluated_candidates": {
+        "bound_only": 327,
+        "exhaustive": 6561,
+        "multiscale": 319
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          -1,
+          0,
+          1,
+          -1,
+          0,
+          1,
+          -1
+        ],
+        "score": 9
+      },
+      "planted_recovered": true,
+      "seed": 79
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 430,
+        "multiscale": 430
+      },
+      "boxes_pruned": {
+        "bound_only": 429,
+        "multiscale": 429
+      },
+      "evaluated_candidates": {
+        "bound_only": 584,
+        "exhaustive": 6561,
+        "multiscale": 586
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          1,
+          0,
+          -1,
+          1,
+          -1,
+          1,
+          1
+        ],
+        "score": 7
+      },
+      "planted_recovered": true,
+      "seed": 80
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 430,
+        "multiscale": 430
+      },
+      "boxes_pruned": {
+        "bound_only": 429,
+        "multiscale": 429
+      },
+      "evaluated_candidates": {
+        "bound_only": 548,
+        "exhaustive": 6561,
+        "multiscale": 557
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          -1,
+          0,
+          1,
+          0,
+          1,
+          0,
+          -1
+        ],
+        "score": 10
+      },
+      "planted_recovered": true,
+      "seed": 81
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 360,
+        "multiscale": 360
+      },
+      "boxes_pruned": {
+        "bound_only": 359,
+        "multiscale": 359
+      },
+      "evaluated_candidates": {
+        "bound_only": 515,
+        "exhaustive": 6561,
+        "multiscale": 519
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          0,
+          -1,
+          -1,
+          0,
+          1,
+          0,
+          1
+        ],
+        "score": 9
+      },
+      "planted_recovered": true,
+      "seed": 82
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 455,
+        "multiscale": 455
+      },
+      "boxes_pruned": {
+        "bound_only": 454,
+        "multiscale": 454
+      },
+      "evaluated_candidates": {
+        "bound_only": 579,
+        "exhaustive": 6561,
+        "multiscale": 583
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          -1,
+          1,
+          1,
+          0,
+          -1,
+          -1,
+          0
+        ],
+        "score": 9
+      },
+      "planted_recovered": true,
+      "seed": 83
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 359,
+        "multiscale": 359
+      },
+      "boxes_pruned": {
+        "bound_only": 358,
+        "multiscale": 358
+      },
+      "evaluated_candidates": {
+        "bound_only": 515,
+        "exhaustive": 6561,
+        "multiscale": 518
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          1,
+          0,
+          1,
+          1,
+          0,
+          1,
+          -1
+        ],
+        "score": 8
+      },
+      "planted_recovered": true,
+      "seed": 84
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 455,
+        "multiscale": 455
+      },
+      "boxes_pruned": {
+        "bound_only": 454,
+        "multiscale": 454
+      },
+      "evaluated_candidates": {
+        "bound_only": 394,
+        "exhaustive": 6561,
+        "multiscale": 428
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          0,
+          -1
+        ],
+        "score": 10
+      },
+      "planted_recovered": true,
+      "seed": 85
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 314,
+        "multiscale": 314
+      },
+      "boxes_pruned": {
+        "bound_only": 313,
+        "multiscale": 313
+      },
+      "evaluated_candidates": {
+        "bound_only": 427,
+        "exhaustive": 6561,
+        "multiscale": 437
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          1,
+          1,
+          0,
+          1,
+          -1,
+          0,
+          0
+        ],
+        "score": 4
+      },
+      "planted_recovered": true,
+      "seed": 86
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 404,
+        "multiscale": 404
+      },
+      "boxes_pruned": {
+        "bound_only": 403,
+        "multiscale": 403
+      },
+      "evaluated_candidates": {
+        "bound_only": 572,
+        "exhaustive": 6561,
+        "multiscale": 573
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          1,
+          0,
+          -1,
+          1,
+          1,
+          -1,
+          0
+        ],
+        "score": 11
+      },
+      "planted_recovered": true,
+      "seed": 87
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 551,
+        "multiscale": 551
+      },
+      "boxes_pruned": {
+        "bound_only": 550,
+        "multiscale": 550
+      },
+      "evaluated_candidates": {
+        "bound_only": 698,
+        "exhaustive": 6561,
+        "multiscale": 714
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          -1,
+          1,
+          -1,
+          1,
+          0,
+          -1,
+          -1
+        ],
+        "score": 10
+      },
+      "planted_recovered": true,
+      "seed": 88
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 431,
+        "multiscale": 431
+      },
+      "boxes_pruned": {
+        "bound_only": 430,
+        "multiscale": 430
+      },
+      "evaluated_candidates": {
+        "bound_only": 602,
+        "exhaustive": 6561,
+        "multiscale": 605
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          1,
+          -1,
+          -1,
+          0,
+          0,
+          -1,
+          1
+        ],
+        "score": 8
+      },
+      "planted_recovered": true,
+      "seed": 89
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 368,
+        "multiscale": 368
+      },
+      "boxes_pruned": {
+        "bound_only": 367,
+        "multiscale": 367
+      },
+      "evaluated_candidates": {
+        "bound_only": 518,
+        "exhaustive": 6561,
+        "multiscale": 521
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          0,
+          -1,
+          0,
+          -1,
+          0,
+          0,
+          1
+        ],
+        "score": 11
+      },
+      "planted_recovered": true,
+      "seed": 90
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 496,
+        "multiscale": 496
+      },
+      "boxes_pruned": {
+        "bound_only": 495,
+        "multiscale": 495
+      },
+      "evaluated_candidates": {
+        "bound_only": 655,
+        "exhaustive": 6561,
+        "multiscale": 659
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          -1,
+          0,
+          1,
+          1,
+          -1,
+          -1,
+          1
+        ],
+        "score": 9
+      },
+      "planted_recovered": true,
+      "seed": 91
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 398,
+        "multiscale": 398
+      },
+      "boxes_pruned": {
+        "bound_only": 397,
+        "multiscale": 397
+      },
+      "evaluated_candidates": {
+        "bound_only": 532,
+        "exhaustive": 6561,
+        "multiscale": 528
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          1,
+          1,
+          -1,
+          0,
+          0,
+          1,
+          -1
+        ],
+        "score": 9
+      },
+      "planted_recovered": true,
+      "seed": 92
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 331,
+        "multiscale": 331
+      },
+      "boxes_pruned": {
+        "bound_only": 330,
+        "multiscale": 330
+      },
+      "evaluated_candidates": {
+        "bound_only": 457,
+        "exhaustive": 6561,
+        "multiscale": 460
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          -1,
+          1,
+          0,
+          1,
+          0,
+          1,
+          -1
+        ],
+        "score": 8
+      },
+      "planted_recovered": true,
+      "seed": 93
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 342,
+        "multiscale": 342
+      },
+      "boxes_pruned": {
+        "bound_only": 341,
+        "multiscale": 341
+      },
+      "evaluated_candidates": {
+        "bound_only": 504,
+        "exhaustive": 6561,
+        "multiscale": 508
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          1,
+          -1,
+          1,
+          1,
+          0,
+          1,
+          0
+        ],
+        "score": 8
+      },
+      "planted_recovered": true,
+      "seed": 94
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 346,
+        "multiscale": 346
+      },
+      "boxes_pruned": {
+        "bound_only": 345,
+        "multiscale": 345
+      },
+      "evaluated_candidates": {
+        "bound_only": 485,
+        "exhaustive": 6561,
+        "multiscale": 488
+      },
+      "optimum": {
+        "candidate": [
+          0,
+          1,
+          1,
+          -1,
+          0,
+          0,
+          -1,
+          1
+        ],
+        "score": 11
+      },
+      "planted_recovered": true,
+      "seed": 95
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 351,
+        "multiscale": 351
+      },
+      "boxes_pruned": {
+        "bound_only": 350,
+        "multiscale": 350
+      },
+      "evaluated_candidates": {
+        "bound_only": 503,
+        "exhaustive": 6561,
+        "multiscale": 504
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          0,
+          0,
+          1,
+          -1,
+          1,
+          1,
+          0
+        ],
+        "score": 10
+      },
+      "planted_recovered": true,
+      "seed": 96
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 273,
+        "multiscale": 273
+      },
+      "boxes_pruned": {
+        "bound_only": 272,
+        "multiscale": 272
+      },
+      "evaluated_candidates": {
+        "bound_only": 393,
+        "exhaustive": 6561,
+        "multiscale": 396
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          -1,
+          1,
+          -1
+        ],
+        "score": 9
+      },
+      "planted_recovered": true,
+      "seed": 97
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 378,
+        "multiscale": 378
+      },
+      "boxes_pruned": {
+        "bound_only": 377,
+        "multiscale": 377
+      },
+      "evaluated_candidates": {
+        "bound_only": 510,
+        "exhaustive": 6561,
+        "multiscale": 515
+      },
+      "optimum": {
+        "candidate": [
+          1,
+          0,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          0
+        ],
+        "score": 6
+      },
+      "planted_recovered": true,
+      "seed": 98
+    },
+    {
+      "boxes_opened": {
+        "bound_only": 407,
+        "multiscale": 407
+      },
+      "boxes_pruned": {
+        "bound_only": 406,
+        "multiscale": 406
+      },
+      "evaluated_candidates": {
+        "bound_only": 561,
+        "exhaustive": 6561,
+        "multiscale": 564
+      },
+      "optimum": {
+        "candidate": [
+          -1,
+          -1,
+          -1,
+          0,
+          -1,
+          -1,
+          0,
+          -1
+        ],
+        "score": 9
+      },
+      "planted_recovered": true,
+      "seed": 99
+    }
+  ],
+  "schema": "scbe.toy-lwe-box-field-benchmark.v1",
+  "status": "TOY_EXPERIMENT_ONLY"
+}
