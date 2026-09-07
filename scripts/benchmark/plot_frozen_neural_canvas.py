@@ -31,7 +31,13 @@ def main() -> int:
     curvature = [sum(row["mean_curvature_rank"][layer]["decimal"] for row in rows) / len(rows) for layer in layers]
 
     figure, axes = plt.subplots(1, 2, figsize=(11, 4.3), constrained_layout=True)
-    axes[0].bar(labels, means, yerr=errors, capsize=5, color=("#315f72", "#8299a4", "#b36b3f", "#888888"))
+    axes[0].bar(
+        labels,
+        means,
+        yerr=errors,
+        capsize=5,
+        color=("#315f72", "#8299a4", "#b36b3f", "#888888"),
+    )
     axes[0].axhline(100 / 3, color="#222222", linestyle="--", linewidth=1, label="1/3 chance")
     axes[0].set_ylabel("Coordinate estimate accuracy (%)")
     axes[0].set_ylim(28, 36)
@@ -40,7 +46,13 @@ def main() -> int:
     axes[0].set_title("No target-estimation advantage")
 
     positions = list(layers)
-    axes[1].bar([value - 0.18 for value in positions], slope, width=0.36, label="Slope rank", color="#315f72")
+    axes[1].bar(
+        [value - 0.18 for value in positions],
+        slope,
+        width=0.36,
+        label="Slope rank",
+        color="#315f72",
+    )
     axes[1].bar(
         [value + 0.18 for value in positions],
         curvature,

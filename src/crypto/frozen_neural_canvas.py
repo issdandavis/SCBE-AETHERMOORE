@@ -53,13 +53,45 @@ class FrozenCanvas:
 
 
 @dataclass(frozen=True)
+class CanvasLayerTransition:
+    """One typed segment of a response path through the frozen canvas."""
+
+    layer: int
+    source: Vector
+    affine: Vector
+    state: Vector
+    clipped_nodes: int
+
+
+@dataclass(frozen=True)
+class CanvasTrajectory:
+    """Ordered origin-to-terminal path; each transition keeps its own width."""
+
+    origin: Vector
+    transitions: tuple[CanvasLayerTransition, ...]
+    terminal: Vector
+
+    @property
+    def states(self) -> tuple[Vector, ...]:
+        return tuple(transition.state for transition in self.transitions)
+
+
+@dataclass(frozen=True)
 class DirectionResponse:
     direction: Vector
-    positive_layers: tuple[Vector, ...]
-    negative_layers: tuple[Vector, ...]
+    positive_trajectory: CanvasTrajectory
+    negative_trajectory: CanvasTrajectory
     first_differences: tuple[Vector, ...]
     second_differences: tuple[Vector, ...]
     dual_trit_states: tuple[tuple[DualTrit, ...], ...]
+
+    @property
+    def positive_layers(self) -> tuple[Vector, ...]:
+        return self.positive_trajectory.states
+
+    @property
+    def negative_layers(self) -> tuple[Vector, ...]:
+        return self.negative_trajectory.states
 
 
 @dataclass(frozen=True)
@@ -81,10 +113,40 @@ class CanvasProbeReceipt:
     canvas_sha256: str
     base_input: Vector
     directions: tuple[Vector, ...]
-    baseline_layers: tuple[Vector, ...]
+    baseline_trajectory: CanvasTrajectory
     responses: tuple[DirectionResponse, ...]
     layer_summaries: tuple[LayerProbeSummary, ...]
     forward_calls: int
+    receipt_sha256: str
+
+    @property
+    def baseline_layers(self) -> tuple[Vector, ...]:
+        return self.baseline_trajectory.states
+
+
+@dataclass(frozen=True)
+class GoalLayerArrow:
+    """Exact response arrow induced by fixed coefficients over probe rays."""
+
+    layer: int
+    nodes: int
+    slope: Vector
+    curvature: Vector
+    slope_squared_length: int
+    curvature_squared_length: int
+
+
+@dataclass(frozen=True)
+class GoalResponseReceipt:
+    """Goal-referenced view of a previously completed fixed probe receipt."""
+
+    schema: str
+    mode: str
+    probe_receipt_sha256: str
+    goal_coefficients: Vector
+    layer_arrows: tuple[GoalLayerArrow, ...]
+    terminal_slope: Vector
+    terminal_curvature: Vector
     receipt_sha256: str
 
 
@@ -187,11 +249,12 @@ def build_canvas(
     )
 
 
-def forward(canvas: FrozenCanvas, value: Sequence[int]) -> tuple[Vector, ...]:
-    """Project one exact integer vector and return every layer response."""
+def trace_forward(canvas: FrozenCanvas, value: Sequence[int]) -> CanvasTrajectory:
+    """Project one vector and retain every affine and bounded path segment."""
 
     current = _validate_vector(value, canvas.input_width, "canvas input")
-    outputs: list[Vector] = []
+    origin = current
+    transitions: list[CanvasLayerTransition] = []
     expected_input = canvas.input_width
     if len(canvas.layers) != len(canvas.layer_widths):
         raise ValueError("canvas layer metadata is inconsistent")
@@ -201,19 +264,35 @@ def forward(canvas: FrozenCanvas, value: Sequence[int]) -> tuple[Vector, ...]:
             raise ValueError(f"canvas layer {layer_index} output shape is inconsistent")
         if any(len(row) != expected_input for row in layer.weights):
             raise ValueError(f"canvas layer {layer_index} input shape is inconsistent")
-        projected = tuple(
+        affine = tuple(
             bias + sum(weight * item for weight, item in zip(row, current, strict=True))
             for row, bias in zip(layer.weights, layer.biases, strict=True)
         )
         if canvas.activation == "clip":
             limit = canvas.clip_limit
-            projected = tuple(max(-limit, min(limit, item)) for item in projected)
+            state = tuple(max(-limit, min(limit, item)) for item in affine)
         elif canvas.activation != "identity":
             raise ValueError("canvas activation changed after construction")
-        outputs.append(projected)
-        current = projected
+        else:
+            state = affine
+        transitions.append(
+            CanvasLayerTransition(
+                layer=layer_index,
+                source=current,
+                affine=affine,
+                state=state,
+                clipped_nodes=sum(left != right for left, right in zip(affine, state, strict=True)),
+            )
+        )
+        current = state
         expected_input = expected_output
-    return tuple(outputs)
+    return CanvasTrajectory(origin=origin, transitions=tuple(transitions), terminal=current)
+
+
+def forward(canvas: FrozenCanvas, value: Sequence[int]) -> tuple[Vector, ...]:
+    """Project one exact integer vector and return every bounded layer state."""
+
+    return trace_forward(canvas, value).states
 
 
 def exact_rank(rows: Sequence[Sequence[int]]) -> int:
@@ -263,6 +342,76 @@ def verify_receipt(receipt: CanvasProbeReceipt) -> bool:
     return receipt.mode == "fixed-complete-probe-bank" and receipt.receipt_sha256 == expected
 
 
+def _goal_receipt_payload(receipt: GoalResponseReceipt) -> dict[str, object]:
+    payload = asdict(receipt)
+    payload.pop("receipt_sha256")
+    return payload
+
+
+def verify_goal_receipt(receipt: GoalResponseReceipt) -> bool:
+    expected = hashlib.sha256(_canonical(_goal_receipt_payload(receipt))).hexdigest()
+    return receipt.mode == "fixed-goal-projection" and receipt.receipt_sha256 == expected
+
+
+def project_goal_response(
+    receipt: CanvasProbeReceipt,
+    goal_coefficients: Sequence[int],
+) -> GoalResponseReceipt:
+    """Project a declared goal over complete response rays without new probes.
+
+    A coefficient belongs to one ordered direction in ``receipt.directions``.
+    Every layer arrow remains in that layer's node coordinates.  This function
+    deliberately does not subtract arrows from layers of different widths; an
+    explicit transport map is required before such a comparison is meaningful.
+    """
+
+    if not verify_receipt(receipt):
+        raise ValueError("goal projection requires an intact fixed probe receipt")
+    goal = _validate_vector(goal_coefficients, len(receipt.responses), "goal coefficients")
+    if not any(goal):
+        raise ValueError("goal coefficients must contain a direction")
+    if len(receipt.layer_summaries) == 0:
+        raise ValueError("probe receipt contains no measured layers")
+
+    arrows: list[GoalLayerArrow] = []
+    for layer_index, summary in enumerate(receipt.layer_summaries):
+        slopes = tuple(response.first_differences[layer_index] for response in receipt.responses)
+        curvatures = tuple(response.second_differences[layer_index] for response in receipt.responses)
+        if any(len(row) != summary.nodes for row in slopes + curvatures):
+            raise ValueError("probe response width disagrees with its layer summary")
+        slope = tuple(
+            sum(coefficient * slopes[direction][node] for direction, coefficient in enumerate(goal))
+            for node in range(summary.nodes)
+        )
+        curvature = tuple(
+            sum(coefficient * curvatures[direction][node] for direction, coefficient in enumerate(goal))
+            for node in range(summary.nodes)
+        )
+        arrows.append(
+            GoalLayerArrow(
+                layer=layer_index,
+                nodes=summary.nodes,
+                slope=slope,
+                curvature=curvature,
+                slope_squared_length=sum(value * value for value in slope),
+                curvature_squared_length=sum(value * value for value in curvature),
+            )
+        )
+
+    value = GoalResponseReceipt(
+        schema="scbe.frozen-neural-canvas-goal-response.v1",
+        mode="fixed-goal-projection",
+        probe_receipt_sha256=receipt.receipt_sha256,
+        goal_coefficients=goal,
+        layer_arrows=tuple(arrows),
+        terminal_slope=arrows[-1].slope,
+        terminal_curvature=arrows[-1].curvature,
+        receipt_sha256="",
+    )
+    digest = hashlib.sha256(_canonical(_goal_receipt_payload(value))).hexdigest()
+    return replace(value, receipt_sha256=digest)
+
+
 def probe_triplets(
     canvas: FrozenCanvas,
     base_input: Sequence[int],
@@ -292,11 +441,20 @@ def probe_triplets(
     if len(labels) != len(set(labels)):
         raise ValueError("probe directions must be unique")
 
-    baseline_layers = forward(canvas, base)
+    baseline_trajectory = trace_forward(canvas, base)
+    baseline_layers = baseline_trajectory.states
     responses: list[DirectionResponse] = []
     for index, direction in enumerate(labels):
-        positive = forward(canvas, _validate_vector(positives[index], canvas.input_width, "positive input"))
-        negative = forward(canvas, _validate_vector(negatives[index], canvas.input_width, "negative input"))
+        positive_trajectory = trace_forward(
+            canvas,
+            _validate_vector(positives[index], canvas.input_width, "positive input"),
+        )
+        negative_trajectory = trace_forward(
+            canvas,
+            _validate_vector(negatives[index], canvas.input_width, "negative input"),
+        )
+        positive = positive_trajectory.states
+        negative = negative_trajectory.states
         first = tuple(
             tuple(right - left for right, left in zip(plus_layer, minus_layer, strict=True))
             for plus_layer, minus_layer in zip(positive, negative, strict=True)
@@ -317,8 +475,8 @@ def probe_triplets(
         responses.append(
             DirectionResponse(
                 direction=direction,
-                positive_layers=positive,
-                negative_layers=negative,
+                positive_trajectory=positive_trajectory,
+                negative_trajectory=negative_trajectory,
                 first_differences=first,
                 second_differences=second,
                 dual_trit_states=states,
@@ -348,12 +506,12 @@ def probe_triplets(
         )
 
     receipt = CanvasProbeReceipt(
-        schema="scbe.frozen-neural-canvas-probe.v1",
+        schema="scbe.frozen-neural-canvas-probe.v2",
         mode="fixed-complete-probe-bank",
         canvas_sha256=canvas.canvas_sha256,
         base_input=base,
         directions=labels,
-        baseline_layers=baseline_layers,
+        baseline_trajectory=baseline_trajectory,
         responses=tuple(responses),
         layer_summaries=tuple(summaries),
         forward_calls=1 + 2 * len(labels),

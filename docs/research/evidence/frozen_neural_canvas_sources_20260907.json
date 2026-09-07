@@ -22,7 +22,10 @@
     "C:/dev/clay-wafer-net/NEURAL_STRIP_MINE_LAYER_MAP.md",
     "C:/dev/loom/case_direction_probe.py",
     "C:/dev/loom/chain_accelerator.py",
-    "notes/round-table/2026-03-19-phase-tunnel-resonance-finding.md"
+    "notes/round-table/2026-03-19-phase-tunnel-resonance-finding.md",
+    "src/symphonic_cipher/scbe_aethermoore/ai_brain/unified_state.py",
+    "src/symphonic_cipher/scbe_aethermoore/ai_brain/mirror_shift.py",
+    "src/symphonic_cipher/scbe_aethermoore/ai_brain/hamiltonian_braid.py"
   ],
   "claim_boundary": "The local experiment validates a fixed response instrument and reports no target-estimation advantage. It does not claim a cryptographic break or a novel random-feature theory."
 }

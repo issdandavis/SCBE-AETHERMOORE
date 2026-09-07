@@ -80,6 +80,40 @@ The receipt hashes the canvas identity, complete input bank, every activation,
 both differences, every dual-trit state, layer summaries, and the expected
 `1 + 2*directions` forward-call count.
 
+## Goal vectors and lightning paths
+
+The clarified response model is now explicit in the instrument. For layer
+`l`, one fixed ray follows:
+
+```text
+x_0 = declared origin
+z_l = W_l * x_(l-1) + b_l       # untouched affine response
+x_l = clip(z_l)                  # boundary interaction
+gamma = (x_0, (z_1,x_1), ..., (z_L,x_L))
+```
+
+`CanvasTrajectory` records the source, affine value, bounded state and number
+of clipped nodes at every layer. The terminal state is therefore backed by the
+complete route that produced it rather than treated as an isolated score.
+
+A goal is declared as exact integer coefficients `g_i` over the already fixed
+probe directions. Its layer response is:
+
+```text
+a_l(g) = sum_i g_i * (h_l(x_i+) - h_l(x_i-))
+```
+
+The same calculation retains the curvature channel and exact squared length.
+It performs no additional canvas calls, selection or fitting. The goal receipt
+hashes the source probe receipt, coefficients, every layer arrow and both
+terminal vectors.
+
+Layer arrows remain typed by their node width. A 24-node vector and a 12-node
+vector are not subtracted or assigned an angle merely because they are
+consecutive. Comparing them requires an explicit transport map into a shared
+space. This keeps the current measurement exact while leaving a clean bridge
+to the existing equal-width 21D PHDM trajectories and Hamiltonian rails.
+
 ## Controlled toy measurement
 
 The benchmark used 300 deterministic toy-LWE instances for each of three
@@ -123,8 +157,8 @@ The independent source record is
 Validation hashes and commands are in
 [`frozen_neural_canvas_validation_20260907.json`](../research/evidence/frozen_neural_canvas_validation_20260907.json).
 
-Validation completed with **322 related tests passing**. The 23 focused canvas
-tests cover 98% of the instrument module, Ruff passes all five new Python
+Validation completed with **326 related tests passing**. The 27 focused canvas
+tests cover 97% of the instrument module, Ruff passes all five Python
 surfaces, and a second complete 900-instance run reproduced every field except
 elapsed wall time exactly.
 

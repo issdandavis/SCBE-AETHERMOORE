@@ -841,10 +841,10 @@
     }
   },
   "conclusion": "The blank canvas produced a reproducible node-response tensor but did not beat every direct, linear, and random control under the registered effect rule.",
-  "elapsed_seconds": 20.653155000065453,
+  "elapsed_seconds": 23.067439300008118,
   "sources": {
-    "C:\\dev\\_wt_integer_phase_shards_20260906\\src\\crypto\\frozen_neural_canvas.py": "75098c4cef6ede92e47a7233cdc46c3ede45090659149a2713d5593e1e6aa144",
+    "C:\\dev\\_wt_integer_phase_shards_20260906\\src\\crypto\\frozen_neural_canvas.py": "d24e8fa226fbb900802a2fb5184d1322fe23bdad43b3688f78e9e5f8b458be5a",
     "C:\\dev\\_wt_integer_phase_shards_20260906\\src\\crypto\\toy_lwe_box_field.py": "c8163e366e6815471a936bc61b435eedbb008937f4aa6672b7d0213b1ce3d227",
-    "C:\\dev\\_wt_integer_phase_shards_20260906\\scripts\\benchmark\\frozen_neural_canvas_benchmark.py": "a98943e67e6f9d8da9b68689cf5d9bea487704ca1e8fb9f177ad64ec53fbe796"
+    "C:\\dev\\_wt_integer_phase_shards_20260906\\scripts\\benchmark\\frozen_neural_canvas_benchmark.py": "58d8807084320d43978b105529d5f745ad869d9b3af80b1448569117ef3cae4b"
   }
 }

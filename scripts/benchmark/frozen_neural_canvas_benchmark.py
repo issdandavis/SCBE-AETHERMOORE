@@ -90,7 +90,10 @@ def _ratio(numerator: int, denominator: int) -> dict[str, int | float | None]:
 
 
 def _stats(values: list[float]) -> dict[str, float]:
-    return {"mean": statistics.fmean(values), "population_sd": statistics.pstdev(values)}
+    return {
+        "mean": statistics.fmean(values),
+        "population_sd": statistics.pstdev(values),
+    }
 
 
 def run(*, instance_start: int = 10_000, instances: int = 300) -> dict[str, object]:
@@ -257,7 +260,13 @@ def main() -> int:
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2, allow_nan=False) + "\n", encoding="utf-8")
     print(
-        json.dumps({"output": str(args.output), "status": result["status"], "aggregate": result["aggregate_accuracy"]})
+        json.dumps(
+            {
+                "output": str(args.output),
+                "status": result["status"],
+                "aggregate": result["aggregate_accuracy"],
+            }
+        )
     )
     return 0
 

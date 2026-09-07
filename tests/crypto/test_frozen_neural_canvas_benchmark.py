@@ -26,7 +26,10 @@ def test_small_benchmark_is_deterministic_and_never_trains() -> None:
 
 
 def test_invalid_benchmark_bounds_fail_closed() -> None:
-    for kwargs in ({"instance_start": -1, "instances": 1}, {"instance_start": 0, "instances": 0}):
+    for kwargs in (
+        {"instance_start": -1, "instances": 1},
+        {"instance_start": 0, "instances": 0},
+    ):
         try:
             BENCHMARK.run(**kwargs)
         except ValueError:

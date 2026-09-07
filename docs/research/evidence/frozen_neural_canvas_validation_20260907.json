@@ -1,22 +1,26 @@
 {
-  "schema": "scbe.frozen-neural-canvas-validation.v1",
-  "created_utc": "2026-09-07T07:46:05.826629+00:00",
+  "schema": "scbe.frozen-neural-canvas-validation.v2",
+  "created_utc": "2026-09-07T08:04:08.974525+00:00",
   "status": "PASS_MEASUREMENT_NO_ADVANTAGE",
-  "scope": "Fixed untrained exact-integer response instrument on synthetic toy LWE.",
+  "scope": "Fixed untrained exact-integer response paths and goal projection on synthetic toy LWE.",
   "validation": {
+    "repository_commit_hook_formatter": {
+      "status": "PASS_REFORMATTED",
+      "files": 5
+    },
     "ruff": {
       "status": "PASS",
       "files": 5
     },
     "focused_tests": {
       "status": "PASS",
-      "passed": 23,
-      "module_statement_coverage_percent": 98
+      "passed": 27,
+      "module_statement_coverage_percent": 97
     },
     "related_regression": {
       "status": "PASS",
-      "passed": 322,
-      "seconds": 12.43
+      "passed": 326,
+      "seconds": 12.54
     },
     "full_replay": {
       "status": "EXACT_MATCH_EXCEPT_ELAPSED_SECONDS",
@@ -30,20 +34,21 @@
     "git_diff_check": "PASS"
   },
   "claim_boundary": {
-    "measured": "Full-rank fixed node response and nonlinear curvature under the declared probes.",
+    "measured": "Full-rank fixed node response, nonlinear curvature, complete layer paths, and exact fixed-goal projection.",
     "not_measured": "No target-estimation improvement beyond direct, same-weight linear, and random controls.",
+    "cross_width_transport_invented": false,
     "production_crypto_attack": false,
     "training_or_adaptive_readout": false
   },
   "artifacts_sha256": {
-    "src/crypto/frozen_neural_canvas.py": "75098c4cef6ede92e47a7233cdc46c3ede45090659149a2713d5593e1e6aa144",
-    "scripts/benchmark/frozen_neural_canvas_benchmark.py": "a98943e67e6f9d8da9b68689cf5d9bea487704ca1e8fb9f177ad64ec53fbe796",
-    "scripts/benchmark/plot_frozen_neural_canvas.py": "20524cee6f0dd4cc8c34a941085931d858c450269dbfe7659e207e6a23fa15ae",
-    "tests/crypto/test_frozen_neural_canvas.py": "7400f7388ba1801ceb1aca8bbd3a7addbaff6e63d1c8cbc75c07803744b28c8f",
-    "tests/crypto/test_frozen_neural_canvas_benchmark.py": "c08ad3ed75f7ddc72fae62e66bbd28b7370a79ad6dc528715568bcb773a0cea9",
-    "docs/research/evidence/frozen_neural_canvas_20260907.json": "9c00b80ab80b077500827b1bfd4a57a1f60adc2e6061f5deb4739800f45d72c2",
+    "src/crypto/frozen_neural_canvas.py": "d24e8fa226fbb900802a2fb5184d1322fe23bdad43b3688f78e9e5f8b458be5a",
+    "scripts/benchmark/frozen_neural_canvas_benchmark.py": "58d8807084320d43978b105529d5f745ad869d9b3af80b1448569117ef3cae4b",
+    "scripts/benchmark/plot_frozen_neural_canvas.py": "ab929fafd841691e7f3d2d9b4cb930089d8579b8cbbeb4a81e49bb9f25563678",
+    "tests/crypto/test_frozen_neural_canvas.py": "7f697a0b8c641aa370281a513258a9cc358ff5d280223e4926dddf79e84ee932",
+    "tests/crypto/test_frozen_neural_canvas_benchmark.py": "de634ecb82195f7e2ba189f0c68b17b97da87e8d9418930422b2379897b5bb63",
+    "docs/research/evidence/frozen_neural_canvas_20260907.json": "7f97c6977f714832bffd49c9129154a8f759362985c6180501c40c548689b6ed",
     "docs/research/evidence/frozen_neural_canvas_20260907.png": "3a1f16cd9b8a08d1299ac84fb2e9f3a49f92815804025b9a90b5fd6c310d99c1",
-    "docs/research/evidence/frozen_neural_canvas_sources_20260907.json": "cfda9e92d04471a06354a9e27fab5224ed45e563bcfd9d4fa379f15ba27f1bf8",
-    "docs/security/FROZEN_NEURAL_CANVAS_RESULT_20260907.md": "b082bfb1d2d52eb20273a6be15ffd2d4bd8b80d06efc844569ed5ee44275bfc3"
+    "docs/research/evidence/frozen_neural_canvas_sources_20260907.json": "4940f720cf01f1fa09eda399eb308f3284e45b61ec4ec0fa59602d3e803d4402",
+    "docs/security/FROZEN_NEURAL_CANVAS_RESULT_20260907.md": "17daaf82c496b342dd2affa6f76fb41825653e2738a7e2855bd9f3c904737ae4"
   }
 }
