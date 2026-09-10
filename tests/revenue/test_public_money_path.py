@@ -13,22 +13,25 @@ def read_doc(name: str) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def test_homepage_focuses_first_buyer_path_on_workflow_snapshot() -> None:
+def test_homepage_presents_verifiable_systems_path() -> None:
     homepage = read_doc("index.html")
 
-    assert "Buy $99 Snapshot" in homepage
-    assert "workflow-snapshot.html" in homepage
-    assert "payments.html" in homepage
+    assert "AetherMoore | Verifiable AI Systems" in homepage
+    assert "AI systems that can show their work" in homepage
+    assert 'href="#work"' in homepage
+    assert 'href="agents.html"' in homepage
+    assert 'href="cli.html"' in homepage
+    assert 'href="training-hub.html"' in homepage
     assert "briefing-room.html" not in homepage
 
 
-def test_homepage_sells_workflow_outputs_without_legal_claims() -> None:
+def test_homepage_sells_verification_without_legal_claims() -> None:
     homepage = read_doc("index.html").lower()
 
-    assert "long ai runs finish with real outputs" in homepage
-    assert "controlled workflow" in homepage
-    assert "cataloged outputs" in homepage
-    assert "receipt-backed checkpoints" in homepage
+    assert "verifiable agent infrastructure" in homepage
+    assert "evidence before claims" in homepage
+    assert "no certification claim" in homepage
+    assert "independent lab" in homepage
 
     banned_phrases = [
         "lawsuit",
@@ -75,12 +78,10 @@ def test_ai_workflow_snapshot_has_no_stale_39_dollar_copy() -> None:
 
 
 def test_money_path_pages_load_funnel_telemetry() -> None:
-    homepage = read_doc("index.html")
     workflow = read_doc("workflow-snapshot.html")
     intake = read_doc("ai-workflow-snapshot.html")
     category = read_doc("ai-agent-governance-toolkit.html")
 
-    assert 'src="static/polly-funnel.js"' in homepage
     assert 'src="static/polly-funnel.js"' in workflow
     assert 'src="static/polly-funnel.js"' in intake
     assert 'src="static/polly-funnel.js"' in category
@@ -89,7 +90,6 @@ def test_money_path_pages_load_funnel_telemetry() -> None:
 
 def test_ai_agent_governance_category_page_is_search_targeted() -> None:
     category = read_doc("ai-agent-governance-toolkit.html")
-    homepage = read_doc("index.html")
     products = read_doc("products.html")
     sitemap = read_doc("sitemap.xml")
     cli = read_doc("cli.html")
@@ -101,7 +101,6 @@ def test_ai_agent_governance_category_page_is_search_targeted() -> None:
     assert "Zapier, Make, n8n, Lindy" in category
     assert "$99 Workflow Snapshot" in category
     assert 'data-funnel-event="cta_click_buy"' in category
-    assert "ai-agent-governance-toolkit.html" in homepage
     assert "ai-agent-governance-toolkit.html" in products
     assert "https://aethermoore.com/SCBE-AETHERMOORE/ai-agent-governance-toolkit.html" in sitemap
     assert "https://aethermoore.com/SCBE-AETHERMOORE/ai-workflow-snapshot.html" in sitemap
@@ -110,12 +109,10 @@ def test_ai_agent_governance_category_page_is_search_targeted() -> None:
 
 
 def test_workflow_machine_proof_page_is_discoverable_and_scoped() -> None:
-    homepage = read_doc("index.html")
     machine = read_doc("workflow-machine.html")
     sitemap = read_doc("sitemap.xml")
     llms = read_doc("llms.txt")
 
-    assert 'href="workflow-machine.html"' in homepage
     assert "https://aethermoore.com/SCBE-AETHERMOORE/workflow-machine.html" in sitemap
     assert "Workflow machine proof" in llms
 

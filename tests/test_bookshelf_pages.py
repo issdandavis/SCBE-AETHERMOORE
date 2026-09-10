@@ -131,7 +131,6 @@ def test_bookshelf_routes_are_discoverable_to_search_and_vercel() -> None:
     sitemap = (DOCS / "sitemap.xml").read_text(encoding="utf-8")
     vercelignore = (REPO_ROOT / ".vercelignore").read_text(encoding="utf-8")
     ignore_build = (REPO_ROOT / "scripts" / "vercel" / "ignore-build.cjs").read_text(encoding="utf-8")
-    homepage = (DOCS / "index.html").read_text(encoding="utf-8")
     llms = (DOCS / "llms.txt").read_text(encoding="utf-8")
     robots = (DOCS / "robots.txt").read_text(encoding="utf-8")
 
@@ -148,8 +147,6 @@ def test_bookshelf_routes_are_discoverable_to_search_and_vercel() -> None:
     assert "'docs/books'" in ignore_build
     assert "'docs/guides.html'" in ignore_build
     assert "'docs/downloads'" in ignore_build
-    assert 'href="books.html"' in homepage
-    assert 'href="guides.html"' in homepage
     assert "https://aethermoore.com/SCBE-AETHERMOORE/guides.html" in llms
     assert "Guides: https://aethermoore.com/SCBE-AETHERMOORE/guides.html" in robots
 
