@@ -25,8 +25,8 @@ def test_homepage_boundary_rejects_ambient_access() -> None:
 def test_homepage_traces_governed_action_path() -> None:
     html = INDEX.read_text(encoding="utf-8")
 
-    assert 'data-route-map' in html
-    assert 'data-boundary-canvas' in html
+    assert "data-route-map" in html
+    assert "data-boundary-canvas" in html
     assert "Proposal" in html
     assert "Capability check" in html
     assert "Isolated action" in html
