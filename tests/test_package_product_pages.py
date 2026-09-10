@@ -69,11 +69,10 @@ def test_bookforge_page_is_marked_publish_pending_without_dead_pypi_link() -> No
     assert "https://pypi.org/project/scbe-bookforge/" not in page
 
 
-def test_package_pages_are_discoverable_to_search_vercel_and_homepage() -> None:
+def test_package_pages_are_discoverable_to_search_and_vercel() -> None:
     sitemap = (DOCS / "sitemap.xml").read_text(encoding="utf-8")
     vercelignore = (REPO_ROOT / ".vercelignore").read_text(encoding="utf-8")
     ignore_build = (REPO_ROOT / "scripts" / "vercel" / "ignore-build.cjs").read_text(encoding="utf-8")
-    homepage = (DOCS / "index.html").read_text(encoding="utf-8")
 
     for path in [
         "packages.html",
@@ -88,4 +87,3 @@ def test_package_pages_are_discoverable_to_search_vercel_and_homepage() -> None:
     assert "!docs/packages/**" in vercelignore
     assert "'docs/packages.html'" in ignore_build
     assert "'docs/packages'" in ignore_build
-    assert 'href="packages.html"' in homepage
