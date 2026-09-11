@@ -334,7 +334,7 @@
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
     "@types/node": "^26.0.0",
-    "@vitest/coverage-v8": "^4.1.1",
+    "@vitest/coverage-v8": "^5.0.0",
     "esbuild": "0.28.2",
     "fast-check": "^4.6.0",
     "madge": "^8.0.0",
@@ -343,7 +343,7 @@
     "ts-node": "^10.9.2",
     "typedoc": "^0.28.18",
     "typescript": "^6.0.2",
-    "vitest": "^4.1.1",
+    "vitest": "^5.0.0",
     "ws": "^8.20.0"
   },
   "overrides": {
