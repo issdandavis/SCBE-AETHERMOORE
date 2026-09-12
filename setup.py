@@ -8,15 +8,44 @@ duplicate root packages (symphonic_cipher/, api/), so we run two finds and merge
 """
 
 from setuptools import find_namespace_packages, find_packages, setup
+from setuptools.command.build_py import build_py
+
+
+class RuntimeBuild(build_py):
+    """Keep embedded validation scripts in the checkout, out of runtime wheels."""
+
+    def find_package_modules(self, package, package_dir):
+        return [
+            entry
+            for entry in super().find_package_modules(package, package_dir)
+            if not entry[1].startswith("test_") and not entry[1].endswith("_tests")
+        ]
+
 
 SRC_INCLUDE = [
-    "neurogolf*", "scbe_aethermoore*", "code_prism*", "flow_router*",
-    "symphonic_cipher*", "api*", "crypto*", "harmonic*", "spiralverse*",
-    "minimal*", "storage*",
+    "neurogolf*",
+    "scbe_aethermoore*",
+    "code_prism*",
+    "flow_router*",
+    "symphonic_cipher*",
+    "api*",
+    "crypto*",
+    "harmonic*",
+    "spiralverse*",
+    "minimal*",
+    "storage*",
 ]
 SRC_EXCLUDE = [
-    "tests*", "agents*", "training*", "scripts*", "*.tests", "*.tests.*",
-    "api.github_app*", "api.billing*", "api.keys*", "symphonic_cipher.geoseal*",
+    "tests*",
+    "agents*",
+    "training*",
+    "scripts*",
+    "*.tests",
+    "*.tests.*",
+    "api.github_app*",
+    "api.billing*",
+    "api.keys*",
+    "symphonic_cipher.geoseal*",
 ]
 
 # src-layout packages (installed by bare name, mapped back to src/)
@@ -29,7 +58,8 @@ package_dir = {p: "src/" + p.replace(".", "/") for p in src_pkgs}
 package_dir["python.scbe"] = "python/scbe"
 
 setup(
-    py_modules=["scbe"],                       # the CLI entry (scbe.py at repo root)
+    cmdclass={"build_py": RuntimeBuild},
+    py_modules=["scbe"],  # the CLI entry (scbe.py at repo root)
     packages=src_pkgs + engine_pkgs,
     package_dir=package_dir,
     package_data={"python.scbe": ["*.json", "data/*"]},
