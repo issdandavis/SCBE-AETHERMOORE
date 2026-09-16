@@ -28,6 +28,9 @@ recursive-exclude api/keys *
 
 # Exclude test files that sneak in
 recursive-exclude src/symphonic_cipher/tests *
+prune src/symphonic_cipher/scbe_aethermoore/axiom_grouped/tests
+recursive-exclude src test_*.py *_tests.py
+recursive-exclude python test_*.py *_tests.py
 
 # Exclude everything that should not ship in sdist
 prune tests

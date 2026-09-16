@@ -68,7 +68,10 @@ def main(argv: list[str] | None = None) -> int:
         dist_dir.mkdir(parents=True, exist_ok=True)
 
     return subprocess.run(
-        [sys.executable, "-m", "build", "--sdist", "--wheel", "--outdir", str(dist_dir)],
+        # With no format flags, build constructs the wheel from the sdist in a
+        # fresh temporary tree. Explicit --sdist --wheel builds both from the
+        # checkout and can conceal missing manifest entries or stale build files.
+        [sys.executable, "-m", "build", "--outdir", str(dist_dir)],
         check=False,
     ).returncode
 

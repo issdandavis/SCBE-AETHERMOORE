@@ -37,11 +37,11 @@ FAIL_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
     (re.compile(r"(^|/)__pycache__(/|$)", re.I), "__pycache__ directory"),
     (re.compile(r"\.py[co]$", re.I), "Python bytecode"),
     (re.compile(r"(^|/)\.(?:pytest_cache|mypy_cache|ruff_cache|hypothesis)(/|$)", re.I), "tool cache"),
+    (re.compile(r"(^|/)tests?(/|$)", re.I), "test package or test directory"),
+    (re.compile(r"(^|/)(?:test_.+|.+_tests?)\.py$", re.I), "test-only module"),
 )
 
 WARN_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
-    (re.compile(r"(^|/)tests?(/|$)", re.I), "test package or test directory"),
-    (re.compile(r"(^|/)(?:test_.+|.+_tests?)\.py$", re.I), "test-like module"),
     (re.compile(r"(^|/)src/(?![^/]+\.egg-info(?:/|$))", re.I), "raw src/ path inside artifact"),
 )
 

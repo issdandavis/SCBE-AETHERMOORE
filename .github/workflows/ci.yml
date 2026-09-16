@@ -7,7 +7,6 @@ on:
       - 'CHANGELOG.md'
       - 'docs/**'
       - '*.md'
-      - '.github/workflows/**'
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -44,6 +43,9 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: Check npm release contents
+        run: npm run publish:check:strict
+
       - name: Run tests
         run: npm test
 
@@ -53,6 +55,26 @@ jobs:
           name: dist-node20
           path: dist/
           retention-days: 7
+
+  python-package:
+    name: Check Python release contents
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Install build and boundary test tools
+        run: python -m pip install build==1.5.0 pytest==9.1.0 'setuptools>=83.0.0'
+      - name: Test manifest and package boundaries
+        env:
+          PYTEST_DISABLE_PLUGIN_AUTOLOAD: '1'
+        run: python -m pytest --noconftest -o addopts='' tests/test_manifest_covers_packages.py tests/test_runtime_package_boundary.py -q
+      - name: Build wheel from source distribution
+        run: python -m build --outdir artifacts/pypi-dist
+      - name: Reject development payloads
+        run: python scripts/pypi_dist_guard.py --dist-dir artifacts/pypi-dist
 
   python-test:
     name: Test Python Components
@@ -168,13 +190,10 @@ jobs:
 
       - name: Install Python linters
         run: |
-          pip install black ruff flake8
+          python -m pip install -r requirements-lint.txt
 
       - name: Check Python formatting
-        run: black --check --target-version py311 --line-length 120 src/ tests/ scripts/ agents/
+        run: npm run format:python:check
 
-      - name: Run ruff (fast lint)
-        run: ruff check --config ruff.toml
-
-      - name: Run flake8 (style + pyflakes)
-        run: flake8 --max-line-length 120 src/ tests/ hydra/ scripts/ agents/
+      - name: Run Python lint
+        run: npm run lint:python
