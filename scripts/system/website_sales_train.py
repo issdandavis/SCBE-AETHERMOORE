@@ -123,17 +123,72 @@ def replace_section_by_id(html: str, section_id: str, replacement: str) -> str:
     return pattern.sub(replacement, html, count=1)
 
 
+class _CTAExtractor(HTMLParser):
+    """Count static actionable elements, not class names in CSS or scripts.
+
+    Understand both site button vocabularies and inherited HTML hiding. This
+    does not replace a browser check for stylesheet visibility or click behavior.
+    """
+
+    _VOID = frozenset("area base br col embed hr img input link meta param source track wbr".split())
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.primary = 0
+        self.secondary = 0
+        self.hero_primary = 0
+        self.stack: list[tuple[str, bool, bool]] = []
+
+    def handle_starttag(self, tag: str, attrs: list) -> None:
+        values = dict(attrs)
+        classes = set((values.get("class") or "").split())
+        hidden = (self.stack[-1][1] if self.stack else False) or (
+            tag in {"script", "style", "template", "noscript"}
+            or "hidden" in values
+            or "inert" in values
+            or (values.get("aria-hidden") or "").lower() == "true"
+            or bool(re.search(r"(?:display\s*:\s*none|visibility\s*:\s*hidden)", values.get("style") or "", re.I))
+        )
+        hero = (self.stack[-1][2] if self.stack else False) or (
+            values.get("id") in {"offer", "hero"} or "hero" in classes
+        )
+        href = (values.get("href") or "").strip()
+        actionable = tag == "button" or (
+            tag == "a" and href not in {"", "#"} and not re.match(r"(?:javascript|data|vbscript):", href, re.I)
+        )
+        if actionable and not hidden and "disabled" not in values and values.get("aria-disabled") != "true":
+            primary = bool(classes & {"btn-primary", "button-primary"})
+            secondary = bool(classes & {"btn-secondary", "button-secondary"})
+            self.primary += primary
+            self.secondary += secondary
+            self.hero_primary += primary and hero
+        if tag not in self._VOID:
+            self.stack.append((tag, hidden, hero))
+
+    def handle_endtag(self, tag: str) -> None:
+        for index in range(len(self.stack) - 1, -1, -1):
+            if self.stack[index][0] == tag:
+                del self.stack[index:]
+                break
+
+    def handle_startendtag(self, tag: str, attrs: list) -> None:
+        self.handle_starttag(tag, attrs)
+        if tag not in self._VOID:
+            self.handle_endtag(tag)
+
+
+def extract_ctas(html: str) -> _CTAExtractor:
+    parser = _CTAExtractor()
+    parser.feed(html)
+    parser.close()
+    return parser
+
+
 def page_flags(html: str) -> dict[str, bool]:
     lower = html.lower()
 
     includes_match = re.search(r"<section[^>]*\bid=\"includes\"[^>]*>([\s\S]*?)</section>", lower)
     includes_text = includes_match.group(1) if includes_match else ""
-
-    offer_match = re.search(
-        r"<(?:section|header)[^>]*\bid=\"offer\"[^>]*>([\s\S]*?)</(?:section|header)>",
-        lower,
-    )
-    offer_text = offer_match.group(1) if offer_match else ""
 
     has_concrete_includes = all(term in includes_text for term in REQUIRED_INCLUDES_TERMS)
 
@@ -151,7 +206,7 @@ def page_flags(html: str) -> dict[str, bool]:
         "has_success_check": ("success check" in lower) or ("first win" in lower),
         "has_hero_image": ("<img" in lower) and bool(re.search(r'src="[^"]*hero\.(png|jpg|jpeg|webp|svg)"', lower)),
         "has_concrete_includes": has_concrete_includes,
-        "has_primary_cta_in_hero": "btn btn-primary" in offer_text,
+        "has_primary_cta_in_hero": extract_ctas(html).hero_primary > 0,
         "has_final_cta": "final cta" in lower,
         "has_use_cases_link": "use-cases/governed-ai-workflows.html" in lower,
         "has_manual_proof_link": "proof/why-the-manual-exists.html" in lower,
@@ -165,8 +220,9 @@ def score_page(html: str) -> tuple[dict[str, float], list[str], list[str]]:
     lower = html.lower()
     text = strip_html(html)
     word_count = len(text.split())
-    primary_cta = len(re.findall(r"btn btn-primary", html))
-    secondary_cta = len(re.findall(r"btn btn-secondary", html))
+    ctas = extract_ctas(html)
+    primary_cta = ctas.primary
+    secondary_cta = ctas.secondary
 
     flags = page_flags(html)
 
@@ -279,11 +335,12 @@ def audit_html(path: Path, html: str) -> PageAudit:
     metrics, risks, strengths = score_page(html)
     internal_links, external_links = count_links(html)
     word_count = len(strip_html(html).split())
+    ctas = extract_ctas(html)
     return PageAudit(
         path=str(path.relative_to(ROOT)),
         title=title,
-        primary_cta_count=len(re.findall(r"btn btn-primary", html)),
-        secondary_cta_count=len(re.findall(r"btn btn-secondary", html)),
+        primary_cta_count=ctas.primary,
+        secondary_cta_count=ctas.secondary,
         internal_links=internal_links,
         external_links=external_links,
         word_count=word_count,
