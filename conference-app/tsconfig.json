@@ -12,11 +12,10 @@
     "jsx": "react-jsx",
     "outDir": "dist",
     "rootDir": ".",
-    "baseUrl": ".",
     "paths": {
-      "@shared/*": ["src/shared/*"],
-      "@api/*": ["src/api/*"],
-      "@frontend/*": ["src/frontend/*"]
+      "@shared/*": ["./src/shared/*"],
+      "@api/*": ["./src/api/*"],
+      "@frontend/*": ["./src/frontend/*"]
     }
   },
   "include": ["src/**/*", "vite.config.ts"],

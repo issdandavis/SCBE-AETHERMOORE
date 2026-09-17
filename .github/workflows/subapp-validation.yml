@@ -1,0 +1,48 @@
+name: Subapp validation
+
+on:
+  pull_request:
+    paths:
+      - 'conference-app/**'
+      - 'scbe-visual-system/**'
+      - '.github/workflows/subapp-validation.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'conference-app/**'
+      - 'scbe-visual-system/**'
+      - '.github/workflows/subapp-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: subapp-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build ${{ matrix.app }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [conference-app, scbe-visual-system]
+    defaults:
+      run:
+        working-directory: ${{ matrix.app }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: ${{ matrix.app }}/package-lock.json
+      # Validate browser bundles without downloading or launching Electron.
+      - run: npm ci --ignore-scripts --no-fund --no-audit
+      - run: npm run build
+      - name: Visual app unit tests
+        if: matrix.app == 'scbe-visual-system'
+        run: npm run test:run -- --maxWorkers=2

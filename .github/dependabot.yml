@@ -72,6 +72,11 @@ updates:
           - "*"
       npm-version:
         applies-to: version-updates
+        # Keep major runtime/UI migrations out of routine update batches.
+        # Unmatched major versions are still proposed as individual PRs.
+        update-types:
+          - "minor"
+          - "patch"
         patterns:
           - "*"
 
