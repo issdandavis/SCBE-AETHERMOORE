@@ -19,6 +19,7 @@ ARTIFACT_DIR = REPO_ROOT / "artifacts" / "system-audit"
 # from the public free-llm response sat undetected on main for two days
 # because `tests/api/test_free_llm_routes.py` wasn't in this list.
 CORE_SMOKE_PATHS: tuple[str, ...] = (
+    "tests/test_src_harmonic_contract.py",
     "tests/test_api_header_compat.py",
     "tests/test_geoseal_v2.py",
     "tests/test_notarize.py",
