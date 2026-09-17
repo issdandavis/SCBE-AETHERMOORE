@@ -131,7 +131,9 @@ def derive_harmonic_mask(
     derived = hmac.new(secret_key, context.encode("utf-8"), hashlib.sha256).digest()
 
     # Commitment for later verification
-    key_commitment = hmac.new(secret_key, f"commit:{token_id}".encode("utf-8"), hashlib.sha256).digest()[:16]
+    # Bind the commitment to the same domain and modality as the fingerprint.
+    # Old token-only commitments must be regenerated with the original key.
+    key_commitment = hmac.new(secret_key, f"commit:{context}".encode("utf-8"), hashlib.sha256).digest()[:16]
 
     # Determine base harmonic pool based on modality
     if modality == ModalityMask.STRICT:
@@ -161,13 +163,13 @@ def derive_harmonic_mask(
         if derived[byte_idx] & (1 << bit_idx):
             selected_harmonics.add(h)
 
-    # Ensure minimum harmonic count
-    while len(selected_harmonics) < MIN_HARMONICS_PER_TOKEN:
-        # Add harmonics deterministically from remaining pool
-        for h in harmonic_pool:
-            if h not in selected_harmonics:
-                selected_harmonics.add(h)
-                break
+    # PROBE has one harmonic, so four distinct selections are impossible.
+    # Traverse the finite pool once and cap the minimum to available entries.
+    minimum_count = min(MIN_HARMONICS_PER_TOKEN, len(harmonic_pool))
+    for h in harmonic_pool:
+        if len(selected_harmonics) >= minimum_count:
+            break
+        selected_harmonics.add(h)
 
     # Trim to maximum if needed
     if len(selected_harmonics) > MAX_HARMONICS_PER_TOKEN:
