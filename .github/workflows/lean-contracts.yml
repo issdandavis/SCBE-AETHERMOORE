@@ -1,0 +1,57 @@
+name: Lean mathematical contracts
+
+on:
+  pull_request:
+    paths:
+      - 'formal/lean/**'
+      - 'src/crypto/sacred_tongues.py'
+      - '.github/workflows/lean-contracts.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'formal/lean/**'
+      - 'src/crypto/sacred_tongues.py'
+      - '.github/workflows/lean-contracts.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lean-contracts-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      LEAN_NUM_THREADS: '2'
+      MATHLIB_NO_CACHE_ON_UPDATE: '1'
+    defaults:
+      run:
+        working-directory: formal/lean
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.11'
+      - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1
+        with:
+          lake-package-directory: formal/lean
+          auto-config: 'false'
+          build: 'false'
+          test: 'false'
+          lint: 'false'
+          use-mathlib-cache: 'false'
+          use-github-cache: 'false'
+      - name: Fetch only required mathematical libraries
+        run: >-
+          lake exe cache get Mathlib.Data.Real.Sqrt
+          Mathlib.Algebra.BigOperators.Group.Finset.Basic Mathlib.Tactic.Linarith
+          Mathlib.Tactic.Positivity Mathlib.Tactic.Ring Mathlib.Data.List.Basic
+          Mathlib.Logic.Equiv.List Mathlib.Analysis.SpecialFunctions.Pow.Real
+      - name: Check vocabulary source binding
+        run: python export_vocabulary.py --check
+      - name: Build, audit axioms, and reject false fixtures
+        run: python verify.py --output validation.json
