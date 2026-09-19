@@ -1,8 +1,8 @@
-"""Tests for the Braided Dual-Primitive Key Vault.
+"""Tests for the Braid-Inspired Key Vault.
 
 Covers: braid word operations, dual hashing, strand initialization,
 crossing mechanics, vault CRUD, key rotation, TTL expiry, and
-the non-commutativity property that gives topological security.
+order sensitivity (not a cryptographic hardness proof).
 """
 
 from __future__ import annotations
@@ -39,7 +39,7 @@ class TestDualPrimitives:
         assert len(_h_b(b"test")) == 32
 
     def test_h_a_and_h_b_differ(self):
-        """SHA3-256 and BLAKE2b must produce different digests."""
+        """Distinct PBKDF2 domains produce different digests for this input."""
         assert _h_a(b"same input") != _h_b(b"same input")
 
     def test_dual_hash_returns_pair(self):

@@ -26,6 +26,14 @@ import math
 
 import pytest
 
+
+@pytest.fixture(autouse=True)
+def explicit_development_signatures(monkeypatch):
+    """Legacy interface checks may use the explicitly labelled classical signer."""
+    monkeypatch.setenv("SCBE_ALLOW_MOCK_PQC", "1")
+    monkeypatch.setenv("SCBE_ENV", "test")
+
+
 try:
     from cryptography import fernet
 
@@ -781,12 +789,7 @@ class TestPostQuantumCrypto:
         """Dilithium3 verify should fail for wrong message."""
         sk, pk = dilithium_keygen()
         signature = dilithium_sign(sk, b"original")
-        # Fallback mode accepts format, real PQC would fail
-        # This tests the interface at minimum
-        result = dilithium_verify(pk, b"tampered", signature)
-        # In fallback mode, this may pass (format check only)
-        # In real PQC mode, this would fail
-        assert isinstance(result, bool)
+        assert not dilithium_verify(pk, b"tampered", signature)
 
     def test_71_dilithium_signature_not_empty(self):
         """Dilithium3 signature should not be empty."""
@@ -799,7 +802,7 @@ class TestPostQuantumCrypto:
         status = get_pqc_sig_status()
         assert "backend" in status
         assert "algorithm" in status
-        assert status["algorithm"] == "Dilithium3"
+        assert status["algorithm"] in {"ML-DSA-65", "Dilithium3", "Ed25519-development"}
 
     def test_73_pqc_fallback_warning(self):
         """PQC status should warn if using fallback."""

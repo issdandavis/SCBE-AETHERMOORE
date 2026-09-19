@@ -15,6 +15,9 @@ on:
       - "tests/crypto/**"
       - "src/symphonic_cipher/scbe_aethermoore/pqc/**"
       - "symphonic_cipher/scbe_aethermoore/pqc/**"
+      - "src/symphonic_cipher/scbe_aethermoore/spiral_seal/**"
+      - "symphonic_cipher/scbe_aethermoore/spiral_seal/**"
+      - "tests/security/test_braid_signature_integrity.py"
   pull_request:
     branches: [main]
     paths:
@@ -25,6 +28,9 @@ on:
       - "tests/crypto/**"
       - "src/symphonic_cipher/scbe_aethermoore/pqc/**"
       - "symphonic_cipher/scbe_aethermoore/pqc/**"
+      - "src/symphonic_cipher/scbe_aethermoore/spiral_seal/**"
+      - "symphonic_cipher/scbe_aethermoore/spiral_seal/**"
+      - "tests/security/test_braid_signature_integrity.py"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}

@@ -25,8 +25,9 @@ The 9 strands braid via B₃ crossings within each bundle (inner braid),
 then the 3 bundles braid together (outer braid). Different compositions
 produce different cluster identities — non-commutative.
 
-Scaling: (3^φ)³ ≈ 162 effective states per position.
-         With 6 tongues × 162 states = 972 dimensions per token.
+Each cluster contains 27 numeric components; six tongue views contain 162.
+The heuristic scaling factor (3^φ)^3 is about 207, not a count of independent
+states, dimensions or entropy bits. Re-encoding a byte adds no source entropy.
 
 Author: SCBE-AETHERMOORE / Issac Davis
 """
@@ -79,7 +80,7 @@ TONGUE_PAIRS = [
 ]
 
 # Scaling constant: (3^φ)³
-BUNDLE_SCALE = (3**PHI) ** 3  # ≈ 162.07
+BUNDLE_SCALE = (3**PHI) ** 3  # ≈ 207; heuristic, not an entropy estimate
 
 
 # ---------------------------------------------------------------------------
@@ -211,7 +212,7 @@ class TriBundleCluster:
 
     @property
     def effective_states(self) -> float:
-        """(3^φ)³ ≈ 162 effective states per position."""
+        """Legacy name for a heuristic scale, not a count of independent states."""
         return BUNDLE_SCALE
 
     def energy(self) -> float:
