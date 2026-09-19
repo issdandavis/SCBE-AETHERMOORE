@@ -117,7 +117,8 @@ from green checks that omit a component.
 
 1. **Deployment authorization coverage.** Trace principal, resource, operation,
    context, expiry and replay state from each ingress to execution. Freeze and
-   authenticate policy inputs. A valid graph edge is not a tool permission.
+   authenticate policy inputs. In particular, `api/main.py:generate_token` remains
+   an unkeyed placeholder; it must not be accepted as a production capability. A valid graph edge is not a tool permission.
 2. **Enrollment and persistence.** RuntimeGate's first five requests can be
    automatically admitted for calibration. Restrict enrollment to trusted inputs
    before treating that heuristic as an enforcing security boundary. Protect
@@ -154,7 +155,9 @@ These are measurable constraints for the user's structural “ribs” analogy.
 They do not grant permissions, prove general robustness, or preserve hyperbolic
 distances. Conditioning can deteriorate near the boundary. Floating-point
 saturation is rejected rather than represented as a reversible operation.
-The TS rendering/math profile uses `exp(A*sin(omega*t))`, with its existing
+The public TS `SCBE.breathe` API reserves a 0.9 radial margin for hashed context
+points, and its intensity test fixes the clock at an expansion peak. The TS
+rendering/math profile uses `exp(A*sin(omega*t))`, with its existing
 amplitude clamp `[0,0.1]`. These profiles have distinct declared parameters.
 
 The separate `src/scbe_14layer_reference.py` clamped-factor profile and other

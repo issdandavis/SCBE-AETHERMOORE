@@ -511,11 +511,13 @@ export class SCBE {
 
   /**
    * Apply breathing transform to a context point.
-   * Used for dynamic security adaptation.
+   * This is a geometric representation, not an authorization decision.
    */
   breathe(context: Context, intensity: number = 1.0): number[] {
     const point = this.contextToPoint(context);
-    const projected = projectToBall(point);
+    // Reserve radial headroom: projecting arbitrary hashes to 1-epsilon makes
+    // expansion numerically saturated and obscures changes in intensity.
+    const projected = projectToBall(point, 0.9);
     const config: BreathConfig = { amplitude: 0.1 * intensity, omega: 1.0 };
     return breathTransform(projected, Date.now() / 1000, config);
   }

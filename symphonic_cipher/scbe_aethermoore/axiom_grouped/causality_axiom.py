@@ -20,10 +20,10 @@ from __future__ import annotations
 
 import functools
 from ..layers.fourteen_layer_pipeline import (
-    breathing_factor as breathing_factor,
+    breathing_factor as _breathing_factor,
     layer_6_breathing as _bounded_breathing,
     layer_6_inverse,
-    layer_6_breathing_jacobian as layer_6_breathing_jacobian,
+    layer_6_breathing_jacobian as _breathing_jacobian,
 )
 
 import numpy as np
@@ -31,6 +31,10 @@ from typing import Callable, TypeVar, Any, Optional, Tuple, List
 from dataclasses import dataclass
 from enum import Enum
 import time as time_module
+
+# Public compatibility exports share the checked layer implementation.
+breathing_factor = _breathing_factor
+layer_6_breathing_jacobian = _breathing_jacobian
 
 # Type variables for generic decorators
 T = TypeVar("T")
