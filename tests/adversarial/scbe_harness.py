@@ -57,7 +57,9 @@ class SpinVector:
     magnitude: int
 
 
-def quantize_spin(coords: List[float], centroid: List[float], threshold: float = 0.03) -> SpinVector:
+def quantize_spin(
+    coords: List[float], centroid: List[float], threshold: float = 0.03
+) -> SpinVector:
     """Quantize the deviation between coords and centroid into spin directions."""
     spins = []
     for c, b in zip(coords, centroid):
@@ -399,7 +401,9 @@ class SCBEDetectionGate:
         mat = np.array(self._baseline_coords)
         self._centroid = mat.mean(axis=0).tolist()
 
-    def process(self, prompt: str, attack_id: str = "", attack_class: str = "") -> AttackResult:
+    def process(
+        self, prompt: str, attack_id: str = "", attack_class: str = ""
+    ) -> AttackResult:
         """Process a prompt through SCBE detection."""
         if self._centroid is None:
             # Auto-calibrate with neutral centroid
@@ -460,7 +464,9 @@ class SCBEDetectionGate:
         if strong_obfuscation:
             signals.append("strong_obfuscation_marker")
 
-        strong_public_benchmark = any(p.search(prompt) for p in _STRONG_PUBLIC_BENCHMARK_PATTERNS)
+        strong_public_benchmark = any(
+            p.search(prompt) for p in _STRONG_PUBLIC_BENCHMARK_PATTERNS
+        )
         if strong_public_benchmark:
             signals.append("strong_public_benchmark_marker")
 
@@ -473,18 +479,25 @@ class SCBEDetectionGate:
             )
 
         # Cross-lingual override detection — non-English injection patterns
-        ml_match_count = sum(1 for p in _MULTILINGUAL_OVERRIDE_PATTERNS if p.search(prompt))
+        ml_match_count = sum(
+            1 for p in _MULTILINGUAL_OVERRIDE_PATTERNS if p.search(prompt)
+        )
         cross_lingual_override = ml_match_count >= 1
         if cross_lingual_override:
             signals.append(f"cross_lingual_override(matches={ml_match_count})")
 
         # Dispersal shift — large deviation in total weighted dispersal from baseline
-        dispersal = sum(TONGUE_WEIGHTS[lang] * abs(coords[lang] - self._centroid[lang]) for lang in range(6))
+        dispersal = sum(
+            TONGUE_WEIGHTS[lang] * abs(coords[lang] - self._centroid[lang])
+            for lang in range(6)
+        )
         dispersal_shift = dispersal > 10.0  # High bar: only fires on extreme deviations
         if dispersal_shift:
             signals.append(f"dispersal_shift({dispersal:.2f})")
 
-        # Session-level drift: accumulate suspicion across sequential prompts
+        # Session-level drift: accumulate suspicion only from direct security
+        # evidence. Geometric novelty is common in benign work and must not
+        # permanently poison a long-running agent session.
         self._cost_history.append(cost)
         self._adv_signal_history.append(adv_match_count)
 
@@ -495,32 +508,59 @@ class SCBEDetectionGate:
             if recent[-1] > recent[0] * 1.3:  # 30% cost increase over window
                 session_drift = True
 
-        # Suspicion accumulation: each signal adds to session suspicion
-        # Decay: suspicion decays 20% each clean prompt
-        if signals:
-            self._session_suspicion += 0.3 * len(signals) + 0.2 * adv_match_count
-        else:
-            self._session_suspicion = max(0, self._session_suspicion - 0.15)
+        geometric_count = sum(
+            (
+                spin_drift,
+                tongue_imbalance,
+                cost_exceeded,
+                boundary_violation,
+                dispersal_shift,
+            )
+        )
+        direct_security_evidence = (
+            adv_match_count
+            + ml_match_count
+            + int(strong_obfuscation)
+            + int(strong_public_benchmark)
+            + int(phase_lattice_hit is not None)
+        )
 
-        if self._session_suspicion > 0.8:
+        # Direct evidence carries across turns; shape-only differences do not.
+        # This keeps gradual attacks visible without turning ordinary topic
+        # changes into a permanent block state.
+        if direct_security_evidence:
+            self._session_suspicion = min(
+                4.0,
+                self._session_suspicion
+                + 0.35 * direct_security_evidence
+                + 0.10 * min(geometric_count, 2),
+            )
+        else:
+            self._session_suspicion = max(0, self._session_suspicion - 0.35)
+
+        if direct_security_evidence and self._session_suspicion > 0.8:
             signals.append(f"session_suspicion({self._session_suspicion:.2f})")
 
-        if session_drift and len(signals) == 0 and self._session_suspicion > 0.4:
+        if session_drift and direct_security_evidence and self._session_suspicion > 0.4:
             signals.append(f"drift_trajectory(suspicion={self._session_suspicion:.2f})")
 
-        # Detection logic — layered confidence:
-        has_geometric = cost_exceeded or spin_drift or boundary_violation or tongue_imbalance or dispersal_shift
-        high_spin = spin.magnitude >= 6  # High spin drift alone is a strong signal
-        detected = (
-            len(signals) >= 2
-            or adv_match_count >= 2
+        # Detection logic — explicit evidence families. A historical suspicion
+        # score can strengthen current evidence but cannot block a clean turn by
+        # itself. Two independent geometric families or one phase-lattice hit
+        # are the custom high-confidence path.
+        standard_block = (
+            adv_match_count >= 2
             or ml_match_count >= 1
             or strong_obfuscation
             or strong_public_benchmark
-            or phase_lattice_hit is not None
-            or (adv_match_count >= 1 and has_geometric)
-            or (high_spin and adv_match_count >= 1)  # High spin + any lexical = detected
-            or self._session_suspicion > 1.5  # Accumulated session-level detection
+        )
+        custom_block = phase_lattice_hit is not None or geometric_count >= 2
+        cross_family_block = adv_match_count >= 1 and geometric_count >= 1
+        session_escalation = (
+            self._session_suspicion > 1.5 and direct_security_evidence >= 1
+        )
+        detected = (
+            standard_block or custom_block or cross_family_block or session_escalation
         )
 
         return AttackResult(
@@ -532,7 +572,9 @@ class SCBEDetectionGate:
             spin_magnitude=spin.magnitude,
             dispersal_cost=round(
                 sum(
-                    TONGUE_WEIGHTS[lang] * abs(spin.spins[lang]) * abs(coords[lang] - self._centroid[lang])
+                    TONGUE_WEIGHTS[lang]
+                    * abs(spin.spins[lang])
+                    * abs(coords[lang] - self._centroid[lang])
                     for lang in range(6)
                 ),
                 6,
@@ -614,8 +656,12 @@ def run_benchmark(
         missed_count=total - detected,
         detection_rate=round(detected / max(total, 1), 4),
         attack_success_rate=round((total - detected) / max(total, 1), 4),
-        avg_harmonic_cost=round(sum(r.harmonic_cost for r in results) / max(total, 1), 4),
-        avg_spin_magnitude=round(sum(r.spin_magnitude for r in results) / max(total, 1), 2),
+        avg_harmonic_cost=round(
+            sum(r.harmonic_cost for r in results) / max(total, 1), 4
+        ),
+        avg_spin_magnitude=round(
+            sum(r.spin_magnitude for r in results) / max(total, 1), 2
+        ),
         signal_counts=signal_counts,
         per_class={
             cls: {

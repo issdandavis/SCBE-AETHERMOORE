@@ -106,8 +106,16 @@
 
     <div class="panel">
       <div class="row">
+        <label for="sharedSecret" style="min-width: 120px;">Service secret</label>
+        <input id="sharedSecret" type="password" autocomplete="off" placeholder="KERNEL_RUNNER_SHARED_SECRET" />
+      </div>
+      <div class="row">
         <label for="runCommand" style="min-width: 120px;">runCommand</label>
         <input id="runCommand" value="npm test" />
+      </div>
+      <div class="row">
+        <input id="allowNetworkInstall" type="checkbox" style="width: auto;" />
+        <label for="allowNetworkInstall">Allow dependency downloads (server must opt in)</label>
       </div>
       <div class="row">
         <button id="btnHealth" class="secondary">Health</button>

@@ -50,14 +50,59 @@ function readPayload() {
     packageJson,
     files,
     runCommand: el('runCommand').value || 'npm test',
+    allowNetworkInstall: el('allowNetworkInstall').checked,
+  };
+}
+
+function toHex(bytes) {
+  return Array.from(bytes, (value) => value.toString(16).padStart(2, '0')).join('');
+}
+
+function randomNonce() {
+  const bytes = crypto.getRandomValues(new Uint8Array(18));
+  return btoa(String.fromCharCode(...bytes))
+    .replaceAll('+', '-')
+    .replaceAll('/', '_')
+    .replaceAll('=', '');
+}
+
+async function signedHeaders(path, bodyText) {
+  const secret = el('sharedSecret').value;
+  const encoder = new TextEncoder();
+  if (encoder.encode(secret).byteLength < 32) {
+    throw new Error('Service secret must be at least 32 UTF-8 bytes.');
+  }
+  const timestamp = Date.now();
+  const nonce = randomNonce();
+  const bodyHash = toHex(
+    new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(bodyText)))
+  );
+  const canonical = ['scbe-kernel-v1', 'POST', path, String(timestamp), nonce, bodyHash].join('\n');
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const signature = toHex(
+    new Uint8Array(await crypto.subtle.sign('HMAC', key, encoder.encode(canonical)))
+  );
+  return {
+    'Content-Type': 'application/json',
+    'X-SCBE-Auth-Version': 'scbe-kernel-v1',
+    'X-SCBE-Timestamp': String(timestamp),
+    'X-SCBE-Nonce': nonce,
+    'X-SCBE-Signature': signature,
   };
 }
 
 async function callApi(path, payload) {
+  const bodyText = payload ? JSON.stringify(payload) : undefined;
   const response = await fetch(path, {
     method: payload ? 'POST' : 'GET',
-    headers: payload ? { 'Content-Type': 'application/json' } : undefined,
-    body: payload ? JSON.stringify(payload) : undefined,
+    headers: payload ? await signedHeaders(path, bodyText) : undefined,
+    body: bodyText,
   });
   const data = await response.json();
   return { ok: response.ok, data };
@@ -81,7 +126,10 @@ el('btnPreflight').addEventListener('click', async () => {
   try {
     const payload = readPayload();
     const { ok, data } = await callApi('/api/preflight', payload);
-    setStatus(ok ? `Decision: ${data?.decision_record?.action || 'UNKNOWN'}` : 'Preflight failed', !ok);
+    setStatus(
+      ok ? `Decision: ${data?.decision_record?.action || 'UNKNOWN'}` : 'Preflight failed',
+      !ok
+    );
     setJSON(resultEl, data);
   } catch (error) {
     setStatus(String(error.message || error), true);
@@ -116,4 +164,3 @@ el('btnRun').addEventListener('click', async () => {
     setStatus(String(error.message || error), true);
   }
 });
-

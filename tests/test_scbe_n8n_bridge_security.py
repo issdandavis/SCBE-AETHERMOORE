@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import io
 import json
 import sys
@@ -12,6 +13,15 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
+
+from src.service_request_auth import (  # noqa: E402
+    AUTH_HEADER_NONCE,
+    DECISION_VERSION,
+    sign_decision_receipt,
+)
+
+VALID_KEY = "test-key"
+SERVICE_KEY = "0123456789abcdef0123456789abcdef"
 
 try:
     from workflows.n8n import scbe_n8n_bridge as bridge  # noqa: E402
@@ -36,7 +46,9 @@ def test_send_zapier_event_skips_when_no_env_hook(monkeypatch) -> None:
 
 
 def test_send_zapier_event_hides_exception_text(monkeypatch) -> None:
-    monkeypatch.setattr(bridge, "_ZAPIER_WEBHOOK_URL", "https://hooks.zapier.com/hooks/catch/123/abc")
+    monkeypatch.setattr(
+        bridge, "_ZAPIER_WEBHOOK_URL", "https://hooks.zapier.com/hooks/catch/123/abc"
+    )
 
     def fake_urlopen(*args, **kwargs):
         raise RuntimeError("secret webhook failure")
@@ -137,6 +149,11 @@ async def test_execute_code_requires_api_key(monkeypatch) -> None:
 @pytest.mark.asyncio
 async def test_execute_code_allows_valid_api_key(monkeypatch) -> None:
     monkeypatch.setattr(bridge, "_API_KEYS", {"test-key"})
+    monkeypatch.setattr(
+        bridge,
+        "_KERNEL_RUNNER_SHARED_SECRET",
+        SERVICE_KEY,
+    )
 
     # execute_code does NOT shell out. Its docstring is explicit: "Instead of running
     # user-supplied code in a local subprocess (command-injection risk), we POST to the
@@ -145,8 +162,11 @@ async def test_execute_code_allows_valid_api_key(monkeypatch) -> None:
     # test could never assert the thing it was written to assert -- the positive half of
     # the auth fix was unverified. Patch the call the code actually makes.
     class _Resp:
-        def read(self):
-            return json.dumps({"ok": True, "execute": {"stdout": "ok\n", "stderr": "", "exit_code": 0}}).encode("utf-8")
+        def __init__(self, document):
+            self.document = document
+
+        def read(self, *_args):
+            return json.dumps(self.document).encode("utf-8")
 
         def __enter__(self):
             return self
@@ -154,7 +174,45 @@ async def test_execute_code_allows_valid_api_key(monkeypatch) -> None:
         def __exit__(self, *exc_info):
             return False
 
-    monkeypatch.setattr(bridge.urllib_request, "urlopen", lambda *args, **kwargs: _Resp())
+    def fake_urlopen(http_req, **_kwargs):
+        headers = {key.lower(): value for key, value in http_req.header_items()}
+        nonce = headers[AUTH_HEADER_NONCE.lower()]
+        state_vector = {"coherence": 0.9, "energy": 0.8, "drift": 0.1}
+        decision = {
+            "action": "ALLOW",
+            "signature_version": DECISION_VERSION,
+            "request_method": "POST",
+            "request_path": "/api/run",
+            "request_digest": hashlib.sha256(http_req.data).hexdigest(),
+            "request_nonce": nonce,
+            "timestamp": "2026-09-19T12:34:56.000Z",
+            "reason": "Verification scores passed policy.",
+            "confidence": 0.92,
+        }
+        decision["signature"] = sign_decision_receipt(
+            secret=SERVICE_KEY,
+            request_method=decision["request_method"],
+            request_path=decision["request_path"],
+            request_digest=decision["request_digest"],
+            request_nonce=decision["request_nonce"],
+            timestamp=decision["timestamp"],
+            action=decision["action"],
+            confidence=decision["confidence"],
+            state_vector=state_vector,
+            reason=decision["reason"],
+        )
+        return _Resp(
+            {
+                "ok": True,
+                "preflight": {
+                    "state_vector": state_vector,
+                    "decision_record": decision,
+                },
+                "execute": {"stdout": "ok\n", "stderr": "", "exit_code": 0},
+            }
+        )
+
+    monkeypatch.setattr(bridge.urllib_request, "urlopen", fake_urlopen)
 
     req = bridge.CodeExecRequest.model_validate(
         {
@@ -172,11 +230,73 @@ async def test_execute_code_allows_valid_api_key(monkeypatch) -> None:
     assert result["sandboxed"] is True
 
 
+@pytest.mark.asyncio
+async def test_execute_code_rejects_forged_runner_decision_receipt(monkeypatch) -> None:
+    monkeypatch.setattr(bridge, "_API_KEYS", {"test-key"})
+    monkeypatch.setattr(
+        bridge,
+        "_KERNEL_RUNNER_SHARED_SECRET",
+        SERVICE_KEY,
+    )
+
+    class _Resp:
+        def __init__(self, document):
+            self.document = document
+
+        def read(self, *_args):
+            return json.dumps(self.document).encode("utf-8")
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc_info):
+            return False
+
+    def fake_urlopen(http_req, **_kwargs):
+        headers = {key.lower(): value for key, value in http_req.header_items()}
+        decision = {
+            "action": "ALLOW",
+            "signature_version": DECISION_VERSION,
+            "request_method": "POST",
+            "request_path": "/api/run",
+            "request_digest": hashlib.sha256(http_req.data).hexdigest(),
+            "request_nonce": headers[AUTH_HEADER_NONCE.lower()],
+            "timestamp": "2026-09-19T12:34:56.000Z",
+            "reason": "Verification scores passed policy.",
+            "confidence": 0.92,
+            "signature": "0" * 64,
+        }
+        return _Resp(
+            {
+                "ok": True,
+                "preflight": {
+                    "state_vector": {
+                        "coherence": 0.9,
+                        "energy": 0.8,
+                        "drift": 0.1,
+                    },
+                    "decision_record": decision,
+                },
+                "execute": {"stdout": "forged\n", "stderr": "", "exit_code": 0},
+            }
+        )
+
+    monkeypatch.setattr(bridge.urllib_request, "urlopen", fake_urlopen)
+    request = bridge.CodeExecRequest(code="print('ok')", language="python", timeout=1)
+    result = await bridge.execute_code(request, x_api_key=VALID_KEY)
+
+    assert result["exit_code"] == -1
+    assert result["stderr"] == "kernel-runner request failed"
+    assert result["sandboxed"] is True
+
+
 def test_dispatch_single_provider_hides_exception_text(monkeypatch) -> None:
     monkeypatch.setattr(
         bridge,
         "_dispatch_openai_compatible",
-        lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("secret stack details")),
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            RuntimeError("secret stack details")
+        ),
     )
 
     result = bridge._dispatch_single_provider("openai", "hello", "system prompt")
@@ -196,11 +316,87 @@ async def test_execute_code_hides_kernel_runner_exception_text(monkeypatch) -> N
     # about leak-hiding, not auth, so it authenticates and keeps asserting the
     # thing it was written to assert.
     monkeypatch.setattr(bridge, "_API_KEYS", {"test-key"})
+    monkeypatch.setattr(
+        bridge,
+        "_KERNEL_RUNNER_SHARED_SECRET",
+        SERVICE_KEY,
+    )
 
-    result = await bridge.execute_code(bridge.CodeExecRequest(code="print('hi')"), x_api_key="test-key")
+    result = await bridge.execute_code(
+        bridge.CodeExecRequest(code="print('hi')"), x_api_key=VALID_KEY
+    )
 
     assert result["stderr"] == "kernel-runner request failed"
     assert "secret kernel-runner details" not in json.dumps(result)
+
+
+def test_api_key_check_compares_every_configured_key(monkeypatch) -> None:
+    monkeypatch.setattr(bridge, "_API_KEYS", {"first-key", "second-key", "third-key"})
+    calls: list[tuple[str, str]] = []
+    original = bridge.secrets.compare_digest
+
+    def recording_compare(left: str, right: str) -> bool:
+        calls.append((left, right))
+        return original(left, right)
+
+    monkeypatch.setattr(bridge.secrets, "compare_digest", recording_compare)
+    bridge._check_key("second-key")
+
+    assert len(calls) == 3
+
+
+@pytest.mark.asyncio
+async def test_execute_code_fails_closed_without_runner_auth(monkeypatch) -> None:
+    monkeypatch.setattr(bridge, "_API_KEYS", {"test-key"})
+    monkeypatch.setattr(bridge, "_KERNEL_RUNNER_SHARED_SECRET", "")
+    monkeypatch.setattr(
+        bridge.urllib_request,
+        "urlopen",
+        lambda *_args, **_kwargs: pytest.fail("unsigned request reached the runner"),
+    )
+
+    with pytest.raises(bridge.HTTPException) as exc:
+        await bridge.execute_code(
+            bridge.CodeExecRequest(code="print('hi')"), x_api_key=VALID_KEY
+        )
+
+    assert exc.value.status_code == 503
+
+
+@pytest.mark.asyncio
+async def test_execute_code_blocks_remote_runner_by_default(monkeypatch) -> None:
+    monkeypatch.setattr(bridge, "_API_KEYS", {"test-key"})
+    monkeypatch.setattr(
+        bridge,
+        "_KERNEL_RUNNER_SHARED_SECRET",
+        SERVICE_KEY,
+    )
+    monkeypatch.setattr(bridge, "_KERNEL_RUNNER_URL", "http://runner.example.test:4242")
+    monkeypatch.setattr(bridge, "_ALLOW_REMOTE_KERNEL_RUNNER", False)
+
+    with pytest.raises(bridge.HTTPException) as exc:
+        await bridge.execute_code(
+            bridge.CodeExecRequest(code="print('hi')"), x_api_key=VALID_KEY
+        )
+
+    assert exc.value.status_code == 503
+    assert "Remote kernel runner" in exc.value.detail
+
+
+@pytest.mark.asyncio
+async def test_execute_code_rejects_oversized_utf8_payload(monkeypatch) -> None:
+    monkeypatch.setattr(bridge, "_API_KEYS", {"test-key"})
+    monkeypatch.setattr(
+        bridge,
+        "_KERNEL_RUNNER_SHARED_SECRET",
+        SERVICE_KEY,
+    )
+    request = bridge.CodeExecRequest(code="🧱" * 200_000)
+
+    with pytest.raises(bridge.HTTPException) as exc:
+        await bridge.execute_code(request, x_api_key=VALID_KEY)
+
+    assert exc.value.status_code == 413
 
 
 def test_forward_to_browser_service_hides_upstream_body(monkeypatch) -> None:
@@ -258,7 +454,9 @@ def test_get_trainer_hides_startup_exception_text(monkeypatch) -> None:
         def __init__(self):
             raise RuntimeError("secret trainer boot detail")
 
-    fake_module = types.SimpleNamespace(RealTimeHFTrainer=BoomTrainer, load_dotenv=lambda: None)
+    fake_module = types.SimpleNamespace(
+        RealTimeHFTrainer=BoomTrainer, load_dotenv=lambda: None
+    )
     monkeypatch.setitem(sys.modules, "hf_trainer", fake_module)
     monkeypatch.setattr(bridge, "_trainer", None)
 
@@ -398,7 +596,9 @@ def test_resolve_repo_relative_output_path_rejects_absolute_path(tmp_path) -> No
 
 
 @pytest.mark.asyncio
-async def test_workflow_lattice25d_rejects_invalid_hf_dataset_repo(monkeypatch, tmp_path) -> None:
+async def test_workflow_lattice25d_rejects_invalid_hf_dataset_repo(
+    monkeypatch, tmp_path
+) -> None:
     monkeypatch.setattr(bridge, "_API_KEYS", {"test-key"})
     repo_root = tmp_path / "repo-root"
     repo_root.mkdir()
@@ -430,7 +630,9 @@ async def test_workflow_lattice25d_rejects_invalid_hf_dataset_repo(monkeypatch, 
 
 
 @pytest.mark.asyncio
-async def test_workflow_lattice25d_push_requires_allowlisted_repo(monkeypatch, tmp_path) -> None:
+async def test_workflow_lattice25d_push_requires_allowlisted_repo(
+    monkeypatch, tmp_path
+) -> None:
     monkeypatch.setattr(bridge, "_API_KEYS", {"test-key"})
     monkeypatch.setattr(bridge, "_HF_ALLOWED_DATASET_REPOS", set())
     monkeypatch.setattr(bridge, "_HF_ROUTER_TOKEN", "hf_test_token")

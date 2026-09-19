@@ -5,6 +5,15 @@ import fs from 'fs/promises';
 import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import {
+  AUTH_HEADERS,
+  DECISION_VERSION,
+  ReplayGuard,
+  isStrongServiceSecret,
+  sha256Hex,
+  signDecisionReceipt,
+  verifyServiceRequest,
+} from './service-auth.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,12 +25,17 @@ const MAX_TOTAL_BYTES = 2 * 1024 * 1024;
 const MAX_OUTPUT_BYTES = 300 * 1024;
 const DOCKER_IMAGE = process.env.KERNEL_RUNNER_IMAGE || 'node:20-bookworm';
 const PORT = Number(process.env.KERNEL_RUNNER_PORT || 4242);
+const HOST = process.env.KERNEL_RUNNER_HOST || '127.0.0.1';
+const SERVICE_SECRET = process.env.KERNEL_RUNNER_SHARED_SECRET || '';
+const TRUST_PROXY = process.env.KERNEL_RUNNER_TRUST_PROXY === '1';
+const ALLOW_NETWORK_INSTALL = process.env.KERNEL_RUNNER_ALLOW_NETWORK_INSTALL === '1';
 const MAX_CONCURRENT_RUNS = 3;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX_REQUESTS = 10;
 const MAX_TIMEOUT_MS = 300_000; // 5 minutes max for any user-supplied timeout
 const MIN_TIMEOUT_MS = 5_000;   // 5 seconds minimum
 const RATE_LIMIT_CLEANUP_INTERVAL_MS = 120_000; // purge stale entries every 2 min
+const PROTECTED_ROUTES = new Set(['/api/preflight', '/api/run']);
 
 let activeRuns = 0;
 const rateLimitMap = new Map();
@@ -206,7 +220,10 @@ function matchAny(patterns, text) {
   return hits;
 }
 
-function buildVerification({ packageJsonText, packageJsonObj, files, runCommand }) {
+function buildVerification(
+  { packageJsonText, packageJsonObj, files, runCommand },
+  { requestMethod, requestPath, requestDigest, requestNonce }
+) {
   const allText = [packageJsonText, extractScriptText(packageJsonObj), ...Object.values(files)].join('\n');
   const scriptText = extractScriptText(packageJsonObj);
 
@@ -283,17 +300,40 @@ function buildVerification({ packageJsonText, packageJsonObj, files, runCommand 
     confidence = 0.86;
   }
 
+  const stateVector = {
+    coherence: verification.truth_score,
+    energy: verification.useful_score,
+    drift: verification.harmful_score,
+  };
+  const timestamp = nowIso();
+  const signature = isStrongServiceSecret(SERVICE_SECRET)
+    ? signDecisionReceipt({
+      secret: SERVICE_SECRET,
+      requestMethod,
+      requestPath,
+      requestDigest,
+      requestNonce,
+      timestamp,
+      action,
+      confidence,
+      stateVector,
+      reason,
+    })
+    : null;
+
   return {
     verification,
-    state_vector: {
-      coherence: verification.truth_score,
-      energy: verification.useful_score,
-      drift: verification.harmful_score,
-    },
+    state_vector: stateVector,
     decision_record: {
       action,
-      signature: `kernel-runner:${action.toLowerCase()}:${Date.now()}`,
-      timestamp: nowIso(),
+      signature,
+      signature_alg: signature ? 'hmac-sha256' : 'unavailable',
+      signature_version: DECISION_VERSION,
+      request_method: requestMethod,
+      request_path: requestPath,
+      request_digest: requestDigest,
+      request_nonce: requestNonce,
+      timestamp,
       reason,
       confidence,
     },
@@ -392,12 +432,23 @@ async function runDockerStage({
     '1024m',
     '--pids-limit',
     '256',
+    '--cap-drop',
+    'ALL',
+    '--security-opt',
+    'no-new-privileges:true',
+    '--read-only',
+    '--ulimit',
+    'nofile=256:256',
+    '--tmpfs',
+    '/tmp:rw,nosuid,nodev,size=64m',
+    '--tmpfs',
+    '/home/node:rw,nosuid,nodev,size=32m',
     '--user',
     'node',
     '--workdir',
     '/workspace',
     '--volume',
-    `${workspace}:/workspace`,
+    `${workspace}:/workspace:rw`,
   ];
 
   if (network === 'none') {
@@ -421,13 +472,65 @@ function parsePayload(body) {
   const packageJsonObj = JSON.parse(packageJsonText);
   const files = normalizeFiles(body.files || {});
   const runCommand = safeRunCommand(body.runCommand);
-  return { packageJsonText, packageJsonObj, files, runCommand };
+  const runTimeoutMs = clampTimeout(body.runTimeoutMs, RUN_TIMEOUT_MS);
+  return { packageJsonText, packageJsonObj, files, runCommand, runTimeoutMs };
+}
+
+function decisionRequestBinding(req) {
+  return {
+    requestMethod: req.method,
+    requestPath: req.path,
+    requestDigest: sha256Hex(req.rawBody || Buffer.alloc(0)),
+    requestNonce: req.get(AUTH_HEADERS.nonce) || '',
+  };
 }
 
 const app = express();
-app.set('trust proxy', 1);
+if (TRUST_PROXY) {
+  // Only enable this behind a proxy that overwrites Forwarded/X-Forwarded-For.
+  // Trusting proxy headers on a directly reachable socket lets callers rotate
+  // spoofed IPs and bypass both rate limiters.
+  app.set('trust proxy', 1);
+}
 app.use(appLimiter);
-app.use(express.json({ limit: '3mb' }));
+
+// Reject absent authentication before reading and parsing up to 3 MiB of JSON.
+// The complete HMAC is checked after the parser captures the exact body bytes.
+app.use((req, res, next) => {
+  if (req.method !== 'POST' || !PROTECTED_ROUTES.has(req.path)) return next();
+  if (!isStrongServiceSecret(SERVICE_SECRET)) {
+    return res.status(503).json({ ok: false, error: 'service_auth_not_configured' });
+  }
+  const required = Object.values(AUTH_HEADERS);
+  if (required.some((name) => !req.get(name))) {
+    return res.status(401).json({ ok: false, error: 'invalid_service_auth' });
+  }
+  return next();
+});
+
+app.use(express.json({
+  limit: '3mb',
+  verify: (req, _res, buffer) => {
+    req.rawBody = Buffer.from(buffer);
+  },
+}));
+
+const serviceReplayGuard = new ReplayGuard();
+app.use((req, res, next) => {
+  if (req.method !== 'POST' || !PROTECTED_ROUTES.has(req.path)) return next();
+  const verification = verifyServiceRequest({
+    secret: SERVICE_SECRET,
+    method: req.method,
+    path: req.path,
+    body: req.rawBody || Buffer.alloc(0),
+    headers: req.headers,
+    replayGuard: serviceReplayGuard,
+  });
+  if (!verification.ok) {
+    return res.status(verification.status).json({ ok: false, error: verification.code });
+  }
+  return next();
+});
 app.use(express.static(publicDir, { index: false }));
 
 app.get('/api/health', async (req, res) => {
@@ -450,7 +553,7 @@ app.post('/api/preflight', (req, res) => {
   }
   try {
     const payload = parsePayload(req.body || {});
-    const result = buildVerification(payload);
+    const result = buildVerification(payload, decisionRequestBinding(req));
     res.json({
       ok: true,
       ...result,
@@ -475,12 +578,21 @@ app.post('/api/run', async (req, res) => {
   let workspace = '';
   try {
     const payload = parsePayload(req.body || {});
-    const preflight = buildVerification(payload);
+    const preflight = buildVerification(payload, decisionRequestBinding(req));
     if (preflight.decision_record.action !== 'ALLOW') {
       return res.status(403).json({
         ok: false,
         blocked: true,
         ...preflight,
+      });
+    }
+
+    const requestedNetworkInstall = req.body?.allowNetworkInstall === true;
+    if (requestedNetworkInstall && !ALLOW_NETWORK_INSTALL) {
+      return res.status(403).json({
+        ok: false,
+        blocked: true,
+        error: 'network_install_disabled',
       });
     }
 
@@ -502,7 +614,7 @@ app.post('/api/run', async (req, res) => {
       await fs.writeFile(full, content, 'utf8');
     }
 
-    const installNetwork = req.body?.allowNetworkInstall === false ? 'none' : 'bridge';
+    const installNetwork = requestedNetworkInstall ? 'bridge' : 'none';
     const installResult = await runDockerStage({
       workspace,
       network: installNetwork,
@@ -522,7 +634,7 @@ app.post('/api/run', async (req, res) => {
     const executeResult = await runDockerStage({
       workspace,
       network: 'none',
-      timeoutMs: RUN_TIMEOUT_MS,
+      timeoutMs: payload.runTimeoutMs,
       command: payload.runCommand,
     });
 
@@ -552,6 +664,14 @@ app.use((req, res) => {
   res.sendFile(path.join(publicDir, 'index.html'));
 });
 
-app.listen(PORT, () => {
-  process.stdout.write(`kernel-runner listening on http://localhost:${PORT}\n`);
-});
+export function startServer({ port = PORT, host = HOST } = {}) {
+  return app.listen(port, host, () => {
+    process.stdout.write(`kernel-runner listening on http://${host}:${port}\n`);
+  });
+}
+
+export { app, HOST, PORT };
+
+if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
+  startServer();
+}

@@ -34,10 +34,13 @@ Start:
 from __future__ import annotations
 
 import asyncio
+import hashlib
+import ipaddress
 import logging
 import json
 import os
 import re
+import secrets
 import sys
 import threading
 import time
@@ -45,6 +48,7 @@ import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional
 from urllib import error as urllib_error
+from urllib import parse as urllib_parse
 from urllib import request as urllib_request
 
 # Resolve project paths
@@ -93,6 +97,12 @@ from symphonic_cipher.scbe_aethermoore.concept_blocks.web_agent import (
 )
 from symphonic_cipher.scbe_aethermoore.concept_blocks.web_agent.publishers import create_publisher
 from workflows.n8n.scbe_automation_hub import AutomationHub, parse_allowed_hosts
+from service_request_auth import (
+    AUTH_HEADER_NONCE,
+    DECISION_VERSION,
+    sign_service_request,
+    verify_decision_receipt,
+)
 
 try:
     from tools import taskmgr_core as _taskmgr_core  # local task manager backend
@@ -245,7 +255,13 @@ def _public_error_detail(
 
 
 def _check_key(api_key: Optional[str] = None):
-    if api_key and api_key in _API_KEYS:
+    matched = False
+    if isinstance(api_key, str) and api_key:
+        # Compare every configured key so key position and prefix do not create
+        # an avoidable timing signal. Identity is separate from SCBE risk.
+        for configured_key in _API_KEYS:
+            matched |= secrets.compare_digest(api_key, configured_key)
+    if matched:
         return
     raise HTTPException(status_code=401, detail="Invalid or missing API key")
 
@@ -449,9 +465,9 @@ class AutomationEmitRequest(BaseModel):
 
 
 class CodeExecRequest(BaseModel):
-    code: str
-    language: str = "python"
-    timeout: int = 10
+    code: str = Field(..., min_length=1, max_length=524_288)
+    language: Literal["python", "javascript"] = "python"
+    timeout: int = Field(default=10, ge=1, le=30)
 
 
 # ---------------------------------------------------------------------------
@@ -923,6 +939,37 @@ async def arena_providers():
 
 
 _KERNEL_RUNNER_URL = os.getenv("KERNEL_RUNNER_URL", "http://127.0.0.1:4242")
+_KERNEL_RUNNER_SHARED_SECRET = os.getenv("KERNEL_RUNNER_SHARED_SECRET", "").strip()
+_ALLOW_REMOTE_KERNEL_RUNNER = os.getenv("SCBE_ALLOW_REMOTE_KERNEL_RUNNER", "") == "1"
+_ALLOW_INSECURE_REMOTE_KERNEL_RUNNER = os.getenv("SCBE_ALLOW_INSECURE_REMOTE_KERNEL_RUNNER", "") == "1"
+_MAX_EXEC_CODE_BYTES = 512 * 1024
+_MAX_KERNEL_RESPONSE_BYTES = 1024 * 1024
+
+
+def _validated_kernel_runner_base_url() -> str:
+    raw = _KERNEL_RUNNER_URL.strip().rstrip("/")
+    parsed = urllib_parse.urlsplit(raw)
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+        raise HTTPException(status_code=503, detail="Kernel runner URL is not configured safely.")
+    if parsed.username or parsed.password or parsed.query or parsed.fragment or parsed.path not in {"", "/"}:
+        raise HTTPException(status_code=503, detail="Kernel runner URL is not configured safely.")
+
+    host = parsed.hostname.lower()
+    is_loopback = host == "localhost"
+    if not is_loopback:
+        try:
+            is_loopback = ipaddress.ip_address(host).is_loopback
+        except ValueError:
+            is_loopback = False
+
+    if not is_loopback and not _ALLOW_REMOTE_KERNEL_RUNNER:
+        raise HTTPException(status_code=503, detail="Remote kernel runner access is disabled.")
+    if not is_loopback and parsed.scheme != "https" and not _ALLOW_INSECURE_REMOTE_KERNEL_RUNNER:
+        raise HTTPException(
+            status_code=503,
+            detail="Remote kernel runner requires HTTPS or an explicit secure-tunnel override.",
+        )
+    return raw
 
 
 @app.post("/v1/execute")
@@ -939,9 +986,12 @@ async def execute_code(req: CodeExecRequest, x_api_key: Optional[str] = Header(N
     memory, and a governance preflight gate.
     """
     _require_key_strict(x_api_key)
-    if req.language not in ("python", "javascript"):
-        raise HTTPException(400, detail=f"Unsupported language: {req.language}")
-    timeout = max(1, min(req.timeout, 30))
+    if not _KERNEL_RUNNER_SHARED_SECRET:
+        raise HTTPException(status_code=503, detail="Kernel runner authentication is not configured.")
+    code_bytes = req.code.encode("utf-8")
+    if len(code_bytes) > _MAX_EXEC_CODE_BYTES:
+        raise HTTPException(status_code=413, detail="Code payload exceeds the execution limit.")
+    timeout = req.timeout
 
     # Build the kernel-runner payload.  The service expects files + packageJson +
     # runCommand.  We wrap the user code in an entry-point file and set the run
@@ -971,21 +1021,76 @@ async def execute_code(req: CodeExecRequest, x_api_key: Optional[str] = Header(N
             "packageJson": pkg,
             "runCommand": run_command,
             "runTimeoutMs": timeout * 1000,
-        }
+        },
+        ensure_ascii=False,
+        separators=(",", ":"),
     ).encode("utf-8")
 
-    url = f"{_KERNEL_RUNNER_URL}/api/run"
+    runner_path = "/api/run"
+    url = f"{_validated_kernel_runner_base_url()}{runner_path}"
+    try:
+        auth_headers = sign_service_request(
+            secret=_KERNEL_RUNNER_SHARED_SECRET,
+            method="POST",
+            path=runner_path,
+            body=payload,
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Kernel runner authentication is not configured safely.",
+        ) from exc
     http_req = urllib_request.Request(
         url=url,
         data=payload,
-        headers={"Content-Type": "application/json"},
+        headers={"Content-Type": "application/json", **auth_headers},
         method="POST",
     )
 
     t0 = time.time()
     try:
-        with urllib_request.urlopen(http_req, timeout=timeout + 10) as resp:
-            body = json.loads(resp.read().decode("utf-8"))
+        # The URL was restricted by _validate_kernel_runner_url above.
+        with urllib_request.urlopen(  # nosec B310
+            http_req, timeout=timeout + 10
+        ) as resp:
+            response_bytes = resp.read(_MAX_KERNEL_RESPONSE_BYTES + 1)
+        if len(response_bytes) > _MAX_KERNEL_RESPONSE_BYTES:
+            raise ValueError("kernel-runner response exceeded limit")
+        body = json.loads(response_bytes.decode("utf-8"))
+        if not isinstance(body, dict):
+            raise ValueError("kernel-runner response must be an object")
+        preflight = body.get("preflight")
+        if not isinstance(preflight, dict):
+            raise ValueError("kernel-runner response has no decision receipt")
+        decision = preflight.get("decision_record")
+        state_vector = preflight.get("state_vector")
+        if not isinstance(decision, dict) or not isinstance(state_vector, dict):
+            raise ValueError("kernel-runner decision receipt is malformed")
+        expected_digest = hashlib.sha256(payload).hexdigest()
+        expected_nonce = auth_headers[AUTH_HEADER_NONCE]
+        if (
+            decision.get("action") != "ALLOW"
+            or decision.get("signature_version") != DECISION_VERSION
+            or decision.get("request_method") != "POST"
+            or decision.get("request_path") != runner_path
+            or decision.get("request_digest") != expected_digest
+            or decision.get("request_nonce") != expected_nonce
+        ):
+            raise ValueError("kernel-runner decision receipt is not bound to this request")
+        if not verify_decision_receipt(
+            secret=_KERNEL_RUNNER_SHARED_SECRET,
+            signature=str(decision.get("signature", "")),
+            request_method=str(decision.get("request_method", "")),
+            request_path=str(decision.get("request_path", "")),
+            request_digest=str(decision.get("request_digest", "")),
+            request_nonce=str(decision.get("request_nonce", "")),
+            timestamp=str(decision.get("timestamp", "")),
+            action=str(decision.get("action", "")),
+            confidence=decision.get("confidence"),
+            state_vector=state_vector,
+            reason=str(decision.get("reason", "")),
+        ):
+            raise ValueError("kernel-runner decision receipt signature is invalid")
         duration_ms = round((time.time() - t0) * 1000)
 
         execute_result = body.get("execute", {})
@@ -1001,9 +1106,13 @@ async def execute_code(req: CodeExecRequest, x_api_key: Optional[str] = Header(N
         duration_ms = round((time.time() - t0) * 1000)
         error_body: Dict[str, Any] = {}
         try:
-            error_body = json.loads(exc.read().decode("utf-8"))
+            error_bytes = exc.read(_MAX_KERNEL_RESPONSE_BYTES + 1)
+            if len(error_bytes) <= _MAX_KERNEL_RESPONSE_BYTES:
+                parsed_error = json.loads(error_bytes.decode("utf-8"))
+                if isinstance(parsed_error, dict):
+                    error_body = parsed_error
         except Exception:
-            pass
+            error_body = {}
         stderr = "kernel-runner upstream error"
         if error_body.get("blocked"):
             stderr = "Governance gate blocked execution."

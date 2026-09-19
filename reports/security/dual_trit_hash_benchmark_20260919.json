@@ -1,0 +1,170 @@
+{
+  "schema": "scbe.dual-trit-hash-benchmark.v1",
+  "generated_at": "2026-09-19T16:01:18.806239+00:00",
+  "construction": {
+    "security_primitive": "SHAKE256",
+    "output_bits": 512,
+    "field": "six fixed balanced trits plus exact inverse rail per byte",
+    "centered_byte_map": "2*b-255",
+    "shells": 128,
+    "directions": 6,
+    "security_boundary": "Dual-trit geometry is a canonical encoding and receipt layout. It contributes no independent entropy or hardness."
+  },
+  "theoretical_generic_bounds": {
+    "classical_collision_bits": 256,
+    "quantum_collision_query_bits_bht_idealized": 170.66666666666666,
+    "quantum_preimage_query_bits_grover_idealized": 256,
+    "note": "Idealized generic-query exponents are not implementation certifications."
+  },
+  "invariants": {
+    "unique_byte_cells": 256,
+    "negative_cells": 128,
+    "positive_cells": 128,
+    "shell_count": 128,
+    "complement_is_exact_inversion": true,
+    "encoded_bytes_for_sample": 783,
+    "sample_payload_bytes": 64,
+    "representation_expansion_ratio": 12.234375
+  },
+  "runs": [
+    {
+      "seed": 11,
+      "cases": 512,
+      "payload_bytes": 64,
+      "direct_avalanche": {
+        "mean": 0.5008544921875,
+        "sample_sd": 0.020897653406176074,
+        "min": 0.439453125,
+        "max": 0.580078125
+      },
+      "dual_root_avalanche": {
+        "mean": 0.5002670288085938,
+        "sample_sd": 0.022981479877723136,
+        "min": 0.431640625,
+        "max": 0.576171875
+      },
+      "radial_root_avalanche": {
+        "mean": 0.5015525817871094,
+        "sample_sd": 0.022578901519925546,
+        "min": 0.427734375,
+        "max": 0.564453125
+      },
+      "direct_observed_collisions": 0,
+      "dual_root_observed_collisions": 0,
+      "radial_root_observed_collisions": 0,
+      "direct_mean_us": 3.2814453125,
+      "dual_root_mean_us": 16.277734375,
+      "radial_root_mean_us": 125.408203125,
+      "dual_root_over_direct_time_ratio": 4.960538063210524,
+      "radial_root_over_direct_time_ratio": 38.2173680138087
+    },
+    {
+      "seed": 29,
+      "cases": 512,
+      "payload_bytes": 64,
+      "direct_avalanche": {
+        "mean": 0.499420166015625,
+        "sample_sd": 0.022567890361357337,
+        "min": 0.41796875,
+        "max": 0.560546875
+      },
+      "dual_root_avalanche": {
+        "mean": 0.500946044921875,
+        "sample_sd": 0.020973582033621672,
+        "min": 0.427734375,
+        "max": 0.5546875
+      },
+      "radial_root_avalanche": {
+        "mean": 0.4979133605957031,
+        "sample_sd": 0.02174506453372438,
+        "min": 0.439453125,
+        "max": 0.560546875
+      },
+      "direct_observed_collisions": 0,
+      "dual_root_observed_collisions": 0,
+      "radial_root_observed_collisions": 0,
+      "direct_mean_us": 7.3501953125,
+      "dual_root_mean_us": 19.056640625,
+      "radial_root_mean_us": 139.534375,
+      "dual_root_over_direct_time_ratio": 2.5926713256981904,
+      "radial_root_over_direct_time_ratio": 18.98376424946191
+    },
+    {
+      "seed": 47,
+      "cases": 512,
+      "payload_bytes": 64,
+      "direct_avalanche": {
+        "mean": 0.49896240234375,
+        "sample_sd": 0.021984215250959283,
+        "min": 0.443359375,
+        "max": 0.583984375
+      },
+      "dual_root_avalanche": {
+        "mean": 0.5012779235839844,
+        "sample_sd": 0.02171366444144306,
+        "min": 0.44140625,
+        "max": 0.576171875
+      },
+      "radial_root_avalanche": {
+        "mean": 0.49761962890625,
+        "sample_sd": 0.022267961760898063,
+        "min": 0.43359375,
+        "max": 0.572265625
+      },
+      "direct_observed_collisions": 0,
+      "dual_root_observed_collisions": 0,
+      "radial_root_observed_collisions": 0,
+      "direct_mean_us": 3.8380859375,
+      "dual_root_mean_us": 18.6603515625,
+      "radial_root_mean_us": 132.49140625,
+      "dual_root_over_direct_time_ratio": 4.861889980153682,
+      "radial_root_over_direct_time_ratio": 34.52017709022442
+    }
+  ],
+  "summary": {
+    "direct_avalanche": {
+      "mean": 0.4997456868489583,
+      "sample_sd": 0.0009871544225226344,
+      "min": 0.49896240234375,
+      "max": 0.5008544921875
+    },
+    "dual_root_avalanche": {
+      "mean": 0.500830332438151,
+      "sample_sd": 0.0005152854508863908,
+      "min": 0.5002670288085938,
+      "max": 0.5012779235839844
+    },
+    "radial_root_avalanche": {
+      "mean": 0.4990285237630208,
+      "sample_sd": 0.0021908266152463004,
+      "min": 0.49761962890625,
+      "max": 0.5015525817871094
+    },
+    "dual_root_minus_direct_avalanche": 0.0010846455891926898,
+    "radial_root_minus_direct_avalanche": -0.0007171630859375,
+    "dual_root_pooled_seed_sd": 0.0007873985489576376,
+    "radial_root_pooled_seed_sd": 0.001699146125555062,
+    "dual_root_within_two_pooled_sd": true,
+    "radial_root_within_two_pooled_sd": true,
+    "direct_total_observed_collisions": 0,
+    "dual_root_total_observed_collisions": 0,
+    "radial_root_total_observed_collisions": 0,
+    "dual_root_over_direct_time_ratio": {
+      "mean": 4.138366456354132,
+      "sample_sd": 1.3395196671840297,
+      "min": 2.5926713256981904,
+      "max": 4.960538063210524
+    },
+    "radial_root_over_direct_time_ratio": {
+      "mean": 30.573769784498342,
+      "sample_sd": 10.206050970281792,
+      "min": 18.98376424946191,
+      "max": 38.2173680138087
+    }
+  },
+  "claim_status": {
+    "functional": "PASS",
+    "cryptographic": "UNPROVEN_CUSTOM_COMPOSITION",
+    "reason": "Round trips, avalanche measurements, and no observed small-sample collisions do not constitute cryptanalysis. Security remains the SHAKE256 assumption."
+  }
+}

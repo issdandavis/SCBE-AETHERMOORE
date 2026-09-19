@@ -159,4 +159,10 @@ checks and test receipts, rather than being inferred from this document.
   package require explicit compatibility testing.
 
 See also [NIST readiness](NIST_READINESS.md) for the broader, partial
-SSDF self-assessment and outstanding assurance work.
+SSDF self-assessment and outstanding assurance work. The follow-up
+[dual-trit polarity research](DUAL_TRIT_POLARITY_COMMITMENT_RESEARCH_20260919.md)
+formalizes the centered multi-sign field while keeping SHAKE256 as its
+cryptographic boundary. The [ML-KEM and ML-DSA hardening review](ML_KEM_ML_DSA_HARDENING_RESEARCH_20260919.md)
+maps that field onto standards-compatible transcript receipts and fault checks.
+The [whole-system agent review](WHOLE_SYSTEM_AGENT_SECURITY_20260919.md) maps
+the same rule through the tool-execution boundary.
