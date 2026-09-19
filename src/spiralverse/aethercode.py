@@ -31,6 +31,9 @@ Features:
 
 import hashlib
 import re
+import hmac
+import json
+import secrets
 import struct
 import numpy as np
 from dataclasses import dataclass, field
@@ -45,7 +48,7 @@ from .rwp2_envelope import (
     RWP2Envelope,
     EnvelopeFactory,
     OperationTier,
-    TONGUE_KEYS,
+    SignatureEngine,
 )
 
 # =============================================================================
@@ -576,8 +579,18 @@ class LedgerHandler(DomainHandler):
     - PROOF <statement>           : Generate proof
     """
 
-    def __init__(self):
+    def __init__(self, signing_key: Optional[bytes] = None):
         super().__init__(TongueID.LEDGER)
+        if signing_key is not None:
+            SignatureEngine({ProtocolTongue.DR: signing_key})
+        self._signing_key = signing_key
+
+    def _mac(self, message: str) -> str:
+        if self._signing_key is None:
+            raise RuntimeError("A configured ledger authentication key is required")
+        return hmac.new(
+            self._signing_key, b"scbe:aether-ledger:v1\0" + message.encode("utf-8"), hashlib.sha256
+        ).hexdigest()
 
     def execute(self, verse: AetherVerse, ctx: AetherContext) -> Any:
         content = verse.content.strip()
@@ -598,11 +611,8 @@ class LedgerHandler(DomainHandler):
         # SIGN command
         if content.startswith("SIGN"):
             message = content[4:].strip().strip("\"'")
-            # Simple HMAC-like signature
-            key = TONGUE_KEYS.get(ProtocolTongue.DR, b"default")
-            sig_input = f"{message}:{key.hex()}"
-            signature = hashlib.sha256(sig_input.encode()).hexdigest()[:32]
-            ctx.emit(f"[LEDGER] Signed: {signature[:16]}...")
+            signature = self._mac(message)
+            ctx.emit(f"[LEDGER] MAC generated: {signature[:16]}...")
             return signature
 
         # PROOF command
@@ -621,10 +631,23 @@ class LedgerHandler(DomainHandler):
 
         # VERIFY command
         if content.startswith("VERIFY"):
-            sig = content[6:].strip()
-            # Simplified verification (always true for demo)
-            ctx.emit(f"[LEDGER] Verified: {sig[:16]}...")
-            return True
+            # VERIFY {"message":"...","mac":"..."}; a tag alone is
+            # insufficient. This is shared-key authentication, not a signature.
+            verified = False
+            try:
+                request = json.loads(content[6:].strip())
+                if (
+                    isinstance(request, dict)
+                    and isinstance(request.get("message"), str)
+                    and isinstance(request.get("mac"), str)
+                    and request["mac"].isascii()
+                    and len(request["mac"]) == 64
+                ):
+                    verified = hmac.compare_digest(request["mac"], self._mac(request["message"]))
+            except (ValueError, TypeError, RuntimeError):
+                verified = False
+            ctx.emit(f"[LEDGER] Verification: {'valid' if verified else 'invalid'}")
+            return verified
 
         return None
 
@@ -767,14 +790,15 @@ class AethercodeInterpreter:
     - RWP2-signed execution proofs
     """
 
-    def __init__(self, synthesize_audio: bool = True):
+    def __init__(self, synthesize_audio: bool = True, signing_keys: Optional[Dict[ProtocolTongue, bytes]] = None):
+        self._envelope_factory = EnvelopeFactory(keys=signing_keys) if signing_keys is not None else None
         self.handlers: Dict[TongueID, DomainHandler] = {
             TongueID.AXIOM: AxiomHandler(),
             TongueID.FLOW: FlowHandler(),
             TongueID.GLYPH: GlyphHandler(),
             TongueID.ORACLE: OracleHandler(),
             TongueID.CHARM: CharmHandler(),
-            TongueID.LEDGER: LedgerHandler(),
+            TongueID.LEDGER: LedgerHandler(signing_key=signing_keys.get(ProtocolTongue.DR) if signing_keys else None),
         }
         self.synthesize_audio = synthesize_audio
         self.synthesizer = ChantSynthesizer() if synthesize_audio else None
@@ -831,8 +855,12 @@ class AethercodeInterpreter:
 
     def export_proof(self, ctx: AetherContext, filename: str = None) -> RWP2Envelope:
         """
-        Generate RWP2-signed proof of execution.
+        Generate a shared-key authenticated receipt of the supplied trace.
+
+        Authentication does not prove that the reported computation occurred.
         """
+        if self._envelope_factory is None:
+            raise RuntimeError("Explicit signing_keys are required to authenticate execution receipts")
         # Build proof payload
         proof_data = {
             "verses": len(ctx.trace),
@@ -844,7 +872,7 @@ class AethercodeInterpreter:
         payload = str(proof_data).encode()
 
         # Create envelope with all tongues used
-        factory = EnvelopeFactory()
+        factory = self._envelope_factory
         tongues_used = [
             (ProtocolTongue[t.value[:2].upper()] if hasattr(ProtocolTongue, t.value[:2].upper()) else ProtocolTongue.KO)
             for t in set(tv.tongue_id for tv in ctx.trace if hasattr(tv, "tongue_id"))
@@ -953,7 +981,8 @@ def demo():
     print()
 
     # Initialize interpreter
-    interpreter = AethercodeInterpreter(synthesize_audio=True)
+    demo_keys = {t: secrets.token_bytes(32) for t in ProtocolTongue}
+    interpreter = AethercodeInterpreter(synthesize_audio=True, signing_keys=demo_keys)
 
     # Demo 1: Hello World
     print("[DEMO 1] Hello World")
@@ -966,7 +995,7 @@ def demo():
     # Demo 2: Fibonacci
     print("[DEMO 2] Fibonacci Structure")
     print("-" * 60)
-    interpreter2 = AethercodeInterpreter(synthesize_audio=True)
+    interpreter2 = AethercodeInterpreter(synthesize_audio=True, signing_keys=demo_keys)
     ctx2 = interpreter2.execute_source(FIBONACCI, "Fibonacci")
     for line in ctx2.output:
         print(f"  {line}")
@@ -975,7 +1004,7 @@ def demo():
     # Demo 3: Full Six-Tongue Demo
     print("[DEMO 3] Full Six-Tongue Composition")
     print("-" * 60)
-    interpreter3 = AethercodeInterpreter(synthesize_audio=True)
+    interpreter3 = AethercodeInterpreter(synthesize_audio=True, signing_keys=demo_keys)
     ctx3 = interpreter3.execute_source(FULL_DEMO, "Six Tongues Symphony")
     for line in ctx3.output:
         print(f"  {line}")

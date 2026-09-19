@@ -22,7 +22,7 @@ around them. That can be useful without claiming a new secure hash primitive.
 | `src/crypto/sacred_eggs.py` | SHA-256 shells, HMAC/HKDF-SHA256 and a sorted three-shell binding | Commitments, derivation and contextual binding. Three shells do not imply triple security. Showing a secret to a verifier is not a zero-knowledge proof. |
 | `packages/kernel/src/tBraid.ts` | Derived temporal variants, weighted hyperbolic distances and an exponential score | A routing/geometry measure, not a cryptographic hash or signature. |
 | `python/scbe/elastic_bijective_hash.py` | Reversible SplitMix64-based mapping with a double-hashed lookup table | Indexing and memory lookup. Not a collision-resistant security primitive. |
-| `src/spiralverse/rwp2_envelope.py` | Per-tongue HMAC-SHA256 | Shared-secret authentication, not public-key signatures. Further blockers are listed below. |
+| `src/spiralverse/rwp2_envelope.py` | Per-tongue, domain-separated HMAC-SHA256 with explicit keys and a canonical envelope | Shared-secret authentication, not public-key signatures. Freshness state is process-local. |
 | Both `spiral_seal/signatures.py` copies | Native liboqs ML-DSA-65 when available, or legacy Dilithium3; explicitly enabled Ed25519 for development | Actual signing. Ed25519 development mode is classical, not PQ-secure. A standard algorithm alone does not establish FIPS module validation. |
 
 ## Confirmed signing and vault defects repaired
@@ -64,14 +64,15 @@ encryption does not prove that derivation secure or repair low-entropy secrets.
 
 ## Remaining blockers and limits
 
-- RWP2 currently defaults to deterministic, source-visible tongue keys. Its
-  `|`-joined MAC input is ambiguous for fields containing delimiters, and omits
-  `kid`, `tier` and `version`. Empty required-tongue sets can pass vacuously.
-  Do not deploy this legacy path as an authentication boundary until the full
-  key provisioning and canonical-input contract is repaired and tested.
-- Aethercode's `LEDGER SIGN` is a truncated SHA-256 composition with a demo key,
-  not HMAC or public-key signing. Its execution-proof caller also uses the legacy
-  RWP2 defaults. Interpreter output must not be treated as security proof.
+- Custom derivation and braid constructions still need independent
+  cryptanalysis. Passing functional/tamper tests cannot establish hardness.
+- RWP2 replay state is per process and does not survive restarts. Deployments
+  with multiple workers need a shared atomic freshness store. Key provisioning,
+  rotation, custody and policy selection remain operator responsibilities.
+  Possessing multiple tongue keys does not establish multiple independent actors.
+- Aethercode's authenticated receipt only authenticates the supplied trace.
+  It does not prove execution or truth. Its `PROOF` command still builds a
+  descriptive trace summary, not a formal or cryptographic computation proof.
 - `create_session_egg` derives its yolk from the session ID. If that ID is public,
   the yolk is public too. It is suitable as a deterministic identifier, not an
   independently secret authentication credential.
@@ -82,6 +83,44 @@ encryption does not prove that derivation secure or repair low-entropy secrets.
 - Rehashing, additional tongues, nested decimal coordinates and longer encodings
   do not create fresh secret entropy. Geometry may route a decision but cannot
   authorize a missing or invalid signature.
+
+## Connected RWP2 and Aethercode repair
+
+Follow-up inspection reproduced eight concrete bad outcomes on the pre-repair
+commit: authentication with public demo keys; accepted changes to key ID, tier
+and version; accepted delimiter redistribution; accepted empty required signer
+sets; replay after eviction of a live cache record; and `LEDGER VERIFY nonsense`
+returning true. The corrected contract is:
+
+- `SignatureEngine(keys=...)` and `EnvelopeFactory(keys=...)` require explicitly
+  supplied, nonempty keys. Source-visible historical demo keys are rejected.
+  Keys are copied so later caller dictionary changes cannot switch the verifier.
+- MAC revision 2 encodes typed fields as canonical JSON, binary payload as
+  Base64URL, and authenticates every field including `kid`, `tier` and `version`.
+  Each tongue has its own domain label. Old delimiter-based tags are rejected.
+- Every tier's minimum signers must verify. An explicit required set may add
+  requirements, but cannot remove the tier minimum or be empty. Missing signing
+  keys raise instead of silently creating a partial result.
+- The factory verifies the MAC before consuming a nonce. A lock makes check and
+  record atomic within one process. A full replay cache rejects new work instead
+  of evicting unexpired receipts and allowing replays.
+- Aethercode accepts `signing_keys=...` for authenticated operations. Without
+  keys ordinary interpretation works, but signing/receipt export rejects and
+  verification returns false. `LEDGER SIGN` uses HMAC-SHA256 with a ledger domain.
+  `LEDGER VERIFY {"message":"hello","mac":"<64 hex characters>"}` checks that
+  exact message. Demonstrations explicitly create ephemeral random keys.
+
+These are deliberate compatibility breaks for insecure defaults and tags.
+Provision keys from a secret store, update all communicating peers, and issue
+fresh envelopes; do not add an acceptance fallback for the old format. The
+`TONGUE_KEYS` symbol remains importable only as historical public demo data and
+must not be used as a secret. No existing secret store is modified by this patch.
+
+`tests/security/test_rwp2_authentication_contract.py` covers both failures and
+ordinary operation, all four tiers, Unicode, binary payloads, wrong keys,
+tampered headers, malformed tags and concurrent replay. Together with the
+canonical-registry and full-system checks, the focused follow-up had 39 passing
+tests. The full-system test's broad title is not a certification claim.
 
 ## Reproduction and validation
 

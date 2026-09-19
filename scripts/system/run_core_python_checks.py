@@ -31,6 +31,7 @@ CORE_SMOKE_PATHS: tuple[str, ...] = (
     "tests/governance/test_full_system_decision_precedence.py",
     "tests/security/test_breathing_and_backend_contracts.py",
     "tests/security/test_braid_signature_integrity.py",
+    "tests/security/test_rwp2_authentication_contract.py",
     "tests/test_sacred_eggs.py",
     "tests/test_sacred_egg_registry.py",
     "tests/test_semantic_projector_deep.py",
