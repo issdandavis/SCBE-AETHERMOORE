@@ -132,10 +132,14 @@ def test_composition_aware_router_selects_coverage_over_cheap_blind_clones() -> 
     assert decision.control_cost == pytest.approx(2 * 0.005 + 2 * 0.08)
 
 
-def test_composition_aware_router_holds_when_no_roster_meets_coverage_contract() -> None:
+def test_composition_aware_router_holds_when_no_roster_meets_coverage_contract() -> (
+    None
+):
     clone, _partial, _full = fixtures()
     coordinator = FleetCompositionCoordinator([clone])
-    task = FleetTask("blind", axis(5), required_governance_tier="KO", minimum_coverage=0.9)
+    task = FleetTask(
+        "blind", axis(5), required_governance_tier="KO", minimum_coverage=0.9
+    )
 
     decision = coordinator.select(
         task,
@@ -152,12 +156,30 @@ def test_composition_aware_router_holds_when_no_roster_meets_coverage_contract()
 def test_composition_aware_router_prefers_a_deadline_valid_roster() -> None:
     slow = FleetComposition(
         "slow",
-        (FleetMember("slow-member", "KO", axis(0), base_cost=0.1, reliability=1.0, latency_ticks=20),),
+        (
+            FleetMember(
+                "slow-member",
+                "KO",
+                axis(0),
+                base_cost=0.1,
+                reliability=1.0,
+                latency_ticks=20,
+            ),
+        ),
         "KO",
     )
     fast = FleetComposition(
         "fast",
-        (FleetMember("fast-member", "KO", axis(0), base_cost=2.0, reliability=1.0, latency_ticks=1),),
+        (
+            FleetMember(
+                "fast-member",
+                "KO",
+                axis(0),
+                base_cost=2.0,
+                reliability=1.0,
+                latency_ticks=1,
+            ),
+        ),
         "KO",
     )
     task = FleetTask("urgent", axis(0), deadline_ticks=5)
@@ -175,7 +197,11 @@ def test_composition_aware_router_prefers_a_deadline_valid_roster() -> None:
 def test_stability_guard_holds_a_valid_roster_until_minimum_dwell() -> None:
     expensive = FleetComposition(
         "expensive",
-        (FleetMember("expensive-member", "KO", axis(0), base_cost=5.0, reliability=1.0),),
+        (
+            FleetMember(
+                "expensive-member", "KO", axis(0), base_cost=5.0, reliability=1.0
+            ),
+        ),
         "KO",
     )
     cheap = FleetComposition(
@@ -247,21 +273,31 @@ def test_decision_receipt_is_deterministic() -> None:
 def test_custody_retransmit_converges_while_permanent_loss_does_not() -> None:
     _clone, _partial, full = fixtures()
     tasks = [
-        FleetTask(f"task-{idx}", axis(idx % 6), required_governance_tier="KO", deadline_ticks=50) for idx in range(12)
+        FleetTask(
+            f"task-{idx}",
+            axis(idx % 6),
+            required_governance_tier="KO",
+            deadline_ticks=50,
+        )
+        for idx in range(12)
     ]
 
     custody = simulate_mission(
         [full],
         tasks,
         policy=CoordinationPolicy.STICKY,
-        network=NetworkCondition("custody", drop_probability=1.0, custody_retransmit=True),
+        network=NetworkCondition(
+            "custody", drop_probability=1.0, custody_retransmit=True
+        ),
         seed=7,
     )
     loss = simulate_mission(
         [full],
         tasks,
         policy=CoordinationPolicy.STICKY,
-        network=NetworkCondition("loss", drop_probability=1.0, custody_retransmit=False),
+        network=NetworkCondition(
+            "loss", drop_probability=1.0, custody_retransmit=False
+        ),
         seed=7,
     )
 
@@ -273,10 +309,88 @@ def test_custody_retransmit_converges_while_permanent_loss_does_not() -> None:
     assert loss.completed == 0
 
 
+def test_presynchronized_relay_keeps_local_work_running_through_blackout() -> None:
+    _clone, _partial, full = fixtures()
+    local_task = FleetTask("local", axis(0), deadline_ticks=5)
+    remote_task = FleetTask(
+        "remote",
+        axis(0),
+        deadline_ticks=5,
+        requires_remote_round_trip=True,
+    )
+    dependent = NetworkCondition(
+        "dependent",
+        base_delay_ticks=4,
+        blackout_ticks=20,
+        custody_retransmit=True,
+        store_carry_forward=True,
+    )
+    relay = NetworkCondition(
+        "relay",
+        base_delay_ticks=4,
+        blackout_ticks=20,
+        custody_retransmit=True,
+        presynchronized_local_autonomy=True,
+        store_carry_forward=True,
+    )
+
+    blocked = simulate_mission(
+        [full],
+        [local_task],
+        policy=CoordinationPolicy.STICKY,
+        network=dependent,
+        seed=7,
+    )
+    autonomous = simulate_mission(
+        [full], [local_task], policy=CoordinationPolicy.STICKY, network=relay, seed=7
+    )
+    remote = simulate_mission(
+        [full], [remote_task], policy=CoordinationPolicy.STICKY, network=relay, seed=7
+    )
+
+    assert blocked.completed == 0
+    assert blocked.deadline_misses == 1
+    assert autonomous.completed == 1
+    assert autonomous.buffered_bundles == 1
+    assert autonomous.autonomous_blackout_tasks == 1
+    assert autonomous.state_converged is True
+    assert remote.completed == 0
+    assert remote.deadline_misses == 1
+    assert remote.remote_round_trip_tasks == 1
+
+
+def test_local_execution_survives_lost_receipt_but_reports_state_divergence() -> None:
+    _clone, _partial, full = fixtures()
+    local_task = FleetTask("local", axis(0), deadline_ticks=5)
+    disconnected = NetworkCondition(
+        "disconnected",
+        drop_probability=1.0,
+        presynchronized_local_autonomy=True,
+    )
+
+    result = simulate_mission(
+        [full],
+        [local_task],
+        policy=CoordinationPolicy.STICKY,
+        network=disconnected,
+        seed=7,
+    )
+
+    assert result.completed == 1
+    assert result.permanent_losses == 1
+    assert result.state_converged is False
+
+
 def test_duplicate_delivery_is_deduplicated_and_simulation_replays_exactly() -> None:
     _clone, _partial, full = fixtures()
     tasks = [
-        FleetTask(f"task-{idx}", axis(idx % 6), required_governance_tier="KO", deadline_ticks=50) for idx in range(18)
+        FleetTask(
+            f"task-{idx}",
+            axis(idx % 6),
+            required_governance_tier="KO",
+            deadline_ticks=50,
+        )
+        for idx in range(18)
     ]
     network = NetworkCondition("duplicates", duplicate_probability=1.0)
 

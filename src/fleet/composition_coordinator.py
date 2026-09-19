@@ -115,7 +115,9 @@ class FleetComposition:
 
     @property
     def base_cost(self) -> float:
-        return self.fixed_overhead + sum(member.effective_cost for member in self.members)
+        return self.fixed_overhead + sum(
+            member.effective_cost for member in self.members
+        )
 
     @property
     def mean_reliability(self) -> float:
@@ -138,6 +140,7 @@ class FleetTask:
     inertia: float = 0.2
     deadline_ticks: int = 20
     minimum_coverage: float = 0.80
+    requires_remote_round_trip: bool = False
 
     def __post_init__(self) -> None:
         if not self.task_id:
@@ -148,7 +151,9 @@ class FleetTask:
             _validate_vector(self.requirement_vector, name="requirement_vector"),
         )
         if self.required_governance_tier not in GOVERNANCE_TIERS:
-            raise ValueError(f"unknown governance tier: {self.required_governance_tier}")
+            raise ValueError(
+                f"unknown governance tier: {self.required_governance_tier}"
+            )
         if not math.isfinite(self.work_units) or self.work_units <= 0.0:
             raise ValueError("work_units must be finite and positive")
         if not 0.0 <= self.risk <= 1.0 or not 0.0 <= self.inertia <= 1.0:
@@ -157,6 +162,8 @@ class FleetTask:
             raise ValueError("deadline_ticks must be positive")
         if not 0.0 <= self.minimum_coverage <= 1.0:
             raise ValueError("minimum_coverage must be in [0, 1]")
+        if not isinstance(self.requires_remote_round_trip, bool):
+            raise ValueError("requires_remote_round_trip must be boolean")
 
 
 @dataclass(frozen=True)
@@ -170,15 +177,25 @@ class NetworkCondition:
     reorder_probability: float = 0.0
     custody_retransmit: bool = False
     blackout_ticks: int = 0
+    presynchronized_local_autonomy: bool = False
+    store_carry_forward: bool = False
 
     def __post_init__(self) -> None:
         if not self.name:
             raise ValueError("network condition name is required")
         if self.base_delay_ticks < 0 or self.blackout_ticks < 0:
             raise ValueError("network delays cannot be negative")
-        for name in ("duplicate_probability", "drop_probability", "reorder_probability"):
+        for name in (
+            "duplicate_probability",
+            "drop_probability",
+            "reorder_probability",
+        ):
             if not 0.0 <= getattr(self, name) <= 1.0:
                 raise ValueError(f"{name} must be in [0, 1]")
+        if not isinstance(self.presynchronized_local_autonomy, bool):
+            raise ValueError("presynchronized_local_autonomy must be boolean")
+        if not isinstance(self.store_carry_forward, bool):
+            raise ValueError("store_carry_forward must be boolean")
 
 
 @dataclass(frozen=True)
@@ -255,6 +272,9 @@ class MissionMetrics:
     transmissions: int
     duplicates: int
     retransmissions: int
+    buffered_bundles: int
+    remote_round_trip_tasks: int
+    autonomous_blackout_tasks: int
     execution_cost: float
     transition_cost: float
     control_cost: float
@@ -269,7 +289,9 @@ class MissionMetrics:
 def composition_geometry(composition: FleetComposition) -> CompositionGeometry:
     """Return rank, blind dimensions, dilution, and row-space projector."""
 
-    basis = np.asarray([member.capability_vector for member in composition.members], dtype=float)
+    basis = np.asarray(
+        [member.capability_vector for member in composition.members], dtype=float
+    )
     _u, singular, vt = np.linalg.svd(basis, full_matrices=True)
     rank = int(np.sum(singular > _RANK_TOL))
     if rank:
@@ -334,7 +356,9 @@ def transition_measure(
     source_projector = np.asarray(source_geometry.projector, dtype=float)
     destination_projector = np.asarray(destination_geometry.projector, dtype=float)
     denominator = max(source_geometry.rank, destination_geometry.rank, 1)
-    alignment = _clamp01(float(np.trace(source_projector @ destination_projector)) / denominator)
+    alignment = _clamp01(
+        float(np.trace(source_projector @ destination_projector)) / denominator
+    )
 
     stability = _clamp01(0.50 * retained + 0.20 * warmed + 0.30 * alignment)
     cost = destination.base_cost * (1.0 - stability) * (0.5 + _clamp01(inertia))
@@ -342,9 +366,9 @@ def transition_measure(
 
 
 def _tier_allows(composition: FleetComposition, task: FleetTask) -> bool:
-    return GOVERNANCE_TIERS.index(composition.max_governance_tier) >= GOVERNANCE_TIERS.index(
-        task.required_governance_tier
-    )
+    return GOVERNANCE_TIERS.index(
+        composition.max_governance_tier
+    ) >= GOVERNANCE_TIERS.index(task.required_governance_tier)
 
 
 def _deadline_duration(
@@ -353,15 +377,22 @@ def _deadline_duration(
     transition: TransitionMeasure,
     network: NetworkCondition,
 ) -> int:
-    transition_ticks = math.ceil((1.0 - transition.stability) * 5.0 * (1.0 + task.inertia))
+    transition_ticks = math.ceil(
+        (1.0 - transition.stability) * 5.0 * (1.0 + task.inertia)
+    )
     work_ticks = math.ceil(task.work_units)
-    reorder_ticks = 1 if network.reorder_probability > 0.0 else 0
+    requires_live_link = (
+        task.requires_remote_round_trip or not network.presynchronized_local_autonomy
+    )
+    link_delay_ticks = network.base_delay_ticks if requires_live_link else 0
+    blackout_delay_ticks = network.blackout_ticks if requires_live_link else 0
+    reorder_ticks = 1 if requires_live_link and network.reorder_probability > 0.0 else 0
     return (
         composition.max_latency_ticks
         + work_ticks
         + transition_ticks
-        + network.base_delay_ticks
-        + network.blackout_ticks
+        + link_delay_ticks
+        + blackout_delay_ticks
         + reorder_ticks
     )
 
@@ -413,7 +444,9 @@ def assess_candidate(
 
 
 def _canonical_digest(payload: dict[str, object]) -> str:
-    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("utf-8")
+    encoded = json.dumps(
+        payload, sort_keys=True, separators=(",", ":"), allow_nan=False
+    ).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
 
 
@@ -431,13 +464,17 @@ class FleetCompositionCoordinator:
     }
 
     def __init__(self, compositions: Iterable[FleetComposition]):
-        ordered = sorted(compositions, key=lambda composition: composition.composition_id)
+        ordered = sorted(
+            compositions, key=lambda composition: composition.composition_id
+        )
         if not ordered:
             raise ValueError("at least one composition is required")
         if len({composition.composition_id for composition in ordered}) != len(ordered):
             raise ValueError("composition IDs must be unique")
         self.compositions = tuple(ordered)
-        self._by_id = {composition.composition_id: composition for composition in ordered}
+        self._by_id = {
+            composition.composition_id: composition for composition in ordered
+        }
         self._round_robin_cursor = 0
 
     def get(self, composition_id: str | None) -> FleetComposition | None:
@@ -454,10 +491,15 @@ class FleetCompositionCoordinator:
     ) -> CoordinationDecision:
         previous = self.get(previous_composition_id)
         governance_checks = len(self.compositions)
-        eligible = [composition for composition in self.compositions if _tier_allows(composition, task)]
+        eligible = [
+            composition
+            for composition in self.compositions
+            if _tier_allows(composition, task)
+        ]
         if not eligible:
             payload = {
                 "task_id": task.task_id,
+                "requires_remote_round_trip": task.requires_remote_round_trip,
                 "policy": policy.value,
                 "outcome": "DENY",
                 "reason": "no_governance_eligible_composition",
@@ -480,7 +522,9 @@ class FleetCompositionCoordinator:
             selected = (
                 previous
                 if previous in eligible
-                else min(eligible, key=lambda item: (item.base_cost, item.composition_id))
+                else min(
+                    eligible, key=lambda item: (item.base_cost, item.composition_id)
+                )
             )
             assessments = (assess_candidate(selected, task, previous, network),)
         elif policy is CoordinationPolicy.ROUND_ROBIN:
@@ -495,7 +539,10 @@ class FleetCompositionCoordinator:
                     break
             assessments = (assess_candidate(selected, task, previous, network),)
         else:
-            assessments = tuple(assess_candidate(candidate, task, previous, network) for candidate in eligible)
+            assessments = tuple(
+                assess_candidate(candidate, task, previous, network)
+                for candidate in eligible
+            )
             if policy is CoordinationPolicy.DISTANCE:
                 selected_id = min(
                     assessments,
@@ -503,7 +550,9 @@ class FleetCompositionCoordinator:
                 ).composition_id
             else:
                 coverage_valid = tuple(
-                    row for row in assessments if row.task_fit.coverage + 1e-12 >= task.minimum_coverage
+                    row
+                    for row in assessments
+                    if row.task_fit.coverage + 1e-12 >= task.minimum_coverage
                 )
                 if not coverage_valid:
                     candidate_evaluations = len(assessments)
@@ -513,6 +562,7 @@ class FleetCompositionCoordinator:
                     )
                     payload = {
                         "task_id": task.task_id,
+                        "requires_remote_round_trip": task.requires_remote_round_trip,
                         "policy": policy.value,
                         "outcome": "HOLD",
                         "reason": "no_composition_meets_coverage_contract",
@@ -535,28 +585,42 @@ class FleetCompositionCoordinator:
                         assessments=assessments,
                         receipt_digest=_canonical_digest(payload),
                     )
-                deadline_valid = tuple(row for row in coverage_valid if row.deadline_overrun_ticks == 0)
+                deadline_valid = tuple(
+                    row for row in coverage_valid if row.deadline_overrun_ticks == 0
+                )
                 adaptive_pool = deadline_valid or coverage_valid
                 best = min(
                     adaptive_pool,
                     key=lambda row: (row.adaptive_objective, row.composition_id),
                 )
                 selected_id = best.composition_id
-                if policy is CoordinationPolicy.STABILITY_GUARDED and previous is not None:
+                if (
+                    policy is CoordinationPolicy.STABILITY_GUARDED
+                    and previous is not None
+                ):
                     previous_assessment = next(
-                        (row for row in adaptive_pool if row.composition_id == previous.composition_id),
+                        (
+                            row
+                            for row in adaptive_pool
+                            if row.composition_id == previous.composition_id
+                        ),
                         None,
                     )
-                    if previous_assessment is not None and previous_dwell_tasks < self.MINIMUM_DWELL_TASKS:
+                    if (
+                        previous_assessment is not None
+                        and previous_dwell_tasks < self.MINIMUM_DWELL_TASKS
+                    ):
                         selected_id = previous.composition_id
             selected = self._by_id[selected_id]
 
         candidate_evaluations = len(assessments)
         control_cost = (
-            governance_checks * self.GOVERNANCE_CHECK_COST + candidate_evaluations * self.EVALUATION_COST[policy]
+            governance_checks * self.GOVERNANCE_CHECK_COST
+            + candidate_evaluations * self.EVALUATION_COST[policy]
         )
         payload = {
             "task_id": task.task_id,
+            "requires_remote_round_trip": task.requires_remote_round_trip,
             "policy": policy.value,
             "selected": selected.composition_id,
             "previous": previous_composition_id,
@@ -616,12 +680,17 @@ def simulate_mission(
     completed = governance_denials = capability_misses = deadline_misses = 0
     execution_failures = permanent_losses = 0
     transitions = governance_checks = candidate_evaluations = 0
-    transmissions = duplicates = retransmissions = 0
+    transmissions = duplicates = retransmissions = buffered_bundles = 0
+    remote_round_trip_tasks = autonomous_blackout_tasks = 0
     execution_cost = transition_cost = control_cost = network_cost = 0.0
     transition_stabilities: list[float] = []
     utilization = {composition.composition_id: 0 for composition in compositions}
 
     for task in tasks:
+        if task.requires_remote_round_trip:
+            remote_round_trip_tasks += 1
+        elif network.blackout_ticks > 0 and network.presynchronized_local_autonomy:
+            autonomous_blackout_tasks += 1
         decision = coordinator.select(
             task,
             policy=policy,
@@ -641,7 +710,11 @@ def simulate_mission(
 
         selected = coordinator.get(decision.selected_composition_id)
         assert selected is not None
-        selected_assessment = next(row for row in decision.assessments if row.composition_id == selected.composition_id)
+        selected_assessment = next(
+            row
+            for row in decision.assessments
+            if row.composition_id == selected.composition_id
+        )
         utilization[selected.composition_id] += 1
         if previous_id is not None and previous_id != selected.composition_id:
             transitions += 1
@@ -653,9 +726,20 @@ def simulate_mission(
             dwell_tasks = 1
         previous_id = selected.composition_id
 
+        if network.blackout_ticks > 0 and network.store_carry_forward:
+            buffered_bundles += 1
+            network_cost += 0.01 * task.work_units
+
         transmissions += 1
         network_cost += 0.05 * task.work_units
-        dropped = _stable_unit(seed, network.name, task.task_id, "drop") < network.drop_probability
+        requires_live_link = (
+            task.requires_remote_round_trip
+            or not network.presynchronized_local_autonomy
+        )
+        dropped = (
+            _stable_unit(seed, network.name, task.task_id, "drop")
+            < network.drop_probability
+        )
         if dropped:
             if network.custody_retransmit:
                 retransmissions += 1
@@ -663,9 +747,13 @@ def simulate_mission(
                 network_cost += 0.05 * task.work_units
             else:
                 permanent_losses += 1
-                continue
+                if requires_live_link:
+                    continue
 
-        if _stable_unit(seed, network.name, task.task_id, "duplicate") < network.duplicate_probability:
+        if (
+            _stable_unit(seed, network.name, task.task_id, "duplicate")
+            < network.duplicate_probability
+        ):
             duplicates += 1
             transmissions += 1
             network_cost += 0.05 * task.work_units
@@ -677,7 +765,7 @@ def simulate_mission(
             continue
 
         duration = selected_assessment.estimated_duration_ticks
-        if dropped and network.custody_retransmit:
+        if dropped and network.custody_retransmit and requires_live_link:
             duration += network.base_delay_ticks + 1
         if duration > task.deadline_ticks:
             deadline_misses += 1
@@ -691,12 +779,19 @@ def simulate_mission(
             * (0.75 + 0.25 * selected_assessment.transition.stability)
             * (1.0 - 0.20 * task.risk * fit.blind_residual)
         )
-        if _stable_unit(seed, task.task_id, selected.composition_id, "execute") <= success_probability:
+        if (
+            _stable_unit(seed, task.task_id, selected.composition_id, "execute")
+            <= success_probability
+        ):
             completed += 1
         else:
             execution_failures += 1
 
-    mean_stability = sum(transition_stabilities) / len(transition_stabilities) if transition_stabilities else 1.0
+    mean_stability = (
+        sum(transition_stabilities) / len(transition_stabilities)
+        if transition_stabilities
+        else 1.0
+    )
     instability = sum(1.0 - value for value in transition_stabilities)
     total_cost = execution_cost + transition_cost + control_cost + network_cost
     return MissionMetrics(
@@ -721,6 +816,9 @@ def simulate_mission(
         transmissions=transmissions,
         duplicates=duplicates,
         retransmissions=retransmissions,
+        buffered_bundles=buffered_bundles,
+        remote_round_trip_tasks=remote_round_trip_tasks,
+        autonomous_blackout_tasks=autonomous_blackout_tasks,
         execution_cost=execution_cost,
         transition_cost=transition_cost,
         control_cost=control_cost,

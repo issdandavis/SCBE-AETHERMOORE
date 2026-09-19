@@ -62,6 +62,10 @@ _Verified 2026-06-16: `scbe -V` → `scbe 4.2.1`; CLI smoke green; wheel install
 - **M-TEF research packet** — `docs/research/mtef_research_compendium_2026-06-17.md`
   and the linked PDF preserve the Magneto-Triboelectric Fluid Cell literature synthesis.
   Treat it as concept/prototype evidence, not proof of a working device.
+- **Magnetic pocket routing / wafer boundary** —
+  `docs/specs/MAGNETIC_POCKET_ROUTING_WAFER_RESEARCH_20260919.md` maps the existing
+  magnetic-logic, ferrofluid-control, and wafer-router work to published physical-computing
+  results and a gated tabletop-to-chip validation ladder.
 - **Space life-support animals packet** —
   `docs/research/space_life_support_animals_husbandry_energy_2026-06-17.md` captures the
   animal-husbandry / micro-energy idea as an Idea Seed with required source, welfare,

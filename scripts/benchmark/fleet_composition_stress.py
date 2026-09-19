@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Multi-seed stress benchmark for SCBE fleet composition coordination.
 
-The benchmark compares four policies on identical tasks and network events:
+The benchmark compares five policies on identical tasks and network events:
 
 * sticky: keep the current eligible roster (no-recomposition baseline)
 * round_robin: rotate through governance-eligible rosters
@@ -43,8 +43,10 @@ from src.fleet.composition_coordinator import (  # noqa: E402
     simulate_mission,
 )
 
-SCHEMA_VERSION = "scbe_fleet_composition_stress_v1"
-DEFAULT_OUTPUT = REPO_ROOT / "artifacts" / "benchmarks" / "fleet_composition" / "latest_report.json"
+SCHEMA_VERSION = "scbe_fleet_composition_stress_v2"
+DEFAULT_OUTPUT = (
+    REPO_ROOT / "artifacts" / "benchmarks" / "fleet_composition" / "latest_report.json"
+)
 DEFAULT_SEEDS = (7, 11, 19, 23, 31, 43, 59, 71, 83)
 
 
@@ -114,7 +116,9 @@ def build_compositions() -> list[FleetComposition]:
             fixed_overhead=0.16,
         ),
         FleetComposition("differentiated_5", differentiated, "UM", fixed_overhead=0.24),
-        FleetComposition("full_spectrum_6", differentiated + (scout,), "DR", fixed_overhead=0.30),
+        FleetComposition(
+            "full_spectrum_6", differentiated + (scout,), "DR", fixed_overhead=0.30
+        ),
     ]
 
 
@@ -137,7 +141,9 @@ def build_tasks(seed: int, count: int) -> list[FleetTask]:
     tasks: list[FleetTask] = []
     for idx in range(count):
         base_vector, tier = TASK_TEMPLATES[idx % len(TASK_TEMPLATES)]
-        vector = tuple(value + (rng.uniform(0.0, 0.12) if value else 0.0) for value in base_vector)
+        vector = tuple(
+            value + (rng.uniform(0.0, 0.12) if value else 0.0) for value in base_vector
+        )
         work_units = round(rng.uniform(1.0, 4.0), 3)
         risk = round(rng.uniform(0.05, 0.95), 3)
         inertia = round(rng.uniform(0.05, 0.95), 3)
@@ -152,6 +158,7 @@ def build_tasks(seed: int, count: int) -> list[FleetTask]:
                 inertia=inertia,
                 deadline_ticks=deadline,
                 minimum_coverage=0.82,
+                requires_remote_round_trip=idx % 8 == 0,
             )
         )
     return tasks
@@ -163,7 +170,9 @@ def network_scenarios() -> tuple[NetworkCondition, ...]:
     return (
         NetworkCondition("nominal"),
         NetworkCondition("delay_reorder", base_delay_ticks=4, reorder_probability=0.65),
-        NetworkCondition("duplicate_bundles", base_delay_ticks=2, duplicate_probability=0.40),
+        NetworkCondition(
+            "duplicate_bundles", base_delay_ticks=2, duplicate_probability=0.40
+        ),
         NetworkCondition(
             "loss_with_custody",
             base_delay_ticks=3,
@@ -172,12 +181,23 @@ def network_scenarios() -> tuple[NetworkCondition, ...]:
             custody_retransmit=True,
         ),
         NetworkCondition(
-            "blackout_with_custody",
+            "blackout_roundtrip_dependent",
             base_delay_ticks=4,
             drop_probability=0.60,
             reorder_probability=0.50,
             custody_retransmit=True,
-            blackout_ticks=10,
+            blackout_ticks=14,
+            store_carry_forward=True,
+        ),
+        NetworkCondition(
+            "blackout_with_relay_custody",
+            base_delay_ticks=4,
+            drop_probability=0.60,
+            reorder_probability=0.50,
+            custody_retransmit=True,
+            blackout_ticks=14,
+            presynchronized_local_autonomy=True,
+            store_carry_forward=True,
         ),
         NetworkCondition(
             "permanent_loss_no_custody",
@@ -204,7 +224,9 @@ def _metric_summary(values: Sequence[float]) -> dict[str, float | int | None]:
 def _group_summary(rows: Sequence[MissionMetrics]) -> dict[str, Any]:
     numeric = {
         "completion_rate": [row.completion_rate for row in rows],
-        "cost_per_completed": [row.cost_per_completed for row in rows if row.cost_per_completed is not None],
+        "cost_per_completed": [
+            row.cost_per_completed for row in rows if row.cost_per_completed is not None
+        ],
         "total_cost": [row.total_cost for row in rows],
         "transition_instability": [row.transition_instability for row in rows],
         "mean_transition_stability": [row.mean_transition_stability for row in rows],
@@ -213,6 +235,11 @@ def _group_summary(rows: Sequence[MissionMetrics]) -> dict[str, Any]:
         "deadline_misses": [float(row.deadline_misses) for row in rows],
         "capability_misses": [float(row.capability_misses) for row in rows],
         "permanent_losses": [float(row.permanent_losses) for row in rows],
+        "buffered_bundles": [float(row.buffered_bundles) for row in rows],
+        "remote_round_trip_tasks": [float(row.remote_round_trip_tasks) for row in rows],
+        "autonomous_blackout_tasks": [
+            float(row.autonomous_blackout_tasks) for row in rows
+        ],
         "utilization_fairness": [row.utilization_fairness for row in rows],
     }
     return {name: _metric_summary(values) for name, values in numeric.items()}
@@ -233,8 +260,12 @@ def _effect(
         return {
             "metric": metric,
             "higher_is_better": higher_is_better,
-            "custom_mean": round(statistics.fmean(custom_values), 9) if custom_values else None,
-            "baseline_mean": round(statistics.fmean(baseline_values), 9) if baseline_values else None,
+            "custom_mean": (
+                round(statistics.fmean(custom_values), 9) if custom_values else None
+            ),
+            "baseline_mean": (
+                round(statistics.fmean(baseline_values), 9) if baseline_values else None
+            ),
             "raw_delta": None,
             "directed_delta": None,
             "pooled_sd": None,
@@ -321,12 +352,19 @@ def run_benchmark(seeds: Sequence[int], tasks_per_seed: int) -> dict[str, Any]:
                 )
 
     by_policy = {
-        policy.value: _group_summary([row for row in rows if row.policy == policy.value]) for policy in policies
+        policy.value: _group_summary(
+            [row for row in rows if row.policy == policy.value]
+        )
+        for policy in policies
     }
     by_scenario = {
         network.name: {
             policy.value: _group_summary(
-                [row for row in rows if row.network == network.name and row.policy == policy.value]
+                [
+                    row
+                    for row in rows
+                    if row.network == network.name and row.policy == policy.value
+                ]
             )
             for policy in policies
         }
@@ -347,17 +385,74 @@ def run_benchmark(seeds: Sequence[int], tasks_per_seed: int) -> dict[str, Any]:
     comparisons_by_scenario = {
         network.name: {
             baseline_policy.value: _comparison_bundle(
-                [row for row in rows if row.network == network.name and row.policy == custom_policy.value],
-                [row for row in rows if row.network == network.name and row.policy == baseline_policy.value],
+                [
+                    row
+                    for row in rows
+                    if row.network == network.name and row.policy == custom_policy.value
+                ],
+                [
+                    row
+                    for row in rows
+                    if row.network == network.name
+                    and row.policy == baseline_policy.value
+                ],
             )
             for baseline_policy in baseline_policies
         }
         for network in networks
     }
 
+    blackout_architecture_comparison = {}
+    for policy in policies:
+        roundtrip_rows = [
+            row
+            for row in rows
+            if row.network == "blackout_roundtrip_dependent"
+            and row.policy == policy.value
+        ]
+        relay_rows = [
+            row
+            for row in rows
+            if row.network == "blackout_with_relay_custody"
+            and row.policy == policy.value
+        ]
+        blackout_architecture_comparison[policy.value] = {
+            "completion_rate": _effect(
+                relay_rows,
+                roundtrip_rows,
+                metric="completion_rate",
+                higher_is_better=True,
+            ),
+            "cost_per_completed": _effect(
+                relay_rows,
+                roundtrip_rows,
+                metric="cost_per_completed",
+                higher_is_better=False,
+            ),
+            "deadline_misses": _effect(
+                relay_rows,
+                roundtrip_rows,
+                metric="deadline_misses",
+                higher_is_better=False,
+            ),
+        }
+    relay_completion_statuses = [
+        comparison["completion_rate"]["status"]
+        for comparison in blackout_architecture_comparison.values()
+    ]
+    if all(status == "SUPPORTED" for status in relay_completion_statuses):
+        blackout_relay_claim_status = "SUPPORTED"
+    elif any(status == "NO_LIFT" for status in relay_completion_statuses):
+        blackout_relay_claim_status = "NO_LIFT"
+    else:
+        blackout_relay_claim_status = "UNDERPOWERED"
+
     completion_statuses = [
         comparisons[baseline]["completion_rate"]["status"]
-        for baseline in (CoordinationPolicy.STICKY.value, CoordinationPolicy.DISTANCE.value)
+        for baseline in (
+            CoordinationPolicy.STICKY.value,
+            CoordinationPolicy.DISTANCE.value,
+        )
     ]
     if all(status == "SUPPORTED" for status in completion_statuses):
         claim_status = "SUPPORTED"
@@ -392,6 +487,21 @@ def run_benchmark(seeds: Sequence[int], tasks_per_seed: int) -> dict[str, Any]:
                 "All governance checks and every candidate assessment are charged; no multi-candidate "
                 "search is billed as one operation."
             ),
+            "mars_relay_model": {
+                "remote_task_schedule": "Every eighth task requires a live remote round trip.",
+                "roundtrip_dependent": (
+                    "All tasks wait through the normalized blackout, even when custody preserves their bundles."
+                ),
+                "presynchronized_relay": (
+                    "Local tasks execute without Earth-link delay; receipts are buffered and forwarded after contact."
+                ),
+                "normalized_blackout_ticks": 14,
+                "source_paths": [
+                    "docs/research/mars_tethered_pushline_relay.md",
+                    "docs/research/mars_nested_drone_architecture_spec.md",
+                    "research/comms_sim/squad_autonomy_sim.py",
+                ],
+            },
         },
         "composition_geometry": {
             composition.composition_id: {
@@ -399,7 +509,9 @@ def run_benchmark(seeds: Sequence[int], tasks_per_seed: int) -> dict[str, Any]:
                 "max_governance_tier": composition.max_governance_tier,
                 "base_cost": round(composition.base_cost, 9),
                 **{
-                    key: value for key, value in asdict(composition_geometry(composition)).items() if key != "projector"
+                    key: value
+                    for key, value in asdict(composition_geometry(composition)).items()
+                    if key != "projector"
                 },
             }
             for composition in compositions
@@ -409,6 +521,8 @@ def run_benchmark(seeds: Sequence[int], tasks_per_seed: int) -> dict[str, Any]:
         "comparisons": comparisons,
         "comparisons_by_scenario": comparisons_by_scenario,
         "claim_status": claim_status,
+        "blackout_architecture_comparison": blackout_architecture_comparison,
+        "blackout_relay_claim_status": blackout_relay_claim_status,
         "runs": [asdict(row) for row in rows],
     }
     return payload
@@ -429,7 +543,8 @@ def write_report(payload: dict[str, Any], output: Path) -> tuple[Path, Path]:
     lines = [
         "# Fleet Composition Stress Benchmark",
         "",
-        f"- Claim status: **{payload['claim_status']}**",
+        f"- Routing-policy claim status: **{payload['claim_status']}**",
+        f"- Mars relay blackout ablation: **{payload['blackout_relay_claim_status']}**",
         f"- Seeds: {len(payload['method']['seeds'])}",
         f"- Tasks per seed: {payload['method']['tasks_per_seed']}",
         f"- Simulated runs: {len(payload['runs'])}",
@@ -480,11 +595,42 @@ def write_report(payload: dict[str, Any], output: Path) -> tuple[Path, Path]:
             "| {scenario} | {sticky_completion} | {sticky_cost} | "
             "{distance_completion} | {distance_cost} |".format(
                 scenario=scenario,
-                sticky_completion=render(sticky["completion_rate"]["raw_delta"], signed=True),
-                sticky_cost=render(sticky["cost_per_completed"]["raw_delta"], signed=True),
-                distance_completion=render(distance["completion_rate"]["raw_delta"], signed=True),
-                distance_cost=render(distance["cost_per_completed"]["raw_delta"], signed=True),
+                sticky_completion=render(
+                    sticky["completion_rate"]["raw_delta"], signed=True
+                ),
+                sticky_cost=render(
+                    sticky["cost_per_completed"]["raw_delta"], signed=True
+                ),
+                distance_completion=render(
+                    distance["completion_rate"]["raw_delta"], signed=True
+                ),
+                distance_cost=render(
+                    distance["cost_per_completed"]["raw_delta"], signed=True
+                ),
             )
+        )
+    lines.extend(
+        [
+            "",
+            "## Mars relay blackout ablation",
+            "",
+            "The custom condition allows pre-synchronized local work while custody buffers receipts. "
+            "The control makes every task wait for the remote link.",
+            "",
+            "| Policy | Round-trip completion | Relay completion | Delta | Round-trip cost | Relay cost |",
+            "| --- | ---: | ---: | ---: | ---: | ---: |",
+        ]
+    )
+    roundtrip_summary = payload["summary_by_scenario"]["blackout_roundtrip_dependent"]
+    relay_summary = payload["summary_by_scenario"]["blackout_with_relay_custody"]
+    for policy, comparison in payload["blackout_architecture_comparison"].items():
+        lines.append(
+            f"| {policy} | {render(roundtrip_summary[policy]['completion_rate']['mean'])} | "
+            f"{render(relay_summary[policy]['completion_rate']['mean'])} | "
+            f"{render(comparison['completion_rate']['raw_delta'], signed=True)} "
+            f"({comparison['completion_rate']['status']}) | "
+            f"{render(roundtrip_summary[policy]['cost_per_completed']['mean'])} | "
+            f"{render(relay_summary[policy]['cost_per_completed']['mean'])} |"
         )
     lines.extend(
         [
@@ -523,6 +669,7 @@ def main() -> int:
         json.dumps(
             {
                 "claim_status": payload["claim_status"],
+                "blackout_relay_claim_status": payload["blackout_relay_claim_status"],
                 "json": str(json_path),
                 "markdown": str(md_path),
                 "runs": len(payload["runs"]),

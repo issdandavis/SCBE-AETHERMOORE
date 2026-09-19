@@ -34,6 +34,19 @@ from src.fleet.composition_coordinator import (
     task_fit,
     transition_measure,
 )
+from src.fleet.bijective_frequency_transport import (
+    BijectiveTransportError,
+    FrequencyLane,
+    MultiplexedCommandBundle,
+    PayloadRecovery,
+    ProgramRecovery,
+    bundle_metrics,
+    encode_payload,
+    encode_program,
+    prove_lane_token_bijections,
+    recover_payload,
+    recover_program,
+)
 
 __all__ = [
     "ModelProvider",
@@ -53,4 +66,15 @@ __all__ = [
     "simulate_mission",
     "task_fit",
     "transition_measure",
+    "BijectiveTransportError",
+    "FrequencyLane",
+    "MultiplexedCommandBundle",
+    "PayloadRecovery",
+    "ProgramRecovery",
+    "bundle_metrics",
+    "encode_payload",
+    "encode_program",
+    "prove_lane_token_bijections",
+    "recover_payload",
+    "recover_program",
 ]
