@@ -22,6 +22,18 @@ from src.fleet.model_matrix import (
     TONGUE_NAMES,
     TONGUE_ROLES,
 )
+from src.fleet.composition_coordinator import (
+    CoordinationPolicy,
+    FleetComposition,
+    FleetCompositionCoordinator,
+    FleetMember,
+    FleetTask,
+    NetworkCondition,
+    composition_geometry,
+    simulate_mission,
+    task_fit,
+    transition_measure,
+)
 
 __all__ = [
     "ModelProvider",
@@ -31,4 +43,14 @@ __all__ = [
     "ModelMatrix",
     "TONGUE_NAMES",
     "TONGUE_ROLES",
+    "CoordinationPolicy",
+    "FleetComposition",
+    "FleetCompositionCoordinator",
+    "FleetMember",
+    "FleetTask",
+    "NetworkCondition",
+    "composition_geometry",
+    "simulate_mission",
+    "task_fit",
+    "transition_measure",
 ]

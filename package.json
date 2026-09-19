@@ -186,6 +186,7 @@
     "benchmark:swe-local-fixtures:groq": "python scripts/benchmark/real_patch_task_benchmark.py --provider groq",
     "benchmark:swe-verified:readiness": "python scripts/benchmark/swe_verified_readiness.py",
     "benchmark:cli": "python scripts/benchmark/cli_competitive_benchmark.py",
+    "benchmark:fleet-composition": "python scripts/benchmark/fleet_composition_stress.py",
     "aetherdesk:chemistry": "python scripts/aetherdesk_tile_actions.py chemistry",
     "aetherdesk:token": "python scripts/aetherdesk_tile_actions.py token",
     "aetherdesk:instrument": "python scripts/aetherdesk_tile_actions.py instrument",
