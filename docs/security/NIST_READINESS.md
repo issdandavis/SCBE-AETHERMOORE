@@ -51,6 +51,9 @@ The implementation correspondence audit passed all seven groups (12,641 finite
 checks). Lean rebuilt 47 theorems, audited their dependencies, and rejected three
 false fixtures. These counts describe different kinds of evidence and are not
 added together into a security score.
+The [validation receipt](evidence/validation-20260918.json) records the source
+commit and hashes; [the correspondence receipt](evidence/runtime-contracts-20260918.json)
+records each group. Subsequent changes must be assessed against their own commits.
 Tests of insecure mocks establish protocol mechanics only. Native backend smoke
 tests require an actual library, exact ML-KEM-768/ML-DSA-65 algorithm availability,
 round trips and rejection of altered signature messages.

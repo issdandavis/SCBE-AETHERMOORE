@@ -1,0 +1,62 @@
+{
+  "schema": "scbe-lean-correspondence/v1",
+  "repository": "SCBE-AETHERMOORE",
+  "head": "47f1c9c836fd50aac271b7fc38f52a662e4b125c",
+  "scope": "Finite implementation checks, not whole-program verification or security assurance",
+  "sources": {
+    "codec": {
+      "path": "src/crypto/sacred_tongues.py",
+      "sha256": "322b72e5147aae80f63bbb1ba1148af71e97252f287894ee99198c527bc74863"
+    },
+    "cfi": {
+      "path": "src/symphonic_cipher/topological_cfi.py",
+      "sha256": "51dce525b504e491143bc2486ab9b4656f37722c824b6ad8dc6074057ecb0ddd"
+    },
+    "layers": {
+      "path": "src/symphonic_cipher/scbe_aethermoore/layers/fourteen_layer_pipeline.py",
+      "sha256": "3ee7e8c78fa6d1b4272751cf13a0c77c008c31fdb8c4197490452263c5a381df"
+    },
+    "full": {
+      "path": "src/symphonic_cipher/scbe_aethermoore/full_system.py",
+      "sha256": "f338ee728feb29d92f1ff027611fa20ac23b150cafab2b40321ed5a831b3b106"
+    }
+  },
+  "checks": [
+    {
+      "contract": "six_codec_tables",
+      "status": "PASS",
+      "cases": 10758
+    },
+    {
+      "contract": "L12_exact_formula_samples",
+      "status": "PASS",
+      "cases": 35
+    },
+    {
+      "contract": "L12_invalid_domain_rejection",
+      "status": "PASS",
+      "cases": 5
+    },
+    {
+      "contract": "L5_interior_geometry_samples",
+      "status": "PASS",
+      "cases": 192
+    },
+    {
+      "contract": "frozen_directed_CFI",
+      "status": "PASS",
+      "cases": 1604
+    },
+    {
+      "contract": "full_system_refusal_precedence",
+      "status": "PASS",
+      "cases": 32
+    },
+    {
+      "contract": "L6_positive_deformation_contract",
+      "status": "PASS",
+      "cases": 15
+    }
+  ],
+  "passed": true
+}

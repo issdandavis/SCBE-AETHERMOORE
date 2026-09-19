@@ -11,6 +11,7 @@ are not validation certificates. See [the current assessment](docs/security/NIST
 
 | Version | Supported          |
 | ------- | ------------------ |
+| 4.x.x   | :white_check_mark: (current development line) |
 | 3.x.x   | :white_check_mark: |
 | 2.x.x   | :white_check_mark: (security fixes only) |
 | 1.x.x   | :x:                |
