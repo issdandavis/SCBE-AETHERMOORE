@@ -52,9 +52,13 @@ def _signature_roundtrip(oqs_module, algorithm: str) -> None:
 
     if not verified:
         _die(f"{algorithm} signature did not verify")
+    if signer.verify(message + b"tampered", signature, public_key):
+        _die(f"{algorithm} accepted a tampered message")
 
 
 def main() -> int:
+    if os.getenv("SCBE_ALLOW_MOCK_PQC") or os.getenv("SCBE_ALLOW_INSECURE_PQC"):
+        _die("Mock/insecure opt-ins are forbidden in the native security lane")
     if os.getenv("SCBE_FORCE_SKIP_LIBOQS", "").strip().lower() in {"1", "true", "yes"}:
         _die("SCBE_FORCE_SKIP_LIBOQS is set; native security lane must not skip liboqs")
 
@@ -65,11 +69,11 @@ def main() -> int:
 
     kem_algorithm = _first_enabled(
         oqs.get_enabled_kem_mechanisms(),
-        ("ML-KEM-768", "Kyber768"),
+        ("ML-KEM-768",),
     )
     signature_algorithm = _first_enabled(
         oqs.get_enabled_sig_mechanisms(),
-        ("ML-DSA-65", "Dilithium3"),
+        ("ML-DSA-65",),
     )
 
     _kem_roundtrip(oqs, kem_algorithm)
@@ -84,6 +88,31 @@ def main() -> int:
         _die(f"SCBE PQC wrapper reports liboqs unavailable: {status}")
     if not status.get("quantum_resistant"):
         _die(f"SCBE PQC governance status is not quantum resistant: {status}")
+
+    # Exercise both shipped legacy-wrapper locations with the real library.
+    # A round-trip or rejected tamper remains a smoke check, not a CMVP claim.
+    import importlib.util
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[2]
+    for index, tree in enumerate(("src/symphonic_cipher", "symphonic_cipher")):
+        name = f"native_legacy_pqc_{index}"
+        spec = importlib.util.spec_from_file_location(name, root / tree / "scbe_aethermoore/pqc/pqc_core.py")
+        wrapper = importlib.util.module_from_spec(spec)
+        sys.modules[name] = wrapper
+        spec.loader.exec_module(wrapper)
+        if wrapper.get_backend() != wrapper.PQCBackend.LIBOQS:
+            _die(f"{tree}: real backend unavailable")
+        keys = wrapper.Kyber768.generate_keypair()
+        sealed = wrapper.Kyber768.encapsulate(keys.public_key)
+        if wrapper.Kyber768.decapsulate(keys.secret_key, sealed.ciphertext) != sealed.shared_secret:
+            _die(f"{tree}: KEM mismatch")
+        keys = wrapper.Dilithium3.generate_keypair()
+        signature = wrapper.Dilithium3.sign(keys.secret_key, b"native fixture")
+        if not wrapper.Dilithium3.verify(keys.public_key, b"native fixture", signature):
+            _die(f"{tree}: signature roundtrip failed")
+        if wrapper.Dilithium3.verify(keys.public_key, b"tampered fixture", signature):
+            _die(f"{tree}: modified message accepted")
 
     print("SCBE_LIBOQS_PASS=1")
     print("native-liboqs-smoke: PASS")

@@ -301,7 +301,7 @@ export interface BreathConfig {
 /**
  * Breath Transform (Layer 6)
  *
- * B(p, t) = tanh(‖p‖ + A·sin(ωt)) · p/‖p‖
+ * B(p,t) = tanh(exp(A*sin(omega*t))*atanh(norm(p))) * p/norm(p)
  *
  * Preserves direction, modulates radius. Creates a "breathing" effect
  * where points rhythmically move toward/away from the boundary.
@@ -311,47 +311,41 @@ export interface BreathConfig {
  * @param config - Breath configuration
  * @returns Transformed point
  */
+function positiveBreathFactor(t: number, config: BreathConfig): number {
+  if (![t, config.amplitude, config.omega, config.omega * t].every(Number.isFinite)) {
+    throw new RangeError('Breathing parameters must be finite');
+  }
+  const amplitude = Math.max(0, Math.min(0.1, config.amplitude));
+  return Math.exp(amplitude * Math.sin(config.omega * t));
+}
+
+function radialBreath(p: number[], b: number): number[] {
+  if (!Array.isArray(p) || p.length === 0 || ![...p].every(Number.isFinite)) {
+    throw new RangeError('Breathing requires a finite nonempty vector');
+  }
+  const radius = norm(p);
+  if (radius >= 1) throw new RangeError('Breathing requires a point inside the unit ball');
+  if (radius === 0) return [...p];
+  const result = scale(p, Math.tanh(b * Math.atanh(radius)) / radius);
+  if (norm(result) >= 1) throw new RangeError('Breathing exhausted boundary precision');
+  return result;
+}
+
 export function breathTransform(
   p: number[],
   t: number,
   config: BreathConfig = { amplitude: 0.05, omega: 1.0 }
 ): number[] {
-  const n = norm(p);
-  if (n < EPSILON) return p.map(() => 0);
-
-  // Clamp amplitude to [0, 0.1] as per spec
-  const A = Math.max(0, Math.min(0.1, config.amplitude));
-
-  // Modulated radius
-  const newRadius = Math.tanh(n + A * Math.sin(config.omega * t));
-
-  // Scale to new radius while preserving direction
-  return scale(p, newRadius / n);
+  return radialBreath(p, positiveBreathFactor(t, config));
 }
 
-/**
- * Inverse breath transform (approximate recovery)
- *
- * @param bp - Breath-transformed point
- * @param t - Time parameter
- * @param config - Breath configuration
- * @returns Approximate original point
- */
+/** Inverse positive radial deformation at the same time; not an isometry. */
 export function inverseBreathTransform(
   bp: number[],
   t: number,
   config: BreathConfig = { amplitude: 0.05, omega: 1.0 }
 ): number[] {
-  const n = norm(bp);
-  if (n < EPSILON) return bp.map(() => 0);
-
-  const A = Math.max(0, Math.min(0.1, config.amplitude));
-
-  // atanh(n) - A·sin(ωt) gives approximate original radius
-  const atanh = 0.5 * Math.log((1 + n) / (1 - n + EPSILON));
-  const originalRadius = Math.max(0, atanh - A * Math.sin(config.omega * t));
-
-  return scale(bp, originalRadius / n);
+  return radialBreath(bp, 1 / positiveBreathFactor(t, config));
 }
 
 // ═══════════════════════════════════════════════════════════════

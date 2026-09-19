@@ -13,6 +13,8 @@ on:
       - "scripts/security/native_liboqs_smoke.py"
       - "src/crypto/**"
       - "tests/crypto/**"
+      - "src/symphonic_cipher/scbe_aethermoore/pqc/**"
+      - "symphonic_cipher/scbe_aethermoore/pqc/**"
   pull_request:
     branches: [main]
     paths:
@@ -21,6 +23,8 @@ on:
       - "scripts/security/native_liboqs_smoke.py"
       - "src/crypto/**"
       - "tests/crypto/**"
+      - "src/symphonic_cipher/scbe_aethermoore/pqc/**"
+      - "symphonic_cipher/scbe_aethermoore/pqc/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
@@ -80,5 +84,5 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install liboqs-python==0.16.0
 
-      - name: Prove native liboqs security backend
+      - name: Check native backend and reject tampered signatures (not FIPS validation)
         run: python scripts/security/native_liboqs_smoke.py

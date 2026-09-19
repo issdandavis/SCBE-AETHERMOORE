@@ -143,17 +143,18 @@ def audit(repo):
         require(gate.verify_execution_path(["0", "1", "2"])["valid"], "Legal path rejected")
         return count + 4
 
-    def breathing_claim():
+    def breathing_contract():
         mod = layers()
-        origin = np.zeros(2)
         point = np.array([0.25, 0.0])
-        before = mod.layer_5_hyperbolic_distance(origin, point)
-        after = mod.layer_5_hyperbolic_distance(mod.layer_6_breathing(origin, 15.0), mod.layer_6_breathing(point, 15.0))
-        require(
-            math.isclose(before, after, rel_tol=1e-12),
-            f"L6 header claims isometry, but at t=15 distance changes {before:.12g} -> {after:.12g}",
-        )
-        return 1
+        distance = mod.layer_5_hyperbolic_distance(np.zeros(2), point)
+        for t in (0.0, 15.0, 30.0, 45.0, 60.0):
+            factor = mod.breathing_factor(t)
+            require(0.4 - 1e-12 <= factor <= 2.5 + 1e-12, "Breathing factor outside positive bounds")
+            moved = mod.layer_6_breathing(point, t)
+            require(np.allclose(mod.layer_6_inverse(moved, t), point), "Breathing inverse failed")
+            after = mod.layer_5_hyperbolic_distance(np.zeros(2), moved)
+            require(math.isclose(after, factor * distance, rel_tol=1e-10), "Radial distance law failed")
+        return 15
 
     def composition():
         directory = (repo / SOURCES["full"]).parent
@@ -194,7 +195,7 @@ def audit(repo):
         ("L5_interior_geometry_samples", geometry),
         ("frozen_directed_CFI", cfi),
         ("full_system_refusal_precedence", composition),
-        ("L6_header_isometry_claim", breathing_claim),
+        ("L6_positive_deformation_contract", breathing_contract),
     ]:
         check(name, op)
     return checks

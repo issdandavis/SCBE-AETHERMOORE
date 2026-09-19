@@ -19,6 +19,13 @@ This ensures information cannot travel backwards in time.
 from __future__ import annotations
 
 import functools
+from ..layers.fourteen_layer_pipeline import (
+    breathing_factor as breathing_factor,
+    layer_6_breathing as _bounded_breathing,
+    layer_6_inverse,
+    layer_6_breathing_jacobian as layer_6_breathing_jacobian,
+)
+
 import numpy as np
 from typing import Callable, TypeVar, Any, Optional, Tuple, List
 from dataclasses import dataclass
@@ -26,8 +33,8 @@ from enum import Enum
 import time as time_module
 
 # Type variables for generic decorators
-T = TypeVar('T')
-F = TypeVar('F', bound=Callable[..., Any])
+T = TypeVar("T")
+F = TypeVar("F", bound=Callable[..., Any])
 
 # Constants
 EPS = 1e-10
@@ -40,11 +47,13 @@ THETA_2 = 2.0  # High risk threshold
 
 class CausalityViolation(Exception):
     """Raised when a transform violates the causality axiom."""
+
     pass
 
 
 class RiskLevel(Enum):
     """Risk levels for governance decisions."""
+
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
@@ -53,6 +62,7 @@ class RiskLevel(Enum):
 
 class Decision(Enum):
     """Governance decisions based on risk assessment."""
+
     ALLOW = "ALLOW"
     REVIEW = "REVIEW"
     DENY = "DENY"
@@ -62,6 +72,7 @@ class Decision(Enum):
 @dataclass
 class CausalityCheckResult:
     """Result of a causality axiom check."""
+
     passed: bool
     time_ordering_preserved: bool
     future_dependency_detected: bool
@@ -83,6 +94,7 @@ class CausalityCheckResult:
 @dataclass
 class TemporalState:
     """Encapsulates the temporal state of the system."""
+
     t: float  # Current time
     tau: float  # Temporal coordinate
     eta: float  # Entropy
@@ -98,10 +110,7 @@ class TemporalState:
         return [(t, s) for t, s in self.history if t >= cutoff]
 
 
-def causality_check(
-    require_time_param: bool = True,
-    allow_acausal: bool = False
-) -> Callable[[F], F]:
+def causality_check(require_time_param: bool = True, allow_acausal: bool = False) -> Callable[[F], F]:
     """
     Decorator that verifies a transform respects causality.
 
@@ -116,14 +125,15 @@ def causality_check(
     Returns:
         Decorated function with causality verification
     """
+
     def decorator(func: F) -> F:
         # Track last execution time for ordering checks
-        last_time = {'value': None}
+        last_time = {"value": None}
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             # Extract time parameter
-            current_time = kwargs.get('t', None)
+            current_time = kwargs.get("t", None)
             if current_time is None and len(args) > 1:
                 # Try to find time in positional args
                 for arg in args:
@@ -139,15 +149,15 @@ def causality_check(
             future_dependency = False
             message = "OK"
 
-            if last_time['value'] is not None:
-                if current_time < last_time['value']:
+            if last_time["value"] is not None:
+                if current_time < last_time["value"]:
                     time_ordering_preserved = False
                     message = f"Time went backwards: {current_time:.4f} < {last_time['value']:.4f}"
                     if not allow_acausal:
                         future_dependency = True
 
             # Update last time
-            last_time['value'] = current_time
+            last_time["value"] = current_time
 
             # Execute the function
             result = func(*args, **kwargs)
@@ -159,7 +169,7 @@ def causality_check(
                 future_dependency_detected=future_dependency,
                 layer_name=func.__name__,
                 current_time=current_time,
-                message=message
+                message=message,
             )
 
             wrapper.last_check = check_result
@@ -171,8 +181,9 @@ def causality_check(
 
         wrapper.last_check = None
         wrapper.axiom = "causality"
-        wrapper.reset_time = lambda: last_time.update({'value': None})
+        wrapper.reset_time = lambda: last_time.update({"value": None})
         return wrapper
+
     return decorator
 
 
@@ -180,108 +191,17 @@ def causality_check(
 # Layer 6: Breathing Transform
 # ============================================================================
 
-def breathing_factor(t: float, b_max: float = B_BREATH_MAX, omega: float = OMEGA_BREATH) -> float:
-    """
-    Compute the breathing factor at time t.
-
-    b(t) = 1 + b_max · sin(ωt)
-
-    This creates expansion/contraction cycles synchronized with
-    the governance breathing rhythm.
-
-    Args:
-        t: Current time
-        b_max: Maximum breathing amplitude
-        omega: Angular frequency
-
-    Returns:
-        Breathing factor b(t) ∈ [1 - b_max, 1 + b_max]
-    """
-    return 1.0 + b_max * np.sin(omega * t)
-
 
 @causality_check(require_time_param=True)
 def layer_6_breathing(u: np.ndarray, t: float) -> np.ndarray:
-    """
-    Layer 6: Breathing Transform
-
-    T_breath(u; t) = tanh(b(t) · artanh(||u||)) · u/||u||
-
-    Time-dependent expansion/contraction of hyperbolic space.
-
-    Causality Property:
-        The transform at time t depends ONLY on the current state u
-        and current time t. It does not access future times.
-
-    Properties:
-        - Diffeomorphism of the Poincaré ball onto itself
-        - Does NOT preserve hyperbolic distance (intentional)
-        - Creates rhythmic cycles that modulate governance sensitivity
-
-    Args:
-        u: Point in Poincaré ball
-        t: Current time (seconds)
-
-    Returns:
-        Transformed point (still in ball)
-    """
-    norm_u = np.linalg.norm(u)
-
-    if norm_u < EPS:
-        return u.copy()
-
-    # Clamp to stay strictly inside ball
-    norm_u = min(norm_u, 1.0 - EPS)
-
-    # Compute breathing factor
-    b = breathing_factor(t)
-
-    # Apply radial scaling
-    # artanh(||u||) gives hyperbolic radius
-    # b(t) * artanh scales it
-    # tanh brings it back to [0, 1)
-    hyp_radius = np.arctanh(norm_u)
-    scaled_radius = np.tanh(b * hyp_radius)
-
-    # Preserve direction
-    direction = u / norm_u
-
-    return scaled_radius * direction
-
-
-def layer_6_inverse(u_breathed: np.ndarray, t: float) -> np.ndarray:
-    """
-    Inverse of Layer 6: Undo breathing at time t.
-
-    Args:
-        u_breathed: Transformed point
-        t: Time at which breathing was applied
-
-    Returns:
-        Original point
-    """
-    norm_u = np.linalg.norm(u_breathed)
-
-    if norm_u < EPS:
-        return u_breathed.copy()
-
-    norm_u = min(norm_u, 1.0 - EPS)
-    b = breathing_factor(t)
-
-    # Invert: artanh(tanh(b * artanh(||u_orig||))) = b * artanh(||u_orig||)
-    # So: artanh(||u_breathed||) / b = artanh(||u_orig||)
-    hyp_radius_scaled = np.arctanh(norm_u)
-    hyp_radius_orig = hyp_radius_scaled / b
-    norm_orig = np.tanh(hyp_radius_orig)
-
-    direction = u_breathed / norm_u
-
-    return norm_orig * direction
+    """Causality-instrumented positive radial deformation; not an isometry."""
+    return _bounded_breathing(u, t)
 
 
 # ============================================================================
 # Layer 11: Triadic Temporal Distance
 # ============================================================================
+
 
 def quantum_fidelity(q1: complex, q2: complex) -> float:
     """
@@ -316,7 +236,7 @@ def hyperbolic_distance(u: np.ndarray, v: np.ndarray) -> float:
 
     denominator = (1 - u_sq) * (1 - v_sq)
     if denominator < EPS:
-        return float('inf')
+        return float("inf")
 
     arg = 1 + 2 * diff_sq / denominator
     arg = max(arg, 1.0)
@@ -326,14 +246,7 @@ def hyperbolic_distance(u: np.ndarray, v: np.ndarray) -> float:
 
 @causality_check(require_time_param=False)
 def layer_11_triadic_distance(
-    u: np.ndarray,
-    ref_u: np.ndarray,
-    tau: float,
-    ref_tau: float,
-    eta: float,
-    ref_eta: float,
-    q: complex,
-    ref_q: complex
+    u: np.ndarray, ref_u: np.ndarray, tau: float, ref_tau: float, eta: float, ref_eta: float, q: complex, ref_q: complex
 ) -> float:
     """
     Layer 11: Triadic Temporal Distance
@@ -383,9 +296,11 @@ def layer_11_triadic_distance(
 # Layer 13: Decision & Risk Assessment
 # ============================================================================
 
+
 @dataclass
 class RiskAssessment:
     """Complete risk assessment from the governance pipeline."""
+
     level: RiskLevel
     decision: Decision
     raw_risk: float
@@ -426,8 +341,8 @@ def harmonic_scaling(d: float, R: float = PHI) -> float:
         Harmonically scaled value
     """
     # Clamp to prevent overflow
-    d_sq = min(d ** 2, 50.0)
-    return R ** d_sq
+    d_sq = min(d**2, 50.0)
+    return R**d_sq
 
 
 @causality_check(require_time_param=False)
@@ -438,7 +353,7 @@ def layer_13_decision(
     realm_weight: float = 1.0,
     theta_1: float = THETA_1,
     theta_2: float = THETA_2,
-    R: float = PHI
+    R: float = PHI,
 ) -> RiskAssessment:
     """
     Layer 13: Decision & Risk Assessment
@@ -500,13 +415,14 @@ def layer_13_decision(
         distance_to_realm=d_star,
         realm_index=realm_index,
         coherence=coherence,
-        timestamp=time_module.time()
+        timestamp=time_module.time(),
     )
 
 
 # ============================================================================
 # Temporal Pipeline Orchestrator
 # ============================================================================
+
 
 class CausalPipeline:
     """
@@ -517,12 +433,7 @@ class CausalPipeline:
     """
 
     def __init__(self):
-        self.temporal_state = TemporalState(
-            t=0.0,
-            tau=0.0,
-            eta=0.0,
-            history=[]
-        )
+        self.temporal_state = TemporalState(t=0.0, tau=0.0, eta=0.0, history=[])
         self.execution_log: List[Tuple[float, str, Any]] = []
 
     def advance_time(self, dt: float) -> None:
@@ -535,13 +446,7 @@ class CausalPipeline:
         self.execution_log.append((self.temporal_state.t, "layer_6", result.copy()))
         return result
 
-    def execute_layer_11(
-        self,
-        u: np.ndarray,
-        ref_u: np.ndarray,
-        q: complex,
-        ref_q: complex
-    ) -> float:
+    def execute_layer_11(self, u: np.ndarray, ref_u: np.ndarray, q: complex, ref_q: complex) -> float:
         """Execute triadic distance with temporal state."""
         result = layer_11_triadic_distance(
             u=u,
@@ -551,23 +456,14 @@ class CausalPipeline:
             eta=self.temporal_state.eta,
             ref_eta=0.0,
             q=q,
-            ref_q=ref_q
+            ref_q=ref_q,
         )
         self.execution_log.append((self.temporal_state.t, "layer_11", result))
         return result
 
-    def execute_layer_13(
-        self,
-        d_star: float,
-        coherence: float,
-        realm_index: int
-    ) -> RiskAssessment:
+    def execute_layer_13(self, d_star: float, coherence: float, realm_index: int) -> RiskAssessment:
         """Execute decision layer."""
-        result = layer_13_decision(
-            d_star=d_star,
-            coherence=coherence,
-            realm_index=realm_index
-        )
+        result = layer_13_decision(d_star=d_star, coherence=coherence, realm_index=realm_index)
         self.execution_log.append((self.temporal_state.t, "layer_13", result))
         return result
 
@@ -593,11 +489,8 @@ class CausalPipeline:
 # Causality Verification Utilities
 # ============================================================================
 
-def verify_layer_causality(
-    layer_func: Callable,
-    n_tests: int = 100,
-    verbose: bool = False
-) -> Tuple[bool, dict]:
+
+def verify_layer_causality(layer_func: Callable, n_tests: int = 100, verbose: bool = False) -> Tuple[bool, dict]:
     """
     Verify that a layer respects causality over multiple invocations.
 
@@ -610,7 +503,7 @@ def verify_layer_causality(
         Tuple of (all_passed, statistics)
     """
     # Reset time tracker
-    if hasattr(layer_func, 'reset_time'):
+    if hasattr(layer_func, "reset_time"):
         layer_func.reset_time()
 
     all_passed = True
@@ -629,15 +522,11 @@ def verify_layer_causality(
             if layer_func.__name__ == "layer_6_breathing":
                 _ = layer_func(u, t=t)
             elif layer_func.__name__ == "layer_13_decision":
-                _ = layer_func(
-                    d_star=np.random.uniform(0, 3),
-                    coherence=np.random.uniform(0, 1),
-                    realm_index=0
-                )
+                _ = layer_func(d_star=np.random.uniform(0, 3), coherence=np.random.uniform(0, 1), realm_index=0)
             else:
                 _ = layer_func(u)
 
-            check = getattr(layer_func, 'last_check', None)
+            check = getattr(layer_func, "last_check", None)
             if check and not check.passed:
                 all_passed = False
                 violations += 1
@@ -650,11 +539,7 @@ def verify_layer_causality(
             if verbose:
                 print(f"Test {i}: VIOLATION - {e}")
 
-    return all_passed, {
-        "n_tests": n_tests,
-        "violations": violations,
-        "violation_rate": violations / n_tests
-    }
+    return all_passed, {"n_tests": n_tests, "violations": violations, "violation_rate": violations / n_tests}
 
 
 # ============================================================================

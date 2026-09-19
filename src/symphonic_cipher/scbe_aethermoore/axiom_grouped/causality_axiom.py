@@ -20,6 +20,13 @@ from __future__ import annotations
 
 import functools
 import inspect
+from ..layers.fourteen_layer_pipeline import (
+    breathing_factor as breathing_factor,
+    layer_6_breathing as _bounded_breathing,
+    layer_6_inverse,
+    layer_6_breathing_jacobian as layer_6_breathing_jacobian,
+)
+
 import numpy as np
 from typing import Callable, TypeVar, Any, Tuple, List
 from dataclasses import dataclass
@@ -210,103 +217,10 @@ def causality_check(require_time_param: bool = True, allow_acausal: bool = False
 # ============================================================================
 
 
-def breathing_factor(t: float, b_max: float = B_BREATH_MAX, omega: float = OMEGA_BREATH) -> float:
-    """
-    Compute the breathing factor at time t.
-
-    b(t) = 1 + b_max · sin(ωt)
-
-    This creates expansion/contraction cycles synchronized with
-    the governance breathing rhythm.
-
-    Args:
-        t: Current time
-        b_max: Maximum breathing amplitude
-        omega: Angular frequency
-
-    Returns:
-        Breathing factor b(t) ∈ [1 - b_max, 1 + b_max]
-    """
-    return 1.0 + b_max * np.sin(omega * t)
-
-
 @causality_check(require_time_param=True)
 def layer_6_breathing(u: np.ndarray, t: float) -> np.ndarray:
-    """
-    Layer 6: Breathing Transform
-
-    T_breath(u; t) = tanh(b(t) · artanh(||u||)) · u/||u||
-
-    Time-dependent expansion/contraction of hyperbolic space.
-
-    Causality Property:
-        The transform at time t depends ONLY on the current state u
-        and current time t. It does not access future times.
-
-    Properties:
-        - Diffeomorphism of the Poincaré ball onto itself
-        - Does NOT preserve hyperbolic distance (intentional)
-        - Creates rhythmic cycles that modulate governance sensitivity
-
-    Args:
-        u: Point in Poincaré ball
-        t: Current time (seconds)
-
-    Returns:
-        Transformed point (still in ball)
-    """
-    norm_u = np.linalg.norm(u)
-
-    if norm_u < EPS:
-        return u.copy()
-
-    # Clamp to stay strictly inside ball
-    norm_u = min(norm_u, 1.0 - EPS)
-
-    # Compute breathing factor
-    b = breathing_factor(t)
-
-    # Apply radial scaling
-    # artanh(||u||) gives hyperbolic radius
-    # b(t) * artanh scales it
-    # tanh brings it back to [0, 1)
-    hyp_radius = np.arctanh(norm_u)
-    scaled_radius = np.tanh(b * hyp_radius)
-
-    # Preserve direction
-    direction = u / norm_u
-
-    return scaled_radius * direction
-
-
-def layer_6_inverse(u_breathed: np.ndarray, t: float) -> np.ndarray:
-    """
-    Inverse of Layer 6: Undo breathing at time t.
-
-    Args:
-        u_breathed: Transformed point
-        t: Time at which breathing was applied
-
-    Returns:
-        Original point
-    """
-    norm_u = np.linalg.norm(u_breathed)
-
-    if norm_u < EPS:
-        return u_breathed.copy()
-
-    norm_u = min(norm_u, 1.0 - EPS)
-    b = breathing_factor(t)
-
-    # Invert: artanh(tanh(b * artanh(||u_orig||))) = b * artanh(||u_orig||)
-    # So: artanh(||u_breathed||) / b = artanh(||u_orig||)
-    hyp_radius_scaled = np.arctanh(norm_u)
-    hyp_radius_orig = hyp_radius_scaled / b
-    norm_orig = np.tanh(hyp_radius_orig)
-
-    direction = u_breathed / norm_u
-
-    return norm_orig * direction
+    """Causality-instrumented positive radial deformation; not an isometry."""
+    return _bounded_breathing(u, t)
 
 
 # ============================================================================

@@ -88,7 +88,7 @@ checkouts produce the same Lean fixture. The implementation receipts retain raw
 file hashes for the deployed files. Scoped Git attributes keep proof sources and
 their dependency pins at LF line endings.
 
-## September 18 source review
+## September 18 source review (before repair)
 
 GitHub `main` was inspected at `91987c938c566bd6ced718a07c70fa7a62da6663`.
 Its newest main-branch maintenance runs passed; dependency PR #2855 was mergeable
@@ -112,15 +112,17 @@ The L6 counterexample uses `u=(0,0)`, `v=(0.25,0)` and `t=15` with default
 parameters. Distance changes from `0.510825623766` to `1.27706405941`.
 The same implementation later acknowledges that breathing is a deformation.
 The isometry statement in its header therefore must not be used as a theorem.
-Invertibility also requires a nonzero breathing factor; the unrestricted default
-oscillation can cross zero. This package preserves runtime files and records the
-gap instead of certifying that statement.
+The initial oscillation could cross zero and lose invertibility. That was an
+observed defect, not a valid theorem. The subsequent repair in this branch uses
+positive bounded breathing, an inverse and explicit derivative/domain tests;
+the historical counterexample above is retained for traceability.
 
-These results do not justify merging the whole dirty worktree. Extract its
-reviewed CFI and decision repairs into focused changes, run the existing security
-regressions plus this audit, and correct the inconsistent breathing documentation.
-The full audit currently returns nonzero for both trees because the L6 claim is
-false, even though the six operational contract groups pass on the repaired tree.
+The reviewed CFI, decision and reference-admission fixes are now included in this
+branch. `audit_implementation.py` now tests the declared positive-deformation
+contract, rather than demanding the false general-isometry claim. See
+[the security assessment](../../docs/security/NIST_READINESS.md) for runtime tests,
+crypto boundaries and unresolved deployment obligations. The current audit
+receipt is separate from the pre-repair source review.
 
 ## Patent connection and next proof obligations
 

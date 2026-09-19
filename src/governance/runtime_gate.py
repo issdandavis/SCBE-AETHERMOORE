@@ -40,6 +40,11 @@ from .negative_tongue_lattice import NegativeTongueLattice
 from .trichromatic_governance import TrichromaticGovernanceEngine
 
 try:
+    from harmonic.state21_product_metric import hyperbolic_distance_poincare
+except ImportError:
+    from src.harmonic.state21_product_metric import hyperbolic_distance_poincare
+
+try:
     from primitives.phi_poincare import (
         fibonacci_trust_level,
     )
@@ -54,6 +59,13 @@ TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")
 TONGUE_WEIGHTS = tuple(PHI**k for k in range(6))
 WORD_RE = re.compile(r"[A-Za-z0-9_']+")
 DEFAULT_SEMANTIC_EMBED_MODEL = "all-MiniLM-L6-v2"
+METRIC_VERSION = "weighted-poincare-tanh-half/allowed-reference-v2"
+
+
+class InvalidGeometry(ValueError):
+    """Invalid measurements must not become a neutral or allowed state."""
+
+
 DEFAULT_TONGUE_PROJECTOR_PATH = str(
     (Path(__file__).resolve().parents[2] / "artifacts" / "projectors" / "tongue_projector.npz")
 )
@@ -466,6 +478,7 @@ class RuntimeGate:
 
         # Session state
         self._centroid: Optional[np.ndarray] = None
+        self._poincare_centroid: Optional[np.ndarray] = None
         self._centroid_count: int = 0
         self._cumulative_cost: float = 0.0
         self._query_count: int = 0
@@ -887,16 +900,39 @@ class RuntimeGate:
     # ------------------------------------------------------------------ #
 
     def _harmonic_cost(self, coords: List[float]) -> float:
-        if self._centroid is None:
-            centroid = np.array([0.4, 0.2, 0.5, 0.1, 0.2, 0.3])
-        else:
-            centroid = self._centroid
+        """Increasing cost of Poincare distance to the trusted embedded mean.
 
-        tc = np.array(coords)
-        weights = np.array(TONGUE_WEIGHTS)
-        weighted_dist = float(np.sqrt(np.sum(weights * (tc - centroid) ** 2)))
-        d_star = min(weighted_dist, 5.0)  # clamp to avoid overflow
+        Alpha=0.5 matches the old weighted-distance scale locally at the origin;
+        away from it the metric is genuinely hyperbolic. Raw tongue coordinates
+        remain available for the separate signed-spin diagnostics.
+        """
+        point = self._embed_coords(coords)
+        center = self._poincare_centroid
+        if center is None:
+            raw_center = self._centroid if self._centroid is not None else [0.4, 0.2, 0.5, 0.1, 0.2, 0.3]
+            center = self._embed_coords(raw_center)
+        if center.shape != (6,) or not np.isfinite(center).all() or np.linalg.norm(center) >= 1:
+            raise InvalidGeometry("Invalid embedded reference")
+        d_star = min(hyperbolic_distance_poincare(point, center), 5.0)
         return PI ** (PHI * d_star)
+
+    @staticmethod
+    def _validated_coords(coords) -> np.ndarray:
+        try:
+            values = np.asarray(coords, dtype=float)
+        except (TypeError, ValueError, OverflowError) as error:
+            raise InvalidGeometry("Invalid tongue coordinates") from error
+        if values.shape != (6,) or not np.isfinite(values).all() or np.any(values < 0) or np.any(values > 1):
+            raise InvalidGeometry("Expected six finite tongue coordinates in [0,1]")
+        return values
+
+    @classmethod
+    def _embed_coords(cls, coords) -> np.ndarray:
+        weighted = np.sqrt(TONGUE_WEIGHTS) * cls._validated_coords(coords)
+        radius = float(np.linalg.norm(weighted))
+        if radius == 0:
+            return weighted
+        return weighted * (min(math.tanh(0.5 * radius), 1.0 - 1e-6) / radius)
 
     # ------------------------------------------------------------------ #
     #  Reroute check
@@ -959,13 +995,20 @@ class RuntimeGate:
     # ------------------------------------------------------------------ #
 
     def _update_centroid(self, coords: List[float]) -> None:
-        tc = np.array(coords)
+        """Admit an allowed observation; callers must not pass rejected actions."""
+        tc = self._validated_coords(coords)
+        point = self._embed_coords(tc)
         if self._centroid is None:
             self._centroid = tc.copy()
+            self._poincare_centroid = point.copy()
             self._centroid_count = 1
         else:
             n = self._centroid_count + 1
+            previous = self._poincare_centroid
+            if previous is None:
+                previous = self._embed_coords(self._centroid)
             self._centroid = self._centroid * ((n - 1) / n) + tc / n
+            self._poincare_centroid = previous * ((n - 1) / n) + point / n
             self._centroid_count = n
 
     # ------------------------------------------------------------------ #
@@ -973,6 +1016,32 @@ class RuntimeGate:
     # ------------------------------------------------------------------ #
 
     def evaluate(self, action_text: str, tool_name: str = "") -> GateResult:
+        """Decide first; only a final ALLOW may update the trusted reference."""
+        if not isinstance(action_text, str) or not isinstance(tool_name, str):
+            raise ValueError("Action and tool name must be strings")
+        policy = self._policy_fingerprint()
+        if getattr(self, "_reflex_policy", None) != policy:
+            self._reflex.clear()
+            self._reflex_policy = policy
+        try:
+            result = self._evaluate(action_text, tool_name)
+        except InvalidGeometry:
+            result = GateResult(
+                decision=Decision.DENY,
+                cost=PI ** (PHI * 5.0),
+                spin_magnitude=6,
+                tongue_coords=[0.0] * 6,
+                signals=["invalid_geometry"],
+                timestamp=time.time(),
+                session_query_count=self._query_count,
+                cumulative_cost=self._cumulative_cost,
+            )
+            self._audit_log.append(result)
+        if result.decision == Decision.ALLOW and "reflex_hit" not in result.signals:
+            self._update_centroid(result.tongue_coords)
+        return result
+
+    def _evaluate(self, action_text: str, tool_name: str = "") -> GateResult:
         """Evaluate an action. Returns ALLOW, DENY, QUARANTINE, or REROUTE.
 
         This is the function that sits between intent and execution.
@@ -1126,7 +1195,7 @@ class RuntimeGate:
             and reroute_rule is None
             and not classifier_quarantine
         ):
-            coords = self._text_to_coords(full_text)
+            coords = self._validated_coords(self._text_to_coords(full_text)).tolist()
             if self._trichromatic_engine is not None:
                 tri_state = self._trichromatic_engine.build_state(
                     coords,
@@ -1137,17 +1206,13 @@ class RuntimeGate:
                     self._query_count,
                 )
                 tri_scores = self._trichromatic_engine.score_state(tri_state)
-                self._trichromatic_engine.update_baseline(tri_state)
                 trichromatic_coherence = tri_scores.triplet_coherence_score
                 trichromatic_lattice_score = tri_scores.lattice_energy_score
                 trichromatic_anomaly = tri_scores.whole_state_anomaly_score
                 trichromatic_risk = tri_scores.risk_score
                 trichromatic_state_hash = tri_state.state_hash
                 trichromatic_strongest_bridge = tri_scores.strongest_bridge
-            self._update_centroid(coords)
             self._cumulative_cost += 1.0  # nominal cost during calibration
-            self._trust_history.append(1)  # calibration = +1 trust
-            fib = fibonacci_trust_level(self._trust_history)
             calib_signals = [*_carry, "calibrating"]
             calib_decision = Decision.ALLOW
             if tamper_data is not None:
@@ -1181,6 +1246,10 @@ class RuntimeGate:
                         f"identifier_canonicality_veto_quarantine(kind={identifier_canonicality_kind},score={identifier_canonicality_score:.2f})"  # noqa: E501
                     )
                 calib_decision = escalated
+            self._trust_history.append(1 if calib_decision == Decision.ALLOW else -1)
+            fib = fibonacci_trust_level(self._trust_history)
+            if calib_decision == Decision.ALLOW and self._trichromatic_engine is not None:
+                self._trichromatic_engine.update_baseline(tri_state)
             result = GateResult(
                 decision=calib_decision,
                 cost=1.0,
@@ -1266,8 +1335,6 @@ class RuntimeGate:
 
         # Reflex table: known safe → instant ALLOW (still builds trust)
         if action_hash in self._reflex and not classifier_quarantine:
-            self._trust_history.append(1)  # known-safe = +1 trust
-            fib = fibonacci_trust_level(self._trust_history)
             reflex_signals = [*_carry, "reflex_hit"]
             reflex_decision = Decision.ALLOW
             if tamper_data is not None:
@@ -1300,6 +1367,8 @@ class RuntimeGate:
                         f"identifier_canonicality_veto_quarantine(kind={identifier_canonicality_kind},score={identifier_canonicality_score:.2f})"  # noqa: E501
                     )
                 reflex_decision = escalated
+            self._trust_history.append(1 if reflex_decision == Decision.ALLOW else -1)
+            fib = fibonacci_trust_level(self._trust_history)
             result = GateResult(
                 decision=reflex_decision,
                 cost=1.0,
@@ -1332,7 +1401,7 @@ class RuntimeGate:
         # ---- Full evaluation ----
 
         full_text = f"{tool_name} {action_text}" if tool_name else action_text
-        coords = self._text_to_coords(full_text)
+        coords = self._validated_coords(self._text_to_coords(full_text)).tolist()
         spins, magnitude = self._spin(coords)
         cost = self._harmonic_cost(coords)
 
@@ -1376,7 +1445,6 @@ class RuntimeGate:
                 )
             )
 
-        self._update_centroid(coords)
         self._cumulative_cost += cost
 
         # ---- Deferred reroute: only fire if semantic confirms the match ----
@@ -1456,9 +1524,7 @@ class RuntimeGate:
             trust_signal = 0
         else:
             trust_signal = -1
-        self._trust_history.append(trust_signal)
-
-        # Compute session trust from Fibonacci consensus
+        # Only prior completed decisions may grant this request more headroom.
         fib_trust = fibonacci_trust_level(self._trust_history)
         trust_weight = fib_trust["weight"]
         trust_level = fib_trust["level"]
@@ -1609,9 +1675,6 @@ class RuntimeGate:
                         signals.append(f"council_manifold_veto_review({council_decision.value})")
                     decision = escalated
 
-            if decision == Decision.ALLOW and self._trichromatic_engine is not None:
-                self._trichromatic_engine.update_baseline(tri_state)
-
         # Bijective tamper + identifier canonicality overlays — receipt +
         # monotonic escalation. Both were computed once at the top of evaluate();
         # catastrophic DENY-recommended cases short-circuited there, so by the
@@ -1669,7 +1732,14 @@ class RuntimeGate:
                     )
                 )
 
+        # A rejected observation must not earn trust, including late overlay vetoes.
+        self._trust_history.append(trust_signal if decision == Decision.ALLOW else -1)
+        fib_trust = fibonacci_trust_level(self._trust_history)
+        trust_weight, trust_level, trust_index = fib_trust["weight"], fib_trust["level"], fib_trust["index"]
+
         # Clean → learn as safe reflex (fast-path for future)
+        if decision == Decision.ALLOW and self._trichromatic_engine is not None:
+            self._trichromatic_engine.update_baseline(tri_state)
         if decision == Decision.ALLOW and not any("council" in s for s in signals):
             self._reflex[action_hash] = True
 
@@ -2232,8 +2302,10 @@ class RuntimeGate:
         return action_hash in self._reflex
 
     def reset_session(self) -> None:
-        """Reset session state (keep immune memory and reflexes)."""
+        """Reset session state and learned allows; keep known-deny memory."""
         self._centroid = None
+        self._poincare_centroid = None
+        self._reflex.clear()
         self._centroid_count = 0
         self._cumulative_cost = 0.0
         self._query_count = 0
@@ -2275,7 +2347,7 @@ class RuntimeGate:
     #    - trichromatic engine baseline: known v1.1 gap.
     # ------------------------------------------------------------------ #
 
-    STATE_SCHEMA = "runtime-gate-state/v1"
+    STATE_SCHEMA = "runtime-gate-state/v2"
 
     def _policy_fingerprint(self) -> Dict[str, Any]:
         """Config the persisted state depends on, recorded for drift detection.
@@ -2285,6 +2357,7 @@ class RuntimeGate:
         be flagged — not refused — when loaded into a differently-configured gate.
         """
         return {
+            "metric_version": METRIC_VERSION,
             "coords_backend": self._coords_backend,
             "cost_allow": self.cost_allow,
             "cost_quarantine": self.cost_quarantine,
@@ -2314,6 +2387,7 @@ class RuntimeGate:
             "policy": self._policy_fingerprint(),
             "state": {
                 "centroid": centroid,
+                "poincare_centroid": self._poincare_centroid.tolist() if self._poincare_centroid is not None else None,
                 "centroid_count": self._centroid_count,
                 "cumulative_cost": self._cumulative_cost,
                 "query_count": self._query_count,
@@ -2363,34 +2437,68 @@ class RuntimeGate:
             snapshot = json.loads(raw)
         except json.JSONDecodeError as exc:
             raise ValueError(f"corrupted runtime-gate state file {p}: {exc}") from exc
-        if not isinstance(snapshot, dict) or snapshot.get("schema") != self.STATE_SCHEMA:
+        if not isinstance(snapshot, dict) or snapshot.get("schema") not in {self.STATE_SCHEMA, "runtime-gate-state/v1"}:
             got = snapshot.get("schema") if isinstance(snapshot, dict) else type(snapshot).__name__
             raise ValueError(
                 f"unrecognized runtime-gate state in {p}: expected schema {self.STATE_SCHEMA!r}, got {got!r}"
             )
 
+        # Validate the whole candidate before changing live state. Legacy
+        # centroids may include rejected observations and cannot become trusted.
         state = snapshot.get("state", {})
-        centroid = state.get("centroid")
-        self._centroid = np.array(centroid, dtype=float) if centroid is not None else None
-        self._centroid_count = int(state.get("centroid_count", 0))
-        self._cumulative_cost = float(state.get("cumulative_cost", 0.0))
-        self._query_count = int(state.get("query_count", 0))
-        self._trust_history = [int(x) for x in state.get("trust_history", [])]
-        self._immune = set(state.get("immune", []))
-        # _reflex is a runtime-learned cache; rebuild empty so a tightened policy
-        # is never silently bypassed by a previously-allowed action.
-        self._reflex = {}
-
-        # Config-drift detection: warn (never refuse) and surface in audit.
         saved_policy = snapshot.get("policy", {})
+        if not isinstance(state, dict) or not isinstance(saved_policy, dict):
+            raise ValueError("Invalid runtime-gate snapshot structure")
+        centroid = state.get("centroid")
+        centroid = self._validated_coords(centroid).copy() if centroid is not None else None
+        embedded = state.get("poincare_centroid")
+        if embedded is not None:
+            embedded = np.asarray(embedded, dtype=float)
+            if embedded.shape != (6,) or not np.isfinite(embedded).all() or np.linalg.norm(embedded) >= 1:
+                raise ValueError("Invalid saved Poincare centroid")
+        count, queries = state.get("centroid_count", 0), state.get("query_count", 0)
+        if any(type(value) is not int or value < 0 for value in (count, queries)):
+            raise ValueError("Invalid saved counters")
+        if (centroid is None) != (count == 0):
+            raise ValueError("Saved centroid/count mismatch")
+        cumulative = state.get("cumulative_cost", 0.0)
+        if (
+            isinstance(cumulative, bool)
+            or not isinstance(cumulative, (int, float))
+            or not math.isfinite(cumulative)
+            or cumulative < 0
+        ):
+            raise ValueError("Invalid saved cumulative cost")
+        history, immune = state.get("trust_history", []), state.get("immune", [])
+        if not isinstance(history, list) or any(type(v) is not int or v not in (-1, 0, 1) for v in history):
+            raise ValueError("Invalid saved trust history")
+        if not isinstance(immune, list) or any(not isinstance(v, str) for v in immune):
+            raise ValueError("Invalid saved deny memory")
+        legacy = snapshot["schema"] == "runtime-gate-state/v1"
+        if not legacy and (embedded is None) != (centroid is None):
+            raise ValueError("Saved metric reference is incomplete")
         current_policy = self._policy_fingerprint()
         all_keys = set(saved_policy) | set(current_policy)
         drift = sorted(k for k in all_keys if saved_policy.get(k) != current_policy.get(k))
-        if drift:
+        discard_reference = legacy or any(k in drift for k in ("metric_version", "coords_backend"))
+        if drift or discard_reference:
             warnings.warn(
                 f"runtime-gate state loaded from {p} was saved under different config; "
-                f"drifted fields: {', '.join(drift)}",
+                f"drifted fields: {', '.join(drift)}; trusted reference discarded: {discard_reference}",
                 RuntimeWarning,
                 stacklevel=2,
             )
+        self._centroid = None if discard_reference else centroid
+        self._poincare_centroid = None if discard_reference else embedded
+        self._centroid_count = 0 if discard_reference else count
+        self._trust_history = [] if discard_reference else list(history)
+        self._cumulative_cost = float(cumulative)
+        self._query_count = queries
+        self._immune = set(immune)
+        self._reflex = {}
+        if self._trichromatic_engine is not None:
+            self._trichromatic_engine.reset()
+        if drift or discard_reference:
             self._pending_load_signals.append(f"state_loaded_config_drift(fields={'|'.join(drift)})")
+        if discard_reference:
+            self._pending_load_signals.append("untrusted_reference_discarded")

@@ -77,3 +77,12 @@ rebuildable and ignored by Git. Proof checking is CPU-only with two Lean threads
 
 New claims must state the quantity, domain, profile, proof assumptions, source
 correspondence and counterexamples before receiving a stronger evidence label.
+
+## Separate SpiralVerse repository
+
+[Spiralverse-AetherMoore-active](https://github.com/issdandavis/Spiralverse-AetherMoore-active)
+is the writable active mirror of the older archived submodule, confirmed through
+GitHub metadata on 2026-09-18. SCBE also has a local `src/spiralverse` integration
+surface. A sparse checkout must include it for the existing RWP2 envelope import
+check. No file named RWP2/RPW2 was found in the active mirror's inspected tree;
+the exact cross-repository protocol/version mapping remains to be established.
