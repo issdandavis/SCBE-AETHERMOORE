@@ -40,13 +40,13 @@ the deployed product. The executable audit traces the named Python sources.
 | 3 | `F:layer_3_weighted`; real coordinates → weighted coordinates | Lean proves positive phi powers and positivity of a weighted quadratic energy for positive weights. No numerical kernel proof. |
 | 4 | `F:layer_4_poincare`; weighted coordinates → ball coordinates | Open-ball premise is explicit in geometry theorems. Tanh saturation and clamping remain unproved. |
 | 5 | `F:layer_5_hyperbolic_distance`; two ball points → distance | Lean: positive denominator, argument >=1, symmetry, diagonal argument. Python: 64 interior samples, 192 checks. Full metric proof open. |
-| 6 | `F:layer_6_breathing`; point/time → radially deformed point | Measured counterexample to header's isometry assertion. Zero-factor invertibility case needs a declared policy. |
+| 6 | `F:layer_6_breathing`; point/time → radially deformed point | Repaired positive schedule, explicit inverse and analytic Jacobian; boundary saturation rejects. Derivative and inverse tests pass. This is a deformation, not an isometry or a globally conditioned map. |
 | 7 | `F:layer_7_phase`; point/phase/translation → transformed point | Prove translation/rotation domain constraints and metric behavior separately from breathing. |
 | 8 | `F:layer_8_multi_well`; point/realm centers → minimum distance/index | Well-defined finite centers and domain validation not yet formalized. |
 | 9 | `F:layer_9_spectral_coherence`; signal → coherence | Sampling/FFT normalization, empty signal and bounds need a named contract. |
 | 10 | `F:layer_10_spin_coherence`; phase evidence → coherence | Optional 47D backend and fallback differ. No parity theorem. |
 | 11 | `F:layer_11_triadic_distance`; geometry/time/entropy/fidelity → aggregate | Actual full-profile formula differs from TS/reference profiles. State validity and norm contract open. |
-| 12 | `F:layer_12_harmonic_scaling`; distance/phase → `1/(1+d+2p)` | Lean positivity, upper bound and monotonicity. Runtime invalid-input audit passes only on local repairs. |
+| 12 | `F:layer_12_harmonic_scaling`; distance/phase → `1/(1+d+2p)` | Lean positivity, upper bound and monotonicity. Runtime invalid-input repairs and regression cases are included in this branch. |
 | 13 | `F:layer_13_decision`; scores/thresholds → risk assessment | Lean evidence-risk bounds and abstract restriction composition. Exact branch thresholds and IEEE behavior need further refinement. |
 | 14 | `F:layer_14_audio_axis`; audio/context → telemetry | No audio, timing, receipt-authenticity or side-channel theorem. |
 
@@ -55,7 +55,7 @@ the deployed product. The executable audit traces the named Python sources.
 | Boundary | Source and connection | Status |
 |---|---|---|
 | Reversible tongue data | `src/crypto/sacred_tongues.py`; byte ↔ vocabulary tables | General sequence laws proved under equivalences; exported table dimensions proved; concrete table uniqueness and round trips tested. Semantic understanding and constant-time execution are separate. |
-| Directed program routes | `src/symphonic_cipher/topological_cfi.py`; CFG → initialized transition checker | Abstract legal-path and fuel theorems proved. Local repaired checker matches bounded enumeration; GitHub snapshot does not. |
+| Directed program routes | `src/symphonic_cipher/topological_cfi.py`; CFG → initialized transition checker | Abstract legal-path and fuel theorems proved. The repaired directed checker is included here and matches bounded enumeration; initial main-branch defects are historical evidence. |
 | Decision wrapper | `src/symphonic_cipher/scbe_aethermoore/full_system.py`; L13 + other checks → final decision | Restriction composition proved abstractly; wrapper tested across four modes, cold/warm starts and four input decisions. |
 | Reference admission | Same wrapper; final decision + candidate → stored reference | Abstract refusal preservation proved; no whole Python state-machine proof. |
 | Runtime gate / GeoSeal | `src/governance/runtime_gate.py`, `src/crypto/geoseal_execution_gate.py` where present | Adjacent consumers requiring principal/resource/context/replay contracts. Not certified by this suite. |
@@ -69,11 +69,13 @@ The Lean definitions are the proof authority; immutable source hashes identify
 the implementation being compared. A Git commit alone is insufficient for a
 dirty tree. A Python pass is finite evidence, not a proof of all inputs.
 
-Work is isolated under `formal/lean` on a worktree based on GitHub main. Existing
-local repairs, patent originals, training code, weights and data remain in their
-own locations. Rollback removes this isolated proof project/branch; it requires
-no model rollback and no runtime migration. Toolchain and Mathlib caches are
-rebuildable and ignored by Git. Proof checking is CPU-only with two Lean threads.
+Work uses an isolated worktree based on GitHub main. Selected runtime repairs
+now accompany the `formal/lean` proof project; unrelated local repairs, patent
+originals, training code, weights and data remain in their own locations.
+Runtime changes include snapshot schema v2 and discard legacy untrusted
+reference state. Roll back by an explicit reviewed commit; preserve audit and
+snapshot artifacts. No model rollback is involved. Toolchain and Mathlib caches
+are rebuildable and ignored by Git. Proof checking is CPU-only with two Lean threads.
 
 New claims must state the quantity, domain, profile, proof assumptions, source
 correspondence and counterexamples before receiving a stronger evidence label.
@@ -86,3 +88,13 @@ GitHub metadata on 2026-09-18. SCBE also has a local `src/spiralverse` integrati
 surface. A sparse checkout must include it for the existing RWP2 envelope import
 check. No file named RWP2/RPW2 was found in the active mirror's inspected tree;
 the exact cross-repository protocol/version mapping remains to be established.
+
+## Nested decimal boundary extension
+
+The existing Loom exact-cell and hierarchical-sign implementations are mapped
+in [the nested boundary integration contract](../../docs/specs/NESTED_BOUNDARY_INTEGRATION_2026-09-18.md).
+An isolated prototype connects those cells to this branch's L6 transform and
+Jacobian, with 16 mechanical tests. It normalizes exact local coordinates before
+floating-point execution, preserves parent paths, and reports wall crossings.
+It does not alter live authorization or Clay's running model. Its mathematical
+contract and future gate integration are separate from the 47 Lean theorems.
