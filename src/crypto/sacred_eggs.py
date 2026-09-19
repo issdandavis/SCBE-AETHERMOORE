@@ -690,6 +690,10 @@ def create_session_egg(
     Derives the yolk deterministically from the session ID so the
     same session always produces the same egg.
 
+    This is an identifier helper, not secret credential generation. Anyone
+    knowing the session ID can derive the yolk; use an independently secret
+    random yolk for authentication. Hashing a public ID does not hide it.
+
     Args:
         session_id: Unique session identifier
         context: Purpose context

@@ -114,6 +114,29 @@ def main() -> int:
         if wrapper.Dilithium3.verify(keys.public_key, b"tampered fixture", signature):
             _die(f"{tree}: modified message accepted")
 
+        spec = importlib.util.spec_from_file_location(
+            f"native_spiral_signatures_{index}", root / tree / "scbe_aethermoore/spiral_seal/signatures.py"
+        )
+        signing = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(signing)
+        signing_status = signing.get_pqc_sig_status()
+        if signing_status["backend"] != "liboqs" or signing_status["algorithm"] != "ML-DSA-65":
+            _die(f"{tree}: legacy signing API did not select native ML-DSA-65")
+        sk, pk = signing.dilithium_keygen()
+        _, wrong_pk = signing.dilithium_keygen()
+        signed = signing.dilithium_sign(sk, b"native fixture")
+        if not signing.dilithium_verify(pk, b"native fixture", signed):
+            _die(f"{tree}: legacy signing API failed its roundtrip")
+        for test_pk, message, candidate in (
+            (pk, b"changed", signed),
+            (wrong_pk, b"native fixture", signed),
+            (pk, b"native fixture", signed[:-1]),
+            (pk, b"native fixture", b"FALLBACK_SIG:" + b"x" * 32),
+        ):
+            if signing.dilithium_verify(test_pk, message, candidate):
+                _die(f"{tree}: legacy signing API accepted invalid authentication")
+        print(f"legacy_signing_{index}=ML-DSA-65 verified; wrong key/message/truncation/forgery rejected")
+
     print("SCBE_LIBOQS_PASS=1")
     print("native-liboqs-smoke: PASS")
     print(f"oqs_module={getattr(oqs, '__file__', 'unknown')}")

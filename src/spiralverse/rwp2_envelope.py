@@ -32,6 +32,7 @@ import hmac
 import json
 import secrets
 import time
+import threading
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Dict, List, Optional, Set, Tuple, Any
@@ -64,8 +65,8 @@ class ProtocolTongue(Enum):
     DR = "DR"  # Draumric - Types & Schema
 
 
-# Tongue-specific HMAC keys (in production, these would be securely managed)
-# Using deterministic seeds for reproducibility in this implementation
+# Historical public demonstration values, retained only for compatibility of
+# imports. SignatureEngine rejects these as authentication keys.
 TONGUE_KEYS = {
     ProtocolTongue.KO: hashlib.sha256(b"SCBE_KO_KEY_v1").digest(),
     ProtocolTongue.AV: hashlib.sha256(b"SCBE_AV_KEY_v1").digest(),
@@ -85,8 +86,8 @@ class OperationTier(Enum):
     """
     Tiered operation classification by risk level.
 
-    Security scales exponentially: S(N) = B * R^(N^2)
-    where B = base bits (256), R = harmonic ratio (1.5), N = tongue count
+    Tiers select mandatory signer roles. The geometric display multipliers
+    below are not estimates of cryptographic security bits.
     """
 
     TIER_1 = 1  # Single tongue (KO) - Basic coordination
@@ -325,22 +326,52 @@ class SignatureEngine:
     """
 
     def __init__(self, keys: Optional[Dict[ProtocolTongue, bytes]] = None):
-        self.keys = keys or TONGUE_KEYS
+        if not isinstance(keys, dict) or not keys:
+            raise ValueError("Explicit nonempty tongue keys are required")
+        for tongue, key in keys.items():
+            if not isinstance(tongue, ProtocolTongue) or not isinstance(key, bytes) or len(key) < 32:
+                raise ValueError("Tongue keys must be bytes of at least 32 bytes")
+            if key in TONGUE_KEYS.values():
+                raise ValueError("Public demo keys cannot authenticate envelopes")
+        self.keys = dict(keys)
 
     def _compute_signature_input(self, envelope: RWP2Envelope) -> bytes:
         """
         Compute the canonical input for signature.
 
-        Includes: spelltext + payload + aad + nonce + timestamp
+        Canonical, typed fields including routing/security metadata. Revision 2
+        MACs deliberately do not verify the old delimiter-joined encoding.
         """
-        parts = [
-            envelope.spelltext.encode("utf-8"),
-            envelope.payload,
-            envelope.aad.encode("utf-8"),
-            envelope.nonce.encode("utf-8"),
-            str(envelope.timestamp_ms).encode("utf-8"),
-        ]
-        return b"|".join(parts)
+        if (
+            envelope.version != "2"
+            or not isinstance(envelope.tier, OperationTier)
+            or not isinstance(envelope.payload, bytes)
+            or type(envelope.timestamp_ms) is not int
+            or envelope.timestamp_ms <= 0
+            or not isinstance(envelope.signatures, dict)
+            or any(not isinstance(v, str) for v in (envelope.spelltext, envelope.aad, envelope.kid, envelope.nonce))
+            or not envelope.nonce
+        ):
+            raise ValueError("Malformed RWP2 envelope")
+        fields = {
+            "domain": "scbe:rwp2:mac:v2",
+            "version": envelope.version,
+            "spelltext": envelope.spelltext,
+            "payload_b64": envelope.payload_b64,
+            "aad": envelope.aad,
+            "nonce": envelope.nonce,
+            "timestamp_ms": envelope.timestamp_ms,
+            "kid": envelope.kid,
+            "tier": envelope.tier.value,
+        }
+        return json.dumps(fields, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("utf-8")
+
+    def _mac(self, tongue: ProtocolTongue, sig_input: bytes) -> str:
+        return hmac.new(
+            self.keys[tongue],
+            b"scbe:rwp2:tongue:v2\0" + tongue.value.encode("ascii") + b"\0" + sig_input,
+            hashlib.sha256,
+        ).hexdigest()
 
     def sign(self, envelope: RWP2Envelope, tongues: Set[ProtocolTongue]) -> RWP2Envelope:
         """
@@ -349,13 +380,12 @@ class SignatureEngine:
         Returns new envelope with signatures added.
         """
         sig_input = self._compute_signature_input(envelope)
+        if not tongues or any(t not in self.keys for t in tongues):
+            raise ValueError("Every requested signer requires a configured key")
 
         new_signatures = dict(envelope.signatures)
         for tongue in tongues:
-            key = self.keys.get(tongue)
-            if key:
-                sig = hmac.new(key, sig_input, hashlib.sha256).hexdigest()
-                new_signatures[tongue] = sig
+            new_signatures[tongue] = self._mac(tongue, sig_input)
 
         # Return new envelope with signatures
         return RWP2Envelope(
@@ -385,22 +415,30 @@ class SignatureEngine:
         Returns:
             (overall_valid, per_tongue_results)
         """
-        sig_input = self._compute_signature_input(envelope)
+        try:
+            sig_input = self._compute_signature_input(envelope)
+        except (ValueError, TypeError, AttributeError):
+            return False, {}
 
         # Determine required tongues
+        tier_required = TIER_REQUIRED_TONGUES[envelope.tier]
         if required_tongues is None:
-            required_tongues = TIER_REQUIRED_TONGUES.get(envelope.tier, {ProtocolTongue.KO})
+            required_tongues = set(tier_required)
+        if not required_tongues or not tier_required.issubset(required_tongues):
+            return False, {}
+        if any(not isinstance(t, ProtocolTongue) for t in required_tongues):
+            return False, {}
 
         results = {}
         for tongue in required_tongues:
             key = self.keys.get(tongue)
             sig = envelope.signatures.get(tongue)
 
-            if not key or not sig:
+            if not key or not isinstance(sig, str) or len(sig) != 64 or not sig.isascii():
                 results[tongue] = False
                 continue
 
-            expected_sig = hmac.new(key, sig_input, hashlib.sha256).hexdigest()
+            expected_sig = self._mac(tongue, sig_input)
             results[tongue] = hmac.compare_digest(sig, expected_sig)
 
         # Overall valid only if ALL required tongues verify
@@ -422,9 +460,17 @@ class ReplayProtector:
     """
 
     def __init__(self, max_age_seconds: int = 300, max_cache_size: int = 10000):  # 5 minutes
+        if (
+            type(max_age_seconds) is not int
+            or max_age_seconds < 0
+            or type(max_cache_size) is not int
+            or max_cache_size < 1
+        ):
+            raise ValueError("Replay bounds must be nonnegative age and positive capacity")
         self.max_age = max_age_seconds
         self.max_cache = max_cache_size
         self.used_nonces: Dict[str, int] = {}  # nonce -> timestamp_ms
+        self._lock = threading.Lock()
 
     def is_valid(self, envelope: RWP2Envelope) -> Tuple[bool, str]:
         """
@@ -432,7 +478,14 @@ class ReplayProtector:
 
         Returns (valid, reason).
         """
+        # This object is process-local; authenticate before calling it.
+        with self._lock:
+            return self._check_and_record(envelope)
+
+    def _check_and_record(self, envelope: RWP2Envelope) -> Tuple[bool, str]:
         now_ms = int(time.time() * 1000)
+        if type(envelope.timestamp_ms) is not int or not isinstance(envelope.nonce, str) or not envelope.nonce:
+            return False, "Malformed freshness fields"
 
         # Check timestamp freshness
         age_ms = now_ms - envelope.timestamp_ms
@@ -447,6 +500,10 @@ class ReplayProtector:
         if nonce_key in self.used_nonces:
             return False, "Nonce already used (replay detected)"
 
+        # Never evict a still-valid receipt to admit a new one.
+        self._cleanup()
+        if len(self.used_nonces) >= self.max_cache:
+            return False, "Replay cache full"
         # Mark nonce as used
         self.used_nonces[nonce_key] = envelope.timestamp_ms
 
@@ -465,14 +522,6 @@ class ReplayProtector:
         for k in to_remove:
             del self.used_nonces[k]
 
-        # Enforce cache size limit
-        if len(self.used_nonces) > self.max_cache:
-            # Remove oldest entries
-            sorted_items = sorted(self.used_nonces.items(), key=lambda x: x[1])
-            remove_count = len(self.used_nonces) - self.max_cache
-            for k, _ in sorted_items[:remove_count]:
-                del self.used_nonces[k]
-
 
 # =============================================================================
 # Envelope Factory
@@ -484,8 +533,8 @@ class EnvelopeFactory:
     Factory for creating and validating RWP2 envelopes.
     """
 
-    def __init__(self):
-        self.signature_engine = SignatureEngine()
+    def __init__(self, keys: Optional[Dict[ProtocolTongue, bytes]] = None):
+        self.signature_engine = SignatureEngine(keys)
         self.replay_protector = ReplayProtector()
         self.sequence_counter = 0
 
@@ -534,16 +583,17 @@ class EnvelopeFactory:
         """
         issues = []
 
+        # Verify before consuming freshness state; unauthenticated traffic must
+        # not burn a legitimate message's nonce.
+        sig_valid, sig_results = self.signature_engine.verify(envelope)
+        if not sig_valid:
+            failed_tongues = [t.value for t, v in sig_results.items() if not v]
+            return False, [f"Signature verification failed for: {failed_tongues}"]
+
         # Check replay protection
         replay_valid, replay_reason = self.replay_protector.is_valid(envelope)
         if not replay_valid:
             issues.append(f"Replay check failed: {replay_reason}")
-
-        # Verify signatures
-        sig_valid, sig_results = self.signature_engine.verify(envelope)
-        if not sig_valid:
-            failed_tongues = [t.value for t, v in sig_results.items() if not v]
-            issues.append(f"Signature verification failed for: {failed_tongues}")
 
         return len(issues) == 0, issues
 
@@ -560,7 +610,7 @@ def demo():
     print("=" * 70)
     print()
 
-    factory = EnvelopeFactory()
+    factory = EnvelopeFactory(keys={t: secrets.token_bytes(32) for t in ProtocolTongue})
 
     # Create a Tier 1 envelope (single tongue)
     print("[TIER 1] Basic coordination message (KO only):")

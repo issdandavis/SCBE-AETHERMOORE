@@ -1,27 +1,10 @@
-"""
-SpiralSeal SS1 - High-Level API
-================================
-Post-quantum hybrid encryption using Kyber768 + Dilithium3 + AES-256-GCM.
+"""Legacy SS1 symmetric envelope API and detached signature helpers.
 
-This is the main entry point for the 14-layer SCBE pipeline's cryptographic
-operations. It provides:
-
-1. Hybrid encryption (Kyber768 KEM → AES-256-GCM)
-2. Digital signatures (Dilithium3)
-3. Sacred Tongue spell-text encoding
-4. Key rotation support via key IDs (kid)
-
-Usage:
-    from spiral_seal import SpiralSealSS1
-
-    ss = SpiralSealSS1()
-
-    # Encrypt
-    sealed = ss.seal(b"my secret API key", aad="service=openai;env=prod")
-    print(sealed)  # SS1|kid=...|aad=...|salt=ru:...|nonce=ko:...|ct=ca:...|tag=dr:...
-
-    # Decrypt
-    plaintext = ss.unseal(sealed, aad="service=openai;env=prod")
+The legacy SS1 serializer has no fields for a KEM ciphertext or signature.
+Signed/hybrid envelope requests must therefore reject, never silently discard
+security fields or imply verification. Use a separately reviewed protocol for
+authenticated hybrid transport. This module is distinct from spiral_seal.py,
+which supplies the package's exported SpiralSealSS1 class.
 """
 
 from typing import Optional
@@ -61,6 +44,8 @@ class SealedPayload:
 
     def to_ss1(self) -> str:
         """Format as SS1 spell-text blob."""
+        if self.signature is not None or self.kyber_ct is not None:
+            raise ValueError("Legacy SS1 cannot serialize signature or KEM fields")
         return format_ss1_blob(
             kid=self.kid,
             aad=self.aad,
@@ -75,7 +60,7 @@ class SpiralSealSS1:
     """
     High-level API for SpiralSeal SS1 encryption.
 
-    Provides hybrid post-quantum encryption using:
+    Exposes symmetric envelopes and detached cryptographic helpers:
     - Kyber768 for key encapsulation
     - Dilithium3 for digital signatures
     - AES-256-GCM for symmetric encryption
@@ -137,11 +122,13 @@ class SpiralSealSS1:
         Args:
             plaintext: Data to encrypt
             aad: Additional authenticated data (e.g., "service=openai;env=prod")
-            sign: Whether to include a Dilithium signature (hybrid mode only)
+            sign: Must be False; this legacy format cannot carry signatures
 
         Returns:
             SS1 spell-text blob
         """
+        if sign or self.mode != "symmetric":
+            raise ValueError("Legacy SS1 supports unsigned symmetric envelopes only")
         if isinstance(plaintext, str):
             plaintext = plaintext.encode("utf-8")
 
@@ -192,7 +179,7 @@ class SpiralSealSS1:
         Args:
             ss1_blob: SS1 spell-text blob
             aad: Additional authenticated data (must match seal)
-            verify_sig: Whether to verify Dilithium signature (hybrid mode)
+            verify_sig: Must be False; no signature exists in this legacy format
 
         Returns:
             Decrypted plaintext
@@ -200,6 +187,8 @@ class SpiralSealSS1:
         Raises:
             ValueError: If authentication fails or AAD mismatch
         """
+        if verify_sig or self.mode != "symmetric":
+            raise ValueError("Legacy SS1 cannot verify a signed or hybrid envelope")
         # Parse the blob
         parsed = parse_ss1_blob(ss1_blob)
 

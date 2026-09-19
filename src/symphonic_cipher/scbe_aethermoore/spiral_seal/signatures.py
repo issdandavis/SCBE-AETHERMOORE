@@ -1,20 +1,30 @@
 """
-Post-Quantum Digital Signatures - Dilithium3
-=============================================
-Wrapper for Dilithium3 digital signature scheme.
+ML-DSA-65 / legacy Dilithium3 signature wrapper.
 
-Security level: ~AES-192 equivalent (NIST Level 3)
-Collision probability: ~2^-128
-
-Note: This module provides a fallback implementation using Ed25519
-when liboqs/pqcrypto is not available. For production, install the
-official liboqs-python bindings.
+Missing native support fails closed. Explicit isolated test settings may enable
+real Ed25519 development signatures, which are labelled and NOT post-quantum.
+Algorithm availability is not FIPS module validation.
 """
 
 import os
-import hashlib
-import hmac
 from typing import Tuple
+
+from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey, Ed25519PublicKey
+
+_SIG_ALG = "Dilithium3"
+_DEV_PREFIX = b"DEV_ED25519:v1:"
+
+
+def _development_enabled() -> bool:
+    return os.getenv("SCBE_ALLOW_MOCK_PQC") == "1" and os.getenv("SCBE_ENV", "").lower() in {"test", "development"}
+
+
+def _require_development() -> None:
+    if not _development_enabled():
+        raise RuntimeError("Native PQ signature backend unavailable; development signatures are disabled")
+
 
 # Try to import post-quantum library
 _FORCE_SKIP_LIBOQS = os.getenv("SCBE_FORCE_SKIP_LIBOQS", "").strip().lower() in {
@@ -77,11 +87,14 @@ def dilithium_keygen() -> Tuple[bytes, bytes]:
         return secret_key, public_key
 
     else:
-        # Fallback: HMAC-based simulation
-        # WARNING: This is NOT post-quantum secure! For development only.
-        secret_key = os.urandom(64)
-        public_key = hashlib.sha256(b"dilithium_pk_sim:" + secret_key[:32]).digest()
-        return secret_key, public_key
+        _require_development()
+        key = Ed25519PrivateKey.generate()
+        return (
+            key.private_bytes(
+                serialization.Encoding.Raw, serialization.PrivateFormat.Raw, serialization.NoEncryption()
+            ),
+            key.public_key().public_bytes(serialization.Encoding.Raw, serialization.PublicFormat.Raw),
+        )
 
 
 def dilithium_sign(secret_key: bytes, message: bytes) -> bytes:
@@ -105,11 +118,8 @@ def dilithium_sign(secret_key: bytes, message: bytes) -> bytes:
         return signature
 
     else:
-        # Fallback: HMAC-SHA256 simulation
-        # WARNING: This is NOT post-quantum secure!
-        signature = hmac.new(secret_key, message, hashlib.sha256).digest()
-        # Add a marker to identify fallback signatures
-        return b"FALLBACK_SIG:" + signature
+        _require_development()
+        return _DEV_PREFIX + Ed25519PrivateKey.from_private_bytes(secret_key).sign(message)
 
 
 def dilithium_verify(public_key: bytes, message: bytes, signature: bytes) -> bool:
@@ -133,20 +143,18 @@ def dilithium_verify(public_key: bytes, message: bytes, signature: bytes) -> boo
 
     elif PQC_SIG_BACKEND == "pqcrypto":
         try:
-            dilithium.verify(public_key, message, signature)
-            return True
+            return dilithium.verify(public_key, message, signature) is True
         except Exception:
             return False
 
     else:
-        # Fallback verification
-        if not signature.startswith(b"FALLBACK_SIG:"):
+        if not _development_enabled() or not isinstance(signature, bytes) or not signature.startswith(_DEV_PREFIX):
             return False
-        expected_sig = signature[13:]  # Strip marker
-        # We need to derive the HMAC key from public key
-        # This is a simplified simulation - in reality we'd need the secret key
-        # For the fallback, we accept any signature that matches the format
-        return len(expected_sig) == 32
+        try:
+            Ed25519PublicKey.from_public_bytes(public_key).verify(signature[len(_DEV_PREFIX) :], message)
+            return True
+        except (InvalidSignature, ValueError, TypeError):
+            return False
 
 
 def get_pqc_sig_status() -> dict:
@@ -159,9 +167,14 @@ def get_pqc_sig_status() -> dict:
     return {
         "available": PQC_SIG_AVAILABLE,
         "backend": PQC_SIG_BACKEND,
-        "algorithm": "Dilithium3",
-        "security_level": ("NIST Level 3 (~AES-192)" if PQC_SIG_AVAILABLE else "FALLBACK (NOT PQ-SECURE)"),
+        "algorithm": _SIG_ALG if PQC_SIG_AVAILABLE else "Ed25519-development",
+        "development_enabled": not PQC_SIG_AVAILABLE and _development_enabled(),
+        "security_level": (
+            "Algorithm category 3; module validation not established" if PQC_SIG_AVAILABLE else "NOT PQ-SECURE"
+        ),
         "warning": (
-            None if PQC_SIG_AVAILABLE else "Using classical fallback! Install liboqs-python for post-quantum security."
+            None
+            if PQC_SIG_AVAILABLE
+            else "Native PQ signatures unavailable; classical development mode requires explicit opt-in."
         ),
     }

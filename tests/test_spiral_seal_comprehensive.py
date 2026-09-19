@@ -21,6 +21,14 @@ import secrets
 
 import pytest
 
+
+@pytest.fixture(autouse=True)
+def explicit_development_signatures(monkeypatch):
+    """Legacy interface checks may use the explicitly labelled classical signer."""
+    monkeypatch.setenv("SCBE_ALLOW_MOCK_PQC", "1")
+    monkeypatch.setenv("SCBE_ENV", "test")
+
+
 try:
     from cryptography import fernet
 
@@ -687,31 +695,17 @@ class TestPostQuantumCrypto:
     # Test 58: Dilithium wrong message fails verification
     def test_58_dilithium_wrong_message_fails(self):
         """Wrong message should fail Dilithium verification (when PQC available)."""
-        from symphonic_cipher.scbe_aethermoore.spiral_seal.signatures import (
-            PQC_SIG_AVAILABLE,
-        )
-
         sk, pk = dilithium_keygen()
         message = b"original message"
 
         signature = dilithium_sign(sk, message)
         is_valid = dilithium_verify(pk, b"wrong message", signature)
 
-        # Note: Fallback HMAC-based verification is simplified and may pass
-        # Real PQC implementation would fail here
-        if PQC_SIG_AVAILABLE:
-            assert not is_valid, "Wrong message passed verification"
-        else:
-            # Fallback mode - just verify the function runs
-            assert isinstance(is_valid, bool)
+        assert not is_valid, "Wrong message passed verification"
 
     # Test 59: Dilithium wrong key fails verification
     def test_59_dilithium_wrong_key_fails(self):
         """Wrong public key should fail Dilithium verification (when PQC available)."""
-        from symphonic_cipher.scbe_aethermoore.spiral_seal.signatures import (
-            PQC_SIG_AVAILABLE,
-        )
-
         sk1, pk1 = dilithium_keygen()
         sk2, pk2 = dilithium_keygen()
 
@@ -720,11 +714,7 @@ class TestPostQuantumCrypto:
 
         is_valid = dilithium_verify(pk2, message, signature)
 
-        # Note: Fallback mode has simplified verification
-        if PQC_SIG_AVAILABLE:
-            assert not is_valid, "Wrong key passed verification"
-        else:
-            assert isinstance(is_valid, bool)
+        assert not is_valid, "Wrong key passed verification"
 
     # Test 60: Dilithium signature is non-empty
     def test_60_dilithium_signature_non_empty(self):

@@ -467,7 +467,9 @@ try:
 
     check("RWP2 envelope imports", True)
 
-    sig_engine = SignatureEngine()
+    import secrets
+
+    sig_engine = SignatureEngine({t: secrets.token_bytes(32) for t in PT})
 
     # Create and sign envelope
     env = RWP2Envelope(

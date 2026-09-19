@@ -1,5 +1,5 @@
 """
-Braided Dual-Primitive Key Vault (MATHBAC-ready)
+Braided key derivation experiment with authenticated vault entries.
 
 Architecture:
   3 braid strands mapped to tongue pairs:
@@ -7,27 +7,31 @@ Architecture:
     Strand 1: RU x CA  (structure pair)
     Strand 2: UM x DR  (depth pair)
 
-  Each strand carries TWO hash primitives (dual):
-    H_a = SHA3-256
-    H_b = BLAKE2b-256
+  Each strand carries two domain-separated PBKDF2-HMAC-SHA256 channels,
+  at 120,000 and 160,000 iterations. They are not independent primitives.
 
-  Braid operations (B_3 generators):
+  Braid-inspired operations (named after B_3 generators):
     sigma_1: cross strand 0 over strand 1  (mix with XOR + rotate)
     sigma_2: cross strand 1 over strand 2
-    sigma_inv_1, sigma_inv_2: inverse crossings
+    sigma_inv_1, sigma_inv_2: reverse-labelled mixing operations
 
   Key derivation = applying a braid word to the initial 3-strand state.
   Verification = applying the same braid word and checking equality.
-  Attack = solving the braid conjugacy problem (computationally hard).
+  These rehashing operations are not a demonstrated B_3 group action: the
+  reverse-labelled operations do not invert the state. No conjugacy-hardness,
+  combined-hash-strength, or post-quantum reduction is claimed.
 
-The braid word itself becomes the "combination lock" — the vault key
-is not a string, it's a topological path.
+Version 2 entries use AES-256-GCM, binding entry identity and metadata. Legacy
+unauthenticated XOR entries are rejected, not silently migrated. Key strength
+still depends on secret entropy and the custom derivation needs external review.
 """
 
 from __future__ import annotations
 
 import hashlib
 import hmac
+import json
+import math
 import os
 import struct
 import time
@@ -35,23 +39,26 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
+from cryptography.exceptions import InvalidTag
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
 # ---------------------------------------------------------------------------
-# Dual hash primitives
+# Domain-separated derivation channels
 # ---------------------------------------------------------------------------
 
 
 def _h_a(data: bytes) -> bytes:
-    """Primary primitive: PBKDF2-HMAC-SHA256 with a domain-separated salt."""
+    """First PBKDF2-HMAC-SHA256 channel with a fixed domain label."""
     return hashlib.pbkdf2_hmac("sha256", data, b"braid-vault-h-a", 120_000, dklen=32)
 
 
 def _h_b(data: bytes) -> bytes:
-    """Secondary primitive: PBKDF2-HMAC-SHA256 with a distinct salt."""
+    """Second channel of the SAME primitive with a distinct domain label."""
     return hashlib.pbkdf2_hmac("sha256", data, b"braid-vault-h-b", 160_000, dklen=32)
 
 
 def _dual_hash(data: bytes) -> Tuple[bytes, bytes]:
-    """Hash through both primitives independently."""
+    """Derive through both domain-separated channels."""
     return _h_a(data), _h_b(data)
 
 
@@ -82,8 +89,8 @@ def _rotate_left(data: bytes, n: int) -> bytes:
 class BraidStrand:
     """One strand carrying dual-hashed state."""
 
-    h_a: bytes  # SHA3-256 channel
-    h_b: bytes  # BLAKE2b channel
+    h_a: bytes  # PBKDF2 domain a
+    h_b: bytes  # PBKDF2 domain b
 
     def as_bytes(self) -> bytes:
         return self.h_a + self.h_b
@@ -94,7 +101,7 @@ class BraidStrand:
         return cls(h_a=_h_a(keyed), h_b=_h_b(keyed))
 
     def rehash(self) -> BraidStrand:
-        """Double-hash: feed each channel through the OTHER primitive."""
+        """Feed each channel through the other domain's derivation."""
         return BraidStrand(
             h_a=_h_a(self.h_b),  # a-channel gets b's output through a
             h_b=_h_b(self.h_a),  # b-channel gets a's output through b
@@ -102,7 +109,7 @@ class BraidStrand:
 
 
 class BraidCrossing(Enum):
-    """B_3 generators and their inverses."""
+    """Braid-inspired operation labels, not proven invertible generators."""
 
     SIGMA_1 = "s1"  # strand 0 over strand 1
     SIGMA_2 = "s2"  # strand 1 over strand 2
@@ -110,8 +117,8 @@ class BraidCrossing(Enum):
     SIGMA_2_INV = "s2i"  # strand 1 under strand 2
 
 
-# The braid relation: sigma_1 * sigma_2 * sigma_1 = sigma_2 * sigma_1 * sigma_2
-# This is NOT commutative: sigma_1 * sigma_2 != sigma_2 * sigma_1
+# Abstract B_3 satisfies the braid relation. This hash-based mixer does not
+# establish that relation or inverse state operations; ordering is significant.
 
 
 def _apply_crossing(strands: List[BraidStrand], crossing: BraidCrossing) -> List[BraidStrand]:
@@ -120,7 +127,7 @@ def _apply_crossing(strands: List[BraidStrand], crossing: BraidCrossing) -> List
     Crossing mixes the two involved strands non-commutatively:
     - Over-strand gets XOR'd with under-strand's dual
     - Under-strand gets rotated by over-strand's entropy
-    - Both get rehashed through the opposite primitive
+    - Both get rehashed through the opposite channel
     """
     s = [BraidStrand(h_a=st.h_a, h_b=st.h_b) for st in strands]
 
@@ -184,9 +191,10 @@ def _apply_crossing(strands: List[BraidStrand], crossing: BraidCrossing) -> List
 class BraidWord:
     """A sequence of crossings forming the vault's combination.
 
-    The braid word is the KEY. Knowing the word lets you derive the
-    final state. Without it, you'd need to solve the conjugacy problem
-    in B_3 to recover the crossing sequence from the final state.
+    The word and master seed determine the final state. No reduction to
+    a braid conjugacy problem has been established for this hash mixer.
+    A generated word of length n has at most 2*n bits of selection entropy;
+    it does not replace a high-entropy master secret.
     """
 
     crossings: List[BraidCrossing] = field(default_factory=list)
@@ -217,7 +225,7 @@ class BraidWord:
         return cls(crossings=crossings)
 
     def inverse(self) -> BraidWord:
-        """Compute the inverse braid word (reverse + invert each crossing)."""
+        """Reverse the symbolic word; this does NOT invert the hashed state."""
         inv_map = {
             BraidCrossing.SIGMA_1: BraidCrossing.SIGMA_1_INV,
             BraidCrossing.SIGMA_2: BraidCrossing.SIGMA_2_INV,
@@ -258,7 +266,7 @@ def _apply_braid(strands: List[BraidStrand], word: BraidWord) -> List[BraidStran
 def _finalize(strands: List[BraidStrand]) -> bytes:
     """Collapse 3 strands into a single 32-byte vault key.
 
-    Uses triadic mixing: hash all 6 channels (3 strands x 2 primitives)
+    Uses triadic mixing: hash all 6 channels (3 strands x 2 domains)
     through a final dual-hash round.
     """
     combined = b"".join(s.as_bytes() for s in strands)  # 192 bytes
@@ -277,18 +285,20 @@ class VaultEntry:
     """A single secret stored in the braid vault."""
 
     entry_id: str
-    ciphertext: bytes  # XOR(secret, derived_key)
+    ciphertext: bytes  # AES-GCM ciphertext with authentication tag
     salt: bytes  # random salt mixed into derivation
     created_at: float
     expires_at: Optional[float] = None
     tongue_affinity: str = "KO"  # primary tongue for this entry
     metadata: Dict[str, Any] = field(default_factory=dict)
+    nonce: bytes = b""  # Empty legacy nonces are explicitly rejected.
+    format_version: int = 2
 
     @property
     def is_expired(self) -> bool:
         if self.expires_at is None:
             return False
-        return time.time() > self.expires_at
+        return time.time() >= self.expires_at
 
 
 # ---------------------------------------------------------------------------
@@ -297,23 +307,22 @@ class VaultEntry:
 
 
 class BraidVault:
-    """Braided dual-primitive key vault.
+    """Custom ordered derivation followed by standard authenticated encryption.
 
     The vault derives encryption keys by applying a braid word (the master key)
     to a 3-strand state initialized from a seed. Each entry gets its own salt,
     producing a unique derived key per entry.
 
-    Security properties:
-      - Dual primitives: compromise of SHA3 OR BLAKE2b alone is insufficient
-      - Non-commutative: braid word order matters (topological security)
-      - Triadic: 3 independent strands = 3 tongue pairs = 192-byte intermediate state
-      - Conjugacy hardness: recovering the braid word from vault state requires
-        solving the conjugacy problem in B_3
+    Three strands are derived from the SAME master secret, not three independent
+    secrets. Their 192-byte intermediate state is not 1536 bits of entropy.
+    Integrity covers the ciphertext and entry metadata; replay of an entire old
+    valid entry needs external freshness state. This in-memory class does not
+    provide concurrent transactions, persistence protection or secure erasure.
     """
 
     def __init__(self, master_seed: bytes, braid_key: BraidWord) -> None:
         self._master_seed = master_seed
-        self._braid_key = braid_key
+        self._braid_key = BraidWord(crossings=list(braid_key.crossings))
         self._entries: Dict[str, VaultEntry] = {}
         self._audit_log: List[Dict[str, Any]] = []
 
@@ -322,10 +331,68 @@ class BraidVault:
         self._derived_strands = _apply_braid(init, braid_key)
         self._vault_key = _finalize(self._derived_strands)
 
-    def _derive_entry_key(self, entry_id: str, salt: bytes) -> bytes:
+    def _derive_entry_key(self, entry_id: str, salt: bytes, vault_key: Optional[bytes] = None) -> bytes:
         """Derive a per-entry encryption key from the vault key."""
-        material = self._vault_key + entry_id.encode("utf-8") + salt
+        encoded_id = entry_id.encode("utf-8")
+        material = b"scbe:braid-entry:v2\0" + (self._vault_key if vault_key is None else vault_key)
+        material += struct.pack(">I", len(encoded_id)) + encoded_id + salt
         return _h_a(material)
+
+    @staticmethod
+    def _entry_aad(entry: VaultEntry) -> bytes:
+        if (
+            type(entry.format_version) is not int
+            or entry.format_version != 2
+            or not isinstance(entry.entry_id, str)
+            or not entry.entry_id
+            or not isinstance(entry.nonce, bytes)
+            or len(entry.nonce) != 12
+            or not isinstance(entry.salt, bytes)
+            or len(entry.salt) != 32
+            or not isinstance(entry.tongue_affinity, str)
+            or not isinstance(entry.metadata, dict)
+        ):
+            raise ValueError("Unsupported or malformed authenticated vault entry")
+        for stamp in (entry.created_at, entry.expires_at):
+            if stamp is not None and (type(stamp) not in (int, float) or not math.isfinite(stamp)):
+                raise ValueError("Invalid vault time")
+        return json.dumps(
+            {
+                "domain": "scbe:braid-entry:v2",
+                "version": entry.format_version,
+                "entry_id": entry.entry_id,
+                "salt": entry.salt.hex(),
+                "created_at": entry.created_at,
+                "expires_at": entry.expires_at,
+                "tongue_affinity": entry.tongue_affinity,
+                "metadata": entry.metadata,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        ).encode("utf-8")
+
+    def _seal_entry(self, entry_id, secret, created_at, expires_at, tongue_affinity, metadata, vault_key=None):
+        # Copy JSON metadata so later changes to the caller's dict cannot alter
+        # the stored authenticated header. Non-JSON or nonfinite data rejects.
+        metadata_copy = json.loads(json.dumps(metadata, allow_nan=False))
+        entry = VaultEntry(
+            entry_id, b"", os.urandom(32), created_at, expires_at, tongue_affinity, metadata_copy, os.urandom(12)
+        )
+        aad = self._entry_aad(entry)
+        key = self._derive_entry_key(entry_id, entry.salt, vault_key)
+        entry.ciphertext = AESGCM(key).encrypt(entry.nonce, secret, aad)
+        return entry
+
+    def _decrypt_entry(self, entry_id: str, entry: VaultEntry) -> bytes:
+        try:
+            if entry.entry_id != entry_id:
+                raise ValueError("Entry identity mismatch")
+            aad = self._entry_aad(entry)
+            key = self._derive_entry_key(entry_id, entry.salt)
+            return AESGCM(key).decrypt(entry.nonce, entry.ciphertext, aad)
+        except (InvalidTag, ValueError, TypeError, OverflowError, AttributeError):
+            raise ValueError("Vault entry authentication failed") from None
 
     def store(
         self,
@@ -336,28 +403,16 @@ class BraidVault:
         metadata: Optional[Dict[str, Any]] = None,
     ) -> VaultEntry:
         """Store a secret in the vault."""
-        salt = os.urandom(32)
-        key = self._derive_entry_key(entry_id, salt)
-
-        # Prepend 4-byte length header so we can strip padding on retrieval
-        payload = struct.pack(">I", len(secret)) + secret
-
-        if len(payload) > len(key):
-            key = self._expand_key(key, len(payload))
-        else:
-            payload = payload.ljust(len(key), b"\x00")
-
-        ciphertext = _xor_bytes(payload, key)
-
+        if ttl_seconds is not None and (type(ttl_seconds) not in (int, float) or not math.isfinite(ttl_seconds)):
+            raise ValueError("TTL must be finite")
         now = time.time()
-        entry = VaultEntry(
-            entry_id=entry_id,
-            ciphertext=ciphertext,
-            salt=salt,
-            created_at=now,
-            expires_at=now + ttl_seconds if ttl_seconds else None,
-            tongue_affinity=tongue_affinity,
-            metadata=metadata or {},
+        entry = self._seal_entry(
+            entry_id,
+            secret,
+            now,
+            now + ttl_seconds if ttl_seconds is not None else None,
+            tongue_affinity,
+            {} if metadata is None else metadata,
         )
         self._entries[entry_id] = entry
         self._log("store", entry_id)
@@ -370,21 +425,14 @@ class BraidVault:
             self._log("retrieve_miss", entry_id)
             return None
 
+        plaintext = self._decrypt_entry(entry_id, entry)
         if entry.is_expired:
             self._log("retrieve_expired", entry_id)
             del self._entries[entry_id]
             return None
 
-        key = self._derive_entry_key(entry_id, entry.salt)
-        if len(entry.ciphertext) > len(key):
-            key = self._expand_key(key, len(entry.ciphertext))
-
-        plaintext = _xor_bytes(entry.ciphertext, key)
-        # Extract original length from 4-byte header
-        secret_len = struct.unpack(">I", plaintext[:4])[0]
-        secret = plaintext[4 : 4 + secret_len]
         self._log("retrieve", entry_id)
-        return secret
+        return plaintext
 
     def rotate(self, entry_id: str, new_braid_key: BraidWord) -> Optional[VaultEntry]:
         """Rotate an entry's encryption under a new braid key.
@@ -396,32 +444,35 @@ class BraidVault:
         if entry_id not in self._entries:
             return None
 
-        # Decrypt ALL entries with the current key
+        # Validate ALL records before changing the key or the entry map.
         decrypted = {}
-        for eid in list(self._entries):
-            val = self.retrieve(eid)
-            if val is not None:
-                decrypted[eid] = (val, self._entries[eid])
+        for eid, entry in self._entries.items():
+            val = self._decrypt_entry(eid, entry)
+            if not entry.is_expired:
+                decrypted[eid] = (val, entry)
 
         # Re-derive vault state with new braid key
         init = _init_strands(self._master_seed)
         new_strands = _apply_braid(init, new_braid_key)
         new_vault_key = _finalize(new_strands)
 
-        # Update vault state
-        self._braid_key = new_braid_key
+        # Stage fresh ciphertext, keeping original authenticated lifetime.
+        staged = {}
+        for eid, (secret, old_entry) in decrypted.items():
+            staged[eid] = self._seal_entry(
+                eid,
+                secret,
+                old_entry.created_at,
+                old_entry.expires_at,
+                old_entry.tongue_affinity,
+                old_entry.metadata,
+                new_vault_key,
+            )
+
+        self._braid_key = BraidWord(crossings=list(new_braid_key.crossings))
         self._derived_strands = new_strands
         self._vault_key = new_vault_key
-
-        # Re-encrypt ALL entries with the new key
-        for eid, (secret, old_entry) in decrypted.items():
-            self.store(
-                entry_id=eid,
-                secret=secret,
-                ttl_seconds=(old_entry.expires_at - time.time() if old_entry.expires_at else None),
-                tongue_affinity=old_entry.tongue_affinity,
-                metadata=old_entry.metadata,
-            )
+        self._entries = staged
 
         self._log("rotate", entry_id)
         return self._entries.get(entry_id)
@@ -469,7 +520,11 @@ class BraidVault:
         return b"".join(blocks)[:length]
 
     def _purge_expired(self) -> None:
-        expired = [eid for eid, e in self._entries.items() if e.is_expired]
+        expired = []
+        for eid, entry in self._entries.items():
+            self._decrypt_entry(eid, entry)
+            if entry.is_expired:
+                expired.append(eid)
         for eid in expired:
             del self._entries[eid]
             self._log("auto_purge", eid)

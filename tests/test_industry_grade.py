@@ -37,6 +37,14 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import pytest
 
+
+@pytest.fixture(autouse=True)
+def explicit_development_signatures(monkeypatch):
+    """Legacy interface checks may use the explicitly labelled classical signer."""
+    monkeypatch.setenv("SCBE_ALLOW_MOCK_PQC", "1")
+    monkeypatch.setenv("SCBE_ENV", "test")
+
+
 try:
     from cryptography.fernet import Fernet
 
@@ -1411,10 +1419,7 @@ class TestQuantumResistantCrypto:
 
         sig = dilithium_sign(sk1, b"test")
 
-        # Verification with wrong key (behavior depends on backend)
-        result = dilithium_verify(pk2, b"test", sig)
-        # In real PQC, this would be False
-        assert isinstance(result, bool)
+        assert not dilithium_verify(pk2, b"test", sig)
 
     def test_165_pqc_status_reporting(self):
         """PQC status should report algorithm details."""
@@ -1422,7 +1427,7 @@ class TestQuantumResistantCrypto:
         sig_status = get_pqc_sig_status()
 
         assert ke_status["algorithm"] == "Kyber768"
-        assert sig_status["algorithm"] == "Dilithium3"
+        assert sig_status["algorithm"] in {"ML-DSA-65", "Dilithium3", "Ed25519-development"}
         assert "backend" in ke_status
         assert "backend" in sig_status
 

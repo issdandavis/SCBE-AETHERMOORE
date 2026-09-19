@@ -15,6 +15,9 @@ on:
       - "tests/crypto/**"
       - "src/symphonic_cipher/scbe_aethermoore/pqc/**"
       - "symphonic_cipher/scbe_aethermoore/pqc/**"
+      - "src/symphonic_cipher/scbe_aethermoore/spiral_seal/**"
+      - "symphonic_cipher/scbe_aethermoore/spiral_seal/**"
+      - "tests/security/test_braid_signature_integrity.py"
   pull_request:
     branches: [main]
     paths:
@@ -25,6 +28,9 @@ on:
       - "tests/crypto/**"
       - "src/symphonic_cipher/scbe_aethermoore/pqc/**"
       - "symphonic_cipher/scbe_aethermoore/pqc/**"
+      - "src/symphonic_cipher/scbe_aethermoore/spiral_seal/**"
+      - "symphonic_cipher/scbe_aethermoore/spiral_seal/**"
+      - "tests/security/test_braid_signature_integrity.py"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
@@ -82,7 +88,7 @@ jobs:
       - name: Install Python native bindings
         run: |
           python -m pip install --upgrade pip
-          python -m pip install liboqs-python==0.16.0
+          python -m pip install liboqs-python==0.16.0 cryptography==50.0.0
 
       - name: Check native backend and reject tampered signatures (not FIPS validation)
         run: python scripts/security/native_liboqs_smoke.py
