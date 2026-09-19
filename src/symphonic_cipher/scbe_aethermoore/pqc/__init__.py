@@ -7,7 +7,7 @@ Provides quantum-resistant cryptographic primitives using liboqs:
 - PQC-enhanced HMAC chains for Layer 0 integration
 - PQC-signed audit entries for governance audit trails
 
-Falls back gracefully to hashlib-based mock if liboqs is not installed.
+Missing liboqs fails closed. Isolated mock tests require SCBE_ENV=test and SCBE_ALLOW_MOCK_PQC=1.
 
 Installation:
     pip install liboqs-python
@@ -23,7 +23,7 @@ Usage:
     if is_liboqs_available():
         print("Using liboqs for quantum-resistant crypto")
     else:
-        print("Using mock implementation (development mode)")
+        raise RuntimeError("Real PQC backend required")
 
     # Key encapsulation
     keypair = Kyber768.generate_keypair()

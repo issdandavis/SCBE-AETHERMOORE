@@ -84,6 +84,9 @@ export class ControlFlowGraph {
    * Add an edge between two vertices
    */
   addEdge(from: number, to: number): void {
+    if (!this.vertices.has(from) || !this.vertices.has(to)) {
+      throw new Error('CFI edge endpoints must be declared vertices');
+    }
     const key = `${from}->${to}`;
     this.edges.add(key);
 
@@ -145,6 +148,15 @@ export class ControlFlowGraph {
    */
   hasEdge(from: number, to: number): boolean {
     return this.adjacency.get(from)?.has(to) ?? false;
+  }
+
+  /** Directed execution policy; hasEdge/getNeighbors are undirected analysis only. */
+  hasDirectedEdge(from: number, to: number): boolean {
+    return this.vertices.has(from) && this.vertices.has(to) && this.edges.has(`${from}->${to}`);
+  }
+
+  getDirectedNeighbors(id: number): number[] {
+    return this.getNeighbors(id).filter((to) => this.hasDirectedEdge(id, to));
   }
 
   /**
@@ -268,18 +280,39 @@ export class HamiltonianCFI {
   private goldenPath: number[] = [];
   private currentPosition: number = 0;
   private deviationThreshold: number;
+  private policyVertices: Set<number>;
+  private policyEdges: Set<string>;
+  private previousVertex: number | undefined;
+  private failed = false;
 
   constructor(cfg: ControlFlowGraph, deviationThreshold: number = 0.5) {
+    if (!Number.isFinite(deviationThreshold) || deviationThreshold < 0) {
+      throw new Error('Deviation threshold must be finite and nonnegative');
+    }
     this.cfg = cfg;
     this.deviationThreshold = deviationThreshold;
+    this.policyVertices = new Set(cfg.getVertexIds());
+    this.policyEdges = new Set(
+      [...this.policyVertices].flatMap((from) =>
+        cfg.getDirectedNeighbors(from).map((to) => `${from}->${to}`)
+      )
+    );
   }
 
   /**
-   * Set the expected "golden path" (valid Hamiltonian traversal)
+   * Set a preferred trace within the frozen directed policy; not new permissions.
    */
   setGoldenPath(path: number[]): void {
-    this.goldenPath = path;
-    this.currentPosition = 0;
+    this.failed = true;
+    if (
+      !Array.isArray(path) ||
+      [...path].some((v) => !Number.isSafeInteger(v) || !this.policyVertices.has(v)) ||
+      path.some((v, i) => i > 0 && !this.policyEdges.has(`${path[i - 1]}->${v}`))
+    ) {
+      throw new Error('Golden path must follow the frozen directed policy');
+    }
+    this.goldenPath = [...path];
+    this.reset();
   }
 
   /**
@@ -303,29 +336,36 @@ export class HamiltonianCFI {
    * Check if a state vector represents valid execution
    *
    * @param stateVector - Current execution state [vertex_id, ...]
-   * @returns CFI result
+   * @returns CFI result. Only VALID authorizes continuation. Other results latch
+   * failure until a trusted caller explicitly resets the monitor. The first
+   * event establishes the start block; entry-point authentication is external.
    */
   checkState(stateVector: number[]): CFIResult {
-    if (stateVector.length === 0) {
+    if (this.failed) return 'ATTACK';
+    if (!Array.isArray(stateVector) || stateVector.length === 0) {
+      this.failed = true;
       return 'OBSTRUCTION';
     }
 
     const currentVertex = stateVector[0];
 
     // Check if vertex exists
-    if (!this.cfg.getVertex(currentVertex)) {
+    if (!Number.isSafeInteger(currentVertex) || !this.policyVertices.has(currentVertex)) {
+      this.failed = true;
       return 'ATTACK';
     }
 
-    // If no golden path set, check graph properties
+    if (
+      this.previousVertex !== undefined &&
+      !this.policyEdges.has(`${this.previousVertex}->${currentVertex}`)
+    ) {
+      this.failed = true;
+      return 'ATTACK';
+    }
+
+    // With no preferred trace, only the frozen directed execution policy grants access.
     if (this.goldenPath.length === 0) {
-      const check = this.cfg.checkHamiltonian();
-      if (!check.likelyHamiltonian) {
-        // Check for bipartite imbalance obstruction
-        if (check.bipartite.isBipartite && check.bipartite.imbalance > 1) {
-          return 'OBSTRUCTION';
-        }
-      }
+      this.previousVertex = currentVertex;
       return 'VALID';
     }
 
@@ -335,6 +375,7 @@ export class HamiltonianCFI {
     if (currentVertex === expectedVertex) {
       // On path - advance position
       this.currentPosition = (this.currentPosition + 1) % this.goldenPath.length;
+      this.previousVertex = currentVertex;
       return 'VALID';
     }
 
@@ -342,9 +383,11 @@ export class HamiltonianCFI {
     const distance = this.spectralDistance(currentVertex, expectedVertex);
 
     if (distance < this.deviationThreshold) {
+      this.failed = true;
       return 'DEVIATION';
     }
 
+    this.failed = true;
     return 'ATTACK';
   }
 
@@ -353,10 +396,12 @@ export class HamiltonianCFI {
    */
   reset(): void {
     this.currentPosition = 0;
+    this.previousVertex = undefined;
+    this.failed = false;
   }
 
   /**
-   * Get Hamiltonicity analysis of the CFG
+   * Undirected structural diagnostic of the caller's live CFG, not authorization.
    */
   analyzeGraph(): HamiltonianCheck {
     return this.cfg.checkHamiltonian();
@@ -367,7 +412,7 @@ export class HamiltonianCFI {
    * Returns null if no path found or graph too large
    */
   findHamiltonianPath(maxVertices: number = 12): number[] | null {
-    const vertices = this.cfg.getVertexIds();
+    const vertices = [...this.policyVertices];
     if (vertices.length > maxVertices) return null;
     if (vertices.length === 0) return [];
     if (vertices.length === 1) return vertices;
@@ -387,7 +432,8 @@ export class HamiltonianCFI {
     }
 
     const current = path[path.length - 1];
-    for (const neighbor of this.cfg.getNeighbors(current)) {
+    for (const neighbor of this.policyVertices) {
+      if (!this.policyEdges.has(`${current}->${neighbor}`)) continue;
       if (!visited.has(neighbor)) {
         visited.add(neighbor);
         path.push(neighbor);

@@ -4,7 +4,7 @@
  * Tests the simplified API wrapper.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   SCBE,
   Agent,
@@ -124,14 +124,28 @@ describe('SCBE API', () => {
     });
 
     it('should vary with intensity', () => {
-      const context = { test: true };
-      const low = api.breathe(context, 0.1);
-      const high = api.breathe(context, 2.0);
+      // At neutral phase every intensity has the identity transform. Sample
+      // the expansion peak explicitly rather than depending on the wall clock.
+      const clock = vi.spyOn(Date, 'now').mockReturnValue((Math.PI / 2) * 1000);
+      try {
+        const context = { test: true };
+        const low = api.breathe(context, 0.1);
+        const high = api.breathe(context, 2.0);
+        expect(high.some((v, i) => Math.abs(v - low[i]) > 0.0001)).toBe(true);
+        expect(Math.hypot(...high)).toBeGreaterThan(Math.hypot(...low));
+        expect(Math.hypot(...high)).toBeLessThan(1);
+      } finally {
+        clock.mockRestore();
+      }
+    });
 
-      // Different intensities should produce different results
-      // (at least slightly different due to breathing amplitude)
-      const diff = low.some((v, i) => Math.abs(v - high[i]) > 0.0001);
-      expect(diff).toBe(true);
+    it('has no intensity difference at neutral phase', () => {
+      const clock = vi.spyOn(Date, 'now').mockReturnValue(0);
+      try {
+        expect(api.breathe({ test: true }, 0.1)).toEqual(api.breathe({ test: true }, 2.0));
+      } finally {
+        clock.mockRestore();
+      }
     });
   });
 

@@ -30,6 +30,7 @@ def test_trichromatic_quarantine_cannot_be_silently_downgraded():
 def test_numeric_benign_is_not_quarantined_by_ca_compute_alone():
     gate = RuntimeGate(
         coords_backend="semantic",
+        cost_allow=1.0,
         reroute_rules=[],
     )
     _calibrate(gate)
@@ -37,4 +38,16 @@ def test_numeric_benign_is_not_quarantined_by_ca_compute_alone():
     result = gate.evaluate("Calculate the compound interest on a $10,000 investment over 5 years at 7%.")
 
     assert result.decision == Decision.ALLOW
-    assert any("council_CA_compute=PASS(benign numeric context)" in signal for signal in result.signals)
+    assert any("council_CA_compute=PASS(" in signal for signal in result.signals)
+
+    # Isolate the numeric exception from the embedding and routing stage:
+    # the new metric need not produce an anomalous CA coordinate for this text.
+    decision, signals = gate._council_review(
+        "Calculate the compound interest on a $10,000 investment over 5 years at 7%.",
+        [0.1, 0.1, 0.1, 0.9, 0.1, 0.1],
+        cost=4.0,
+        spin_magnitude=0,
+        action_hash="numeric-fixture",
+    )
+    assert decision == Decision.ALLOW
+    assert "council_CA_compute=PASS(benign numeric context)" in signals

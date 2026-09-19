@@ -13,15 +13,15 @@ Mathematical Implementation of the complete layer stack:
     Layer 9:  Spectral Coherence (S_spec = 1 - r_HF)
     Layer 10: Spin Coherence (C_spin)
     Layer 11: Triadic Temporal Distance (d_tri)
-    Layer 12: Harmonic Scaling (H(d,R) = R^(d²))
+    Layer 12: Bounded Safety (H = 1/(1+d+2*pd))
     Layer 13: Decision & Risk (Risk' with thresholds θ₁, θ₂)
     Layer 14: Audio Axis (S_audio)
 
-Core Theorems:
-    A. Metric Invariance: d_H preserved through breathing/phase transforms
-    B. End-to-End Continuity: Pipeline is composition of smooth maps
-    C. Risk Monotonicity: d_tri ↑ ⟹ H(d,R) ↑ (superexponential)
-    D. Diffeomorphism: T_breath and T_phase are diffeomorphisms of 𝔹ⁿ
+Mathematical scope:
+    Phase maps are isometries under their stated domain constraints.
+    Breathing is a positive radial deformation with an explicit inverse.
+    Continuous stages are smooth only on their valid domains; decisions are discrete.
+    Bounded safety decreases with distance; it is not the increasing harmonic cost.
 """
 
 import numpy as np
@@ -256,40 +256,75 @@ def layer_5_hyperbolic_distance(u: np.ndarray, v: np.ndarray) -> float:
 
 
 def breathing_factor(t: float, b_max: float = B_BREATH_MAX, omega: float = OMEGA_BREATH) -> float:
-    """
-    Compute breathing factor b(t) = 1 + b_max · sin(ωt)
+    """Positive smooth cycle: exp(log(1+b_max)*sin(omega*t)).
 
-    This creates expansion/contraction cycles in the hyperbolic space.
+    b_max is the upper excursion above one, in [0, 1.5]. Thus b is in
+    [1/(1+b_max), 1+b_max], never zero. This changes the old signed schedule.
     """
-    return 1.0 + b_max * np.sin(omega * t)
+    for value in (t, b_max, omega):
+        if (
+            isinstance(value, (bool, np.bool_))
+            or not isinstance(value, (int, float, np.integer, np.floating))
+            or not np.isfinite(value)
+        ):
+            raise ValueError("Breathing parameters must be finite real scalars")
+    if not 0 <= b_max <= 1.5 or not np.isfinite(omega * t):
+        raise ValueError("Breathing excursion must be in [0,1.5] and phase finite")
+    return float(np.exp(np.log1p(b_max) * np.sin(omega * t)))
+
+
+def _radial_breathing(u: np.ndarray, b: float) -> np.ndarray:
+    """Exact radial formula on its finite precision interior domain."""
+    raw = np.asarray(u)
+    if raw.dtype.kind not in "fiu":
+        raise ValueError("Breathing requires real numeric coordinates")
+    values = np.asarray(raw, dtype=float)
+    if values.ndim != 1 or values.size == 0 or not np.isfinite(values).all():
+        raise ValueError("Breathing requires a finite nonempty vector")
+    radius = float(np.linalg.norm(values))
+    if radius >= 1:
+        raise ValueError("Breathing requires a point strictly inside the unit ball")
+    if radius == 0:
+        return values.copy()
+    new_radius = float(np.tanh(b * np.arctanh(radius)))
+    result = (new_radius / radius) * values
+    if np.linalg.norm(result) >= 1:
+        raise ValueError("Breathing exhausted boundary precision; use a smaller radius")
+    return result
 
 
 def layer_6_breathing(u: np.ndarray, t: float) -> np.ndarray:
+    """Positive radial deformation, NOT an isometry.
+
+    F_b(u)=tanh(b*atanh(r))*u/r, r=||u||. For b>0 the real-valued map
+    is smooth and invertible with F_(1/b); distances intentionally change.
+    Floating-point saturation is rejected rather than silently clamped.
     """
-    Layer 6: Breathing Transform T_breath(u; t)
+    return _radial_breathing(u, breathing_factor(t))
 
-    T_breath(u; t) = tanh(b(t) · artanh(||u||)) · u/||u||
 
-    Properties:
-        - Diffeomorphism of 𝔹ⁿ onto itself
-        - Preserves hyperbolic distance (isometry)
-        - Expands/contracts based on breathing cycle
-        - b > 1 expands, b < 1 contracts
+def layer_6_inverse(u_breathed: np.ndarray, t: float) -> np.ndarray:
+    """Inverse at the same time; numerical accuracy depends on boundary margin."""
+    return _radial_breathing(u_breathed, 1.0 / breathing_factor(t))
 
-    Theorem: T_breath is an isometry of (𝔹ⁿ, d_H)
+
+def layer_6_breathing_jacobian(u: np.ndarray, t: float) -> np.ndarray:
+    """Radial/tangential sensitivity ('ribs'), not an authorization decision.
+
+    Eigenvalues: b*(1-f(r)^2)/(1-r^2) radially and f(r)/r tangentially;
+    both tend to b at the origin. No uniform boundary conditioning is claimed.
     """
-    norm = np.linalg.norm(u)
-    if norm < EPS:
-        return np.zeros_like(u)
-
-    # Clamp for numerical stability
-    norm = min(norm, 1.0 - EPS)
-
     b = breathing_factor(t)
-    artanh_norm = np.arctanh(norm)
-    new_norm = np.tanh(b * artanh_norm)
-
-    return new_norm * u / norm
+    result = _radial_breathing(u, b)
+    values = np.asarray(u, dtype=float)
+    radius = float(np.linalg.norm(values))
+    if radius == 0:
+        return b * np.eye(values.size)
+    new_radius = float(np.linalg.norm(result))
+    tangential = new_radius / radius
+    radial = b * (1.0 - new_radius**2) / (1.0 - radius**2)
+    direction = values / radius
+    return tangential * np.eye(values.size) + (radial - tangential) * np.outer(direction, direction)
 
 
 # =============================================================================
@@ -539,24 +574,22 @@ def layer_11_triadic_distance(
 # =============================================================================
 
 
+def _finite_scalar(value) -> bool:
+    return (
+        isinstance(value, (int, float, np.integer, np.floating))
+        and not isinstance(value, (bool, np.bool_))
+        and bool(np.isfinite(value))
+    )
+
+
 def layer_12_harmonic_scaling(d: float, phase_deviation: float = 0.0) -> float:
+    """Bounded safety, H=1/(1+d+2*phase_deviation); lower means less safe.
+
+    Zero is a valid neutral distance. Missing or invalid numbers are not zero.
     """
-    Layer 12: Harmonic Scaling (Bounded)
-
-    score = 1 / (1 + d_H + 2 * phase_deviation)
-
-    Returns a safety score in (0, 1]:
-        - d=0, pd=0 → 1.0 (safe center)
-        - d=1, pd=0 → 0.5
-        - d→∞        → 0.0
-
-    Replaces R^(d²) which caused numerical collapse on subtle attacks
-    (AUC 0.054 vs baseline 0.984).
-
-    Theorem C (Risk Monotonicity):
-        d₁ < d₂ ⟹ H(d₁) > H(d₂) (safety decreases with distance)
-    """
-    return 1.0 / (1.0 + d + 2.0 * phase_deviation)
+    if not all(_finite_scalar(v) and v >= 0 for v in (d, phase_deviation)):
+        raise ValueError("Distances and phase deviation must be finite and nonnegative")
+    return 1.0 / (1.0 + float(d) + 2.0 * float(phase_deviation))
 
 
 # =============================================================================
@@ -593,47 +626,39 @@ def layer_13_decision(
     theta_1: float = THETA_1,
     theta_2: float = THETA_2,
 ) -> RiskAssessment:
+    """Combine realm distance, bounded safety and coherence monotonically.
+
+    Raw risk is 1-H_d. Coherence loss and realm sensitivity may raise risk;
+    they cannot undo a distance-based rejection. Distance thresholds map to
+    bounded risk thresholds via d/(1+d). Risk >= .99 requests emergency SNAP.
+    Invalid measurements/configuration fail closed with finite telemetry.
     """
-    Layer 13: Decision & Risk Assessment
-
-    Risk' = H(d*) · (1 - coherence) · realm_weight
-
-    Decision thresholds:
-        - d* < θ₁: LOW risk → ALLOW
-        - θ₁ ≤ d* < θ₂: MEDIUM risk → REVIEW
-        - d* ≥ θ₂: HIGH risk → DENY
-        - H(d*) > 100: CRITICAL → SNAP
-    """
-    # Realm-specific weight (different realms have different sensitivity)
-    realm_weights = [1.0, 1.2, 0.8, 1.5, 1.1]
-    realm_weight = realm_weights[realm_idx % len(realm_weights)]
-
-    # Compute adjusted risk
-    raw_risk = H_d
-    scaled_risk = H_d * (1 - coherence + 0.1) * realm_weight
-
-    # Determine level and decision
-    if H_d > 100:
-        level = RiskLevel.CRITICAL
-        decision = "SNAP"
-    elif d_star >= theta_2:
-        level = RiskLevel.HIGH
-        decision = "DENY"
-    elif d_star >= theta_1:
-        level = RiskLevel.MEDIUM
-        decision = "REVIEW"
-    else:
-        level = RiskLevel.LOW
-        decision = "ALLOW"
-
-    return RiskAssessment(
-        raw_risk=raw_risk,
-        scaled_risk=scaled_risk,
-        level=level,
-        realm_index=realm_idx,
-        coherence=coherence,
-        decision=decision,
+    valid = (
+        all(_finite_scalar(v) for v in (d_star, H_d, coherence, theta_1, theta_2))
+        and d_star >= 0
+        and 0 <= H_d <= 1
+        and 0 <= coherence <= 1
+        and 0 < theta_1 < theta_2
+        and isinstance(realm_idx, (int, np.integer))
+        and not isinstance(realm_idx, (bool, np.bool_))
+        and realm_idx >= 0
     )
+    if not valid:
+        return RiskAssessment(1.0, 1.0, RiskLevel.CRITICAL, -1, 0.0, "DENY")
+
+    realm_weights = [1.0, 1.2, 0.8, 1.5, 1.1]
+    raw_risk = 1.0 - float(H_d)
+    evidence_risk = max(raw_risk, 1.0 - float(coherence))
+    scaled_risk = min(1.0, max(evidence_risk, evidence_risk * realm_weights[realm_idx % len(realm_weights)]))
+    if scaled_risk >= 0.99:
+        level, decision = RiskLevel.CRITICAL, "SNAP"
+    elif d_star >= theta_2 or scaled_risk >= theta_2 / (1.0 + theta_2):
+        level, decision = RiskLevel.HIGH, "DENY"
+    elif d_star >= theta_1 or scaled_risk >= theta_1 / (1.0 + theta_1):
+        level, decision = RiskLevel.MEDIUM, "REVIEW"
+    else:
+        level, decision = RiskLevel.LOW, "ALLOW"
+    return RiskAssessment(raw_risk, scaled_risk, level, realm_idx, coherence, decision)
 
 
 # =============================================================================
@@ -728,6 +753,7 @@ class FourteenLayerPipeline:
         # Default 0.999 catches only extreme outliers; set lower for tighter enforcement.
         self.boundary_threshold = boundary_threshold
         self.realm_centers = None
+        self._reference_center = None
         self.langues_metric = None
         self.layer_states: List[PipelineState] = []
 
@@ -735,14 +761,15 @@ class FourteenLayerPipeline:
         """Establish realm centers from known-safe agent profiles.
 
         Runs each profile through L1→L4 (pre-breathing) to capture the
-        Poincaré embedding of safe operating states. L6/L7 are isometries
-        so d_H in the pre-L6 space equals d_H in the post-L7 space —
-        calibrating here gives time-invariant realm distances.
+        Poincaré embedding of safe operating states. Realm membership is
+        measured there; breathing is a deformation, not an isometry.
 
         Args:
             safe_profiles: List of dicts with keys:
                 identity, intent, trajectory, timing, commitment, signature.
         """
+        if not safe_profiles:
+            raise ValueError("Calibration requires at least one safe profile")
         centers = []
         for profile in safe_profiles:
             c = layer_1_complex_context(
@@ -760,6 +787,7 @@ class FourteenLayerPipeline:
             u_cal = layer_4_poincare(xw, self.alpha)
             centers.append(u_cal)
         self.realm_centers = centers
+        self._reference_center = centers[0].copy()
 
     def process(
         self,
@@ -826,8 +854,8 @@ class FourteenLayerPipeline:
         # giving L12 H_d a meaningful governance signal without requiring the caller
         # to always pass ref_u explicitly.
         if ref_u is None:
-            if self.realm_centers is not None:
-                ref_u = self.realm_centers[0]
+            if self._reference_center is not None:
+                ref_u = self._reference_center
             else:
                 ref_u = np.zeros_like(u)
         d_H = layer_5_hyperbolic_distance(u, ref_u)
@@ -848,7 +876,7 @@ class FourteenLayerPipeline:
             },
         )
 
-        # Verify Theorem A: d_H preserved (compute but result not used in this path)
+        # Measure breathing deformation; it intentionally changes d_H (compute but result not used in this path)
         layer_5_hyperbolic_distance(layer_6_breathing(u, t), layer_6_breathing(ref_u, t))
 
         # Layer 7: Phase Transform
@@ -1084,9 +1112,9 @@ def verify_theorem_C_risk_monotonicity(
     """
     Theorem C: Risk Monotonicity
 
-    d₁ < d₂ ⟹ H(d₁, R) < H(d₂, R) for R > 1
+    d₁ < d₂ ⟹ H(d₁) > H(d₂) for nonnegative distances
 
-    The harmonic scaling function is strictly monotonically increasing.
+    The bounded safety function is strictly monotonically decreasing.
     """
     results = {"passed": 0, "failed": 0, "violations": []}
 

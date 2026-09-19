@@ -7,7 +7,7 @@ Provides quantum-resistant cryptographic primitives using liboqs:
 - PQC-enhanced HMAC chains for Layer 0 integration
 - PQC-signed audit entries for governance audit trails
 
-Falls back gracefully to hashlib-based mock if liboqs is not installed.
+Missing liboqs fails closed. Isolated mock tests require SCBE_ENV=test and SCBE_ALLOW_MOCK_PQC=1.
 
 Installation:
     pip install liboqs-python
@@ -23,7 +23,7 @@ Usage:
     if is_liboqs_available():
         print("Using liboqs for quantum-resistant crypto")
     else:
-        print("Using mock implementation (development mode)")
+        raise RuntimeError("Real PQC backend required")
 
     # Key encapsulation
     keypair = Kyber768.generate_keypair()
@@ -48,22 +48,18 @@ from .pqc_core import (
     Kyber768,
     KyberKeyPair,
     EncapsulationResult,
-
     # Digital signatures
     Dilithium3,
     DilithiumKeyPair,
     SignatureResult,
-
     # Backend detection
     PQCBackend,
     get_backend,
     is_liboqs_available,
-
     # Hybrid key derivation
     derive_hybrid_key,
     generate_pqc_session_keys,
     verify_pqc_session,
-
     # Constants
     KYBER768_PUBLIC_KEY_SIZE,
     KYBER768_SECRET_KEY_SIZE,
@@ -82,16 +78,13 @@ from .pqc_hmac import (
     PQCHMACState,
     pqc_derive_hmac_key,
     pqc_recover_hmac_key,
-
     # HMAC chain operations
     pqc_hmac_chain_tag,
     pqc_verify_hmac_chain,
     PQCHMACChain,
-
     # State management
     create_pqc_hmac_state,
     migrate_classical_chain,
-
     # Constants
     NONCE_BYTES,
     KEY_LEN,
@@ -123,14 +116,11 @@ from .pqc_audit import (
     AuditDecision,
     PQCAuditEntry,
     AuditChainVerification,
-
     # Audit chain
     PQCAuditChain,
-
     # Standalone signatures
     create_audit_entry_signature,
     verify_audit_entry_signature,
-
     # Integration helper
     PQCAuditIntegration,
 )
@@ -140,22 +130,18 @@ __all__ = [
     "Kyber768",
     "KyberKeyPair",
     "EncapsulationResult",
-
     # Core - Digital Signatures
     "Dilithium3",
     "DilithiumKeyPair",
     "SignatureResult",
-
     # Core - Backend
     "PQCBackend",
     "get_backend",
     "is_liboqs_available",
-
     # Core - Hybrid
     "derive_hybrid_key",
     "generate_pqc_session_keys",
     "verify_pqc_session",
-
     # Core - Constants
     "KYBER768_PUBLIC_KEY_SIZE",
     "KYBER768_SECRET_KEY_SIZE",
@@ -164,43 +150,34 @@ __all__ = [
     "DILITHIUM3_PUBLIC_KEY_SIZE",
     "DILITHIUM3_SECRET_KEY_SIZE",
     "DILITHIUM3_SIGNATURE_SIZE",
-
     # HMAC - Key Derivation
     "KeyDerivationMode",
     "PQCKeyMaterial",
     "PQCHMACState",
     "pqc_derive_hmac_key",
     "pqc_recover_hmac_key",
-
     # HMAC - Chain Operations
     "pqc_hmac_chain_tag",
     "pqc_verify_hmac_chain",
     "PQCHMACChain",
-
     # HMAC - State Management
     "create_pqc_hmac_state",
     "migrate_classical_chain",
-
     # HMAC - Constants
     "NONCE_BYTES",
     "KEY_LEN",
     "AUDIT_CHAIN_IV",
-
     # Audit - Types
     "AuditDecision",
     "PQCAuditEntry",
     "AuditChainVerification",
-
     # Audit - Chain
     "PQCAuditChain",
-
     # Audit - Standalone
     "create_audit_entry_signature",
     "verify_audit_entry_signature",
-
     # Audit - Integration
     "PQCAuditIntegration",
-
     # Harmonic Enhancement
     "SecurityDimension",
     "HarmonicKeyMaterial",

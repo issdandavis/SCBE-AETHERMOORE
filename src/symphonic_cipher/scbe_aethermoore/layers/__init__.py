@@ -13,15 +13,15 @@ Layer Structure:
     Layer 9:  Spectral Coherence (S_spec = 1 - r_HF)
     Layer 10: Spin Coherence (C_spin)
     Layer 11: Triadic Temporal Distance (d_tri)
-    Layer 12: Harmonic Scaling (H(d,R) = R^(d²))
+    Layer 12: Bounded Safety (H = 1/(1+d+2*phase_deviation))
     Layer 13: Decision & Risk (Risk' with thresholds θ₁, θ₂)
     Layer 14: Audio Axis (S_audio)
 
-Theorems:
-    A. Metric Invariance: d_H preserved through T_breath, T_phase
-    B. End-to-End Continuity: Pipeline is composition of smooth maps
-    C. Risk Monotonicity: d ↑ ⟹ H(d,R) ↑ (superexponential)
-    D. Diffeomorphism: T_breath, T_phase are diffeomorphisms of 𝔹ⁿ
+Contracts:
+    Phase isometries require valid domains; breathing intentionally deforms distance.
+    Positive breathing has an explicit inverse and radial/tangential Jacobian.
+    Bounded safety decreases with distance; decision thresholds are discrete.
+    These are component contracts, not whole-system security guarantees.
 """
 
 from .fourteen_layer_pipeline import (
@@ -37,6 +37,8 @@ from .fourteen_layer_pipeline import (
     layer_4_poincare,
     layer_5_hyperbolic_distance,
     layer_6_breathing,
+    layer_6_inverse,
+    layer_6_breathing_jacobian,
     layer_7_phase,
     layer_8_multi_well,
     layer_9_spectral_coherence,
@@ -81,6 +83,8 @@ __all__ = [
     "layer_4_poincare",
     "layer_5_hyperbolic_distance",
     "layer_6_breathing",
+    "layer_6_inverse",
+    "layer_6_breathing_jacobian",
     "layer_7_phase",
     "layer_8_multi_well",
     "layer_9_spectral_coherence",

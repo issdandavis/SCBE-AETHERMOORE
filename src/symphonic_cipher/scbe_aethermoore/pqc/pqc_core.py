@@ -5,7 +5,7 @@ Provides quantum-resistant cryptographic primitives using liboqs:
 - Kyber768: Key Encapsulation Mechanism (KEM) for secure key exchange
 - Dilithium3: Digital signatures for audit chain integrity
 
-Graceful fallback to hashlib-based mock if liboqs is not installed.
+Missing liboqs fails closed. Insecure mock operations require explicit test opt-in.
 """
 
 import hashlib
@@ -162,6 +162,12 @@ class SignatureResult:
 # =============================================================================
 
 
+def _require_mock_opt_in() -> None:
+    """Mocks have no secrecy/unforgeability; opt-in is for isolated tests only."""
+    if os.getenv("SCBE_ALLOW_MOCK_PQC") != "1" or os.getenv("SCBE_ENV", "").lower() not in {"test", "development"}:
+        raise RuntimeError("Real PQC backend unavailable: mocks require SCBE_ENV=test and SCBE_ALLOW_MOCK_PQC=1")
+
+
 class _MockKyber:
     """Mock Kyber768 implementation using hashlib for testing/fallback.
 
@@ -175,6 +181,7 @@ class _MockKyber:
     @staticmethod
     def generate_keypair() -> KyberKeyPair:
         """Generate a mock Kyber768 keypair."""
+        _require_mock_opt_in()
         seed = secrets.token_bytes(32)
         # Public key derived deterministically from seed
         public_key = hashlib.shake_256(b"kyber_pk:" + seed).digest(KYBER768_PUBLIC_KEY_SIZE)
@@ -186,6 +193,7 @@ class _MockKyber:
     @staticmethod
     def encapsulate(public_key: bytes) -> EncapsulationResult:
         """Mock encapsulation - derive shared secret from public key."""
+        _require_mock_opt_in()
         if len(public_key) != KYBER768_PUBLIC_KEY_SIZE:
             raise ValueError(f"Invalid public key size: {len(public_key)}")
 
@@ -204,6 +212,7 @@ class _MockKyber:
     @staticmethod
     def decapsulate(secret_key: bytes, ciphertext: bytes) -> bytes:
         """Mock decapsulation - derive shared secret from secret key and ciphertext."""
+        _require_mock_opt_in()
         if len(secret_key) != KYBER768_SECRET_KEY_SIZE:
             raise ValueError(f"Invalid secret key size: {len(secret_key)}")
         if len(ciphertext) != KYBER768_CIPHERTEXT_SIZE:
@@ -238,6 +247,7 @@ class _MockDilithium:
     @staticmethod
     def generate_keypair() -> DilithiumKeyPair:
         """Generate a mock Dilithium3 keypair."""
+        _require_mock_opt_in()
         seed = secrets.token_bytes(32)
         # Both keys embed the seed at the beginning for verification
         sk_data = hashlib.shake_256(b"dilithium_sk:" + seed).digest(DILITHIUM3_SECRET_KEY_SIZE - 32)
@@ -251,6 +261,7 @@ class _MockDilithium:
     @staticmethod
     def sign(secret_key: bytes, message: bytes) -> bytes:
         """Mock signing - create deterministic signature."""
+        _require_mock_opt_in()
         if len(secret_key) != DILITHIUM3_SECRET_KEY_SIZE:
             raise ValueError(f"Invalid secret key size: {len(secret_key)}")
 
@@ -265,6 +276,7 @@ class _MockDilithium:
     @staticmethod
     def verify(public_key: bytes, message: bytes, signature: bytes) -> bool:
         """Mock verification - check signature validity."""
+        _require_mock_opt_in()
         if len(public_key) != DILITHIUM3_PUBLIC_KEY_SIZE:
             raise ValueError(f"Invalid public key size: {len(public_key)}")
         if len(signature) != DILITHIUM3_SIGNATURE_SIZE:
@@ -382,7 +394,7 @@ class Kyber768:
     Kyber768 Key Encapsulation Mechanism (KEM).
 
     Provides quantum-resistant key exchange. Uses liboqs when available,
-    falls back to hashlib-based mock for testing/development.
+    refuses mock operations unless an isolated test explicitly opts in.
 
     Usage:
         # Generate keypair
@@ -455,7 +467,7 @@ class Dilithium3:
     Dilithium3 Digital Signature Algorithm.
 
     Provides quantum-resistant digital signatures. Uses liboqs when available,
-    falls back to hashlib-based mock for testing/development.
+    refuses mock operations unless an isolated test explicitly opts in.
 
     Usage:
         # Generate keypair

@@ -13,15 +13,15 @@ Mathematical Implementation of the complete layer stack:
     Layer 9:  Spectral Coherence (S_spec = 1 - r_HF)
     Layer 10: Spin Coherence (C_spin)
     Layer 11: Triadic Temporal Distance (d_tri)
-    Layer 12: Harmonic Scaling (H(d,R) = R^(d²))
+    Layer 12: Bounded Safety (H = 1/(1+d+2*pd))
     Layer 13: Decision & Risk (Risk' with thresholds θ₁, θ₂)
     Layer 14: Audio Axis (S_audio)
 
-Core Theorems:
-    A. Metric Invariance: d_H preserved through breathing/phase transforms
-    B. End-to-End Continuity: Pipeline is composition of smooth maps
-    C. Risk Monotonicity: d_tri ↑ ⟹ H(d,R) ↑ (superexponential)
-    D. Diffeomorphism: T_breath and T_phase are diffeomorphisms of 𝔹ⁿ
+Mathematical scope:
+    Phase maps are isometries under their stated domain constraints.
+    Breathing is a positive radial deformation with an explicit inverse.
+    Continuous stages are smooth only on their valid domains; decisions are discrete.
+    Bounded safety decreases with distance; it is not the increasing harmonic cost.
 """
 
 import numpy as np
@@ -30,33 +30,28 @@ from typing import Tuple, List, Optional, Dict, Any
 from enum import Enum
 import hashlib
 
-
 # =============================================================================
 # CONSTANTS
 # =============================================================================
 
 PHI = (1 + np.sqrt(5)) / 2  # Golden ratio
-R_BASE = PHI                 # Base for harmonic scaling
-ALPHA_EMBED = 0.99           # Poincaré embedding scale
-B_BREATH_MAX = 1.5           # Max breathing amplitude
+R_BASE = PHI  # Base for harmonic scaling
+ALPHA_EMBED = 0.99  # Poincaré embedding scale
+B_BREATH_MAX = 1.5  # Max breathing amplitude
 OMEGA_BREATH = 2 * np.pi / 60  # Breathing frequency
-N_REALMS = 5                 # Number of multi-well realms
-THETA_1 = 0.5                # Low risk threshold
-THETA_2 = 2.0                # High risk threshold
-EPS = 1e-10                  # Numerical stability
+N_REALMS = 5  # Number of multi-well realms
+THETA_1 = 0.5  # Low risk threshold
+THETA_2 = 2.0  # High risk threshold
+EPS = 1e-10  # Numerical stability
 
 
 # =============================================================================
 # LAYER 1: COMPLEX CONTEXT STATE
 # =============================================================================
 
+
 def layer_1_complex_context(
-    identity: float,
-    intent: complex,
-    trajectory: float,
-    timing: float,
-    commitment: float,
-    signature: float
+    identity: float, intent: complex, trajectory: float, timing: float, commitment: float, signature: float
 ) -> np.ndarray:
     """
     Layer 1: Complex Context State c(t) ∈ ℂᴰ
@@ -71,19 +66,23 @@ def layer_1_complex_context(
 
     Returns: c ∈ ℂ⁶
     """
-    return np.array([
-        np.exp(1j * identity),      # Identity as phase
-        intent,                      # Intent (complex)
-        trajectory + 0j,             # Trajectory (real as complex)
-        np.exp(1j * timing * 0.001), # Timing as phase
-        np.exp(1j * commitment),     # Commitment as phase
-        signature + 0j               # Signature (real as complex)
-    ], dtype=complex)
+    return np.array(
+        [
+            np.exp(1j * identity),  # Identity as phase
+            intent,  # Intent (complex)
+            trajectory + 0j,  # Trajectory (real as complex)
+            np.exp(1j * timing * 0.001),  # Timing as phase
+            np.exp(1j * commitment),  # Commitment as phase
+            signature + 0j,  # Signature (real as complex)
+        ],
+        dtype=complex,
+    )
 
 
 # =============================================================================
 # LAYER 2: REALIFICATION
 # =============================================================================
+
 
 def layer_2_realify(c: np.ndarray) -> np.ndarray:
     """
@@ -105,6 +104,7 @@ def layer_2_realify(c: np.ndarray) -> np.ndarray:
 # =============================================================================
 # LAYER 3: WEIGHTED TRANSFORM (Langues Metric Tensor)
 # =============================================================================
+
 
 def build_langues_metric(dim: int, phi: float = PHI) -> np.ndarray:
     """
@@ -156,6 +156,7 @@ def layer_3_weighted(x: np.ndarray, G: np.ndarray = None) -> np.ndarray:
 # LAYER 4: POINCARÉ EMBEDDING
 # =============================================================================
 
+
 def layer_4_poincare(x: np.ndarray, alpha: float = ALPHA_EMBED) -> np.ndarray:
     """
     Layer 4: Poincaré Ball Embedding Ψ_α: ℝ²ᴰ → 𝔹²ᴰ
@@ -179,6 +180,7 @@ def layer_4_poincare(x: np.ndarray, alpha: float = ALPHA_EMBED) -> np.ndarray:
 # LAYER 5: HYPERBOLIC DISTANCE (THE INVARIANT)
 # =============================================================================
 
+
 def layer_5_hyperbolic_distance(u: np.ndarray, v: np.ndarray) -> float:
     """
     Layer 5: Hyperbolic Distance d_H (THE INVARIANT)
@@ -194,8 +196,8 @@ def layer_5_hyperbolic_distance(u: np.ndarray, v: np.ndarray) -> float:
         - d_H(u, v) ≤ d_H(u, w) + d_H(w, v)  (triangle inequality)
         - Isometric under Möbius transforms
     """
-    norm_u_sq = np.sum(u ** 2)
-    norm_v_sq = np.sum(v ** 2)
+    norm_u_sq = np.sum(u**2)
+    norm_v_sq = np.sum(v**2)
     diff_sq = np.sum((u - v) ** 2)
 
     # Clamp to ball interior for numerical stability
@@ -215,46 +217,83 @@ def layer_5_hyperbolic_distance(u: np.ndarray, v: np.ndarray) -> float:
 # LAYER 6: BREATHING TRANSFORM
 # =============================================================================
 
-def breathing_factor(t: float, b_max: float = B_BREATH_MAX, omega: float = OMEGA_BREATH) -> float:
-    """
-    Compute breathing factor b(t) = 1 + b_max · sin(ωt)
 
-    This creates expansion/contraction cycles in the hyperbolic space.
+def breathing_factor(t: float, b_max: float = B_BREATH_MAX, omega: float = OMEGA_BREATH) -> float:
+    """Positive smooth cycle: exp(log(1+b_max)*sin(omega*t)).
+
+    b_max is the upper excursion above one, in [0, 1.5]. Thus b is in
+    [1/(1+b_max), 1+b_max], never zero. This changes the old signed schedule.
     """
-    return 1.0 + b_max * np.sin(omega * t)
+    for value in (t, b_max, omega):
+        if (
+            isinstance(value, (bool, np.bool_))
+            or not isinstance(value, (int, float, np.integer, np.floating))
+            or not np.isfinite(value)
+        ):
+            raise ValueError("Breathing parameters must be finite real scalars")
+    if not 0 <= b_max <= 1.5 or not np.isfinite(omega * t):
+        raise ValueError("Breathing excursion must be in [0,1.5] and phase finite")
+    return float(np.exp(np.log1p(b_max) * np.sin(omega * t)))
+
+
+def _radial_breathing(u: np.ndarray, b: float) -> np.ndarray:
+    """Exact radial formula on its finite precision interior domain."""
+    raw = np.asarray(u)
+    if raw.dtype.kind not in "fiu":
+        raise ValueError("Breathing requires real numeric coordinates")
+    values = np.asarray(raw, dtype=float)
+    if values.ndim != 1 or values.size == 0 or not np.isfinite(values).all():
+        raise ValueError("Breathing requires a finite nonempty vector")
+    radius = float(np.linalg.norm(values))
+    if radius >= 1:
+        raise ValueError("Breathing requires a point strictly inside the unit ball")
+    if radius == 0:
+        return values.copy()
+    new_radius = float(np.tanh(b * np.arctanh(radius)))
+    result = (new_radius / radius) * values
+    if np.linalg.norm(result) >= 1:
+        raise ValueError("Breathing exhausted boundary precision; use a smaller radius")
+    return result
 
 
 def layer_6_breathing(u: np.ndarray, t: float) -> np.ndarray:
+    """Positive radial deformation, NOT an isometry.
+
+    F_b(u)=tanh(b*atanh(r))*u/r, r=||u||. For b>0 the real-valued map
+    is smooth and invertible with F_(1/b); distances intentionally change.
+    Floating-point saturation is rejected rather than silently clamped.
     """
-    Layer 6: Breathing Transform T_breath(u; t)
+    return _radial_breathing(u, breathing_factor(t))
 
-    T_breath(u; t) = tanh(b(t) · artanh(||u||)) · u/||u||
 
-    Properties:
-        - Diffeomorphism of 𝔹ⁿ onto itself
-        - Preserves hyperbolic distance (isometry)
-        - Expands/contracts based on breathing cycle
-        - b > 1 expands, b < 1 contracts
+def layer_6_inverse(u_breathed: np.ndarray, t: float) -> np.ndarray:
+    """Inverse at the same time; numerical accuracy depends on boundary margin."""
+    return _radial_breathing(u_breathed, 1.0 / breathing_factor(t))
 
-    Theorem: T_breath is an isometry of (𝔹ⁿ, d_H)
+
+def layer_6_breathing_jacobian(u: np.ndarray, t: float) -> np.ndarray:
+    """Radial/tangential sensitivity ('ribs'), not an authorization decision.
+
+    Eigenvalues: b*(1-f(r)^2)/(1-r^2) radially and f(r)/r tangentially;
+    both tend to b at the origin. No uniform boundary conditioning is claimed.
     """
-    norm = np.linalg.norm(u)
-    if norm < EPS:
-        return np.zeros_like(u)
-
-    # Clamp for numerical stability
-    norm = min(norm, 1.0 - EPS)
-
     b = breathing_factor(t)
-    artanh_norm = np.arctanh(norm)
-    new_norm = np.tanh(b * artanh_norm)
-
-    return new_norm * u / norm
+    result = _radial_breathing(u, b)
+    values = np.asarray(u, dtype=float)
+    radius = float(np.linalg.norm(values))
+    if radius == 0:
+        return b * np.eye(values.size)
+    new_radius = float(np.linalg.norm(result))
+    tangential = new_radius / radius
+    radial = b * (1.0 - new_radius**2) / (1.0 - radius**2)
+    direction = values / radius
+    return tangential * np.eye(values.size) + (radial - tangential) * np.outer(direction, direction)
 
 
 # =============================================================================
 # LAYER 7: PHASE TRANSFORM (MÖBIUS)
 # =============================================================================
+
 
 def mobius_addition(a: np.ndarray, u: np.ndarray) -> np.ndarray:
     """
@@ -268,16 +307,16 @@ def mobius_addition(a: np.ndarray, u: np.ndarray) -> np.ndarray:
     a = np.asarray(a, dtype=np.float64)
     u = np.asarray(u, dtype=np.float64)
 
-    norm_a_sq = np.sum(a ** 2)
-    norm_u_sq = np.sum(u ** 2)
+    norm_a_sq = np.sum(a**2)
+    norm_u_sq = np.sum(u**2)
     inner = np.dot(a, u)
 
     # Clamp for stability
     norm_a_sq = min(norm_a_sq, 1.0 - EPS)
     norm_u_sq = min(norm_u_sq, 1.0 - EPS)
 
-    numerator = (1 + 2*inner + norm_u_sq) * a + (1 - norm_a_sq) * u
-    denominator = 1 + 2*inner + norm_a_sq * norm_u_sq
+    numerator = (1 + 2 * inner + norm_u_sq) * a + (1 - norm_a_sq) * u
+    denominator = 1 + 2 * inner + norm_a_sq * norm_u_sq
     denominator = max(denominator, EPS)
 
     result = numerator / denominator
@@ -325,6 +364,7 @@ def layer_7_phase(u: np.ndarray, phi: float, a: np.ndarray = None) -> np.ndarray
 # LAYER 8: MULTI-WELL REALMS
 # =============================================================================
 
+
 def generate_realm_centers(dim: int, n_realms: int = N_REALMS) -> List[np.ndarray]:
     """
     Generate realm centers (potential wells) in the Poincaré ball.
@@ -363,14 +403,14 @@ def layer_8_multi_well(u: np.ndarray, realm_centers: List[np.ndarray] = None) ->
     if realm_centers is None:
         realm_centers = generate_realm_centers(len(u))
 
-    min_dist = float('inf')
+    min_dist = float("inf")
     min_idx = 0
 
     for k, mu_k in enumerate(realm_centers):
         # Ensure dimensions match
         if len(mu_k) != len(u):
             mu_k = np.zeros(len(u))
-            mu_k[:min(len(mu_k), N_REALMS)] = realm_centers[k][:min(len(mu_k), N_REALMS)]
+            mu_k[: min(len(mu_k), N_REALMS)] = realm_centers[k][: min(len(mu_k), N_REALMS)]
 
         dist = layer_5_hyperbolic_distance(u, mu_k)
         if dist < min_dist:
@@ -383,6 +423,7 @@ def layer_8_multi_well(u: np.ndarray, realm_centers: List[np.ndarray] = None) ->
 # =============================================================================
 # LAYER 9: SPECTRAL COHERENCE
 # =============================================================================
+
 
 def layer_9_spectral_coherence(signal: np.ndarray, sample_rate: float = 44100) -> float:
     """
@@ -403,11 +444,11 @@ def layer_9_spectral_coherence(signal: np.ndarray, sample_rate: float = 44100) -
     # Split at Nyquist/4 (arbitrary but reasonable)
     cutoff = n // 4
 
-    total_energy = np.sum(spectrum ** 2)
+    total_energy = np.sum(spectrum**2)
     if total_energy < EPS:
         return 1.0
 
-    high_freq_energy = np.sum(spectrum[cutoff:n-cutoff] ** 2)
+    high_freq_energy = np.sum(spectrum[cutoff : n - cutoff] ** 2)
     r_hf = high_freq_energy / total_energy
 
     return 1.0 - r_hf
@@ -416,6 +457,7 @@ def layer_9_spectral_coherence(signal: np.ndarray, sample_rate: float = 44100) -
 # =============================================================================
 # LAYER 10: SPIN COHERENCE
 # =============================================================================
+
 
 def layer_10_spin_coherence(q: complex) -> float:
     """
@@ -441,15 +483,9 @@ def layer_10_spin_coherence(q: complex) -> float:
 # LAYER 11: TRIADIC TEMPORAL DISTANCE
 # =============================================================================
 
+
 def layer_11_triadic_distance(
-    u1: np.ndarray,
-    u2: np.ndarray,
-    tau1: float,
-    tau2: float,
-    eta1: float,
-    eta2: float,
-    q1: complex,
-    q2: complex
+    u1: np.ndarray, u2: np.ndarray, tau1: float, tau2: float, eta1: float, eta2: float, q1: complex, q2: complex
 ) -> float:
     """
     Layer 11: Triadic Temporal Distance d_tri
@@ -490,29 +526,36 @@ def layer_11_triadic_distance(
 
 
 # =============================================================================
-# LAYER 12: HARMONIC SCALING (SUPEREXPONENTIAL)
+# LAYER 12: HARMONIC SCALING (BOUNDED SAFETY)
 # =============================================================================
 
+
+def _finite_scalar(value) -> bool:
+    return (
+        isinstance(value, (int, float, np.integer, np.floating))
+        and not isinstance(value, (bool, np.bool_))
+        and bool(np.isfinite(value))
+    )
+
+
 def layer_12_harmonic_scaling(d: float, phase_deviation: float = 0.0) -> float:
-    """
-    Layer 12: Bounded Harmonic Scaling H(d) = 1/(1 + d + 2*pd)
+    """Bounded safety, H=1/(1+d+2*phase_deviation); lower means less safe.
 
-    Safety score bounded in (0, 1]:
-        - d = 0 → H = 1 (safe)
-        - d → ∞ → H → 0 (dangerous)
-
-    Theorem C (Risk Monotonicity):
-        d₁ < d₂ ⟹ H(d₁) > H(d₂) (lower score = higher risk)
+    Zero is a valid neutral distance. Missing or invalid numbers are not zero.
     """
-    return 1.0 / (1.0 + d + 2.0 * phase_deviation)
+    if not all(_finite_scalar(v) and v >= 0 for v in (d, phase_deviation)):
+        raise ValueError("Distances and phase deviation must be finite and nonnegative")
+    return 1.0 / (1.0 + float(d) + 2.0 * float(phase_deviation))
 
 
 # =============================================================================
 # LAYER 13: DECISION & RISK
 # =============================================================================
 
+
 class RiskLevel(Enum):
     """Risk classification levels."""
+
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
@@ -522,6 +565,7 @@ class RiskLevel(Enum):
 @dataclass
 class RiskAssessment:
     """Complete risk assessment from Layer 13."""
+
     raw_risk: float
     scaled_risk: float
     level: RiskLevel
@@ -536,54 +580,47 @@ def layer_13_decision(
     coherence: float,
     realm_idx: int,
     theta_1: float = THETA_1,
-    theta_2: float = THETA_2
+    theta_2: float = THETA_2,
 ) -> RiskAssessment:
+    """Combine realm distance, bounded safety and coherence monotonically.
+
+    Raw risk is 1-H_d. Coherence loss and realm sensitivity may raise risk;
+    they cannot undo a distance-based rejection. Distance thresholds map to
+    bounded risk thresholds via d/(1+d). Risk >= .99 requests emergency SNAP.
+    Invalid measurements/configuration fail closed with finite telemetry.
     """
-    Layer 13: Decision & Risk Assessment
-
-    Risk' = H(d*) · (1 - coherence) · realm_weight
-
-    Decision thresholds:
-        - d* < θ₁: LOW risk → ALLOW
-        - θ₁ ≤ d* < θ₂: MEDIUM risk → REVIEW
-        - d* ≥ θ₂: HIGH risk → DENY
-        - H(d*) > 100: CRITICAL → SNAP
-    """
-    # Realm-specific weight (different realms have different sensitivity)
-    realm_weights = [1.0, 1.2, 0.8, 1.5, 1.1]
-    realm_weight = realm_weights[realm_idx % len(realm_weights)]
-
-    # Compute adjusted risk
-    raw_risk = H_d
-    scaled_risk = H_d * (1 - coherence + 0.1) * realm_weight
-
-    # Determine level and decision
-    if H_d > 100:
-        level = RiskLevel.CRITICAL
-        decision = "SNAP"
-    elif d_star >= theta_2:
-        level = RiskLevel.HIGH
-        decision = "DENY"
-    elif d_star >= theta_1:
-        level = RiskLevel.MEDIUM
-        decision = "REVIEW"
-    else:
-        level = RiskLevel.LOW
-        decision = "ALLOW"
-
-    return RiskAssessment(
-        raw_risk=raw_risk,
-        scaled_risk=scaled_risk,
-        level=level,
-        realm_index=realm_idx,
-        coherence=coherence,
-        decision=decision
+    valid = (
+        all(_finite_scalar(v) for v in (d_star, H_d, coherence, theta_1, theta_2))
+        and d_star >= 0
+        and 0 <= H_d <= 1
+        and 0 <= coherence <= 1
+        and 0 < theta_1 < theta_2
+        and isinstance(realm_idx, (int, np.integer))
+        and not isinstance(realm_idx, (bool, np.bool_))
+        and realm_idx >= 0
     )
+    if not valid:
+        return RiskAssessment(1.0, 1.0, RiskLevel.CRITICAL, -1, 0.0, "DENY")
+
+    realm_weights = [1.0, 1.2, 0.8, 1.5, 1.1]
+    raw_risk = 1.0 - float(H_d)
+    evidence_risk = max(raw_risk, 1.0 - float(coherence))
+    scaled_risk = min(1.0, max(evidence_risk, evidence_risk * realm_weights[realm_idx % len(realm_weights)]))
+    if scaled_risk >= 0.99:
+        level, decision = RiskLevel.CRITICAL, "SNAP"
+    elif d_star >= theta_2 or scaled_risk >= theta_2 / (1.0 + theta_2):
+        level, decision = RiskLevel.HIGH, "DENY"
+    elif d_star >= theta_1 or scaled_risk >= theta_1 / (1.0 + theta_1):
+        level, decision = RiskLevel.MEDIUM, "REVIEW"
+    else:
+        level, decision = RiskLevel.LOW, "ALLOW"
+    return RiskAssessment(raw_risk, scaled_risk, level, realm_idx, coherence, decision)
 
 
 # =============================================================================
 # LAYER 14: AUDIO AXIS
 # =============================================================================
+
 
 def layer_14_audio_axis(
     intent: float,
@@ -591,7 +628,7 @@ def layer_14_audio_axis(
     risk_level: RiskLevel,
     carrier_freq: float = 440.0,
     sample_rate: int = 44100,
-    duration: float = 0.1
+    duration: float = 0.1,
 ) -> np.ndarray:
     """
     Layer 14: Audio Axis S_audio
@@ -607,12 +644,7 @@ def layer_14_audio_axis(
     t = np.linspace(0, duration, int(sample_rate * duration))
 
     # Amplitude from risk
-    risk_amplitudes = {
-        RiskLevel.LOW: 1.0,
-        RiskLevel.MEDIUM: 0.7,
-        RiskLevel.HIGH: 0.4,
-        RiskLevel.CRITICAL: 0.1
-    }
+    risk_amplitudes = {RiskLevel.LOW: 1.0, RiskLevel.MEDIUM: 0.7, RiskLevel.HIGH: 0.4, RiskLevel.CRITICAL: 0.1}
     amplitude = risk_amplitudes.get(risk_level, 0.5)
 
     # Phase from intent
@@ -631,9 +663,11 @@ def layer_14_audio_axis(
 # COMPLETE PIPELINE
 # =============================================================================
 
+
 @dataclass
 class PipelineState:
     """State at each layer of the pipeline."""
+
     layer: int
     name: str
     value: Any
@@ -652,11 +686,7 @@ class FourteenLayerPipeline:
     """
 
     def __init__(
-        self,
-        alpha: float = ALPHA_EMBED,
-        R: float = R_BASE,
-        theta_1: float = THETA_1,
-        theta_2: float = THETA_2
+        self, alpha: float = ALPHA_EMBED, R: float = R_BASE, theta_1: float = THETA_1, theta_2: float = THETA_2
     ):
         self.alpha = alpha
         self.R = R
@@ -684,10 +714,10 @@ class FourteenLayerPipeline:
         ref_u: np.ndarray = None,
         ref_tau: float = 0.0,
         ref_eta: float = 4.0,
-        ref_q: complex = 1+0j,
+        ref_q: complex = 1 + 0j,
         # Phase transform parameters
         phase_angle: float = 0.0,
-        translation: np.ndarray = None
+        translation: np.ndarray = None,
     ) -> Tuple[RiskAssessment, List[PipelineState]]:
         """
         Run the complete 14-layer pipeline.
@@ -722,25 +752,21 @@ class FourteenLayerPipeline:
 
         # Layer 6: Breathing Transform
         u_breath = layer_6_breathing(u, t)
-        self._record(6, "Breathing Transform", u_breath, {
-            "breathing_factor": breathing_factor(t),
-            "norm_change": np.linalg.norm(u_breath) - np.linalg.norm(u)
-        })
-
-        # Verify Theorem A: d_H preserved
-        d_H_after_breath = layer_5_hyperbolic_distance(
-            layer_6_breathing(u, t),
-            layer_6_breathing(ref_u, t)
+        self._record(
+            6,
+            "Breathing Transform",
+            u_breath,
+            {"breathing_factor": breathing_factor(t), "norm_change": np.linalg.norm(u_breath) - np.linalg.norm(u)},
         )
+
+        # Measure breathing deformation; it intentionally changes d_H
+        d_H_after_breath = layer_5_hyperbolic_distance(layer_6_breathing(u, t), layer_6_breathing(ref_u, t))
 
         # Layer 7: Phase Transform
         if translation is None:
             translation = np.zeros_like(u_breath)
         u_phase = layer_7_phase(u_breath, phase_angle, translation)
-        self._record(7, "Phase Transform", u_phase, {
-            "phase_angle": phase_angle,
-            "norm": np.linalg.norm(u_phase)
-        })
+        self._record(7, "Phase Transform", u_phase, {"phase_angle": phase_angle, "norm": np.linalg.norm(u_phase)})
 
         # Layer 8: Multi-Well Realms
         if self.realm_centers is None:
@@ -769,35 +795,33 @@ class FourteenLayerPipeline:
 
         # Layer 13: Decision & Risk
         risk = layer_13_decision(d_star, H_d, coherence, realm_idx, self.theta_1, self.theta_2)
-        self._record(13, "Decision & Risk", risk, {
-            "raw_risk": risk.raw_risk,
-            "scaled_risk": risk.scaled_risk,
-            "level": risk.level.value,
-            "decision": risk.decision
-        })
+        self._record(
+            13,
+            "Decision & Risk",
+            risk,
+            {
+                "raw_risk": risk.raw_risk,
+                "scaled_risk": risk.scaled_risk,
+                "level": risk.level.value,
+                "decision": risk.decision,
+            },
+        )
 
         # Layer 14: Audio Axis
         audio = layer_14_audio_axis(np.abs(intent), coherence, risk.level)
-        self._record(14, "Audio Axis", audio, {
-            "duration": len(audio) / 44100,
-            "max_amplitude": np.max(np.abs(audio))
-        })
+        self._record(14, "Audio Axis", audio, {"duration": len(audio) / 44100, "max_amplitude": np.max(np.abs(audio))})
 
         return risk, self.layer_states
 
     def _record(self, layer: int, name: str, value: Any, metrics: Dict[str, float]):
         """Record layer state."""
-        self.layer_states.append(PipelineState(
-            layer=layer,
-            name=name,
-            value=value,
-            metrics=metrics
-        ))
+        self.layer_states.append(PipelineState(layer=layer, name=name, value=value, metrics=metrics))
 
 
 # =============================================================================
 # THEOREM VERIFICATION
 # =============================================================================
+
 
 def verify_theorem_A_metric_invariance(n_tests: int = 100) -> Tuple[bool, Dict[str, Any]]:
     """
@@ -841,11 +865,7 @@ def verify_theorem_A_metric_invariance(n_tests: int = 100) -> Tuple[bool, Dict[s
             results["passed"] += 1
         else:
             results["failed"] += 1
-            results["errors"].append({
-                "d_original": d_original,
-                "d_phase": d_phase,
-                "error": error_phase
-            })
+            results["errors"].append({"d_original": d_original, "d_phase": d_phase, "error": error_phase})
 
     return results["failed"] == 0, results
 
@@ -867,9 +887,16 @@ def verify_theorem_B_continuity() -> Tuple[bool, Dict[str, Any]]:
 
     # Base inputs
     base = {
-        "identity": 1.0, "intent": 0.5+0.5j, "trajectory": 0.9,
-        "timing": 1000.0, "commitment": 0.8, "signature": 0.95,
-        "t": 10.0, "tau": 1.0, "eta": 4.0, "q": 1+0j
+        "identity": 1.0,
+        "intent": 0.5 + 0.5j,
+        "trajectory": 0.9,
+        "timing": 1000.0,
+        "commitment": 0.8,
+        "signature": 0.95,
+        "t": 10.0,
+        "tau": 1.0,
+        "eta": 4.0,
+        "q": 1 + 0j,
     }
 
     # Compute base output
@@ -895,9 +922,9 @@ def verify_theorem_C_risk_monotonicity(n_tests: int = 100) -> Tuple[bool, Dict[s
     """
     Theorem C: Risk Monotonicity
 
-    d₁ < d₂ ⟹ H(d₁, R) < H(d₂, R) for R > 1
+    d₁ < d₂ ⟹ H(d₁) > H(d₂) for nonnegative distances
 
-    The harmonic scaling function is strictly monotonically increasing.
+    The bounded safety function is strictly monotonically decreasing.
     """
     results = {"passed": 0, "failed": 0, "violations": []}
 
@@ -914,10 +941,7 @@ def verify_theorem_C_risk_monotonicity(n_tests: int = 100) -> Tuple[bool, Dict[s
             results["passed"] += 1
         else:
             results["failed"] += 1
-            results["violations"].append({
-                "d1": d1, "d2": d2,
-                "H1": H1, "H2": H2
-            })
+            results["violations"].append({"d1": d1, "d2": d2, "H1": H1, "H2": H2})
 
     return results["failed"] == 0, results
 
@@ -950,7 +974,7 @@ def verify_theorem_D_diffeomorphism(n_tests: int = 50) -> Tuple[bool, Dict[str, 
         norm = np.linalg.norm(u_forward)
         if norm > EPS:
             b = breathing_factor(t)
-            inv_norm = np.tanh(np.arctanh(min(norm, 1-EPS)) / b)
+            inv_norm = np.tanh(np.arctanh(min(norm, 1 - EPS)) / b)
             u_inverse = inv_norm * u_forward / norm
         else:
             u_inverse = np.zeros_like(u_forward)
@@ -989,6 +1013,7 @@ def run_all_theorem_verification() -> Dict[str, Tuple[bool, Dict[str, Any]]]:
 # DEMO
 # =============================================================================
 
+
 def demo():
     """Demonstrate the 14-layer pipeline."""
     print("=" * 70)
@@ -1010,14 +1035,15 @@ def demo():
         t=10.0,
         tau=1.0,
         eta=4.0,
-        q=0.99 + 0.1j
+        q=0.99 + 0.1j,
     )
 
     print("Layer-by-Layer Processing:")
     print("-" * 70)
     for state in states:
-        metrics_str = ", ".join(f"{k}={v:.4f}" if isinstance(v, float) else f"{k}={v}"
-                               for k, v in state.metrics.items())
+        metrics_str = ", ".join(
+            f"{k}={v:.4f}" if isinstance(v, float) else f"{k}={v}" for k, v in state.metrics.items()
+        )
         print(f"Layer {state.layer:2d}: {state.name:<20s} | {metrics_str}")
     print()
 

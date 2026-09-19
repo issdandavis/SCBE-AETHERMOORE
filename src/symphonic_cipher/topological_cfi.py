@@ -4,12 +4,13 @@ Topological Control-Flow Integrity (TLCFI) Module
 =================================================
 Implements patent claims for topological linearization CFI:
 - Control-flow graph extraction and analysis
-- Hamiltonian path testing (Dirac/Ore criteria)
+- Directed Hamiltonian path diagnostics
 - Dimensional lifting for non-Hamiltonian graphs
 - Principal curve computation through embedded states
-- Runtime deviation detection with O(1) checks
+- Frozen directed-edge enforcement with expected O(1) hash lookups
 
-Achieves 90%+ detection rate for ROP/JOP attacks at <0.5% overhead.
+Embeddings are diagnostic, not a substitute for execution policy. End-to-end
+attack detection and overhead require separate measured benchmarks.
 
 Author: Issac Davis / SpiralVerse OS
 Date: January 15, 2026
@@ -50,7 +51,6 @@ class BasicBlock:
 
 
 @dataclass
-@dataclass
 class HyperbolicPoint:
     """2D point in the Poincare disk model (|z| < 1)."""
 
@@ -61,8 +61,23 @@ class HyperbolicPoint:
         return float(np.sqrt(self.x**2 + self.y**2))
 
 
+@dataclass(eq=False)
 class CFGEdge:
-    """Represents an edge in the control-flow graph."""
+    """Represents an edge in the control-flow graph.
+
+    Two decisions here are load-bearing and were previously wrong:
+
+    1. The ``@dataclass`` decorator is required. Without it the annotations
+       below are bare class-level hints rather than fields, and
+       ``CFGEdge(source=0, target=1, edge_type="jump")`` raises
+       ``TypeError: CFGEdge() takes no arguments`` — no edge can be built.
+    2. ``eq=False`` keeps dataclass from generating an ``__eq__`` over all three
+       fields. Identity is ``(source, target)``, matching ``__hash__``. With a
+       generated three-field ``__eq__``, two edges between the same pair of
+       blocks would hash alike but compare unequal, so ``ControlFlowGraph.edges``
+       (a ``Set``) would store both and inflate the degree counts that
+       :class:`HamiltonianTester` relies on.
+    """
 
     source: int
     target: int
@@ -70,6 +85,11 @@ class CFGEdge:
 
     def __hash__(self):
         return hash((self.source, self.target))
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, CFGEdge):
+            return NotImplemented
+        return (self.source, self.target) == (other.source, other.target)
 
 
 class ControlFlowGraph:
@@ -91,6 +111,8 @@ class ControlFlowGraph:
 
     def add_edge(self, edge: CFGEdge):
         """Add a control-flow edge."""
+        if edge in self.edges:
+            return
         self.edges.add(edge)
         if edge.source not in self.adjacency:
             self.adjacency[edge.source] = []
@@ -110,59 +132,216 @@ class ControlFlowGraph:
 
 
 class HamiltonianTester:
+    """Tests whether a control-flow graph admits a Hamiltonian path.
+
+    A control-flow graph is DIRECTED — its edges are jumps, calls, returns and
+    fallthroughs, all of which are one-way. Dirac's criterion and Ore's theorem
+    are theorems about simple UNDIRECTED graphs and are not valid on a digraph;
+    applying them here produced false positives (see ``EXACT_MAX_VERTICES`` note
+    and ``tests/test_topological_cfi_hamiltonian.py``).
+
+    The failure direction mattered: ``lift_to_hamiltonian`` is applied only when
+    a graph is found NON-Hamiltonian, so a false positive skipped the lift, left
+    no principal curve, and gave runtime deviation nothing to measure against —
+    the detector failed open.
+
+    Strategy, cheapest test first:
+
+    1. Necessary conditions (O(V+E)) — reject outright. A Hamiltonian path has
+       exactly one start and one end, so more than one source or more than one
+       sink is fatal, as is weak disconnection.
+    2. Ghouila-Houri (1960) (O(V+E)) — accept. A strongly connected digraph in
+       which EVERY vertex has in-degree >= n/2 AND out-degree >= n/2 has a
+       Hamiltonian circuit, which implies a Hamiltonian path. Note the two
+       degrees are constrained separately; summing them is strictly weaker and
+       is what admitted sinks.
+    3. Exact bitmask DP (O(2^n * n^2)) for small graphs — decide it properly.
+       Per-function CFGs are usually well inside this bound.
+    4. Otherwise report unknown, which routes the graph to the lift. Unknown
+       must fail CLOSED.
     """
-    Tests if a control-flow graph admits a Hamiltonian path.
-    Uses Dirac's and Ore's theorems as sufficient conditions.
-    """
+
+    #: Above this vertex count the exact DP is skipped (2^n state space).
+    EXACT_MAX_VERTICES = 20
 
     def __init__(self, cfg: ControlFlowGraph):
         self.cfg = cfg
 
-    def dirac_criterion(self) -> bool:
-        """
-        Dirac's theorem: If every vertex has degree >= n/2,
-        the graph is Hamiltonian.
-        """
-        n = self.cfg.vertex_count()
-        if n < 3:
-            return True
-        threshold = n / 2
-        return all(self.cfg.get_degree(v) >= threshold for v in self.cfg.vertices)
+    def _degrees(self) -> Tuple[Dict[int, int], Dict[int, int]]:
+        """Return (in_degree, out_degree) maps, counted separately."""
+        in_deg = {v: 0 for v in self.cfg.vertices}
+        out_deg = {v: 0 for v in self.cfg.vertices}
+        for edge in self.cfg.edges:
+            if edge.source == edge.target:
+                continue  # self-loops do not connect distinct Hamiltonian vertices
+            if edge.source in out_deg:
+                out_deg[edge.source] += 1
+            if edge.target in in_deg:
+                in_deg[edge.target] += 1
+        return in_deg, out_deg
 
-    def ore_criterion(self) -> bool:
+    def necessary_conditions(self) -> Tuple[bool, str]:
+        """Cheap structural conditions that a Hamiltonian path must satisfy.
+
+        Returns:
+            (still_possible, reason). ``False`` is a definitive NO.
         """
-        Ore's theorem: If deg(u) + deg(v) >= n for every
-        non-adjacent pair u,v, the graph is Hamiltonian.
+        n = self.cfg.vertex_count()
+        if n < 2:
+            return True, "trivial"
+
+        in_deg, out_deg = self._degrees()
+
+        # A path visits every vertex once and has exactly one final vertex, so at
+        # most one vertex may have no outgoing edge. Two sinks is unsatisfiable.
+        sinks = [v for v, d in out_deg.items() if d == 0]
+        if len(sinks) > 1:
+            return False, f"multiple_sinks({len(sinks)})"
+
+        sources = [v for v, d in in_deg.items() if d == 0]
+        if len(sources) > 1:
+            return False, f"multiple_sources({len(sources)})"
+
+        if not self._is_weakly_connected():
+            return False, "disconnected"
+
+        return True, "possible"
+
+    def _is_weakly_connected(self) -> bool:
+        """True if the underlying undirected graph is connected."""
+        vertices = list(self.cfg.vertices.keys())
+        if not vertices:
+            return True
+        undirected: Dict[int, Set[int]] = {v: set() for v in vertices}
+        for edge in self.cfg.edges:
+            if edge.source in undirected and edge.target in undirected:
+                undirected[edge.source].add(edge.target)
+                undirected[edge.target].add(edge.source)
+        seen = {vertices[0]}
+        stack = [vertices[0]]
+        while stack:
+            for nxt in undirected[stack.pop()]:
+                if nxt not in seen:
+                    seen.add(nxt)
+                    stack.append(nxt)
+        return len(seen) == len(vertices)
+
+    def _is_strongly_connected(self) -> bool:
+        """True if every vertex reaches every other following edge direction."""
+        vertices = list(self.cfg.vertices.keys())
+        if len(vertices) < 2:
+            return True
+        forward: Dict[int, Set[int]] = {v: set() for v in vertices}
+        reverse: Dict[int, Set[int]] = {v: set() for v in vertices}
+        for edge in self.cfg.edges:
+            if edge.source in forward and edge.target in forward:
+                forward[edge.source].add(edge.target)
+                reverse[edge.target].add(edge.source)
+
+        def reaches_all(adj: Dict[int, Set[int]]) -> bool:
+            seen = {vertices[0]}
+            stack = [vertices[0]]
+            while stack:
+                for nxt in adj[stack.pop()]:
+                    if nxt not in seen:
+                        seen.add(nxt)
+                        stack.append(nxt)
+            return len(seen) == len(vertices)
+
+        return reaches_all(forward) and reaches_all(reverse)
+
+    def ghouila_houri_criterion(self) -> bool:
+        """Ghouila-Houri sufficient condition for a Hamiltonian circuit.
+
+        A strongly connected digraph on n vertices in which every vertex has
+        in-degree >= n/2 and out-degree >= n/2 is Hamiltonian. The two degrees
+        are checked SEPARATELY — this is the directed replacement for the
+        previously-used Dirac criterion.
         """
         n = self.cfg.vertex_count()
         if n < 3:
-            return True
+            return False  # defer to the exact test
+        if not self._is_strongly_connected():
+            return False
+        in_deg, out_deg = self._degrees()
+        threshold = n / 2
+        return all(in_deg[v] >= threshold and out_deg[v] >= threshold for v in self.cfg.vertices)
+
+    def _exact_hamiltonian_path(self) -> Optional[bool]:
+        """Decide Hamiltonian-path existence exactly by bitmask DP.
+
+        Returns None if the graph is too large for the exact test.
+        """
         vertices = list(self.cfg.vertices.keys())
-        for i, u in enumerate(vertices):
-            for v in vertices[i + 1 :]:
-                # Check if non-adjacent
-                adjacent = v in self.cfg.adjacency.get(u, []) or u in self.cfg.adjacency.get(v, [])
-                if not adjacent:
-                    if self.cfg.get_degree(u) + self.cfg.get_degree(v) < n:
-                        return False
-        return True
+        n = len(vertices)
+        if n == 0:
+            return True
+        if n > self.EXACT_MAX_VERTICES:
+            return None
+
+        index = {v: i for i, v in enumerate(vertices)}
+        succ = [0] * n
+        for edge in self.cfg.edges:
+            if edge.source in index and edge.target in index and edge.source != edge.target:
+                succ[index[edge.source]] |= 1 << index[edge.target]
+
+        full = (1 << n) - 1
+        # reachable[mask] = bitset of vertices that can be the END of a path
+        # visiting exactly `mask`.
+        reachable = [0] * (1 << n)
+        for i in range(n):
+            reachable[1 << i] = 1 << i
+        for mask in range(1 << n):
+            ends = reachable[mask]
+            if not ends:
+                continue
+            if mask == full:
+                return True
+            e = ends
+            while e:
+                low = e & -e
+                i = low.bit_length() - 1
+                e ^= low
+                nxt = succ[i] & ~mask
+                while nxt:
+                    lown = nxt & -nxt
+                    j = lown.bit_length() - 1
+                    nxt ^= lown
+                    reachable[mask | lown] |= 1 << j
+        return bool(reachable[full])
 
     def is_hamiltonian(self) -> Tuple[bool, str]:
+        """Test whether the CFG admits a Hamiltonian path.
+
+        Returns:
+            (is_hamiltonian, reason). ``reason`` is one of ``trivial``,
+            ``ghouila_houri``, ``exact``, a ``necessary:*`` rejection, or
+            ``unknown``. ``unknown`` means undecided and MUST be treated as
+            non-Hamiltonian by callers so the dimensional lift still runs.
         """
-        Test if graph is Hamiltonian using sufficient conditions.
-        Returns (is_hamiltonian, reason).
-        """
-        if self.dirac_criterion():
-            return True, "dirac"
-        if self.ore_criterion():
-            return True, "ore"
+        n = self.cfg.vertex_count()
+        if n < 2:
+            return True, "trivial"
+
+        possible, why = self.necessary_conditions()
+        if not possible:
+            return False, f"necessary:{why}"
+
+        if self.ghouila_houri_criterion():
+            return True, "ghouila_houri"
+
+        exact = self._exact_hamiltonian_path()
+        if exact is not None:
+            return exact, "exact"
+
         return False, "unknown"
 
 
 class DimensionalLifter:
-    """
-    Lifts non-Hamiltonian graphs to higher dimensions to induce
-    Hamiltonian connectivity. Per patent: d' >= 4 dimensions.
+    """Embed graph vertices for diagnostics without changing legal edges.
+
+    Higher dimension and distance variance do not establish Hamiltonicity.
+    The historical method name is retained for callers, not as a proof claim.
     """
 
     def __init__(self, cfg: ControlFlowGraph):
@@ -211,8 +390,8 @@ class DimensionalLifter:
 
     def lift_to_hamiltonian(self) -> Tuple[Dict[int, np.ndarray], int]:
         """
-        Iteratively increase dimension until graph becomes
-        Hamiltonian-connected in the lifted space.
+        Select an embedding dimension using a distance-variance heuristic.
+        The original graph connectivity is unchanged.
         """
         for dim in range(MIN_DIMENSION_LIFT, MAX_DIMENSION_LIFT + 1):
             self.embeddings = self.spectral_embedding(dim)
@@ -306,23 +485,18 @@ class PrincipalCurve:
     def deviation(self, point: np.ndarray) -> float:
         """
         Compute orthogonal deviation from principal curve.
-        This is the key metric for CFI violation detection.
+        Diagnostic only: proximity must never grant a control-flow permission.
         """
         _, closest = self.project(point)
         return float(np.linalg.norm(point - closest))
 
 
 class TopologicalCFI:
-    """
-    Main Topological Control-Flow Integrity system.
-    Implements the full patent claims:
-    - CFG extraction and analysis
-    - Hamiltonian testing
-    - Dimensional lifting
-    - Principal curve computation
-    - O(1) runtime deviation checks
+    """Frozen directed policy enforcement with geometric diagnostics.
 
-    Achieves 90%+ ROP detection at <0.5% overhead.
+    A curve through known blocks cannot distinguish a legal edge from a jump
+    to another known block. Runtime authorization therefore uses the original
+    directed edges, not proximity. This is not proof of semantic program safety.
     """
 
     def __init__(self):
@@ -336,18 +510,35 @@ class TopologicalCFI:
         self.violation_count: int = 0
         self.check_count: int = 0
         self.hamiltonian_tested: bool = False
+        self._policy_ready = False
+        self._allowed_vertices = frozenset()
+        self._allowed_edges = frozenset()
 
     def initialize(self, cfg: ControlFlowGraph) -> Dict[str, any]:
         """
         Initialize CFI system with a control-flow graph.
-        Pre-computes all embeddings for O(1) runtime checks.
+        Freeze an explicit policy; rebuild only through this method.
+        A failed rebuild revokes the previous policy rather than failing open.
         """
+        self._policy_ready = False
+        self.hamiltonian_tested = False
+        self._allowed_vertices = frozenset()
+        self._allowed_edges = frozenset()
+        self.curve = None
+        self.embeddings = {}
+        vertices = frozenset(cfg.vertices)
+        edges = frozenset((edge.source, edge.target) for edge in cfg.edges)
+        if any(type(v) is not int for v in vertices) or any(
+            type(a) is not int or type(b) is not int or a not in vertices or b not in vertices for a, b in edges
+        ):
+            raise ValueError("CFI policy requires integer vertices and edges with known endpoints")
         self.cfg = cfg
         results = {"status": "initialized"}
 
         # Step 1: Test Hamiltonicity
         self.hamiltonian_tester = HamiltonianTester(cfg)
         self.is_hamiltonian, reason = self.hamiltonian_tester.is_hamiltonian()
+        self.hamiltonian_tested = True
         results["hamiltonian"] = self.is_hamiltonian
         results["hamiltonian_reason"] = reason
 
@@ -368,40 +559,36 @@ class TopologicalCFI:
         results["curve_fitted"] = curve_fitted
         results["num_vertices"] = cfg.vertex_count()
         results["num_edges"] = cfg.edge_count()
+        self._allowed_vertices = vertices
+        self._allowed_edges = edges
+        self._policy_ready = bool(vertices)
+        results["policy_ready"] = self._policy_ready
+        results["enforcement"] = "frozen_directed_edges"
+        results["geometry_proves_connectivity"] = False
 
         return results
 
     def check_transition(self, from_block: int, to_block: int) -> CFIResult:
         """
-        O(1) runtime check for control-flow transition validity.
+        Expected O(1) hash lookup against the initialized directed policy.
         This is called at every control-flow transition.
         """
         self.check_count += 1
 
-        if self.curve is None or not self.embeddings:
+        if not self._policy_ready:
             return CFIResult.UNKNOWN
-
-        # Get embeddings for both blocks
-        from_embed = self.embeddings.get(from_block)
-        to_embed = self.embeddings.get(to_block)
-
-        if from_embed is None or to_embed is None:
-            # Unknown block - potential violation
-            self.violation_count += 1
-            return CFIResult.VIOLATION
-
-        # Compute deviation from principal curve
-        # This is the key O(1) check
-        deviation = self.curve.deviation(to_embed)
-
-        if deviation > DEVIATION_THRESHOLD:
+        if (
+            type(from_block) is not int
+            or type(to_block) is not int
+            or (from_block, to_block) not in self._allowed_edges
+        ):
             self.violation_count += 1
             return CFIResult.VIOLATION
 
         return CFIResult.VALID
 
     def get_detection_stats(self) -> Dict[str, float]:
-        """Get detection statistics."""
+        """Observed rejection fraction; not a labelled attack detection rate."""
         if self.check_count == 0:
             return {"detection_rate": 0.0, "checks": 0, "violations": 0}
         return {
@@ -412,42 +599,24 @@ class TopologicalCFI:
 
     def verify_execution_path(self, path: List[str]) -> Dict[str, Any]:
         """
-        Compatibility API: verify a symbolic execution path.
-
-        A path is treated as Hamiltonian-valid when it contains no repeated nodes.
+        Verify canonical string block IDs against the initialized policy.
+        Legitimate cycles are allowed. Uniqueness alone is not authorization.
         """
-        self.hamiltonian_tested = True
-
-        if not path or len(path) < 2:
-            return {
-                "valid": False,
-                "hamiltonian_tested": True,
-                "reason": "violation: path too short",
-                "hash": hashlib.sha256(str(path).encode()).hexdigest(),
-            }
-
-        seen = set()
-        repeated = []
-        for node in path:
-            if node in seen:
-                repeated.append(node)
-            seen.add(node)
-
-        path_hash = hashlib.sha256("->".join(path).encode()).hexdigest()
-
-        if repeated:
-            return {
-                "valid": False,
-                "hamiltonian_tested": True,
-                "reason": f"violation: repeated nodes detected ({sorted(set(repeated))})",
-                "hash": path_hash,
-            }
-
+        ids = {str(v): v for v in self._allowed_vertices}
+        valid = (
+            self._policy_ready
+            and isinstance(path, (list, tuple))
+            and len(path) >= 2
+            and all(type(node) is str and node in ids for node in path)
+        )
+        if valid:
+            valid = all(self.check_transition(ids[a], ids[b]) == CFIResult.VALID for a, b in zip(path, path[1:]))
         return {
-            "valid": True,
-            "hamiltonian_tested": True,
-            "reason": "verified",
-            "hash": path_hash,
+            "valid": bool(valid),
+            "hamiltonian_tested": self.hamiltonian_tested,
+            "policy_verified": bool(valid),
+            "reason": "verified directed policy" if valid else "violation: missing policy or illegal path",
+            "hash": hashlib.sha256(repr(path).encode()).hexdigest(),
         }
 
 

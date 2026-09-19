@@ -25,6 +25,11 @@ CORE_SMOKE_PATHS: tuple[str, ...] = (
     "tests/test_notarize.py",
     "tests/test_phi_ternary.py",
     "tests/test_runtime_gate.py",
+    # Security contracts must run on every PR, including both Python trees.
+    "tests/test_patent_security_regressions.py",
+    "tests/governance/test_patent_decision_repairs.py",
+    "tests/governance/test_full_system_decision_precedence.py",
+    "tests/security/test_breathing_and_backend_contracts.py",
     "tests/test_sacred_eggs.py",
     "tests/test_sacred_egg_registry.py",
     "tests/test_semantic_projector_deep.py",

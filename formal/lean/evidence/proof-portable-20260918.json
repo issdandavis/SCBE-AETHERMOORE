@@ -1,0 +1,202 @@
+{
+  "schema": "scbe-lean-proof-check/v1",
+  "checked_at": "2026-09-18T23:25:12.839358+00:00",
+  "lean": "Lean (version 4.19.0, x86_64-w64-windows-gnu, commit 6caaee842e94, Release)",
+  "passed": true,
+  "theorem_count": 47,
+  "axioms": {
+    "SCBE.codec_roundtrip": [
+      "propext",
+      "Quot.sound"
+    ],
+    "SCBE.translation_composes": [
+      "propext",
+      "Quot.sound"
+    ],
+    "SCBE.translation_back": [
+      "propext",
+      "Quot.sound"
+    ],
+    "SCBE.codec_preserves_length": [
+      "propext",
+      "Quot.sound"
+    ],
+    "SCBE.combine_allow_iff": [
+      "propext"
+    ],
+    "SCBE.aggregate_allow_iff": [
+      "propext",
+      "Quot.sound"
+    ],
+    "SCBE.aggregate_never_weakens": [
+      "propext"
+    ],
+    "SCBE.fourteen_layer_veto": [
+      "propext"
+    ],
+    "SCBE.refused_reference_unchanged": [
+      "propext"
+    ],
+    "SCBE.authorizedStep_contract": [
+      "propext",
+      "Quot.sound"
+    ],
+    "SCBE.score_denominator_positive": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "SCBE.safetyScore_positive": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "SCBE.safetyScore_le_one": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "SCBE.safetyScore_antitone": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "SCBE.safetyScore_strict_distance": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "SCBE.bounded_score_never_exceeds_100": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "SCBE.evidenceRisk_bounds": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "SCBE.evidenceRisk_monotone": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "SCBE.phi_positive": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "SCBE.tongue_weight_positive": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "SCBE.phi_greater_than_one": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "SCBE.weightedEnergy_nonnegative": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "SCBE.weightedEnergy_positive": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "SCBE.separationSq_nonnegative": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "SCBE.separationSq_symmetric": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "SCBE.poincare_denominator_positive": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "SCBE.poincareArgument_at_least_one": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "SCBE.poincareArgument_symmetric": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "SCBE.poincareArgument_self": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "SCBE.harmonicCost_at_least_one": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "SCBE.harmonicCost_monotone": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "SCBE.harmonicCost_strict": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "SCBE.cost_and_score_have_opposite_orders": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "SCBE.permits_iff": [
+      "propext"
+    ],
+    "SCBE.permitted_edge": [
+      "propext"
+    ],
+    "SCBE.walk_only_directed_edges": [
+      "propext"
+    ],
+    "SCBE.execution_fuel_bound": [
+      "propext"
+    ],
+    "SCBE.execution_legal": [
+      "propext"
+    ],
+    "SCBE.combine_preserves_left": [],
+    "SCBE.combine_preserves_right": [],
+    "SCBE.combine_associative": [],
+    "SCBE.combine_commutative": [],
+    "SCBE.reverse_edge_denied": [],
+    "SCBE.known_destination_is_insufficient": [],
+    "SCBE.symmetric_gate_cannot_enforce_direction": [],
+    "SCBE.Vocabulary.exactly_six_tables": [],
+    "SCBE.Vocabulary.each_table_has_256_symbols": []
+  },
+  "rejected_false_fixtures": [
+    "reverse_edge",
+    "weaken_refusal",
+    "exclude_valid_center"
+  ],
+  "sha256": {
+    "SCBE/Codecs.lean": "f7e328e43700b6a254bd2d2277e39ab69b421a1a26337866875f8be6acaf1119",
+    "SCBE/Composition.lean": "3556677efe539e19f09fb817eb5df04cb3634e7bb87e55436cddc576b00f033e",
+    "SCBE/Geometry.lean": "2721a4697ffdf85832fc448c63727e94ad087e7ac9336e98291ec569c4f58950",
+    "SCBE/Harmonic.lean": "d2bac727431ac343e584ea9a5bfc97e1ef3f3118bee5d83431fa73ac5d0ae637",
+    "SCBE/Routing.lean": "09eb37e33bdca162872dc3168f259f68d46e939baa400572bb5a6eaf7d993591",
+    "SCBE/Vocabulary.lean": "43c19230fb85703343def772aab3b06648ccdce8158509fc3cba1e1f2bcd4219",
+    "SCBE.lean": "9a10a28d8cb462c080adec55b808c5b8608bc3b68b16d7a8b2e02755b791f9b0",
+    "lean-toolchain": "55e97be96000b5e9e290c9e74482e5e317861499a5540353ce845471bded8cea",
+    "lakefile.toml": "705aa586642f5133d36551e3c34620d472553799a09c2418346a99b3cec4b604",
+    "lake-manifest.json": "b32a7bfac961bdbac326e97b578e38d966a89e1f31551e208aef783c92b4a86c"
+  },
+  "scope": "Exact formal definitions; implementation correspondence is audited separately"
+}

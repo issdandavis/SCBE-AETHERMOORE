@@ -37,7 +37,6 @@ from scbe_aethermoore.layers import (
     verify_theorem_C_risk_monotonicity,
     verify_theorem_D_diffeomorphism,
     PHI,
-    R_BASE,
     EPS,
 )
 
@@ -47,17 +46,17 @@ class TestLayer1ComplexContext:
 
     def test_output_is_complex(self):
         """Output should be complex array."""
-        c = layer_1_complex_context(1.0, 0.5+0.5j, 0.9, 1000, 0.8, 0.95)
+        c = layer_1_complex_context(1.0, 0.5 + 0.5j, 0.9, 1000, 0.8, 0.95)
         assert c.dtype == complex
 
     def test_correct_dimension(self):
         """Output should be 6-dimensional."""
-        c = layer_1_complex_context(1.0, 0.5+0.5j, 0.9, 1000, 0.8, 0.95)
+        c = layer_1_complex_context(1.0, 0.5 + 0.5j, 0.9, 1000, 0.8, 0.95)
         assert len(c) == 6
 
     def test_identity_as_phase(self):
         """Identity should encode as unit complex number."""
-        c = layer_1_complex_context(np.pi/2, 0+0j, 0.9, 1000, 0.8, 0.95)
+        c = layer_1_complex_context(np.pi / 2, 0 + 0j, 0.9, 1000, 0.8, 0.95)
         assert np.abs(np.abs(c[0]) - 1.0) < 1e-10  # Unit magnitude
 
     def test_intent_preserved(self):
@@ -72,20 +71,20 @@ class TestLayer2Realify:
 
     def test_output_dimension_doubled(self):
         """Real dimension should be 2x complex dimension."""
-        c = np.array([1+2j, 3+4j, 5+6j], dtype=complex)
+        c = np.array([1 + 2j, 3 + 4j, 5 + 6j], dtype=complex)
         x = layer_2_realify(c)
         assert len(x) == 2 * len(c)
 
     def test_correct_interleaving(self):
         """Real and imaginary parts should be interleaved."""
-        c = np.array([1+2j, 3+4j], dtype=complex)
+        c = np.array([1 + 2j, 3 + 4j], dtype=complex)
         x = layer_2_realify(c)
         assert np.allclose(x, [1, 2, 3, 4])
 
     def test_isometry_property(self):
         """Inner product should be preserved: ⟨c,c'⟩_ℂ = ⟨Φ(c),Φ(c')⟩_ℝ."""
-        c1 = np.array([1+2j, 3+4j, 5+0j], dtype=complex)
-        c2 = np.array([2+1j, 1+3j, 0+5j], dtype=complex)
+        c1 = np.array([1 + 2j, 3 + 4j, 5 + 0j], dtype=complex)
+        c2 = np.array([2 + 1j, 1 + 3j, 0 + 5j], dtype=complex)
 
         # Complex inner product (conjugate linear in first arg)
         inner_complex = np.sum(np.conj(c1) * c2)
@@ -201,7 +200,7 @@ class TestLayer6Breathing:
         """Breathing factor should oscillate."""
         b0 = breathing_factor(0)
         b_quarter = breathing_factor(15)  # Quarter period
-        b_half = breathing_factor(30)     # Half period
+        b_half = breathing_factor(30)  # Half period
 
         # Should oscillate around 1
         assert b0 < b_quarter or b0 > b_quarter  # Different values
@@ -238,7 +237,7 @@ class TestLayer7Phase:
     def test_phase_rotation_preserves_norm(self):
         """Rotation should preserve norm in 2D plane."""
         u = np.array([0.3, 0.4, 0.0, 0.0, 0.0, 0.0])
-        for phi in [0, np.pi/4, np.pi/2, np.pi]:
+        for phi in [0, np.pi / 4, np.pi / 2, np.pi]:
             u_rot = layer_7_phase(u, phi)
             # Norm should be preserved (approximately, due to just rotating first 2 coords)
             assert np.abs(np.linalg.norm(u) - np.linalg.norm(u_rot)) < 1e-10
@@ -251,6 +250,7 @@ class TestLayer8MultiWell:
         """Should return distance to nearest realm center."""
         dim = 6
         from scbe_aethermoore.layers import generate_realm_centers
+
         centers = generate_realm_centers(dim, n_realms=3)
 
         # Point close to first center
@@ -323,32 +323,32 @@ class TestLayer11TriadicDistance:
     def test_identical_states_zero_distance(self):
         """Identical states should have zero distance."""
         u = np.array([0.3, 0.4, 0.0, 0.0, 0.0, 0.0])
-        d = layer_11_triadic_distance(u, u, 1.0, 1.0, 4.0, 4.0, 1+0j, 1+0j)
+        d = layer_11_triadic_distance(u, u, 1.0, 1.0, 4.0, 4.0, 1 + 0j, 1 + 0j)
         assert d < 1e-10
 
     def test_includes_all_components(self):
         """Changing any component should change distance."""
         u = np.array([0.3, 0.4, 0.0, 0.0, 0.0, 0.0])
 
-        d_base = layer_11_triadic_distance(u, u, 1.0, 1.0, 4.0, 4.0, 1+0j, 1+0j)
+        d_base = layer_11_triadic_distance(u, u, 1.0, 1.0, 4.0, 4.0, 1 + 0j, 1 + 0j)
 
         # Different time
-        d_tau = layer_11_triadic_distance(u, u, 1.0, 2.0, 4.0, 4.0, 1+0j, 1+0j)
+        d_tau = layer_11_triadic_distance(u, u, 1.0, 2.0, 4.0, 4.0, 1 + 0j, 1 + 0j)
         assert d_tau > d_base
 
         # Different entropy
-        d_eta = layer_11_triadic_distance(u, u, 1.0, 1.0, 4.0, 5.0, 1+0j, 1+0j)
+        d_eta = layer_11_triadic_distance(u, u, 1.0, 1.0, 4.0, 5.0, 1 + 0j, 1 + 0j)
         assert d_eta > d_base
 
         # Different quantum - orthogonal phases (π/2 apart)
         # q1=1+0j has phase 0, q2=0+1j has phase π/2
         # phase_fidelity = (1 + cos(π/2))/2 = 0.5, so 1-F = 0.5
-        d_q = layer_11_triadic_distance(u, u, 1.0, 1.0, 4.0, 4.0, 1+0j, 0+1j)
+        d_q = layer_11_triadic_distance(u, u, 1.0, 1.0, 4.0, 4.0, 1 + 0j, 0 + 1j)
         assert d_q > d_base, f"Expected d_q > d_base, got {d_q} <= {d_base}"
 
         # Opposite phases (π apart) should give even larger distance
         # phase_fidelity = (1 + cos(π))/2 = 0, so 1-F = 1
-        d_q_opposite = layer_11_triadic_distance(u, u, 1.0, 1.0, 4.0, 4.0, 1+0j, -1+0j)
+        d_q_opposite = layer_11_triadic_distance(u, u, 1.0, 1.0, 4.0, 4.0, 1 + 0j, -1 + 0j)
         assert d_q_opposite > d_q, f"Opposite phases should have larger distance"
 
 
@@ -356,8 +356,7 @@ class TestLayer12HarmonicScaling:
     """Tests for Layer 12: Harmonic Scaling."""
 
     def test_zero_distance_gives_one(self):
-        """H(0) = 1/(1+0) = 1.0."""
-        assert np.abs(layer_12_harmonic_scaling(0) - 1.0) < 1e-10
+        assert layer_12_harmonic_scaling(0, 0) == 1.0
 
     def test_monotone_decreasing(self):
         """H(d) should decrease with distance (higher d = lower safety)."""
@@ -370,40 +369,28 @@ class TestLayer12HarmonicScaling:
         assert H1 > H2 > H3
 
     def test_monotonicity(self):
-        """H(d1) > H(d2) for d1 < d2."""
-        d_values = np.linspace(0, 3, 20)
-        H_values = [layer_12_harmonic_scaling(d) for d in d_values]
-
-        for i in range(len(H_values) - 1):
-            assert H_values[i] > H_values[i+1]
+        values = [layer_12_harmonic_scaling(d) for d in np.linspace(0, 3, 20)]
+        assert all(a > b for a, b in zip(values, values[1:]))
 
 
 class TestLayer13Decision:
     """Tests for Layer 13: Decision & Risk."""
 
     def test_low_risk_allows(self):
-        """Low d_star should give ALLOW."""
-        risk = layer_13_decision(d_star=0.1, H_d=1.1, coherence=0.9, realm_idx=0)
-        assert risk.decision == "ALLOW"
-        assert risk.level == RiskLevel.LOW
+        risk = layer_13_decision(0.1, layer_12_harmonic_scaling(0.1), 0.9, 0)
+        assert risk.decision == "ALLOW" and risk.level == RiskLevel.LOW
 
     def test_high_risk_denies(self):
-        """High d_star should give DENY."""
-        risk = layer_13_decision(d_star=3.0, H_d=5.0, coherence=0.9, realm_idx=0)
-        assert risk.decision == "DENY"
-        assert risk.level == RiskLevel.HIGH
+        risk = layer_13_decision(3, layer_12_harmonic_scaling(3), 0.9, 0)
+        assert risk.decision == "DENY" and risk.level == RiskLevel.HIGH
 
     def test_critical_snaps(self):
-        """Very high H_d should give SNAP."""
-        risk = layer_13_decision(d_star=0.5, H_d=150, coherence=0.9, realm_idx=0)
-        assert risk.decision == "SNAP"
-        assert risk.level == RiskLevel.CRITICAL
+        risk = layer_13_decision(100, layer_12_harmonic_scaling(100), 0.9, 0)
+        assert risk.decision == "SNAP" and risk.level == RiskLevel.CRITICAL
 
     def test_medium_reviews(self):
-        """Medium d_star should give REVIEW."""
-        risk = layer_13_decision(d_star=1.0, H_d=2.0, coherence=0.9, realm_idx=0)
-        assert risk.decision == "REVIEW"
-        assert risk.level == RiskLevel.MEDIUM
+        risk = layer_13_decision(1, layer_12_harmonic_scaling(1), 0.9, 0)
+        assert risk.decision == "REVIEW" and risk.level == RiskLevel.MEDIUM
 
 
 class TestLayer14AudioAxis:
@@ -439,7 +426,7 @@ class TestFullPipeline:
         pipeline = FourteenLayerPipeline()
         risk, states = pipeline.process(
             identity=1.0,
-            intent=0.5+0.5j,
+            intent=0.5 + 0.5j,
             trajectory=0.9,
             timing=1000,
             commitment=0.8,
@@ -447,7 +434,7 @@ class TestFullPipeline:
             t=10.0,
             tau=1.0,
             eta=4.0,
-            q=1+0j
+            q=1 + 0j,
         )
         assert risk is not None
         assert len(states) == 14
@@ -456,9 +443,16 @@ class TestFullPipeline:
         """All 14 layers should be recorded."""
         pipeline = FourteenLayerPipeline()
         _, states = pipeline.process(
-            identity=1.0, intent=0.5+0.5j, trajectory=0.9,
-            timing=1000, commitment=0.8, signature=0.95,
-            t=10.0, tau=1.0, eta=4.0, q=1+0j
+            identity=1.0,
+            intent=0.5 + 0.5j,
+            trajectory=0.9,
+            timing=1000,
+            commitment=0.8,
+            signature=0.95,
+            t=10.0,
+            tau=1.0,
+            eta=4.0,
+            q=1 + 0j,
         )
 
         layer_nums = [s.layer for s in states]
@@ -470,15 +464,29 @@ class TestFullPipeline:
 
         # Process identical states twice - should get same risk
         risk1, states1 = pipeline.process(
-            identity=1.0, intent=0.5+0.5j, trajectory=0.99,
-            timing=1000, commitment=0.99, signature=0.99,
-            t=10.0, tau=1.0, eta=4.0, q=1+0j
+            identity=1.0,
+            intent=0.5 + 0.5j,
+            trajectory=0.99,
+            timing=1000,
+            commitment=0.99,
+            signature=0.99,
+            t=10.0,
+            tau=1.0,
+            eta=4.0,
+            q=1 + 0j,
         )
 
         risk2, states2 = pipeline.process(
-            identity=1.0, intent=0.5+0.5j, trajectory=0.99,
-            timing=1000, commitment=0.99, signature=0.99,
-            t=10.0, tau=1.0, eta=4.0, q=1+0j
+            identity=1.0,
+            intent=0.5 + 0.5j,
+            trajectory=0.99,
+            timing=1000,
+            commitment=0.99,
+            signature=0.99,
+            t=10.0,
+            tau=1.0,
+            eta=4.0,
+            q=1 + 0j,
         )
 
         # Identical inputs should produce identical risk levels
@@ -487,22 +495,9 @@ class TestFullPipeline:
         assert np.isclose(risk1.raw_risk, risk2.raw_risk)
 
     def test_harmonic_scaling_dominates_risk(self):
-        """Verify that harmonic scaling drives risk classification."""
-        # H(d,R) = R^(d²) with R = φ ≈ 1.618
-        # For d = 0: H = 1 (LOW)
-        # For d = 1: H = φ ≈ 1.6 (still relatively low)
-        # For d = 2: H = φ^4 ≈ 6.85 (MEDIUM)
-        # For d = 3: H = φ^9 ≈ 76.0 (HIGH)
-        # For d = 4: H = φ^16 ≈ 2207 (CRITICAL, >100)
-
-        from scbe_aethermoore.layers import layer_12_harmonic_scaling
-
-        # Test the bounded scaling behavior: H(d) = 1/(1+d), in (0, 1]
-        assert layer_12_harmonic_scaling(0) == 1.0
-        assert layer_12_harmonic_scaling(1) == 0.5
-        assert abs(layer_12_harmonic_scaling(2) - 1.0 / 3.0) < 1e-10
-        assert layer_12_harmonic_scaling(3) == 0.25
-        assert layer_12_harmonic_scaling(4) == 0.2
+        rank = {"ALLOW": 0, "REVIEW": 1, "DENY": 2, "SNAP": 3}
+        results = [layer_13_decision(d, layer_12_harmonic_scaling(d), 1.0, 0) for d in (0, 1, 3, 100)]
+        assert [rank[r.decision] for r in results] == [0, 1, 2, 3]
 
 
 class TestTheoremVerification:

@@ -65,6 +65,13 @@ from symphonic_cipher.scbe_aethermoore.pqc import (
 # =============================================================================
 
 
+@pytest.fixture(autouse=True)
+def explicit_mock_fixture(monkeypatch):
+    """Protocol mechanics only; real backend assurance is a separate CI job."""
+    monkeypatch.setenv("SCBE_ENV", "test")
+    monkeypatch.setenv("SCBE_ALLOW_MOCK_PQC", "1")
+
+
 class TestBackendDetection:
     """Tests for PQC backend detection."""
 

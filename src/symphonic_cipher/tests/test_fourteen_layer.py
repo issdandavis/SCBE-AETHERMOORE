@@ -36,7 +36,6 @@ from scbe_aethermoore.layers import (
     verify_theorem_B_continuity,
     verify_theorem_C_risk_monotonicity,
     verify_theorem_D_diffeomorphism,
-    R_BASE,
     EPS,
 )
 
@@ -356,56 +355,36 @@ class TestLayer12HarmonicScaling:
     """Tests for Layer 12: Harmonic Scaling."""
 
     def test_zero_distance_gives_one(self):
-        """H(0, R) = R^0 = 1."""
-        assert np.abs(layer_12_harmonic_scaling(0, R_BASE) - 1.0) < 1e-10
+        assert layer_12_harmonic_scaling(0, 0) == 1.0
 
-    def test_superexponential_growth(self):
-        """H(d) should grow faster than exponential."""
-        d1, d2, d3 = 1.0, 2.0, 3.0
-        H1 = layer_12_harmonic_scaling(d1)
-        H2 = layer_12_harmonic_scaling(d2)
-        H3 = layer_12_harmonic_scaling(d3)
-
-        # Check superexponential: H(3)/H(2) > H(2)/H(1)
-        ratio_23 = H3 / H2
-        ratio_12 = H2 / H1
-        assert ratio_23 > ratio_12
+    def test_bounded_safety_formula(self):
+        # This profile returns bounded safety, not the separate R**(d*d) cost.
+        for d in (0.0, 0.5, 1.0, 2.0, 100.0):
+            assert layer_12_harmonic_scaling(d, 0.25) == pytest.approx(1 / (1 + d + 0.5))
 
     def test_monotonicity(self):
-        """H(d1) < H(d2) for d1 < d2."""
-        d_values = np.linspace(0, 3, 20)
-        H_values = [layer_12_harmonic_scaling(d) for d in d_values]
-
-        for i in range(len(H_values) - 1):
-            assert H_values[i] < H_values[i + 1]
+        values = [layer_12_harmonic_scaling(d) for d in np.linspace(0, 3, 20)]
+        assert all(a > b for a, b in zip(values, values[1:]))
 
 
 class TestLayer13Decision:
     """Tests for Layer 13: Decision & Risk."""
 
     def test_low_risk_allows(self):
-        """Low d_star should give ALLOW."""
-        risk = layer_13_decision(d_star=0.1, H_d=1.1, coherence=0.9, realm_idx=0)
-        assert risk.decision == "ALLOW"
-        assert risk.level == RiskLevel.LOW
+        risk = layer_13_decision(0.1, layer_12_harmonic_scaling(0.1), 0.9, 0)
+        assert risk.decision == "ALLOW" and risk.level == RiskLevel.LOW
 
     def test_high_risk_denies(self):
-        """High d_star should give DENY."""
-        risk = layer_13_decision(d_star=3.0, H_d=5.0, coherence=0.9, realm_idx=0)
-        assert risk.decision == "DENY"
-        assert risk.level == RiskLevel.HIGH
+        risk = layer_13_decision(3, layer_12_harmonic_scaling(3), 0.9, 0)
+        assert risk.decision == "DENY" and risk.level == RiskLevel.HIGH
 
     def test_critical_snaps(self):
-        """Very high H_d should give SNAP."""
-        risk = layer_13_decision(d_star=0.5, H_d=150, coherence=0.9, realm_idx=0)
-        assert risk.decision == "SNAP"
-        assert risk.level == RiskLevel.CRITICAL
+        risk = layer_13_decision(100, layer_12_harmonic_scaling(100), 0.9, 0)
+        assert risk.decision == "SNAP" and risk.level == RiskLevel.CRITICAL
 
     def test_medium_reviews(self):
-        """Medium d_star should give REVIEW."""
-        risk = layer_13_decision(d_star=1.0, H_d=2.0, coherence=0.9, realm_idx=0)
-        assert risk.decision == "REVIEW"
-        assert risk.level == RiskLevel.MEDIUM
+        risk = layer_13_decision(1, layer_12_harmonic_scaling(1), 0.9, 0)
+        assert risk.decision == "REVIEW" and risk.level == RiskLevel.MEDIUM
 
 
 class TestLayer14AudioAxis:
@@ -510,20 +489,9 @@ class TestFullPipeline:
         assert np.isclose(risk1.raw_risk, risk2.raw_risk)
 
     def test_harmonic_scaling_dominates_risk(self):
-        """Verify that harmonic scaling drives risk classification."""
-        # H(d,R) = R^(d²) with R = φ ≈ 1.618
-        # For d = 0: H = 1 (LOW)
-        # For d = 1: H = φ ≈ 1.6 (still relatively low)
-        # For d = 2: H = φ^4 ≈ 6.85 (MEDIUM)
-        # For d = 3: H = φ^9 ≈ 76.0 (HIGH)
-        # For d = 4: H = φ^16 ≈ 2207 (CRITICAL, >100)
-
-        # Test the scaling behavior
-        assert layer_12_harmonic_scaling(0, R_BASE) == 1.0
-        assert layer_12_harmonic_scaling(1, R_BASE) < 3.0
-        assert layer_12_harmonic_scaling(2, R_BASE) < 20.0
-        assert layer_12_harmonic_scaling(3, R_BASE) < 100.0
-        assert layer_12_harmonic_scaling(4, R_BASE) > 100.0  # CRITICAL threshold
+        rank = {"ALLOW": 0, "REVIEW": 1, "DENY": 2, "SNAP": 3}
+        results = [layer_13_decision(d, layer_12_harmonic_scaling(d), 1.0, 0) for d in (0, 1, 3, 100)]
+        assert [rank[r.decision] for r in results] == [0, 1, 2, 3]
 
 
 class TestTheoremVerification:
