@@ -4,13 +4,17 @@ This project formalizes selected SCBE formulas and the contracts between encodin
 geometric scoring, directed routing, decisions and reference-state admission.
 It extends the repository's existing system map; it does not replace the runtime.
 
-The September 18, 2026 proof pass contains **47 Lean theorems**. The build and axiom
+The September 19, 2026 proof pass contains **85 Lean theorems** (38 added to the
+previous 47). The build and axiom
 audit are reproducible with `verify.py`. Formal results apply to the definitions
 and hypotheses written in these files. Python correspondence is a separate,
 bounded executable audit. No theorem establishes complete system security,
 post-quantum hardness, patent scope, or correctness of every runtime profile.
 
-The latest saved check is [evidence/proof-portable-20260918.json](evidence/proof-portable-20260918.json).
+The latest saved check is [evidence/proof-extension-20260919.json](evidence/proof-extension-20260919.json).
+The [September 19 proof guide](PROOF_GUIDE_20260919.md) maps the new statements,
+assumptions, runtime correspondence and remaining obligations.
+The earlier 47-theorem check is [evidence/proof-portable-20260918.json](evidence/proof-portable-20260918.json).
 The earlier receipt preserves the proof before cross-platform vocabulary-hash
 normalization; the theorem statements are unchanged.
 
@@ -24,6 +28,9 @@ normalization; the theorem statements are unchanged.
 | `SCBE/Composition.lean` | Decision composition preserves both restrictions; associativity and commutativity; an aggregate allows only when every check allows; a fourteen-result specialization; rejected candidates do not update the reference; an authorized step requires a legal edge and all checks allowing | All mandatory checks reach the aggregator and all execution uses the guarded step |
 | `SCBE/Codecs.lean` | Byte-sequence round trip; cross-tongue translation composition and reversal; symbol-count preservation | Each valid tongue vocabulary is equivalent to `Fin 256` |
 | `SCBE/Vocabulary.lean` | The exported fixture has six tables, each with 256 entries | Fixture matches the named Python source; checked separately by the exporter |
+| `SCBE/NestedRegions.lean` | Exact refinement containment; strictly decreasing width; half-open seams; coordinate inversion/rebasing; normalized weighted embedding with squared norm at most 9/16 | Positive rational width; valid subdivision; normalized nonnegative weights; bounded local coordinates |
+| `SCBE/RestrictedExecution.lean` | Restricted quarantine progress; unscoped refusal; control identity; directed-route and host-check requirements | DCP inspection profile; trusted evidence and scope classification; pure total handler model |
+| `SCBE/InterfaceConnections.lean` | Policy, path, execution and dispatch preserved across bijections; six-tongue specialization; chunk composition and no sequence alias | Full policy transported with the same equivalence; valid vocabulary lists |
 
 `Codecs.lean` supports a different token type for each tongue. Its equivalences
 apply to valid vocabulary members, not arbitrary text. The concrete Python table
@@ -44,7 +51,7 @@ From `formal/lean`, with `lean` and `lake` available:
 
 ```sh
 lake update
-lake exe cache get Mathlib.Data.Real.Sqrt Mathlib.Algebra.BigOperators.Group.Finset.Basic Mathlib.Tactic.Linarith Mathlib.Tactic.Positivity Mathlib.Tactic.Ring Mathlib.Data.List.Basic Mathlib.Logic.Equiv.List Mathlib.Analysis.SpecialFunctions.Pow.Real
+lake exe cache get Mathlib.Data.Real.Sqrt Mathlib.Algebra.BigOperators.Group.Finset.Basic Mathlib.Tactic.Linarith Mathlib.Tactic.Positivity Mathlib.Tactic.Ring Mathlib.Tactic.FieldSimp Mathlib.Data.List.Basic Mathlib.Logic.Equiv.List Mathlib.Analysis.SpecialFunctions.Pow.Real
 python -X utf8 verify.py --output validation.json
 ```
 
@@ -57,8 +64,9 @@ above. Limit `LEAN_NUM_THREADS=2` on a machine running training.
 
 `verify.py` performs a build, enumerates every named theorem in this project,
 audits its transitive axiom dependencies, hashes the sources and dependency pins,
-and requires three false fixtures to be rejected. The fixtures try to authorize
-a reversed edge, weaken DENY to ALLOW, and exclude the valid score at the origin.
+and requires seven false fixtures to be rejected. It first proves the negation
+of each fixture. They cover reversed edges, weakened refusals, the valid origin
+score, overlapping seams, admission by rebasing and quarantine scope/promotion.
 It refuses unfinished proofs, native decision shortcuts and custom axioms. Only
 the standard `propext`, `Classical.choice` and `Quot.sound` dependencies are allowed.
 This trust boundary follows [Lean's axiom documentation](https://lean-lang.org/doc/reference/latest/Axioms/).
@@ -155,4 +163,4 @@ Next obligations, in dependency order:
 
 Training gains, attack detection rates, latency, Lyapunov stability and
 cryptographic indistinguishability require their own evidence and are not
-consequences of these 47 theorems.
+consequences of these 85 theorems.

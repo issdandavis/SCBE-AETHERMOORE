@@ -60,7 +60,35 @@ def main():
         "reverse_edge": ("SCBE.Routing", "example : SCBE.permits SCBE.forwardChain 1 0 = true := by decide"),
         "weaken_refusal": ("SCBE.Composition", "example : SCBE.combine .deny .allow = .allow := by decide"),
         "exclude_valid_center": ("SCBE.Geometry", "example : SCBE.safetyScore 0 0 < 1 := by simp [SCBE.safetyScore]"),
+        "double_owned_seam": (
+            "SCBE.NestedRegions",
+            "example : SCBE.inCell ⟨0, 1, by decide⟩ 1 := by norm_num [SCBE.inCell, SCBE.cellUpper]",
+        ),
+        "rebase_grants_membership": (
+            "SCBE.NestedRegions",
+            "example : SCBE.inCell ⟨0, 1, by decide⟩ "
+            "(SCBE.globalCoord ⟨0, 1, by decide⟩ (SCBE.localCoord ⟨0, 1, by decide⟩ 2)) "
+            ":= by norm_num [SCBE.inCell, SCBE.cellUpper, SCBE.globalCoord, SCBE.localCoord]",
+        ),
+        "quarantine_executes_unscoped": (
+            "SCBE.RestrictedExecution",
+            "example : SCBE.dispatchAllowed SCBE.forwardChain 0 1 .quarantine false "
+            "⟨true, true, true, true⟩ = true := by decide",
+        ),
+        "quarantine_silently_promotes": (
+            "SCBE.RestrictedExecution",
+            "example : (SCBE.checkedCall SCBE.forwardChain 0 1 .quarantine true "
+            "⟨true, true, true, true⟩ (fun _ => (6 : Nat))).1 = .allow := by decide",
+        ),
     }
+    # Compile the actual negations first. An import/syntax failure in a fixture
+    # must not masquerade as rejection of a mathematically false statement.
+    for name, (module, statement) in false_fixtures.items():
+        proposition = statement.removeprefix("example : ").split(" := by ", 1)[0]
+        proof = statement.split(" := by ", 1)[1]
+        path = scratch / (name + "_counterexample.lean")
+        path.write_text(f"import {module}\nexample : ¬ ({proposition}) := by {proof}\n", encoding="utf-8")
+        run(["lake", "env", "lean", str(path)], timeout=60)
     rejected = []
     for name, (module, statement) in false_fixtures.items():
         path = scratch / (name + ".lean")
@@ -78,9 +106,10 @@ def main():
         "theorem_count": len(theorems),
         "axioms": audits,
         "rejected_false_fixtures": rejected,
+        "proved_fixture_negations": list(false_fixtures),
         "sha256": {
             str(p.relative_to(ROOT)).replace("\\", "/"): hashlib.sha256(p.read_bytes()).hexdigest()
-            for p in source_files + pinned
+            for p in source_files + pinned + [Path(__file__).resolve()]
         },
         "scope": "Exact formal definitions; implementation correspondence is audited separately",
     }

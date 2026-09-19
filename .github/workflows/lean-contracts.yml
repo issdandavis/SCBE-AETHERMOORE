@@ -49,7 +49,7 @@ jobs:
         run: >-
           lake exe cache get Mathlib.Data.Real.Sqrt
           Mathlib.Algebra.BigOperators.Group.Finset.Basic Mathlib.Tactic.Linarith
-          Mathlib.Tactic.Positivity Mathlib.Tactic.Ring Mathlib.Data.List.Basic
+          Mathlib.Tactic.Positivity Mathlib.Tactic.Ring Mathlib.Tactic.FieldSimp Mathlib.Data.List.Basic
           Mathlib.Logic.Equiv.List Mathlib.Analysis.SpecialFunctions.Pow.Real
       - name: Check vocabulary source binding
         run: python export_vocabulary.py --check

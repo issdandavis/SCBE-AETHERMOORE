@@ -4,3 +4,6 @@ import SCBE.Routing
 import SCBE.Composition
 import SCBE.Codecs
 import SCBE.Vocabulary
+import SCBE.NestedRegions
+import SCBE.RestrictedExecution
+import SCBE.InterfaceConnections

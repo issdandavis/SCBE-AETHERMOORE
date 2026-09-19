@@ -91,10 +91,40 @@ the exact cross-repository protocol/version mapping remains to be established.
 
 ## Nested decimal boundary extension
 
+### September 19 proof extension scope
+
+Reuse the existing Lean project, Mathlib pin and exact-cell/workcell implementations.
+Add `SCBE/NestedRegions.lean` for exact rational subdivision, finite refinement,
+half-open membership, chart inversion and a normalized weighted ball bound.
+Add `SCBE/RestrictedExecution.lean` for the separate DCP control profile:
+ALLOW, QUARANTINE, ESCALATE and DENY. Preserve restricted inspection results and
+control identity; require directed routes and host-provided checks before a call.
+This is not the SNAP profile in `Composition.lean`.
+`SCBE/InterfaceConnections.lean` transports directed policy, walks, fuel-bounded
+execution and restricted dispatch across bijections. This supplies an explicit
+mathematical connection between the six codecs and the execution contracts.
+It also proves list chunk composition and absence of sequence aliases under the
+existing codec equivalence assumptions. String parsing/framing is separate.
+
+Inputs: validated subdivision indices, positive widths/weights, trusted policy,
+tool-scope classification and binding/argument/codec evidence. Outputs: formal
+containment, coordinate and dispatch contracts. Lean checking is the authority for
+the abstract definitions; existing Python tests and source hashes remain a
+separate correspondence boundary. Replay, OS isolation, authentic classification,
+floating-point refinement and end-to-end ingress completeness remain open.
+
+No live source, model, tokenizer or policy is changed. Rollback is removal of
+these three imports/files and their dated documentation; old receipts stay intact.
+
+Validation: 85 named theorems passed Lean 4.19.0 and the axiom audit, including
+38 new declarations. Seven false fixtures were rejected after their negations
+were proved. The receipt is `evidence/proof-extension-20260919.json`.
+
 The existing Loom exact-cell and hierarchical-sign implementations are mapped
 in [the nested boundary integration contract](../../docs/specs/NESTED_BOUNDARY_INTEGRATION_2026-09-18.md).
 An isolated prototype connects those cells to this branch's L6 transform and
 Jacobian, with 16 mechanical tests. It normalizes exact local coordinates before
 floating-point execution, preserves parent paths, and reports wall crossings.
-It does not alter live authorization or Clay's running model. Its mathematical
-contract and future gate integration are separate from the 47 Lean theorems.
+It does not alter live authorization or Clay's running model. Selected exact-cell
+and embedding contracts now have the September 19 proofs above; the complete
+Python bridge, breathing transform and future live integration remain separate.
