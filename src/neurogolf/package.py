@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import re
 from zipfile import ZIP_DEFLATED, ZipFile
 
 
@@ -12,10 +13,9 @@ def _uses_external_data(src: Path) -> bool:
 
 
 def canonical_task_filename(task_id: str) -> str:
-    digits = "".join(ch for ch in task_id if ch.isdigit())
-    if not digits:
-        raise ValueError(f"Task ID '{task_id}' does not contain digits")
-    return f"task{int(digits):03d}.onnx"
+    if re.fullmatch(r"task[0-9]{3}", task_id) is None:
+        raise ValueError(f"Task ID '{task_id}' is not a canonical competition key; expected 'taskNNN'")
+    return f"{task_id}.onnx"
 
 
 def build_submission_zip(task_to_onnx: dict[str, str | Path], output_zip: str | Path) -> Path:
