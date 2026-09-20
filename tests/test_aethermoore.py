@@ -147,21 +147,10 @@ class TestHarmonicScaling:
             harmonic_scale(1, 0.0)
 
     def test_security_bits(self):
-        """Test security bits calculation."""
-        # S_bits = base + d^2 * log2(R)
-        # For d=6, R=1.5: S = 128 + 36 * log2(1.5) ≈ 149.06
-        s_bits = security_bits(128, 6)
-        expected = 128 + (6 * 6) * math.log2(1.5)
-        assert abs(s_bits - expected) < 0.01
-
-        # For d=6, R=2.0: S = 128 + 36 * log2(2) = 164
-        s_bits2 = security_bits(128, 6, 1.5)
-        expected2 = 128 + (6 * 6) * math.log2(1.5)
-        assert abs(s_bits2 - expected2) < 0.01
-
-        s_bits3 = security_bits(128, 6, 2.0)
-        expected3 = 128 + (6 * 6) * math.log2(2.0)
-        assert abs(s_bits3 - expected3) < 0.01
+        """Geometry does not inflate the cryptographic security baseline."""
+        assert security_bits(128, 6) == 128.0
+        assert security_bits(128, 6, 1.5) == 128.0
+        assert security_bits(128, 6, 2.0) == 128.0
 
 
 class TestHarmonicDistance:
@@ -588,7 +577,7 @@ class TestPQCHarmonic:
         assert analysis["base_security_bits"] == 192
         assert analysis["dimension"] == 6
         assert analysis["d_squared"] == 36
-        assert analysis["effective_security_bits"] > 192
+        assert analysis["effective_security_bits"] == 192
 
 
 class TestHarmonicPQCSession:
@@ -613,7 +602,7 @@ class TestHarmonicPQCSession:
         assert session.dimension == 6
         assert session.harmonic_ratio == 1.5
         assert len(session.encryption_key.base_key) == 32
-        assert session.effective_security_bits > 192
+        assert session.effective_security_bits == 192
 
     def test_verify_harmonic_session(self):
         """Test verifying a harmonic PQC session."""
@@ -687,9 +676,9 @@ class TestHarmonicKyberOrchestrator:
         analysis = orch.get_security_analysis()
 
         assert analysis["dimension"] == 6
-        # New formula: security_bits = base + log2(1+d+2*pd)
-        # Kyber768 base=192, so effective > 192
-        assert analysis["effective_security_bits"] > 192
+        # Geometry can govern use of Kyber768, but it cannot raise its claimed
+        # cryptographic strength above the algorithm's baseline.
+        assert analysis["effective_security_bits"] == 192
 
 
 # =============================================================================
@@ -743,18 +732,14 @@ class TestAethermoorIntegration:
         assert voxel.data == b"PQC-protected data"
         assert cube.voxel_count == 1
 
-    def test_harmonic_scale_security_chain(self):
-        """Test harmonic scaling applied to full security chain."""
+    def test_harmonic_scale_keeps_cryptographic_baseline(self):
+        """Keep geometric cost separate from cryptographic bit strength."""
         # Start with base AES-128
         base_bits = 128
         dimension = 6
 
-        # Calculate enhanced security using the harmonic wall formula:
-        # S_bits = base + d^2 * log2(R)
-        enhanced_bits = security_bits(base_bits, dimension)
-
-        # Should be > 128 (128 + 36 * log2(1.5) ≈ 149.06)
-        assert enhanced_bits > base_bits
+        reported_bits = security_bits(base_bits, dimension)
+        assert reported_bits == base_bits
 
         # Harmonic wall grows super-exponentially with dimension
         h_value = harmonic_scale(dimension)

@@ -2,7 +2,7 @@
 
 Every test pins a property the prototype only *claimed*: exact+global transparency, GENUINE
 divergence at the gate (no epsilon cap), the analytic force matching numerical differentiation of
-the real Layer-5 distance, force pointing away (hundreds of points), the real ALLOW->DENY decision
+the real Layer-5 distance, force pointing away (hundreds of points), the real ALLOW->SNAP decision
 flip through live L12/L13, intent grounded in the hardened Sacred Eggs ring gate (cross-checked
 against live ring_descent and proven non-destructive), isometry-invariance that catches Euclidean
 leakage, gate-by-argmax, intent clamping, and lambda=0 = off.
@@ -229,11 +229,11 @@ def test_decision_flips_for_unauthorized_at_the_gate(centers, gate, gate_idx):
     base_d, _ = layer_8_multi_well(u, centers)
     assert base_d < 0.5  # the gate looks perfectly safe by geometry alone
     assert governed_decision(u, centers, gate_idx, intent=0.0).decision == "ALLOW"
-    assert governed_decision(u, centers, gate_idx, intent=1.0).decision == "DENY"
+    assert governed_decision(u, centers, gate_idx, intent=1.0).decision == "SNAP"
 
 
 def test_end_to_end_grounded_decision(centers, gate, gate_idx):
-    """Build a real egg; the yolk-holder is waved through, the intruder is denied."""
+    """Build a real egg; the yolk-holder passes and an intruder triggers emergency SNAP."""
     from src.crypto.sacred_eggs import EggRing, SacredEgg
 
     yolk = secrets.token_bytes(32)
@@ -246,7 +246,7 @@ def test_end_to_end_grounded_decision(centers, gate, gate_idx):
     assert i_intruder > 0.0
 
     assert governed_decision(u, centers, gate_idx, i_auth).decision == "ALLOW"
-    assert governed_decision(u, centers, gate_idx, i_intruder).decision == "DENY"
+    assert governed_decision(u, centers, gate_idx, i_intruder).decision == "SNAP"
 
 
 # --------------------------------------------------------------------- intent grounded in the real ring gate
