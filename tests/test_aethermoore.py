@@ -74,6 +74,14 @@ from symphonic_cipher.scbe_aethermoore.pqc.pqc_harmonic import (
 
 from symphonic_cipher.scbe_aethermoore.pqc import Kyber768, Dilithium3
 
+
+@pytest.fixture
+def mock_pqc_backend(monkeypatch):
+    """Opt protocol-mechanics tests into the explicitly gated mock backend."""
+    monkeypatch.setenv("SCBE_ENV", "test")
+    monkeypatch.setenv("SCBE_ALLOW_MOCK_PQC", "1")
+
+
 # =============================================================================
 # CONSTANTS MODULE TESTS
 # =============================================================================
@@ -583,7 +591,7 @@ class TestPQCHarmonic:
 class TestHarmonicPQCSession:
     """Test harmonic-enhanced PQC sessions."""
 
-    def test_create_harmonic_session(self):
+    def test_create_harmonic_session(self, mock_pqc_backend):
         """Test creating a harmonic PQC session."""
         # Generate keypairs
         alice_kem = Kyber768.generate_keypair()
@@ -604,7 +612,7 @@ class TestHarmonicPQCSession:
         assert len(session.encryption_key.base_key) == 32
         assert session.effective_security_bits == 192
 
-    def test_verify_harmonic_session(self):
+    def test_verify_harmonic_session(self, mock_pqc_backend):
         """Test verifying a harmonic PQC session."""
         # Generate keypairs
         alice_kem = Kyber768.generate_keypair()
@@ -631,7 +639,7 @@ class TestHarmonicPQCSession:
         assert verified.encryption_key.base_key == session.encryption_key.base_key
         assert verified.mac_key.base_key == session.mac_key.base_key
 
-    def test_harmonic_session_with_vector_key(self):
+    def test_harmonic_session_with_vector_key(self, mock_pqc_backend):
         """Test session with 6D vector key binding."""
         alice_kem = Kyber768.generate_keypair()
         alice_sig = Dilithium3.generate_keypair()
@@ -653,7 +661,7 @@ class TestHarmonicPQCSession:
 class TestHarmonicKyberOrchestrator:
     """Test HarmonicKyberOrchestrator."""
 
-    def test_orchestrator_session_creation(self):
+    def test_orchestrator_session_creation(self, mock_pqc_backend):
         """Test orchestrator session creation."""
         alice = HarmonicKyberOrchestrator(dimension=4)
         bob = HarmonicKyberOrchestrator(dimension=4)
@@ -670,7 +678,7 @@ class TestHarmonicKyberOrchestrator:
         assert verified is not None
         assert verified.encryption_key.base_key == session.encryption_key.base_key
 
-    def test_orchestrator_security_analysis(self):
+    def test_orchestrator_security_analysis(self, mock_pqc_backend):
         """Test orchestrator security analysis."""
         orch = HarmonicKyberOrchestrator(dimension=6, R=1.5)
         analysis = orch.get_security_analysis()
@@ -704,7 +712,7 @@ class TestAethermoorIntegration:
         # Result depends on cos(n*PI*x/L) formula
         assert isinstance(result, float)
 
-    def test_cymatic_storage_with_pqc_session(self):
+    def test_cymatic_storage_with_pqc_session(self, mock_pqc_backend):
         """Test cymatic storage with PQC-derived keys."""
         # Create a PQC session for key material
         alice = HarmonicKyberOrchestrator(dimension=4)
