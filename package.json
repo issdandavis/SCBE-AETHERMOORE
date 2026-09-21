@@ -335,7 +335,7 @@
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
     "@types/node": "^26.0.0",
-    "@vitest/coverage-v8": "^4.1.1",
+    "@vitest/coverage-v8": "^5.0.1",
     "esbuild": "0.28.2",
     "fast-check": "^4.6.0",
     "madge": "^8.0.0",
