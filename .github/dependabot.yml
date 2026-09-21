@@ -70,6 +70,14 @@ updates:
         applies-to: security-updates
         patterns:
           - "*"
+      # Vitest and its coverage providers require matching release versions.
+      # Match them before npm-version, including major upgrades, so installation
+      # can be tested as one toolchain instead of incompatible individual PRs.
+      vitest-toolchain:
+        applies-to: version-updates
+        patterns:
+          - "vitest"
+          - "@vitest/*"
       npm-version:
         applies-to: version-updates
         # Keep major runtime/UI migrations out of routine update batches.
