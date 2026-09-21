@@ -13,10 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     if: >-
-      github.actor == 'dependabot[bot]' ||
-      github.actor == 'copilot-swe-agent' ||
-      github.actor == 'issdandavis'
+      github.event.pull_request.user.login != 'github-actions[bot]' &&
+      (github.actor == 'dependabot[bot]' ||
+       github.actor == 'copilot-swe-agent' ||
+       github.actor == 'issdandavis')
     steps:
+      # GITHUB_TOKEN is github-actions[bot]; GitHub rejects self-approval.
       - name: Approve PR
         uses: hmarr/auto-approve-action@v4
         with:

@@ -1,5 +1,9 @@
 # Dependency maintenance
 
+Bot-authored badge PRs skip automatic approval: the built-in token belongs to
+`github-actions[bot]`, which cannot approve its own PR. They still undergo the
+same required CI and merge checks; this exception does not grant approval.
+
 SCBE owns its governance rules, tokenizer, and orchestration code. Third-party
 libraries support those components; maintaining a private replacement also
 means owning its compatibility tests, security fixes, and release process.
