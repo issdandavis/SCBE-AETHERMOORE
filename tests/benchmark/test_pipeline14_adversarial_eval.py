@@ -31,3 +31,4 @@ def test_pipeline14_eval_reports_asr_by_distance_bin() -> None:
     assert bins["2.0-4.0"]["attack_success_rate"] == 0.0
     assert bins["4.0+"]["attack_success_rate"] == 0.0
     assert report["summary"]["false_positive_rate"] == 0.0
+    assert all(row["decision"] == "ALLOW" for row in report["rows"] if not row["expected_block"])

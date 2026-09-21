@@ -63,8 +63,11 @@ def _benign_profile(seed: int) -> dict[str, Any]:
         "timing": 0.5,
         "commitment": 0.8 - jitter,
         "signature": 0.5,
-        "t": 1.0 + seed * 0.05,
-        "tau": 0.5,
+        # Keep benign samples near the pipeline's neutral temporal reference.
+        # The hardened L13 contract now treats the old t=1/tau=.5 fixture as
+        # real temporal drift and correctly routes it to REVIEW.
+        "t": seed * 0.05,
+        "tau": 0.0,
         "eta": 4.0,
         "q": 1.0 + 0j,
     }
