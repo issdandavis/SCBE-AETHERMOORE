@@ -1,0 +1,38 @@
+name: Desktop preload compatibility
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'desktop/**'
+      - 'src/extension/lib/**'
+      - '.github/workflows/desktop-preloads.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'desktop/**'
+      - 'src/extension/lib/**'
+      - '.github/workflows/desktop-preloads.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-preloads-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preload-contracts:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - run: npm install --ignore-scripts --no-audit --no-fund
+      - run: npm run test:preloads

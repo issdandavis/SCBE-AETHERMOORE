@@ -5,7 +5,10 @@
  * Reads the active tab's DOM content via the content script.
  */
 
+import { getBrowserApi } from './browser-api.js';
+
 export async function readActivePage() {
+  const chrome = getBrowserApi();
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab?.id) {
     throw new Error('No active tab found');
@@ -23,6 +26,7 @@ export async function readActivePage() {
 }
 
 export async function getOpenTabs() {
+  const chrome = getBrowserApi();
   return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage({ action: 'getOpenTabs' }, (response) => {
       if (chrome.runtime.lastError) {
@@ -39,6 +43,7 @@ export async function getOpenTabs() {
 }
 
 export async function captureVisibleTab() {
+  const chrome = getBrowserApi();
   return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage({ action: 'captureVisibleTab' }, (response) => {
       if (chrome.runtime.lastError) {

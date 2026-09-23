@@ -10,6 +10,7 @@
     "dev:electron": "electron .",
     "dev:vite": "vite build --watch",
     "build": "vite build",
+    "test:preloads": "electron scripts/preload-smoke.cjs",
     "package": "electron-builder --win",
     "package:dir": "electron-builder --win --dir"
   },
