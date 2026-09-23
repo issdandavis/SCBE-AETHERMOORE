@@ -56,13 +56,9 @@ def main() -> None:
             if fixed:
                 command += ["--runtime-hook", str(hook)]
             command.append("main.py")
-            build = subprocess.run(
-                command, cwd=root, env=env, capture_output=True, text=True, timeout=180
-            )
+            build = subprocess.run(command, cwd=root, env=env, capture_output=True, text=True, timeout=180)
             if build.returncode:
-                raise RuntimeError(
-                    f"{name} build failed:\n{build.stdout[-4000:]}\n{build.stderr[-4000:]}"
-                )
+                raise RuntimeError(f"{name} build failed:\n{build.stdout[-4000:]}\n{build.stderr[-4000:]}")
             executable = root / "dist" / (name + (".exe" if os.name == "nt" else ""))
             result = subprocess.run(
                 [str(executable)],
@@ -74,16 +70,9 @@ def main() -> None:
             )
             if fixed:
                 if result.returncode or result.stdout.strip() != "frozen-import-ok":
-                    raise RuntimeError(
-                        f"Repair failed: {result.returncode}\n{result.stdout}\n{result.stderr}"
-                    )
-            elif (
-                result.returncode == 0
-                or "No module named 'python.scbe'" not in result.stderr
-            ):
-                raise RuntimeError(
-                    f"Control did not reproduce the failure:\n{result.stdout}\n{result.stderr}"
-                )
+                    raise RuntimeError(f"Repair failed: {result.returncode}\n{result.stdout}\n{result.stderr}")
+            elif result.returncode == 0 or "No module named 'python.scbe'" not in result.stderr:
+                raise RuntimeError(f"Control did not reproduce the failure:\n{result.stdout}\n{result.stderr}")
             print(
                 f"{name}: {'import succeeded' if fixed else 'expected missing-module failure reproduced'}",
                 flush=True,

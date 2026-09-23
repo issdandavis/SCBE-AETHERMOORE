@@ -15,6 +15,4 @@ if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
 
     # Preserve a real search path, unlike the earlier empty-__path__ workaround.
     # Leave working paths alone on platforms without the filename collision.
-    python.__path__[:] = [
-        path + os.sep if os.path.isfile(path) else path for path in python.__path__
-    ]
+    python.__path__[:] = [path + os.sep if os.path.isfile(path) else path for path in python.__path__]
