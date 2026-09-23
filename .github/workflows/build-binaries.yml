@@ -42,6 +42,9 @@ jobs:
           # jsonschema for ingestion_rights validators), plus the bundler.
           python -m pip install --require-hashes -r .github/workflows/build-binaries-requirements.txt
 
+      - name: Reproduce and verify frozen package collision repair
+        run: python scripts/check_frozen_namespace.py
+
       - name: Build binary
         run: pyinstaller scbe.spec
 
@@ -86,7 +89,8 @@ jobs:
           merge-multiple: true
 
       - name: Verify checksums
-        run: sha256sum --check out/*.sha256
+        working-directory: out
+        run: sha256sum --check *.sha256
 
       - name: Attach to Release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
