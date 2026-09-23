@@ -5,6 +5,8 @@
  * Wrapper around chrome.storage.local for settings persistence.
  */
 
+import { getBrowserApi } from './browser-api.js';
+
 const DEFAULTS = {
   port: 8002,
   preferences: {
@@ -20,6 +22,7 @@ const DEFAULTS = {
 };
 
 export async function loadSettings() {
+  const chrome = getBrowserApi();
   return new Promise((resolve) => {
     chrome.storage.local.get('aetherbrowser_settings', (result) => {
       resolve({ ...DEFAULTS, ...(result.aetherbrowser_settings || {}) });
@@ -28,6 +31,7 @@ export async function loadSettings() {
 }
 
 export async function saveSettings(settings) {
+  const chrome = getBrowserApi();
   return new Promise((resolve) => {
     chrome.storage.local.set({ aetherbrowser_settings: settings }, resolve);
   });

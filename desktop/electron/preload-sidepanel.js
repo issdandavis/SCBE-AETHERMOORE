@@ -23,7 +23,8 @@ const { contextBridge, ipcRenderer } = require('electron');
 const storageLocal = {
   get(keys, callback) {
     try {
-      const keyList = typeof keys === 'string' ? [keys] : Array.isArray(keys) ? keys : Object.keys(keys);
+      const keyList =
+        typeof keys === 'string' ? [keys] : Array.isArray(keys) ? keys : Object.keys(keys);
       const result = {};
       for (const key of keyList) {
         const raw = localStorage.getItem(`aether_${key}`);
@@ -152,8 +153,12 @@ const runtimeShim = {
   },
 
   onMessage: {
-    addListener() { /* no-op in Electron */ },
-    removeListener() { /* no-op */ },
+    addListener() {
+      /* no-op in Electron */
+    },
+    removeListener() {
+      /* no-op */
+    },
   },
 };
 
@@ -162,13 +167,16 @@ const runtimeShim = {
 // ---------------------------------------------------------------------------
 const sidePanelShim = {
   open() {},
-  setPanelBehavior() { return Promise.resolve(); },
+  setPanelBehavior() {
+    return Promise.resolve();
+  },
 };
 
 // ---------------------------------------------------------------------------
-// Expose as window.chrome
+// Keep Chromium's existing window.chrome intact. Shared renderer modules use
+// this namespaced bridge in Electron and the native API in a browser extension.
 // ---------------------------------------------------------------------------
-contextBridge.exposeInMainWorld('chrome', {
+contextBridge.exposeInMainWorld('aetherChrome', {
   tabs: tabsShim,
   storage: { local: storageLocal },
   runtime: runtimeShim,
