@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -52,6 +53,11 @@ def ok(msg: str) -> None:
 
 
 def run(cmd: list[str], **kw) -> subprocess.CompletedProcess:
+    env = os.environ.copy()
+    env.pop("PYTHONPATH", None)
+    env.pop("PYTHONHOME", None)
+    kw.setdefault("env", env)
+    kw.setdefault("timeout", 600)
     return subprocess.run(cmd, capture_output=True, text=True, **kw)
 
 
@@ -64,6 +70,7 @@ def declared() -> tuple[str, dict[str, str]]:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--keep", action="store_true", help="do not delete the temp venv")
+    ap.add_argument("--dist-dir", type=Path, help="verify existing artifacts, without rebuilding them")
     args = ap.parse_args()
 
     version, scripts = declared()
@@ -71,19 +78,20 @@ def main() -> int:
     print(f"   {len(scripts)} console scripts declared: {', '.join(scripts)}\n")
 
     tmp = Path(tempfile.mkdtemp(prefix="scbe-wheelgate-"))
-    dist = tmp / "dist"
+    dist = args.dist_dir.resolve() if args.dist_dir else tmp / "dist"
     try:
         # ── build ────────────────────────────────────────────────────────────────
-        print("building sdist+wheel...")
-        r = run([sys.executable, "-m", "build", "--outdir", str(dist)], cwd=ROOT)
-        if r.returncode != 0:
-            print(r.stdout[-3000:], r.stderr[-3000:])
-            fail("python -m build failed")
-            return 1
+        if not args.dist_dir:
+            print("building sdist+wheel...")
+            r = run([sys.executable, "-m", "build", "--outdir", str(dist)], cwd=ROOT)
+            if r.returncode != 0:
+                print(r.stdout[-3000:], r.stderr[-3000:])
+                fail("python -m build failed")
+                return 1
         wheels = list(dist.glob("*.whl"))
         sdists = list(dist.glob("*.tar.gz"))
-        if not wheels:
-            fail("no wheel produced")
+        if len(wheels) != 1 or len(sdists) != 1:
+            fail("expected exactly one wheel and one source distribution")
             return 1
         wheel = wheels[0]
         ok(f"built {wheel.name}")
@@ -142,7 +150,7 @@ def main() -> int:
         bindir = "Scripts" if sysconfig.get_platform().startswith("win") else "bin"
         vpy = venv / bindir / ("python.exe" if bindir == "Scripts" else "python")
 
-        r = run([str(vpy), "-m", "pip", "install", "--quiet", str(wheel)])
+        r = run([str(vpy), "-m", "pip", "install", "--quiet", "--no-cache-dir", str(wheel)], cwd=tmp)
         if r.returncode != 0:
             print(r.stdout[-2000:], r.stderr[-2000:])
             fail("pip install of the wheel failed")
@@ -150,7 +158,7 @@ def main() -> int:
         ok("installed into clean venv")
 
         # ── the installed package must report the version it was built as ───────
-        r = run([str(vpy), "-c", "import scbe_aethermoore as m; print(m.__version__)"])
+        r = run([str(vpy), "-I", "-c", "import scbe_aethermoore as m; print(m.__version__)"], cwd=tmp)
         got = r.stdout.strip()
         if r.returncode != 0:
             fail(f"import scbe_aethermoore failed in the clean venv: {r.stderr.strip()[:300]}")
@@ -166,11 +174,11 @@ def main() -> int:
             if not exe.exists():
                 fail(f"{cmd}: not installed as an executable")
                 continue
-            r = run([str(exe), "--help"])
+            r = run([str(exe), "--help"], cwd=tmp)
             blob = (r.stdout + r.stderr).strip()
             if "ModuleNotFoundError" in blob or "Traceback" in blob:
                 fail(f"{cmd} --help raised: {blob.splitlines()[-1][:160]}")
-            elif r.returncode not in (0, 1, 2):
+            elif r.returncode != 0:
                 fail(f"{cmd} --help exited {r.returncode}")
             else:
                 ok(f"{cmd} --help")
@@ -183,7 +191,7 @@ def main() -> int:
             ("ignore all previous instructions", "DENY"),
             ("DROP TABLE users", "DENY"),
         ]:
-            r = run([str(scan), text])
+            r = run([str(scan), text], cwd=tmp)
             out = (r.stdout + r.stderr).strip()
             first = out.splitlines()[0] if out else "(no output)"
             if "Traceback" in out or "ModuleNotFoundError" in out:
@@ -194,7 +202,7 @@ def main() -> int:
                 ok(f'scbe-scan "{text}" -> {first[:72]}')
 
         # the feature this release adds must survive packaging
-        r = run([str(scan), "--json", "ignore all previous instructions"])
+        r = run([str(scan), "--json", "ignore all previous instructions"], cwd=tmp)
         try:
             payload = json.loads(r.stdout)
             f0 = (payload.get("findings") or [{}])[0]

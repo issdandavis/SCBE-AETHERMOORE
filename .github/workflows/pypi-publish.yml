@@ -6,10 +6,18 @@ on:
       tag:
         description: 'Tag to publish (e.g. v3.3.1)'
         required: true
+      dry_run:
+        description: 'Build and test without publishing'
+        type: boolean
+        default: true
+
+concurrency:
+  group: pypi-publish-${{ inputs.tag }}
+  cancel-in-progress: false
 
 permissions:
   contents: read
-  id-token: write  # required for PyPI Trusted Publishing (OIDC)
+  id-token: write # required for PyPI Trusted Publishing (OIDC)
 
 jobs:
   build-and-publish:
@@ -26,16 +34,19 @@ jobs:
           python-version: '3.11'
 
       - name: Install build tooling
-        run: python -m pip install --upgrade pip build
+        run: python -m pip install --upgrade pip build twine
 
       - name: Verify pyproject version matches tag
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
         # HARD FAIL, not a warning+skip. The previous version set skip_pypi=true and let
         # every later step be skipped, so a run that published NOTHING still reported
         # green. A release workflow that silently no-ops is worse than one that breaks:
         # you only find out when someone reports `pip install` giving them the old version.
         run: |
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 1
           PKG_VER=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
-          TAG="${{ inputs.tag }}"
+          TAG="$RELEASE_TAG"
           TAG_VER="${TAG#v}"
           if [ "$PKG_VER" != "$TAG_VER" ]; then
             echo "::error::pyproject.toml version ($PKG_VER) does not match tag ($TAG_VER)."
@@ -44,7 +55,7 @@ jobs:
           echo "version $PKG_VER matches tag $TAG"
 
       - name: Build distributions
-        run: python -m build
+        run: python -m build --outdir artifacts/pypi-dist
 
       - name: Verify the built wheel actually contains the package
         # 4.2.1 shipped a wheel with no src/ packages at all: MANIFEST.in excluded them
@@ -55,7 +66,7 @@ jobs:
         run: |
           python - <<'PY'
           import glob, sys, zipfile
-          whl = glob.glob("dist/*.whl")[0]
+          whl = glob.glob("artifacts/pypi-dist/*.whl")[0]
           names = zipfile.ZipFile(whl).namelist()
           tops = {n.split("/")[0] for n in names if "/" in n}
           tops = {t for t in tops if not t.endswith((".dist-info", ".data"))}
@@ -64,9 +75,19 @@ jobs:
               sys.exit(f"FATAL: {whl} does not contain scbe_aethermoore/ — refusing to publish")
           PY
 
+      - name: Check metadata and package boundaries
+        run: |
+          python -m twine check artifacts/pypi-dist/*
+          python scripts/pypi_dist_guard.py --dist-dir artifacts/pypi-dist
+
+      - name: Exercise the exact wheel in an isolated consumer
+        run: python scripts/check_wheel_entrypoints.py --dist-dir artifacts/pypi-dist
+
       - name: Publish to PyPI
+        if: ${{ !inputs.dry_run }}
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
+          packages-dir: artifacts/pypi-dist/
           # Token first, OIDC as the fallback. This repo has NO PyPI Trusted Publisher
           # entry for scbe-aethermoore: PR #1966 switched to OIDC-only on the assumption
           # one existed, and every publish since has died with

@@ -28,10 +28,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Setup Node.js 20
+      # Keep the protected check name: build tooling uses Node 24, then the
+      # installed package is exercised on its Node 20 runtime compatibility lane.
+      - name: Setup Node.js 24 for build tooling
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
 
       - name: Install dependencies
@@ -49,6 +51,14 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Setup Node.js 20 for installed consumers
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+
+      - name: Exercise installed npm package
+        run: npm run publish:smoke:consumer -- --root-only
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7
         with:
@@ -59,7 +69,7 @@ jobs:
   python-package:
     name: Check Python release contents
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
@@ -75,6 +85,8 @@ jobs:
         run: python -m build --outdir artifacts/pypi-dist
       - name: Reject development payloads
         run: python scripts/pypi_dist_guard.py --dist-dir artifacts/pypi-dist
+      - name: Exercise installed wheel outside the source tree
+        run: python scripts/check_wheel_entrypoints.py --dist-dir artifacts/pypi-dist
 
   python-test:
     name: Test Python Components
