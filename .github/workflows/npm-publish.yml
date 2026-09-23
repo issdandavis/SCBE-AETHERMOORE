@@ -6,6 +6,18 @@ on:
       tag:
         description: 'Tag to publish (e.g. v4.0.3). Defaults to latest semver tag.'
         required: true
+      dry_run:
+        description: 'Build and test without publishing'
+        type: boolean
+        default: true
+      github_packages:
+        description: 'Also publish the separate GitHub Packages mirror'
+        type: boolean
+        default: false
+
+concurrency:
+  group: npm-publish-${{ inputs.tag }}
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -25,33 +37,42 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install
-        run: npm ci || npm install
+        run: npm ci
 
       - name: Build
         run: npm run build
 
       - name: Verify package version matches tag
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
         run: |
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 1
           PKG_VER=$(node -p "require('./package.json').version")
-          TAG="${{ inputs.tag }}"
+          TAG="$RELEASE_TAG"
           TAG_VER="${TAG#v}"
           if [ "$PKG_VER" != "$TAG_VER" ]; then
             echo "::error::package.json version ($PKG_VER) does not match tag ($TAG_VER)"
             exit 1
           fi
 
-      - name: Publish to npmjs
-        run: npm publish --provenance --access public
+      - name: Verify the tarball in a clean consumer
+        id: consumer
+        run: npm run publish:smoke:consumer -- --root-only
+
+      - name: Publish the tested tarball to npmjs
+        if: ${{ !inputs.dry_run }}
         env:
+          TARBALL: ${{ steps.consumer.outputs.tarball }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish "$TARBALL" --ignore-scripts --provenance --access public
 
   github-packages:
     name: Publish to GitHub Packages
-    if: ${{ inputs.tag != '' }}
+    if: ${{ inputs.tag != '' && inputs.github_packages && !inputs.dry_run }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -61,12 +82,12 @@ jobs:
       - name: Setup Node (GH Packages registry)
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           registry-url: 'https://npm.pkg.github.com'
           scope: '@issdandavis'
 
       - name: Install
-        run: npm ci || npm install
+        run: npm ci
 
       - name: Build
         run: npm run build

@@ -8,7 +8,7 @@ and CLI entrypoints a downloader expects to use.
 */
 
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync } from 'node:fs';
+import { appendFileSync, mkdtempSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import os from 'node:os';
 import path from 'node:path';
@@ -50,15 +50,23 @@ function assertIncludes(text, expected, label) {
   }
 }
 
+const rootOnly = process.argv.includes('--root-only');
 const rootTarball = pack(repoRoot);
-const busTarball = pack(path.join(repoRoot, 'packages', 'agent-bus'));
+const busTarball = rootOnly ? null : pack(path.join(repoRoot, 'packages', 'agent-bus'));
 const consumerDir = mkdtempSync(path.join(os.tmpdir(), 'scbe-npm-consumer-'));
 const rootPackage = JSON.parse(readFileSync(path.join(repoRoot, 'package.json'), 'utf-8'));
 
 run(node, [npmCli, 'init', '-y'], { cwd: consumerDir });
 run(
   node,
-  [npmCli, 'install', rootTarball, busTarball, '--cache', path.join(consumerDir, '.npm-cache')],
+  [
+    npmCli,
+    'install',
+    rootTarball,
+    ...(busTarball ? [busTarball] : []),
+    '--cache',
+    path.join(consumerDir, '.npm-cache'),
+  ],
   {
     cwd: consumerDir,
   }
@@ -103,6 +111,22 @@ assertIncludes(
   rootPackage.version,
   'geoseal version'
 );
+
+for (const entry of Object.keys(rootPackage.exports)) {
+  const specifier = rootPackage.name + (entry === '.' ? '' : entry.slice(1));
+  run(node, ['-e', 'require(process.argv[1])', specifier], { cwd: consumerDir });
+  run(node, ['--input-type=module', '-e', 'await import(process.argv[1])', specifier], {
+    cwd: consumerDir,
+  });
+}
+
+if (rootOnly) {
+  if (process.env.GITHUB_OUTPUT) {
+    appendFileSync(process.env.GITHUB_OUTPUT, `tarball=${rootTarball}\n`);
+  }
+  console.log(JSON.stringify({ ok: true, root_tarball: rootTarball, consumer_dir: consumerDir }));
+  process.exit(0);
+}
 assertIncludes(
   run(
     node,

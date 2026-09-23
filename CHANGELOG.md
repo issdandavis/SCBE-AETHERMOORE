@@ -1,5 +1,18 @@
 # SCBE Production Pack Changelog
 
+## [4.3.2] - 2026-09-23
+
+### Fixed
+
+- Refresh dependency/security fixes and runtime package boundaries since 4.3.1.
+- Declare Node >=20.19, matching the installed crypto dependency requirements.
+- Run Vitest/build tooling on Node 24 and verify the installed npm package on Node 20.
+- Gate publishing on isolated npm/Python consumer checks, including public npm exports,
+  Python console scripts and scan examples; publish the artifacts that passed those checks.
+- Default manual publishing workflows to dry-run and serialize releases per registry/tag.
+- Repair the Electron 44 sidepanel bridge and add Windows preload validation (desktop
+  source only; the desktop app is not part of the npm/PyPI package).
+
 ## [Unreleased]
 
 ### Added
