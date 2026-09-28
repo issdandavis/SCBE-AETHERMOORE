@@ -19,6 +19,22 @@ from scbe_aethermoore import (
 )
 
 
+def _pipeline_decision(result):
+    decision = result.risk_assessment.decision
+    return decision.value if hasattr(decision, "value") else str(decision)
+
+
+def _assert_cold_start_respects_pipeline(system, result):
+    """Layer-13 refusals stay binding; only ALLOW may install the reference."""
+    pipeline = _pipeline_decision(result)
+    if pipeline == "ALLOW" and result.decision == GovernanceDecision.ALLOW:
+        assert system.state.reference_state is not None
+        return
+    assert result.decision != GovernanceDecision.ALLOW
+    assert system.state.reference_state is None
+    assert system.state.reference_embedding is None
+
+
 class TestSCBEFullSystem:
     """Tests for the full governance system."""
 
@@ -29,32 +45,31 @@ class TestSCBEFullSystem:
         assert system.state.total_evaluations == 0
         assert system.state.threat_level == 0.0
 
-    def test_cold_start_allows_baseline(self):
-        """First evaluation should ALLOW to establish baseline."""
+    def test_cold_start_does_not_override_layer_refusal(self):
+        """First evaluation cannot install a baseline after Layer 13 refuses."""
         system = SCBEFullSystem()
         result = system.evaluate_intent(
             identity="test_user",
             intent="test_action"
         )
-        assert result.decision == GovernanceDecision.ALLOW
-        assert "cold start" in result.explanation.lower()
-        assert system.state.reference_state is not None
+        assert result.decision in list(GovernanceDecision)
+        _assert_cold_start_respects_pipeline(system, result)
 
     def test_sequential_evaluations(self):
         """Sequential evaluations should work and update state."""
         system = SCBEFullSystem()
 
-        # First - cold start
         r1 = system.evaluate_intent("user", "action1")
-        assert r1.decision == GovernanceDecision.ALLOW
+        assert r1.decision in list(GovernanceDecision)
 
-        # Second - normal evaluation
         r2 = system.evaluate_intent("user", "action2")
-        assert r2.decision in [GovernanceDecision.ALLOW, GovernanceDecision.QUARANTINE]
+        assert r2.decision in list(GovernanceDecision)
 
-        # Check state updated
         assert system.state.total_evaluations == 2
-        assert system.state.reference_state is not None  # Has reference state
+        if r1.decision == GovernanceDecision.ALLOW or r2.decision == GovernanceDecision.ALLOW:
+            assert system.state.reference_state is not None
+        else:
+            assert system.state.reference_state is None
 
     def test_audit_chain_integrity(self):
         """Audit chain should maintain integrity."""
@@ -70,26 +85,20 @@ class TestSCBEFullSystem:
         """System should correctly classify entropy zones."""
         system = SCBEFullSystem()
 
-        # Cold start
         r1 = system.evaluate_intent("user", "action1")
-
-        # Subsequent - should have entropy zone classification
         r2 = system.evaluate_intent("user", "action2")
         assert r2.entropy_zone in ["NEGENTROPY", "OPTIMAL", "HIGH_ENTROPY"]
+        assert r1.entropy_zone in ["NEGENTROPY", "OPTIMAL", "HIGH_ENTROPY"]
 
     def test_mode_escalation(self):
         """System should escalate mode on repeated denials."""
         system = SCBEFullSystem()
 
-        # Force denials by simulating bad state
-        # First, establish baseline
         system.evaluate_intent("user", "action")
 
-        # Manually trigger denials
         for _ in range(3):
             system.state.consecutive_denials += 1
 
-        # Check mode would escalate
         if system.state.consecutive_denials >= 3:
             system.state.mode = GovernanceMode.HEIGHTENED
 
@@ -149,10 +158,11 @@ class TestQuickEvaluate:
         assert isinstance(explanation, str)
 
     def test_quick_evaluate_cold_start(self):
-        """quick_evaluate should handle cold start."""
+        """quick_evaluate should return a real decision on first use."""
         decision, explanation = quick_evaluate("user", "action")
-        assert decision == GovernanceDecision.ALLOW
-        assert "cold start" in explanation.lower()
+        assert decision in list(GovernanceDecision)
+        assert isinstance(explanation, str)
+        assert len(explanation) > 0
 
 
 class TestTheoremVerification:
@@ -235,24 +245,24 @@ class TestIntegration:
         """Complete workflow should work end-to-end."""
         system = SCBEFullSystem()
 
-        # 1. Initialize with cold start
         r1 = system.evaluate_intent("alice", "login")
-        assert r1.decision == GovernanceDecision.ALLOW
+        assert r1.decision in list(GovernanceDecision)
 
-        # 2. Normal operations
         r2 = system.evaluate_intent("alice", "read_document")
         r3 = system.evaluate_intent("alice", "write_document")
+        assert r2.decision in list(GovernanceDecision)
+        assert r3.decision in list(GovernanceDecision)
 
-        # 3. Check audit chain
         assert system.verify_audit_chain()
         assert len(system.state.audit_chain) == 3
 
-        # 4. Check status
         status = system.get_system_status()
         assert status["total_evaluations"] == 3
-        assert status["has_reference_state"] == True
+        if any(r.decision == GovernanceDecision.ALLOW for r in (r1, r2, r3)):
+            assert status["has_reference_state"] is True
+        else:
+            assert status["has_reference_state"] is False
 
-        # 5. Verify theorems still hold
         theorems = verify_all_theorems()
         assert all(theorems.values())
 
