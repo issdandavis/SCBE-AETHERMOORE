@@ -231,7 +231,7 @@ tzdata==2026.2
 urllib3==2.8.0
 uv==0.11.21
 uvicorn==0.43.0
-virtualenv==21.7.12
+virtualenv==21.7.13
 watchdog==6.0.0
 wcwidth==0.7.0
 websockets==16.0
