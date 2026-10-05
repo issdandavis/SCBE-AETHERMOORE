@@ -28,7 +28,7 @@
   "devDependencies": {
     "@types/node": "^26.6.3",
     "@vitejs/plugin-react": "^6.1.1",
-    "@vitest/coverage-v8": "^5.0.1",
+    "@vitest/coverage-v8": "^5.0.3",
     "concurrently": "^10.0.5",
     "electron": "^44.5.1",
     "electron-builder": "^26.15.3",
