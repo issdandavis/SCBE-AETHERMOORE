@@ -1,0 +1,133 @@
+{
+  "schema": "scbe-change-catalog-v1",
+  "repository": "issdandavis/SCBE-AETHERMOORE",
+  "base_exclusive": "07d3e7b527e2bee0641394d9cc20761e0cbb927e",
+  "head_inclusive": "112d5d3be200d634bb0ae3a535516742bb75b301",
+  "commit_count": 6,
+  "first_parent_landing_count": 6,
+  "unique_changed_paths": 10,
+  "area_commit_counts_overlapping": {
+    "dependencies": 6,
+    "other-review-needed": 1
+  },
+  "semantics": "All reachable commits in base..head; first-parent landings marked separately. Paths compare each commit with its first parent; area counts overlap. Commit timestamps are not deployment timestamps. Classification is heuristic, and the complete path lists require human review.",
+  "commits": [
+    {
+      "sha": "8d36210083041c17b868e233c2c9c743c53a20ab",
+      "parents": [
+        "07d3e7b527e2bee0641394d9cc20761e0cbb927e"
+      ],
+      "committed_at": "2026-10-01T22:41:16-07:00",
+      "subject": "fix(deps): bump the pip-security group across 1 directory with 3 updates (#2891)",
+      "mainline_landing": true,
+      "areas": [
+        "dependencies",
+        "other-review-needed"
+      ],
+      "paths": [
+        "requirements-lock.txt",
+        "requirements.txt",
+        "src/requirements.txt"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/8d36210083041c17b868e233c2c9c743c53a20ab"
+    },
+    {
+      "sha": "1f89e7c3bbfd012e811490c613b3d24d4b3eaa2c",
+      "parents": [
+        "8d36210083041c17b868e233c2c9c743c53a20ab"
+      ],
+      "committed_at": "2026-10-03T22:41:20-07:00",
+      "subject": "fix(deps): bump virtualenv from 21.7.12 to 21.7.13 in the pip-security group (#2892)",
+      "mainline_landing": true,
+      "areas": [
+        "dependencies"
+      ],
+      "paths": [
+        "requirements-lock.txt"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/1f89e7c3bbfd012e811490c613b3d24d4b3eaa2c"
+    },
+    {
+      "sha": "ccc07d893d3b5be7b776173c2e1604af7e5fad23",
+      "parents": [
+        "1f89e7c3bbfd012e811490c613b3d24d4b3eaa2c"
+      ],
+      "committed_at": "2026-10-03T22:41:24-07:00",
+      "subject": "fix(deps): bump @fastify/busboy from 3.2.0 to 3.2.2 in the npm-security group (#2893)",
+      "mainline_landing": true,
+      "areas": [
+        "dependencies"
+      ],
+      "paths": [
+        "package-lock.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/ccc07d893d3b5be7b776173c2e1604af7e5fad23"
+    },
+    {
+      "sha": "ed6fcff23b5ac32cc44141fcb46f452c70218546",
+      "parents": [
+        "ccc07d893d3b5be7b776173c2e1604af7e5fad23"
+      ],
+      "committed_at": "2026-10-04T22:41:21-07:00",
+      "subject": "fix(deps-dev): bump the vitest-toolchain group across 4 directories with 2 updates (#2894)",
+      "mainline_landing": true,
+      "areas": [
+        "dependencies"
+      ],
+      "paths": [
+        "conference-app/package-lock.json",
+        "conference-app/package.json",
+        "package-lock.json",
+        "scbe-visual-system/package-lock.json",
+        "scbe-visual-system/package.json",
+        "src/package-lock.json",
+        "src/package.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/ed6fcff23b5ac32cc44141fcb46f452c70218546"
+    },
+    {
+      "sha": "1be5dd67f092f10eb186d6a29274a22c65918a42",
+      "parents": [
+        "ed6fcff23b5ac32cc44141fcb46f452c70218546"
+      ],
+      "committed_at": "2026-10-04T22:50:04-07:00",
+      "subject": "fix(deps): bump the npm-version group across 4 directories with 10 updates (#2895)",
+      "mainline_landing": true,
+      "areas": [
+        "dependencies"
+      ],
+      "paths": [
+        "conference-app/package-lock.json",
+        "conference-app/package.json",
+        "package-lock.json",
+        "scbe-visual-system/package-lock.json",
+        "scbe-visual-system/package.json",
+        "src/package-lock.json",
+        "src/package.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/1be5dd67f092f10eb186d6a29274a22c65918a42"
+    },
+    {
+      "sha": "112d5d3be200d634bb0ae3a535516742bb75b301",
+      "parents": [
+        "1be5dd67f092f10eb186d6a29274a22c65918a42"
+      ],
+      "committed_at": "2026-10-05T22:41:01-07:00",
+      "subject": "fix(deps): bump the npm-version group across 4 directories with 3 updates (#2897)",
+      "mainline_landing": true,
+      "areas": [
+        "dependencies"
+      ],
+      "paths": [
+        "conference-app/package-lock.json",
+        "conference-app/package.json",
+        "package-lock.json",
+        "scbe-visual-system/package-lock.json",
+        "scbe-visual-system/package.json",
+        "src/package-lock.json",
+        "src/package.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/112d5d3be200d634bb0ae3a535516742bb75b301"
+    }
+  ]
+}
