@@ -16,6 +16,11 @@ updates:
       - "/**"
     exclude-paths:
       - "archive/**"
+      # uv-managed project (uv.lock + unpinned pyproject). The pip updater
+      # cannot patch it ("no lockfile or pinned version requirement") and
+      # every pip security job for this directory failed. It is handled by
+      # the `uv` block below instead.
+      - "examples/SCBEAgent/**"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
@@ -31,6 +36,16 @@ updates:
         applies-to: version-updates
         patterns:
           - "*"
+
+  # ── uv (lockfile-managed Python projects) ────────────────────────────────
+  - package-ecosystem: "uv"
+    directory: "/examples/SCBEAgent"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "security"
 
   # ── npm (every manifest, recursively, minus vendored / submodule lanes) ───
   - package-ecosystem: "npm"
