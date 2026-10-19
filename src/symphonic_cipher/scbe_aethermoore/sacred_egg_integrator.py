@@ -34,6 +34,7 @@ from typing import TYPE_CHECKING, Dict, List, Optional
 
 if TYPE_CHECKING:
     from .cli_toolkit import CrossTokenizer
+    from .ai_brain.egg_governance import NeuralEggGate, NeuralEvidence
 
 
 def _cli_toolkit():
@@ -191,6 +192,32 @@ def _sealed_noise_tokens(xt: CrossTokenizer, tongue: str, nbytes: int) -> List[s
     return xt.tok.encode_bytes(tongue, noise)
 
 
+def neural_hatch_request(
+    egg: SacredEgg,
+    current_context: List[float],
+    agent_tongue: str,
+    ritual_mode: str = "solitary",
+    additional_tongues: Optional[List[str]] = None,
+    path_history: Optional[List[dict]] = None,
+) -> dict:
+    """Public transcript for neural witnesses; binds the shell AND ciphertext.
+
+    Use this with ``NeuralEggGate.signing_message`` at witness collection time.
+    Changing a hatch condition, context, ritual, or path requires new signatures.
+    Secret KEM/DSA keys are deliberately absent from the transcript.
+    """
+    return copy.deepcopy(
+        {
+            "egg": dataclasses.asdict(egg),
+            "current_context": list(current_context),
+            "agent_tongue": agent_tongue,
+            "ritual_mode": ritual_mode,
+            "additional_tongues": additional_tongues or [],
+            "path_history": path_history or [],
+        }
+    )
+
+
 # =============================================================================
 # SacredEggIntegrator
 # =============================================================================
@@ -214,9 +241,12 @@ class SacredEggIntegrator:
         result = integrator.hatch_egg(egg, context, "KO", sk_kem_b64, pk_dsa_b64)
     """
 
-    def __init__(self, xt: CrossTokenizer):
+    def __init__(self, xt: CrossTokenizer, *, neural_gate: Optional[NeuralEggGate] = None):
         self.xt = xt
         self.ring_policy = _cli_toolkit().ConcentricRingPolicy()
+        # Server-side configuration. Once configured, every hatch needs evidence;
+        # the caller cannot turn the gate off through an Egg or request parameter.
+        self.neural_gate = neural_gate
 
     def create_egg(
         self,
@@ -272,6 +302,8 @@ class SacredEggIntegrator:
         ritual_mode: str = "solitary",
         additional_tongues: Optional[List[str]] = None,
         path_history: Optional[List[dict]] = None,
+        *,
+        neural_evidence: Optional[NeuralEvidence] = None,
     ) -> HatchResult:
         """Attempt to hatch a Sacred Egg under ritual conditions.
 
@@ -287,10 +319,29 @@ class SacredEggIntegrator:
             ritual_mode:        "solitary", "triadic", or "ring_descent"
             additional_tongues: Extra tongues for triadic mode
             path_history:       Ring traversal history for ring_descent mode
+            neural_evidence:     Signed trajectory required by a configured neural gate
 
         Returns:
             HatchResult — success=True with real tokens, or success=False with noise
         """
+        # Snapshot the exact request before verification and use that same copy
+        # through decryption, including nested shell/envelope/history structures.
+        egg = copy.deepcopy(egg)
+        current_context = list(current_context)
+        additional_tongues = copy.deepcopy(additional_tongues)
+        path_history = copy.deepcopy(path_history)
+        ct_spec_b64 = egg.yolk_ct.get("ct_spec", "")
+        ct_spec_len = len(base64.b64decode(ct_spec_b64)) if ct_spec_b64 else _AEAD_TAG_LEN
+        pt_len = max(ct_spec_len - _AEAD_TAG_LEN, 0)
+        fail_tokens = _sealed_noise_tokens(self.xt, agent_tongue, nbytes=pt_len)
+
+        if self.neural_gate is not None:
+            request = neural_hatch_request(
+                egg, current_context, agent_tongue, ritual_mode, additional_tongues, path_history
+            )
+            if not self.neural_gate.evaluate(request, neural_evidence).allowed:
+                return HatchResult(False, fail_tokens, None, "sealed")
+
         # Compute geometric classification from context
         r = context_radius(current_context)
         ring_info = self.ring_policy.classify(r)
@@ -303,14 +354,6 @@ class SacredEggIntegrator:
         z = toolkit.morton_id(v, 2)
         P, margin = toolkit.potentials(u, v)
         path = toolkit.classify(h, z, P, margin)
-
-        # Pre-compute noise output length for consistent fail-to-noise. The stored
-        # ct_spec is AES-256-GCM (plaintext + a 16-byte tag); a successful hatch
-        # tokenizes only the plaintext, so subtract the tag to match token counts.
-        ct_spec_b64 = egg.yolk_ct.get("ct_spec", "")
-        ct_spec_len = len(base64.b64decode(ct_spec_b64)) if ct_spec_b64 else _AEAD_TAG_LEN
-        pt_len = max(ct_spec_len - _AEAD_TAG_LEN, 0)
-        fail_tokens = _sealed_noise_tokens(self.xt, agent_tongue, nbytes=pt_len)
 
         # --- Self-identity integrity check (genesis-bound) ---
         # Back-compat: if fields are missing/empty, do not fail here.

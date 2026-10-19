@@ -133,12 +133,16 @@ def participation_ratio(evals: np.ndarray) -> float:
         evals: Eigenvalues (non-negative).
 
     Returns:
-        Participation ratio in [1, D].
+        Participation ratio in [1, D], or 0 for an all-zero spectrum.
     """
-    evals = np.maximum(evals, EPS)
-    total = float(evals.sum())
-    sq_total = float(np.sum(evals**2))
-    return (total**2) / (sq_total + EPS)
+    evals = np.maximum(np.asarray(evals, dtype=float), 0.0)
+    peak = float(np.max(evals)) if evals.size else 0.0
+    if peak == 0.0:
+        return 0.0  # no observed activity, not a full-rank uniform spectrum
+    # PR is dimensionless. Adding an absolute epsilon to squared eigenvalues
+    # made the same motion look like replay when expressed at a smaller scale.
+    scaled = evals / peak
+    return float(scaled.sum() ** 2 / np.sum(scaled**2))
 
 
 def spectral_entropy(evals: np.ndarray) -> float:
@@ -154,9 +158,14 @@ def spectral_entropy(evals: np.ndarray) -> float:
     Returns:
         Spectral entropy in [0, log(D)].
     """
-    evals = np.maximum(evals, EPS)
-    p = evals / evals.sum()
-    return float(-np.sum(p * np.log(p + EPS)))
+    evals = np.maximum(np.asarray(evals, dtype=float), 0.0)
+    positive = evals[evals > 0]
+    if not positive.size:
+        return 0.0
+    scaled = positive / positive.max()
+    p = scaled / scaled.sum()
+    p = p[p > 0]  # an extreme dynamic range may underflow a negligible mode
+    return float(-np.sum(p * np.log(p)))
 
 
 def effective_rank(evals: np.ndarray) -> float:
@@ -188,7 +197,7 @@ def analyze_scale(X: np.ndarray, scale: int, top_k: int = 5) -> ScaleFeatures:
     """
     dX = compute_increments(X, scale)
     evals, _ = covariance_spectrum(dX)
-    evals_pos = np.maximum(evals, EPS)
+    evals_pos = np.maximum(evals, 0.0)
 
     pr = participation_ratio(evals_pos)
     se = spectral_entropy(evals_pos)
