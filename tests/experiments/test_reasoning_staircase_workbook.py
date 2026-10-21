@@ -34,10 +34,52 @@ def test_topology_has_inverse_stairs_and_residual_returns() -> None:
 def test_workbook_reopens_with_links_and_required_sheets(tmp_path: Path) -> None:
     output = M.build_workbook(tmp_path / "stairs.xlsx", None, None, None, depths=4)
     workbook = load_workbook(output, data_only=False)
-    required = {"README", "Nodes", "Edges", "Link_Ledger", "Staircase_Grid", "Phi_Schedule", "Results"}
+    required = {
+        "README",
+        "Nodes",
+        "Edges",
+        "Link_Ledger",
+        "Elastic_Paths",
+        "Staircase_Grid",
+        "Phi_Schedule",
+        "Results",
+    }
     assert required.issubset(workbook.sheetnames)
     assert str(workbook["Link_Ledger"]["B2"].value).startswith("=HYPERLINK")
     assert str(workbook["Staircase_Grid"]["B2"].value).startswith("=HYPERLINK")
     angles = [workbook["Phi_Schedule"].cell(row=row, column=3).value for row in range(2, 6)]
     assert len(set(angles)) == 4
+    assert all(
+        workbook["Elastic_Paths"].cell(row=row, column=10).value
+        for row in range(2, workbook["Elastic_Paths"].max_row + 1)
+    )
+    workbook.close()
+
+
+def test_workbook_accepts_staircase_result_receipts(tmp_path: Path) -> None:
+    receipt = {
+        "arms": [{"name": "receipt"}],
+        "runs": [{"arm": "receipt", "seed": 11, "metrics": {"deep_route_floor": 0.75}}],
+        "analysis": {"claim_rules": {"receipt_support": True}},
+    }
+    output = M.build_workbook(
+        tmp_path / "stairs-results.xlsx",
+        None,
+        None,
+        None,
+        depths=3,
+        staircase=receipt,
+        staircase_sidecar=receipt,
+        staircase_snap=receipt,
+    )
+    workbook = load_workbook(output, data_only=False)
+    experiments = {
+        workbook["Results"].cell(row=row, column=1).value
+        for row in range(2, workbook["Results"].max_row + 1)
+    }
+    assert {
+        "staircase_coupled",
+        "staircase_decoupled",
+        "staircase_lattice_snap",
+    }.issubset(experiments)
     workbook.close()

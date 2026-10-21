@@ -266,6 +266,9 @@ def build_workbook(
     triadic: dict[str, object] | None,
     sidecar: dict[str, object] | None,
     depths: int = 14,
+    staircase: dict[str, object] | None = None,
+    staircase_sidecar: dict[str, object] | None = None,
+    staircase_snap: dict[str, object] | None = None,
 ) -> Path:
     nodes, edges = build_topology(depths)
     node_row = {node.node_id: index + 2 for index, node in enumerate(nodes)}
@@ -277,6 +280,7 @@ def build_workbook(
         ("Node sheet", "Local, radial, and z coordinates for every landing"),
         ("Edge sheet", "Typed direction, inverse, shared group, and residual lineage"),
         ("Link_Ledger", "Clickable source/target links into Nodes"),
+        ("Elastic_Paths", "Deformable residual geometry with fixed endpoint identity"),
         ("Staircase_Grid", "One whole decision grid per depth"),
         ("Phi_Schedule", "Golden-angle coordinates and reversible depth links"),
         ("Results", "Measured arm means and registered claim gates"),
@@ -335,6 +339,50 @@ def build_workbook(
     style_header(link_ws)
     add_table(link_ws, "LinkLedger")
     auto_width(link_ws)
+
+    elastic_ws = workbook.create_sheet("Elastic_Paths")
+    elastic_ws.append(
+        [
+            "edge_id",
+            "source",
+            "target",
+            "rest_length",
+            "spring_k",
+            "damping_c",
+            "bend_kappa",
+            "max_stretch_ratio",
+            "payload",
+            "topology_locked",
+            "render_path",
+        ]
+    )
+    node_by_id = {node.node_id: node for node in nodes}
+    for edge in edges:
+        source = node_by_id[edge.source]
+        target = node_by_id[edge.target]
+        dz = float(target.depth_z - source.depth_z)
+        rest_length = math.sqrt(
+            (target.x - source.x) ** 2 + (target.y - source.y) ** 2 + dz**2
+        )
+        spring_k = max(0.25, abs(edge.weight))
+        elastic_ws.append(
+            [
+                edge.edge_id,
+                edge.source,
+                edge.target,
+                rest_length,
+                spring_k,
+                0.70 * math.sqrt(spring_k),
+                1.0 / PHI,
+                PHI,
+                edge.residual_of or edge.shared_group,
+                True,
+                "bounded cubic spline",
+            ]
+        )
+    style_header(elastic_ws)
+    add_table(elastic_ws, "ElasticPathLedger")
+    auto_width(elastic_ws)
 
     grid_ws = workbook.create_sheet("Staircase_Grid")
     grid_headers = ["depth_z", "anchor"] + [f"evidence_{i}" for i in range(6)] + [
@@ -422,6 +470,9 @@ def build_workbook(
         ("multiview", multiview),
         ("triadic_latent", triadic),
         ("triadic_sidecar", sidecar),
+        ("staircase_coupled", staircase),
+        ("staircase_decoupled", staircase_sidecar),
+        ("staircase_lattice_snap", staircase_snap),
     ):
         if not receipt:
             continue
@@ -465,7 +516,16 @@ def build_workbook(
     workbook.save(output)
     # Reopen now so a corrupt or unsupported workbook fails before it is reported.
     checked = load_workbook(output, read_only=False, data_only=False)
-    required = {"README", "Nodes", "Edges", "Link_Ledger", "Staircase_Grid", "Phi_Schedule", "Results"}
+    required = {
+        "README",
+        "Nodes",
+        "Edges",
+        "Link_Ledger",
+        "Elastic_Paths",
+        "Staircase_Grid",
+        "Phi_Schedule",
+        "Results",
+    }
     if not required.issubset(checked.sheetnames):
         raise RuntimeError("saved workbook is missing required sheets")
     checked.close()
@@ -479,6 +539,9 @@ def main(argv: Iterable[str] | None = None) -> int:
     parser.add_argument("--multiview-results", type=Path)
     parser.add_argument("--triadic-results", type=Path)
     parser.add_argument("--sidecar-results", type=Path)
+    parser.add_argument("--staircase-results", type=Path)
+    parser.add_argument("--staircase-sidecar-results", type=Path)
+    parser.add_argument("--staircase-snap-results", type=Path)
     args = parser.parse_args(list(argv) if argv is not None else None)
     if args.depths < 2:
         parser.error("--depths must be at least 2")
@@ -487,7 +550,10 @@ def main(argv: Iterable[str] | None = None) -> int:
         load_receipt(args.multiview_results),
         load_receipt(args.triadic_results),
         load_receipt(args.sidecar_results),
-        args.depths,
+        depths=args.depths,
+        staircase=load_receipt(args.staircase_results),
+        staircase_sidecar=load_receipt(args.staircase_sidecar_results),
+        staircase_snap=load_receipt(args.staircase_snap_results),
     )
     print(output.resolve())
     return 0
