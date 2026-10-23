@@ -2328,6 +2328,32 @@ export {
   computeTubalBranchTelemetry,
 } from './reasoning-artifact-graph.js';
 
+// Nested topic fields over public reasoning artifacts. Concept bubbles are
+// overlapping hyperedges; routes are bounded, typed, receipted, and replayable.
+export {
+  CONCEPT_RELATIONS,
+  type ConceptRelation,
+  type ConceptAuthority,
+  type ConceptEvidenceStatus,
+  type ConceptRouteHopKind,
+  type ConceptMembership,
+  type ConceptBubble,
+  type TopicField,
+  type TypedConceptEdge,
+  type ConceptFieldGraph,
+  type ConceptFieldGraphInput,
+  type ConceptFieldVerification,
+  type ConceptRouteGoal,
+  type NormalizedConceptRouteGoal,
+  type ConceptRouteHop,
+  type PublicReasoningStep,
+  type ConceptRouteResult,
+  createConceptFieldGraph,
+  verifyConceptFieldGraph,
+  planConceptRoute,
+  verifyConceptRoute,
+} from './concept-field-graph.js';
+
 // Typed DATA/BIND/BRANCH/LOOP instruction language with bounded execution
 // receipts and a bridge into the public reasoning-artifact DAG.
 export {

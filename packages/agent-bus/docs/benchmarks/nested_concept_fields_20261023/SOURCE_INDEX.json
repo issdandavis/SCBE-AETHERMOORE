@@ -1,0 +1,2482 @@
+[
+  {
+    "sentence_id": "P1.01",
+    "source_text": "Where I come from, people live in nice clean homes and have clean thoughts, living nice lives and being busy at work or on the river.",
+    "source_utf8_sha256": "1c939ac0f08a1bb7f0151a493ace1b148c512999d5acc1df688e81ed9bbc82ae",
+    "role": {
+      "label": "Broad Topic",
+      "family": "orientation"
+    },
+    "map_job": "Opens the subject.",
+    "slots": [
+      {
+        "slot_id": "P1.01.S01",
+        "phrase": "Where I come from",
+        "function": "Setting",
+        "explanation": "Places the opening in the community you know before the essay narrows to your own identity.",
+        "char_span": [0, 17],
+        "byte_span": [0, 17]
+      },
+      {
+        "slot_id": "P1.01.S02",
+        "phrase": "nice clean homes and have clean thoughts",
+        "function": "Central comparison",
+        "explanation": "Pairs the outward house with the inward mind, establishing the image the rest of the essay develops.",
+        "char_span": [34, 74],
+        "byte_span": [34, 74]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P1.02",
+    "source_text": "But below the surface is the history many don't talk about often, dirty secrets and opinions not spoken out loud but that pile up in the eyes of the neighbors.",
+    "source_utf8_sha256": "6ae306de05237f9bba430bef5e5b792c1189938d789bafd2ed6a8137210386cb",
+    "role": {
+      "label": "Paint a Picture - Claim",
+      "family": "imagery_context"
+    },
+    "map_job": "Makes a broad observation.",
+    "slots": [
+      {
+        "slot_id": "P1.02.S01",
+        "phrase": "But below the surface",
+        "function": "Contrast / transition",
+        "explanation": "Challenges the clean appearance in the opening and directs attention toward hidden history.",
+        "char_span": [0, 21],
+        "byte_span": [0, 21]
+      },
+      {
+        "slot_id": "P1.02.S02",
+        "phrase": "pile up in the eyes of the neighbors",
+        "function": "Perspective",
+        "explanation": "Connects accumulated history to what observers notice, preparing the discussion of judgment.",
+        "char_span": [122, 158],
+        "byte_span": [122, 158]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P1.03",
+    "source_text": "We all see ourselves in positive ways, more or less, while others do not.",
+    "source_utf8_sha256": "866ca9049e531e2bb9496c61d052aea95e5688638841f645f08dbccac089c5ac",
+    "role": {
+      "label": "Paint a Picture - Claim",
+      "family": "imagery_context"
+    },
+    "map_job": "Makes a broad observation.",
+    "slots": [
+      {
+        "slot_id": "P1.03.S01",
+        "phrase": "We all see ourselves in positive ways",
+        "function": "Broad claim",
+        "explanation": "Introduces a difference between self-perception and being seen by other people.",
+        "char_span": [0, 37],
+        "byte_span": [0, 37]
+      },
+      {
+        "slot_id": "P1.03.S02",
+        "phrase": "more or less, while others do not",
+        "function": "Qualification / contrast",
+        "explanation": "Softens the first claim, then sets your own view against an outside view.",
+        "char_span": [39, 72],
+        "byte_span": [39, 72]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P1.04",
+    "source_text": "Constantly looking over their neighbors' fences, some people look at your home, see the piles of your past projects in your yard, and label you based on that.",
+    "source_utf8_sha256": "016275b8898ebaa23cd5e6e6a3c2c2a4a2410419401ad4d253373a8d9c8068d0",
+    "role": {
+      "label": "Paint a Picture - Details",
+      "family": "imagery_context"
+    },
+    "map_job": "Makes the broad subject visible.",
+    "slots": [
+      {
+        "slot_id": "P1.04.S01",
+        "phrase": "looking over their neighbors' fences",
+        "function": "Visible detail",
+        "explanation": "Gives the outside observer a position: close enough to see something, but still outside the home.",
+        "char_span": [11, 47],
+        "byte_span": [11, 47]
+      },
+      {
+        "slot_id": "P1.04.S02",
+        "phrase": "see the piles of your past projects in your yard, and label you based on that",
+        "function": "Judgment sequence",
+        "explanation": "Moves from observation to a label, showing the process your essay questions.",
+        "char_span": [80, 157],
+        "byte_span": [80, 157]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P1.05",
+    "source_text": "Some of those \"other people\" see the things in the yard as failed attempts while they live in immaculate homes where the things of the past are sorted into clean storage, and the floors show no stains of the past.",
+    "source_utf8_sha256": "7539de8848d59d8301d53a9ce4f1b12dbb9319de94df800b86de22a0d510d6b2",
+    "role": {
+      "label": "Paint a Picture - Details",
+      "family": "imagery_context"
+    },
+    "map_job": "Makes the broad subject visible.",
+    "slots": [
+      {
+        "slot_id": "P1.05.S01",
+        "phrase": "failed attempts",
+        "function": "Outside interpretation",
+        "explanation": "Names a negative meaning that observers assign to the projects, rather than merely naming the objects.",
+        "char_span": [59, 74],
+        "byte_span": [59, 74]
+      },
+      {
+        "slot_id": "P1.05.S02",
+        "phrase": "while they live in immaculate homes",
+        "function": "Contrast",
+        "explanation": "Places the judged collection beside the apparently organized lives of those making the judgment.",
+        "char_span": [75, 110],
+        "byte_span": [75, 110]
+      },
+      {
+        "slot_id": "P1.05.S03",
+        "phrase": "the floors show no stains of the past",
+        "function": "House / history metaphor",
+        "explanation": "Presents an unstained floor as an image of an apparently resolved past, not proof of another person’s private life.",
+        "char_span": [175, 212],
+        "byte_span": [175, 212]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P1.06",
+    "source_text": "They know the ways things have changed and have cleaned the grime off the change they accumulated.",
+    "source_utf8_sha256": "7698746c824a21e16dc668f7110a8eb95df5dc7b16ad8786ef17e08826e515fb",
+    "role": {
+      "label": "Paint a Picture - Details",
+      "family": "imagery_context"
+    },
+    "map_job": "Makes the broad subject visible.",
+    "slots": [
+      {
+        "slot_id": "P1.06.S01",
+        "phrase": "They know the ways things have changed",
+        "function": "Continuation",
+        "explanation": "Continues the preceding portrait of people who appear to have handled their past.",
+        "char_span": [0, 38],
+        "byte_span": [0, 38]
+      },
+      {
+        "slot_id": "P1.06.S02",
+        "phrase": "cleaned the grime off the change they accumulated",
+        "function": "Wordplay / metaphor",
+        "explanation": "Links change over time with accumulated change as coins, preparing the later coin-jar image.",
+        "char_span": [48, 97],
+        "byte_span": [48, 97]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P1.07",
+    "source_text": "We see the faults in others more than the goodness sometimes.",
+    "source_utf8_sha256": "42ce1fd1918e45717c5089acc8cdffd11a5d28e885a6d2f45f744e17a5ce7444",
+    "role": {
+      "label": "Paint a Picture - EOS",
+      "family": "imagery_context"
+    },
+    "map_job": "Explains why the broad subject matters.",
+    "slots": [
+      {
+        "slot_id": "P1.07.S01",
+        "phrase": "We see the faults in others more than the goodness",
+        "function": "Significance",
+        "explanation": "Steps back from the yard scene to identify a pattern of judgment.",
+        "char_span": [0, 50],
+        "byte_span": [0, 50]
+      },
+      {
+        "slot_id": "P1.07.S02",
+        "phrase": "sometimes",
+        "function": "Qualification",
+        "explanation": "Keeps the statement from claiming that people always overlook goodness.",
+        "char_span": [51, 60],
+        "byte_span": [51, 60]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P1.08",
+    "source_text": "It becomes easy to judge and label others based on how we label ourselves.",
+    "source_utf8_sha256": "18e57ac71d82e09f5f6e05fd53075f6c33460e8661abfe28c31a82d017f03b20",
+    "role": {
+      "label": "Paint a Picture - EOS",
+      "family": "imagery_context"
+    },
+    "map_job": "Explains why the broad subject matters.",
+    "slots": [
+      {
+        "slot_id": "P1.08.S01",
+        "phrase": "judge and label others",
+        "function": "Significance",
+        "explanation": "Names the consequence of the selective seeing described in the previous sentence.",
+        "char_span": [19, 41],
+        "byte_span": [19, 41]
+      },
+      {
+        "slot_id": "P1.08.S02",
+        "phrase": "based on how we label ourselves",
+        "function": "Connection",
+        "explanation": "Links judgments of others to the standards people use for themselves, preparing your response about labels.",
+        "char_span": [42, 73],
+        "byte_span": [42, 73]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P1.09",
+    "source_text": "For me, I put labels on my objects and memories, not myself.",
+    "source_utf8_sha256": "59b5ca8b954ffc07d2e0cc97027cf01517d5a24764958f674c1fe9d3c381aef2",
+    "role": {
+      "label": "Narrow Down 1 - Claim",
+      "family": "narrowing"
+    },
+    "map_job": "Moves to your particular focus.",
+    "slots": [
+      {
+        "slot_id": "P1.09.S01",
+        "phrase": "For me",
+        "function": "Narrowing transition",
+        "explanation": "Moves from the general neighborhood to your particular way of understanding your collection.",
+        "char_span": [0, 6],
+        "byte_span": [0, 6]
+      },
+      {
+        "slot_id": "P1.09.S02",
+        "phrase": "my objects and memories, not myself",
+        "function": "Contrast / identity claim",
+        "explanation": "Separates identifying what you carry from reducing your identity to a label.",
+        "char_span": [24, 59],
+        "byte_span": [24, 59]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P1.10",
+    "source_text": "I keep my thoughts to myself, if I can, but that doesn't mean I'm quiet.",
+    "source_utf8_sha256": "666848e8cacb9087e3378867fe7f6151940242e5659b2c73901361f5553f97c3",
+    "role": {
+      "label": "Narrow Down 1 - Claim",
+      "family": "narrowing"
+    },
+    "map_job": "Moves to your particular focus.",
+    "slots": [
+      {
+        "slot_id": "P1.10.S01",
+        "phrase": "I keep my thoughts to myself, if I can",
+        "function": "Personal claim / qualification",
+        "explanation": "Introduces selective privacy while acknowledging that you do not always achieve it.",
+        "char_span": [0, 38],
+        "byte_span": [0, 38]
+      },
+      {
+        "slot_id": "P1.10.S02",
+        "phrase": "but that doesn't mean I'm quiet",
+        "function": "Misconception answered",
+        "explanation": "Distinguishes being outspoken from revealing everything, preparing the first body paragraph.",
+        "char_span": [40, 71],
+        "byte_span": [40, 71]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P1.11",
+    "source_text": "I keep old memories like dusty coins in jars, crushed by one another into labeled bins by year and grade.",
+    "source_utf8_sha256": "6d9ef6c82e435edc2f16e0b7ed8f7ec36894efc8d34d1e4d16a83f3a1bbd763d",
+    "role": {
+      "label": "Narrow Down 1 - Details",
+      "family": "narrowing"
+    },
+    "map_job": "Develops that narrower focus.",
+    "slots": [
+      {
+        "slot_id": "P1.11.S01",
+        "phrase": "old memories like dusty coins in jars",
+        "function": "Concrete comparison",
+        "explanation": "Makes retained memories imaginable as collected objects that can carry value and signs of age.",
+        "char_span": [7, 44],
+        "byte_span": [7, 44]
+      },
+      {
+        "slot_id": "P1.11.S02",
+        "phrase": "labeled bins by year and grade",
+        "function": "Organization detail",
+        "explanation": "Gives the collection a time-based arrangement rather than presenting it as completely undifferentiated.",
+        "char_span": [74, 104],
+        "byte_span": [74, 104]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P1.12",
+    "source_text": "The old dirty coins, surrounded by trash piles I have to sort through to find them, sit next to the projects and papers I work on.",
+    "source_utf8_sha256": "35eb4e56b9a1af95700cbba8dcdef688e34fbfb570df3cd92dddc8e7e8df2857",
+    "role": {
+      "label": "Narrow Down 1 - Details",
+      "family": "narrowing"
+    },
+    "map_job": "Develops that narrower focus.",
+    "slots": [
+      {
+        "slot_id": "P1.12.S01",
+        "phrase": "trash piles I have to sort through to find them",
+        "function": "Complication",
+        "explanation": "Shows that reaching valued memories can involve sorting through surrounding material.",
+        "char_span": [35, 82],
+        "byte_span": [35, 82]
+      },
+      {
+        "slot_id": "P1.12.S02",
+        "phrase": "next to the projects and papers I work on",
+        "function": "Past / present connection",
+        "explanation": "Places remembered experience beside ongoing work in the same home.",
+        "char_span": [88, 129],
+        "byte_span": [88, 129]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P1.13",
+    "source_text": "I know where they all came from.",
+    "source_utf8_sha256": "65b8b2514e086e4d47ccddba6da21e53b40f8bd200498351b2089c7e37a50acf",
+    "role": {
+      "label": "Narrow Down 1 - EOS",
+      "family": "narrowing"
+    },
+    "map_job": "Explains the narrower focus’s significance.",
+    "slots": [
+      {
+        "slot_id": "P1.13.S01",
+        "phrase": "I know",
+        "function": "Insider knowledge",
+        "explanation": "Contrasts your familiarity with the neighbors’ partial view.",
+        "char_span": [0, 6],
+        "byte_span": [0, 6]
+      },
+      {
+        "slot_id": "P1.13.S02",
+        "phrase": "where they all came from",
+        "function": "Significance",
+        "explanation": "Makes an object’s origin part of why it matters to you.",
+        "char_span": [7, 31],
+        "byte_span": [7, 31]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P1.14",
+    "source_text": "Every scrap is a memory of a time or a place.",
+    "source_utf8_sha256": "b819393ab2a2c99adaee00a3fd8ebae74f330ed82a4c8f2e3e882cad7150d45b",
+    "role": {
+      "label": "Narrow Down 1 - EOS",
+      "family": "narrowing"
+    },
+    "map_job": "Explains the narrower focus’s significance.",
+    "slots": [
+      {
+        "slot_id": "P1.14.S01",
+        "phrase": "Every scrap",
+        "function": "Value claim",
+        "explanation": "Extends significance even to something that might appear small or disposable.",
+        "char_span": [0, 11],
+        "byte_span": [0, 11]
+      },
+      {
+        "slot_id": "P1.14.S02",
+        "phrase": "a memory of a time or a place",
+        "function": "Explanation",
+        "explanation": "States what a scrap holds for you, completing the first narrowing section.",
+        "char_span": [15, 44],
+        "byte_span": [15, 44]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P1.15",
+    "source_text": "Some would say hoarding is defined as an obsession to gather trash, but I gather my life and its moments into boxes and bins.",
+    "source_utf8_sha256": "008779465230297cfe223fa6610c77ac202550e8dc9d032b759ad0947c6c7b10",
+    "role": {
+      "label": "Narrow Down 2 (They Say discussion)",
+      "family": "narrowing"
+    },
+    "map_job": "Opens the discussion the voices address.",
+    "slots": [
+      {
+        "slot_id": "P1.15.S01",
+        "phrase": "Some would say",
+        "function": "Discussion opening",
+        "explanation": "Introduces an outside characterization; the sentence reports that view rather than establishing a clinical definition.",
+        "char_span": [0, 14],
+        "byte_span": [0, 14]
+      },
+      {
+        "slot_id": "P1.15.S02",
+        "phrase": "an obsession to gather trash, but I gather my life and its moments",
+        "function": "Counterposition",
+        "explanation": "Sets supposedly worthless accumulation against your interpretation of the collection as lived experience.",
+        "char_span": [38, 104],
+        "byte_span": [38, 104]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P1.16",
+    "source_text": "As a hoarder of thoughts, some would assume I keep them all to myself, that I have opinions held deep that are treasure.",
+    "source_utf8_sha256": "a1ad6e888de25a513659b36a95e237677abfc630e3eb907199e36fa14c360c9c",
+    "role": {
+      "label": "They Say 1",
+      "family": "outside_position"
+    },
+    "map_job": "Introduces the first outside perspective.",
+    "slots": [
+      {
+        "slot_id": "P1.16.S01",
+        "phrase": "some would assume",
+        "function": "They Say perspective",
+        "explanation": "Marks the view as an assumption made about you, not your own conclusion.",
+        "char_span": [26, 43],
+        "byte_span": [26, 43]
+      },
+      {
+        "slot_id": "P1.16.S02",
+        "phrase": "keep them all to myself",
+        "function": "Position introduced",
+        "explanation": "Names the privacy assumption that the first body paragraph later complicates.",
+        "char_span": [46, 69],
+        "byte_span": [46, 69]
+      },
+      {
+        "slot_id": "P1.16.S03",
+        "phrase": "opinions held deep that are treasure",
+        "function": "Value image",
+        "explanation": "Adds the idea that private thoughts are precious to their keeper.",
+        "char_span": [83, 119],
+        "byte_span": [83, 119]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P1.17",
+    "source_text": "Other people would say the best way to remember the past is to clean up the present and move forward; to them I say I try.",
+    "source_utf8_sha256": "26c6bb7ed97494c7a36e36dee7e338a0f5ec4837e7e7818778929ddf66b71e7c",
+    "role": {
+      "label": "They Say 2",
+      "family": "outside_position"
+    },
+    "map_job": "Introduces another outside perspective.",
+    "slots": [
+      {
+        "slot_id": "P1.17.S01",
+        "phrase": "Other people would say",
+        "function": "Alternative perspective",
+        "explanation": "Introduces a different voice from the previous assumption about privacy.",
+        "char_span": [0, 22],
+        "byte_span": [0, 22]
+      },
+      {
+        "slot_id": "P1.17.S02",
+        "phrase": "clean up the present and move forward",
+        "function": "Advice / opposing emphasis",
+        "explanation": "Presents improvement and forward movement as the other view’s priority.",
+        "char_span": [63, 100],
+        "byte_span": [63, 100]
+      },
+      {
+        "slot_id": "P1.17.S03",
+        "phrase": "to them I say I try",
+        "function": "Brief response",
+        "explanation": "Acknowledges the advice and your effort without claiming that the work is finished.",
+        "char_span": [102, 121],
+        "byte_span": [102, 121]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P1.18",
+    "source_text": "Others say I should clean up my attitude and words.",
+    "source_utf8_sha256": "63ae1685b0f42668fb811fa46d28ff6d3d3be2b8c825203f84bf99daf5e937de",
+    "role": {
+      "label": "They Say 3",
+      "family": "outside_position"
+    },
+    "map_job": "Introduces a third outside perspective.",
+    "slots": [
+      {
+        "slot_id": "P1.18.S01",
+        "phrase": "Others say",
+        "function": "Third perspective",
+        "explanation": "Signals another outside voice in the discussion.",
+        "char_span": [0, 10],
+        "byte_span": [0, 10]
+      },
+      {
+        "slot_id": "P1.18.S02",
+        "phrase": "clean up my attitude and words",
+        "function": "Behavioral criticism",
+        "explanation": "Moves from possessions and memory to how you speak, setting up Body 1’s examples.",
+        "char_span": [20, 50],
+        "byte_span": [20, 50]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P1.19",
+    "source_text": "While some people see me as an outspoken, boisterous man who has his life in order, and while they are not wrong, what they need to understand is that I'm truly a hoarder of my own thoughts.",
+    "source_utf8_sha256": "9043adb805bc4b7fc66baf7ed9917f21f4cebbe0cfb383fd678a7d59f32d0e15",
+    "role": {
+      "label": "Thesis Formula",
+      "family": "thesis"
+    },
+    "map_job": "Turns from They Say to I Say.",
+    "slots": [
+      {
+        "slot_id": "P1.19.S01",
+        "phrase": "While some people see me as an outspoken, boisterous man who has his life in order",
+        "function": "They Say / concession opening",
+        "explanation": "Names the outward impression that the thesis will qualify.",
+        "char_span": [0, 82],
+        "byte_span": [0, 82]
+      },
+      {
+        "slot_id": "P1.19.S02",
+        "phrase": "and while they are not wrong",
+        "function": "Concession",
+        "explanation": "Accepts part of that impression instead of claiming that every judgment is false.",
+        "char_span": [84, 112],
+        "byte_span": [84, 112]
+      },
+      {
+        "slot_id": "P1.19.S03",
+        "phrase": "what they need to understand is that I'm truly a hoarder of my own thoughts",
+        "function": "I Say / identity claim",
+        "explanation": "Turns to the inward identity the body paragraphs explain. This sentence names that identity; its reasons develop later.",
+        "char_span": [114, 189],
+        "byte_span": [114, 189]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P2.01",
+    "source_text": "When I started hoarding thoughts, I began to notice the people around me more.",
+    "source_utf8_sha256": "27a13b67f6fef9f4f6f65e3719394581e6af3be05008ffec330923ece9cb3297",
+    "role": {
+      "label": "TS 1",
+      "family": "topic_sentence"
+    },
+    "map_job": "Connects back and introduces Body 1.",
+    "slots": [
+      {
+        "slot_id": "P2.01.S01",
+        "phrase": "When I started hoarding thoughts",
+        "function": "Time transition / thesis link",
+        "explanation": "Reaches back to the thesis’s hoarding identity and introduces the experience of living with it.",
+        "char_span": [0, 32],
+        "byte_span": [0, 32]
+      },
+      {
+        "slot_id": "P2.01.S02",
+        "phrase": "I began to notice the people around me more",
+        "function": "Paragraph direction",
+        "explanation": "Sets the focus on interactions and perception, which the next sentence makes more specific.",
+        "char_span": [34, 77],
+        "byte_span": [34, 77]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P2.02",
+    "source_text": "Some would see sands on my floor in a flurry, unswept; I am constantly shifting my thoughts around and keeping the feelings I have hidden under grit.",
+    "source_utf8_sha256": "98edd380d60f92496b0712eec19d3bcc64025ae9318b4ccaa53c783d50cf1b00",
+    "role": {
+      "label": "TS 1",
+      "family": "topic_sentence"
+    },
+    "map_job": "Connects back and introduces Body 1.",
+    "slots": [
+      {
+        "slot_id": "P2.02.S01",
+        "phrase": "Some would see sands on my floor in a flurry, unswept",
+        "function": "Outside view",
+        "explanation": "Presents activity and disorder as they might appear to an observer.",
+        "char_span": [0, 53],
+        "byte_span": [0, 53]
+      },
+      {
+        "slot_id": "P2.02.S02",
+        "phrase": "I am constantly shifting my thoughts around",
+        "function": "Inside activity",
+        "explanation": "Sets your ongoing mental activity beside that outward impression.",
+        "char_span": [55, 98],
+        "byte_span": [55, 98]
+      },
+      {
+        "slot_id": "P2.02.S03",
+        "phrase": "keeping the feelings I have hidden under grit",
+        "function": "Privacy metaphor",
+        "explanation": "Introduces the distinction between what is visible and what remains concealed.",
+        "char_span": [103, 148],
+        "byte_span": [103, 148]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P2.03",
+    "source_text": "I used to think I was correct all the time and never accepted reality.",
+    "source_utf8_sha256": "56005541c73e188cf18b248807acde70fc147b48babfbb70c63d6931c0749b28",
+    "role": {
+      "label": "CLAIM 1",
+      "family": "claim"
+    },
+    "map_job": "Offers the first reason.",
+    "slots": [
+      {
+        "slot_id": "P2.03.S01",
+        "phrase": "I used to think",
+        "function": "Past-time claim",
+        "explanation": "Moves into an earlier habit, leaving room for what you later learned.",
+        "char_span": [0, 15],
+        "byte_span": [0, 15]
+      },
+      {
+        "slot_id": "P2.03.S02",
+        "phrase": "I was correct all the time and never accepted reality",
+        "function": "First reason",
+        "explanation": "Names the attitude behind the conflicts and consequences that follow.",
+        "char_span": [16, 69],
+        "byte_span": [16, 69]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P2.04",
+    "source_text": "This caused me to lose friends and jobs.",
+    "source_utf8_sha256": "589f814e420ed4491f71501a70a332890cfb784dad5dc40d9858017bf1d9e57a",
+    "role": {
+      "label": "EX 1",
+      "family": "evidence_example"
+    },
+    "map_job": "Supplies support for the first claim.",
+    "slots": [
+      {
+        "slot_id": "P2.04.S01",
+        "phrase": "This caused me",
+        "function": "Cause-and-effect link",
+        "explanation": "Connects the reported consequences to the attitude in the previous sentence.",
+        "char_span": [0, 14],
+        "byte_span": [0, 14]
+      },
+      {
+        "slot_id": "P2.04.S02",
+        "phrase": "lose friends and jobs",
+        "function": "Consequence evidence",
+        "explanation": "Identifies the relationships and work affected. It reports an outcome rather than depicting a single incident.",
+        "char_span": [18, 39],
+        "byte_span": [18, 39]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P2.05",
+    "source_text": "For example, I would call some friends silly-headed or hard-headed or foolish to their faces and let my hoard of thoughts spill out my front door.",
+    "source_utf8_sha256": "5caaead93106585242def6ecb59a62cfdb236a3724c2d96190cbf8729136d6ce",
+    "role": {
+      "label": "EX 1",
+      "family": "evidence_example"
+    },
+    "map_job": "Supplies support for the first claim.",
+    "slots": [
+      {
+        "slot_id": "P2.05.S01",
+        "phrase": "For example",
+        "function": "Evidence transition",
+        "explanation": "Signals a move from the general consequence to a particular kind of behavior.",
+        "char_span": [0, 11],
+        "byte_span": [0, 11]
+      },
+      {
+        "slot_id": "P2.05.S02",
+        "phrase": "call some friends silly-headed or hard-headed or foolish to their faces",
+        "function": "Behavioral example",
+        "explanation": "Names what you said and to whom, making the earlier claim more concrete.",
+        "char_span": [21, 92],
+        "byte_span": [21, 92]
+      },
+      {
+        "slot_id": "P2.05.S03",
+        "phrase": "let my hoard of thoughts spill out my front door",
+        "function": "House connection",
+        "explanation": "Connects uncontrolled speech to the movement of private contents into a public space.",
+        "char_span": [97, 145],
+        "byte_span": [97, 145]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P2.06",
+    "source_text": "I had to learn which thoughts had value and when to let some go.",
+    "source_utf8_sha256": "4586ed1e2116905fe27c5ef932d2bb9221463931312776fdf60a91bb356d8aa2",
+    "role": {
+      "label": "EOS 1",
+      "family": "explanation_significance"
+    },
+    "map_job": "Explains the first example’s significance.",
+    "slots": [
+      {
+        "slot_id": "P2.06.S01",
+        "phrase": "I had to learn",
+        "function": "Consequence / growth in understanding",
+        "explanation": "Shows that the earlier behavior led to a lesson rather than ending at the report of conflict.",
+        "char_span": [0, 14],
+        "byte_span": [0, 14]
+      },
+      {
+        "slot_id": "P2.06.S02",
+        "phrase": "which thoughts had value and when to let some go",
+        "function": "Significance",
+        "explanation": "Explains the sorting and restraint that you took from those experiences.",
+        "char_span": [15, 63],
+        "byte_span": [15, 63]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P2.07",
+    "source_text": "I had to find the threshold of my front porch and cordon it off so others would know where I began and the world could enter.",
+    "source_utf8_sha256": "d638e48e61e1874b454c18fcbe280fc9f4371f8756591b81b7fbea425d78210a",
+    "role": {
+      "label": "EOS 1",
+      "family": "explanation_significance"
+    },
+    "map_job": "Explains the first example’s significance.",
+    "slots": [
+      {
+        "slot_id": "P2.07.S01",
+        "phrase": "the threshold of my front porch and cordon it off",
+        "function": "Boundary metaphor",
+        "explanation": "Gives the learned limit a physical location at the entrance to the home.",
+        "char_span": [14, 63],
+        "byte_span": [14, 63]
+      },
+      {
+        "slot_id": "P2.07.S02",
+        "phrase": "where I began and the world could enter",
+        "function": "Significance",
+        "explanation": "Makes the boundary a way to define access, not simply a way to shut everyone out.",
+        "char_span": [85, 124],
+        "byte_span": [85, 124]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P2.08",
+    "source_text": "While others think I am sharing the truth of me, I am only scratching the surface.",
+    "source_utf8_sha256": "748baaa71e36585cb160b2601a04f1437d9f909544709a36d077e3f5e564c314",
+    "role": {
+      "label": "CLAIM 2",
+      "family": "claim"
+    },
+    "map_job": "Transitions to the second reason.",
+    "slots": [
+      {
+        "slot_id": "P2.08.S01",
+        "phrase": "While others think I am sharing the truth of me",
+        "function": "Contrast / second claim",
+        "explanation": "Returns to the outside interpretation of your speech and introduces a different reason for privacy.",
+        "char_span": [0, 47],
+        "byte_span": [0, 47]
+      },
+      {
+        "slot_id": "P2.08.S02",
+        "phrase": "I am only scratching the surface",
+        "function": "Inner / outer distinction",
+        "explanation": "Claims that what people hear does not reveal the entire collection underneath.",
+        "char_span": [49, 81],
+        "byte_span": [49, 81]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P2.09",
+    "source_text": "I may have deep-held emotions that I hoard, and the world sees them gather as jokes on my traveling duster from dusty drinking conversations.",
+    "source_utf8_sha256": "925c8bcf6907591ebe9b1ae3a44a1d093836b056e9f29010559207fb08c01ac2",
+    "role": {
+      "label": "EX 2",
+      "family": "evidence_example"
+    },
+    "map_job": "Supplies support for the second claim.",
+    "slots": [
+      {
+        "slot_id": "P2.09.S01",
+        "phrase": "I may have deep-held emotions that I hoard",
+        "function": "Illustrative possibility",
+        "explanation": "Presents what might remain private; “may” makes this an illustration rather than one named event.",
+        "char_span": [0, 42],
+        "byte_span": [0, 42]
+      },
+      {
+        "slot_id": "P2.09.S02",
+        "phrase": "gather as jokes on my traveling duster",
+        "function": "Public trace / metaphor",
+        "explanation": "Makes jokes the visible traces of experiences carried by the traveler, without exposing everything underneath.",
+        "char_span": [68, 106],
+        "byte_span": [68, 106]
+      },
+      {
+        "slot_id": "P2.09.S03",
+        "phrase": "dusty drinking conversations",
+        "function": "Social setting",
+        "explanation": "Locates the collection of those traces in conversations. Your stated duster intention is travel and gathering, not a new subject.",
+        "char_span": [112, 140],
+        "byte_span": [112, 140]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P2.10",
+    "source_text": "While I hold no belief in a thing or place, I could argue it for hours and gather moments about it with men like me; I see how others view my opinions, and I don't care.",
+    "source_utf8_sha256": "702c2896b61787ef54c52f0ff6725cecd6f188638823bad96f42b42f2f42bf35",
+    "role": {
+      "label": "EX 2",
+      "family": "evidence_example"
+    },
+    "map_job": "Supplies support for the second claim.",
+    "slots": [
+      {
+        "slot_id": "P2.10.S01",
+        "phrase": "While I hold no belief in a thing or place, I could argue it for hours",
+        "function": "Contrast / illustration",
+        "explanation": "Shows why arguing a position need not disclose a firmly held belief; “could” describes a capacity, not a single scene.",
+        "char_span": [0, 70],
+        "byte_span": [0, 70]
+      },
+      {
+        "slot_id": "P2.10.S02",
+        "phrase": "gather moments about it with men like me",
+        "function": "Relationship to the collection",
+        "explanation": "Makes the exchange itself something worth collecting, beyond the position being debated.",
+        "char_span": [75, 115],
+        "byte_span": [75, 115]
+      },
+      {
+        "slot_id": "P2.10.S03",
+        "phrase": "I see how others view my opinions, and I don't care",
+        "function": "Personal stance",
+        "explanation": "States your response to that outside judgment; it does not erase the earlier distinction between speech and belief.",
+        "char_span": [117, 168],
+        "byte_span": [117, 168]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P2.11",
+    "source_text": "I gather my trinkets of these times to see how the past connects to each item inside my collections of things, but I don't share them all.",
+    "source_utf8_sha256": "9d02648536ef51bba549e07c9eba67034f3f86464f47b740925d546e303f2846",
+    "role": {
+      "label": "EOS 2",
+      "family": "explanation_significance"
+    },
+    "map_job": "Explains the second example’s significance.",
+    "slots": [
+      {
+        "slot_id": "P2.11.S01",
+        "phrase": "to see how the past connects to each item",
+        "function": "Purpose / significance",
+        "explanation": "Explains why you retain the conversational trinkets: to preserve their connections.",
+        "char_span": [36, 77],
+        "byte_span": [36, 77]
+      },
+      {
+        "slot_id": "P2.11.S02",
+        "phrase": "but I don't share them all",
+        "function": "Boundary",
+        "explanation": "Returns directly to the claim that speaking does not reveal the whole collection.",
+        "char_span": [111, 137],
+        "byte_span": [111, 137]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P2.12",
+    "source_text": "To do that would disturb the hoard and leave me scrambling to ignore the clink of loose change as the \"penny for your thoughts\" jars all spill to the floor.",
+    "source_utf8_sha256": "4af0c882bd53c5adf17aef358cf39e8c0dcd37e7f8dad666cc4f8ff5fe720593",
+    "role": {
+      "label": "EOS 2",
+      "family": "explanation_significance"
+    },
+    "map_job": "Explains the second example’s significance.",
+    "slots": [
+      {
+        "slot_id": "P2.12.S01",
+        "phrase": "To do that",
+        "function": "Backward link",
+        "explanation": "Refers to sharing everything in the previous sentence, rather than opening a new subject.",
+        "char_span": [0, 10],
+        "byte_span": [0, 10]
+      },
+      {
+        "slot_id": "P2.12.S02",
+        "phrase": "would disturb the hoard and leave me scrambling",
+        "function": "Reason for the boundary",
+        "explanation": "Explains the disruption you associate with exposing the whole collection.",
+        "char_span": [11, 58],
+        "byte_span": [11, 58]
+      },
+      {
+        "slot_id": "P2.12.S03",
+        "phrase": "the \"penny for your thoughts\" jars all spill to the floor",
+        "function": "Sound / coin image",
+        "explanation": "Returns to the introduction’s jars and turns disclosure into a noisy loss of arrangement.",
+        "char_span": [98, 155],
+        "byte_span": [98, 155]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P2.13",
+    "source_text": "Other times I would let a thought out, and it would get stolen and used against me.",
+    "source_utf8_sha256": "43bbec2f81581a7c263024a3c8514f6142547d129efb800f8ee8c356ee62d55f",
+    "role": {
+      "label": "CLAIM 3",
+      "family": "claim"
+    },
+    "map_job": "Transitions to the third reason.",
+    "slots": [
+      {
+        "slot_id": "P2.13.S01",
+        "phrase": "Other times",
+        "function": "Third-claim transition",
+        "explanation": "Shifts from what you choose to withhold to occasions when you did release a thought.",
+        "char_span": [0, 11],
+        "byte_span": [0, 11]
+      },
+      {
+        "slot_id": "P2.13.S02",
+        "phrase": "stolen and used against me",
+        "function": "Third reason",
+        "explanation": "Introduces misuse of disclosed thoughts as another reason for caution.",
+        "char_span": [56, 82],
+        "byte_span": [56, 82]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P2.14",
+    "source_text": "My own words, thoughts, and opinions turned into tools to chisel my walls and foundation.",
+    "source_utf8_sha256": "d214168325068eaace14ab526f67734cee3cda334c052978fb6d6e276ef91def",
+    "role": {
+      "label": "EX 3",
+      "family": "evidence_example"
+    },
+    "map_job": "Supplies support for the third claim.",
+    "slots": [
+      {
+        "slot_id": "P2.14.S01",
+        "phrase": "My own words, thoughts, and opinions",
+        "function": "Personal source",
+        "explanation": "Identifies what you describe as being used against you.",
+        "char_span": [0, 36],
+        "byte_span": [0, 36]
+      },
+      {
+        "slot_id": "P2.14.S02",
+        "phrase": "tools to chisel my walls and foundation",
+        "function": "Figurative illustration",
+        "explanation": "Describes the effect as damage to your home or stability. It conveys impact without specifying a particular exchange.",
+        "char_span": [49, 88],
+        "byte_span": [49, 88]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P2.15",
+    "source_text": "The people who did this would see the tool and not think of where I got it.",
+    "source_utf8_sha256": "11c225fb20493c29abc1ac4282740b29eab92ef5bd64c3190b2d0a8254ea3ca5",
+    "role": {
+      "label": "EX 3",
+      "family": "evidence_example"
+    },
+    "map_job": "Supplies support for the third claim.",
+    "slots": [
+      {
+        "slot_id": "P2.15.S01",
+        "phrase": "The people who did this",
+        "function": "Reference link",
+        "explanation": "Keeps the sentence attached to the misuse described immediately before it.",
+        "char_span": [0, 23],
+        "byte_span": [0, 23]
+      },
+      {
+        "slot_id": "P2.15.S02",
+        "phrase": "see the tool and not think of where I got it",
+        "function": "Missing context",
+        "explanation": "Contrasts attention to the words themselves with attention to their history or origin.",
+        "char_span": [30, 74],
+        "byte_span": [30, 74]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P2.16",
+    "source_text": "Was I using it how it was meant to be used or waving it around for fun?",
+    "source_utf8_sha256": "28624bb0dc1c71f13e5b1a62f6059b4fcb0e1e78484db8916416e5112386d39b",
+    "role": {
+      "label": "EOS 3",
+      "family": "explanation_significance"
+    },
+    "map_job": "Explains what the third example adds.",
+    "slots": [
+      {
+        "slot_id": "P2.16.S01",
+        "phrase": "Was I using it how it was meant to be used",
+        "function": "Self-questioning",
+        "explanation": "Allows examination of your own use of the words, not only other people’s reaction.",
+        "char_span": [0, 42],
+        "byte_span": [0, 42]
+      },
+      {
+        "slot_id": "P2.16.S02",
+        "phrase": "or waving it around for fun?",
+        "function": "Alternative interpretation",
+        "explanation": "Raises a difference between purpose and play. The question invites reflection rather than settling the answer.",
+        "char_span": [43, 71],
+        "byte_span": [43, 71]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P2.17",
+    "source_text": "While they see the sharp knives and dull blades scattered in my kitchen, I see the meals and conversations that dulled the blades.",
+    "source_utf8_sha256": "803a2b895198307cf88a314789f031ec20320480c630d53b3523ae01700d5612",
+    "role": {
+      "label": "EOS 3",
+      "family": "explanation_significance"
+    },
+    "map_job": "Explains what the third example adds.",
+    "slots": [
+      {
+        "slot_id": "P2.17.S01",
+        "phrase": "While they see the sharp knives and dull blades",
+        "function": "Outside reading",
+        "explanation": "Continues the tools image from the previous sentences through what others notice.",
+        "char_span": [0, 47],
+        "byte_span": [0, 47]
+      },
+      {
+        "slot_id": "P2.17.S02",
+        "phrase": "I see the meals and conversations that dulled the blades",
+        "function": "Context / significance",
+        "explanation": "Supplies the history and shared use that you associate with those objects, explaining the difference in meaning.",
+        "char_span": [73, 129],
+        "byte_span": [73, 129]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P2.18",
+    "source_text": "While I am a hoarder of my own thoughts, the most important part of my hoarded thoughts is how they are parts of me.",
+    "source_utf8_sha256": "b9c8ef765e5ecae30ab6ea1cc96948cc240882cef32cb423e661e078d9235c54",
+    "role": {
+      "label": "CONCL 1",
+      "family": "paragraph_conclusion"
+    },
+    "map_job": "Closes Body 1 with its developed meaning.",
+    "slots": [
+      {
+        "slot_id": "P2.18.S01",
+        "phrase": "While I am a hoarder of my own thoughts",
+        "function": "Thesis return",
+        "explanation": "Closes the paragraph by returning to the identity named in the introduction.",
+        "char_span": [0, 39],
+        "byte_span": [0, 39]
+      },
+      {
+        "slot_id": "P2.18.S02",
+        "phrase": "how they are parts of me",
+        "function": "Concluding meaning",
+        "explanation": "Places the thoughts within your identity. It gathers their personal importance rather than restating every example.",
+        "char_span": [91, 115],
+        "byte_span": [91, 115]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P3.01",
+    "source_text": "While the way I appear to others and to myself matters, the most important reason I hoard my thoughts is to remember those who brought them to me as they wither and decay.",
+    "source_utf8_sha256": "318f61d9adae21cb2a07dc22a303d434461123437abf4344e1849f13d6052d65",
+    "role": {
+      "label": "TS 2",
+      "family": "topic_sentence"
+    },
+    "map_job": "Connects back and introduces Body 2.",
+    "slots": [
+      {
+        "slot_id": "P3.01.S01",
+        "phrase": "While the way I appear to others and to myself matters",
+        "function": "Paragraph transition",
+        "explanation": "Reaches back to Body 1’s focus on perception and acknowledges its importance.",
+        "char_span": [0, 54],
+        "byte_span": [0, 54]
+      },
+      {
+        "slot_id": "P3.01.S02",
+        "phrase": "the most important reason I hoard my thoughts is to remember",
+        "function": "New main idea",
+        "explanation": "Moves from managing disclosure to preserving people through memory.",
+        "char_span": [56, 116],
+        "byte_span": [56, 116]
+      },
+      {
+        "slot_id": "P3.01.S03",
+        "phrase": "those who brought them to me as they wither and decay",
+        "function": "Stakes",
+        "explanation": "Explains why retention matters: the people connected to the thoughts do not remain unchanged or present.",
+        "char_span": [117, 170],
+        "byte_span": [117, 170]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P3.02",
+    "source_text": "Old photos bring loss and pain and take up wall space, but they also show me where I came from and who I loved.",
+    "source_utf8_sha256": "1fea2f4c157b5e69a11aa499c8935a383f6e0db772eac8dbfce1883741e6955a",
+    "role": {
+      "label": "CLAIM 1",
+      "family": "claim"
+    },
+    "map_job": "Offers the first reason.",
+    "slots": [
+      {
+        "slot_id": "P3.02.S01",
+        "phrase": "Old photos bring loss and pain and take up wall space",
+        "function": "Cost acknowledged",
+        "explanation": "Recognizes emotional and physical costs instead of treating every possession as uncomplicated comfort.",
+        "char_span": [0, 53],
+        "byte_span": [0, 53]
+      },
+      {
+        "slot_id": "P3.02.S02",
+        "phrase": "but they also show me where I came from and who I loved",
+        "function": "Claim / counterweight",
+        "explanation": "States the value that explains keeping them despite those costs.",
+        "char_span": [55, 110],
+        "byte_span": [55, 110]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P3.03",
+    "source_text": "I host the thoughts of the items I've snagged and held as treasures: old photos of my best friend, now dead, out hunting with a gun in hand; old messages from those who left and never returned.",
+    "source_utf8_sha256": "d0a4844337b99716d92a029d1fdaf120f28e31c2b84442f65935398bf1c3eb0f",
+    "role": {
+      "label": "EX 1",
+      "family": "evidence_example"
+    },
+    "map_job": "Supplies support for the first claim.",
+    "slots": [
+      {
+        "slot_id": "P3.03.S01",
+        "phrase": "old photos of my best friend, now dead, out hunting with a gun in hand",
+        "function": "Specific personal example",
+        "explanation": "Gives the photo a person and activity, connecting the object to a remembered life.",
+        "char_span": [69, 139],
+        "byte_span": [69, 139]
+      },
+      {
+        "slot_id": "P3.03.S02",
+        "phrase": "old messages from those who left and never returned",
+        "function": "Second example",
+        "explanation": "Adds preserved communication as another form of contact with people who are absent.",
+        "char_span": [141, 192],
+        "byte_span": [141, 192]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P3.04",
+    "source_text": "While some say it's better to let the dead lie, I cannot.",
+    "source_utf8_sha256": "b50ce7d0a7b1eee678c32039c40b93b24c88d3fa77aac77d3cd227aa80c77700",
+    "role": {
+      "label": "EOS 1",
+      "family": "explanation_significance"
+    },
+    "map_job": "Explains the first example’s significance.",
+    "slots": [
+      {
+        "slot_id": "P3.04.S01",
+        "phrase": "While some say it's better to let the dead lie",
+        "function": "Opposing view",
+        "explanation": "Introduces an outside position about leaving the past alone.",
+        "char_span": [0, 46],
+        "byte_span": [0, 46]
+      },
+      {
+        "slot_id": "P3.04.S02",
+        "phrase": "I cannot",
+        "function": "Direct response",
+        "explanation": "States your refusal or inability to follow that advice; the next sentence explains the reason.",
+        "char_span": [48, 56],
+        "byte_span": [48, 56]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P3.05",
+    "source_text": "I hoard the last reels of memory film, now out of date and unprintable, to feel the pain of the past as part of my present, so that they remain in my future.",
+    "source_utf8_sha256": "f9cb8269bd299369efc6d21282b9b1d6f1bccb7a9e02631bd8c98d7a5c6bd1c7",
+    "role": {
+      "label": "EOS 1",
+      "family": "explanation_significance"
+    },
+    "map_job": "Explains the first example’s significance.",
+    "slots": [
+      {
+        "slot_id": "P3.05.S01",
+        "phrase": "the last reels of memory film, now out of date and unprintable",
+        "function": "Memory metaphor",
+        "explanation": "Presents retained memories as limited traces of experiences that cannot simply be reproduced.",
+        "char_span": [8, 70],
+        "byte_span": [8, 70]
+      },
+      {
+        "slot_id": "P3.05.S02",
+        "phrase": "the pain of the past as part of my present",
+        "function": "Cost and continuity",
+        "explanation": "Acknowledges that carrying the connection also carries pain.",
+        "char_span": [80, 122],
+        "byte_span": [80, 122]
+      },
+      {
+        "slot_id": "P3.05.S03",
+        "phrase": "so that they remain in my future",
+        "function": "Purpose / significance",
+        "explanation": "Explains why the cost is accepted: retaining a place for those people as your life continues.",
+        "char_span": [124, 156],
+        "byte_span": [124, 156]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P3.06",
+    "source_text": "Even as I keep those memories, I often do not know how to sort the whole life I have accrued or the feelings that come along with it.",
+    "source_utf8_sha256": "d983915cf6b6325fdd2cb3f46b292b7576f70e5d17ffa9bab40c9af2603fd67c",
+    "role": {
+      "label": "CLAIM 2",
+      "family": "claim"
+    },
+    "map_job": "Transitions to the second reason.",
+    "slots": [
+      {
+        "slot_id": "P3.06.S01",
+        "phrase": "Even as I keep those memories",
+        "function": "Concession / transition",
+        "explanation": "Connects the second claim to the value established in the first set without pretending keeping is easy.",
+        "char_span": [0, 29],
+        "byte_span": [0, 29]
+      },
+      {
+        "slot_id": "P3.06.S02",
+        "phrase": "do not know how to sort the whole life I have accrued or the feelings",
+        "function": "Second reason",
+        "explanation": "Introduces the difficulty of separating accumulated experiences and emotions.",
+        "char_span": [39, 108],
+        "byte_span": [39, 108]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P3.07",
+    "source_text": "I remember the past as bits and bobs, ones that need to be held and collected; I collected the last feelings I had of a friend I grew up with next to an image of him dead, next to a book with his epitaph engraved on the inner folds.",
+    "source_utf8_sha256": "0604b447e8ee1bad9c6cf9b31559eefd002e1d239e7c21624345b5e4104ad46d",
+    "role": {
+      "label": "EX 2",
+      "family": "evidence_example"
+    },
+    "map_job": "Supplies support for the second claim.",
+    "slots": [
+      {
+        "slot_id": "P3.07.S01",
+        "phrase": "the last feelings I had of a friend I grew up with",
+        "function": "Personal memory",
+        "explanation": "Places a long relationship inside the sorting problem introduced by the claim.",
+        "char_span": [91, 141],
+        "byte_span": [91, 141]
+      },
+      {
+        "slot_id": "P3.07.S02",
+        "phrase": "next to an image of him dead, next to a book with his epitaph",
+        "function": "Juxtaposition",
+        "explanation": "The repeated “next to” places life, death, and memorial together. It does not say you witnessed the death.",
+        "char_span": [142, 203],
+        "byte_span": [142, 203]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P3.08",
+    "source_text": "These thoughts cling like cobwebs, linking the things in the basement of my past one to another; I must rummage through them to find the days that connect to the now.",
+    "source_utf8_sha256": "0d7aeaa4453a258af75d98b4556bb7137b84e669a495ec47bc43dbc5909c575b",
+    "role": {
+      "label": "EOS 2",
+      "family": "explanation_significance"
+    },
+    "map_job": "Explains the second example’s significance.",
+    "slots": [
+      {
+        "slot_id": "P3.08.S01",
+        "phrase": "These thoughts cling like cobwebs",
+        "function": "Explanation / metaphor",
+        "explanation": "Explains why the memories are difficult to sort: they connect to one another.",
+        "char_span": [0, 33],
+        "byte_span": [0, 33]
+      },
+      {
+        "slot_id": "P3.08.S02",
+        "phrase": "rummage through them to find the days that connect to the now",
+        "function": "Significance / forward link",
+        "explanation": "Shows how searching the collection relates to the present and prepares the next claim’s wording.",
+        "char_span": [104, 165],
+        "byte_span": [104, 165]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P3.09",
+    "source_text": "When those memories connect to the now, I think of the people I miss and what they would think of the things I have done.",
+    "source_utf8_sha256": "372e88f953268438804d22e56c7d0137bdc059ab7e79f8db05420aa5b549a154",
+    "role": {
+      "label": "CLAIM 3",
+      "family": "claim"
+    },
+    "map_job": "Transitions to the third reason.",
+    "slots": [
+      {
+        "slot_id": "P3.09.S01",
+        "phrase": "When those memories connect to the now",
+        "function": "Explicit transition",
+        "explanation": "Picks up the previous sentence’s “connect to the now” and carries it into the third set.",
+        "char_span": [0, 38],
+        "byte_span": [0, 38]
+      },
+      {
+        "slot_id": "P3.09.S02",
+        "phrase": "what they would think of the things I have done",
+        "function": "Third reason",
+        "explanation": "Introduces the continuing role of remembered people in how you understand present actions.",
+        "char_span": [73, 120],
+        "byte_span": [73, 120]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P3.10",
+    "source_text": "Only the people who give you a home can judge the one you live in when you are grown.",
+    "source_utf8_sha256": "99cc1c819d9a4dcb4f7ce4c3d69628b66f246344f833f6565de1edef628a1574",
+    "role": {
+      "label": "CLAIM 3",
+      "family": "claim"
+    },
+    "map_job": "Transitions to the third reason.",
+    "slots": [
+      {
+        "slot_id": "P3.10.S01",
+        "phrase": "Only the people who give you a home",
+        "function": "Authority claim",
+        "explanation": "Identifies a restricted group whose judgment you authorize; “only” makes the claim exclusive.",
+        "char_span": [0, 35],
+        "byte_span": [0, 35]
+      },
+      {
+        "slot_id": "P3.10.S02",
+        "phrase": "the one you live in when you are grown",
+        "function": "House / identity link",
+        "explanation": "Connects earlier support with the life or identity you later inhabit. This states a position rather than supplying its example.",
+        "char_span": [46, 84],
+        "byte_span": [46, 84]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P3.11",
+    "source_text": "When my grandfather died, I cried like a baby.",
+    "source_utf8_sha256": "5e784681f84f11b4abe85b8d05b3ed86406e495a054732b2d5bee0f8a5f92240",
+    "role": {
+      "label": "EX 3",
+      "family": "evidence_example"
+    },
+    "map_job": "Supplies support for the third claim.",
+    "slots": [
+      {
+        "slot_id": "P3.11.S01",
+        "phrase": "When my grandfather died",
+        "function": "Personal event",
+        "explanation": "Names the relationship and loss that the third set now examines.",
+        "char_span": [0, 24],
+        "byte_span": [0, 24]
+      },
+      {
+        "slot_id": "P3.11.S02",
+        "phrase": "I cried like a baby",
+        "function": "Emotional evidence",
+        "explanation": "Shows the force of your response in direct language, establishing what the relationship meant to you.",
+        "char_span": [26, 45],
+        "byte_span": [26, 45]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P3.12",
+    "source_text": "When I overcame court, he was proud and stood by me.",
+    "source_utf8_sha256": "c7238cc6fe67942343070c2e89801ec3353ee1a0becbf262ebda45d1b71173ee",
+    "role": {
+      "label": "EX 3",
+      "family": "evidence_example"
+    },
+    "map_job": "Supplies support for the third claim.",
+    "slots": [
+      {
+        "slot_id": "P3.12.S01",
+        "phrase": "When I overcame court",
+        "function": "Past situation",
+        "explanation": "Locates his support in a particular part of your life without adding details the sentence does not give.",
+        "char_span": [0, 21],
+        "byte_span": [0, 21]
+      },
+      {
+        "slot_id": "P3.12.S02",
+        "phrase": "he was proud and stood by me",
+        "function": "Relational evidence",
+        "explanation": "Shows the supportive response that makes his remembered judgment important to you.",
+        "char_span": [23, 51],
+        "byte_span": [23, 51]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P3.13",
+    "source_text": "My grandpa always told me to try my best and that's all that matters.",
+    "source_utf8_sha256": "f69d61e8aababf245645dd22730f5281c94673fedba11bb7009fd5fd6934220c",
+    "role": {
+      "label": "EX 3",
+      "family": "evidence_example"
+    },
+    "map_job": "Supplies support for the third claim.",
+    "slots": [
+      {
+        "slot_id": "P3.13.S01",
+        "phrase": "My grandpa always told me",
+        "function": "Remembered guidance",
+        "explanation": "Introduces the advice you retain from the relationship.",
+        "char_span": [0, 25],
+        "byte_span": [0, 25]
+      },
+      {
+        "slot_id": "P3.13.S02",
+        "phrase": "try my best and that's all that matters",
+        "function": "Value / standard",
+        "explanation": "Gives the reader the standard he encouraged you to use when judging your effort.",
+        "char_span": [29, 68],
+        "byte_span": [29, 68]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P3.14",
+    "source_text": "I keep his words close to heart: only family matters.",
+    "source_utf8_sha256": "ea52767918e72a0fec419516deb216e75cffbf69d299660c29cc0c7023fbb8fe",
+    "role": {
+      "label": "EX 3",
+      "family": "evidence_example"
+    },
+    "map_job": "Supplies support for the third claim.",
+    "slots": [
+      {
+        "slot_id": "P3.14.S01",
+        "phrase": "I keep his words close to heart",
+        "function": "Present retention",
+        "explanation": "Connects remembered advice to what you continue to carry now.",
+        "char_span": [0, 31],
+        "byte_span": [0, 31]
+      },
+      {
+        "slot_id": "P3.14.S02",
+        "phrase": "only family matters",
+        "function": "Value statement",
+        "explanation": "Presents the principle you associate with his words and hold close; the sentence expresses your priority.",
+        "char_span": [33, 52],
+        "byte_span": [33, 52]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P3.15",
+    "source_text": "What do the words of those peeking over a fence matter?",
+    "source_utf8_sha256": "2dabaf7921cf7c520143e14bc0d9733fa244fcc3217fc6f3c99a015144715587",
+    "role": {
+      "label": "EOS 3",
+      "family": "explanation_significance"
+    },
+    "map_job": "Explains what the third example adds.",
+    "slots": [
+      {
+        "slot_id": "P3.15.S02",
+        "phrase": "What do the words",
+        "function": "Rhetorical question",
+        "explanation": "Questions the weight of outsiders’ opinions in comparison with the remembered support.",
+        "char_span": [0, 17],
+        "byte_span": [0, 17]
+      },
+      {
+        "slot_id": "P3.15.S01",
+        "phrase": "those peeking over a fence",
+        "function": "Callback",
+        "explanation": "Returns to the introduction’s outsiders after the example of someone who knew and supported you.",
+        "char_span": [21, 47],
+        "byte_span": [21, 47]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P3.16",
+    "source_text": "Who is there to judge me for having a tent in the yard or a past that overlaps into my present?",
+    "source_utf8_sha256": "9cdbb51bfb2df8ed222fb221fb05a2ddcecfd891a2688e2563fa64a928c05446",
+    "role": {
+      "label": "EOS 3",
+      "family": "explanation_significance"
+    },
+    "map_job": "Explains what the third example adds.",
+    "slots": [
+      {
+        "slot_id": "P3.16.S01",
+        "phrase": "Who is there to judge me",
+        "function": "Challenge",
+        "explanation": "Continues questioning who has standing to interpret your life.",
+        "char_span": [0, 24],
+        "byte_span": [0, 24]
+      },
+      {
+        "slot_id": "P3.16.S02",
+        "phrase": "a tent in the yard or a past that overlaps into my present",
+        "function": "Image / meaning link",
+        "explanation": "Pairs a visible condition with the continuing presence of history, connecting the house image to the identity argument.",
+        "char_span": [36, 94],
+        "byte_span": [36, 94]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P3.17",
+    "source_text": "I accomplished my goals and can look back in sad remembering, not depressed regret or branded misfortune at the things I have done.",
+    "source_utf8_sha256": "0698993fbb4a125d3f4610d0a61b49044757eecd47c56c3e40d1b80c3ed17417",
+    "role": {
+      "label": "EOS 3",
+      "family": "explanation_significance"
+    },
+    "map_job": "Explains what the third example adds.",
+    "slots": [
+      {
+        "slot_id": "P3.17.S01",
+        "phrase": "I accomplished my goals",
+        "function": "Present assessment",
+        "explanation": "States your own view of what you have achieved following the earlier experiences.",
+        "char_span": [0, 23],
+        "byte_span": [0, 23]
+      },
+      {
+        "slot_id": "P3.17.S02",
+        "phrase": "sad remembering, not depressed regret or branded misfortune",
+        "function": "Emotional distinction",
+        "explanation": "Separates your account of sadness from being defined by regret or an imposed label; this is your description, not a diagnosis.",
+        "char_span": [45, 104],
+        "byte_span": [45, 104]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P3.18",
+    "source_text": "I see the value in those I lost, as they saw the value in me; now that they are gone, no one can see their value without a grave or a guide to walk down memory alley with.",
+    "source_utf8_sha256": "42411460226309d3af2d593bd7dfd1865f339aace91e5c9caaa7da9a8013a13a",
+    "role": {
+      "label": "EOS 3",
+      "family": "explanation_significance"
+    },
+    "map_job": "Explains what the third example adds.",
+    "slots": [
+      {
+        "slot_id": "P3.18.S01",
+        "phrase": "I see the value in those I lost, as they saw the value in me",
+        "function": "Reciprocity",
+        "explanation": "Explains why preserving these people matters through the mutual recognition in those relationships.",
+        "char_span": [0, 60],
+        "byte_span": [0, 60]
+      },
+      {
+        "slot_id": "P3.18.S02",
+        "phrase": "without a grave or a guide to walk down memory alley with",
+        "function": "Keeper / witness role",
+        "explanation": "Presents remembrance or a guide as a way others can encounter the people you knew, extending the importance of keeping memories.",
+        "char_span": [113, 170],
+        "byte_span": [113, 170]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P3.19",
+    "source_text": "I am a hoarder of my thoughts; my thoughts show the paths I have taken, and the man I became because of those who walked them with me.",
+    "source_utf8_sha256": "f0203fbdf9f995a3e3a4611f35041ff559c02d18e6a5176b93e40fe8b4df182b",
+    "role": {
+      "label": "CONCL 2",
+      "family": "paragraph_conclusion"
+    },
+    "map_job": "Closes Body 2 with its developed meaning.",
+    "slots": [
+      {
+        "slot_id": "P3.19.S01",
+        "phrase": "my thoughts show the paths I have taken",
+        "function": "Paragraph synthesis",
+        "explanation": "Gathers the memories into a record of your own history.",
+        "char_span": [31, 70],
+        "byte_span": [31, 70]
+      },
+      {
+        "slot_id": "P3.19.S02",
+        "phrase": "the man I became because of those who walked them with me",
+        "function": "Deeper concluding meaning",
+        "explanation": "Explains identity through shared experience, not merely through the fact that memories have accumulated.",
+        "char_span": [76, 133],
+        "byte_span": [76, 133]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P4.01",
+    "source_text": "While I hold on to memories of those I have lost, the people closest to me see my hoard differently than the neighbors do, because they are the ones I invite past the fence.",
+    "source_utf8_sha256": "c6c1ace75d20a5917bd236d0beb5f55324801e67cfec1a9e675289fdbbb9f7dc",
+    "role": {
+      "label": "TS 3",
+      "family": "topic_sentence"
+    },
+    "map_job": "Connects back and introduces Body 3.",
+    "slots": [
+      {
+        "slot_id": "P4.01.S01",
+        "phrase": "While I hold on to memories of those I have lost",
+        "function": "Backward transition",
+        "explanation": "Connects directly to Body 2’s preservation of absent people.",
+        "char_span": [0, 48],
+        "byte_span": [0, 48]
+      },
+      {
+        "slot_id": "P4.01.S02",
+        "phrase": "the people closest to me see my hoard differently than the neighbors do",
+        "function": "New paragraph claim",
+        "explanation": "Shifts to the understanding available within close relationships.",
+        "char_span": [50, 121],
+        "byte_span": [50, 121]
+      },
+      {
+        "slot_id": "P4.01.S03",
+        "phrase": "because they are the ones I invite past the fence",
+        "function": "Reason / house movement",
+        "explanation": "Explains the difference through access: the reader moves from outside observation toward invitation.",
+        "char_span": [123, 172],
+        "byte_span": [123, 172]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P4.02",
+    "source_text": "My hoard makes sense to the people who believe in me: my family and friends.",
+    "source_utf8_sha256": "f2cf386caf9dfe182ba068023f869c14fbb2dad93440def1b7b37b024c10ee55",
+    "role": {
+      "label": "CLAIM 1",
+      "family": "claim"
+    },
+    "map_job": "Offers the first reason.",
+    "slots": [
+      {
+        "slot_id": "P4.02.S01",
+        "phrase": "My hoard makes sense",
+        "function": "First reason",
+        "explanation": "Claims that the collection can be understood, rather than necessarily being meaningless disorder.",
+        "char_span": [0, 20],
+        "byte_span": [0, 20]
+      },
+      {
+        "slot_id": "P4.02.S02",
+        "phrase": "the people who believe in me: my family and friends",
+        "function": "Scope",
+        "explanation": "Names the people whose understanding the following examples illustrate.",
+        "char_span": [24, 75],
+        "byte_span": [24, 75]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P4.03",
+    "source_text": "They understand why I keep the same coffee cup for years, and the ring our dead friend left in it from his.",
+    "source_utf8_sha256": "2b735de517e5e984aa62d1376e5c4c18edb6edb188349947a90a311fbe69ea86",
+    "role": {
+      "label": "EX 1",
+      "family": "evidence_example"
+    },
+    "map_job": "Supplies support for the first claim.",
+    "slots": [
+      {
+        "slot_id": "P4.03.S01",
+        "phrase": "the same coffee cup for years",
+        "function": "Personal object",
+        "explanation": "Provides a particular, repeatedly retained item rather than an abstract statement about possessions.",
+        "char_span": [27, 56],
+        "byte_span": [27, 56]
+      },
+      {
+        "slot_id": "P4.03.S02",
+        "phrase": "our dead friend",
+        "function": "Shared association",
+        "explanation": "Connects the cup’s meaning to someone known by both keeper and visitors. The exact reference of “ring” remains unstated here.",
+        "char_span": [71, 86],
+        "byte_span": [71, 86]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P4.04",
+    "source_text": "When the people I care about come to my home, I pull out the hoarded blankets and pillows.",
+    "source_utf8_sha256": "e276097edfe5cd1c731bee5ee263c2013b7f08e4aa011f698a81a5bbee1aefb8",
+    "role": {
+      "label": "EX 1",
+      "family": "evidence_example"
+    },
+    "map_job": "Supplies support for the first claim.",
+    "slots": [
+      {
+        "slot_id": "P4.04.S01",
+        "phrase": "When the people I care about come to my home",
+        "function": "Situation / invitation",
+        "explanation": "Places the example in the arrival of welcomed people.",
+        "char_span": [0, 44],
+        "byte_span": [0, 44]
+      },
+      {
+        "slot_id": "P4.04.S02",
+        "phrase": "I pull out the hoarded blankets and pillows",
+        "function": "Action / evidence",
+        "explanation": "Shows you using retained things to receive people, rather than only storing them.",
+        "char_span": [46, 89],
+        "byte_span": [46, 89]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P4.05",
+    "source_text": "I unroll the sleeping bag we got years ago and use once a decade.",
+    "source_utf8_sha256": "fb3939330aa645f7d1df86736b5cee0f7fa9751f3848fa8c352cc5cead974d4f",
+    "role": {
+      "label": "EX 1",
+      "family": "evidence_example"
+    },
+    "map_job": "Supplies support for the first claim.",
+    "slots": [
+      {
+        "slot_id": "P4.05.S01",
+        "phrase": "I unroll the sleeping bag",
+        "function": "Concrete action",
+        "explanation": "Continues the hospitality scene with something you actually do.",
+        "char_span": [0, 25],
+        "byte_span": [0, 25]
+      },
+      {
+        "slot_id": "P4.05.S02",
+        "phrase": "we got years ago and use once a decade",
+        "function": "Retention / usefulness",
+        "explanation": "Shows that an infrequently used item can still have a use when it is needed.",
+        "char_span": [26, 64],
+        "byte_span": [26, 64]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P4.06",
+    "source_text": "What looks like clutter from the road becomes comfort for those who are welcomed in.",
+    "source_utf8_sha256": "84abe6796df5ea8540a76b5a64aac3bb0a78d7fa733533862c9592f59877d11c",
+    "role": {
+      "label": "EOS 1",
+      "family": "explanation_significance"
+    },
+    "map_job": "Explains the first example’s significance.",
+    "slots": [
+      {
+        "slot_id": "P4.06.S01",
+        "phrase": "What looks like clutter from the road",
+        "function": "Outside judgment recalled",
+        "explanation": "Returns to the neighbors’ position established in the introduction.",
+        "char_span": [0, 37],
+        "byte_span": [0, 37]
+      },
+      {
+        "slot_id": "P4.06.S02",
+        "phrase": "becomes comfort for those who are welcomed in",
+        "function": "Significance / response",
+        "explanation": "Explains what the blankets and sleeping bag establish: the collection can serve a relationship from inside the home.",
+        "char_span": [38, 83],
+        "byte_span": [38, 83]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P4.07",
+    "source_text": "With the blankets and pillows out, I show my hoarded moments only to those who make it past the fence line, past the signs that say private property, and into my cluttered entrance.",
+    "source_utf8_sha256": "2ab72ab815f2ca40b698cc1003824e73d9ca3d4fb9cad48fbaee9b3bd835e2b5",
+    "role": {
+      "label": "CLAIM 2",
+      "family": "claim"
+    },
+    "map_job": "Transitions to the second reason.",
+    "slots": [
+      {
+        "slot_id": "P4.07.S01",
+        "phrase": "With the blankets and pillows out",
+        "function": "Scene-based transition",
+        "explanation": "Uses the completed action in the first set to carry the reader into sharing memories.",
+        "char_span": [0, 33],
+        "byte_span": [0, 33]
+      },
+      {
+        "slot_id": "P4.07.S02",
+        "phrase": "I show my hoarded moments only to those",
+        "function": "Second claim / boundary",
+        "explanation": "States that access to your memories is selective.",
+        "char_span": [35, 74],
+        "byte_span": [35, 74]
+      },
+      {
+        "slot_id": "P4.07.S03",
+        "phrase": "past the fence line, past the signs that say private property, and into my cluttered entrance",
+        "function": "Spatial progression",
+        "explanation": "The repeated “past” moves the reader through layers of access; invitation does not require a spotless entrance.",
+        "char_span": [87, 180],
+        "byte_span": [87, 180]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P4.08",
+    "source_text": "I show the people I care for the scraps of paper that formed a page in my books about Clay and Polly.",
+    "source_utf8_sha256": "23a41c57fc5c190e33c5ebf0083d669afb1f2af93ffdc5c0adca0eab93b1d027",
+    "role": {
+      "label": "EX 2",
+      "family": "evidence_example"
+    },
+    "map_job": "Supplies support for the second claim.",
+    "slots": [
+      {
+        "slot_id": "P4.08.S01",
+        "phrase": "I show the people I care for",
+        "function": "Sharing action",
+        "explanation": "Supplies an example of the selective access claimed in the previous sentence.",
+        "char_span": [0, 28],
+        "byte_span": [0, 28]
+      },
+      {
+        "slot_id": "P4.08.S02",
+        "phrase": "the scraps of paper that formed a page in my books about Clay and Polly",
+        "function": "Concrete creative material",
+        "explanation": "Connects something that looks like a scrap to the writing it helped produce.",
+        "char_span": [29, 100],
+        "byte_span": [29, 100]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P4.09",
+    "source_text": "I show them how I have saved a bit of us for others to see, in a joke about passing gas.",
+    "source_utf8_sha256": "ccd302b3a8dc06959ee312be9d3262ae7c4f3ef7ce3842914bc7050fe7315fd9",
+    "role": {
+      "label": "EX 2",
+      "family": "evidence_example"
+    },
+    "map_job": "Supplies support for the second claim.",
+    "slots": [
+      {
+        "slot_id": "P4.09.S01",
+        "phrase": "saved a bit of us for others to see",
+        "function": "Preservation / sharing",
+        "explanation": "Links a shared past to something that can be encountered by another reader.",
+        "char_span": [23, 58],
+        "byte_span": [23, 58]
+      },
+      {
+        "slot_id": "P4.09.S02",
+        "phrase": "in a joke about passing gas",
+        "function": "Specific example / voice",
+        "explanation": "Makes the preserved connection ordinary and humorous rather than requiring a grand or solemn moment.",
+        "char_span": [60, 87],
+        "byte_span": [60, 87]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P4.10",
+    "source_text": "It shows me that life goes on, and that the memories stay alive in the cobwebs and dust on old shelves next to new works.",
+    "source_utf8_sha256": "7a0a304a048e442d79dd8f4ae0714aa92564ecb9ba8cb3239c94d4021d5dfdba",
+    "role": {
+      "label": "EOS 2",
+      "family": "explanation_significance"
+    },
+    "map_job": "Explains the second example’s significance.",
+    "slots": [
+      {
+        "slot_id": "P4.10.S01",
+        "phrase": "It shows me that life goes on",
+        "function": "Significance signal",
+        "explanation": "Explicitly explains what the shared writing demonstrates to you.",
+        "char_span": [0, 29],
+        "byte_span": [0, 29]
+      },
+      {
+        "slot_id": "P4.10.S02",
+        "phrase": "old shelves next to new works",
+        "function": "Past / future relation",
+        "explanation": "Places retained memories beside ongoing creation, showing coexistence rather than a forced choice between them.",
+        "char_span": [91, 120],
+        "byte_span": [91, 120]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P4.11",
+    "source_text": "The people who love me also helped me see my hoard more clearly.",
+    "source_utf8_sha256": "51e05f2f1b890c9301819e2063b94657a20435a84f167af0769b73b0ca043116",
+    "role": {
+      "label": "CLAIM 3",
+      "family": "claim"
+    },
+    "map_job": "Transitions to the third reason.",
+    "slots": [
+      {
+        "slot_id": "P4.11.S01",
+        "phrase": "The people who love me also",
+        "function": "Addition / third-set transition",
+        "explanation": "Adds a different role for close people: they do more than receive what you share.",
+        "char_span": [0, 27],
+        "byte_span": [0, 27]
+      },
+      {
+        "slot_id": "P4.11.S02",
+        "phrase": "helped me see my hoard more clearly",
+        "function": "Third claim",
+        "explanation": "Introduces their contribution to your understanding and organization of the collection.",
+        "char_span": [28, 63],
+        "byte_span": [28, 63]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P4.12",
+    "source_text": "What others saw as scattered drawings on the wall was me developing my passions, and the belief of those close to me pushed me forward.",
+    "source_utf8_sha256": "08cdd22242917087647035b639ad934a20af42ce40cc5c7051577ca42156a0fe",
+    "role": {
+      "label": "EX 3",
+      "family": "evidence_example"
+    },
+    "map_job": "Supplies support for the third claim.",
+    "slots": [
+      {
+        "slot_id": "P4.12.S01",
+        "phrase": "What others saw as scattered drawings on the wall was me developing my passions",
+        "function": "Contrasting interpretations",
+        "explanation": "Presents the same activity as either disorder or development.",
+        "char_span": [0, 79],
+        "byte_span": [0, 79]
+      },
+      {
+        "slot_id": "P4.12.S02",
+        "phrase": "the belief of those close to me pushed me forward",
+        "function": "Support / effect",
+        "explanation": "Reports how encouragement affected you. It is a pattern of support rather than a single named exchange.",
+        "char_span": [85, 134],
+        "byte_span": [85, 134]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P4.13",
+    "source_text": "They saw my struggles and helped me sort my Legos into bins and buckets, turning a mess into a collection.",
+    "source_utf8_sha256": "6f6277737ae633a8cf305f082f507ac03076050edb7d4939ec6b9c4b72d6e547",
+    "role": {
+      "label": "EX 3",
+      "family": "evidence_example"
+    },
+    "map_job": "Supplies support for the third claim.",
+    "slots": [
+      {
+        "slot_id": "P4.13.S01",
+        "phrase": "They saw my struggles and helped me sort my Legos into bins and buckets",
+        "function": "Help made visible",
+        "explanation": "Gives help an organizing action within the essay’s collection image; the sentence does not establish whether it is literal.",
+        "char_span": [0, 71],
+        "byte_span": [0, 71]
+      },
+      {
+        "slot_id": "P4.13.S02",
+        "phrase": "turning a mess into a collection",
+        "function": "Outcome",
+        "explanation": "Names the change that the help made possible while retaining the things themselves.",
+        "char_span": [73, 105],
+        "byte_span": [73, 105]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P4.14",
+    "source_text": "They were partly right that it's okay to organize the world into better piles, and now I see them in every bin.",
+    "source_utf8_sha256": "f303d9bdc42148b8bbed7e964f27d2c9734bdd1606fa76ae003b297949a8ffaf",
+    "role": {
+      "label": "EOS 3",
+      "family": "explanation_significance"
+    },
+    "map_job": "Explains what the third example adds.",
+    "slots": [
+      {
+        "slot_id": "P4.14.S01",
+        "phrase": "They were partly right",
+        "function": "Concession",
+        "explanation": "Acknowledges useful criticism rather than treating every outside opinion as mistaken.",
+        "char_span": [0, 22],
+        "byte_span": [0, 22]
+      },
+      {
+        "slot_id": "P4.14.S02",
+        "phrase": "it's okay to organize the world into better piles",
+        "function": "Lesson",
+        "explanation": "Separates changing the arrangement from discarding the collection.",
+        "char_span": [28, 77],
+        "byte_span": [28, 77]
+      },
+      {
+        "slot_id": "P4.14.S03",
+        "phrase": "now I see them in every bin",
+        "function": "Relational significance",
+        "explanation": "Makes the new arrangement itself a reminder of the people who helped.",
+        "char_span": [83, 110],
+        "byte_span": [83, 110]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P4.15",
+    "source_text": "Strangers see the mess in my yard; the people close to me see the messages I've left in my actions, and in those messages, I see the people who helped me keep it all.",
+    "source_utf8_sha256": "58aeb47afdc24332c7958a499f69177246d460df397b099a3a49cbc6bcb41381",
+    "role": {
+      "label": "CONCL 3",
+      "family": "paragraph_conclusion"
+    },
+    "map_job": "Closes Body 3 with its developed meaning.",
+    "slots": [
+      {
+        "slot_id": "P4.15.S01",
+        "phrase": "Strangers see the mess in my yard",
+        "function": "Outside-view return",
+        "explanation": "Returns to the paragraph’s contrast with neighbors and strangers.",
+        "char_span": [0, 33],
+        "byte_span": [0, 33]
+      },
+      {
+        "slot_id": "P4.15.S02",
+        "phrase": "the messages I've left in my actions",
+        "function": "Wordplay / synthesis",
+        "explanation": "Changes “mess” into “messages,” gathering the examples of hospitality, sharing, and development.",
+        "char_span": [62, 98],
+        "byte_span": [62, 98]
+      },
+      {
+        "slot_id": "P4.15.S03",
+        "phrase": "I see the people who helped me keep it all",
+        "function": "Deeper concluding meaning",
+        "explanation": "Adds what the collection tells you about relationships, beyond what observers can see.",
+        "char_span": [123, 165],
+        "byte_span": [123, 165]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P5.01",
+    "source_text": "As my hoard has grown, I recognize the habit and accept it as a way to hide, yet also a way to grow.",
+    "source_utf8_sha256": "5ea4d6094d95616cac1cba650a665d71af12fe2a6e6a7f1e2f16337a32cc7ebf",
+    "role": {
+      "label": "Revisit Thesis",
+      "family": "thesis_revisit"
+    },
+    "map_job": "Returns to the thesis with developed understanding.",
+    "slots": [
+      {
+        "slot_id": "P5.01.S01",
+        "phrase": "As my hoard has grown",
+        "function": "Time / concluding transition",
+        "explanation": "Returns to the central identity after the body paragraphs have developed its effects and meanings.",
+        "char_span": [0, 21],
+        "byte_span": [0, 21]
+      },
+      {
+        "slot_id": "P5.01.S02",
+        "phrase": "a way to hide, yet also a way to grow",
+        "function": "Qualified thesis return",
+        "explanation": "Holds a limitation and a benefit together instead of presenting the habit as wholly good or wholly bad.",
+        "char_span": [62, 99],
+        "byte_span": [62, 99]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P5.02",
+    "source_text": "I hoard thoughts, and the things that hold them, because they hold the people and moments that made me.",
+    "source_utf8_sha256": "d691d29cbb2712ff9f3a86e66e9e6126e0796786bc55603dc960ad7c40c19cec",
+    "role": {
+      "label": "Summary",
+      "family": "summary"
+    },
+    "map_job": "Gathers the main meaning under one umbrella.",
+    "slots": [
+      {
+        "slot_id": "P5.02.S01",
+        "phrase": "thoughts, and the things that hold them",
+        "function": "Umbrella phrase",
+        "explanation": "Gathers the mental collection and its physical reminders into one subject.",
+        "char_span": [8, 47],
+        "byte_span": [8, 47]
+      },
+      {
+        "slot_id": "P5.02.S02",
+        "phrase": "because they hold the people and moments that made me",
+        "function": "Synthesis / reason",
+        "explanation": "Explains their shared importance to identity instead of listing the body paragraphs again.",
+        "char_span": [49, 102],
+        "byte_span": [49, 102]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P5.03",
+    "source_text": "I keep most of it tucked between my ears and let only some of it out, and only to some people.",
+    "source_utf8_sha256": "9ad27c00c38dec27a24e0654802b0da7a0f2a0d23d77ac38a78d1068d878e4e4",
+    "role": {
+      "label": "Summary",
+      "family": "summary"
+    },
+    "map_job": "Gathers the main meaning under one umbrella.",
+    "slots": [
+      {
+        "slot_id": "P5.03.S01",
+        "phrase": "most of it tucked between my ears",
+        "function": "Inner-home return",
+        "explanation": "Brings the discussion back to thoughts, not only physical possessions.",
+        "char_span": [7, 40],
+        "byte_span": [7, 40]
+      },
+      {
+        "slot_id": "P5.03.S02",
+        "phrase": "only some of it out, and only to some people",
+        "function": "Boundary synthesis",
+        "explanation": "Gathers the distinction between privacy and selected sharing developed across the body paragraphs.",
+        "char_span": [49, 93],
+        "byte_span": [49, 93]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P5.04",
+    "source_text": "But what about the people looking in from the other side of the fence?",
+    "source_utf8_sha256": "f31c6a6d90492eb646e5c9abf8a2b4cf2d5c9920bb570de29c4cd615b772ed91",
+    "role": {
+      "label": "The Turn",
+      "family": "turn"
+    },
+    "map_job": "Moves from the argument to wider meaning.",
+    "slots": [
+      {
+        "slot_id": "P5.04.S01",
+        "phrase": "But what about",
+        "function": "Outward turn",
+        "explanation": "Signals a change from explaining your own collection to considering its meaning for observers.",
+        "char_span": [0, 14],
+        "byte_span": [0, 14]
+      },
+      {
+        "slot_id": "P5.04.S02",
+        "phrase": "the other side of the fence",
+        "function": "Perspective shift / callback",
+        "explanation": "Moves the reader outside again using the boundary established throughout the essay.",
+        "char_span": [42, 69],
+        "byte_span": [42, 69]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P5.05",
+    "source_text": "Neighbors are like Wilson on Home Improvement, a set of eyes over the fence.",
+    "source_utf8_sha256": "0856a278e4198bdeedf56ce2afb028e2df5177018dc595d462e36ecb2c12568d",
+    "role": {
+      "label": "Broader Implications",
+      "family": "broader_implication"
+    },
+    "map_job": "Develops meaning beyond the immediate subject.",
+    "slots": [
+      {
+        "slot_id": "P5.05.S01",
+        "phrase": "Neighbors are like Wilson on Home Improvement",
+        "function": "Comparison",
+        "explanation": "Supplies a named comparison for the observer in this conclusion; it functions as imagery, not outside proof.",
+        "char_span": [0, 45],
+        "byte_span": [0, 45]
+      },
+      {
+        "slot_id": "P5.05.S02",
+        "phrase": "a set of eyes over the fence",
+        "function": "Perspective image",
+        "explanation": "Reduces the encounter to partial observation, carrying forward the opening’s fence motif.",
+        "char_span": [47, 75],
+        "byte_span": [47, 75]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P5.06",
+    "source_text": "Hopefully the neighbors are kind like him.",
+    "source_utf8_sha256": "848260d1f881834d4822c33baa0e63e0feb002c98bb777c4fbf83535cce396bb",
+    "role": {
+      "label": "Broader Implications",
+      "family": "broader_implication"
+    },
+    "map_job": "Develops meaning beyond the immediate subject.",
+    "slots": [
+      {
+        "slot_id": "P5.06.S01",
+        "phrase": "Hopefully",
+        "function": "Desired possibility",
+        "explanation": "Signals a hope rather than a claim that every neighbor behaves this way.",
+        "char_span": [0, 9],
+        "byte_span": [0, 9]
+      },
+      {
+        "slot_id": "P5.06.S02",
+        "phrase": "the neighbors are kind like him",
+        "function": "Broader implication",
+        "explanation": "Imagines kindness as one possible response to seeing another person’s home.",
+        "char_span": [10, 41],
+        "byte_span": [10, 41]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P5.07",
+    "source_text": "Or they can judge the projects in my yard or the dishes in the sink they spot through a window.",
+    "source_utf8_sha256": "6baf63f0aaf8193c89e94220bde1969e7c51be888b4a39f575a6b594396e927d",
+    "role": {
+      "label": "Broader Implications",
+      "family": "broader_implication"
+    },
+    "map_job": "Develops meaning beyond the immediate subject.",
+    "slots": [
+      {
+        "slot_id": "P5.07.S01",
+        "phrase": "Or they can judge",
+        "function": "Alternative response",
+        "explanation": "Sets judgment beside the kindness imagined in the previous sentence.",
+        "char_span": [0, 17],
+        "byte_span": [0, 17]
+      },
+      {
+        "slot_id": "P5.07.S02",
+        "phrase": "the projects in my yard or the dishes in the sink they spot through a window",
+        "function": "Limited-view illustration",
+        "explanation": "Shows the fragments an observer might see; the scenario illustrates the implication rather than adding a new personal event.",
+        "char_span": [18, 94],
+        "byte_span": [18, 94]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P5.08",
+    "source_text": "They won't see the sorted arrays of objects inside, the person who gathered them, or those who left them in my care.",
+    "source_utf8_sha256": "2275f301fb50a2cadb192bafe105517158ef5ca89d5266cbc2505dee72ca9825",
+    "role": {
+      "label": "Broader Implications",
+      "family": "broader_implication"
+    },
+    "map_job": "Develops meaning beyond the immediate subject.",
+    "slots": [
+      {
+        "slot_id": "P5.08.S01",
+        "phrase": "They won't see",
+        "function": "Limit of observation",
+        "explanation": "Identifies what is absent from the outside view in the previous sentence.",
+        "char_span": [0, 14],
+        "byte_span": [0, 14]
+      },
+      {
+        "slot_id": "P5.08.S02",
+        "phrase": "the sorted arrays of objects inside, the person who gathered them, or those who left them in my care",
+        "function": "Expanded meaning",
+        "explanation": "Moves from visible objects to their arrangement, keeper, and relationships, explaining why the outside view is incomplete.",
+        "char_span": [15, 115],
+        "byte_span": [15, 115]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P5.09",
+    "source_text": "We see faults in others more than goodness sometimes, and I do it too.",
+    "source_utf8_sha256": "a31d3c7e68e06a4469c0b7acaf04675c9ace03411f07c32de4157c2e97198f87",
+    "role": {
+      "label": "Broader Implications",
+      "family": "broader_implication"
+    },
+    "map_job": "Develops meaning beyond the immediate subject.",
+    "slots": [
+      {
+        "slot_id": "P5.09.S01",
+        "phrase": "We see faults in others more than goodness sometimes",
+        "function": "Opening callback / wider claim",
+        "explanation": "Returns to the introduction’s observation and applies it to people generally.",
+        "char_span": [0, 52],
+        "byte_span": [0, 52]
+      },
+      {
+        "slot_id": "P5.09.S02",
+        "phrase": "and I do it too",
+        "function": "Self-inclusion / concession",
+        "explanation": "Acknowledges your participation in the same behavior rather than claiming superiority over the neighbors.",
+        "char_span": [54, 69],
+        "byte_span": [54, 69]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P5.10",
+    "source_text": "Sometimes it's important to move past labels to the details.",
+    "source_utf8_sha256": "52abd0fa9e280896b5cb3d5729d155ba17f5b807acb42718d7cd71e44a04ea49",
+    "role": {
+      "label": "Broader Implications",
+      "family": "broader_implication"
+    },
+    "map_job": "Develops meaning beyond the immediate subject.",
+    "slots": [
+      {
+        "slot_id": "P5.10.S01",
+        "phrase": "Sometimes it's important",
+        "function": "Qualified implication",
+        "explanation": "Presents a principle to consider without making it an absolute rule.",
+        "char_span": [0, 24],
+        "byte_span": [0, 24]
+      },
+      {
+        "slot_id": "P5.10.S02",
+        "phrase": "move past labels to the details",
+        "function": "Reader-facing consequence",
+        "explanation": "States what should change in interpretation: examine more than the shorthand judgment.",
+        "char_span": [28, 59],
+        "byte_span": [28, 59]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P5.11",
+    "source_text": "I choose my home.",
+    "source_utf8_sha256": "903f750a437a5bad9f68d3dea40184da222b32598562acad3d28554ccd467106",
+    "role": {
+      "label": "Broader Implications",
+      "family": "broader_implication"
+    },
+    "map_job": "Develops meaning beyond the immediate subject.",
+    "slots": [
+      {
+        "slot_id": "P5.11.S01",
+        "phrase": "I choose",
+        "function": "Agency",
+        "explanation": "States an active choice rather than describing only something that happened to you.",
+        "char_span": [0, 8],
+        "byte_span": [0, 8]
+      },
+      {
+        "slot_id": "P5.11.S02",
+        "phrase": "my home",
+        "function": "Metaphor return",
+        "explanation": "Brings the broader discussion back to the physical and inward space you inhabit.",
+        "char_span": [9, 16],
+        "byte_span": [9, 16]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P5.12",
+    "source_text": "I chose my yard ornaments, and I chose my friends.",
+    "source_utf8_sha256": "63afb256195f5afa41661772f7fc91622098b3b419e9fe3e06aa0b8ff63ef0c3",
+    "role": {
+      "label": "Broader Implications",
+      "family": "broader_implication"
+    },
+    "map_job": "Develops meaning beyond the immediate subject.",
+    "slots": [
+      {
+        "slot_id": "P5.12.S01",
+        "phrase": "I chose my yard ornaments",
+        "function": "Choice made concrete",
+        "explanation": "Extends the preceding assertion of agency to the objects visible outside.",
+        "char_span": [0, 25],
+        "byte_span": [0, 25]
+      },
+      {
+        "slot_id": "P5.12.S02",
+        "phrase": "and I chose my friends",
+        "function": "Parallel structure / relationships",
+        "explanation": "Extends the same sentence pattern from possessions to relationships, preparing the ending about whom you let inside.",
+        "char_span": [27, 49],
+        "byte_span": [27, 49]
+      }
+    ]
+  },
+  {
+    "sentence_id": "P5.13",
+    "source_text": "I am more than the sum of my moments and things; I am the one who carries them, so what I carry should matter only to me and to those I let inside.",
+    "source_utf8_sha256": "83dd976da274ede06f3ff5dbde97989521c50c6e5a20b03406f7794b7e7efd71",
+    "role": {
+      "label": "Final Insight",
+      "family": "final_insight"
+    },
+    "map_job": "Leaves the final thought with the reader.",
+    "slots": [
+      {
+        "slot_id": "P5.13.S01",
+        "phrase": "more than the sum of my moments and things",
+        "function": "Final identity claim",
+        "explanation": "Distinguishes the person from a complete inventory of experiences and objects.",
+        "char_span": [5, 47],
+        "byte_span": [5, 47]
+      },
+      {
+        "slot_id": "P5.13.S02",
+        "phrase": "I am the one who carries them",
+        "function": "Reason / agency",
+        "explanation": "Places meaning with the person who remembers and keeps, not with the collection alone.",
+        "char_span": [49, 78],
+        "byte_span": [49, 78]
+      },
+      {
+        "slot_id": "P5.13.S03",
+        "phrase": "so what I carry should matter only to me and to those I let inside",
+        "function": "Concluding inference / boundary",
+        "explanation": "Uses “so” to draw the final position about whose understanding matters, returning to chosen access.",
+        "char_span": [80, 146],
+        "byte_span": [80, 146]
+      }
+    ]
+  }
+]

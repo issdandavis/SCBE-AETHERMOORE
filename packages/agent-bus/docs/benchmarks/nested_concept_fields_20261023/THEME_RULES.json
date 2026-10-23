@@ -1,0 +1,62 @@
+[
+  {
+    "id": "identity",
+    "label": "Identity and agency",
+    "terms": [
+      "identity",
+      "myself",
+      "parts of me",
+      "the man i became",
+      "i choose",
+      "i chose",
+      "i am the one"
+    ]
+  },
+  {
+    "id": "judgment",
+    "label": "Judgment and outside views",
+    "terms": ["judge", "label", "assume", "outside", "neighbors", "others see", "they see"]
+  },
+  {
+    "id": "memory",
+    "label": "Memory and loss",
+    "terms": ["memory", "memories", "remember", "past", "photos", "dead", "grandpa", "grandfather"]
+  },
+  {
+    "id": "boundary",
+    "label": "Boundaries and access",
+    "terms": [
+      "fence",
+      "threshold",
+      "porch",
+      "private property",
+      "inside",
+      "window",
+      "enter",
+      "let inside"
+    ]
+  },
+  {
+    "id": "hospitality",
+    "label": "Hospitality and invitation",
+    "terms": ["invite", "blankets", "pillows", "sleeping bag", "comfort", "welcomed"]
+  },
+  {
+    "id": "organization",
+    "label": "Sorting and organization",
+    "terms": ["sort", "bins", "jars", "collection", "piles", "clutter", "clean storage"]
+  },
+  {
+    "id": "growth",
+    "label": "Growth and change",
+    "terms": [
+      "learn",
+      "grow",
+      "developing",
+      "pushed me forward",
+      "accomplished",
+      "became",
+      "future"
+    ]
+  }
+]

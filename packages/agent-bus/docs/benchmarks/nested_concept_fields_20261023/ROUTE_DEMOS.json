@@ -1,0 +1,551 @@
+[
+  {
+    "schema_version": "scbe.concept_route.v1",
+    "route_id": "evidence-to-explanation",
+    "status": "reached",
+    "rejection_code": null,
+    "goal": {
+      "id": "evidence-to-explanation",
+      "public_goal": "Follow source-backed support into the first explanation, preserving the route.",
+      "start_artifact_ids": ["P2.03"],
+      "target_artifact_ids": ["P2.06"],
+      "target_bubble_ids": [],
+      "target_field_ids": [],
+      "relation_multipliers": {
+        "transitions": 0.2,
+        "requires": 10,
+        "elaborates": 10
+      },
+      "allow_bubble_hops": false,
+      "bubble_hop_cost": 2,
+      "verified_only": true,
+      "allowed_policies": ["allow"],
+      "max_hops": 32,
+      "max_expansions": 10000
+    },
+    "goal_sha256": "9dc1757d86739b469939793f924a9b35563af4b0b40e5160f0519e2ac245095e",
+    "reasoning_graph_sha256": "ff8c0cbd859c17f37cd4429fcd4420c4ab154179c6856fbcc3b808f9d52a0b6e",
+    "concept_graph_sha256": "933b8bd74fe793bfb91066ece20b82a7a862ce0fb166185abd56464d06737d1a",
+    "selected_start_artifact_id": "P2.03",
+    "target_artifact_id": "P2.06",
+    "artifact_path": ["P2.03", "P2.04", "P2.05", "P2.06"],
+    "hops": [
+      {
+        "index": 0,
+        "kind": "typed-edge",
+        "from_artifact_id": "P2.03",
+        "to_artifact_id": "P2.04",
+        "relation": "transitions",
+        "edge_id": "edge:0022",
+        "bubble_id": null,
+        "authority": "source-annotation",
+        "status": "source",
+        "evidence_hashes": [
+          "56005541c73e188cf18b248807acde70fc147b48babfbb70c63d6931c0749b28",
+          "589f814e420ed4491f71501a70a332890cfb784dad5dc40d9858017bf1d9e57a",
+          "f1a31f8f613669e16998e51f0e3c92d821c5b0b3262bb01f55a369da89026f81"
+        ],
+        "step_cost": 0.2,
+        "cumulative_cost": 0.2,
+        "previous_receipt_sha256": "19cbca700e3ca5ccc0061fe33f33dcc3c2d88c051bb35545d1c81517baba0df5",
+        "receipt_sha256": "96825ae53b38408fde4641bc7820cdc04d11c756827f382482d3fbb4491d2384"
+      },
+      {
+        "index": 1,
+        "kind": "typed-edge",
+        "from_artifact_id": "P2.04",
+        "to_artifact_id": "P2.05",
+        "relation": "transitions",
+        "edge_id": "edge:0023",
+        "bubble_id": null,
+        "authority": "source-annotation",
+        "status": "source",
+        "evidence_hashes": [
+          "10033dd0719fb2d33f577e44664f4e1fd251a3f26ee297e67ad2f7c6fe841703",
+          "589f814e420ed4491f71501a70a332890cfb784dad5dc40d9858017bf1d9e57a",
+          "5caaead93106585242def6ecb59a62cfdb236a3724c2d96190cbf8729136d6ce"
+        ],
+        "step_cost": 0.2,
+        "cumulative_cost": 0.4,
+        "previous_receipt_sha256": "96825ae53b38408fde4641bc7820cdc04d11c756827f382482d3fbb4491d2384",
+        "receipt_sha256": "f766b49391e0ada3405b397071d5bf98bcd3cfc508fe04645ec56f502ce541f6"
+      },
+      {
+        "index": 2,
+        "kind": "typed-edge",
+        "from_artifact_id": "P2.05",
+        "to_artifact_id": "P2.06",
+        "relation": "transitions",
+        "edge_id": "edge:0024",
+        "bubble_id": null,
+        "authority": "source-annotation",
+        "status": "source",
+        "evidence_hashes": [
+          "4586ed1e2116905fe27c5ef932d2bb9221463931312776fdf60a91bb356d8aa2",
+          "5caaead93106585242def6ecb59a62cfdb236a3724c2d96190cbf8729136d6ce",
+          "e86b6cc0c7710fba9cc2690d43f62ac18a11b04ba1a2a2871a34c153411fad4f"
+        ],
+        "step_cost": 0.2,
+        "cumulative_cost": 0.6000000000000001,
+        "previous_receipt_sha256": "f766b49391e0ada3405b397071d5bf98bcd3cfc508fe04645ec56f502ce541f6",
+        "receipt_sha256": "ce952da3d2fd7f7235ed53b53ec4454d817e99431c4854038cc50f476183070f"
+      }
+    ],
+    "public_steps": [
+      {
+        "id": "step:0",
+        "parent_step_id": null,
+        "depth": 0,
+        "kind": "anchor",
+        "artifact_id": "P2.03",
+        "public_summary": "P2.03 · claim · Offers the first reason.",
+        "state_transition": "Preserve P2.03; source order continues to P2.04.",
+        "bubble_ids": [
+          "paragraph:P2",
+          "phrase-function:first-reason",
+          "phrase-function:past-time-claim",
+          "role:claim"
+        ],
+        "field_ids": ["essay", "field:P2", "paragraphs", "phrase-functions", "rhetoric"],
+        "evidence_hashes": ["56005541c73e188cf18b248807acde70fc147b48babfbb70c63d6931c0749b28"]
+      },
+      {
+        "id": "step:1",
+        "parent_step_id": "step:0",
+        "depth": 1,
+        "kind": "follow-relation",
+        "artifact_id": "P2.04",
+        "public_summary": "P2.04 · evidence_example · Supplies support for the first claim.",
+        "state_transition": "Preserve P2.04; source order continues to P2.05.",
+        "bubble_ids": [
+          "paragraph:P2",
+          "phrase-function:cause-and-effect-link",
+          "phrase-function:consequence-evidence",
+          "role:evidence-example"
+        ],
+        "field_ids": ["essay", "field:P2", "paragraphs", "phrase-functions", "rhetoric"],
+        "evidence_hashes": ["589f814e420ed4491f71501a70a332890cfb784dad5dc40d9858017bf1d9e57a"]
+      },
+      {
+        "id": "step:2",
+        "parent_step_id": "step:1",
+        "depth": 2,
+        "kind": "follow-relation",
+        "artifact_id": "P2.05",
+        "public_summary": "P2.05 · evidence_example · Supplies support for the first claim.",
+        "state_transition": "Preserve P2.05; source order continues to P2.06.",
+        "bubble_ids": [
+          "paragraph:P2",
+          "phrase-function:behavioral-example",
+          "phrase-function:evidence-transition",
+          "phrase-function:house-connection",
+          "role:evidence-example"
+        ],
+        "field_ids": ["essay", "field:P2", "paragraphs", "phrase-functions", "rhetoric"],
+        "evidence_hashes": ["5caaead93106585242def6ecb59a62cfdb236a3724c2d96190cbf8729136d6ce"]
+      },
+      {
+        "id": "step:3",
+        "parent_step_id": "step:2",
+        "depth": 3,
+        "kind": "follow-relation",
+        "artifact_id": "P2.06",
+        "public_summary": "P2.06 · explanation_significance · Explains the first example’s significance.",
+        "state_transition": "Preserve P2.06; source order continues to P2.07.",
+        "bubble_ids": [
+          "paragraph:P2",
+          "phrase-function:consequence-growth-in-understanding",
+          "phrase-function:significance",
+          "role:explanation-significance",
+          "theme:growth"
+        ],
+        "field_ids": ["essay", "field:P2", "paragraphs", "phrase-functions", "rhetoric", "themes"],
+        "evidence_hashes": ["4586ed1e2116905fe27c5ef932d2bb9221463931312776fdf60a91bb356d8aa2"]
+      }
+    ],
+    "total_cost": 0.6000000000000001,
+    "expanded_states": 4,
+    "route_sha256": "94e546581d0cd303a7b08ec51406e2806a4e5c5cd6859a92af5266ee317f0814"
+  },
+  {
+    "schema_version": "scbe.concept_route.v1",
+    "route_id": "return-to-thesis",
+    "status": "reached",
+    "rejection_code": null,
+    "goal": {
+      "id": "return-to-thesis",
+      "public_goal": "Return from the Body 3 conclusion to the source thesis.",
+      "start_artifact_ids": ["P4.15"],
+      "target_artifact_ids": ["P1.19"],
+      "target_bubble_ids": [],
+      "target_field_ids": [],
+      "relation_multipliers": {
+        "returns_to": 0.25
+      },
+      "allow_bubble_hops": false,
+      "bubble_hop_cost": 2,
+      "verified_only": true,
+      "allowed_policies": ["allow"],
+      "max_hops": 32,
+      "max_expansions": 10000
+    },
+    "goal_sha256": "4813284b460f2704563a9fc74875bbfcbac62294942ed6916116f056c7cfb3cb",
+    "reasoning_graph_sha256": "ff8c0cbd859c17f37cd4429fcd4420c4ab154179c6856fbcc3b808f9d52a0b6e",
+    "concept_graph_sha256": "933b8bd74fe793bfb91066ece20b82a7a862ce0fb166185abd56464d06737d1a",
+    "selected_start_artifact_id": "P4.15",
+    "target_artifact_id": "P1.19",
+    "artifact_path": ["P4.15", "P1.19"],
+    "hops": [
+      {
+        "index": 0,
+        "kind": "typed-edge",
+        "from_artifact_id": "P4.15",
+        "to_artifact_id": "P1.19",
+        "relation": "returns_to",
+        "edge_id": "edge:0178",
+        "bubble_id": null,
+        "authority": "deterministic-rule",
+        "status": "source",
+        "evidence_hashes": [
+          "42e7155688bebcb404a3cc8f9e8be081932569158dcaf9e07650c2b46a1a8206",
+          "58aeb47afdc24332c7958a499f69177246d460df397b099a3a49cbc6bcb41381",
+          "9043adb805bc4b7fc66baf7ed9917f21f4cebbe0cfb383fd678a7d59f32d0e15"
+        ],
+        "step_cost": 0.175,
+        "cumulative_cost": 0.175,
+        "previous_receipt_sha256": "5e706d5cb3c5bdef443f2da1147e9700eb78bd6cf9c0ad2f4a142c9a8315962d",
+        "receipt_sha256": "4b4280a6f74fad281d994beae98e57dbc6d8257ab060818a708395c45377ca6a"
+      }
+    ],
+    "public_steps": [
+      {
+        "id": "step:0",
+        "parent_step_id": null,
+        "depth": 0,
+        "kind": "anchor",
+        "artifact_id": "P4.15",
+        "public_summary": "P4.15 · paragraph_conclusion · Closes Body 3 with its developed meaning.",
+        "state_transition": "Preserve P4.15; source order continues to P5.01.",
+        "bubble_ids": [
+          "paragraph:P4",
+          "phrase-function:deeper-concluding-meaning",
+          "phrase-function:outside-view-return",
+          "phrase-function:wordplay-synthesis",
+          "role:paragraph-conclusion"
+        ],
+        "field_ids": ["essay", "field:P4", "paragraphs", "phrase-functions", "rhetoric"],
+        "evidence_hashes": ["58aeb47afdc24332c7958a499f69177246d460df397b099a3a49cbc6bcb41381"]
+      },
+      {
+        "id": "step:1",
+        "parent_step_id": "step:0",
+        "depth": 1,
+        "kind": "follow-relation",
+        "artifact_id": "P1.19",
+        "public_summary": "P1.19 · thesis · Turns from They Say to I Say.",
+        "state_transition": "Preserve P1.19; source order continues to P2.01.",
+        "bubble_ids": [
+          "paragraph:P1",
+          "phrase-function:concession",
+          "phrase-function:i-say-identity-claim",
+          "phrase-function:they-say-concession-opening",
+          "role:thesis"
+        ],
+        "field_ids": ["essay", "field:P1", "paragraphs", "phrase-functions", "rhetoric"],
+        "evidence_hashes": ["9043adb805bc4b7fc66baf7ed9917f21f4cebbe0cfb383fd678a7d59f32d0e15"]
+      }
+    ],
+    "total_cost": 0.175,
+    "expanded_states": 2,
+    "route_sha256": "3401e6b4c58e1ecfdda6f559fc1706750136d656bc8a44acc0cdacd2d28d25ac"
+  },
+  {
+    "schema_version": "scbe.concept_route.v1",
+    "route_id": "strict-theme-refusal",
+    "status": "no-route",
+    "rejection_code": "E_NO_ROUTE",
+    "goal": {
+      "id": "strict-theme-refusal",
+      "public_goal": "Reach the proposed memory theme using source or externally verified membership only.",
+      "start_artifact_ids": ["P1.01"],
+      "target_artifact_ids": [],
+      "target_bubble_ids": ["theme:memory"],
+      "target_field_ids": [],
+      "relation_multipliers": {},
+      "allow_bubble_hops": true,
+      "bubble_hop_cost": 2,
+      "verified_only": true,
+      "allowed_policies": ["allow"],
+      "max_hops": 12,
+      "max_expansions": 10000
+    },
+    "goal_sha256": "c878bddb4644e85221e0cdfe12c951e112a740aae91e6032caa926c2352a035e",
+    "reasoning_graph_sha256": "ff8c0cbd859c17f37cd4429fcd4420c4ab154179c6856fbcc3b808f9d52a0b6e",
+    "concept_graph_sha256": "933b8bd74fe793bfb91066ece20b82a7a862ce0fb166185abd56464d06737d1a",
+    "selected_start_artifact_id": null,
+    "target_artifact_id": null,
+    "artifact_path": [],
+    "hops": [],
+    "public_steps": [],
+    "total_cost": null,
+    "expanded_states": 84,
+    "route_sha256": "1ef2db230cc4b7768108e8ee0fc6392464ae066d54fa4305ee13c75fa4239333"
+  },
+  {
+    "schema_version": "scbe.concept_route.v1",
+    "route_id": "exploratory-theme-route",
+    "status": "reached",
+    "rejection_code": null,
+    "goal": {
+      "id": "exploratory-theme-route",
+      "public_goal": "Explore the deterministic memory-theme proposal without upgrading it to verified evidence.",
+      "start_artifact_ids": ["P1.01"],
+      "target_artifact_ids": [],
+      "target_bubble_ids": ["theme:memory"],
+      "target_field_ids": [],
+      "relation_multipliers": {},
+      "allow_bubble_hops": false,
+      "bubble_hop_cost": 2,
+      "verified_only": false,
+      "allowed_policies": ["allow"],
+      "max_hops": 32,
+      "max_expansions": 10000
+    },
+    "goal_sha256": "b66c5791670b6724fd04ee1dfa61b0775619cbb1abcf70b08a79e3d8d95c2c2e",
+    "reasoning_graph_sha256": "ff8c0cbd859c17f37cd4429fcd4420c4ab154179c6856fbcc3b808f9d52a0b6e",
+    "concept_graph_sha256": "933b8bd74fe793bfb91066ece20b82a7a862ce0fb166185abd56464d06737d1a",
+    "selected_start_artifact_id": "P1.01",
+    "target_artifact_id": "P1.04",
+    "artifact_path": ["P1.01", "P1.02", "P1.03", "P1.04"],
+    "hops": [
+      {
+        "index": 0,
+        "kind": "typed-edge",
+        "from_artifact_id": "P1.01",
+        "to_artifact_id": "P1.02",
+        "relation": "transitions",
+        "edge_id": "edge:0001",
+        "bubble_id": null,
+        "authority": "source-annotation",
+        "status": "source",
+        "evidence_hashes": [
+          "079bc8d938c7df9c7ccc3ab01ff167f49ce95a9a2f891f59cd830a7d954cd3a8",
+          "1c939ac0f08a1bb7f0151a493ace1b148c512999d5acc1df688e81ed9bbc82ae",
+          "6ae306de05237f9bba430bef5e5b792c1189938d789bafd2ed6a8137210386cb"
+        ],
+        "step_cost": 1,
+        "cumulative_cost": 1,
+        "previous_receipt_sha256": "1ce71beb2251d8ad120e23a68badff36bb8e8c2deaf4bdc8c116c3b24820c889",
+        "receipt_sha256": "4dd21fcff3d8958263f35ef9605029cd367cf99b1b769fffc627a729a4ed42c4"
+      },
+      {
+        "index": 1,
+        "kind": "typed-edge",
+        "from_artifact_id": "P1.02",
+        "to_artifact_id": "P1.03",
+        "relation": "transitions",
+        "edge_id": "edge:0002",
+        "bubble_id": null,
+        "authority": "source-annotation",
+        "status": "source",
+        "evidence_hashes": [
+          "6ae306de05237f9bba430bef5e5b792c1189938d789bafd2ed6a8137210386cb",
+          "866ca9049e531e2bb9496c61d052aea95e5688638841f645f08dbccac089c5ac",
+          "9a80cb9b4b20fcf77cf5811ac616c4918c5262eb7739bb0bb76197febb321b16"
+        ],
+        "step_cost": 1,
+        "cumulative_cost": 2,
+        "previous_receipt_sha256": "4dd21fcff3d8958263f35ef9605029cd367cf99b1b769fffc627a729a4ed42c4",
+        "receipt_sha256": "22db099f0650ae76dab276914b0fdaec39f9c55ced0795dee09439e8f2ab47f1"
+      },
+      {
+        "index": 2,
+        "kind": "typed-edge",
+        "from_artifact_id": "P1.03",
+        "to_artifact_id": "P1.04",
+        "relation": "transitions",
+        "edge_id": "edge:0003",
+        "bubble_id": null,
+        "authority": "source-annotation",
+        "status": "source",
+        "evidence_hashes": [
+          "016275b8898ebaa23cd5e6e6a3c2c2a4a2410419401ad4d253373a8d9c8068d0",
+          "66658036f269cdf3fe3bd964ad560f7a530ef6f731e66a789c3bf1aa036c2d93",
+          "866ca9049e531e2bb9496c61d052aea95e5688638841f645f08dbccac089c5ac"
+        ],
+        "step_cost": 1,
+        "cumulative_cost": 3,
+        "previous_receipt_sha256": "22db099f0650ae76dab276914b0fdaec39f9c55ced0795dee09439e8f2ab47f1",
+        "receipt_sha256": "c3dfbbbfb20b0ba70d8c861bbf2082067c6a16fb9974835e4bd666d6cd71ea47"
+      }
+    ],
+    "public_steps": [
+      {
+        "id": "step:0",
+        "parent_step_id": null,
+        "depth": 0,
+        "kind": "anchor",
+        "artifact_id": "P1.01",
+        "public_summary": "P1.01 · orientation · Opens the subject.",
+        "state_transition": "Preserve P1.01; source order continues to P1.02.",
+        "bubble_ids": [
+          "paragraph:P1",
+          "phrase-function:central-comparison",
+          "phrase-function:setting",
+          "role:orientation"
+        ],
+        "field_ids": ["essay", "field:P1", "paragraphs", "phrase-functions", "rhetoric"],
+        "evidence_hashes": ["1c939ac0f08a1bb7f0151a493ace1b148c512999d5acc1df688e81ed9bbc82ae"]
+      },
+      {
+        "id": "step:1",
+        "parent_step_id": "step:0",
+        "depth": 1,
+        "kind": "follow-relation",
+        "artifact_id": "P1.02",
+        "public_summary": "P1.02 · imagery_context · Makes a broad observation.",
+        "state_transition": "Preserve P1.02; source order continues to P1.03.",
+        "bubble_ids": [
+          "paragraph:P1",
+          "phrase-function:contrast-transition",
+          "phrase-function:perspective",
+          "role:imagery-context",
+          "theme:judgment"
+        ],
+        "field_ids": ["essay", "field:P1", "paragraphs", "phrase-functions", "rhetoric", "themes"],
+        "evidence_hashes": ["6ae306de05237f9bba430bef5e5b792c1189938d789bafd2ed6a8137210386cb"]
+      },
+      {
+        "id": "step:2",
+        "parent_step_id": "step:1",
+        "depth": 2,
+        "kind": "follow-relation",
+        "artifact_id": "P1.03",
+        "public_summary": "P1.03 · imagery_context · Makes a broad observation.",
+        "state_transition": "Preserve P1.03; source order continues to P1.04.",
+        "bubble_ids": [
+          "paragraph:P1",
+          "phrase-function:broad-claim",
+          "phrase-function:qualification-contrast",
+          "role:imagery-context"
+        ],
+        "field_ids": ["essay", "field:P1", "paragraphs", "phrase-functions", "rhetoric"],
+        "evidence_hashes": ["866ca9049e531e2bb9496c61d052aea95e5688638841f645f08dbccac089c5ac"]
+      },
+      {
+        "id": "step:3",
+        "parent_step_id": "step:2",
+        "depth": 3,
+        "kind": "follow-relation",
+        "artifact_id": "P1.04",
+        "public_summary": "P1.04 · imagery_context · Makes the broad subject visible.",
+        "state_transition": "Preserve P1.04; source order continues to P1.05.",
+        "bubble_ids": [
+          "paragraph:P1",
+          "phrase-function:judgment-sequence",
+          "phrase-function:visible-detail",
+          "role:imagery-context",
+          "theme:boundary",
+          "theme:judgment",
+          "theme:memory",
+          "theme:organization"
+        ],
+        "field_ids": ["essay", "field:P1", "paragraphs", "phrase-functions", "rhetoric", "themes"],
+        "evidence_hashes": ["016275b8898ebaa23cd5e6e6a3c2c2a4a2410419401ad4d253373a8d9c8068d0"]
+      }
+    ],
+    "total_cost": 3,
+    "expanded_states": 4,
+    "route_sha256": "6699c48f2213ec53d2568e2f2e486efb655e98cdd99e7bd02b1c29e861b68ca1"
+  },
+  {
+    "schema_version": "scbe.concept_route.v1",
+    "route_id": "paragraph-hyperedge",
+    "status": "reached",
+    "rejection_code": null,
+    "goal": {
+      "id": "paragraph-hyperedge",
+      "public_goal": "Use the source paragraph as an explicit overlapping concept bubble.",
+      "start_artifact_ids": ["P4.03"],
+      "target_artifact_ids": ["P4.14"],
+      "target_bubble_ids": [],
+      "target_field_ids": [],
+      "relation_multipliers": {},
+      "allow_bubble_hops": true,
+      "bubble_hop_cost": 0.25,
+      "verified_only": true,
+      "allowed_policies": ["allow"],
+      "max_hops": 32,
+      "max_expansions": 10000
+    },
+    "goal_sha256": "a308e34a91dd37268c761366e271550807629ea7c0eba87791b29366ab9471d1",
+    "reasoning_graph_sha256": "ff8c0cbd859c17f37cd4429fcd4420c4ab154179c6856fbcc3b808f9d52a0b6e",
+    "concept_graph_sha256": "933b8bd74fe793bfb91066ece20b82a7a862ce0fb166185abd56464d06737d1a",
+    "selected_start_artifact_id": "P4.03",
+    "target_artifact_id": "P4.14",
+    "artifact_path": ["P4.03", "P4.14"],
+    "hops": [
+      {
+        "index": 0,
+        "kind": "concept-bubble",
+        "from_artifact_id": "P4.03",
+        "to_artifact_id": "P4.14",
+        "relation": "co_member",
+        "edge_id": null,
+        "bubble_id": "paragraph:P4",
+        "authority": "source-annotation",
+        "status": "source",
+        "evidence_hashes": [
+          "2b735de517e5e984aa62d1376e5c4c18edb6edb188349947a90a311fbe69ea86",
+          "f303d9bdc42148b8bbed7e964f27d2c9734bdd1606fa76ae003b297949a8ffaf"
+        ],
+        "step_cost": 0.25,
+        "cumulative_cost": 0.25,
+        "previous_receipt_sha256": "83f770195b0720dd7f6bccfc7dbb8d955f5438aee0a64046d1687f74294b2939",
+        "receipt_sha256": "3abb639b530062888aaa8220039e303374452da03254137158274fe602789bc9"
+      }
+    ],
+    "public_steps": [
+      {
+        "id": "step:0",
+        "parent_step_id": null,
+        "depth": 0,
+        "kind": "anchor",
+        "artifact_id": "P4.03",
+        "public_summary": "P4.03 · evidence_example · Supplies support for the first claim.",
+        "state_transition": "Preserve P4.03; source order continues to P4.04.",
+        "bubble_ids": [
+          "paragraph:P4",
+          "phrase-function:personal-object",
+          "phrase-function:shared-association",
+          "role:evidence-example",
+          "theme:memory"
+        ],
+        "field_ids": ["essay", "field:P4", "paragraphs", "phrase-functions", "rhetoric", "themes"],
+        "evidence_hashes": ["2b735de517e5e984aa62d1376e5c4c18edb6edb188349947a90a311fbe69ea86"]
+      },
+      {
+        "id": "step:1",
+        "parent_step_id": "step:0",
+        "depth": 1,
+        "kind": "cross-bubble",
+        "artifact_id": "P4.14",
+        "public_summary": "P4.14 · explanation_significance · Explains what the third example adds.",
+        "state_transition": "Preserve P4.14; source order continues to P4.15.",
+        "bubble_ids": [
+          "paragraph:P4",
+          "phrase-function:concession",
+          "phrase-function:lesson",
+          "phrase-function:relational-significance",
+          "role:explanation-significance",
+          "theme:organization"
+        ],
+        "field_ids": ["essay", "field:P4", "paragraphs", "phrase-functions", "rhetoric", "themes"],
+        "evidence_hashes": ["f303d9bdc42148b8bbed7e964f27d2c9734bdd1606fa76ae003b297949a8ffaf"]
+      }
+    ],
+    "total_cost": 0.25,
+    "expanded_states": 26,
+    "route_sha256": "d9cec5056864fd124077cb5fc5be84c54b33b6cbdbbfec8adc69ef3e916885b7"
+  }
+]
