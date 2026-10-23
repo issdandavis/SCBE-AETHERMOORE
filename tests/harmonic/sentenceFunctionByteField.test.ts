@@ -12,7 +12,9 @@ import {
 } from "../../research/sentence-function-byte-field/sentenceFunctionByteField";
 
 const PLAIN = Buffer.from(
-  "53464231010101010101020102000a000000627974652d6669656c64" + "01".repeat(40) + "00".repeat(10),
+  "53464231010101010101020102000a000000627974652d6669656c64" +
+    "01".repeat(40) +
+    "00".repeat(10),
   "hex",
 );
 const SPANNED = Buffer.from(
