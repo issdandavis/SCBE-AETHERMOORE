@@ -1,0 +1,2043 @@
+{
+  "schema": "sentence-function-byte-field.v1",
+  "source": "Davis, Issac Essay 1 - Sentence Function Guide.docx",
+  "prose": "absent",
+  "sorts": [
+    {
+      "code": 1,
+      "name": "TOPIC"
+    },
+    {
+      "code": 2,
+      "name": "CLAIM"
+    },
+    {
+      "code": 3,
+      "name": "EX"
+    },
+    {
+      "code": 4,
+      "name": "EOS"
+    },
+    {
+      "code": 5,
+      "name": "THEY_SAY"
+    },
+    {
+      "code": 6,
+      "name": "TS"
+    },
+    {
+      "code": 7,
+      "name": "CONCL"
+    },
+    {
+      "code": 8,
+      "name": "THESIS"
+    },
+    {
+      "code": 9,
+      "name": "SUMMARY"
+    },
+    {
+      "code": 10,
+      "name": "TURN"
+    },
+    {
+      "code": 11,
+      "name": "IMPLICATION"
+    },
+    {
+      "code": 12,
+      "name": "INSIGHT"
+    }
+  ],
+  "slots": [
+    {
+      "code": 1,
+      "name": "Broad Topic"
+    },
+    {
+      "code": 2,
+      "name": "Paint a Picture - Claim"
+    },
+    {
+      "code": 3,
+      "name": "Paint a Picture - Details"
+    },
+    {
+      "code": 4,
+      "name": "Paint a Picture - EOS"
+    },
+    {
+      "code": 5,
+      "name": "Narrow Down 1 - Claim"
+    },
+    {
+      "code": 6,
+      "name": "Narrow Down 1 - Details"
+    },
+    {
+      "code": 7,
+      "name": "Narrow Down 1 - EOS"
+    },
+    {
+      "code": 8,
+      "name": "Narrow Down 2 (They Say discussion)"
+    },
+    {
+      "code": 9,
+      "name": "They Say 1"
+    },
+    {
+      "code": 10,
+      "name": "They Say 2"
+    },
+    {
+      "code": 11,
+      "name": "They Say 3"
+    },
+    {
+      "code": 12,
+      "name": "Thesis Formula"
+    },
+    {
+      "code": 13,
+      "name": "TS 1"
+    },
+    {
+      "code": 14,
+      "name": "CLAIM 1"
+    },
+    {
+      "code": 15,
+      "name": "EX 1"
+    },
+    {
+      "code": 16,
+      "name": "EOS 1"
+    },
+    {
+      "code": 17,
+      "name": "CLAIM 2"
+    },
+    {
+      "code": 18,
+      "name": "EX 2"
+    },
+    {
+      "code": 19,
+      "name": "EOS 2"
+    },
+    {
+      "code": 20,
+      "name": "CLAIM 3"
+    },
+    {
+      "code": 21,
+      "name": "EX 3"
+    },
+    {
+      "code": 22,
+      "name": "EOS 3"
+    },
+    {
+      "code": 23,
+      "name": "CONCL 1"
+    },
+    {
+      "code": 24,
+      "name": "TS 2"
+    },
+    {
+      "code": 25,
+      "name": "CONCL 2"
+    },
+    {
+      "code": 26,
+      "name": "TS 3"
+    },
+    {
+      "code": 27,
+      "name": "CONCL 3"
+    },
+    {
+      "code": 28,
+      "name": "Revisit Thesis"
+    },
+    {
+      "code": 29,
+      "name": "Summary"
+    },
+    {
+      "code": 30,
+      "name": "The Turn"
+    },
+    {
+      "code": 31,
+      "name": "Broader Implications"
+    },
+    {
+      "code": 32,
+      "name": "Final Insight"
+    }
+  ],
+  "jobs": [
+    {
+      "code": 1,
+      "name": "Opens the subject."
+    },
+    {
+      "code": 2,
+      "name": "Makes a broad observation."
+    },
+    {
+      "code": 3,
+      "name": "Makes the broad subject visible."
+    },
+    {
+      "code": 4,
+      "name": "Explains why the broad subject matters."
+    },
+    {
+      "code": 5,
+      "name": "Moves to your particular focus."
+    },
+    {
+      "code": 6,
+      "name": "Develops that narrower focus."
+    },
+    {
+      "code": 7,
+      "name": "Explains the narrower focus’s significance."
+    },
+    {
+      "code": 8,
+      "name": "Opens the discussion the voices address."
+    },
+    {
+      "code": 9,
+      "name": "Introduces the first outside perspective."
+    },
+    {
+      "code": 10,
+      "name": "Introduces another outside perspective."
+    },
+    {
+      "code": 11,
+      "name": "Introduces a third outside perspective."
+    },
+    {
+      "code": 12,
+      "name": "Turns from They Say to I Say."
+    },
+    {
+      "code": 13,
+      "name": "Connects back and introduces Body 1."
+    },
+    {
+      "code": 14,
+      "name": "Offers the first reason."
+    },
+    {
+      "code": 15,
+      "name": "Supplies support for the first claim."
+    },
+    {
+      "code": 16,
+      "name": "Explains the first example’s significance."
+    },
+    {
+      "code": 17,
+      "name": "Transitions to the second reason."
+    },
+    {
+      "code": 18,
+      "name": "Supplies support for the second claim."
+    },
+    {
+      "code": 19,
+      "name": "Explains the second example’s significance."
+    },
+    {
+      "code": 20,
+      "name": "Transitions to the third reason."
+    },
+    {
+      "code": 21,
+      "name": "Supplies support for the third claim."
+    },
+    {
+      "code": 22,
+      "name": "Explains what the third example adds."
+    },
+    {
+      "code": 23,
+      "name": "Closes Body 1 with its developed meaning."
+    },
+    {
+      "code": 24,
+      "name": "Connects back and introduces Body 2."
+    },
+    {
+      "code": 25,
+      "name": "Closes Body 2 with its developed meaning."
+    },
+    {
+      "code": 26,
+      "name": "Connects back and introduces Body 3."
+    },
+    {
+      "code": 27,
+      "name": "Closes Body 3 with its developed meaning."
+    },
+    {
+      "code": 28,
+      "name": "Returns to the thesis with developed understanding."
+    },
+    {
+      "code": 29,
+      "name": "Gathers the main meaning under one umbrella."
+    },
+    {
+      "code": 30,
+      "name": "Moves from the argument to wider meaning."
+    },
+    {
+      "code": 31,
+      "name": "Develops meaning beyond the immediate subject."
+    },
+    {
+      "code": 32,
+      "name": "Leaves the final thought with the reader."
+    }
+  ],
+  "phrases": [
+    {
+      "code": 1,
+      "name": "Setting"
+    },
+    {
+      "code": 2,
+      "name": "Central comparison"
+    },
+    {
+      "code": 3,
+      "name": "Contrast / transition"
+    },
+    {
+      "code": 4,
+      "name": "Perspective"
+    },
+    {
+      "code": 5,
+      "name": "Broad claim"
+    },
+    {
+      "code": 6,
+      "name": "Qualification / contrast"
+    },
+    {
+      "code": 7,
+      "name": "Visible detail"
+    },
+    {
+      "code": 8,
+      "name": "Judgment sequence"
+    },
+    {
+      "code": 9,
+      "name": "Outside interpretation"
+    },
+    {
+      "code": 10,
+      "name": "Contrast"
+    },
+    {
+      "code": 11,
+      "name": "House / history metaphor"
+    },
+    {
+      "code": 12,
+      "name": "Continuation"
+    },
+    {
+      "code": 13,
+      "name": "Wordplay / metaphor"
+    },
+    {
+      "code": 14,
+      "name": "Significance"
+    },
+    {
+      "code": 15,
+      "name": "Qualification"
+    },
+    {
+      "code": 16,
+      "name": "Connection"
+    },
+    {
+      "code": 17,
+      "name": "Narrowing transition"
+    },
+    {
+      "code": 18,
+      "name": "Contrast / identity claim"
+    },
+    {
+      "code": 19,
+      "name": "Personal claim / qualification"
+    },
+    {
+      "code": 20,
+      "name": "Misconception answered"
+    },
+    {
+      "code": 21,
+      "name": "Concrete comparison"
+    },
+    {
+      "code": 22,
+      "name": "Organization detail"
+    },
+    {
+      "code": 23,
+      "name": "Complication"
+    },
+    {
+      "code": 24,
+      "name": "Past / present connection"
+    },
+    {
+      "code": 25,
+      "name": "Insider knowledge"
+    },
+    {
+      "code": 26,
+      "name": "Value claim"
+    },
+    {
+      "code": 27,
+      "name": "Explanation"
+    },
+    {
+      "code": 28,
+      "name": "Discussion opening"
+    },
+    {
+      "code": 29,
+      "name": "Counterposition"
+    },
+    {
+      "code": 30,
+      "name": "They Say perspective"
+    },
+    {
+      "code": 31,
+      "name": "Position introduced"
+    },
+    {
+      "code": 32,
+      "name": "Value image"
+    },
+    {
+      "code": 33,
+      "name": "Alternative perspective"
+    },
+    {
+      "code": 34,
+      "name": "Advice / opposing emphasis"
+    },
+    {
+      "code": 35,
+      "name": "Brief response"
+    },
+    {
+      "code": 36,
+      "name": "Third perspective"
+    },
+    {
+      "code": 37,
+      "name": "Behavioral criticism"
+    },
+    {
+      "code": 38,
+      "name": "They Say / concession opening"
+    },
+    {
+      "code": 39,
+      "name": "Concession"
+    },
+    {
+      "code": 40,
+      "name": "I Say / identity claim"
+    },
+    {
+      "code": 41,
+      "name": "Time transition / thesis link"
+    },
+    {
+      "code": 42,
+      "name": "Paragraph direction"
+    },
+    {
+      "code": 43,
+      "name": "Outside view"
+    },
+    {
+      "code": 44,
+      "name": "Inside activity"
+    },
+    {
+      "code": 45,
+      "name": "Privacy metaphor"
+    },
+    {
+      "code": 46,
+      "name": "Past-time claim"
+    },
+    {
+      "code": 47,
+      "name": "First reason"
+    },
+    {
+      "code": 48,
+      "name": "Cause-and-effect link"
+    },
+    {
+      "code": 49,
+      "name": "Consequence evidence"
+    },
+    {
+      "code": 50,
+      "name": "Evidence transition"
+    },
+    {
+      "code": 51,
+      "name": "Behavioral example"
+    },
+    {
+      "code": 52,
+      "name": "House connection"
+    },
+    {
+      "code": 53,
+      "name": "Consequence / growth in understanding"
+    },
+    {
+      "code": 54,
+      "name": "Boundary metaphor"
+    },
+    {
+      "code": 55,
+      "name": "Contrast / second claim"
+    },
+    {
+      "code": 56,
+      "name": "Inner / outer distinction"
+    },
+    {
+      "code": 57,
+      "name": "Illustrative possibility"
+    },
+    {
+      "code": 58,
+      "name": "Public trace / metaphor"
+    },
+    {
+      "code": 59,
+      "name": "Social setting"
+    },
+    {
+      "code": 60,
+      "name": "Contrast / illustration"
+    },
+    {
+      "code": 61,
+      "name": "Relationship to the collection"
+    },
+    {
+      "code": 62,
+      "name": "Personal stance"
+    },
+    {
+      "code": 63,
+      "name": "Purpose / significance"
+    },
+    {
+      "code": 64,
+      "name": "Boundary"
+    },
+    {
+      "code": 65,
+      "name": "Backward link"
+    },
+    {
+      "code": 66,
+      "name": "Reason for the boundary"
+    },
+    {
+      "code": 67,
+      "name": "Sound / coin image"
+    },
+    {
+      "code": 68,
+      "name": "Third-claim transition"
+    },
+    {
+      "code": 69,
+      "name": "Third reason"
+    },
+    {
+      "code": 70,
+      "name": "Personal source"
+    },
+    {
+      "code": 71,
+      "name": "Figurative illustration"
+    },
+    {
+      "code": 72,
+      "name": "Reference link"
+    },
+    {
+      "code": 73,
+      "name": "Missing context"
+    },
+    {
+      "code": 74,
+      "name": "Self-questioning"
+    },
+    {
+      "code": 75,
+      "name": "Alternative interpretation"
+    },
+    {
+      "code": 76,
+      "name": "Outside reading"
+    },
+    {
+      "code": 77,
+      "name": "Context / significance"
+    },
+    {
+      "code": 78,
+      "name": "Thesis return"
+    },
+    {
+      "code": 79,
+      "name": "Concluding meaning"
+    },
+    {
+      "code": 80,
+      "name": "Paragraph transition"
+    },
+    {
+      "code": 81,
+      "name": "New main idea"
+    },
+    {
+      "code": 82,
+      "name": "Stakes"
+    },
+    {
+      "code": 83,
+      "name": "Cost acknowledged"
+    },
+    {
+      "code": 84,
+      "name": "Claim / counterweight"
+    },
+    {
+      "code": 85,
+      "name": "Specific personal example"
+    },
+    {
+      "code": 86,
+      "name": "Second example"
+    },
+    {
+      "code": 87,
+      "name": "Opposing view"
+    },
+    {
+      "code": 88,
+      "name": "Direct response"
+    },
+    {
+      "code": 89,
+      "name": "Memory metaphor"
+    },
+    {
+      "code": 90,
+      "name": "Cost and continuity"
+    },
+    {
+      "code": 91,
+      "name": "Concession / transition"
+    },
+    {
+      "code": 92,
+      "name": "Second reason"
+    },
+    {
+      "code": 93,
+      "name": "Personal memory"
+    },
+    {
+      "code": 94,
+      "name": "Juxtaposition"
+    },
+    {
+      "code": 95,
+      "name": "Explanation / metaphor"
+    },
+    {
+      "code": 96,
+      "name": "Significance / forward link"
+    },
+    {
+      "code": 97,
+      "name": "Explicit transition"
+    },
+    {
+      "code": 98,
+      "name": "Authority claim"
+    },
+    {
+      "code": 99,
+      "name": "House / identity link"
+    },
+    {
+      "code": 100,
+      "name": "Personal event"
+    },
+    {
+      "code": 101,
+      "name": "Emotional evidence"
+    },
+    {
+      "code": 102,
+      "name": "Past situation"
+    },
+    {
+      "code": 103,
+      "name": "Relational evidence"
+    },
+    {
+      "code": 104,
+      "name": "Remembered guidance"
+    },
+    {
+      "code": 105,
+      "name": "Value / standard"
+    },
+    {
+      "code": 106,
+      "name": "Present retention"
+    },
+    {
+      "code": 107,
+      "name": "Value statement"
+    },
+    {
+      "code": 108,
+      "name": "Callback"
+    },
+    {
+      "code": 109,
+      "name": "Rhetorical question"
+    },
+    {
+      "code": 110,
+      "name": "Challenge"
+    },
+    {
+      "code": 111,
+      "name": "Image / meaning link"
+    },
+    {
+      "code": 112,
+      "name": "Present assessment"
+    },
+    {
+      "code": 113,
+      "name": "Emotional distinction"
+    },
+    {
+      "code": 114,
+      "name": "Reciprocity"
+    },
+    {
+      "code": 115,
+      "name": "Keeper / witness role"
+    },
+    {
+      "code": 116,
+      "name": "Paragraph synthesis"
+    },
+    {
+      "code": 117,
+      "name": "Deeper concluding meaning"
+    },
+    {
+      "code": 118,
+      "name": "Backward transition"
+    },
+    {
+      "code": 119,
+      "name": "New paragraph claim"
+    },
+    {
+      "code": 120,
+      "name": "Reason / house movement"
+    },
+    {
+      "code": 121,
+      "name": "Scope"
+    },
+    {
+      "code": 122,
+      "name": "Personal object"
+    },
+    {
+      "code": 123,
+      "name": "Shared association"
+    },
+    {
+      "code": 124,
+      "name": "Situation / invitation"
+    },
+    {
+      "code": 125,
+      "name": "Action / evidence"
+    },
+    {
+      "code": 126,
+      "name": "Concrete action"
+    },
+    {
+      "code": 127,
+      "name": "Retention / usefulness"
+    },
+    {
+      "code": 128,
+      "name": "Outside judgment recalled"
+    },
+    {
+      "code": 129,
+      "name": "Significance / response"
+    },
+    {
+      "code": 130,
+      "name": "Scene-based transition"
+    },
+    {
+      "code": 131,
+      "name": "Second claim / boundary"
+    },
+    {
+      "code": 132,
+      "name": "Spatial progression"
+    },
+    {
+      "code": 133,
+      "name": "Sharing action"
+    },
+    {
+      "code": 134,
+      "name": "Concrete creative material"
+    },
+    {
+      "code": 135,
+      "name": "Preservation / sharing"
+    },
+    {
+      "code": 136,
+      "name": "Specific example / voice"
+    },
+    {
+      "code": 137,
+      "name": "Significance signal"
+    },
+    {
+      "code": 138,
+      "name": "Past / future relation"
+    },
+    {
+      "code": 139,
+      "name": "Addition / third-set transition"
+    },
+    {
+      "code": 140,
+      "name": "Third claim"
+    },
+    {
+      "code": 141,
+      "name": "Contrasting interpretations"
+    },
+    {
+      "code": 142,
+      "name": "Support / effect"
+    },
+    {
+      "code": 143,
+      "name": "Help made visible"
+    },
+    {
+      "code": 144,
+      "name": "Outcome"
+    },
+    {
+      "code": 145,
+      "name": "Lesson"
+    },
+    {
+      "code": 146,
+      "name": "Relational significance"
+    },
+    {
+      "code": 147,
+      "name": "Outside-view return"
+    },
+    {
+      "code": 148,
+      "name": "Wordplay / synthesis"
+    },
+    {
+      "code": 149,
+      "name": "Time / concluding transition"
+    },
+    {
+      "code": 150,
+      "name": "Qualified thesis return"
+    },
+    {
+      "code": 151,
+      "name": "Umbrella phrase"
+    },
+    {
+      "code": 152,
+      "name": "Synthesis / reason"
+    },
+    {
+      "code": 153,
+      "name": "Inner-home return"
+    },
+    {
+      "code": 154,
+      "name": "Boundary synthesis"
+    },
+    {
+      "code": 155,
+      "name": "Outward turn"
+    },
+    {
+      "code": 156,
+      "name": "Perspective shift / callback"
+    },
+    {
+      "code": 157,
+      "name": "Comparison"
+    },
+    {
+      "code": 158,
+      "name": "Perspective image"
+    },
+    {
+      "code": 159,
+      "name": "Desired possibility"
+    },
+    {
+      "code": 160,
+      "name": "Broader implication"
+    },
+    {
+      "code": 161,
+      "name": "Alternative response"
+    },
+    {
+      "code": 162,
+      "name": "Limited-view illustration"
+    },
+    {
+      "code": 163,
+      "name": "Limit of observation"
+    },
+    {
+      "code": 164,
+      "name": "Expanded meaning"
+    },
+    {
+      "code": 165,
+      "name": "Opening callback / wider claim"
+    },
+    {
+      "code": 166,
+      "name": "Self-inclusion / concession"
+    },
+    {
+      "code": 167,
+      "name": "Qualified implication"
+    },
+    {
+      "code": 168,
+      "name": "Reader-facing consequence"
+    },
+    {
+      "code": 169,
+      "name": "Agency"
+    },
+    {
+      "code": 170,
+      "name": "Metaphor return"
+    },
+    {
+      "code": 171,
+      "name": "Choice made concrete"
+    },
+    {
+      "code": 172,
+      "name": "Parallel structure / relationships"
+    },
+    {
+      "code": 173,
+      "name": "Final identity claim"
+    },
+    {
+      "code": 174,
+      "name": "Reason / agency"
+    },
+    {
+      "code": 175,
+      "name": "Concluding inference / boundary"
+    }
+  ],
+  "sentences": [
+    {
+      "id": 1,
+      "paragraph": 1,
+      "ref": "P1.01",
+      "slot": 1,
+      "sort": 1,
+      "job": 1,
+      "phrases": [
+        1,
+        2
+      ]
+    },
+    {
+      "id": 2,
+      "paragraph": 1,
+      "ref": "P1.02",
+      "slot": 2,
+      "sort": 2,
+      "job": 2,
+      "phrases": [
+        3,
+        4
+      ]
+    },
+    {
+      "id": 3,
+      "paragraph": 1,
+      "ref": "P1.03",
+      "slot": 2,
+      "sort": 2,
+      "job": 2,
+      "phrases": [
+        5,
+        6
+      ]
+    },
+    {
+      "id": 4,
+      "paragraph": 1,
+      "ref": "P1.04",
+      "slot": 3,
+      "sort": 3,
+      "job": 3,
+      "phrases": [
+        7,
+        8
+      ]
+    },
+    {
+      "id": 5,
+      "paragraph": 1,
+      "ref": "P1.05",
+      "slot": 3,
+      "sort": 3,
+      "job": 3,
+      "phrases": [
+        9,
+        10,
+        11
+      ]
+    },
+    {
+      "id": 6,
+      "paragraph": 1,
+      "ref": "P1.06",
+      "slot": 3,
+      "sort": 3,
+      "job": 3,
+      "phrases": [
+        12,
+        13
+      ]
+    },
+    {
+      "id": 7,
+      "paragraph": 1,
+      "ref": "P1.07",
+      "slot": 4,
+      "sort": 4,
+      "job": 4,
+      "phrases": [
+        14,
+        15
+      ]
+    },
+    {
+      "id": 8,
+      "paragraph": 1,
+      "ref": "P1.08",
+      "slot": 4,
+      "sort": 4,
+      "job": 4,
+      "phrases": [
+        14,
+        16
+      ]
+    },
+    {
+      "id": 9,
+      "paragraph": 1,
+      "ref": "P1.09",
+      "slot": 5,
+      "sort": 2,
+      "job": 5,
+      "phrases": [
+        17,
+        18
+      ]
+    },
+    {
+      "id": 10,
+      "paragraph": 1,
+      "ref": "P1.10",
+      "slot": 5,
+      "sort": 2,
+      "job": 5,
+      "phrases": [
+        19,
+        20
+      ]
+    },
+    {
+      "id": 11,
+      "paragraph": 1,
+      "ref": "P1.11",
+      "slot": 6,
+      "sort": 3,
+      "job": 6,
+      "phrases": [
+        21,
+        22
+      ]
+    },
+    {
+      "id": 12,
+      "paragraph": 1,
+      "ref": "P1.12",
+      "slot": 6,
+      "sort": 3,
+      "job": 6,
+      "phrases": [
+        23,
+        24
+      ]
+    },
+    {
+      "id": 13,
+      "paragraph": 1,
+      "ref": "P1.13",
+      "slot": 7,
+      "sort": 4,
+      "job": 7,
+      "phrases": [
+        25,
+        14
+      ]
+    },
+    {
+      "id": 14,
+      "paragraph": 1,
+      "ref": "P1.14",
+      "slot": 7,
+      "sort": 4,
+      "job": 7,
+      "phrases": [
+        26,
+        27
+      ]
+    },
+    {
+      "id": 15,
+      "paragraph": 1,
+      "ref": "P1.15",
+      "slot": 8,
+      "sort": 5,
+      "job": 8,
+      "phrases": [
+        28,
+        29
+      ]
+    },
+    {
+      "id": 16,
+      "paragraph": 1,
+      "ref": "P1.16",
+      "slot": 9,
+      "sort": 5,
+      "job": 9,
+      "phrases": [
+        30,
+        31,
+        32
+      ]
+    },
+    {
+      "id": 17,
+      "paragraph": 1,
+      "ref": "P1.17",
+      "slot": 10,
+      "sort": 5,
+      "job": 10,
+      "phrases": [
+        33,
+        34,
+        35
+      ]
+    },
+    {
+      "id": 18,
+      "paragraph": 1,
+      "ref": "P1.18",
+      "slot": 11,
+      "sort": 5,
+      "job": 11,
+      "phrases": [
+        36,
+        37
+      ]
+    },
+    {
+      "id": 19,
+      "paragraph": 1,
+      "ref": "P1.19",
+      "slot": 12,
+      "sort": 8,
+      "job": 12,
+      "phrases": [
+        38,
+        39,
+        40
+      ]
+    },
+    {
+      "id": 20,
+      "paragraph": 2,
+      "ref": "P2.01",
+      "slot": 13,
+      "sort": 6,
+      "job": 13,
+      "phrases": [
+        41,
+        42
+      ]
+    },
+    {
+      "id": 21,
+      "paragraph": 2,
+      "ref": "P2.02",
+      "slot": 13,
+      "sort": 6,
+      "job": 13,
+      "phrases": [
+        43,
+        44,
+        45
+      ]
+    },
+    {
+      "id": 22,
+      "paragraph": 2,
+      "ref": "P2.03",
+      "slot": 14,
+      "sort": 2,
+      "job": 14,
+      "phrases": [
+        46,
+        47
+      ]
+    },
+    {
+      "id": 23,
+      "paragraph": 2,
+      "ref": "P2.04",
+      "slot": 15,
+      "sort": 3,
+      "job": 15,
+      "phrases": [
+        48,
+        49
+      ]
+    },
+    {
+      "id": 24,
+      "paragraph": 2,
+      "ref": "P2.05",
+      "slot": 15,
+      "sort": 3,
+      "job": 15,
+      "phrases": [
+        50,
+        51,
+        52
+      ]
+    },
+    {
+      "id": 25,
+      "paragraph": 2,
+      "ref": "P2.06",
+      "slot": 16,
+      "sort": 4,
+      "job": 16,
+      "phrases": [
+        53,
+        14
+      ]
+    },
+    {
+      "id": 26,
+      "paragraph": 2,
+      "ref": "P2.07",
+      "slot": 16,
+      "sort": 4,
+      "job": 16,
+      "phrases": [
+        54,
+        14
+      ]
+    },
+    {
+      "id": 27,
+      "paragraph": 2,
+      "ref": "P2.08",
+      "slot": 17,
+      "sort": 2,
+      "job": 17,
+      "phrases": [
+        55,
+        56
+      ]
+    },
+    {
+      "id": 28,
+      "paragraph": 2,
+      "ref": "P2.09",
+      "slot": 18,
+      "sort": 3,
+      "job": 18,
+      "phrases": [
+        57,
+        58,
+        59
+      ]
+    },
+    {
+      "id": 29,
+      "paragraph": 2,
+      "ref": "P2.10",
+      "slot": 18,
+      "sort": 3,
+      "job": 18,
+      "phrases": [
+        60,
+        61,
+        62
+      ]
+    },
+    {
+      "id": 30,
+      "paragraph": 2,
+      "ref": "P2.11",
+      "slot": 19,
+      "sort": 4,
+      "job": 19,
+      "phrases": [
+        63,
+        64
+      ]
+    },
+    {
+      "id": 31,
+      "paragraph": 2,
+      "ref": "P2.12",
+      "slot": 19,
+      "sort": 4,
+      "job": 19,
+      "phrases": [
+        65,
+        66,
+        67
+      ]
+    },
+    {
+      "id": 32,
+      "paragraph": 2,
+      "ref": "P2.13",
+      "slot": 20,
+      "sort": 2,
+      "job": 20,
+      "phrases": [
+        68,
+        69
+      ]
+    },
+    {
+      "id": 33,
+      "paragraph": 2,
+      "ref": "P2.14",
+      "slot": 21,
+      "sort": 3,
+      "job": 21,
+      "phrases": [
+        70,
+        71
+      ]
+    },
+    {
+      "id": 34,
+      "paragraph": 2,
+      "ref": "P2.15",
+      "slot": 21,
+      "sort": 3,
+      "job": 21,
+      "phrases": [
+        72,
+        73
+      ]
+    },
+    {
+      "id": 35,
+      "paragraph": 2,
+      "ref": "P2.16",
+      "slot": 22,
+      "sort": 4,
+      "job": 22,
+      "phrases": [
+        74,
+        75
+      ]
+    },
+    {
+      "id": 36,
+      "paragraph": 2,
+      "ref": "P2.17",
+      "slot": 22,
+      "sort": 4,
+      "job": 22,
+      "phrases": [
+        76,
+        77
+      ]
+    },
+    {
+      "id": 37,
+      "paragraph": 2,
+      "ref": "P2.18",
+      "slot": 23,
+      "sort": 7,
+      "job": 23,
+      "phrases": [
+        78,
+        79
+      ]
+    },
+    {
+      "id": 38,
+      "paragraph": 3,
+      "ref": "P3.01",
+      "slot": 24,
+      "sort": 6,
+      "job": 24,
+      "phrases": [
+        80,
+        81,
+        82
+      ]
+    },
+    {
+      "id": 39,
+      "paragraph": 3,
+      "ref": "P3.02",
+      "slot": 14,
+      "sort": 2,
+      "job": 14,
+      "phrases": [
+        83,
+        84
+      ]
+    },
+    {
+      "id": 40,
+      "paragraph": 3,
+      "ref": "P3.03",
+      "slot": 15,
+      "sort": 3,
+      "job": 15,
+      "phrases": [
+        85,
+        86
+      ]
+    },
+    {
+      "id": 41,
+      "paragraph": 3,
+      "ref": "P3.04",
+      "slot": 16,
+      "sort": 4,
+      "job": 16,
+      "phrases": [
+        87,
+        88
+      ]
+    },
+    {
+      "id": 42,
+      "paragraph": 3,
+      "ref": "P3.05",
+      "slot": 16,
+      "sort": 4,
+      "job": 16,
+      "phrases": [
+        89,
+        90,
+        63
+      ]
+    },
+    {
+      "id": 43,
+      "paragraph": 3,
+      "ref": "P3.06",
+      "slot": 17,
+      "sort": 2,
+      "job": 17,
+      "phrases": [
+        91,
+        92
+      ]
+    },
+    {
+      "id": 44,
+      "paragraph": 3,
+      "ref": "P3.07",
+      "slot": 18,
+      "sort": 3,
+      "job": 18,
+      "phrases": [
+        93,
+        94
+      ]
+    },
+    {
+      "id": 45,
+      "paragraph": 3,
+      "ref": "P3.08",
+      "slot": 19,
+      "sort": 4,
+      "job": 19,
+      "phrases": [
+        95,
+        96
+      ]
+    },
+    {
+      "id": 46,
+      "paragraph": 3,
+      "ref": "P3.09",
+      "slot": 20,
+      "sort": 2,
+      "job": 20,
+      "phrases": [
+        97,
+        69
+      ]
+    },
+    {
+      "id": 47,
+      "paragraph": 3,
+      "ref": "P3.10",
+      "slot": 20,
+      "sort": 2,
+      "job": 20,
+      "phrases": [
+        98,
+        99
+      ]
+    },
+    {
+      "id": 48,
+      "paragraph": 3,
+      "ref": "P3.11",
+      "slot": 21,
+      "sort": 3,
+      "job": 21,
+      "phrases": [
+        100,
+        101
+      ]
+    },
+    {
+      "id": 49,
+      "paragraph": 3,
+      "ref": "P3.12",
+      "slot": 21,
+      "sort": 3,
+      "job": 21,
+      "phrases": [
+        102,
+        103
+      ]
+    },
+    {
+      "id": 50,
+      "paragraph": 3,
+      "ref": "P3.13",
+      "slot": 21,
+      "sort": 3,
+      "job": 21,
+      "phrases": [
+        104,
+        105
+      ]
+    },
+    {
+      "id": 51,
+      "paragraph": 3,
+      "ref": "P3.14",
+      "slot": 21,
+      "sort": 3,
+      "job": 21,
+      "phrases": [
+        106,
+        107
+      ]
+    },
+    {
+      "id": 52,
+      "paragraph": 3,
+      "ref": "P3.15",
+      "slot": 22,
+      "sort": 4,
+      "job": 22,
+      "phrases": [
+        108,
+        109
+      ]
+    },
+    {
+      "id": 53,
+      "paragraph": 3,
+      "ref": "P3.16",
+      "slot": 22,
+      "sort": 4,
+      "job": 22,
+      "phrases": [
+        110,
+        111
+      ]
+    },
+    {
+      "id": 54,
+      "paragraph": 3,
+      "ref": "P3.17",
+      "slot": 22,
+      "sort": 4,
+      "job": 22,
+      "phrases": [
+        112,
+        113
+      ]
+    },
+    {
+      "id": 55,
+      "paragraph": 3,
+      "ref": "P3.18",
+      "slot": 22,
+      "sort": 4,
+      "job": 22,
+      "phrases": [
+        114,
+        115
+      ]
+    },
+    {
+      "id": 56,
+      "paragraph": 3,
+      "ref": "P3.19",
+      "slot": 25,
+      "sort": 7,
+      "job": 25,
+      "phrases": [
+        116,
+        117
+      ]
+    },
+    {
+      "id": 57,
+      "paragraph": 4,
+      "ref": "P4.01",
+      "slot": 26,
+      "sort": 6,
+      "job": 26,
+      "phrases": [
+        118,
+        119,
+        120
+      ]
+    },
+    {
+      "id": 58,
+      "paragraph": 4,
+      "ref": "P4.02",
+      "slot": 14,
+      "sort": 2,
+      "job": 14,
+      "phrases": [
+        47,
+        121
+      ]
+    },
+    {
+      "id": 59,
+      "paragraph": 4,
+      "ref": "P4.03",
+      "slot": 15,
+      "sort": 3,
+      "job": 15,
+      "phrases": [
+        122,
+        123
+      ]
+    },
+    {
+      "id": 60,
+      "paragraph": 4,
+      "ref": "P4.04",
+      "slot": 15,
+      "sort": 3,
+      "job": 15,
+      "phrases": [
+        124,
+        125
+      ]
+    },
+    {
+      "id": 61,
+      "paragraph": 4,
+      "ref": "P4.05",
+      "slot": 15,
+      "sort": 3,
+      "job": 15,
+      "phrases": [
+        126,
+        127
+      ]
+    },
+    {
+      "id": 62,
+      "paragraph": 4,
+      "ref": "P4.06",
+      "slot": 16,
+      "sort": 4,
+      "job": 16,
+      "phrases": [
+        128,
+        129
+      ]
+    },
+    {
+      "id": 63,
+      "paragraph": 4,
+      "ref": "P4.07",
+      "slot": 17,
+      "sort": 2,
+      "job": 17,
+      "phrases": [
+        130,
+        131,
+        132
+      ]
+    },
+    {
+      "id": 64,
+      "paragraph": 4,
+      "ref": "P4.08",
+      "slot": 18,
+      "sort": 3,
+      "job": 18,
+      "phrases": [
+        133,
+        134
+      ]
+    },
+    {
+      "id": 65,
+      "paragraph": 4,
+      "ref": "P4.09",
+      "slot": 18,
+      "sort": 3,
+      "job": 18,
+      "phrases": [
+        135,
+        136
+      ]
+    },
+    {
+      "id": 66,
+      "paragraph": 4,
+      "ref": "P4.10",
+      "slot": 19,
+      "sort": 4,
+      "job": 19,
+      "phrases": [
+        137,
+        138
+      ]
+    },
+    {
+      "id": 67,
+      "paragraph": 4,
+      "ref": "P4.11",
+      "slot": 20,
+      "sort": 2,
+      "job": 20,
+      "phrases": [
+        139,
+        140
+      ]
+    },
+    {
+      "id": 68,
+      "paragraph": 4,
+      "ref": "P4.12",
+      "slot": 21,
+      "sort": 3,
+      "job": 21,
+      "phrases": [
+        141,
+        142
+      ]
+    },
+    {
+      "id": 69,
+      "paragraph": 4,
+      "ref": "P4.13",
+      "slot": 21,
+      "sort": 3,
+      "job": 21,
+      "phrases": [
+        143,
+        144
+      ]
+    },
+    {
+      "id": 70,
+      "paragraph": 4,
+      "ref": "P4.14",
+      "slot": 22,
+      "sort": 4,
+      "job": 22,
+      "phrases": [
+        39,
+        145,
+        146
+      ]
+    },
+    {
+      "id": 71,
+      "paragraph": 4,
+      "ref": "P4.15",
+      "slot": 27,
+      "sort": 7,
+      "job": 27,
+      "phrases": [
+        147,
+        148,
+        117
+      ]
+    },
+    {
+      "id": 72,
+      "paragraph": 5,
+      "ref": "P5.01",
+      "slot": 28,
+      "sort": 8,
+      "job": 28,
+      "phrases": [
+        149,
+        150
+      ]
+    },
+    {
+      "id": 73,
+      "paragraph": 5,
+      "ref": "P5.02",
+      "slot": 29,
+      "sort": 9,
+      "job": 29,
+      "phrases": [
+        151,
+        152
+      ]
+    },
+    {
+      "id": 74,
+      "paragraph": 5,
+      "ref": "P5.03",
+      "slot": 29,
+      "sort": 9,
+      "job": 29,
+      "phrases": [
+        153,
+        154
+      ]
+    },
+    {
+      "id": 75,
+      "paragraph": 5,
+      "ref": "P5.04",
+      "slot": 30,
+      "sort": 10,
+      "job": 30,
+      "phrases": [
+        155,
+        156
+      ]
+    },
+    {
+      "id": 76,
+      "paragraph": 5,
+      "ref": "P5.05",
+      "slot": 31,
+      "sort": 11,
+      "job": 31,
+      "phrases": [
+        157,
+        158
+      ]
+    },
+    {
+      "id": 77,
+      "paragraph": 5,
+      "ref": "P5.06",
+      "slot": 31,
+      "sort": 11,
+      "job": 31,
+      "phrases": [
+        159,
+        160
+      ]
+    },
+    {
+      "id": 78,
+      "paragraph": 5,
+      "ref": "P5.07",
+      "slot": 31,
+      "sort": 11,
+      "job": 31,
+      "phrases": [
+        161,
+        162
+      ]
+    },
+    {
+      "id": 79,
+      "paragraph": 5,
+      "ref": "P5.08",
+      "slot": 31,
+      "sort": 11,
+      "job": 31,
+      "phrases": [
+        163,
+        164
+      ]
+    },
+    {
+      "id": 80,
+      "paragraph": 5,
+      "ref": "P5.09",
+      "slot": 31,
+      "sort": 11,
+      "job": 31,
+      "phrases": [
+        165,
+        166
+      ]
+    },
+    {
+      "id": 81,
+      "paragraph": 5,
+      "ref": "P5.10",
+      "slot": 31,
+      "sort": 11,
+      "job": 31,
+      "phrases": [
+        167,
+        168
+      ]
+    },
+    {
+      "id": 82,
+      "paragraph": 5,
+      "ref": "P5.11",
+      "slot": 31,
+      "sort": 11,
+      "job": 31,
+      "phrases": [
+        169,
+        170
+      ]
+    },
+    {
+      "id": 83,
+      "paragraph": 5,
+      "ref": "P5.12",
+      "slot": 31,
+      "sort": 11,
+      "job": 31,
+      "phrases": [
+        171,
+        172
+      ]
+    },
+    {
+      "id": 84,
+      "paragraph": 5,
+      "ref": "P5.13",
+      "slot": 32,
+      "sort": 12,
+      "job": 32,
+      "phrases": [
+        173,
+        174,
+        175
+      ]
+    }
+  ]
+}
