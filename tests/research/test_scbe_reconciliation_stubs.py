@@ -8,8 +8,16 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "prototype" / "reconciliation"))
 
 from scbe_reconciliation_stubs import (  # noqa: E402
-    BreakType, DecisionLog, Fill, Ledger, PositionState, VenueReport,
-    may_trade, position_state, reconcile, to_scaled,
+    BreakType,
+    DecisionLog,
+    Fill,
+    Ledger,
+    PositionState,
+    VenueReport,
+    may_trade,
+    position_state,
+    reconcile,
+    to_scaled,
 )
 
 
@@ -31,7 +39,9 @@ def test_duplicate_fill_is_idempotent():
 
 
 def test_clean_reconcile_allows_trading():
-    led = Ledger(); led.issue("c1"); led.record_fill(fill())
+    led = Ledger()
+    led.issue("c1")
+    led.record_fill(fill())
     rep = VenueReport("coinbase", "BTC-USD", to_scaled("0.5"), (fill(),))
     br = reconcile(led, rep)
     assert br == [] and may_trade(rep, br)
@@ -49,14 +59,18 @@ def test_no_data_is_not_flat_and_fails_closed():
 
 
 def test_missing_fill_detected_partial_fill_silence():
-    led = Ledger(); led.issue("c1")
+    led = Ledger()
+    led.issue("c1")
     rep = VenueReport("coinbase", "BTC-USD", to_scaled("0.5"), (fill(),))
     kinds = {b.kind for b in reconcile(led, rep)}
     assert {BreakType.MISSING_FILL, BreakType.POSITION_MISMATCH} <= kinds
 
 
 def test_phantom_fill_detected():
-    led = Ledger(); led.issue("c1"); led.record_fill(fill()); led.record_fill(fill(tid="t2"))
+    led = Ledger()
+    led.issue("c1")
+    led.record_fill(fill())
+    led.record_fill(fill(tid="t2"))
     rep = VenueReport("coinbase", "BTC-USD", to_scaled("0.5"), (fill(),))
     assert BreakType.PHANTOM_FILL in {b.kind for b in reconcile(led, rep)}
 
@@ -68,14 +82,17 @@ def test_unknown_client_order_id_flagged():
 
 
 def test_qty_and_price_mismatch():
-    led = Ledger(); led.issue("c1"); led.record_fill(fill(qty="0.4", price="100"))
+    led = Ledger()
+    led.issue("c1")
+    led.record_fill(fill(qty="0.4", price="100"))
     rep = VenueReport("coinbase", "BTC-USD", to_scaled("0.5"), (fill(),))
     kinds = {b.kind for b in reconcile(led, rep)}
     assert {BreakType.QTY_MISMATCH, BreakType.PRICE_MISMATCH} <= kinds
 
 
 def test_decision_log_hash_chain_detects_tamper():
-    log = DecisionLog(); led = Ledger()
+    log = DecisionLog()
+    led = Ledger()
     reconcile(led, VenueReport("coinbase", "BTC-USD", None), log)
     reconcile(led, VenueReport("binance", "BTC-USD", 0), log)
     assert log.verify()
