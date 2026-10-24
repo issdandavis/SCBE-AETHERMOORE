@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Crypto and Blockchain Mechanisms: From Computational Precepts to Multi-Venue Reconciliation | AetherMoore Research</title>
+<style>
+:root {
+  color-scheme: light;
+  --ink: #17201d;
+  --muted: #5b6762;
+  --rule: #d8ded8;
+  --paper: #fffdf7;
+  --wash: #f3f6f0;
+  --accent: #0f6f61;
+  --gold: #8b6a16;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--wash);
+  font-family: Georgia, "Times New Roman", serif;
+  line-height: 1.58;
+}
+a { color: var(--accent); }
+.shell {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 28px 20px 56px;
+}
+.paper {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  box-shadow: 0 18px 45px rgba(23, 32, 29, 0.08);
+  padding: 44px;
+}
+.kicker {
+  color: var(--gold);
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+h1 {
+  margin: 10px 0 10px;
+  font-size: 36px;
+  line-height: 1.08;
+}
+h2 {
+  margin-top: 34px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--rule);
+  font-size: 24px;
+}
+h3 { margin-top: 28px; font-size: 18px; }
+p { margin: 12px 0; }
+.subtitle, .abstract, .meta, .boundary {
+  color: var(--muted);
+}
+.abstract, .boundary {
+  border-left: 4px solid var(--accent);
+  padding-left: 16px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+.card {
+  display: block;
+  min-height: 100%;
+  padding: 18px;
+  border: 1px solid var(--rule);
+  background: #fff;
+  text-decoration: none;
+}
+.card h3 { margin-top: 0; color: var(--ink); }
+.card p { color: var(--muted); }
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+.tag {
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 3px 9px;
+  color: var(--muted);
+  background: #fff;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+}
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 22px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+}
+.source {
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid var(--rule);
+  color: var(--muted);
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+}
+pre, code {
+  font-family: Consolas, "Courier New", monospace;
+}
+pre {
+  overflow-x: auto;
+  padding: 14px;
+  border: 1px solid var(--rule);
+  background: #f8faf7;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0;
+  font-size: 14px;
+}
+th, td {
+  border: 1px solid var(--rule);
+  padding: 8px;
+  vertical-align: top;
+}
+th { background: #f1f5ef; }
+@media (max-width: 700px) {
+  .paper { padding: 24px; }
+  h1 { font-size: 28px; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+<nav class="nav"><a href="../../index.html">Home</a><a href="../../research/index.html">Research Library</a><a href="../../payments.html">Payments</a></nav>
+<main class="paper">
+
+<p class="kicker">AetherMoore Research Packet</p>
+<h1>Crypto and Blockchain Mechanisms: From Computational Precepts to Multi-Venue Reconciliation</h1>
+<p class="subtitle">A consolidated session write-up linking early-computing precepts, ledger semantics, an exchange aggregator design, fail-closed reconciliation, and a falsifiable topology map.</p>
+<div class="tags"><span class="tag">blockchain</span><span class="tag">reconciliation</span><span class="tag">exchanges</span><span class="tag">fault-tolerance</span><span class="tag">topology</span><span class="tag">paper-trading</span></div>
+<p class="abstract"><strong>Abstract.</strong> Traces a line from Denning and Tedre&#x27;s computational-thinking precepts (Boolean circuits, control flow, loops, subprograms, the address-constant distinction, and fault tolerance) to modern ledgers. It then specifies a multi-venue exchange aggregator with canonical adapters, a hash-chained decision log, fail-closed reconciliation in which no-data is distinct from flat, a five-layer topology map revised after a stress test (RBF/Kriging, experiential signatures, a cross-validated projection radius, and a Poincare-ball falsification test), and a zero-cost two-venue testnet plan.</p>
+<p class="boundary"><strong>Claim boundary.</strong> Research and paper trading only; places no real orders, holds no funds, and does not circumvent exchange regulation. Market figures are session snapshots, and TDA lead-time claims await a rebuilt source list.</p>
+<p class="meta"><strong>Status:</strong> Idea Seed / Research Brief; several session claims marked &#x27;verify&#x27;; reconciliation stubs pass 9 tests.</p>
+<p class="meta"><strong>Research grade:</strong> Research Brief</p>
+<p class="meta"><strong>Review model:</strong> Framer + partial source scout + stress-test (domain skeptic) passes complete; passes 4-10 pending.</p>
+<p class="meta"><a href="../../research/crypto_blockchain_mechanisms/README.md">Source note</a></p>
+<h2>Source Text</h2>
+<h1>Crypto / Blockchain Mechanisms — Research Notes</h1>
+<p>Status: Idea Seed → Research Brief (see <code>../RESEARCH_PACKET_STANDARD.md</code>) Created: 2026-10-24 Author: Issac Davis (session write-up compiled by Peyton, Issac&#x27;s Grok Bot assistant)</p>
+<p>&gt; &quot;Trading is, at the end of the day, just a different sort of blockchain. Doesn&#x27;t matter what currency it is, even dollars are a blockchain, it&#x27;s just a paper one. Spread on the chain of trust.&quot; &gt; — Issac Davis, 2026-10-24</p>
+<h2>What this folder is</h2>
+<p>A single consolidated write-up of one long working session that started with the history of computational thinking and ended with a testable design for a multi-venue exchange aggregator whose decision log feeds SCBE. The through-line: <strong>every ledger — tape, memory cell, order book, blockchain, dollar bill — is a record of state that only means something if it persists, can be read back, and can be reconciled against another record.</strong></p>
+<p>The original session artifacts (<code>artifacts/*.md</code>, <code>artifacts/scbe_reconciliation_stubs.py</code>) did not persist on the working box. These files are the durable reconstruction.</p>
+<h2>Claim-boundary conventions used here</h2>
+<ul>
+<li><strong>Verified</strong> — checked against a primary source or reputable report; link given.</li>
+<li><strong>Paraphrase</strong> — wording is ours, not the author&#x27;s. Direct quotes appear only where we could confirm them.</li>
+<li><strong>⚠ Session note — verify</strong> — stated in the session, not independently confirmed when written.</li>
+</ul>
+<h2>Reading order</h2>
+<table><thead><tr><th>#</th><th>File</th><th>Theme</th></tr></thead><tbody><tr><td>01</td><td><a href="01_denning_tedre_precepts.md">01_denning_tedre_precepts.md</a></td><td>Computational-thinking precepts 2, 4, 5, 7, plus a deep dive on 9</td></tr><tr><td>02</td><td><a href="02_stored_program_address_data.md">02_stored_program_address_data.md</a></td><td>Precept 6, addresses vs constants, and Data = Concept + Identity + Location + Methods</td></tr><tr><td>03</td><td><a href="03_computing_without_electricity.md">03_computing_without_electricity.md</a></td><td>Gears, beads, and the boulder: what makes matter into memory</td></tr><tr><td>04</td><td><a href="04_ceruzzi_microprocessor_era.md">04_ceruzzi_microprocessor_era.md</a></td><td>Ceruzzi&#x27;s four threads and the microprocessor era</td></tr><tr><td>05</td><td><a href="05_wozniak_efforce_wozx.md">05_wozniak_efforce_wozx.md</a></td><td>Wozniak today, EFFORCE and WOZX market notes</td></tr><tr><td>06</td><td><a href="06_exchange_aggregator_design.md">06_exchange_aggregator_design.md</a></td><td>Aggregator front end, adapter interfaces and auth vault</td></tr><tr><td>07</td><td><a href="07_reconciliation_engine_spec.md">07_reconciliation_engine_spec.md</a></td><td>Reconciliation module spec (code in <code>prototype/reconciliation/</code>)</td></tr><tr><td>08</td><td><a href="08_reconciliation_research_findings.md">08_reconciliation_research_findings.md</a></td><td>Prior art: FIX, NautilusTrader, finality, dedupe</td></tr><tr><td>09</td><td><a href="09_no_data_state.md">09_no_data_state.md</a></td><td>Why &quot;no data&quot; is not &quot;flat&quot;</td></tr><tr><td>10</td><td><a href="10_topology_map_spec_v2.md">10_topology_map_spec_v2.md</a></td><td>Five-layer topology map, version 2</td></tr><tr><td>11</td><td><a href="11_topology_stress_test_results.md">11_topology_stress_test_results.md</a></td><td>What the stress test broke, and the fixes</td></tr><tr><td>12</td><td><a href="12_parallel_universes_experiment.md">12_parallel_universes_experiment.md</a></td><td>Two clocks, one seed (the Crusader Kings analogy)</td></tr><tr><td>13</td><td><a href="13_blackout_protocol_mars.md">13_blackout_protocol_mars.md</a></td><td>Solar-conjunction blackout as a test of intent</td></tr><tr><td>14</td><td><a href="14_overlapping_cycles_engine_model.md">14_overlapping_cycles_engine_model.md</a></td><td>Power, torque and traction across time grains</td></tr><tr><td>15</td><td><a href="15_low_budget_test_plan.md">15_low_budget_test_plan.md</a></td><td>Zero-cost paper-trading plan</td></tr><tr><td>16</td><td><a href="16_conversation_trajectory.md">16_conversation_trajectory.md</a></td><td>How the session moved, phase by phase</td></tr><tr><td>—</td><td><a href="CHANGELOG.md">CHANGELOG.md</a></td><td>Spec v1 → v2 deltas</td></tr></tbody></table>
+<h2>Code</h2>
+<ul>
+<li><code>prototype/reconciliation/scbe_reconciliation_stubs.py</code>: paper-only reconciliation core. It has no network access and no keys.</li>
+<li><code>tests/research/test_scbe_reconciliation_stubs.py</code>: 9 tests.</li>
+</ul>
+<h2>Scope boundary</h2>
+<p>This is research and paper trading only. Nothing here places real orders, holds customer funds, or tries to avoid exchange or financial regulation. The aggregator idea is a front-end and middleman layer (like YouTube for content ↔ viewers, or Cash App between markets), and it runs on top of each venue&#x27;s own compliance and authentication.</p>
+<p class="source">Generated from <code>research/crypto_blockchain_mechanisms/README.md</code> by <code>scripts/research/build_research_library.py</code>.</p>
+
+</main>
+</div>
+</body>
+</html>

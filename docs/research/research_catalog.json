@@ -1,6 +1,6 @@
 {
   "schema": "aethermoore-research-catalog-v1",
-  "updated": "2026-07-12",
+  "updated": "2026-10-24",
   "standard": "research/RESEARCH_PACKET_STANDARD.md",
   "topics": [
     {
@@ -315,6 +315,31 @@
       "review_model": "Framer + source scout + partial domain skeptic passes complete; passes 4-10 pending for packet promotion.",
       "claim_boundary": "Claims only that the informal statements have identifiable formal counterparts with stated statuses and that the container-cosmology variant is observationally excluded; asserts no new physical theory.",
       "abstract": "Four informally stated claims - systems self-generate their boundaries, boundaries are relational rather than intrinsic, definition is co-created by measurement, and relations are the fundamental layer - are mapped onto self-bounding spacetimes, horizon relativity, it-from-bit and relational quantum mechanics, and ontic structural realism, with each component classified as settled physics, live research, or open philosophy."
+    },
+    {
+      "id": "crypto-blockchain-mechanisms",
+      "html": "research/papers/crypto-blockchain-mechanisms.html",
+      "title": "Crypto and Blockchain Mechanisms: From Computational Precepts to Multi-Venue Reconciliation",
+      "subtitle": "A consolidated session write-up linking early-computing precepts, ledger semantics, an exchange aggregator design, fail-closed reconciliation, and a falsifiable topology map.",
+      "topic": "ai-governance",
+      "topics": [
+        "ai-governance",
+        "language-code-systems"
+      ],
+      "tags": [
+        "blockchain",
+        "reconciliation",
+        "exchanges",
+        "fault-tolerance",
+        "topology",
+        "paper-trading"
+      ],
+      "source_md": "research/crypto_blockchain_mechanisms/README.md",
+      "status": "Idea Seed / Research Brief; several session claims marked 'verify'; reconciliation stubs pass 9 tests.",
+      "grade": "Research Brief",
+      "review_model": "Framer + partial source scout + stress-test (domain skeptic) passes complete; passes 4-10 pending.",
+      "claim_boundary": "Research and paper trading only; places no real orders, holds no funds, and does not circumvent exchange regulation. Market figures are session snapshots, and TDA lead-time claims await a rebuilt source list.",
+      "abstract": "Traces a line from Denning and Tedre's computational-thinking precepts (Boolean circuits, control flow, loops, subprograms, the address-constant distinction, and fault tolerance) to modern ledgers. It then specifies a multi-venue exchange aggregator with canonical adapters, a hash-chained decision log, fail-closed reconciliation in which no-data is distinct from flat, a five-layer topology map revised after a stress test (RBF/Kriging, experiential signatures, a cross-validated projection radius, and a Poincare-ball falsification test), and a zero-cost two-venue testnet plan."
     }
   ]
 }
