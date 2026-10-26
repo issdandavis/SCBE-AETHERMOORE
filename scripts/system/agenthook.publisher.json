@@ -1,0 +1,53 @@
+{
+  "schema": "https://agenthook.org/schemas/publisher-manifest.v1.json",
+  "schema_version": "1.0",
+  "publisher_id": "com.aethermoore.scbe.hookrouter",
+  "display_name": "SCBE Hook Router",
+  "maintainer": {
+    "name": "Issac Daniel Davis",
+    "url": "https://github.com/issdandavis/SCBE-AETHERMOORE"
+  },
+  "runtime": {
+    "vendor": "SCBE-AETHERMOORE",
+    "name": "local agent hook bridge",
+    "versions_tested": []
+  },
+  "agenthook": {
+    "version": "0.2-draft",
+    "source": "https://github.com/agentic-thinking/agenthook",
+    "events": {
+      "SessionStart": "supported",
+      "UserPromptSubmit": "supported",
+      "PreLLMCall": "planned",
+      "PostLLMCall": "planned",
+      "PreToolUse": "supported",
+      "PostToolUse": "supported",
+      "ModelResponse": "planned",
+      "SessionEnd": "partial",
+      "AgentHandoff": "partial",
+      "ErrorOccurred": "partial"
+    }
+  },
+  "entrypoints": {
+    "command": "python scripts/system/scbe_hook_router.py <EventName>",
+    "installer": "Configure the host runtime to invoke the command for each exposed lifecycle hook."
+  },
+  "config": {
+    "files": []
+  },
+  "limitations": [
+    "This publisher is self-attested and has not run an upstream AgentHook conformance fixture.",
+    "Coverage depends on the host runtime invoking the configured hook; an unhooked execution route is outside this publisher's visibility.",
+    "The local receipt chain is tamper-evident after capture, not a remote timestamp, signature, or hardware attestation.",
+    "SessionEnd is translated from the host-native Stop event; AgentHandoff is translated from subagent lifecycle events."
+  ],
+  "verification": {
+    "self_attested": true,
+    "conformance": "not_claimed",
+    "last_tested": "2026-10-26",
+    "commands": [
+      "python -m pytest tests/system/test_scbe_hook_router.py tests/system/test_scbe_tool_context.py -q",
+      "python -m ruff check scripts/system/scbe_hook_router.py scripts/system/scbe_tool_context.py tests/system/test_scbe_hook_router.py tests/system/test_scbe_tool_context.py"
+    ]
+  }
+}
