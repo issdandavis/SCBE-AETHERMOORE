@@ -39,6 +39,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import runpy
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -167,9 +168,9 @@ def cmd_compile_ca(args: argparse.Namespace) -> int:
 
 
 def _ca_name_index() -> Dict[str, int]:
-    from python.scbe.ca_opcode_table import OP_TABLE
-
-    return {entry.name.lower(): op_id for op_id, entry in OP_TABLE.items()}
+    catalog_path = REPO_ROOT / "python" / "scbe" / "ca_opcode_catalog.py"
+    catalog = runpy.run_path(str(catalog_path))
+    return dict(catalog["CA_OPCODE_BY_NAME"])
 
 
 def _parse_ca_ops(spec: str) -> List[str]:

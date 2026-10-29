@@ -10632,7 +10632,7 @@ function runSelftest() {
   if (compilerScript) {
     const child = spawnSync(
       pythonCommand(),
-      [compilerScript, 'ca-plan', '--ops', 'abs abs add', '--json'],
+      ['-S', compilerScript, 'ca-plan', '--ops', 'abs abs add', '--json'],
       {
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'pipe'],

@@ -15,6 +15,7 @@ from typing import Dict, Sequence
 import numpy as np
 
 from .atomic_tokenization import AtomicTokenState, DualState, Element, TritVector
+from .ca_opcode_catalog import CA_OPCODE_NAMES
 from .chemical_fusion import FusionParams, FusionResult, fuse_atomic_states
 
 KO, AV, RU, CA, UM, DR = 0, 1, 2, 3, 4, 5
@@ -108,6 +109,9 @@ AGGREGATION = [
 ]
 
 ALL_OPS = ARITHMETIC + LOGIC + COMPARISON + AGGREGATION
+
+if tuple(name for _, name, _, _ in ALL_OPS) != CA_OPCODE_NAMES:
+    raise RuntimeError("CA numerical opcode table does not match the dependency-free name catalog")
 
 OP_TABLE: Dict[int, CAOpcodeEntry] = {
     op_id: CAOpcodeEntry(

@@ -169,6 +169,28 @@ def test_ca_plan_resolves_abs_abs_add_from_table():
     assert payload["compile_hint"] == 'compile-ca --opcodes "0x09 0x09 0x00" --args a,b'
 
 
+def test_ca_plan_runs_without_site_packages():
+    """Release smoke must not need NumPy just to resolve opcode names."""
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "-S",
+            str(SCRIPTS_DIR / "scbe_code.py"),
+            "ca-plan",
+            "--ops",
+            "abs abs add",
+            "--json",
+        ],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert json.loads(proc.stdout)["hex_sequence"] == ["0x09", "0x09", "0x00"]
+
+
 def test_ca_plan_known_abs_add_expression():
     rc, stdout, _ = _run_cli(["ca-plan", "--expr", "abs(a)+abs(b)"])
     assert rc == 0
