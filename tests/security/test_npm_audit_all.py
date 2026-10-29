@@ -103,6 +103,18 @@ def test_public_npm_publish_workflows_have_blocking_audits() -> None:
         assert "npm ci --ignore-scripts" in text
 
 
+def test_agent_bus_ci_does_not_rewrite_the_lockfile() -> None:
+    workflows = REPO_ROOT / ".github" / "workflows"
+    for filename in (
+        "agent-bus-auto-format.yml",
+        "agent-bus-format-check.yml",
+        "agent-bus-lint-and-test.yml",
+    ):
+        text = (workflows / filename).read_text(encoding="utf-8")
+        assert "npm ci --ignore-scripts" in text
+        assert "npm install --ignore-scripts" not in text
+
+
 def test_weekly_scan_does_not_reintroduce_trivy() -> None:
     workflow = (REPO_ROOT / ".github" / "workflows" / "weekly-security-scan.yml").read_text(
         encoding="utf-8"

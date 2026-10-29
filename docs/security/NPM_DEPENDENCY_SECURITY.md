@@ -90,6 +90,8 @@ npm audit
 - Every public npm publish workflow performs a blocking audit before it can
   publish. The agent-bus workflow also runs its test suite, and the CLI workflow
   runs its self-test and package-content check.
+- Agent-bus CI and formatting workflows use immutable `npm ci` installs so a
+  Linux runner cannot silently rewrite cross-platform lockfile metadata.
 - `tests/security/test_npm_audit_all.py` protects project discovery, thresholds,
   workflow wiring, recursive Dependabot coverage, and the no-Trivy decision.
 

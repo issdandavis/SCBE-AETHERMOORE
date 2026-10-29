@@ -29,17 +29,22 @@ jobs:
         with:
           node-version: 20
       - name: Install dependencies
-        run: npm install --ignore-scripts
+        # npm install rewrites cross-platform optional-dependency metadata in
+        # package-lock.json on Linux, causing the formatter bot to commit lock
+        # churn. npm ci is immutable and fails if the lock is out of sync.
+        run: npm ci --ignore-scripts
       - name: Run Prettier
         run: npm run format
       - name: Commit and push if changed
+        env:
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
         run: |
           if [ -n "$(git status --porcelain)" ]; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add -A
             git commit -m "chore(format): apply Prettier formatting [agent-bus]"
-            git push origin HEAD:${{ github.head_ref || github.ref_name }}
+            git push origin "HEAD:${BRANCH_NAME}"
           else
             echo "No formatting changes"
           fi
