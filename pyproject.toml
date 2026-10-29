@@ -39,7 +39,7 @@ dependencies = [
     "strands-agents>=1.48.0",
     "urllib3>=2.8.0",
     "uv>=0.13.4",
-    "virtualenv>=21.14.10",
+    "virtualenv>=21.14.13",
 ]
 authors = [
     {name = "Issac Daniel Davis", email = "issdandavis@users.noreply.github.com"},

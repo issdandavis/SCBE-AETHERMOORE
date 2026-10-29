@@ -34,7 +34,7 @@ def test_current_lock_submits_all_patched_security_floors() -> None:
         "strands-agents": "1.48.0",
         "urllib3": "2.8.0",
         "uv": "0.13.4",
-        "virtualenv": "21.14.10",
+        "virtualenv": "21.14.13",
     }
     for name, version in expected.items():
         assert resolved[name]["package_url"] == f"pkg:pypi/{name}@{version}"
