@@ -43,6 +43,9 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: Audit every npm dependency tree
+        run: npm run security:audit:npm
+
       - name: Build
         run: npm run build
 

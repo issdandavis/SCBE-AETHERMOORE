@@ -1,21 +1,21 @@
 # Dependabot configuration for SCBE-AETHERMOORE
 # https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 #
-# This is a monorepo: ~25 Python manifests and ~15 npm lockfiles live in nested
-# sub-apps (packages/*, apps/*, game/*, conference-app, examples/*, ...). The old
-# config used singular `directory: "/"` (root only), so nested lockfiles were
-# never watched and their advisories just sat open. `directories: ["/**"]`
-# watches every manifest recursively; `groups` batches the bumps so we get a few
-# PRs per ecosystem, not dozens. Vendored / archived lanes are excluded with the
-# supported `exclude-paths` option.
+# This is a monorepo. The `**/*` glob is the GitHub-documented way to include
+# manifests in the current directory and every recursive subdirectory. Groups
+# batch routine bumps so nested applications stay covered without creating one
+# pull request per dependency. Vendored and archived lanes are excluded.
 version: 2
 updates:
   # ── Python (every manifest, recursively) ──────────────────────────────────
   - package-ecosystem: "pip"
     directories:
-      - "/**"
+      - "**/*"
     exclude-paths:
       - "archive/**"
+      - "external/**"
+      - "external_repos/**"
+      - "training-data/**"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
@@ -35,7 +35,7 @@ updates:
   # ── npm (every manifest, recursively, minus vendored / submodule lanes) ───
   - package-ecosystem: "npm"
     directories:
-      - "/**"
+      - "**/*"
     exclude-paths:
       - "external/**"
       - "external_repos/**"
@@ -93,3 +93,13 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+
+  # ── GitHub Actions ───────────────────────────────────────────────────────
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "security"
