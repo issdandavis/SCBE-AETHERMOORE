@@ -1,0 +1,25 @@
+{
+  "name": "Aethermoor Bus",
+  "short_name": "Aethermoor",
+  "description": "Mobile dashboard for SCBE-AETHERMOORE agents and the agent-bus event stream.",
+  "theme_color": "#08101a",
+  "background_color": "#08101a",
+  "display": "standalone",
+  "orientation": "portrait",
+  "start_url": "./",
+  "scope": "./",
+  "icons": [
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

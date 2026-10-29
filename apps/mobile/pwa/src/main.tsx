@@ -8,3 +8,21 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <App />
   </React.StrictMode>,
 );
+
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    const serviceWorkerUrl = new URL('sw.js', document.baseURI);
+    const scope = new URL('./', document.baseURI).pathname;
+
+    void navigator.serviceWorker
+      .register(serviceWorkerUrl.toString(), { scope })
+      .then((registration) => {
+        const update = () => void registration.update();
+        window.addEventListener('online', update);
+        window.setInterval(update, 60 * 60 * 1000);
+      })
+      .catch((error: unknown) => {
+        console.warn('Aethermoor service worker registration failed', error);
+      });
+  });
+}

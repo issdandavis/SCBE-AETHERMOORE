@@ -1,0 +1,73 @@
+name: npm Dependency Security Gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '**/package.json'
+      - '**/package-lock.json'
+      - 'scripts/security/npm_audit_all.py'
+      - 'tests/security/test_npm_audit_all.py'
+      - '.github/dependabot.yml'
+      - '.github/workflows/npm-security-gate.yml'
+      - '.github/workflows/security-checks.yml'
+      - '.github/workflows/weekly-security-scan.yml'
+  push:
+    branches: [main]
+    paths:
+      - '**/package.json'
+      - '**/package-lock.json'
+      - 'scripts/security/npm_audit_all.py'
+      - 'tests/security/test_npm_audit_all.py'
+      - '.github/dependabot.yml'
+      - '.github/workflows/npm-security-gate.yml'
+  schedule:
+    - cron: '23 8 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: npm-security-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit-all-lockfiles:
+    name: Audit every npm dependency tree
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run repository-wide npm audit gate
+        run: >-
+          python scripts/security/npm_audit_all.py
+          --audit-level high
+          --report npm-audit-report.json
+      - name: Upload aggregate report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report
+          path: npm-audit-report.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  dependency-review:
+    name: Review dependency changes
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Block newly introduced high-risk dependencies
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
