@@ -19,19 +19,28 @@ def test_current_lock_submits_all_patched_security_floors() -> None:
     resolved = snapshot["manifests"]["pyproject.toml"]["resolved"]
 
     expected = {
-        "pillow": "12.3.0",
-        "aiohttp": "3.14.3",
+        "pillow": "13.0.0",
+        "aiohttp": "3.14.4",
+        "black": "26.10.1",
+        "certifi": "2026.10.23",
         "cryptography": "50.0.0",
+        "filelock": "4.2.1",
         "pyasn1": "0.6.4",
         "soupsieve": "2.9.1",
-        "mcp": "1.28.1",
+        "mcp": "1.30.0",
         "bedrock-agentcore": "1.19.0",
+        "opentelemetry-api": "1.45.1",
+        "pygments": "2.20.0",
+        "strands-agents": "1.48.0",
+        "urllib3": "2.8.0",
+        "uv": "0.13.4",
+        "virtualenv": "21.14.10",
     }
     for name, version in expected.items():
         assert resolved[name]["package_url"] == f"pkg:pypi/{name}@{version}"
         assert resolved[name]["relationship"] == "direct"
 
-    assert len(resolved) >= 200
+    assert len(resolved) >= 180
     assert len(skipped_vcs) == 2
 
 

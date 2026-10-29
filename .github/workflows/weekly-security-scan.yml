@@ -109,34 +109,26 @@ jobs:
       errors: ${{ steps.npm_result.outputs.errors }}
 
   pip-audit:
-    name: pip Audit
+    name: pip Audit (all exact pins)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-      - name: Install and audit
+          python-version: '3.12'
+      - name: Install pinned audit tooling
+        run: >-
+          python -m pip install --upgrade
+          "setuptools>=84.1.0"
+          "pip-audit==2.10.1"
+      - name: Audit every exact Python dependency surface
         id: pip_audit
-        run: |
-          # Keep the runner toolchain above the audited security floor.
-          pip install --upgrade "setuptools>=83.0.0" pip-audit
-          if [ -f requirements.txt ]; then
-            pip install -r requirements.txt
-          fi
-          for f in src/*/setup.py src/*/pyproject.toml; do
-            if [ -f "$f" ]; then
-              dir=$(dirname "$f")
-              pip install -e "$dir"
-            fi
-          done
-          set +e
-          pip-audit --format json --output pip-audit-report.json 2>&1
-          EXIT_CODE=$?
-          set -e
-          echo "exit_code=$EXIT_CODE" >> "$GITHUB_OUTPUT"
-      - name: Parse results
+        continue-on-error: true
+        run: >-
+          python scripts/security/pip_audit_all.py
+          --report pip-audit-report.json
+      - name: Parse aggregate results
         id: pip_result
         if: always()
         run: |
@@ -144,18 +136,24 @@ jobs:
           import json, os
           from pathlib import Path
           report = Path("pip-audit-report.json")
-          vuln_count = 0
+          values = {
+              "vuln_packages": 0,
+              "vulnerabilities": 0,
+              "surfaces": 0,
+              "errors": 1,
+          }
           if report.exists():
               try:
                   data = json.loads(report.read_text())
-                  if isinstance(data, list):
-                      vuln_count = sum(1 for item in data if item.get("vulns"))
-                  elif isinstance(data, dict):
-                      vuln_count = sum(1 for item in data.get("dependencies", []) if item.get("vulns"))
+                  totals = data.get("totals", {})
+                  for key in ("vuln_packages", "vulnerabilities", "surfaces"):
+                      values[key] = int(totals.get(key, 0) or 0)
+                  values["errors"] = int(totals.get("scanner_errors", 0) or 0)
               except Exception as exc:
-                  print(f"::warning::pip-audit parse error: {exc}")
+                  print(f"::warning::pip aggregate report parse error: {exc}")
           with open(os.environ["GITHUB_OUTPUT"], "a") as stream:
-              stream.write(f"vuln_packages={vuln_count}\n")
+              for key, value in values.items():
+                  stream.write(f"{key}={value}\n")
           PYEOF
       - uses: actions/upload-artifact@v4
         if: always()
@@ -165,6 +163,9 @@ jobs:
           retention-days: 90
     outputs:
       vuln_packages: ${{ steps.pip_result.outputs.vuln_packages }}
+      vulnerabilities: ${{ steps.pip_result.outputs.vulnerabilities }}
+      surfaces: ${{ steps.pip_result.outputs.surfaces }}
+      errors: ${{ steps.pip_result.outputs.errors }}
 
   report:
     name: Create Security Issue
@@ -186,6 +187,9 @@ jobs:
           NPM_PROJECTS: ${{ needs.npm-audit.outputs.projects }}
           NPM_ERRORS: ${{ needs.npm-audit.outputs.errors }}
           PIP_VULNS: ${{ needs.pip-audit.outputs.vuln_packages }}
+          PIP_ADVISORIES: ${{ needs.pip-audit.outputs.vulnerabilities }}
+          PIP_SURFACES: ${{ needs.pip-audit.outputs.surfaces }}
+          PIP_ERRORS: ${{ needs.pip-audit.outputs.errors }}
         with:
           script: |
             const today = new Date().toISOString().slice(0, 10);
@@ -218,10 +222,13 @@ jobs:
             const npmProjects = count('NPM_PROJECTS');
             const npmErrors = count('NPM_ERRORS');
             const pipVulns = count('PIP_VULNS');
+            const pipAdvisories = count('PIP_ADVISORIES');
+            const pipSurfaces = count('PIP_SURFACES');
+            const pipErrors = count('PIP_ERRORS');
 
             const hasCritical = leaked || npmCrit > 0;
             const hasIssues = hasCritical || npmHigh > 0 || npmModerate > 0 ||
-              npmLow > 0 || npmErrors > 0 || pipVulns > 0;
+              npmLow > 0 || npmErrors > 0 || pipVulns > 0 || pipErrors > 0;
             const status = hasCritical ? 'CRITICAL' : hasIssues ? 'WARNINGS' : 'CLEAN';
 
             let body = [
@@ -238,7 +245,9 @@ jobs:
               '| npm audit (' + npmProjects + ' projects) | Moderate | ' + npmModerate + ' |',
               '| npm audit (' + npmProjects + ' projects) | Low | ' + npmLow + ' |',
               '| npm audit | Scanner errors | ' + npmErrors + ' |',
-              '| pip-audit | Vulnerable packages | ' + pipVulns + ' |',
+              '| pip-audit (' + pipSurfaces + ' surfaces) | Vulnerable packages | ' + pipVulns + ' |',
+              '| pip-audit (' + pipSurfaces + ' surfaces) | Advisories | ' + pipAdvisories + ' |',
+              '| pip-audit | Scanner errors | ' + pipErrors + ' |',
               '',
             ].join('\n');
 
@@ -252,7 +261,10 @@ jobs:
               body += '\n### Action Required\nRun `npm run security:audit:npm`, update the affected project, and rerun its tests.\n';
             }
             if (pipVulns > 0) {
-              body += '\n### Python Action Required\nRun `pip-audit`, update the affected requirement, and rerun its tests.\n';
+              body += '\n### Python Action Required\nRun `python scripts/security/pip_audit_all.py`, update every affected lock surface, and rerun its tests.\n';
+            }
+            if (pipErrors > 0) {
+              body += '\n### Python Scanner Error\nReview the pip-audit-report artifact; one or more exact pins could not be audited.\n';
             }
             body += '\n---\n*Automated by weekly-security-scan*';
 
