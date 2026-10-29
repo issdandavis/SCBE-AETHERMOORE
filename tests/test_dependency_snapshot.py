@@ -57,3 +57,14 @@ def test_lock_parser_normalizes_names_and_rejects_ambiguous_entries(tmp_path: Pa
     invalid_lock.write_text("unpinned>=1.0\n", encoding="utf-8")
     with pytest.raises(ValueError, match="Unsupported lock entry"):
         load_locked_dependencies(invalid_lock)
+
+
+def test_snapshot_workflow_reconciles_token_suppressed_merges() -> None:
+    workflow = (REPO_ROOT / ".github/workflows/root-python-dependency-snapshot.yml").read_text(encoding="utf-8")
+
+    assert "push:" in workflow
+    assert "workflow_dispatch:" in workflow
+    assert "schedule:" in workflow
+    assert "cron: '17 * * * *'" in workflow
+    assert "group: root-python-dependency-snapshot" in workflow
+    assert "cancel-in-progress: true" in workflow
