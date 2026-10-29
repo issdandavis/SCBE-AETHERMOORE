@@ -44,14 +44,9 @@ def test_current_lock_submits_all_patched_security_floors() -> None:
     assert len(skipped_vcs) == 2
 
 
-def test_lock_parser_normalizes_names_and_rejects_ambiguous_entries(
-    tmp_path: Path,
-) -> None:
+def test_lock_parser_normalizes_names_and_rejects_ambiguous_entries(tmp_path: Path) -> None:
     valid_lock = tmp_path / "valid.txt"
-    valid_lock.write_text(
-        "PyYAML==6.0.3\n-e git+https://example.test/repo.git#egg=demo\n",
-        encoding="utf-8",
-    )
+    valid_lock.write_text("PyYAML==6.0.3\n-e git+https://example.test/repo.git#egg=demo\n", encoding="utf-8")
 
     locked, skipped_vcs = load_locked_dependencies(valid_lock)
 
@@ -65,9 +60,7 @@ def test_lock_parser_normalizes_names_and_rejects_ambiguous_entries(
 
 
 def test_snapshot_workflow_reconciles_token_suppressed_merges() -> None:
-    workflow = (
-        REPO_ROOT / ".github/workflows/root-python-dependency-snapshot.yml"
-    ).read_text(encoding="utf-8")
+    workflow = (REPO_ROOT / ".github/workflows/root-python-dependency-snapshot.yml").read_text(encoding="utf-8")
 
     assert "push:" in workflow
     assert "workflow_dispatch:" in workflow
