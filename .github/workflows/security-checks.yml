@@ -33,7 +33,7 @@ jobs:
       - name: Install security tooling
         run: |
           python -m pip install --upgrade pip
-          pip install bandit pip-audit
+          pip install bandit "setuptools>=84.1.0" "pip-audit==2.10.1"
 
       - name: Run gitleaks
         uses: gitleaks/gitleaks-action@v2.3.9
@@ -64,13 +64,20 @@ jobs:
           path: npm-audit-report.json
           if-no-files-found: warn
 
-      - name: Check for requirements.txt and run pip-audit
+      - name: Audit every exact Python dependency surface
         id: pip_audit
-        if: ${{ hashFiles('requirements.txt') != '' }}
-        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
-        run: |
-          pip-audit -r requirements.txt
+        run: >-
+          python scripts/security/pip_audit_all.py
+          --report pip-audit-report.json
+
+      - name: Upload pip audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pip-audit-report
+          path: pip-audit-report.json
+          if-no-files-found: warn
 
       - name: Security summary
         if: always()
@@ -79,7 +86,7 @@ jobs:
           echo "- gitleaks: **blocking**" >> "$GITHUB_STEP_SUMMARY"
           echo "- bandit: ${{ steps.bandit.outcome }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- npm audit (all lockfiles): ${{ steps.npm_audit.outcome || 'skipped' }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- pip-audit: ${{ steps.pip_audit.outcome || 'skipped' }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- pip-audit (all exact pins): ${{ steps.pip_audit.outcome || 'skipped' }}" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Fail if blocking security checks failed
         if: always()
@@ -94,7 +101,8 @@ jobs:
             failed=1
           fi
           if [ "${{ steps.pip_audit.outcome }}" = "failure" ]; then
-            echo "::warning::pip-audit found vulnerabilities; tracked as advisory telemetry"
+            echo "::error::pip-audit found a vulnerability or scanner coverage error"
+            failed=1
           fi
           if [ "$failed" -eq 1 ]; then
             echo "::error::One or more blocking security checks reported issues — see summary above"

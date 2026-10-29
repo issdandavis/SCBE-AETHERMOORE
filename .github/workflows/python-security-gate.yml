@@ -1,0 +1,82 @@
+name: Python Dependency Security Gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '**/*requirements*.txt'
+      - '**/pyproject.toml'
+      - '**/uv.lock'
+      - 'scripts/security/pip_audit_all.py'
+      - 'tests/security/test_pip_audit_all.py'
+      - '.github/dependabot.yml'
+      - '.github/workflows/python-security-gate.yml'
+      - '.github/workflows/security-checks.yml'
+      - '.github/workflows/weekly-security-scan.yml'
+  push:
+    branches: [main]
+    paths:
+      - '**/*requirements*.txt'
+      - '**/pyproject.toml'
+      - '**/uv.lock'
+      - 'scripts/security/pip_audit_all.py'
+      - 'tests/security/test_pip_audit_all.py'
+      - '.github/dependabot.yml'
+      - '.github/workflows/python-security-gate.yml'
+  schedule:
+    - cron: '41 8 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: python-security-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit-all-locks:
+    name: Audit every exact Python dependency surface
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned audit tooling
+        run: >-
+          python -m pip install --upgrade
+          "setuptools>=84.1.0"
+          "pip-audit==2.10.1"
+          "pytest>=8,<10"
+      - name: Test the lockfile inventory and parser
+        run: >-
+          python -m pytest -q
+          --confcutdir=tests/security
+          tests/security/test_pip_audit_all.py
+      - name: Run repository-wide Python audit gate
+        run: >-
+          python scripts/security/pip_audit_all.py
+          --report pip-audit-report.json
+      - name: Upload aggregate report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pip-audit-report
+          path: pip-audit-report.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  dependency-review:
+    name: Review Python dependency changes
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Block newly introduced high-risk dependencies
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high

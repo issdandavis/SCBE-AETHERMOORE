@@ -34,15 +34,22 @@ cryptography>=50.0.0
 # Transitive: pillow and soupsieve arrive via the imaging and beautifulsoup4
 # chains, bedrock-agentcore via the example agent. Floored so a fresh resolve
 # cannot pick the vulnerable range back up.
-pillow>=12.3.0            # Dependabot #344-#356: OOB read/write, decompression-bomb
+pillow>=13.0.0            # Dependabot: OOB read/write, decompression-bomb
 soupsieve>=2.8.4          # Dependabot #315/#316: selector ReDoS + memory exhaustion
 bedrock-agentcore>=1.18.1 # Dependabot #389/#393: arg-delimiter injection
+aiohttp>=3.14.4
+black>=26.10.1
+filelock>=4.2.1
+opentelemetry-api>=1.45.1
+pygments>=2.20.0
+strands-agents>=1.48.0
+virtualenv>=21.14.10
 urllib3>=2.8.0
-uv>=0.11.17
+uv>=0.13.4
 pyasn1>=0.6.4
 protobuf>=5.28.0
 Werkzeug>=3.1.9
-certifi>=2026.5.20
+certifi>=2026.10.23
 idna>=3.18
 
 # Browser Automation & Content Extraction
@@ -59,4 +66,4 @@ z3-solver>=4.12
 
 # MCP SDK — current servers use the FastMCP v1 API. Keep the patched security
 # floor while preventing an incompatible v2 resolve in clean CI environments.
-mcp[cli]>=1.28.1,<2.0.0
+mcp[cli]>=1.30.0,<2.0.0
