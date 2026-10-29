@@ -159,7 +159,7 @@ def test_security_floors_and_example_lock_exclude_known_vulnerable_ranges() -> N
         "strands-agents>=1.48.0",
         "urllib3>=2.8.0",
         "uv>=0.13.4",
-        "virtualenv>=21.14.10",
+        "virtualenv>=21.14.13",
     ):
         assert floor in rendered
 
