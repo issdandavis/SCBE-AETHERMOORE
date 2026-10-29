@@ -20,7 +20,6 @@ import subprocess
 import sys
 from typing import Any, Iterable
 
-
 SEVERITIES = ("info", "low", "moderate", "high", "critical")
 DEFAULT_EXCLUDED_DIRECTORIES = frozenset(
     {
@@ -51,9 +50,7 @@ class Project:
     manifest_exists: bool
 
 
-def discover_projects(
-    root: Path, excluded_directories: Iterable[str] = DEFAULT_EXCLUDED_DIRECTORIES
-) -> list[Project]:
+def discover_projects(root: Path, excluded_directories: Iterable[str] = DEFAULT_EXCLUDED_DIRECTORIES) -> list[Project]:
     """Return every non-vendored npm dependency tree beneath *root*."""
 
     root = root.resolve()
@@ -71,9 +68,7 @@ def discover_projects(
             Project(
                 directory=directory,
                 relative_directory=relative,
-                lockfile=(Path(relative) / "package-lock.json").as_posix()
-                if relative != "."
-                else "package-lock.json",
+                lockfile=(Path(relative) / "package-lock.json").as_posix() if relative != "." else "package-lock.json",
                 manifest_exists=(directory / "package.json").is_file(),
             )
         )

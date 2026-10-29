@@ -5,7 +5,6 @@ from pathlib import Path
 
 from scripts.security import npm_audit_all
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -116,9 +115,7 @@ def test_agent_bus_ci_does_not_rewrite_the_lockfile() -> None:
 
 
 def test_weekly_scan_does_not_reintroduce_trivy() -> None:
-    workflow = (REPO_ROOT / ".github" / "workflows" / "weekly-security-scan.yml").read_text(
-        encoding="utf-8"
-    )
+    workflow = (REPO_ROOT / ".github" / "workflows" / "weekly-security-scan.yml").read_text(encoding="utf-8")
 
     assert "trivy" not in workflow.lower()
 
