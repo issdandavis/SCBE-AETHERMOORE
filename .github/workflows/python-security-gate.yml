@@ -52,7 +52,10 @@ jobs:
           "pip-audit==2.10.1"
           "pytest>=8,<10"
       - name: Test the lockfile inventory and parser
-        run: python -m pytest -q tests/security/test_pip_audit_all.py
+        run: >-
+          python -m pytest -q
+          --confcutdir=tests/security
+          tests/security/test_pip_audit_all.py
       - name: Run repository-wide Python audit gate
         run: >-
           python scripts/security/pip_audit_all.py
