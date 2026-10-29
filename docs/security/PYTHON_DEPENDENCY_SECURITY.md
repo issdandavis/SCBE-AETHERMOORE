@@ -51,13 +51,20 @@ monitors those manifests and their resolved locks.
   vulnerable packages, advisory counts, and scanner errors in the rolling issue.
 - `.github/dependabot.yml` recursively covers pip manifests throughout the
   monorepo and groups compatible security updates.
+- `.github/workflows/root-python-dependency-snapshot.yml` submits the exact root
+  lock after relevant main-branch pushes and also reconciles hourly. The schedule
+  covers automation merges made with `GITHUB_TOKEN`, whose resulting push events
+  do not start another workflow under
+  [GitHub's token event rules](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow).
 - `tests/security/test_pip_audit_all.py` protects discovery, requirements/hash
   parsing, uv registry filtering, finding attribution, security floors, and
   workflow wiring.
 
 The root dependency snapshot submitted to GitHub comes from
 `requirements-lock.txt`. Therefore a fix is incomplete until both the declaring
-manifest floor and every affected exact lock/snapshot entry are safe.
+manifest floor and every affected exact lock/snapshot entry are safe. If an
+immediate reconciliation is needed before the hourly fallback, run
+`gh workflow run root-python-dependency-snapshot.yml --ref main`.
 
 ## Remediation rules
 

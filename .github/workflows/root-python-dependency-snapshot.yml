@@ -9,10 +9,18 @@ on:
       - requirements-lock.txt
       - scripts/build_dependency_snapshot.py
       - .github/workflows/root-python-dependency-snapshot.yml
+  # Merges performed with GITHUB_TOKEN do not start push workflows. Reconcile
+  # hourly so an automation-merged lock update cannot leave a stale graph.
+  schedule:
+    - cron: '17 * * * *'
   workflow_dispatch:
 
 permissions:
   contents: write
+
+concurrency:
+  group: root-python-dependency-snapshot
+  cancel-in-progress: true
 
 jobs:
   submit:
