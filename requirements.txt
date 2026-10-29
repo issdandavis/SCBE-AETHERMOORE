@@ -66,4 +66,4 @@ z3-solver>=4.12
 
 # MCP SDK — current servers use the FastMCP v1 API. Keep the patched security
 # floor while preventing an incompatible v2 resolve in clean CI environments.
-mcp[cli]>=1.30.0,<2.0.0
+mcp[cli]>=1.30.0,<3.0.0
