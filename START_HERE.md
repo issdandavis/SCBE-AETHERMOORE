@@ -14,6 +14,10 @@ Do not start by browsing the root at random.
 
 ## Fast Path
 
+For deployment decisions and ongoing maintenance, use the
+[live deployment readiness guide](docs/readiness/README.md), including the recurring
+mission board, companion repository map, and monthly commit catalogs.
+
 Run the active product surface before exploring the monorepo:
 
 ```bash
