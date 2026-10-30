@@ -21,130 +21,30 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
-        run: pip install requests
-
       - name: Query SAM.gov for relevant opportunities
         id: sam_query
         env:
           SAM_GOV_API_KEY: ${{ secrets.SAM_GOV_API_KEY }}
-        run: |
-          python3 - <<'PYEOF'
-          import json, os, datetime, urllib.request, urllib.parse, urllib.error
-
-          API_KEY = os.environ.get("SAM_GOV_API_KEY", "")
-          BASE_URL = "https://api.sam.gov/opportunities/v2/search"
-          today = datetime.date.today()
-          posted_from = (today - datetime.timedelta(days=7)).strftime("%m/%d/%Y")
-          posted_to = today.strftime("%m/%d/%Y")
-
-          SEARCH_TERMS = [
-              "AI safety",
-              "artificial intelligence governance",
-              "post-quantum cryptography",
-              "cybersecurity framework",
-              "machine learning security",
-              "AI assurance",
-              "trustworthy AI",
-              "adversarial machine learning",
-          ]
-
-          all_results = []
-          seen_ids = set()
-          query_errors = []
-          successful_terms = 0
-
-          for term in SEARCH_TERMS:
-              params = {
-                  "postedFrom": posted_from,
-                  "postedTo": posted_to,
-                  "limit": "25",
-                  "offset": "0",
-                  # SAM.gov Opportunities v2 documents title as the
-                  # server-side text filter. "keywords" is not a supported
-                  # request parameter and can produce unfiltered results.
-                  "title": term,
-              }
-              if API_KEY:
-                  params["api_key"] = API_KEY
-
-              url = BASE_URL + "?" + urllib.parse.urlencode(params)
-              try:
-                  req = urllib.request.Request(url, headers={"Accept": "application/json"})
-                  with urllib.request.urlopen(req, timeout=30) as resp:
-                      data = json.loads(resp.read().decode("utf-8"))
-                  successful_terms += 1
-
-                  for opp in data.get("opportunitiesData", []):
-                      opp_id = opp.get("noticeId", "")
-                      if opp_id and opp_id not in seen_ids:
-                          seen_ids.add(opp_id)
-                          all_results.append({
-                              "noticeId": opp_id,
-                              "title": opp.get("title", "N/A"),
-                              "solicitationNumber": opp.get("solicitationNumber", "N/A"),
-                              "department": opp.get("department", "N/A"),
-                              "type": opp.get("type", "N/A"),
-                              "postedDate": opp.get("postedDate", "N/A"),
-                              "responseDeadLine": opp.get("responseDeadLine", "N/A"),
-                              "uiLink": opp.get("uiLink", ""),
-                              "matchedKeyword": term,
-                          })
-              except urllib.error.HTTPError as e:
-                  # The public API documents 404 as "No Data found", so it is
-                  # a successful empty query rather than an incomplete scan.
-                  if e.code == 404:
-                      successful_terms += 1
-                      print(f"No SAM.gov opportunities found for: {term}")
-                      continue
-
-                  query_errors.append({"term": term, "error": f"HTTP {e.code}"})
-                  if e.code == 401:
-                      print(f"::warning::SAM.gov API key is missing, invalid, or expired for: {term}")
-                  elif e.code == 403:
-                      print(f"::warning::SAM.gov API key required or rate limited for: {term}")
-                  else:
-                      print(f"::warning::SAM.gov query failed for '{term}': HTTP {e.code}")
-              except Exception as e:
-                  query_errors.append({"term": term, "error": type(e).__name__})
-                  print(f"::warning::SAM.gov query failed for '{term}': {type(e).__name__}")
-
-          report = {
-              "scan_date": today.isoformat(),
-              "period": f"{posted_from} - {posted_to}",
-              "total_opportunities": len(all_results),
-              "search_terms": SEARCH_TERMS,
-              "opportunities": all_results,
-              "successful_terms": successful_terms,
-              "query_errors": query_errors,
-          }
-
-          os.makedirs("artifacts/gov-contracts", exist_ok=True)
-          report_path = "artifacts/gov-contracts/sam_gov_weekly.json"
-          with open(report_path, "w", encoding="utf-8") as f:
-              json.dump(report, f, indent=2, default=str)
-
-          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
-              fh.write(f"total={len(all_results)}\n")
-              fh.write(f"errors={len(query_errors)}\n")
-              fh.write(f"successful_terms={successful_terms}\n")
-
-          print(f"Found {len(all_results)} opportunities across {len(SEARCH_TERMS)} search terms")
-          PYEOF
+        run: >-
+          python scripts/system/scan_sam_opportunities.py
+          --days 14
+          --per-profile 50
+          --min-score 6
+          --max-results 100
+          --output artifacts/gov-contracts/sam_gov_weekly.json
 
       - name: Upload SAM.gov report artifact
         uses: actions/upload-artifact@v7
+        if: always()
         with:
           name: sam-gov-weekly-report
           path: artifacts/gov-contracts/sam_gov_weekly.json
+          if-no-files-found: warn
           retention-days: 90
 
       - name: Publish scan summary and reconcile issue
+        if: always()
         uses: actions/github-script@v9
-        env:
-          TOTAL_OPPS: ${{ steps.sam_query.outputs.total }}
-          QUERY_ERRORS: ${{ steps.sam_query.outputs.errors }}
-          SUCCESSFUL_TERMS: ${{ steps.sam_query.outputs.successful_terms }}
         with:
           script: |
             const fs = require('fs');
@@ -152,7 +52,15 @@ jobs:
             const today = new Date().toISOString().slice(0, 10);
             const title = 'Government Contracts Scan - action required';
 
-            let reportData = { opportunities: [], total_opportunities: 0 };
+            let reportData = {
+              opportunities: [],
+              profiles: [],
+              query_errors: [],
+              total_opportunities: 0,
+              successful_profiles: 0,
+              profile_count: 0,
+              scan_complete: false,
+            };
             try {
               reportData = JSON.parse(fs.readFileSync('artifacts/gov-contracts/sam_gov_weekly.json', 'utf8'));
             } catch (e) {
@@ -161,34 +69,46 @@ jobs:
 
             const total = reportData.total_opportunities || 0;
             const queryErrors = reportData.query_errors || [];
+            const profileCount = reportData.profile_count || reportData.profiles?.length || 0;
+            const successfulProfiles = reportData.successful_profiles || 0;
+            const scanComplete = reportData.scan_complete === true &&
+              queryErrors.length === 0 && successfulProfiles === profileCount;
+            const cell = (value, max = 70) => String(value || 'N/A')
+              .replace(/[\r\n]+/g, ' ')
+              .replace(/\|/g, '\\|')
+              .slice(0, max);
             let body = `## Weekly Government Contracts Scan\n\n`;
             body += `**Date:** ${today}\n`;
             body += `**Opportunities Found:** ${total}\n\n`;
 
-            if (queryErrors.length > 0) {
+            if (!scanComplete) {
               body += `### Scan Incomplete\n\n`;
-              body += `${queryErrors.length} of ${reportData.search_terms?.length || 0} queries failed. `;
+              body += `${queryErrors.length} of ${profileCount} profiles failed; `;
+              body += `${successfulProfiles} completed. `;
               body += `A zero result is **UNKNOWN**, not evidence that no opportunities exist.\n\n`;
               for (const error of queryErrors.slice(0, 20)) {
-                body += `- ${error.term}: ${error.error}\n`;
+                body += `- ${cell(error.label || error.profile_id)}: ${cell(error.error, 120)}\n`;
               }
               body += `\n`;
             }
 
-            if (total === 0 && queryErrors.length === 0) {
+            if (total === 0 && scanComplete) {
               body += `No new opportunities matching our search terms were posted this week.\n\n`;
-              body += `### Search Terms\n`;
-              for (const term of (reportData.search_terms || [])) {
-                body += `- ${term}\n`;
+              body += `### Search Profiles\n`;
+              for (const profile of (reportData.profiles || [])) {
+                body += `- ${cell(profile.label, 100)}\n`;
               }
             } else if (total > 0) {
               body += `### Opportunities\n\n`;
-              body += `| Title | Department | Type | Deadline | Link |\n`;
-              body += `|-------|-----------|------|----------|------|\n`;
+              body += `| Score | Title | Organization | NAICS | Deadline | Match | Link |\n`;
+              body += `|------:|-------|--------------|-------|----------|-------|------|\n`;
               for (const opp of (reportData.opportunities || []).slice(0, 30)) {
-                const link = opp.uiLink ? `[View](${opp.uiLink})` : 'N/A';
-                const deadline = opp.responseDeadLine || 'N/A';
-                body += `| ${opp.title.slice(0, 60)} | ${opp.department} | ${opp.type} | ${deadline} | ${link} |\n`;
+                const url = String(opp.sam_url || '');
+                const link = /^https:\/\/([a-z0-9-]+\.)?sam\.gov\//i.test(url) ? `[View](${url})` : 'N/A';
+                const matches = (opp.matched_terms || opp.matched_profiles || []).slice(0, 3).join(', ');
+                body += `| ${Number(opp.relevance_score || 0)} | ${cell(opp.title)} | `;
+                body += `${cell(opp.organization, 55)} | ${cell(opp.naics_code, 8)} | `;
+                body += `${cell(opp.response_deadline, 24)} | ${cell(matches, 45)} | ${link} |\n`;
               }
               if (total > 30) {
                 body += `\n*Showing 30 of ${total} results. See full report in workflow artifacts.*\n`;
@@ -205,7 +125,16 @@ jobs:
               label: 'gov-contracts',
               title,
               body,
-              active: total > 0 || queryErrors.length > 0,
+              active: total > 0 || !scanComplete,
               labels: ['automated', 'action-needed'],
               legacyTitlePrefixes: ['Gov Contracts Scan -'],
             });
+
+      - name: Enforce complete SAM.gov scan
+        if: >-
+          always() &&
+          (steps.sam_query.outcome != 'success' ||
+          steps.sam_query.outputs.errors != '0')
+        run: |
+          echo "::error::SAM.gov opportunity scan was incomplete; review the workflow summary and rolling issue."
+          exit 1
