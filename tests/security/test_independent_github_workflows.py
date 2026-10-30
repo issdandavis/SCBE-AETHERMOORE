@@ -34,12 +34,19 @@ def test_daily_dependency_audit_uses_one_rolling_issue_not_daily_issue_spam() ->
 
     assert "Security Scan - rolling" in text
     assert "Security Scan - ${today}" not in text
-    assert "issues.update" in text
-    assert "updates one rolling issue" in text
+    assert "reconcileRollingIssue" in text
+    assert "active: hasIssues" in text
+    assert "legacyTitlePrefixes: ['Security Scan -']" in text
+
+    helper = (ROOT / ".github" / "scripts" / "issue-lifecycle.cjs").read_text(encoding="utf-8")
+    assert "github.rest.issues.update" in helper
+    assert "state_reason: 'completed'" in helper
 
 
 def test_weekly_security_scan_updates_the_audited_build_toolchain() -> None:
     text = _workflow_text("weekly-security-scan.yml")
     yaml.safe_load(text)
 
-    assert 'pip install --upgrade "setuptools>=83.0.0" pip-audit' in text
+    assert '"setuptools>=84.1.0"' in text
+    assert '"pip-audit==2.10.1"' in text
+    assert "scripts/security/pip_audit_all.py" in text
