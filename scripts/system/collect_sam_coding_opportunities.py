@@ -11,15 +11,19 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import urllib.parse
-import urllib.request
+import sys
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from api.darpa_prep.sam_public import SamGovPublicClient, validate_official_endpoint
+
 DEFAULT_OUTPUT_ROOT = REPO_ROOT / "artifacts" / "training" / "sam_coding_opportunities"
-DEFAULT_ENDPOINT = "https://api.sam.gov/prod/opportunities/v2/search"
+DEFAULT_ENDPOINT = "https://api.sam.gov/opportunities/v2/search"
 DEFAULT_KEYWORDS = [
     "software development",
     "application development",
@@ -60,7 +64,7 @@ def build_query_params(
         "postedTo": posted_to,
         "limit": str(limit),
         "ptype": ptype,
-        "q": keyword,
+        "title": keyword,
     }
 
 
@@ -88,13 +92,6 @@ def public_plan_status(plan: dict[str, Any], *, ok: bool, dry_run: bool, error: 
         "api_key_present": bool(plan.get("api_key_present")),
         "error": error,
     }
-
-
-def fetch_json(endpoint: str, params: dict[str, str], timeout: int = 60) -> dict[str, Any]:
-    url = f"{endpoint}?{urllib.parse.urlencode(params)}"
-    request = urllib.request.Request(url, headers={"Accept": "application/json"})
-    with urllib.request.urlopen(request, timeout=timeout) as response:  # noqa: S310 - trusted endpoint from CLI arg
-        return json.loads(response.read().decode("utf-8"))
 
 
 def normalize_opportunities(payload: dict[str, Any], *, keyword: str) -> list[dict[str, Any]]:
@@ -136,13 +133,14 @@ def write_report(report: dict[str, Any], output_root: Path) -> dict[str, str]:
 
 
 def build_plan(args: argparse.Namespace, api_key: str) -> dict[str, Any]:
+    endpoint = validate_official_endpoint(args.endpoint)
     posted_from, posted_to = args.posted_from, args.posted_to
     if not posted_from or not posted_to:
         posted_from, posted_to = default_date_window(args.days)
     keywords = args.keyword or DEFAULT_KEYWORDS
     queries = [
         {
-            "endpoint": args.endpoint,
+            "endpoint": endpoint,
             "params": redact_params(
                 build_query_params(
                     api_key=api_key,
@@ -190,12 +188,19 @@ def main() -> int:
 
     opportunities: list[dict[str, Any]] = []
     raw_counts: dict[str, int] = {}
+    client = SamGovPublicClient(api_key=api_key, base_url=args.endpoint, timeout_seconds=60)
     for query in plan["queries"]:
         redacted = query["params"]
-        real_params = dict(redacted)
-        real_params["api_" + "key"] = api_key
-        payload = fetch_json(query["endpoint"], real_params)
-        keyword = str(redacted["q"])
+        keyword = str(redacted["title"])
+        rows_raw = client.search_opportunities(
+            query=keyword,
+            limit=int(redacted["limit"]),
+            active_only=False,
+            posted_from=str(redacted["postedFrom"]),
+            posted_to=str(redacted["postedTo"]),
+            notice_types=str(redacted["ptype"]),
+        )
+        payload = {"opportunitiesData": rows_raw}
         rows = normalize_opportunities(payload, keyword=keyword)
         raw_counts[keyword] = len(rows)
         opportunities.extend(rows)

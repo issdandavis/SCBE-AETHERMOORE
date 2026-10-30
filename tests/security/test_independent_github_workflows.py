@@ -57,8 +57,10 @@ def test_weekly_gov_contracts_uses_documented_sam_v2_search_contract() -> None:
     yaml.safe_load(text)
 
     assert "SAM_GOV_API_KEY: ${{ secrets.SAM_GOV_API_KEY }}" in text
-    assert '"title": term' in text
-    assert '"keywords": term' not in text
-    assert "if e.code == 404:" in text
-    assert "successful_terms += 1" in text
+    assert "scripts/system/scan_sam_opportunities.py" in text
+    assert "scan_complete" in text
+    assert "successfulProfiles === profileCount" in text
+    assert "A zero result is **UNKNOWN**" in text
+    assert "Enforce complete SAM.gov scan" in text
+    assert "steps.sam_query.outputs.errors != '0'" in text
     assert "reconcileRollingIssue" in text

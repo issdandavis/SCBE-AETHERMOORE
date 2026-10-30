@@ -17,12 +17,19 @@ from __future__ import annotations
 import json
 import os
 import re
+import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
 import requests
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from api.darpa_prep.sam_public import SamGovPublicClient
 
 FEED_FILE = Path("docs/research-feed.json")
 UA = "SCBE-AETHERMOORE/1.0 +https://aethermoore.com research-feed-bot"
@@ -328,22 +335,17 @@ def darpa_opportunities(n: int = 4) -> list[dict]:
         print("[DARPA] SAM_GOV_API_KEY not set — skipping")
         return []
     try:
-        resp = requests.get(
-            "https://api.sam.gov/opportunities/v2/search",
-            params={
-                "api_key": key,
-                "orgName": "DARPA",
-                "limit": n,
-                "postedFrom": datetime.now(timezone.utc).strftime("%m/%d/%Y"),
-                "sortBy": "postedDate",
-                "order": "desc",
-                "status": "active",
-            },
-            headers={"User-Agent": UA},
-            timeout=TIMEOUT,
-        ).json()
+        client = SamGovPublicClient(api_key=key, timeout_seconds=TIMEOUT)
+        rows = client.search_opportunities(
+            limit=max(1, n),
+            active_only=True,
+            days_back=45,
+            notice_types=("p", "r", "o", "k", "s"),
+            organization_name="Defense Advanced Research Projects Agency",
+        )
+        rows.sort(key=lambda item: str(item.get("postedDate") or ""), reverse=True)
         items = []
-        for opp in resp.get("opportunitiesData", [])[:n]:
+        for opp in rows[:n]:
             items.append(
                 {
                     "title": opp.get("title", "")[:120],

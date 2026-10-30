@@ -138,10 +138,6 @@ if billing_router is not None:
 if github_app_router is not None:
     app.include_router(github_app_router)
 
-# Include DARPA Prep router for federal opportunity normalization and search
-if darpa_prep_router is not None:
-    app.include_router(darpa_prep_router)
-
 # API Key authentication
 API_KEY_HEADER = APIKeyHeader(name="SCBE_api_key", auto_error=False)
 API_KEY_HEADER_LEGACY = APIKeyHeader(name="X-API-Key", auto_error=False)
@@ -325,6 +321,12 @@ async def verify_api_key(
     if key not in VALID_API_KEYS:
         raise HTTPException(status_code=403, detail="Invalid API key")
     return VALID_API_KEYS[key]
+
+
+# The search route spends the server's SAM.gov quota, so every DARPA Prep
+# endpoint inherits the same tenant authentication as the core API.
+if darpa_prep_router is not None:
+    app.include_router(darpa_prep_router, dependencies=[Depends(verify_api_key)])
 
 
 def _get_orchestrator() -> Optional[Any]:

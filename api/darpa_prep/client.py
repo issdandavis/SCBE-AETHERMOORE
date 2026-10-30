@@ -1,68 +1,14 @@
 from __future__ import annotations
 
-import json
-import os
 import re
-from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
-from typing import Any, Dict, Iterable, List, Optional
-from urllib.parse import urlencode
-from urllib.error import HTTPError
-from urllib.request import Request, urlopen
+from typing import Any, Dict, Iterable
 
 from .models import OpportunityRecord
+from .sam_public import SamGovPublicClient
 
 
-def _env_api_key() -> Optional[str]:
-    for name in ("SAM_GOV_API_KEY", "DATA_GOV_API_KEY"):
-        value = os.getenv(name, "").strip()
-        if value:
-            return value
-    return None
-
-
-@dataclass
-class SamGovClient:
-    api_key: Optional[str] = None
-    base_url: str = "https://api.sam.gov/opportunities/v2/search"
-    timeout_seconds: int = 20
-
-    def __post_init__(self) -> None:
-        self.api_key = (self.api_key or _env_api_key() or "").strip() or None
-        override_url = os.getenv("SAM_GOV_OPPORTUNITIES_URL", "").strip()
-        if override_url:
-            self.base_url = override_url
-
-    def search_opportunities(self, *, query: str, limit: int = 10, active_only: bool = True) -> List[Dict[str, Any]]:
-        if not self.api_key:
-            raise ValueError("SAM_GOV_API_KEY or DATA_GOV_API_KEY is not configured")
-
-        today = datetime.now(UTC).date()
-        posted_from = (today - timedelta(days=180)).strftime("%m/%d/%Y")
-        posted_to = today.strftime("%m/%d/%Y")
-        params = {
-            "api_key": self.api_key,
-            "title": query,
-            "limit": max(1, min(int(limit), 50)),
-            "postedFrom": posted_from,
-            "postedTo": posted_to,
-            "offset": 0,
-        }
-
-        request = Request(f"{self.base_url}?{urlencode(params)}", method="GET")
-        try:
-            with urlopen(request, timeout=self.timeout_seconds) as response:
-                payload = json.loads(response.read().decode("utf-8"))
-        except HTTPError as exc:
-            body = exc.read().decode("utf-8", errors="replace")
-            raise RuntimeError(f"SAM.gov search failed with HTTP {exc.code}: {body}") from exc
-
-        opportunities = payload.get("opportunitiesData") or payload.get("data") or payload.get("results") or []
-        if isinstance(opportunities, dict):
-            opportunities = [opportunities]
-        if active_only:
-            opportunities = [item for item in opportunities if str(item.get("active", "")).strip().lower() in {"yes", "true", "active"}]
-        return list(opportunities)
+class SamGovClient(SamGovPublicClient):
+    """Public SAM transport plus SCBE's proposal-domain normalization."""
 
     @staticmethod
     def normalize_opportunity(payload: Dict[str, Any]) -> OpportunityRecord:
@@ -105,14 +51,20 @@ class SamGovClient:
             or payload.get("archiveDate")
         )
 
-        topic_area = str(
-            payload.get("naicsDescription")
-            or payload.get("description")
-            or payload.get("classification")
-            or ""
-        ).strip() or None
+        topic_area = (
+            str(
+                payload.get("naicsDescription")
+                or payload.get("naicsCode")
+                or payload.get("classification")
+                or payload.get("classificationCode")
+                or ""
+            ).strip()
+            or None
+        )
 
-        notice_type = str(payload.get("noticeType") or payload.get("instrumentType") or "").lower()
+        notice_type = str(
+            payload.get("type") or payload.get("noticeType") or payload.get("instrumentType") or ""
+        ).lower()
         if "grant" in notice_type:
             instrument_type = "grant"
         elif "cooperative" in notice_type:
@@ -144,7 +96,10 @@ def extract_requirement_candidates(text: str) -> Iterable[tuple[str, str]]:
             lowered = line.lower()
             if len(line) < 20:
                 continue
-            if any(token in lowered for token in ("shall", "must", "required", "deadline", "eligib", "evaluate", "registration", "submit")):
+            if any(
+                token in lowered
+                for token in ("shall", "must", "required", "deadline", "eligib", "evaluate", "registration", "submit")
+            ):
                 if "eligib" in lowered or "sam.gov" in lowered or "uei" in lowered or "register" in lowered:
                     category = "eligibility"
                 elif "deadline" in lowered or "submit" in lowered:
