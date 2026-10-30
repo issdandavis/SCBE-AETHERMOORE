@@ -18,13 +18,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           lfs: true
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.11'
 
@@ -42,10 +42,23 @@ jobs:
 
           try:
               from huggingface_hub import HfApi, list_repo_files
-          except ImportError:
+          except ImportError as exc:
               print("::warning::huggingface_hub not available")
+              report = {
+                  "scan_date": datetime.date.today().isoformat(),
+                  "local_training_files": [],
+                  "new_local_files": [],
+                  "drift_detected": [],
+                  "repo_accessibility": {"scanner": f"error: {exc}"},
+              }
+              os.makedirs("artifacts/hf-sync", exist_ok=True)
+              with open("artifacts/hf-sync/weekly_drift_report.json", "w") as report_file:
+                  json.dump(report, report_file, indent=2)
               with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
-                  fh.write("status=error\ndrift_count=0\nnew_count=0\n")
+                  fh.write(
+                      "status=error\ndrift_count=0\nnew_count=0\nlocal_count=0\n"
+                      "access_errors=1\nneeds_sync=true\n"
+                  )
               exit(0)
 
           token = os.environ.get("HF_TOKEN", "")
@@ -114,7 +127,11 @@ jobs:
           # Summary stats
           drift_count = len(report["drift_detected"])
           new_count = len(report["new_local_files"])
-          needs_sync = "true" if (new_count > 0 or drift_count > 0) else "false"
+          access_errors = sum(
+              1 for status in report["repo_accessibility"].values()
+              if not status.startswith("accessible")
+          )
+          needs_sync = "true" if (new_count > 0 or drift_count > 0 or access_errors > 0) else "false"
 
           os.makedirs("artifacts/hf-sync", exist_ok=True)
           with open("artifacts/hf-sync/weekly_drift_report.json", "w") as f:
@@ -124,47 +141,32 @@ jobs:
               fh.write(f"drift_count={drift_count}\n")
               fh.write(f"new_count={new_count}\n")
               fh.write(f"local_count={len(local_hashes)}\n")
+              fh.write(f"access_errors={access_errors}\n")
               fh.write(f"needs_sync={needs_sync}\n")
           PYEOF
 
       - name: Upload drift report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: hf-drift-weekly
           path: artifacts/hf-sync/weekly_drift_report.json
           retention-days: 90
 
-      - name: Create GitHub Issue
-        uses: actions/github-script@v7
+      - name: Publish sync summary and reconcile issue
+        uses: actions/github-script@v9
         env:
           DRIFT: ${{ steps.drift.outputs.drift_count }}
           NEW: ${{ steps.drift.outputs.new_count }}
           LOCAL: ${{ steps.drift.outputs.local_count }}
+          ACCESS_ERRORS: ${{ steps.drift.outputs.access_errors }}
           NEEDS_SYNC: ${{ steps.drift.outputs.needs_sync }}
         with:
           script: |
             const fs = require('fs');
-            const today = new Date().toISOString().slice(0, 10);
-            const title = `HuggingFace Sync Check - ${today}`;
+            const { reconcileRollingIssue } = require('./.github/scripts/issue-lifecycle.cjs');
+            const title = 'HuggingFace Sync - action required';
             const needsSync = process.env.NEEDS_SYNC === 'true';
-
-            // Close previous weekly issues
-            const existing = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              labels: 'hf-sync',
-              state: 'open',
-            });
-            for (const issue of existing.data) {
-              if (issue.title.startsWith('HuggingFace Sync Check -') && issue.title !== title) {
-                await github.rest.issues.update({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: issue.number,
-                  state: 'closed',
-                });
-              }
-            }
+            const accessErrors = Number(process.env.ACCESS_ERRORS || '0');
 
             let report = { new_local_files: [], repo_accessibility: {}, local_training_files: [] };
             try {
@@ -179,7 +181,8 @@ jobs:
             body += `| Metric | Value |\n|--------|-------|\n`;
             body += `| Local training files | ${process.env.LOCAL} |\n`;
             body += `| Files needing upload | ${process.env.NEW} |\n`;
-            body += `| Drift detected | ${process.env.DRIFT} |\n\n`;
+            body += `| Drift detected | ${process.env.DRIFT} |\n`;
+            body += `| Scanner/access errors | ${accessErrors} |\n\n`;
 
             // Repo accessibility
             body += `### Repository Accessibility\n`;
@@ -203,13 +206,15 @@ jobs:
 
             body += `---\n*Automated by weekly-hf-sync workflow*`;
 
-            const labels = ['hf-sync', 'automated'];
-            if (needsSync) labels.push('action-needed');
-
-            await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
+            await core.summary.addRaw(body).write();
+            await reconcileRollingIssue({
+              github,
+              context,
+              key: 'hf-sync',
+              label: 'hf-sync',
               title,
               body,
-              labels,
+              active: needsSync,
+              labels: ['automated', 'action-needed'],
+              legacyTitlePrefixes: ['HuggingFace Sync Check -'],
             });

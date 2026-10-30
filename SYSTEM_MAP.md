@@ -1,7 +1,7 @@
 # SYSTEM_MAP — load order from core to extension
 
-**Updated:** 2026-08-31  
-**Scope:** live tree at `main` after Dependabot #2807 (`60fd157`).  
+**Updated:** 2026-10-29
+**Scope:** root load-order map plus GitHub maintenance control plane; current `main` baseline `d4bf1a6e7`.
 **Diagram:** [SYSTEM_FLOW.mmd](SYSTEM_FLOW.mmd)
 
 This file is the root orientation map. It does **not** move source trees. Physical
@@ -121,6 +121,15 @@ python -m uvicorn api.main:app --reload --port 8080
 # Layer 1 — rust core
 npm run test:rust
 ```
+
+## GitHub maintenance control plane
+
+Issue intake and scheduled-report lifecycle rules are mapped in
+[docs/operations/GITHUB_ISSUE_MAINTENANCE.md](docs/operations/GITHUB_ISSUE_MAINTENANCE.md).
+The workflows reuse `.github/scripts/issue-lifecycle.cjs`: successful scheduled
+runs remain workflow summaries/artifacts, actionable exceptions share one
+automation-owned rolling issue, and verified recovery closes that issue. Human
+issues and GitHub project fields are outside automatic closure authority.
 
 ## Merge confidence after this map
 

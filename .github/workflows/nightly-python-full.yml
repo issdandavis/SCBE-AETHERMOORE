@@ -26,10 +26,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: 'npm'
@@ -40,7 +40,7 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -49,53 +49,87 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest pytest-asyncio pytest-cov hypothesis
+          # pytest-benchmark 5.3.0 reads a private Pytest field removed in
+          # Pytest 9.2. Keep the nightly correctness lane on the proven pair
+          # until the plugin publishes a compatible release.
+          pip install "pytest>=8,<9.2" "pytest-benchmark>=4,<5.3" pytest-asyncio pytest-cov hypothesis
 
       - name: Run full suite
+        id: full_suite
         env:
           PYTHONPATH: .
         run: |
+          set -o pipefail
           python -m pytest tests/ -q \
             --ignore=tests/node_modules \
             --ignore=tests/aetherbrowser/test_integration.py \
             --ignore=tests/aetherbrowser/test_red_zone_integration.py \
             -m "not slow" \
-            --continue-on-collection-errors
+            --continue-on-collection-errors 2>&1 | tee nightly-pytest.log
+
+      - name: Upload nightly failure evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: nightly-pytest-log
+          path: nightly-pytest.log
+          if-no-files-found: ignore
+          retention-days: 30
 
       # A red X on a scheduled run is easy to miss — surface failures as a
       # labeled issue so they land in triage instead of rotting silently.
-      - name: Open or update failure issue
+      - name: Reconcile failure issue
         if: failure()
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
-            const label = "nightly-failure";
+            const fs = require('fs');
+            const { reconcileRollingIssue } = require('./.github/scripts/issue-lifecycle.cjs');
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const log = fs.existsSync('nightly-pytest.log')
+              ? fs.readFileSync('nightly-pytest.log', 'utf8')
+              : '';
+            const findings = log
+              .split(/\r?\n/)
+              .filter((line) => /^(FAILED|ERROR) /.test(line))
+              .slice(-25);
             const body = [
-              `The scheduled full pytest run failed: ${runUrl}`,
+              '## Nightly full Python suite failed',
+              '',
+              `**Latest run:** ${runUrl}`,
               "",
               "The PR smoke lane does not cover these tests, so this failure is",
               "invisible to PR CI — triage before it compounds.",
+              ...(findings.length > 0
+                ? ['', '### Failure summary', '```text', ...findings, '```']
+                : ['', 'The run stopped before a pytest failure summary was produced.']),
+              '',
+              'The complete log is attached to the workflow run as `nightly-pytest-log`.',
             ].join("\n");
-            const { data: issues } = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: "open",
-              labels: label,
+            await reconcileRollingIssue({
+              github,
+              context,
+              key: 'nightly-python',
+              label: 'nightly-failure',
+              title: 'Nightly full Python suite failed',
+              active: true,
+              body,
+              labels: ['automated', 'action-needed'],
+              legacyTitlePrefixes: ['Nightly full Python suite failed'],
             });
-            if (issues.length > 0) {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issues[0].number,
-                body,
-              });
-            } else {
-              await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: "Nightly full Python suite failed",
-                body,
-                labels: [label],
-              });
-            }
+
+      - name: Close resolved failure issue
+        if: success()
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const { reconcileRollingIssue } = require('./.github/scripts/issue-lifecycle.cjs');
+            await reconcileRollingIssue({
+              github,
+              context,
+              key: 'nightly-python',
+              label: 'nightly-failure',
+              title: 'Nightly full Python suite failed',
+              active: false,
+              legacyTitlePrefixes: ['Nightly full Python suite failed'],
+            });

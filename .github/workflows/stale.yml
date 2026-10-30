@@ -16,16 +16,19 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-      - uses: actions/stale@v9
+      - uses: actions/stale@v11
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          stale-issue-message: '⏰ This issue has been automatically marked as stale because it has had no activity for 60 days. It will be closed in 14 days unless there is new activity. Please comment if this issue is still relevant.'
-          stale-pr-message: '⏰ This pull request has been automatically marked as stale due to 60 days of inactivity. It will be closed in 14 days unless there is new activity. Please rebase and update if still active.'
-          close-issue-message: '🔒 This issue was closed automatically after being stale for 14 days with no activity. Feel free to reopen if this is still relevant.'
+          stale-issue-message: '⏰ This issue has had no activity for 90 days. It will close in 30 more days unless it is updated or given an active/blocked exemption label.'
+          stale-pr-message: '⏰ This pull request has had no activity for 30 days. It will close in 14 more days unless it is updated.'
+          close-issue-message: '🔒 This issue closed after 120 days without activity. Reopen it with current evidence if the work is still needed.'
           close-pr-message: '🔒 This PR was closed automatically after being stale for 14 days with no activity. Please reopen with a rebase if you wish to continue.'
-          days-before-stale: 60
-          days-before-close: 14
+          days-before-stale: -1
+          days-before-issue-stale: 90
+          days-before-issue-close: 30
+          days-before-pr-stale: 30
+          days-before-pr-close: 14
           stale-issue-label: 'stale'
           stale-pr-label: 'stale'
-          exempt-issue-labels: 'pinned,security,bug,enhancement,priority:high'
+          exempt-issue-labels: 'pinned,security,critical,lead,action-needed,website-betterment,security-scan,nightly-failure,status:active,status:blocked'
           exempt-pr-labels: 'pinned,security,do-not-close'
