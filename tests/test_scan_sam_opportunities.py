@@ -97,7 +97,8 @@ def test_partial_failure_is_not_reported_as_clean_and_contains_no_key() -> None:
         def search_opportunities(self, **kwargs):
             raise SamGovRequestError(
                 "SAM.gov request failed with HTTP 401: "
-                f"https://api.sam.gov/opportunities/v2/search?api_key={redaction_key}"
+                f"https://api.sam.gov/opportunities/v2/search?api_key={redaction_key}",
+                status_code=401,
             )
 
     report = module.run_scan(

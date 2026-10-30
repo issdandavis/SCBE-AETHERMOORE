@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from urllib.parse import parse_qs, urlsplit
 
 import pytest
@@ -101,6 +101,31 @@ def test_auth_error_never_echoes_key(monkeypatch) -> None:
     assert caught.value.status_code == 401
     assert REDACTION_API_KEY not in str(caught.value)
     assert "api_key" not in str(caught.value)
+
+
+def test_transient_network_error_is_retried_within_bound(monkeypatch) -> None:
+    calls = 0
+
+    def fake_urlopen(request, timeout):
+        nonlocal calls
+        del request, timeout
+        calls += 1
+        if calls == 1:
+            raise URLError("temporary failure")
+        return _Response(
+            {
+                "totalRecords": 1,
+                "opportunitiesData": [{"noticeId": "N1", "title": "Recovered"}],
+            }
+        )
+
+    monkeypatch.setattr(sam_public, "urlopen", fake_urlopen)
+    client = SamGovPublicClient(api_key=TEST_API_KEY, max_retries=2, retry_backoff_seconds=0)
+
+    rows = client.search_opportunities(query="AI", limit=1)
+
+    assert [row["noticeId"] for row in rows] == ["N1"]
+    assert calls == 2
 
 
 def test_pagination_uses_page_index_and_deduplicates(monkeypatch) -> None:

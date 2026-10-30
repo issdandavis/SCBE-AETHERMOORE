@@ -110,3 +110,15 @@ official record, attachments, eligibility, and deadline.
   `git diff --check` passed.
 - Live profile quality and the real API response remain UNKNOWN until the
   reviewed branch runs with the repository secret in GitHub Actions.
+
+## First Live Branch Run — 2026-10-30
+
+- Run 41123624154 proved the key valid and the report/artifact path operational.
+- Fifteen of sixteen profiles succeeded: 212 unique public notices were
+  collected and 36 passed the deterministic relevance threshold.
+- One title profile encountered a transient network failure. The workflow
+  published the incomplete evidence and then failed as designed.
+- The shared client now retries only transient network, HTTP 408/429, and HTTP
+  5xx failures with a bounded exponential backoff. Authentication failures still
+  fail immediately. A second live run is required before this status becomes
+  PROVEN complete.

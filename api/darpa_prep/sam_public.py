@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from typing import Any, Iterable, Mapping, Sequence
@@ -132,6 +133,8 @@ class SamGovPublicClient:
     api_key: str | None = None
     base_url: str = DEFAULT_OPPORTUNITIES_URL
     timeout_seconds: int = 30
+    max_retries: int = 2
+    retry_backoff_seconds: float = 1.0
 
     def __post_init__(self) -> None:
         self.api_key = (self.api_key or _environment_api_key()).strip() or None
@@ -139,6 +142,10 @@ class SamGovPublicClient:
         self.base_url = validate_official_endpoint(override or self.base_url)
         if not 1 <= int(self.timeout_seconds) <= 120:
             raise ValueError("timeout_seconds must be between 1 and 120")
+        if not 0 <= int(self.max_retries) <= 5:
+            raise ValueError("max_retries must be between 0 and 5")
+        if not 0 <= float(self.retry_backoff_seconds) <= 10:
+            raise ValueError("retry_backoff_seconds must be between 0 and 10")
 
     def build_query(
         self,
@@ -226,7 +233,7 @@ class SamGovPublicClient:
                 output[name] = value
         return output
 
-    def _request_page(self, pairs: Iterable[tuple[str, str]]) -> dict[str, Any]:
+    def _request_page_once(self, pairs: Iterable[tuple[str, str]]) -> dict[str, Any]:
         if not self.api_key:
             raise ValueError("SAM_GOV_API_KEY or SAM_API_KEY is not configured")
         request_pairs = list(pairs) + [("api_key", self.api_key)]
@@ -263,6 +270,21 @@ class SamGovPublicClient:
         if rows is not None and not isinstance(rows, list):
             raise SamGovRequestError("SAM.gov returned an invalid opportunitiesData field")
         return payload
+
+    def _request_page(self, pairs: Iterable[tuple[str, str]]) -> dict[str, Any]:
+        query_pairs = list(pairs)
+        for attempt in range(int(self.max_retries) + 1):
+            try:
+                return self._request_page_once(query_pairs)
+            except SamGovRequestError as exc:
+                status = exc.status_code
+                retryable = status is None or status in {408, 429} or (status is not None and 500 <= status <= 599)
+                if not retryable or attempt >= int(self.max_retries):
+                    raise
+                delay = float(self.retry_backoff_seconds) * (2**attempt)
+                if delay:
+                    time.sleep(delay)
+        raise AssertionError("unreachable SAM.gov retry state")
 
     def search_opportunities(
         self,
