@@ -48,8 +48,20 @@ def test_mobile_backend_is_operator_configured_without_loopback_defaults() -> No
 
 def test_manifest_uses_aethermoor_bus_branding() -> None:
     config = _read("vite.config.ts")
-    twa = (ROOT / "apps" / "mobile" / "twa" / "twa-manifest.json").read_text(encoding="utf-8")
-    assert "VitePWA" in config
-    assert "name: 'Aethermoor Bus'" in config
+    index = _read("index.html")
+    main = _read("src/main.tsx")
+    manifest = _read("public/manifest.webmanifest")
+    service_worker = _read("public/sw.js")
+    twa = (ROOT / "apps" / "mobile" / "twa" / "twa-manifest.json").read_text(
+        encoding="utf-8"
+    )
+    assert "base: './'" in config
+    assert 'href="./manifest.webmanifest"' in index
+    assert "navigator.serviceWorker" in main
+    assert ".register(serviceWorkerUrl.toString()" in main
+    assert '"name": "Aethermoor Bus"' in manifest
+    assert '"display": "standalone"' in manifest
+    assert "const SHELL_CACHE = `aethermoor-shell-${CACHE_VERSION}`" in service_worker
+    assert '!request.headers.has("authorization")' in service_worker
     assert '"name": "Aethermoor Bus"' in twa
     assert '"packageId": "io.aethermoor.bus"' in twa
