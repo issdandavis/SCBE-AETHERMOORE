@@ -10612,6 +10612,8 @@ function runUpgrade(args) {
 
 function runSelftest() {
   const checks = [
+    ['--version'],
+    ['-v'],
     ['version', '--json'],
     ['doctor', '--json'],
   ];
@@ -10860,6 +10862,10 @@ if (argv.length === 0) {
 if (argv[0] === '--help' || argv[0] === '-h' || argv[0] === 'help') {
   process.stdout.write(colorizeHelp(CLI_HELP, ui({})));
   process.exit(0);
+}
+
+if (argv[0] === '--version' || argv[0] === '-v') {
+  runVersion(argv.slice(1));
 }
 
 if (argv[0] === 'tools' || argv[0] === 'list-tools') {
