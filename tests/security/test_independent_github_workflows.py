@@ -50,3 +50,15 @@ def test_weekly_security_scan_updates_the_audited_build_toolchain() -> None:
     assert '"setuptools>=84.1.0"' in text
     assert '"pip-audit==2.10.1"' in text
     assert "scripts/security/pip_audit_all.py" in text
+
+
+def test_weekly_gov_contracts_uses_documented_sam_v2_search_contract() -> None:
+    text = _workflow_text("weekly-gov-contracts-check.yml")
+    yaml.safe_load(text)
+
+    assert 'SAM_GOV_API_KEY: ${{ secrets.SAM_GOV_API_KEY }}' in text
+    assert '"title": term' in text
+    assert '"keywords": term' not in text
+    assert "if e.code == 404:" in text
+    assert "successful_terms += 1" in text
+    assert "reconcileRollingIssue" in text
