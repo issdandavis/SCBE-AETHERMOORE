@@ -205,4 +205,5 @@ def test_python_security_workflows_use_repository_wide_auditor() -> None:
 
     weekly = (workflows / "weekly-security-scan.yml").read_text(encoding="utf-8")
     assert "pip-audit-report.json" in weekly
+    assert 'totals.get("vulnerable_packages"' in weekly
     assert "pip install -r requirements.txt" not in weekly
