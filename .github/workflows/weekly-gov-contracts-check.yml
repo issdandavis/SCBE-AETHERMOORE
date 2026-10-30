@@ -14,10 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.11'
 
@@ -26,6 +26,8 @@ jobs:
 
       - name: Query SAM.gov for relevant opportunities
         id: sam_query
+        env:
+          SAM_GOV_API_KEY: ${{ secrets.SAM_GOV_API_KEY }}
         run: |
           python3 - <<'PYEOF'
           import json, os, datetime, urllib.request, urllib.parse, urllib.error
@@ -49,6 +51,8 @@ jobs:
 
           all_results = []
           seen_ids = set()
+          query_errors = []
+          successful_terms = 0
 
           for term in SEARCH_TERMS:
               params = {
@@ -66,6 +70,7 @@ jobs:
                   req = urllib.request.Request(url, headers={"Accept": "application/json"})
                   with urllib.request.urlopen(req, timeout=30) as resp:
                       data = json.loads(resp.read().decode("utf-8"))
+                  successful_terms += 1
 
                   for opp in data.get("opportunitiesData", []):
                       opp_id = opp.get("noticeId", "")
@@ -83,12 +88,14 @@ jobs:
                               "matchedKeyword": term,
                           })
               except urllib.error.HTTPError as e:
+                  query_errors.append({"term": term, "error": f"HTTP {e.code}"})
                   if e.code == 403:
                       print(f"::warning::SAM.gov API key required or rate limited for: {term}")
                   else:
                       print(f"::warning::SAM.gov query failed for '{term}': HTTP {e.code}")
               except Exception as e:
-                  print(f"::warning::SAM.gov query failed for '{term}': {e}")
+                  query_errors.append({"term": term, "error": type(e).__name__})
+                  print(f"::warning::SAM.gov query failed for '{term}': {type(e).__name__}")
 
           report = {
               "scan_date": today.isoformat(),
@@ -96,6 +103,8 @@ jobs:
               "total_opportunities": len(all_results),
               "search_terms": SEARCH_TERMS,
               "opportunities": all_results,
+              "successful_terms": successful_terms,
+              "query_errors": query_errors,
           }
 
           os.makedirs("artifacts/gov-contracts", exist_ok=True)
@@ -105,44 +114,31 @@ jobs:
 
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
               fh.write(f"total={len(all_results)}\n")
+              fh.write(f"errors={len(query_errors)}\n")
+              fh.write(f"successful_terms={successful_terms}\n")
 
           print(f"Found {len(all_results)} opportunities across {len(SEARCH_TERMS)} search terms")
           PYEOF
 
       - name: Upload SAM.gov report artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sam-gov-weekly-report
           path: artifacts/gov-contracts/sam_gov_weekly.json
           retention-days: 90
 
-      - name: Create or update GitHub Issue
-        uses: actions/github-script@v7
+      - name: Publish scan summary and reconcile issue
+        uses: actions/github-script@v9
         env:
           TOTAL_OPPS: ${{ steps.sam_query.outputs.total }}
+          QUERY_ERRORS: ${{ steps.sam_query.outputs.errors }}
+          SUCCESSFUL_TERMS: ${{ steps.sam_query.outputs.successful_terms }}
         with:
           script: |
             const fs = require('fs');
+            const { reconcileRollingIssue } = require('./.github/scripts/issue-lifecycle.cjs');
             const today = new Date().toISOString().slice(0, 10);
-            const title = `Gov Contracts Scan - ${today}`;
-
-            // Close previous weekly issues
-            const existing = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              labels: 'gov-contracts',
-              state: 'open',
-            });
-            for (const issue of existing.data) {
-              if (issue.title.startsWith('Gov Contracts Scan -') && issue.title !== title) {
-                await github.rest.issues.update({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: issue.number,
-                  state: 'closed',
-                });
-              }
-            }
+            const title = 'Government Contracts Scan - action required';
 
             let reportData = { opportunities: [], total_opportunities: 0 };
             try {
@@ -152,17 +148,28 @@ jobs:
             }
 
             const total = reportData.total_opportunities || 0;
+            const queryErrors = reportData.query_errors || [];
             let body = `## Weekly Government Contracts Scan\n\n`;
             body += `**Date:** ${today}\n`;
             body += `**Opportunities Found:** ${total}\n\n`;
 
-            if (total === 0) {
+            if (queryErrors.length > 0) {
+              body += `### Scan Incomplete\n\n`;
+              body += `${queryErrors.length} of ${reportData.search_terms?.length || 0} queries failed. `;
+              body += `A zero result is **UNKNOWN**, not evidence that no opportunities exist.\n\n`;
+              for (const error of queryErrors.slice(0, 20)) {
+                body += `- ${error.term}: ${error.error}\n`;
+              }
+              body += `\n`;
+            }
+
+            if (total === 0 && queryErrors.length === 0) {
               body += `No new opportunities matching our search terms were posted this week.\n\n`;
               body += `### Search Terms\n`;
               for (const term of (reportData.search_terms || [])) {
                 body += `- ${term}\n`;
               }
-            } else {
+            } else if (total > 0) {
               body += `### Opportunities\n\n`;
               body += `| Title | Department | Type | Deadline | Link |\n`;
               body += `|-------|-----------|------|----------|------|\n`;
@@ -178,10 +185,15 @@ jobs:
 
             body += `\n---\n*Automated by weekly-gov-contracts-check workflow*`;
 
-            await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
+            await core.summary.addRaw(body).write();
+            await reconcileRollingIssue({
+              github,
+              context,
+              key: 'gov-contracts',
+              label: 'gov-contracts',
               title,
               body,
-              labels: ['gov-contracts', 'automated'],
+              active: total > 0 || queryErrors.length > 0,
+              labels: ['automated', 'action-needed'],
+              legacyTitlePrefixes: ['Gov Contracts Scan -'],
             });

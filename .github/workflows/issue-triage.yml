@@ -13,82 +13,25 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
+      contents: read
       issues: write
 
     steps:
-      - name: Label issue based on content
-        uses: actions/github-script@v7
+      - name: Checkout trusted triage rules
+        uses: actions/checkout@v7
+
+      - name: Apply high-confidence labels
+        uses: actions/github-script@v9
         with:
           script: |
             const issue = context.payload.issue;
-            const title = issue.title.toLowerCase();
-            const body = (issue.body || '').toLowerCase();
-            const content = title + ' ' + body;
+            const { classifyIssue } = require('./.github/scripts/issue-triage.cjs');
+            const labels = classifyIssue({
+              title: issue.title,
+              labels: issue.labels,
+              author: issue.user,
+            });
 
-            const labels = [];
-
-            // Bug detection
-            if (content.includes('bug') || content.includes('error') ||
-                content.includes('crash') || content.includes('broken') ||
-                content.includes('not working') || content.includes('fail')) {
-              labels.push('bug');
-            }
-
-            // Feature request
-            if (content.includes('feature') || content.includes('request') ||
-                content.includes('add support') || content.includes('would be nice') ||
-                content.includes('enhancement') || content.includes('suggestion')) {
-              labels.push('enhancement');
-            }
-
-            // Security
-            if (content.includes('security') || content.includes('vulnerability') ||
-                content.includes('cve') || content.includes('exploit') ||
-                content.includes('injection') || content.includes('xss')) {
-              labels.push('security');
-              labels.push('priority-high');
-            }
-
-            // Documentation
-            if (content.includes('documentation') || content.includes('docs') ||
-                content.includes('readme') || content.includes('example') ||
-                content.includes('tutorial')) {
-              labels.push('documentation');
-            }
-
-            // Crypto/PQC specific
-            if (content.includes('kyber') || content.includes('dilithium') ||
-                content.includes('pqc') || content.includes('post-quantum') ||
-                content.includes('cryptograph')) {
-              labels.push('crypto');
-            }
-
-            // Hyperbolic/Math specific
-            if (content.includes('hyperbolic') || content.includes('poincare') ||
-                content.includes('harmonic') || content.includes('layer')) {
-              labels.push('core-math');
-            }
-
-            // Sacred Tongues
-            if (content.includes('tongue') || content.includes('ko ') ||
-                content.includes('av ') || content.includes('geoseal') ||
-                content.includes('tokenizer')) {
-              labels.push('sacred-tongues');
-            }
-
-            // Commercial inquiry
-            if (content.includes('license') || content.includes('commercial') ||
-                content.includes('enterprise') || content.includes('pricing')) {
-              labels.push('commercial-inquiry');
-            }
-
-            // Question
-            if (title.includes('?') || content.includes('how do') ||
-                content.includes('how to') || content.includes('what is')) {
-              labels.push('question');
-            }
-
-            // Apply labels
             if (labels.length > 0) {
               await github.rest.issues.addLabels({
                 owner: context.repo.owner,
@@ -97,36 +40,3 @@ jobs:
                 labels: labels
               });
             }
-
-            // Welcome message for first-time contributors
-            const comments = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issue.number
-            });
-
-            // Add triage comment
-            let response = '👋 Thanks for opening this issue!\n\n';
-
-            if (labels.includes('security')) {
-              response += '🔒 **Security issues are prioritized.** We\'ll review this ASAP.\n\n';
-            }
-
-            if (labels.includes('commercial-inquiry')) {
-              response += '💼 For commercial licensing, please also email: issdandavis@gmail.com\n\n';
-            }
-
-            if (labels.includes('question')) {
-              response += '📚 Have you checked:\n';
-              response += '- [README](https://github.com/issdandavis/SCBE-AETHERMOORE#readme)\n';
-              response += '- [Pitch Deck](https://scbe-aethermoore-x8vu3ly.gamma.site/)\n\n';
-            }
-
-            response += '---\n*Auto-triaged by GitHub Actions*';
-
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issue.number,
-              body: response
-            });

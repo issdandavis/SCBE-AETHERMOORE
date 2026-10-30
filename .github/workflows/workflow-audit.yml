@@ -16,10 +16,10 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.11'
 
@@ -32,7 +32,7 @@ jobs:
             --summary .github/workflows/workflow-audit-summary.md
 
       - name: Upload workflow audit report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: workflow-audit-report
           path: |
@@ -46,26 +46,36 @@ jobs:
             cat .github/workflows/workflow-audit-summary.md >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      - name: Open follow-up issue on high-risk findings
-        if: steps.audit.outputs.status == 'fail'
-        uses: actions/github-script@v7
+      - name: Reconcile workflow audit issue
+        if: always()
+        uses: actions/github-script@v9
         with:
           script: |
+            const { reconcileRollingIssue } = require('./.github/scripts/issue-lifecycle.cjs');
             const highCount = Number("${{ steps.audit.outputs.high_count }}") || 0;
-            await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: `Workflow Audit: ${highCount} high-risk CI masking issue(s) found`,
-              body: [
+            const issueCount = Number("${{ steps.audit.outputs.issue_count }}") || 0;
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
                 "## Workflow Governance Audit",
                 "",
-                "High-risk workflow issues were detected by the scheduled audit.",
+                `High-risk findings: **${highCount}**`,
+                `All findings: **${issueCount}**`,
                 "",
                 "Please review and fix masked error patterns before the next release gate.",
                 "",
-                `Output: .github/workflows/workflow-audit-report.json`,
+                `Latest run: ${runUrl}`,
+                "Artifact: `workflow-audit-report`",
                 "",
                 "*Automated by workflow-audit.*",
-              ].join("\n"),
-              labels: ["ci", "automation", "security"]
+              ].join("\n");
+            await reconcileRollingIssue({
+              github,
+              context,
+              key: 'workflow-audit',
+              label: 'ci',
+              title: 'Workflow Governance Audit - action required',
+              active: highCount > 0,
+              body,
+              labels: ['automation', 'automated', 'security', 'action-needed'],
+              legacyTitlePrefixes: ['Workflow Audit:'],
             });
