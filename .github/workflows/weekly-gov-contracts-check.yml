@@ -60,7 +60,10 @@ jobs:
                   "postedTo": posted_to,
                   "limit": "25",
                   "offset": "0",
-                  "keywords": term,
+                  # SAM.gov Opportunities v2 documents title as the
+                  # server-side text filter. "keywords" is not a supported
+                  # request parameter and can produce unfiltered results.
+                  "title": term,
               }
               if API_KEY:
                   params["api_key"] = API_KEY
@@ -88,8 +91,17 @@ jobs:
                               "matchedKeyword": term,
                           })
               except urllib.error.HTTPError as e:
+                  # The public API documents 404 as "No Data found", so it is
+                  # a successful empty query rather than an incomplete scan.
+                  if e.code == 404:
+                      successful_terms += 1
+                      print(f"No SAM.gov opportunities found for: {term}")
+                      continue
+
                   query_errors.append({"term": term, "error": f"HTTP {e.code}"})
-                  if e.code == 403:
+                  if e.code == 401:
+                      print(f"::warning::SAM.gov API key is missing, invalid, or expired for: {term}")
+                  elif e.code == 403:
                       print(f"::warning::SAM.gov API key required or rate limited for: {term}")
                   else:
                       print(f"::warning::SAM.gov query failed for '{term}': HTTP {e.code}")
