@@ -56,7 +56,7 @@ def test_weekly_gov_contracts_uses_documented_sam_v2_search_contract() -> None:
     text = _workflow_text("weekly-gov-contracts-check.yml")
     yaml.safe_load(text)
 
-    assert 'SAM_GOV_API_KEY: ${{ secrets.SAM_GOV_API_KEY }}' in text
+    assert "SAM_GOV_API_KEY: ${{ secrets.SAM_GOV_API_KEY }}" in text
     assert '"title": term' in text
     assert '"keywords": term' not in text
     assert "if e.code == 404:" in text
