@@ -41,11 +41,11 @@ import re
 import sys
 import time
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Tuple
 from urllib.parse import quote_plus
-from urllib.request import urlopen, Request
+from urllib.request import urlopen
 from urllib.error import URLError
 import xml.etree.ElementTree as ET
 
@@ -60,6 +60,8 @@ try:
 except ImportError as _e:
     TONGUE_SCORING = False
     print(f"[WARN] tongue_scorer not available: {_e} — running without L2 orientation headers")
+
+from api.darpa_prep.sam_public import SamGovPublicClient
 
 # Load env from connector oauth if running locally
 _ENV_PATH = REPO_ROOT / "config" / "connector_oauth" / ".env.connector.oauth"
@@ -102,23 +104,14 @@ RESEARCH_QUERIES = [
     {"label": "geometric_deep_learning", "arxiv": "geometric deep learning equivariant networks", "sam": None},
 ]
 
-# SAM.gov NAICS codes relevant to SCBE work
-SAM_NAICS = ["541715", "541511", "541512", "541519"]  # R&D + software
-
-# DARPA organization code on SAM.gov
-DARPA_ORG_ID = "97AS"
-
-
 # =============================================================================
 # SAM.GOV CLIENT
 # =============================================================================
 
 
 class SamGovClient:
-    BASE = "https://api.sam.gov/opportunities/v2/search"
-
     def __init__(self, api_key: str):
-        self.api_key = api_key
+        self.client = SamGovPublicClient(api_key=api_key, timeout_seconds=15)
 
     def fetch(
         self,
@@ -127,34 +120,16 @@ class SamGovClient:
         limit: int = 10,
         darpa_only: bool = False,
     ) -> List[dict]:
-        now = datetime.now(timezone.utc)
-        since = (now - timedelta(days=days_back)).strftime("%m/%d/%Y")
-        until = now.strftime("%m/%d/%Y")
-        params = {
-            "api_key": self.api_key,
-            "q": keywords,
-            "postedFrom": since,
-            "postedTo": until,
-            "limit": str(limit),
-            "offset": "0",
-            # R&D-relevant notice types only:
-            # p=Presolicitation, k=Combined Synopsis, r=Sources Sought, s=Special Notice
-            "ptype": "p,k,r,s",
-            # R&D and software NAICS codes
-            "naicscode": ",".join(SAM_NAICS),
-        }
-        if darpa_only:
-            params["organizationId"] = DARPA_ORG_ID
-
-        qs = "&".join(f"{k}={quote_plus(str(v))}" for k, v in params.items())
-        url = f"{self.BASE}?{qs}"
-
         try:
-            req = Request(url, headers={"Accept": "application/json"})
-            with urlopen(req, timeout=15) as r:
-                data = json.loads(r.read().decode())
-            return data.get("opportunitiesData", [])
-        except URLError as e:
+            return self.client.search_opportunities(
+                query=keywords,
+                days_back=days_back,
+                limit=limit,
+                active_only=True,
+                notice_types=("p", "k", "r", "s"),
+                organization_name=("Defense Advanced Research Projects Agency" if darpa_only else None),
+            )
+        except Exception as e:
             print(f"  [SAM] fetch error for '{keywords}': {e}")
             return []
 

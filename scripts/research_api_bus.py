@@ -254,7 +254,7 @@ def _search_sam_gov(query: str, limit: int) -> dict:
 
         client = SamGovClient()
         raw = client.search_opportunities(query=query, limit=limit, active_only=True)
-        normalized = [client.normalize_opportunity(item).model_dump() for item in raw]
+        normalized = [(item, client.normalize_opportunity(item).model_dump()) for item in raw]
     except ValueError as exc:
         return _error("sam_gov", f"Auth error: {exc}")
     except Exception as exc:
@@ -262,16 +262,16 @@ def _search_sam_gov(query: str, limit: int) -> dict:
 
     results = [
         {
-            "title": r.get("title", ""),
-            "agency": r.get("department_name", r.get("agency_name", "")),
-            "type": r.get("opportunity_type", ""),
-            "naics": r.get("naics", ""),
-            "set_aside": r.get("set_aside_description", ""),
-            "close_date": r.get("response_deadline", ""),
-            "notice_id": r.get("notice_id", ""),
-            "url": r.get("ui_link", ""),
+            "title": normalized_row.get("title", ""),
+            "agency": normalized_row.get("agency", ""),
+            "type": raw_row.get("type", normalized_row.get("instrument_type", "")),
+            "naics": raw_row.get("naicsCode", ""),
+            "set_aside": raw_row.get("setAside", ""),
+            "close_date": normalized_row.get("deadline", ""),
+            "notice_id": raw_row.get("noticeId", ""),
+            "url": normalized_row.get("submission_path", ""),
         }
-        for r in normalized
+        for raw_row, normalized_row in normalized
     ]
     return _result("sam_gov", results)
 

@@ -11,7 +11,9 @@ import pytest
 pytest.importorskip("_cffi_backend", reason="cffi backend unavailable — cryptography will panic")
 
 from api import main as api_main  # noqa: E402
+from api.darpa_prep import routes as darpa_routes  # noqa: E402
 from fastapi import HTTPException  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
 
 fake_mangum = types.ModuleType("mangum")
 
@@ -54,6 +56,32 @@ def test_verify_api_key_rejects_missing_headers(monkeypatch) -> None:
     with pytest.raises(HTTPException) as exc_info:
         asyncio.run(api_main.verify_api_key(api_key=None, api_key_legacy=None))
     assert exc_info.value.status_code == 401
+
+
+def test_sam_gov_search_cannot_spend_server_quota_without_auth(monkeypatch) -> None:
+    monkeypatch.setattr(api_main, "VALID_API_KEYS", {"configured-key": "tenant"})
+    with TestClient(api_main.app) as client:
+        response = client.get("/v1/opportunities/sam-gov/search", params={"query": "autonomy"})
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Missing API key"
+
+
+def test_sam_gov_search_works_for_authenticated_tenant(monkeypatch) -> None:
+    class EmptySamClient:
+        def search_opportunities(self, **kwargs):
+            assert kwargs == {"query": "autonomy", "limit": 10, "active_only": True}
+            return []
+
+    monkeypatch.setattr(api_main, "VALID_API_KEYS", {"configured-key": "tenant"})
+    monkeypatch.setattr(darpa_routes, "SamGovClient", EmptySamClient)
+    with TestClient(api_main.app) as client:
+        response = client.get(
+            "/v1/opportunities/sam-gov/search",
+            params={"query": "autonomy"},
+            headers={"SCBE_api_key": "configured-key"},
+        )
+    assert response.status_code == 200
+    assert response.json() == {"query": "autonomy", "count": 0, "opportunities": []}
 
 
 def test_lambda_extract_api_key_accepts_new_and_legacy_headers() -> None:

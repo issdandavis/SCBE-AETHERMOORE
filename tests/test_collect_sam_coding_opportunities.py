@@ -23,7 +23,7 @@ def load_module():
 def test_build_plan_redacts_api_key():
     module = load_module()
     args = Namespace(
-        endpoint="https://api.sam.gov/prod/opportunities/v2/search",
+        endpoint="https://api.sam.gov/opportunities/v2/search",
         keyword=["software development"],
         posted_from="04/01/2026",
         posted_to="04/30/2026",
@@ -37,7 +37,7 @@ def test_build_plan_redacts_api_key():
 
     assert plan["api_key_present"] is True
     assert plan["queries"][0]["params"]["api_key"] == "<redacted>"
-    assert plan["queries"][0]["params"]["q"] == "software development"
+    assert plan["queries"][0]["params"]["title"] == "software development"
 
 
 def test_normalize_opportunities_metadata_only():
