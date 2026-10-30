@@ -38,9 +38,7 @@ def test_daily_dependency_audit_uses_one_rolling_issue_not_daily_issue_spam() ->
     assert "active: hasIssues" in text
     assert "legacyTitlePrefixes: ['Security Scan -']" in text
 
-    helper = (ROOT / ".github" / "scripts" / "issue-lifecycle.cjs").read_text(
-        encoding="utf-8"
-    )
+    helper = (ROOT / ".github" / "scripts" / "issue-lifecycle.cjs").read_text(encoding="utf-8")
     assert "github.rest.issues.update" in helper
     assert "state_reason: 'completed'" in helper
 

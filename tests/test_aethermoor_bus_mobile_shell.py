@@ -52,9 +52,7 @@ def test_manifest_uses_aethermoor_bus_branding() -> None:
     main = _read("src/main.tsx")
     manifest = _read("public/manifest.webmanifest")
     service_worker = _read("public/sw.js")
-    twa = (ROOT / "apps" / "mobile" / "twa" / "twa-manifest.json").read_text(
-        encoding="utf-8"
-    )
+    twa = (ROOT / "apps" / "mobile" / "twa" / "twa-manifest.json").read_text(encoding="utf-8")
     assert "base: './'" in config
     assert 'href="./manifest.webmanifest"' in index
     assert "navigator.serviceWorker" in main
