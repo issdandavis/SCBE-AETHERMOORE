@@ -1,10 +1,17 @@
 # Sacred Egg Challenge-Response PUF Harness
 
-**Status:** candidate forward path.  
+**Status:** exploratory pairwise harness; superseded for authentication
+measurements by `SACRED_EGG_CRP_PUF_PROTOCOL_V2.md`.
 **Harness:** `scripts/experiments/sacred_egg_crp_puf_analysis.py`  
 **Tests:** `tests/experiments/test_sacred_egg_crp_puf_analysis.py`
 
 ## Why this exists
+
+This v1 harness remains useful for exploratory distance plots and backward
+compatibility. It does not enforce a temporal enrollment/verification split:
+its quantization thresholds are learned from all rows that it later scores.
+Do not use a v1 green result as held-out authentication evidence. Use the V2
+protocol for that claim.
 
 The raw seeded-topology PUF test asks whether deterministic seed-derived
 geometry alone can resist cloning. That narrow model is parked because the
