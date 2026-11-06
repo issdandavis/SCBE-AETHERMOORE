@@ -252,7 +252,8 @@ async def _llm_generate(
                 payload = {
                     "systemInstruction": {"parts": [{"text": system_prompt}]},
                     "contents": [{"role": "user", "parts": [{"text": user_text}]}],
-                    "generationConfig": {"maxOutputTokens": max_tokens, "temperature": temperature},
+                    # Use Google's sampling/thinking defaults; no deprecated overrides.
+                    "generationConfig": {"maxOutputTokens": max_tokens},
                 }
             elif provider_type == "openai":
                 headers["Authorization"] = f"Bearer {api_key}"

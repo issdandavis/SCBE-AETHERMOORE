@@ -229,7 +229,8 @@ def test_decision_flips_for_unauthorized_at_the_gate(centers, gate, gate_idx):
     base_d, _ = layer_8_multi_well(u, centers)
     assert base_d < 0.5  # the gate looks perfectly safe by geometry alone
     assert governed_decision(u, centers, gate_idx, intent=0.0).decision == "ALLOW"
-    assert governed_decision(u, centers, gate_idx, intent=1.0).decision == "DENY"
+    # Bounded risk can now reach the stronger SNAP threshold near the gate.
+    assert governed_decision(u, centers, gate_idx, intent=1.0).decision in {"DENY", "SNAP"}
 
 
 def test_end_to_end_grounded_decision(centers, gate, gate_idx):
@@ -246,7 +247,7 @@ def test_end_to_end_grounded_decision(centers, gate, gate_idx):
     assert i_intruder > 0.0
 
     assert governed_decision(u, centers, gate_idx, i_auth).decision == "ALLOW"
-    assert governed_decision(u, centers, gate_idx, i_intruder).decision == "DENY"
+    assert governed_decision(u, centers, gate_idx, i_intruder).decision in {"DENY", "SNAP"}
 
 
 # --------------------------------------------------------------------- intent grounded in the real ring gate

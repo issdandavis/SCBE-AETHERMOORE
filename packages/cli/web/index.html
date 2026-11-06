@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="scbe-api-token" content="__SCBE_API_TOKEN__" />
+    <meta
+      name="description"
+      content="SCBE Agent — a first-party conversational workspace for local and hosted models with governed tools."
+    />
+    <title>SCBE Agent</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <header class="masthead">
+      <a class="brand" href="/" aria-label="SCBE Agent home">
+        <span class="brand-orbit" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span><strong>SCBE</strong><small>Agent field console</small></span>
+      </a>
+      <div class="mast-controls">
+        <button class="model-chip" id="modelButton" type="button" aria-haspopup="dialog">
+          <span class="pulse" aria-hidden="true"></span>
+          <span id="modelLabel">connecting</span>
+        </button>
+        <label class="permission-control">
+          <span>Permissions</span>
+          <select id="permissionSelect" aria-label="Permission mode">
+            <option value="ask">Ask</option>
+            <option value="auto-edit">Auto-edit</option>
+            <option value="plan">Plan only</option>
+          </select>
+        </label>
+        <button class="mechanics-trigger" id="mechanicsButton" type="button" aria-haspopup="dialog">
+          <span class="mechanics-glyph" aria-hidden="true">◇◯</span>
+          <span class="mechanics-label">Mechanics</span>
+        </button>
+        <button class="icon-button" id="commandsButton" type="button" aria-haspopup="dialog">
+          <span aria-hidden="true">⌘</span><span class="sr-only">Open custom commands</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="app-grid">
+      <aside class="session-rail" aria-label="Conversations">
+        <div class="rail-heading">
+          <div>
+            <span class="utility-label">Workspace memory</span>
+            <h2>Sessions</h2>
+          </div>
+          <button class="new-session" id="newSessionButton" type="button" title="New conversation">
+            +
+          </button>
+        </div>
+        <nav id="sessionList" class="session-list" aria-label="Saved sessions"></nav>
+        <div class="rail-foot">
+          <span class="status-light" id="healthLight" aria-hidden="true"></span>
+          <span id="workspaceLabel">Local workspace</span>
+        </div>
+      </aside>
+
+      <main class="conversation-stage">
+        <section class="conversation-paper" aria-label="Conversation">
+          <div class="conversation-head">
+            <div>
+              <span class="utility-label">Active conversation</span>
+              <h1 id="conversationTitle">What are we making?</h1>
+            </div>
+            <button class="text-button" id="compactButton" type="button">Compact context</button>
+          </div>
+
+          <div id="emptyState" class="empty-state">
+            <p class="opening-mark" aria-hidden="true">⌁</p>
+            <h2>Give the system an outcome.</h2>
+            <p>
+              It can inspect this workspace, edit files, run checks, and keep the work resumable.
+              Tool machinery stays quiet until it matters.
+            </p>
+            <div class="prompt-starters" aria-label="Example prompts">
+              <button
+                type="button"
+                data-prompt="Map this project, then tell me the safest next improvement."
+              >
+                Map the project
+              </button>
+              <button
+                type="button"
+                data-prompt="Find the failing tests, explain the root cause, and propose a repair."
+              >
+                Diagnose tests
+              </button>
+              <button
+                type="button"
+                data-prompt="Review the current Git diff and flag anything risky or incomplete."
+              >
+                Review the diff
+              </button>
+            </div>
+          </div>
+
+          <div id="messageLog" class="message-log" aria-live="polite" aria-label="Messages"></div>
+
+          <form id="composer" class="composer">
+            <label for="messageInput" class="sr-only">Message SCBE</label>
+            <textarea
+              id="messageInput"
+              rows="1"
+              placeholder="Ask SCBE to build, inspect, explain, or verify…"
+              autocomplete="off"
+            ></textarea>
+            <div class="composer-foot">
+              <div class="composer-options">
+                <button class="slash-hint" id="slashButton" type="button">/ commands</button>
+                <label
+                  class="once-toggle"
+                  title="Explicitly approve run_command for only this message"
+                >
+                  <input id="commandApproval" type="checkbox" />
+                  <span>Allow one shell command</span>
+                </label>
+              </div>
+              <button class="send-button" id="sendButton" type="submit">
+                <span>Send</span><span aria-hidden="true">↗</span>
+              </button>
+            </div>
+          </form>
+          <p class="composer-note">
+            Enter sends · Shift+Enter adds a line · Ctrl+K focuses the prompt
+          </p>
+        </section>
+      </main>
+
+      <aside class="trace-rail" aria-label="Tool activity">
+        <div class="trace-heading">
+          <span class="utility-label">Governed execution</span>
+          <h2>Tool orbit</h2>
+          <p>Every node is a real model-visible action in this turn.</p>
+        </div>
+        <div class="orbit-map" id="orbitMap" aria-label="Tool call map">
+          <span class="orbit orbit-one"></span>
+          <span class="orbit orbit-two"></span>
+          <span class="orbit orbit-three"></span>
+          <span class="orbit-core"><strong id="toolCount">0</strong><small>calls</small></span>
+          <div id="orbitNodes"></div>
+        </div>
+        <ol class="trace-list" id="traceList">
+          <li class="trace-empty">No tools used yet. Conversation alone is allowed.</li>
+        </ol>
+        <details class="registry-drawer">
+          <summary><span>Curated registry</span><span id="registryCount">10 tools</span></summary>
+          <ul id="toolRegistry"></ul>
+        </details>
+      </aside>
+    </div>
+
+    <dialog id="commandsDialog" class="sheet-dialog">
+      <form method="dialog" class="dialog-shell">
+        <header>
+          <div>
+            <span class="utility-label">Prompt workshop</span>
+            <h2>Custom commands</h2>
+          </div>
+          <button class="icon-button dialog-close" value="cancel" aria-label="Close">×</button>
+        </header>
+        <p class="dialog-intro">
+          A command is a reusable prompt. Use <code>$ARGUMENTS</code> where invocation text should
+          go.
+        </p>
+        <div id="commandList" class="command-list"></div>
+        <fieldset class="command-maker">
+          <legend>Create a command</legend>
+          <div class="field-row">
+            <label
+              >Name<input
+                id="commandName"
+                name="name"
+                placeholder="review"
+                pattern="[a-z][a-z0-9-]{0,31}"
+            /></label>
+            <label
+              >Scope<select id="commandScope" name="scope">
+                <option value="user">My machine</option>
+                <option value="project">This project</option>
+              </select></label
+            >
+          </div>
+          <label
+            >Description<input
+              id="commandDescription"
+              name="description"
+              placeholder="Review code with project conventions"
+          /></label>
+          <label
+            >Template<textarea
+              id="commandTemplate"
+              name="template"
+              rows="5"
+              placeholder="Review $ARGUMENTS. Inspect the relevant files and return prioritized findings."
+            ></textarea>
+          </label>
+          <button id="saveCommandButton" class="primary-action" type="button">Save command</button>
+          <p id="commandFeedback" class="form-feedback" role="status"></p>
+        </fieldset>
+      </form>
+    </dialog>
+
+    <dialog id="modelDialog" class="sheet-dialog model-dialog">
+      <form method="dialog" class="dialog-shell">
+        <header>
+          <div>
+            <span class="utility-label">Provider socket</span>
+            <h2>Choose the mind</h2>
+          </div>
+          <button class="icon-button dialog-close" value="cancel" aria-label="Close">×</button>
+        </header>
+        <p class="dialog-intro">Keys stay in environment variables on the machine running SCBE.</p>
+        <label>Provider<select id="providerSelect"></select></label>
+        <label>Model<input id="modelInput" autocomplete="off" /></label>
+        <button id="saveModelButton" class="primary-action" type="button">Use this model</button>
+        <p id="modelFeedback" class="form-feedback" role="status"></p>
+      </form>
+    </dialog>
+
+    <dialog
+      id="mechanicsDialog"
+      class="sheet-dialog mechanics-dialog"
+      aria-labelledby="mechanicsTitle"
+    >
+      <div class="mechanics-shell">
+        <header class="mechanics-head">
+          <div>
+            <span class="utility-label">Advanced substrate view</span>
+            <h2 id="mechanicsTitle">Mechanical computer</h2>
+            <p>
+              Four coding primitives and one folded opcode space, exposed as an operator reference.
+            </p>
+          </div>
+          <button
+            class="icon-button mechanics-close"
+            id="mechanicsCloseButton"
+            type="button"
+            aria-label="Close mechanics view"
+          >
+            ×
+          </button>
+        </header>
+
+        <div class="mechanics-tabs" role="tablist" aria-label="Mechanics views">
+          <button
+            id="primitivesTab"
+            type="button"
+            role="tab"
+            aria-selected="true"
+            aria-controls="primitivesPanel"
+            tabindex="0"
+            data-mechanics-tab="primitives"
+          >
+            <span aria-hidden="true">DATA · BIND · BRANCH · LOOP</span>
+            <span class="sr-only">Coding primitives wheel</span>
+          </button>
+          <button
+            id="waferTab"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="waferPanel"
+            tabindex="-1"
+            data-mechanics-tab="wafer"
+          >
+            <span aria-hidden="true">j-space wafer · 64 cells</span>
+            <span class="sr-only">J-space wafer</span>
+          </button>
+        </div>
+
+        <section
+          class="mechanics-panel primitives-panel"
+          id="primitivesPanel"
+          role="tabpanel"
+          aria-labelledby="primitivesTab"
+          data-mechanics-panel="primitives"
+        >
+          <div class="primitive-layout">
+            <div class="primitive-instrument">
+              <div class="primitive-wheel" aria-label="Select a coding primitive">
+                <button
+                  class="primitive-node data-node selected"
+                  type="button"
+                  data-primitive="DATA"
+                  aria-pressed="true"
+                >
+                  <span>DATA</span><strong>+ − ×</strong><small>values</small>
+                </button>
+                <button
+                  class="primitive-node bind-node"
+                  type="button"
+                  data-primitive="BIND"
+                  aria-pressed="false"
+                >
+                  <span>BIND</span><strong>let x</strong><small>state</small>
+                </button>
+                <button
+                  class="primitive-node branch-node"
+                  type="button"
+                  data-primitive="BRANCH"
+                  aria-pressed="false"
+                >
+                  <span>BRANCH</span><strong>if · yes/no</strong><small>select</small>
+                </button>
+                <button
+                  class="primitive-node loop-node"
+                  type="button"
+                  data-primitive="LOOP"
+                  aria-pressed="false"
+                >
+                  <span>LOOP</span><strong>◯ repeat</strong><small>iterate</small>
+                </button>
+                <div class="wheel-hub" aria-hidden="true">
+                  <strong>⏚</strong><span>Clay<br />substrate</span>
+                </div>
+              </div>
+              <p class="tape-line">
+                <span>The tape</span><strong>read · op · write · move</strong>
+              </p>
+            </div>
+
+            <article class="primitive-readout" id="primitiveReadout" aria-live="polite">
+              <div class="readout-heading">
+                <span id="primitiveIndex">01 / 04</span>
+                <span id="primitiveStatus">Supplied mark · ✓ 98.6%</span>
+              </div>
+              <p class="readout-kind" id="primitiveKind">DATA · values</p>
+              <h3 id="primitivePattern">join + take − weave ×</h3>
+              <p id="primitiveDescription">
+                Number-realm operations over leaves 0–9. The conlang’s operate step.
+              </p>
+              <dl class="mechanical-notation">
+                <div>
+                  <dt>Form</dt>
+                  <dd id="primitiveForm">value · operation · value</dd>
+                </div>
+                <div>
+                  <dt>Tape move</dt>
+                  <dd id="primitiveTape">read · op · write</dd>
+                </div>
+                <div>
+                  <dt>Runtime</dt>
+                  <dd id="primitiveRuntime">read_file · search_text · workspace_info</dd>
+                </div>
+              </dl>
+            </article>
+          </div>
+
+          <div class="mechanics-drawers">
+            <details open>
+              <summary><span>Compose the four</span><span>minimal mechanical set</span></summary>
+              <div class="composition-grid" id="compositionGrid">
+                <code>a ; b</code>
+                <p><strong>Sequence</strong> — do a, then b; the tape moves right.</p>
+                <code>let x = a ; f(x)</code>
+                <p><strong>Bind</strong> — name an intermediate, store it, reuse it.</p>
+                <code>if v then a else b</code>
+                <p><strong>Branch</strong> — the up/down signal selects a path.</p>
+                <code>while v: body</code>
+                <p><strong>Loop</strong> — iterate with carried state.</p>
+              </div>
+              <p class="universal-line">
+                BRANCH + LOOP + BIND <span>= universal computation</span>
+              </p>
+            </details>
+
+            <details>
+              <summary>
+                <span>Six tongue lanes</span><span>φ-weighted · one substrate</span>
+              </summary>
+              <div
+                class="tongue-lanes"
+                id="tongueLanes"
+                aria-label="Six phi-weighted language lanes"
+              ></div>
+            </details>
+          </div>
+
+          <p class="evidence-note">
+            Verification marks and percentages are preserved from the supplied mechanics notes; this
+            interface does not re-run or independently certify those measurements. DATA + BIND are
+            marked done there; BRANCH + LOOP are marked as the next free nodes.
+          </p>
+        </section>
+
+        <section
+          class="mechanics-panel wafer-panel"
+          id="waferPanel"
+          role="tabpanel"
+          aria-labelledby="waferTab"
+          data-mechanics-panel="wafer"
+          hidden
+        >
+          <div class="wafer-copy">
+            <span class="utility-label" id="waferName">j-space wafer</span>
+            <h3 id="waferSubtitle">The fold heals.</h3>
+            <p>
+              Sixty-four opcode cells share one hyperbolic space: the Poincaré disk and the sheet
+              <code id="waferEquation">−x₀² + x₁² + x₂² = −1</code> are two views of the same
+              geometry.
+            </p>
+          </div>
+
+          <div class="wafer-console">
+            <div class="wafer-toolbar" role="group" aria-label="Wafer view">
+              <span>View</span>
+              <button type="button" data-wafer-view="disk" aria-pressed="true">Disk</button>
+              <button type="button" data-wafer-view="sheet" aria-pressed="false">Sheet</button>
+              <button type="button" data-wafer-view="spin" aria-pressed="false">Spin bands</button>
+            </div>
+
+            <div class="wafer-stage">
+              <div
+                class="wafer-surface view-disk"
+                id="waferSurface"
+                role="img"
+                aria-label="Poincaré disk with 64 opcode cells arranged across four realm bands"
+              >
+                <span class="wafer-band realm-band-3" aria-hidden="true"></span>
+                <span class="wafer-band realm-band-2" aria-hidden="true"></span>
+                <span class="wafer-band realm-band-1" aria-hidden="true"></span>
+                <span class="wafer-band realm-band-0" aria-hidden="true"></span>
+                <span class="wafer-axis wafer-axis-x" aria-hidden="true"></span>
+                <span class="wafer-axis wafer-axis-y" aria-hidden="true"></span>
+                <div id="opcodeCells" class="opcode-cells" aria-hidden="true"></div>
+                <div class="nest-marker" aria-hidden="true">
+                  <strong id="waferNestId">nest</strong
+                  ><span id="waferNestControl">cost · inward</span>
+                </div>
+              </div>
+            </div>
+
+            <p class="wafer-view-status" id="waferViewStatus" aria-live="polite">
+              Disk view · realm 0 is the inward nest; realm 3 meets the divergent bevel.
+            </p>
+
+            <ol class="realm-key" aria-label="Realm bands from inward to outward">
+              <li>
+                <i></i><span><strong>Realm 0</strong> nest · inward</span>
+              </li>
+              <li>
+                <i></i><span><strong>Realm 1</strong> inner band</span>
+              </li>
+              <li>
+                <i></i><span><strong>Realm 2</strong> outer band</span>
+              </li>
+              <li>
+                <i></i><span><strong>Realm 3</strong> bevel · d<sub>H</sub> diverges</span>
+              </li>
+            </ol>
+          </div>
+
+          <div class="fold-readout">
+            <div><span>Opcode cells</span><strong id="waferCellCount">64</strong></div>
+            <div><span>Supplied trim cost</span><strong id="waferTrimCost">3.997e−15</strong></div>
+            <p id="waferProvenance">
+              The trim-cost value is shown exactly as supplied in the mechanics description; it is
+              not newly measured by this interface.
+            </p>
+          </div>
+        </section>
+      </div>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

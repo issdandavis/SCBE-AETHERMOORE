@@ -439,16 +439,18 @@ def scan_command(
                     findings.extend(_scan_python_payload(payload))
 
     if claimed_paths:
-        normalized_claims = [Path(path).as_posix().lower().strip("/") for path in claimed_paths]
-        touched = [token.strip("\"'").replace("\\", "/").lower() for token in argv if "/" in token or "\\" in token]
+        normalized_claims = [Path(path).expanduser().resolve(strict=False) for path in claimed_paths]
+        touched = [token.strip("\"'") for token in argv if "/" in token or "\\" in token]
         for token in touched:
-            if normalized_claims and not any(token.startswith(claim) or claim in token for claim in normalized_claims):
+            candidate = Path(token).expanduser().resolve(strict=False)
+            within_claim = any(candidate == claim or claim in candidate.parents for claim in normalized_claims)
+            if normalized_claims and not within_claim:
                 findings.append(
                     GateFinding(
                         "unclaimed-path",
                         "DENY",
                         "command touches a path outside its declared scope",
-                        evidence=token,
+                        evidence=str(candidate),
                     )
                 )
 

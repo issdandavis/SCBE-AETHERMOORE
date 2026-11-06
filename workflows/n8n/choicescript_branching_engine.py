@@ -33,9 +33,11 @@ Bridge endpoint:
 
 from __future__ import annotations
 
+import ast
 import copy
 import hashlib
 import json
+import math
 import time
 import uuid
 from dataclasses import asdict, dataclass, field
@@ -43,56 +45,59 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
-
 # ---------------------------------------------------------------------------
 #  Core data model — ChoiceScript semantics mapped to workflow primitives
 # ---------------------------------------------------------------------------
 
+
 class NodeType(str, Enum):
-    SCENE = "scene"           # A workflow step (like a *scene_list entry)
-    CHOICE = "choice"         # A branching decision point (*choice)
-    GOTO = "goto"             # Unconditional jump (*goto)
-    GOSUB = "gosub"           # Subroutine call (*gosub / *return)
-    FINISH = "finish"         # Terminal node (*finish / *ending)
-    CHECKPOINT = "checkpoint" # Save state for backtracking
+    SCENE = "scene"  # A workflow step (like a *scene_list entry)
+    CHOICE = "choice"  # A branching decision point (*choice)
+    GOTO = "goto"  # Unconditional jump (*goto)
+    GOSUB = "gosub"  # Subroutine call (*gosub / *return)
+    FINISH = "finish"  # Terminal node (*finish / *ending)
+    CHECKPOINT = "checkpoint"  # Save state for backtracking
 
 
 class ExploreStrategy(str, Enum):
-    FIRST_MATCH = "first_match"   # Take first valid branch (like a player)
-    ALL_PATHS = "all_paths"       # Fork and explore every valid branch in parallel
-    SCORED = "scored"             # Evaluate all, pick highest-scoring path
+    FIRST_MATCH = "first_match"  # Take first valid branch (like a player)
+    ALL_PATHS = "all_paths"  # Fork and explore every valid branch in parallel
+    SCORED = "scored"  # Evaluate all, pick highest-scoring path
     BREADTH_FIRST = "breadth_first"  # BFS through the graph
-    MONTE_CARLO = "monte_carlo"   # Random path sampling for coverage estimation
+    MONTE_CARLO = "monte_carlo"  # Random path sampling for coverage estimation
 
 
 @dataclass
 class Choice:
     """A single option within a *choice block."""
-    target: str                           # Scene label to goto
-    label: str = ""                       # Display label
-    condition: str = "True"               # Python expression evaluated against context
-    weight: float = 1.0                   # Priority weight for scored strategy
+
+    target: str  # Scene label to goto
+    label: str = ""  # Display label
+    condition: str = "True"  # Python expression evaluated against context
+    weight: float = 1.0  # Priority weight for scored strategy
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class SceneNode:
     """A single scene in the workflow graph — maps to an n8n node."""
+
     label: str
     node_type: NodeType = NodeType.SCENE
-    action: str = ""                      # n8n action: scrape_arxiv, llm_dispatch, governance_scan, etc.
+    action: str = ""  # n8n action: scrape_arxiv, llm_dispatch, governance_scan, etc.
     params: Dict[str, Any] = field(default_factory=dict)
     choices: List[Choice] = field(default_factory=list)
-    goto_target: Optional[str] = None     # For GOTO nodes
+    goto_target: Optional[str] = None  # For GOTO nodes
     set_vars: Dict[str, str] = field(default_factory=dict)  # *set variable expressions
-    prompt_template: str = ""             # Template for LLM-driven decisions
-    on_enter: str = ""                    # Expression to eval on entering scene
-    on_exit: str = ""                     # Expression to eval on leaving scene
+    prompt_template: str = ""  # Template for LLM-driven decisions
+    on_enter: str = ""  # Expression to eval on entering scene
+    on_exit: str = ""  # Expression to eval on leaving scene
 
 
 @dataclass
 class PathTrace:
     """Record of a single exploration path through the graph."""
+
     path_id: str
     scenes_visited: List[str] = field(default_factory=list)
     actions_taken: List[Dict[str, Any]] = field(default_factory=list)
@@ -106,11 +111,12 @@ class PathTrace:
 @dataclass
 class ExploreResult:
     """Aggregate result from multi-path exploration."""
+
     graph_name: str
     strategy: ExploreStrategy
     paths: List[PathTrace] = field(default_factory=list)
     best_path: Optional[PathTrace] = None
-    coverage: float = 0.0                 # Fraction of scenes visited across all paths
+    coverage: float = 0.0  # Fraction of scenes visited across all paths
     total_scenes: int = 0
     timestamp: str = ""
 
@@ -118,6 +124,7 @@ class ExploreResult:
 # ---------------------------------------------------------------------------
 #  Scene Graph — the workflow blueprint
 # ---------------------------------------------------------------------------
+
 
 class SceneGraph:
     """Directed graph of scenes with ChoiceScript-style branching."""
@@ -159,7 +166,9 @@ class SceneGraph:
         self.scenes[from_label].goto_target = target_label
         self.scenes[from_label].node_type = NodeType.GOTO
 
-    def add_finish(self, label: str, action: str = "", params: Optional[Dict[str, Any]] = None):
+    def add_finish(
+        self, label: str, action: str = "", params: Optional[Dict[str, Any]] = None
+    ):
         self.add_scene(label, action=action, params=params, node_type=NodeType.FINISH)
 
     def scene_labels(self) -> Set[str]:
@@ -198,7 +207,9 @@ class SceneGraph:
         for label, node in self.scenes.items():
             lines.append(f"*label {label}")
             if node.action:
-                lines.append(f"*comment action: {node.action} {json.dumps(node.params)}")
+                lines.append(
+                    f"*comment action: {node.action} {json.dumps(node.params)}"
+                )
             if node.prompt_template:
                 lines.append(node.prompt_template)
             for var_name, var_expr in node.set_vars.items():
@@ -207,7 +218,11 @@ class SceneGraph:
             if node.choices:
                 lines.append("*choice")
                 for choice in node.choices:
-                    cond = f"*if ({choice.condition}) " if choice.condition != "True" else ""
+                    cond = (
+                        f"*if ({choice.condition}) "
+                        if choice.condition != "True"
+                        else ""
+                    )
                     lines.append(f"  #{cond}{choice.label or choice.target}")
                     lines.append(f"    *goto {choice.target}")
             elif node.goto_target:
@@ -225,18 +240,20 @@ class SceneGraph:
         x_offset, y_offset = 0, 0
 
         # Entry webhook
-        nodes.append({
-            "parameters": {
-                "httpMethod": "POST",
-                "path": f"branch-{self.name}",
-                "responseMode": "responseNode",
-            },
-            "id": f"webhook_{self.name}",
-            "name": "Webhook: Branch Entry",
-            "type": "n8n-nodes-base.webhook",
-            "typeVersion": 2,
-            "position": [x_offset, y_offset],
-        })
+        nodes.append(
+            {
+                "parameters": {
+                    "httpMethod": "POST",
+                    "path": f"branch-{self.name}",
+                    "responseMode": "responseNode",
+                },
+                "id": f"webhook_{self.name}",
+                "name": "Webhook: Branch Entry",
+                "type": "n8n-nodes-base.webhook",
+                "typeVersion": 2,
+                "position": [x_offset, y_offset],
+            }
+        )
 
         scene_positions: Dict[str, Tuple[int, int]] = {}
         for idx, (label, node) in enumerate(self.scenes.items()):
@@ -246,77 +263,105 @@ class SceneGraph:
 
             if node.action:
                 # Action nodes become HTTP Request nodes calling bridge
-                nodes.append({
-                    "parameters": {
-                        "method": "POST",
-                        "url": "http://localhost:8001/v1/workflow/branch/action",
-                        "sendHeaders": True,
-                        "headerParameters": {
-                            "parameters": [
-                                {"name": "X-API-Key", "value": "={{ $env.SCBE_API_KEY }}"},
-                                {"name": "Content-Type", "value": "application/json"},
-                            ]
+                nodes.append(
+                    {
+                        "parameters": {
+                            "method": "POST",
+                            "url": "http://localhost:8001/v1/workflow/branch/action",
+                            "sendHeaders": True,
+                            "headerParameters": {
+                                "parameters": [
+                                    {
+                                        "name": "X-API-Key",
+                                        "value": "={{ $env.SCBE_API_KEY }}",
+                                    },
+                                    {
+                                        "name": "Content-Type",
+                                        "value": "application/json",
+                                    },
+                                ]
+                            },
+                            "sendBody": True,
+                            "specifyBody": "json",
+                            "jsonBody": json.dumps(
+                                {
+                                    "scene": label,
+                                    "action": node.action,
+                                    "params": node.params,
+                                }
+                            ),
                         },
-                        "sendBody": True,
-                        "specifyBody": "json",
-                        "jsonBody": json.dumps({
-                            "scene": label,
-                            "action": node.action,
-                            "params": node.params,
-                        }),
-                    },
-                    "id": f"scene_{label}",
-                    "name": f"Scene: {label}",
-                    "type": "n8n-nodes-base.httpRequest",
-                    "typeVersion": 4.2,
-                    "position": [sx, sy],
-                })
+                        "id": f"scene_{label}",
+                        "name": f"Scene: {label}",
+                        "type": "n8n-nodes-base.httpRequest",
+                        "typeVersion": 4.2,
+                        "position": [sx, sy],
+                    }
+                )
             elif node.choices:
                 # Choice nodes become Switch/If nodes
-                nodes.append({
-                    "parameters": {
-                        "mode": "expression",
-                        "output": "={{ $json.branch_choice }}",
-                    },
-                    "id": f"choice_{label}",
-                    "name": f"Choice: {label}",
-                    "type": "n8n-nodes-base.switch",
-                    "typeVersion": 3,
-                    "position": [sx, sy],
-                })
+                nodes.append(
+                    {
+                        "parameters": {
+                            "mode": "expression",
+                            "output": "={{ $json.branch_choice }}",
+                        },
+                        "id": f"choice_{label}",
+                        "name": f"Choice: {label}",
+                        "type": "n8n-nodes-base.switch",
+                        "typeVersion": 3,
+                        "position": [sx, sy],
+                    }
+                )
             else:
                 # Pass-through or finish
-                nodes.append({
-                    "parameters": {},
-                    "id": f"node_{label}",
-                    "name": f"Node: {label}",
-                    "type": "n8n-nodes-base.noOp",
-                    "typeVersion": 1,
-                    "position": [sx, sy],
-                })
+                nodes.append(
+                    {
+                        "parameters": {},
+                        "id": f"node_{label}",
+                        "name": f"Node: {label}",
+                        "type": "n8n-nodes-base.noOp",
+                        "typeVersion": 1,
+                        "position": [sx, sy],
+                    }
+                )
 
             # Build connections
             if node.choices:
                 conn_outputs: Dict[str, Any] = {}
                 for ci, choice in enumerate(node.choices):
-                    target_id = f"scene_{choice.target}" if self.scenes.get(choice.target, SceneNode(label="")).action else f"node_{choice.target}"
-                    conn_outputs[f"output_{ci}"] = [{"node": target_id, "type": "main", "index": 0}]
+                    target_id = (
+                        f"scene_{choice.target}"
+                        if self.scenes.get(choice.target, SceneNode(label="")).action
+                        else f"node_{choice.target}"
+                    )
+                    conn_outputs[f"output_{ci}"] = [
+                        {"node": target_id, "type": "main", "index": 0}
+                    ]
                 connections[f"choice_{label}"] = {"main": list(conn_outputs.values())}
             elif node.goto_target and node.goto_target in self.scenes:
                 target_node = self.scenes[node.goto_target]
-                target_id = f"scene_{node.goto_target}" if target_node.action else f"node_{node.goto_target}"
+                target_id = (
+                    f"scene_{node.goto_target}"
+                    if target_node.action
+                    else f"node_{node.goto_target}"
+                )
                 node_id = f"scene_{label}" if node.action else f"node_{label}"
-                connections[node_id] = {"main": [[{"node": target_id, "type": "main", "index": 0}]]}
+                connections[node_id] = {
+                    "main": [[{"node": target_id, "type": "main", "index": 0}]]
+                }
 
         # Response node
-        nodes.append({
-            "parameters": {"respondWith": "json", "responseBody": "={{ $json }}"},
-            "id": f"respond_{self.name}",
-            "name": "Respond",
-            "type": "n8n-nodes-base.respondToWebhook",
-            "typeVersion": 1.1,
-            "position": [x_offset + 2000, y_offset],
-        })
+        nodes.append(
+            {
+                "parameters": {"respondWith": "json", "responseBody": "={{ $json }}"},
+                "id": f"respond_{self.name}",
+                "name": "Respond",
+                "type": "n8n-nodes-base.respondToWebhook",
+                "typeVersion": 1.1,
+                "position": [x_offset + 2000, y_offset],
+            }
+        )
 
         return {
             "name": workflow_name or f"SCBE Branch: {self.name}",
@@ -332,14 +377,33 @@ class SceneGraph:
 #  Context evaluator — safe expression evaluation for *if / *set
 # ---------------------------------------------------------------------------
 
-class SafeContextEval:
-    """Evaluate ChoiceScript conditions against a workflow context dict.
 
-    Only allows attribute access, comparisons, and basic math — no imports,
-    no builtins, no exec/eval abuse.
+class SafeContextEval:
+    """Evaluate a bounded, data-only ChoiceScript expression.
+
+    This interpreter accepts comparisons, boolean logic, small arithmetic,
+    mapping/list lookup, mapping get, and a short function allowlist. It never
+    invokes Python eval and never exposes object attributes.
     """
 
-    ALLOWED_BUILTINS = {"len", "int", "float", "str", "bool", "abs", "min", "max", "sum", "any", "all"}
+    FUNCTIONS: Dict[str, Callable[..., Any]] = {
+        "len": len,
+        "int": int,
+        "float": float,
+        "str": str,
+        "bool": bool,
+        "abs": abs,
+        "min": min,
+        "max": max,
+        "sum": sum,
+        "any": any,
+        "all": all,
+    }
+    MAX_EXPRESSION_CHARS = 1024
+    MAX_AST_NODES = 128
+    MAX_COLLECTION_ITEMS = 1024
+    MAX_STRING_CHARS = 65536
+    MAX_ABS_NUMBER = 1e15
 
     @classmethod
     def evaluate(cls, expression: str, context: Dict[str, Any]) -> Any:
@@ -347,27 +411,164 @@ class SafeContextEval:
             return True
         if expression.strip() == "False":
             return False
-
-        # Flatten nested dict access: "topic.domain" -> context["topic"]["domain"]
-        safe_globals: Dict[str, Any] = {"__builtins__": {k: __builtins__[k] for k in cls.ALLOWED_BUILTINS if k in __builtins__}} if isinstance(__builtins__, dict) else {"__builtins__": {}}
-        # Add allowed builtins
-        import builtins as _b
-        safe_globals["__builtins__"] = {k: getattr(_b, k) for k in cls.ALLOWED_BUILTINS if hasattr(_b, k)}
-
-        # Create a dotdict wrapper so "topic.domain" works
-        class DotDict(dict):
-            def __getattr__(self, key):
-                val = self.get(key)
-                if isinstance(val, dict):
-                    return DotDict(val)
-                return val
-
-        safe_locals = {k: DotDict(v) if isinstance(v, dict) else v for k, v in context.items()}
-
-        try:
-            return eval(expression, safe_globals, safe_locals)  # noqa: S307
-        except Exception:
+        if (
+            not isinstance(expression, str)
+            or len(expression) > cls.MAX_EXPRESSION_CHARS
+        ):
             return False
+        try:
+            tree = ast.parse(expression, mode="eval")
+            if sum(1 for _ in ast.walk(tree)) > cls.MAX_AST_NODES:
+                return False
+            return cls._checked(cls._evaluate_node(tree.body, context))
+        except (ArithmeticError, KeyError, TypeError, ValueError, SyntaxError):
+            return False
+
+    @classmethod
+    def _checked(cls, value: Any, depth: int = 0) -> Any:
+        if depth > 16:
+            raise ValueError("ChoiceScript value nesting is too deep")
+        if value is None or isinstance(value, bool):
+            return value
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            if not math.isfinite(float(value)) or abs(value) > cls.MAX_ABS_NUMBER:
+                raise ValueError("ChoiceScript number is outside bounds")
+            return value
+        if isinstance(value, str):
+            if len(value) > cls.MAX_STRING_CHARS:
+                raise ValueError("ChoiceScript string is outside bounds")
+            return value
+        if isinstance(value, (list, tuple)):
+            if len(value) > cls.MAX_COLLECTION_ITEMS:
+                raise ValueError("ChoiceScript collection is outside bounds")
+            return type(value)(cls._checked(item, depth + 1) for item in value)
+        if isinstance(value, dict):
+            if len(value) > cls.MAX_COLLECTION_ITEMS:
+                raise ValueError("ChoiceScript mapping is outside bounds")
+            checked: Dict[Any, Any] = {}
+            for key, item in value.items():
+                if not isinstance(key, (str, int)):
+                    raise ValueError("ChoiceScript mapping key is not data-only")
+                checked[key] = cls._checked(item, depth + 1)
+            return checked
+        raise ValueError("ChoiceScript context contains a non-data object")
+
+    @classmethod
+    def _evaluate_node(cls, node: ast.AST, context: Dict[str, Any]) -> Any:
+        if isinstance(node, ast.Constant):
+            return cls._checked(node.value)
+        if isinstance(node, ast.Name):
+            if node.id not in context or node.id.startswith("__"):
+                raise ValueError("unknown ChoiceScript name")
+            return cls._checked(context[node.id])
+        if isinstance(node, ast.List):
+            return cls._checked(
+                [cls._evaluate_node(item, context) for item in node.elts]
+            )
+        if isinstance(node, ast.Tuple):
+            return cls._checked(
+                tuple(cls._evaluate_node(item, context) for item in node.elts)
+            )
+        if isinstance(node, ast.Attribute):
+            if node.attr.startswith("_"):
+                raise ValueError("private attributes are forbidden")
+            owner = cls._evaluate_node(node.value, context)
+            if not isinstance(owner, dict) or node.attr not in owner:
+                raise ValueError("attribute access is limited to mapping keys")
+            return cls._checked(owner[node.attr])
+        if isinstance(node, ast.Subscript):
+            owner = cls._evaluate_node(node.value, context)
+            key = cls._evaluate_node(node.slice, context)
+            if isinstance(owner, dict):
+                return cls._checked(owner[key])
+            if (
+                isinstance(owner, (list, tuple))
+                and isinstance(key, int)
+                and not isinstance(key, bool)
+            ):
+                return cls._checked(owner[key])
+            raise ValueError("invalid ChoiceScript subscript")
+        if isinstance(node, ast.Call):
+            if node.keywords:
+                raise ValueError("ChoiceScript keyword calls are forbidden")
+            args = [cls._evaluate_node(arg, context) for arg in node.args]
+            if isinstance(node.func, ast.Name) and node.func.id in cls.FUNCTIONS:
+                return cls._checked(cls.FUNCTIONS[node.func.id](*args))
+            if isinstance(node.func, ast.Attribute) and node.func.attr == "get":
+                owner = cls._evaluate_node(node.func.value, context)
+                if not isinstance(owner, dict) or not 1 <= len(args) <= 2:
+                    raise ValueError("invalid mapping get")
+                return cls._checked(owner.get(*args))
+            raise ValueError("ChoiceScript call is not allowlisted")
+        if isinstance(node, ast.BoolOp):
+            if isinstance(node.op, ast.And):
+                result: Any = True
+                for item in node.values:
+                    result = cls._evaluate_node(item, context)
+                    if not result:
+                        return result
+                return result
+            if isinstance(node.op, ast.Or):
+                result = False
+                for item in node.values:
+                    result = cls._evaluate_node(item, context)
+                    if result:
+                        return result
+                return result
+            raise ValueError("invalid boolean operator")
+        if isinstance(node, ast.UnaryOp):
+            operand = cls._evaluate_node(node.operand, context)
+            if isinstance(node.op, ast.Not):
+                return not operand
+            if isinstance(node.op, (ast.UAdd, ast.USub)):
+                if not isinstance(operand, (int, float)) or isinstance(operand, bool):
+                    raise ValueError("numeric unary operator requires a number")
+                return cls._checked(
+                    +operand if isinstance(node.op, ast.UAdd) else -operand
+                )
+            raise ValueError("invalid unary operator")
+        if isinstance(node, ast.BinOp):
+            left = cls._evaluate_node(node.left, context)
+            right = cls._evaluate_node(node.right, context)
+            if any(
+                not isinstance(value, (int, float)) or isinstance(value, bool)
+                for value in (left, right)
+            ):
+                raise ValueError("arithmetic is numeric-only")
+            operations = {
+                ast.Add: lambda: left + right,
+                ast.Sub: lambda: left - right,
+                ast.Mult: lambda: left * right,
+                ast.Div: lambda: left / right,
+                ast.FloorDiv: lambda: left // right,
+                ast.Mod: lambda: left % right,
+            }
+            operation = operations.get(type(node.op))
+            if operation is None:
+                raise ValueError("arithmetic operator is not allowlisted")
+            return cls._checked(operation())
+        if isinstance(node, ast.Compare):
+            left = cls._evaluate_node(node.left, context)
+            for operator, comparator_node in zip(node.ops, node.comparators):
+                right = cls._evaluate_node(comparator_node, context)
+                comparisons = {
+                    ast.Eq: lambda: left == right,
+                    ast.NotEq: lambda: left != right,
+                    ast.Lt: lambda: left < right,
+                    ast.LtE: lambda: left <= right,
+                    ast.Gt: lambda: left > right,
+                    ast.GtE: lambda: left >= right,
+                    ast.In: lambda: left in right,
+                    ast.NotIn: lambda: left not in right,
+                    ast.Is: lambda: left is right,
+                    ast.IsNot: lambda: left is not right,
+                }
+                comparison = comparisons.get(type(operator))
+                if comparison is None or not comparison():
+                    return False
+                left = right
+            return True
+        raise ValueError("ChoiceScript syntax is not allowlisted")
 
 
 # ---------------------------------------------------------------------------
@@ -398,7 +599,9 @@ class ActionRegistry:
     def register(self, name: str, handler: Callable):
         self._actions[name] = handler
 
-    def execute(self, name: str, params: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
+    def execute(
+        self, name: str, params: Dict[str, Any], context: Dict[str, Any]
+    ) -> Dict[str, Any]:
         if name in self._actions:
             return self._actions[name](params=params, context=context)
         # Default: return params as-is (dry run / stub)
@@ -413,6 +616,7 @@ class ActionRegistry:
 # ---------------------------------------------------------------------------
 #  Branching Engine — the multi-path explorer
 # ---------------------------------------------------------------------------
+
 
 class BranchingEngine:
     """Execute a SceneGraph using ChoiceScript branching with multi-path exploration."""
@@ -520,6 +724,7 @@ class BranchingEngine:
             return sorted(valid, key=lambda c: c.weight, reverse=True)
         elif strategy == ExploreStrategy.MONTE_CARLO:
             import random
+
             if valid:
                 weights = [c.weight for c in valid]
                 chosen = random.choices(valid, weights=weights, k=1)
@@ -577,11 +782,13 @@ class BranchingEngine:
             # Execute scene action
             try:
                 result = self._execute_scene(node, ctx)
-                trace.actions_taken.append({
-                    "scene": current_label,
-                    "action": node.action,
-                    "result": result,
-                })
+                trace.actions_taken.append(
+                    {
+                        "scene": current_label,
+                        "action": node.action,
+                        "result": result,
+                    }
+                )
                 # Accumulate score from results
                 trace.score += result.get("score", 0.0)
                 if result.get("chunks"):
@@ -595,7 +802,9 @@ class BranchingEngine:
             # Handle node type
             if node.node_type == NodeType.FINISH:
                 trace.terminal = True
-                trace.context_snapshot = {k: v for k, v in ctx.items() if not k.startswith("_")}
+                trace.context_snapshot = {
+                    k: v for k, v in ctx.items() if not k.startswith("_")
+                }
                 trace.duration_ms = (time.time() - t0) * 1000
                 paths.append(trace)
                 continue
@@ -609,7 +818,9 @@ class BranchingEngine:
                 if not valid_choices:
                     trace.terminal = True
                     trace.error = "no_valid_choices"
-                    trace.context_snapshot = {k: v for k, v in ctx.items() if not k.startswith("_")}
+                    trace.context_snapshot = {
+                        k: v for k, v in ctx.items() if not k.startswith("_")
+                    }
                     paths.append(trace)
                     continue
 
@@ -620,7 +831,9 @@ class BranchingEngine:
                     # Fork — create new traces for each branch
                     for ci, choice in enumerate(valid_choices):
                         forked_trace = PathTrace(
-                            path_id=hashlib.md5(f"{graph.name}-{len(paths)}-{ci}".encode()).hexdigest()[:8],
+                            path_id=hashlib.md5(
+                                f"{graph.name}-{len(paths)}-{ci}".encode()
+                            ).hexdigest()[:8],
                             scenes_visited=list(trace.scenes_visited),
                             actions_taken=list(trace.actions_taken),
                             score=trace.score + choice.weight,
@@ -629,7 +842,9 @@ class BranchingEngine:
             else:
                 # No choices, no goto — terminal
                 trace.terminal = True
-                trace.context_snapshot = {k: v for k, v in ctx.items() if not k.startswith("_")}
+                trace.context_snapshot = {
+                    k: v for k, v in ctx.items() if not k.startswith("_")
+                }
                 trace.duration_ms = (time.time() - t0) * 1000
                 paths.append(trace)
 
@@ -652,25 +867,52 @@ class BranchingEngine:
 #  Pre-built scene graphs — reusable workflow templates
 # ---------------------------------------------------------------------------
 
+
 def build_research_pipeline_graph(topic: str = "chladni modes") -> SceneGraph:
     """Multi-path research pipeline: arxiv vs web vs hybrid, with governance gates."""
     g = SceneGraph("research_pipeline")
 
     # Entry: classify the topic
     g.add_scene("start", action="noop", set_vars={"query": f"'{topic}'"})
-    g.add_choice("start", [
-        Choice("arxiv_deep", label="Deep academic search", condition="True", weight=2.0),
-        Choice("web_scan", label="Web intelligence scan", condition="True", weight=1.5),
-        Choice("hybrid_fan", label="Hybrid fan-out", condition="True", weight=3.0),
-    ])
+    g.add_choice(
+        "start",
+        [
+            Choice(
+                "arxiv_deep", label="Deep academic search", condition="True", weight=2.0
+            ),
+            Choice(
+                "web_scan", label="Web intelligence scan", condition="True", weight=1.5
+            ),
+            Choice("hybrid_fan", label="Hybrid fan-out", condition="True", weight=3.0),
+        ],
+    )
 
     # ArXiv deep path
-    g.add_scene("arxiv_deep", action="scrape_arxiv", params={"source": "arxiv", "max_results": 40})
-    g.add_choice("arxiv_deep", [
-        Choice("arxiv_analyze", label="Analyze results", condition="_last_result.get('chunks', 0) > 0"),
-        Choice("fallback_web", label="No results, try web", condition="_last_result.get('chunks', 0) == 0"),
-    ])
-    g.add_scene("arxiv_analyze", action="llm_dispatch", params={"provider": "claude", "prompt": "Analyze arxiv results for {query}"})
+    g.add_scene(
+        "arxiv_deep",
+        action="scrape_arxiv",
+        params={"source": "arxiv", "max_results": 40},
+    )
+    g.add_choice(
+        "arxiv_deep",
+        [
+            Choice(
+                "arxiv_analyze",
+                label="Analyze results",
+                condition="_last_result.get('chunks', 0) > 0",
+            ),
+            Choice(
+                "fallback_web",
+                label="No results, try web",
+                condition="_last_result.get('chunks', 0) == 0",
+            ),
+        ],
+    )
+    g.add_scene(
+        "arxiv_analyze",
+        action="llm_dispatch",
+        params={"provider": "claude", "prompt": "Analyze arxiv results for {query}"},
+    )
     g.add_goto("arxiv_analyze", "governance_gate")
 
     # Web scan path
@@ -678,29 +920,65 @@ def build_research_pipeline_graph(topic: str = "chladni modes") -> SceneGraph:
     g.add_goto("web_scan", "governance_gate")
 
     # Hybrid fan-out: hit both sources
-    g.add_scene("hybrid_fan", action="scrape_both", params={"source": "both", "max_results": 20})
-    g.add_choice("hybrid_fan", [
-        Choice("council_review", label="Send to AI council", condition="True", weight=2.0),
-        Choice("governance_gate", label="Direct to governance", condition="True", weight=1.0),
-    ])
+    g.add_scene(
+        "hybrid_fan", action="scrape_both", params={"source": "both", "max_results": 20}
+    )
+    g.add_choice(
+        "hybrid_fan",
+        [
+            Choice(
+                "council_review",
+                label="Send to AI council",
+                condition="True",
+                weight=2.0,
+            ),
+            Choice(
+                "governance_gate",
+                label="Direct to governance",
+                condition="True",
+                weight=1.0,
+            ),
+        ],
+    )
 
     # Fallback
-    g.add_scene("fallback_web", action="scrape_web", params={"source": "web", "depth": 1})
+    g.add_scene(
+        "fallback_web", action="scrape_web", params={"source": "web", "depth": 1}
+    )
     g.add_goto("fallback_web", "governance_gate")
 
     # AI Council review
-    g.add_scene("council_review", action="council_deliberate", params={
-        "providers": ["anthropic", "openai"],
-        "strategy": "debate",
-    })
+    g.add_scene(
+        "council_review",
+        action="council_deliberate",
+        params={
+            "providers": ["anthropic", "openai"],
+            "strategy": "debate",
+        },
+    )
     g.add_goto("council_review", "governance_gate")
 
     # Governance gate — all paths converge here
-    g.add_scene("governance_gate", action="governance_scan", params={"content": "aggregated results"})
-    g.add_choice("governance_gate", [
-        Choice("publish", label="Approved — publish", condition="_last_result.get('verdict') == 'ALLOW'"),
-        Choice("quarantine", label="Quarantined", condition="_last_result.get('verdict') != 'ALLOW'"),
-    ])
+    g.add_scene(
+        "governance_gate",
+        action="governance_scan",
+        params={"content": "aggregated results"},
+    )
+    g.add_choice(
+        "governance_gate",
+        [
+            Choice(
+                "publish",
+                label="Approved — publish",
+                condition="_last_result.get('verdict') == 'ALLOW'",
+            ),
+            Choice(
+                "quarantine",
+                label="Quarantined",
+                condition="_last_result.get('verdict') != 'ALLOW'",
+            ),
+        ],
+    )
 
     # Terminal nodes
     g.add_finish("publish", action="noop", params={"status": "published"})
@@ -714,23 +992,47 @@ def build_content_publishing_graph() -> SceneGraph:
     g = SceneGraph("content_publisher")
 
     g.add_scene("start", action="noop")
-    g.add_choice("start", [
-        Choice("twitter_path", label="Twitter/X", condition="True", weight=2.0),
-        Choice("linkedin_path", label="LinkedIn", condition="True", weight=1.5),
-        Choice("github_path", label="GitHub Discussion", condition="True", weight=1.0),
-        Choice("medium_path", label="Medium article", condition="True", weight=1.0),
-    ])
+    g.add_choice(
+        "start",
+        [
+            Choice("twitter_path", label="Twitter/X", condition="True", weight=2.0),
+            Choice("linkedin_path", label="LinkedIn", condition="True", weight=1.5),
+            Choice(
+                "github_path", label="GitHub Discussion", condition="True", weight=1.0
+            ),
+            Choice("medium_path", label="Medium article", condition="True", weight=1.0),
+        ],
+    )
 
     for platform in ["twitter", "linkedin", "github", "medium"]:
         g.add_scene(f"{platform}_path", action="tongue_encode", params={"tongue": "KO"})
-        g.add_scene(f"{platform}_gov", action="governance_scan", params={"platform": platform})
+        g.add_scene(
+            f"{platform}_gov", action="governance_scan", params={"platform": platform}
+        )
         g.add_goto(f"{platform}_path", f"{platform}_gov")
-        g.add_choice(f"{platform}_gov", [
-            Choice(f"{platform}_post", condition="_last_result.get('verdict') == 'ALLOW'"),
-            Choice(f"{platform}_blocked", condition="_last_result.get('verdict') != 'ALLOW'"),
-        ])
-        g.add_finish(f"{platform}_post", action="noop", params={"platform": platform, "status": "posted"})
-        g.add_finish(f"{platform}_blocked", action="noop", params={"platform": platform, "status": "blocked"})
+        g.add_choice(
+            f"{platform}_gov",
+            [
+                Choice(
+                    f"{platform}_post",
+                    condition="_last_result.get('verdict') == 'ALLOW'",
+                ),
+                Choice(
+                    f"{platform}_blocked",
+                    condition="_last_result.get('verdict') != 'ALLOW'",
+                ),
+            ],
+        )
+        g.add_finish(
+            f"{platform}_post",
+            action="noop",
+            params={"platform": platform, "status": "posted"},
+        )
+        g.add_finish(
+            f"{platform}_blocked",
+            action="noop",
+            params={"platform": platform, "status": "blocked"},
+        )
 
     return g
 
@@ -740,11 +1042,14 @@ def build_training_funnel_graph() -> SceneGraph:
     g = SceneGraph("training_funnel")
 
     g.add_scene("start", action="noop")
-    g.add_choice("start", [
-        Choice("arxiv_ingest", label="ArXiv papers", condition="True", weight=2.0),
-        Choice("notion_ingest", label="Notion pages", condition="True", weight=1.5),
-        Choice("game_ingest", label="Game sessions", condition="True", weight=1.0),
-    ])
+    g.add_choice(
+        "start",
+        [
+            Choice("arxiv_ingest", label="ArXiv papers", condition="True", weight=2.0),
+            Choice("notion_ingest", label="Notion pages", condition="True", weight=1.5),
+            Choice("game_ingest", label="Game sessions", condition="True", weight=1.0),
+        ],
+    )
 
     # ArXiv branch
     g.add_scene("arxiv_ingest", action="scrape_arxiv", params={"max_results": 50})
@@ -755,15 +1060,22 @@ def build_training_funnel_graph() -> SceneGraph:
     g.add_goto("notion_ingest", "quality_gate")
 
     # Game session branch
-    g.add_scene("game_ingest", action="training_ingest", params={"event_type": "game_session"})
+    g.add_scene(
+        "game_ingest", action="training_ingest", params={"event_type": "game_session"}
+    )
     g.add_goto("game_ingest", "quality_gate")
 
     # Quality gate
     g.add_scene("quality_gate", action="governance_scan", params={})
-    g.add_choice("quality_gate", [
-        Choice("merge_and_push", condition="_last_result.get('verdict') == 'ALLOW'"),
-        Choice("reject", condition="_last_result.get('verdict') != 'ALLOW'"),
-    ])
+    g.add_choice(
+        "quality_gate",
+        [
+            Choice(
+                "merge_and_push", condition="_last_result.get('verdict') == 'ALLOW'"
+            ),
+            Choice("reject", condition="_last_result.get('verdict') != 'ALLOW'"),
+        ],
+    )
 
     g.add_finish("merge_and_push", action="noop", params={"status": "merged"})
     g.add_finish("reject", action="noop", params={"status": "rejected"})
@@ -774,6 +1086,7 @@ def build_training_funnel_graph() -> SceneGraph:
 # ---------------------------------------------------------------------------
 #  CLI / test harness
 # ---------------------------------------------------------------------------
+
 
 def _run_demo():
     """Run a demo exploration of the research pipeline graph."""
@@ -790,16 +1103,28 @@ def _run_demo():
     print()
 
     # Explore all paths
-    for strategy in [ExploreStrategy.ALL_PATHS, ExploreStrategy.FIRST_MATCH, ExploreStrategy.SCORED]:
-        result = engine.explore_sync(graph, context={"query": "signed chladni modes"}, strategy=strategy)
+    for strategy in [
+        ExploreStrategy.ALL_PATHS,
+        ExploreStrategy.FIRST_MATCH,
+        ExploreStrategy.SCORED,
+    ]:
+        result = engine.explore_sync(
+            graph, context={"query": "signed chladni modes"}, strategy=strategy
+        )
         print(f"--- Strategy: {strategy.value} ---")
         print(f"  Paths found: {len(result.paths)}")
-        print(f"  Coverage: {result.coverage:.0%} ({int(result.coverage * result.total_scenes)}/{result.total_scenes} scenes)")
+        print(
+            f"  Coverage: {result.coverage:.0%} ({int(result.coverage * result.total_scenes)}/{result.total_scenes} scenes)"
+        )
         if result.best_path:
-            print(f"  Best path: {' -> '.join(result.best_path.scenes_visited)} (score: {result.best_path.score:.1f})")
+            print(
+                f"  Best path: {' -> '.join(result.best_path.scenes_visited)} (score: {result.best_path.score:.1f})"
+            )
         for path in result.paths:
             status = "OK" if not path.error else path.error
-            print(f"    [{path.path_id}] {' -> '.join(path.scenes_visited)} | score={path.score:.1f} | {status}")
+            print(
+                f"    [{path.path_id}] {' -> '.join(path.scenes_visited)} | score={path.score:.1f} | {status}"
+            )
         print()
 
     # Export n8n workflow

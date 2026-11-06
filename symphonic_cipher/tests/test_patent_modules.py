@@ -20,6 +20,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import the patent modules
 from topological_cfi import (
     TopologicalCFI,
+    BasicBlock,
+    CFGEdge,
+    ControlFlowGraph,
     HyperbolicPoint,
     compute_hyperbolic_distance,
     map_to_poincare_disk,
@@ -30,6 +33,18 @@ from dual_lattice_consensus import (
     create_authorization_token,
     verify_token,
 )
+
+
+def authorized_cfi():
+    """Use an explicit five-block policy, not an arbitrary string sequence."""
+    cfg = ControlFlowGraph()
+    for i in range(5):
+        cfg.add_vertex(BasicBlock(i, [str(i)], i, i))
+    for i in range(4):
+        cfg.add_edge(CFGEdge(i, i + 1, "jump"))
+    cfi = TopologicalCFI()
+    cfi.initialize(cfg)
+    return cfi
 
 
 class TestHyperbolicGeometry:
@@ -97,27 +112,18 @@ class TestTopologicalCFI:
         assert hasattr(cfi, 'hamiltonian_tested')
     
     def test_hamiltonian_path_verification(self):
-        """Valid execution paths should satisfy Hamiltonian property."""
-        cfi = TopologicalCFI()
-        
-        # Create a simple authorized path
-        path = ['start', 'auth', 'process', 'verify', 'end']
-        
-        result = cfi.verify_execution_path(path)
-        assert result['valid'] is True
-        assert result['hamiltonian_tested'] is True
-    
+        """Every adjacent pair must be an authorized directed edge."""
+        result = authorized_cfi().verify_execution_path(["0", "1", "2", "3", "4"])
+        assert result["valid"] is True
+        assert result["hamiltonian_tested"] is True
+        assert result["policy_verified"] is True
+
     def test_invalid_path_detection(self):
-        """Paths violating Hamiltonian constraint should be rejected."""
-        cfi = TopologicalCFI()
-        
-        # Path with repeated node (not Hamiltonian)
-        invalid_path = ['start', 'auth', 'start', 'end']  # 'start' repeated
-        
-        result = cfi.verify_execution_path(invalid_path)
-        assert result['valid'] is False
-        assert 'violation' in result['reason'].lower()
-    
+        """Reject a jump that skips a required directed edge."""
+        result = authorized_cfi().verify_execution_path(["0", "2", "4"])
+        assert result["valid"] is False
+        assert "violation" in result["reason"].lower()
+
     def test_principal_curve_membership(self):
         """Authorized states lie on principal curve in hyperbolic space."""
         # Valid authorization should map to curve
@@ -284,11 +290,11 @@ class TestIntegration:
     def test_full_authorization_flow(self):
         """Complete authorization: identity -> CFI -> consensus -> token."""
         # Initialize systems
-        cfi = TopologicalCFI()
+        cfi = authorized_cfi()
         dlc = DualLatticeConsensus()
         
         # Step 1: Verify execution path (CFI)
-        execution_path = ['entry', 'authenticate', 'authorize', 'process', 'exit']
+        execution_path = ["0", "1", "2", "3", "4"]
         cfi_result = cfi.verify_execution_path(execution_path)
         assert cfi_result['valid'] is True
         

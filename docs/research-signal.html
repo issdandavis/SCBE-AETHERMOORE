@@ -1,0 +1,1034 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Research Signal | AetherMoore</title>
+    <meta
+      name="description"
+      content="A live, source-labeled field stream connecting AetherMoore lab notes with worldwide reporting and current research metadata."
+    />
+    <meta property="og:title" content="AetherMoore Research Signal" />
+    <meta
+      property="og:description"
+      content="Recent AetherMoore experiments, worldwide reporting, research metadata, and space updates in one inspectable stream."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://aethermoore.com/research-signal" />
+    <link rel="canonical" href="https://aethermoore.com/research-signal" />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title="AetherMoore Research Signal"
+      href="/api/agent/research-signal-feed?format=rss"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --night: #07111f;
+        --deep: #0c1930;
+        --plum: #25172f;
+        --sheet: #11223b;
+        --line: rgba(170, 197, 220, 0.22);
+        --ink: #f4f6f2;
+        --fog: #a9bac6;
+        --copper: #e99a55;
+        --sky: #74c7ec;
+        --mint: #88e3c4;
+        --warning: #ffd08a;
+        --max: 1220px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--night);
+        font-family: Charter, Georgia, "Times New Roman", serif;
+        line-height: 1.55;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        pointer-events: none;
+        background:
+          linear-gradient(108deg, transparent 0 46%, rgba(116, 199, 236, 0.055) 46.2% 46.5%, transparent 46.7%),
+          linear-gradient(90deg, var(--night) 0 62%, var(--plum) 100%);
+      }
+
+      a {
+        color: inherit;
+      }
+
+      button,
+      a {
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      :focus-visible {
+        outline: 3px solid var(--sky);
+        outline-offset: 4px;
+      }
+
+      .skip-link {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        z-index: 99;
+        padding: 10px 14px;
+        color: var(--night);
+        background: var(--sky);
+        transform: translateY(-160%);
+      }
+
+      .skip-link:focus {
+        transform: translateY(0);
+      }
+
+      .wrap {
+        width: min(var(--max), calc(100% - 36px));
+        margin: 0 auto;
+      }
+
+      .utility,
+      .eyebrow,
+      .meta,
+      .filter,
+      .source-state,
+      .horizon-label,
+      .horizon-time,
+      .channel,
+      .status-line,
+      .boundary,
+      .index-mark {
+        font-family: "Aptos Narrow", "Arial Narrow", Arial, sans-serif;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        border-bottom: 1px solid var(--line);
+        background: rgba(7, 17, 31, 0.94);
+        backdrop-filter: blur(14px);
+      }
+
+      .topbar .wrap {
+        min-height: 62px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 22px;
+      }
+
+      .brand {
+        color: var(--copper);
+        font-family: "Trebuchet MS", sans-serif;
+        font-size: 13px;
+        font-weight: 900;
+        letter-spacing: 0.16em;
+        text-decoration: none;
+        text-transform: uppercase;
+      }
+
+      nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 16px;
+        color: var(--fog);
+        font-family: "Aptos Narrow", Arial, sans-serif;
+        font-size: 14px;
+      }
+
+      nav a {
+        text-decoration: none;
+      }
+
+      nav a[aria-current="page"] {
+        color: var(--sky);
+      }
+
+      .hero {
+        position: relative;
+        overflow: hidden;
+        border-bottom: 1px solid var(--line);
+        padding: 76px 0 36px;
+      }
+
+      .hero::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: -20%;
+        width: 18%;
+        pointer-events: none;
+        background: linear-gradient(90deg, transparent, rgba(116, 199, 236, 0.12), transparent);
+        transform: skewX(-16deg);
+        animation: scan 9s ease-in-out 1 both;
+      }
+
+      @keyframes scan {
+        from {
+          left: -24%;
+        }
+        to {
+          left: 112%;
+        }
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.7fr);
+        gap: 42px;
+        align-items: end;
+      }
+
+      .eyebrow {
+        margin: 0 0 14px;
+        color: var(--copper);
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        max-width: 10ch;
+        margin-bottom: 18px;
+        font-family: "Trebuchet MS", "Arial Narrow", sans-serif;
+        font-size: clamp(50px, 8vw, 96px);
+        line-height: 0.88;
+        letter-spacing: -0.065em;
+      }
+
+      h2 {
+        margin-bottom: 12px;
+        font-family: "Trebuchet MS", sans-serif;
+        font-size: clamp(28px, 4vw, 46px);
+        line-height: 1;
+        letter-spacing: -0.035em;
+      }
+
+      h3 {
+        margin-bottom: 8px;
+        font-family: "Trebuchet MS", sans-serif;
+        font-size: 21px;
+        line-height: 1.15;
+      }
+
+      .lead {
+        max-width: 66ch;
+        margin-bottom: 0;
+        color: #d6e0e5;
+        font-size: clamp(18px, 2vw, 23px);
+      }
+
+      .hero-note {
+        border-left: 3px solid var(--mint);
+        padding: 8px 0 8px 18px;
+        color: var(--fog);
+        font-size: 16px;
+      }
+
+      .hero-note strong {
+        display: block;
+        margin-bottom: 7px;
+        color: var(--mint);
+        font-family: "Aptos Narrow", Arial, sans-serif;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .horizon {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        background: rgba(12, 25, 48, 0.86);
+      }
+
+      .horizon-cell {
+        min-width: 0;
+        padding: 15px 16px 14px;
+        border-right: 1px solid var(--line);
+      }
+
+      .horizon-cell:last-child {
+        border-right: 0;
+      }
+
+      .horizon-label {
+        display: block;
+        overflow: hidden;
+        color: var(--fog);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-overflow: ellipsis;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
+      .horizon-time {
+        display: block;
+        color: var(--sky);
+        font-size: clamp(18px, 2.2vw, 28px);
+        font-variant-numeric: tabular-nums;
+        line-height: 1.1;
+      }
+
+      .main-grid {
+        display: grid;
+        grid-template-columns: 280px minmax(0, 1fr);
+        gap: 48px;
+        padding: 54px 0 90px;
+      }
+
+      .console {
+        align-self: start;
+        position: sticky;
+        top: 92px;
+      }
+
+      .console-block {
+        margin-bottom: 28px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .console h2 {
+        font-size: 22px;
+        letter-spacing: -0.02em;
+      }
+
+      .console p {
+        color: var(--fog);
+      }
+
+      .filter-stack {
+        display: grid;
+        gap: 8px;
+      }
+
+      .filter {
+        width: 100%;
+        min-height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border: 1px solid var(--line);
+        border-radius: 0;
+        padding: 9px 11px;
+        color: var(--fog);
+        background: transparent;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 800;
+        text-align: left;
+      }
+
+      .filter::after {
+        content: "↗";
+        color: var(--sky);
+      }
+
+      .filter[aria-pressed="true"] {
+        border-color: var(--sky);
+        color: var(--night);
+        background: var(--sky);
+      }
+
+      .filter[aria-pressed="true"]::after {
+        color: var(--night);
+      }
+
+      .refresh,
+      .rss-link {
+        min-height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--copper);
+        padding: 9px 12px;
+        color: var(--copper);
+        background: transparent;
+        cursor: pointer;
+        font-family: "Aptos Narrow", Arial, sans-serif;
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-decoration: none;
+        text-transform: uppercase;
+      }
+
+      .refresh-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .source-status {
+        display: grid;
+        gap: 7px;
+        margin: 12px 0 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .source-state {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        color: var(--fog);
+        font-size: 11px;
+      }
+
+      .source-state::after {
+        content: "";
+        width: 7px;
+        height: 7px;
+        flex: 0 0 auto;
+        border-radius: 50%;
+        background: var(--mint);
+      }
+
+      .source-state[data-ok="false"]::after {
+        background: var(--warning);
+      }
+
+      .section-head {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 22px;
+        margin-bottom: 24px;
+      }
+
+      .section-head p {
+        max-width: 48ch;
+        margin-bottom: 0;
+        color: var(--fog);
+      }
+
+      .lab-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 64px;
+      }
+
+      .lab-card {
+        position: relative;
+        min-height: 310px;
+        padding: 24px 22px 22px;
+        border: 1px solid var(--line);
+        background: rgba(17, 34, 59, 0.72);
+        clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%);
+      }
+
+      .lab-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 18px;
+        height: 18px;
+        border-left: 1px solid var(--line);
+        background: var(--deep);
+      }
+
+      .index-mark {
+        display: block;
+        margin-bottom: 30px;
+        color: var(--copper);
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      .lab-card p {
+        color: #c1cfd6;
+      }
+
+      .metric {
+        margin: 20px 0 8px;
+        color: var(--mint);
+        font-family: "Trebuchet MS", sans-serif;
+        font-size: 30px;
+        font-weight: 900;
+        letter-spacing: -0.04em;
+      }
+
+      details {
+        margin-top: 18px;
+        color: var(--fog);
+      }
+
+      summary {
+        color: var(--sky);
+        cursor: pointer;
+        font-family: "Aptos Narrow", Arial, sans-serif;
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .boundary {
+        margin-top: 14px;
+        color: var(--fog);
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .stream-shell {
+        border-top: 1px solid var(--line);
+        padding-top: 44px;
+      }
+
+      .status-line {
+        min-height: 25px;
+        margin: 0 0 16px;
+        color: var(--fog);
+        font-size: 12px;
+        letter-spacing: 0.04em;
+      }
+
+      .status-line[data-state="error"] {
+        color: var(--warning);
+      }
+
+      .feed {
+        display: grid;
+      }
+
+      .signal-card {
+        position: relative;
+        display: grid;
+        grid-template-columns: 118px minmax(0, 1fr) 98px;
+        gap: 22px;
+        padding: 24px 0;
+        border-top: 1px solid var(--line);
+      }
+
+      .signal-card:last-child {
+        border-bottom: 1px solid var(--line);
+      }
+
+      .channel {
+        align-self: start;
+        color: var(--sky);
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .signal-card h3 a {
+        text-decoration-thickness: 1px;
+        text-decoration-color: transparent;
+        text-underline-offset: 5px;
+      }
+
+      .signal-card h3 a:hover {
+        text-decoration-color: var(--sky);
+      }
+
+      .signal-card p {
+        max-width: 68ch;
+        margin-bottom: 0;
+        color: var(--fog);
+      }
+
+      .meta {
+        display: grid;
+        align-content: start;
+        gap: 5px;
+        color: var(--fog);
+        font-size: 11px;
+        text-align: right;
+      }
+
+      .meta strong {
+        color: var(--copper);
+        font-weight: 900;
+      }
+
+      .sentinel {
+        min-height: 100px;
+        display: grid;
+        place-items: center;
+        color: var(--fog);
+        font-family: "Aptos Narrow", Arial, sans-serif;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .sentinel::before {
+        content: "";
+        width: 58px;
+        height: 1px;
+        margin-right: 10px;
+        background: var(--copper);
+      }
+
+      .method-note {
+        margin-top: 54px;
+        border: 1px solid var(--line);
+        padding: 20px;
+        color: var(--fog);
+        background: rgba(12, 25, 48, 0.6);
+      }
+
+      .method-note strong {
+        color: var(--ink);
+      }
+
+      footer {
+        border-top: 1px solid var(--line);
+        padding: 34px 0 48px;
+        color: var(--fog);
+        font-family: "Aptos Narrow", Arial, sans-serif;
+        font-size: 13px;
+      }
+
+      footer .wrap {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 18px;
+      }
+
+      @media (max-width: 980px) {
+        .hero-grid,
+        .main-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .console {
+          position: static;
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 20px;
+        }
+
+        .lab-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .lab-card {
+          min-height: 0;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .topbar .wrap,
+        .section-head,
+        footer .wrap {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        nav {
+          justify-content: flex-start;
+          padding-bottom: 13px;
+        }
+
+        .hero {
+          padding-top: 54px;
+        }
+
+        .horizon {
+          grid-template-columns: repeat(3, 1fr);
+        }
+
+        .horizon-cell:nth-child(3) {
+          border-right: 0;
+        }
+
+        .horizon-cell:nth-child(-n + 3) {
+          border-bottom: 1px solid var(--line);
+        }
+
+        .console {
+          grid-template-columns: 1fr;
+        }
+
+        .signal-card {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+
+        .meta {
+          display: flex;
+          flex-wrap: wrap;
+          text-align: left;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+
+        .hero::after {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to signals</a>
+    <header class="topbar">
+      <div class="wrap">
+        <a class="brand" href="/">AetherMoore</a>
+        <nav aria-label="Primary navigation">
+          <a href="/">Home</a>
+          <a href="/SCBE-AETHERMOORE/research/">Library</a>
+          <a href="/research-signal" aria-current="page">Signal</a>
+          <a href="/products">Products</a>
+          <a href="/api/agent/research-signal-feed?format=rss">RSS</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero" aria-labelledby="page-title">
+        <div class="wrap hero-grid">
+          <div>
+            <p class="eyebrow">AetherMoore field desk · rolling ten-minute refresh</p>
+            <h1 id="page-title">Research has a horizon.</h1>
+            <p class="lead">
+              Recent experiments from our lab, braided with worldwide reporting, current research
+              metadata, and primary space updates. Every outside item keeps its source attached.
+            </p>
+          </div>
+          <p class="hero-note">
+            <strong>Reading boundary</strong>
+            This is a discovery surface, not an automated truth machine. A headline is a lead. Open
+            the source, compare independent reporting, and use the research library for reviewed
+            claim packets.
+          </p>
+        </div>
+      </section>
+
+      <section class="horizon" aria-label="Current time across six world regions">
+        <div class="horizon-cell" data-zone="America/Los_Angeles">
+          <span class="horizon-label">Pacific · Port Angeles</span><time class="horizon-time">--:--</time>
+        </div>
+        <div class="horizon-cell" data-zone="America/Mexico_City">
+          <span class="horizon-label">Central · Mexico City</span><time class="horizon-time">--:--</time>
+        </div>
+        <div class="horizon-cell" data-zone="Europe/London">
+          <span class="horizon-label">Atlantic · London</span><time class="horizon-time">--:--</time>
+        </div>
+        <div class="horizon-cell" data-zone="Africa/Lagos">
+          <span class="horizon-label">West Africa · Lagos</span><time class="horizon-time">--:--</time>
+        </div>
+        <div class="horizon-cell" data-zone="Asia/Kolkata">
+          <span class="horizon-label">South Asia · New Delhi</span><time class="horizon-time">--:--</time>
+        </div>
+        <div class="horizon-cell" data-zone="Asia/Tokyo">
+          <span class="horizon-label">Pacific · Tokyo</span><time class="horizon-time">--:--</time>
+        </div>
+      </section>
+
+      <div class="wrap main-grid">
+        <aside class="console" aria-label="Signal controls">
+          <div class="console-block">
+            <p class="eyebrow">Tune the field</p>
+            <h2>Choose a lane</h2>
+            <div class="filter-stack" role="group" aria-label="Filter signal stream">
+              <button class="filter" type="button" data-filter="all" aria-pressed="true">All signals</button>
+              <button class="filter" type="button" data-filter="world" aria-pressed="false">World desks</button>
+              <button class="filter" type="button" data-filter="research" aria-pressed="false">Research</button>
+              <button class="filter" type="button" data-filter="space" aria-pressed="false">Space</button>
+            </div>
+          </div>
+
+          <div class="console-block">
+            <p class="eyebrow">Update controls</p>
+            <p>The public endpoint caches for ten minutes and keeps serving stale data while a source recovers.</p>
+            <div class="refresh-row">
+              <button class="refresh" id="refresh" type="button">Refresh now</button>
+              <a class="rss-link" href="/api/agent/research-signal-feed?format=rss">Follow by RSS</a>
+            </div>
+          </div>
+
+          <div class="console-block">
+            <p class="eyebrow">Source telemetry</p>
+            <ul class="source-status" id="source-status" aria-live="polite">
+              <li class="source-state">Waiting for first scan</li>
+            </ul>
+          </div>
+        </aside>
+
+        <div>
+          <section aria-labelledby="lab-title">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Latest from the lab · August 2026</p>
+                <h2 id="lab-title">Three measured notes</h2>
+              </div>
+              <p>These are preliminary engineering notes with their boundaries left visible—not polished into larger claims.</p>
+            </div>
+
+            <div class="lab-grid">
+              <article class="lab-card" id="reach-not-force">
+                <span class="index-mark">Clay arithmetic · 01</span>
+                <h3>Reach, not force</h3>
+                <p>Independent modular constraints moved a 3.2M-parameter model beyond its reranking ceiling on held-out addition.</p>
+                <p class="metric">80.8 → 91.7%</p>
+                <details>
+                  <summary>Measurement details</summary>
+                  <p>156 held-out prompts, three seeds. Mod 9 alone reached 82.7%; the simultaneous mod 9 and 7 chord reached 91.7% with zero measured harm.</p>
+                </details>
+                <p class="boundary">Lab note · held-out experiment · not peer reviewed</p>
+              </article>
+
+              <article class="lab-card" id="tongue-braid-residual">
+                <span class="index-mark">Tongue integrity · 02</span>
+                <h3>Different null spaces make a stronger gate</h3>
+                <p>An exact six-axis residual named its complete blind direction. The bijective tongue braid then rejected a representative corruption on every blind pair.</p>
+                <p class="metric">59,913 cases</p>
+                <details>
+                  <summary>Measurement details</summary>
+                  <p>Across 64 opcodes, the residual detected 100% of 378 single-tongue and 99.68% of 59,535 two-tongue corruptions. Its 189 misses were exactly equal shifts on KO↔CA, AV↔UM, or RU↔DR. The cage localized both dissenting tongues for a +7 probe on each pair. <a href="/SCBE-AETHERMOORE/research/live-signal/tongue_braid_residual_note.md">Read the evidence note.</a></p>
+                </details>
+                <p class="boundary">Exact finite residual proof · three cage probes · no claim beyond the configured 64-opcode tongue roads</p>
+              </article>
+
+              <article class="lab-card" id="developer-tools-corpus">
+                <span class="index-mark">Clay corpus · 03</span>
+                <h3>Ten tools, one thousand checks</h3>
+                <p>Original training tasks model developer workflows without copying documentation bodies, community patterns, or credentials.</p>
+                <p class="metric">900 + 100</p>
+                <details>
+                  <summary>Measurement details</summary>
+                  <p>One hundred tasks per tool, with 900 training rows and a 100-row family-disjoint holdout. Generator, secret gate, and four focused tests passed.</p>
+                </details>
+                <p class="boundary">Corpus validation · no downstream model-performance claim yet</p>
+              </article>
+            </div>
+          </section>
+
+          <section class="stream-shell" aria-labelledby="stream-title">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Worldwide signal stream</p>
+                <h2 id="stream-title">Open the original</h2>
+              </div>
+              <p>Progressive loading keeps the page fast. Scroll to reveal the next set; the browser never receives a secret key.</p>
+            </div>
+            <p class="status-line" id="status" aria-live="polite">Connecting to source lanes…</p>
+            <div class="feed" id="feed"></div>
+            <div class="sentinel" id="sentinel">Watching the horizon</div>
+          </section>
+
+          <aside class="method-note">
+            <strong>How this stays honest:</strong> source URLs are fixed on the server; outside HTML is stripped;
+            cards are built with text nodes; one failed source cannot erase the others; and the interface never labels
+            cross-source agreement unless a human-reviewed research packet actually established it.
+          </aside>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        <span>AetherMoore Research Signal · discovery with provenance</span>
+        <span><a href="/SCBE-AETHERMOORE/research/">Research library</a> · <a href="/api/agent/research-signal-feed?format=rss">RSS feed</a></span>
+      </div>
+    </footer>
+
+    <noscript>
+      <p class="wrap method-note">JavaScript is required for the live stream. The recent lab notes above remain readable, and the RSS link opens the same external-source index.</p>
+    </noscript>
+
+    <script>
+      (() => {
+        'use strict';
+
+        const PAGE_SIZE = 10;
+        const REFRESH_MS = 10 * 60 * 1000;
+        const state = { all: [], filtered: [], rendered: 0, active: 'all', loading: false };
+        const feed = document.getElementById('feed');
+        const sentinel = document.getElementById('sentinel');
+        const status = document.getElementById('status');
+        const sourceStatus = document.getElementById('source-status');
+        const refresh = document.getElementById('refresh');
+
+        function setStatus(message, mode = 'ready') {
+          status.textContent = message;
+          status.dataset.state = mode;
+        }
+
+        function updateClocks() {
+          const now = new Date();
+          document.querySelectorAll('[data-zone]').forEach((cell) => {
+            const time = cell.querySelector('time');
+            time.dateTime = now.toISOString();
+            time.textContent = new Intl.DateTimeFormat('en-US', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false,
+              timeZone: cell.dataset.zone,
+            }).format(now);
+          });
+        }
+
+        function relativeDate(value) {
+          const then = Date.parse(value || '');
+          if (!Number.isFinite(then)) return 'Date unavailable';
+          const deltaHours = Math.round((then - Date.now()) / 3_600_000);
+          if (Math.abs(deltaHours) < 24) {
+            return new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(deltaHours, 'hour');
+          }
+          const deltaDays = Math.round(deltaHours / 24);
+          if (Math.abs(deltaDays) < 30) {
+            return new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(deltaDays, 'day');
+          }
+          return new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(new Date(then));
+        }
+
+        function makeText(tag, className, text) {
+          const element = document.createElement(tag);
+          if (className) element.className = className;
+          element.textContent = text;
+          return element;
+        }
+
+        function buildCard(item) {
+          const card = document.createElement('article');
+          card.className = 'signal-card';
+          card.dataset.channel = item.channel;
+
+          card.appendChild(makeText('span', 'channel', item.channel));
+
+          const body = document.createElement('div');
+          const title = document.createElement('h3');
+          const link = document.createElement('a');
+          link.href = item.url;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.textContent = item.title;
+          title.appendChild(link);
+          body.appendChild(title);
+          if (item.summary) body.appendChild(makeText('p', '', item.summary));
+          card.appendChild(body);
+
+          const meta = document.createElement('div');
+          meta.className = 'meta';
+          meta.appendChild(makeText('strong', '', item.source));
+          meta.appendChild(makeText('span', '', relativeDate(item.published_at)));
+          if (item.source_context) meta.appendChild(makeText('span', '', item.source_context));
+          card.appendChild(meta);
+          return card;
+        }
+
+        function renderNext() {
+          if (state.rendered >= state.filtered.length) {
+            sentinel.textContent = state.filtered.length ? 'End of this scan' : 'No signals in this lane';
+            return;
+          }
+          const end = Math.min(state.rendered + PAGE_SIZE, state.filtered.length);
+          const fragment = document.createDocumentFragment();
+          state.filtered.slice(state.rendered, end).forEach((item) => fragment.appendChild(buildCard(item)));
+          feed.appendChild(fragment);
+          state.rendered = end;
+          sentinel.textContent = state.rendered < state.filtered.length ? 'Scroll for the next scan' : 'End of this scan';
+        }
+
+        function applyFilter(filter) {
+          state.active = filter;
+          state.filtered = filter === 'all' ? state.all : state.all.filter((item) => item.channel === filter);
+          state.rendered = 0;
+          feed.replaceChildren();
+          document.querySelectorAll('[data-filter]').forEach((button) => {
+            button.setAttribute('aria-pressed', String(button.dataset.filter === filter));
+          });
+          renderNext();
+          setStatus(`${state.filtered.length} source-labeled signals in ${filter === 'all' ? 'the full field' : filter}.`);
+        }
+
+        function renderSourceStatus(rows) {
+          sourceStatus.replaceChildren();
+          rows.forEach((row) => {
+            const item = makeText('li', 'source-state', `${row.name} · ${row.ok ? row.count : 'unavailable'}`);
+            item.dataset.ok = String(Boolean(row.ok));
+            if (row.error) item.title = row.error;
+            sourceStatus.appendChild(item);
+          });
+        }
+
+        async function load(force = false) {
+          if (state.loading) return;
+          state.loading = true;
+          refresh.disabled = true;
+          setStatus(force ? 'Running a fresh source scan…' : 'Connecting to source lanes…');
+          try {
+            const url = force
+              ? `/api/agent/research-signal-feed?fresh=${Date.now()}`
+              : '/api/agent/research-signal-feed';
+            const response = await fetch(url, { headers: { Accept: 'application/json' } });
+            if (!response.ok) throw new Error(`Signal endpoint returned ${response.status}`);
+            const payload = await response.json();
+            state.all = Array.isArray(payload.items) ? payload.items : [];
+            renderSourceStatus(Array.isArray(payload.status) ? payload.status : []);
+            applyFilter(state.active);
+            const healthy = (payload.status || []).filter((row) => row.ok).length;
+            setStatus(`${state.all.length} signals loaded from ${healthy} independent source lanes.`);
+          } catch (error) {
+            setStatus(`Live sources are temporarily unavailable. ${error.message || error}`, 'error');
+            sentinel.textContent = 'The next automatic scan will retry';
+          } finally {
+            state.loading = false;
+            refresh.disabled = false;
+          }
+        }
+
+        document.querySelectorAll('[data-filter]').forEach((button) => {
+          button.addEventListener('click', () => applyFilter(button.dataset.filter));
+        });
+        refresh.addEventListener('click', () => load(true));
+
+        const observer = new IntersectionObserver(
+          (entries) => {
+            if (entries.some((entry) => entry.isIntersecting)) renderNext();
+          },
+          { rootMargin: '320px 0px' }
+        );
+        observer.observe(sentinel);
+
+        updateClocks();
+        setInterval(updateClocks, 30_000);
+        setInterval(() => load(false), REFRESH_MS);
+        load(false);
+      })();
+    </script>
+  </body>
+</html>

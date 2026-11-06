@@ -43,6 +43,7 @@ export * from './hamiltonianCFI.js';
 // (hyperbolicDistance, mobiusAdd, Decision). Import directly.
 export * from './harmonicScaling.js';
 export * from './halAttention.js';
+export * from './nestedPatchAttention.js';
 export * from './audioAxis.js';
 export * from './vacuumAcoustics.js';
 

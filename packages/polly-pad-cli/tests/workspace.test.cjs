@@ -611,52 +611,36 @@ test('polly cross translate --dry-run shows prompt', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Test 26: terminal AI router must be resolved from Polly's trusted repo
+// Test 26: installed model routing must not load scripts from the consumer repo
 // ---------------------------------------------------------------------------
-test('polly terminal router ignores attacker-controlled current git repository', () => {
+test('polly model routing is source-checkout independent', () => {
   const dir = mktemp();
   try {
     const evilRouterDir = path.join(dir, 'scripts', 'system');
     fs.mkdirSync(evilRouterDir, { recursive: true });
-    fs.writeFileSync(path.join(evilRouterDir, 'terminal_ai_router.py'), 'print("evil router")\n', 'utf8');
+    const marker = path.join(dir, 'evil-router-ran.txt');
+    fs.writeFileSync(
+      path.join(evilRouterDir, 'terminal_ai_router.py'),
+      'from pathlib import Path\nPath(' + JSON.stringify(marker) + ').write_text("ran")\n',
+      'utf8'
+    );
     spawnSync('git', ['init'], { cwd: dir, encoding: 'utf8' });
-
-    const pythonStub = path.join(dir, process.platform === 'win32' ? 'python-stub.cmd' : 'python-stub');
-    const argvPath = path.join(dir, 'router-argv.json');
-    if (process.platform === 'win32') {
-      fs.writeFileSync(
-        pythonStub,
-        '@echo off\r\nnode -e "require(\'fs\').writeFileSync(process.env.POLLY_ROUTER_ARGV_PATH, JSON.stringify(process.argv.slice(1))); console.log(\'trusted router ok\')" %*\r\n',
-        'utf8'
-      );
-    } else {
-      fs.writeFileSync(
-        pythonStub,
-        '#!/usr/bin/env node\n' +
-          'require("fs").writeFileSync(process.env.POLLY_ROUTER_ARGV_PATH, JSON.stringify(process.argv.slice(2)));\n' +
-          'console.log("trusted router ok");\n',
-        'utf8'
-      );
-      fs.chmodSync(pythonStub, 0o755);
-    }
 
     const result = run(
       dir,
       ['cross', 'translate', '--from', 'python', '--to', 'javascript', '--text', 'print(1)', '--json'],
       {
-        CEREBRAS_API_KEY: 'fake-test-key',
-        PYTHON: pythonStub,
-        POLLY_ROUTER_ARGV_PATH: argvPath,
+        POLLY_DISABLE_OLLAMA: '1',
+        POLLY_DISABLE_FREE_ROUTER: '1',
+        POLLY_DISABLE_PAID_APIS: '1',
       }
     );
 
     assert.strictEqual(result.status, 0, 'translate should exit 0\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
     const data = JSON.parse(result.stdout);
-    assert.strictEqual(data.model_used, 'terminal-ai-router');
-    assert.ok(fs.existsSync(argvPath), 'trusted router stub should be invoked');
-    const argv = JSON.parse(fs.readFileSync(argvPath, 'utf8'));
-    assert.strictEqual(argv[0], path.resolve(__dirname, '..', '..', '..', 'scripts', 'system', 'terminal_ai_router.py'));
-    assert.notStrictEqual(argv[0], path.join(evilRouterDir, 'terminal_ai_router.py'));
+    assert.strictEqual(data.model_used, 'template');
+    assert.strictEqual(fs.existsSync(marker), false, 'consumer repository scripts must not run');
+    assert.doesNotMatch(fs.readFileSync(BIN, 'utf8'), /terminal_ai_router\.py/);
   } finally {
     cleanup(dir);
   }
@@ -815,5 +799,24 @@ test('polly ps run dry-run does not execute PATH-resolved pwsh probes', () => {
   } finally {
     cleanup(dir);
     cleanup(binDir);
+  }
+});
+
+test('polly run keeps task text after a boolean flag', () => {
+  const dir = mktemp();
+  try {
+    run(dir, ['init', 'PlanOrderingTest']);
+    const result = run(dir, ['run', 'plan', '--dry-run', 'migrate to new API', '--json']);
+    assert.strictEqual(
+      result.status,
+      0,
+      'run plan --dry-run should exit 0\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr
+    );
+    const payload = JSON.parse(result.stdout);
+    assert.strictEqual(payload.dry_run, true);
+    assert.strictEqual(payload.recipe, 'plan');
+    assert.match(payload.prompt, /migrate to new API/);
+  } finally {
+    cleanup(dir);
   }
 });

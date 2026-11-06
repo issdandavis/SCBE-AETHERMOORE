@@ -1,7 +1,8 @@
 """Apollo YouTube Transcript Collector — Free daily transcript harvesting.
 
-Pulls transcripts from curated channels, classifies by tongue,
-scrubs secrets, generates SFT training pairs.
+Pulls transcripts from curated channels, classifies by tongue, and scrubs
+secrets for analysis. Collection never writes training pairs; training admission
+requires a separate, source-specific rights receipt.
 
 Uses youtube-transcript-api (free, no API key needed for public videos).
 Uses YouTube Data API only for video search (via MCP or direct).
@@ -203,7 +204,6 @@ def collect_channel(channel_name: str, max_videos: int = 5) -> dict:
         return {"collected": 0}
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    all_sft = []
     collected = 0
 
     for video in videos:
@@ -230,10 +230,6 @@ def collect_channel(channel_name: str, max_videos: int = 5) -> dict:
         out_file = OUTPUT_DIR / f"{channel['name'].lower().replace(' ', '_')}_{vid_id}.txt"
         out_file.write_text(clean[:50000])  # cap at 50KB
 
-        # Generate SFT
-        pairs = generate_sft_from_transcript(channel, title, clean)
-        all_sft.extend(pairs)
-
         # Update state
         state.setdefault("collected", {})[vid_id] = {
             "channel": channel["name"],
@@ -241,6 +237,8 @@ def collect_channel(channel_name: str, max_videos: int = 5) -> dict:
             "tongue": channel["tongue"],
             "chars": len(clean),
             "date": datetime.date.today().isoformat(),
+            "usage": "analysis_only",
+            "training_eligible": False,
         }
         collected += 1
 
@@ -248,16 +246,12 @@ def collect_channel(channel_name: str, max_videos: int = 5) -> dict:
     state["last_run"] = datetime.datetime.now().isoformat()
     save_state(state)
 
-    # Save SFT
-    if all_sft:
-        sft_path = SFT_DIR / f"youtube_transcripts_{datetime.date.today().isoformat()}.jsonl"
-        with open(sft_path, "a") as f:
-            for p in all_sft:
-                json.dump(p, f)
-                f.write("\n")
-        print(f"  SFT: {len(all_sft)} pairs -> {sft_path}")
-
-    return {"collected": collected, "sft_pairs": len(all_sft)}
+    return {
+        "collected": collected,
+        "sft_pairs": 0,
+        "training_eligible": False,
+        "usage": "analysis_only",
+    }
 
 
 def collect_all(max_per_channel: int = 3):

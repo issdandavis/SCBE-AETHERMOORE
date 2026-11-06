@@ -74,7 +74,7 @@ test('natural-language CLI can use learned corpus before static fallback', () =>
     { logPath, enabled: true }
   );
 
-  const result = runCli(['show', 'local', 'package', 'manifest', '--json'], {
+  const result = runCli(['resolve', 'show', 'local', 'package', 'manifest', '--json'], {
     env: { SCBE_UTTERANCE_LOG: logPath },
   });
 

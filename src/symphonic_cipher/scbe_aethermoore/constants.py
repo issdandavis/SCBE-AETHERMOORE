@@ -111,35 +111,25 @@ def harmonic_scale(d: int, R: float = DEFAULT_R) -> float:
 
 
 def security_bits(base_bits: int, d: int, R: float = DEFAULT_R) -> float:
+    """Return the caller-supplied baseline strength without geometric inflation.
+
+    This is not a cryptographic certification of the baseline. The compatibility
+    arguments d and R describe governance geometry, not secret entropy or a
+    proven attacker work factor. Use harmonic_scale for the geometric score.
     """
-    Compute effective security bits after harmonic scaling.
-
-    S_bits(d, R, B_bits) = B_bits + d² × log₂(R)
-
-    Args:
-        base_bits: Base security level in bits (e.g., 128 for AES-128)
-        d: Dimension count
-        R: Harmonic ratio (default 1.5)
-
-    Returns:
-        Effective security bits
-    """
-    return base_bits + (d * d) * math.log2(R)
+    if not math.isfinite(base_bits) or base_bits < 0:
+        raise ValueError("Baseline strength must be finite and nonnegative")
+    if not math.isfinite(d) or d < 1 or not math.isfinite(R) or R <= 0:
+        raise ValueError("Geometry requires finite d >= 1 and R > 0")
+    return float(base_bits)
 
 
 def security_level(base: float, d: int, R: float = DEFAULT_R) -> float:
-    """
-    Compute full security level S = B × R^(d²).
-
-    Args:
-        base: Base security constant (e.g., 2^128)
-        d: Dimension count
-        R: Harmonic ratio (default 1.5)
-
-    Returns:
-        Enhanced security level
-    """
-    return base * harmonic_scale(d, R)
+    """Return the supplied baseline, not a geometric multiplier of security."""
+    if not math.isfinite(base) or base < 0:
+        raise ValueError("Baseline strength must be finite and nonnegative")
+    security_bits(0, d, R)  # validate compatibility arguments without exponentiation
+    return base
 
 
 # =============================================================================

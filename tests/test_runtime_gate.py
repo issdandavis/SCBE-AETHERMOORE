@@ -369,8 +369,8 @@ class TestCouncilReview:
     """6-council Seireitei gate — throw the book at them."""
 
     def _calibrate_and_lower_threshold(self):
-        """Create a gate with low cost_allow so council fires on normal text."""
-        gate = RuntimeGate(cost_allow=1.5)
+        """Exercise council review below the direct-denial threshold."""
+        gate = RuntimeGate(cost_allow=1.5, cost_deny=10000.0)
         for i in range(5):
             gate.evaluate(f"Cal {i}")
         return gate
@@ -414,7 +414,8 @@ class TestCouncilReview:
         assert any("FAIL" in s for s in council_signals)
 
     def test_encoding_artifacts_trigger_dr_council(self):
-        gate = RuntimeGate(cost_allow=1.5, reroute_rules=[])
+        # Keep the fixture below direct denial to inspect the DR council itself.
+        gate = RuntimeGate(cost_allow=1.5, cost_deny=10000.0, reroute_rules=[])
         for i in range(5):
             gate.evaluate(f"Cal {i}")
         # DR council checks punct_ratio > 0.15 or "base64" in text

@@ -21,6 +21,13 @@ import {
   layer12HarmonicScaling,
   layer13RiskDecision,
   layer14AudioAxis,
+  L02_CANONICAL_ORDER,
+  L07_CANONICAL_ORDER,
+  adaptLayer7Shift,
+  audioCoherenceTelemetry,
+  convertLayer2Realification,
+  layer9SpectralObservation,
+  verdictSonificationTelemetry,
   scbe14LayerPipeline,
   mobiusAdd,
 } from '../../src/harmonic/pipeline14';
@@ -165,6 +172,42 @@ describe('SCBE 14-Layer Pipeline', () => {
   });
 
   describe('Layer 9: Spectral Coherence (A9)', () => {
+    const cosine = (bin: number, count = 256) =>
+      Array.from({ length: count }, (_, i) => Math.cos((2 * Math.PI * bin * i) / count));
+
+    it.each([255, 256])('separates low and high interior bins for %i samples', (count) => {
+      expect(layer9SpectralCoherence(cosine(4, count))).toBeGreaterThan(0.99);
+      expect(layer9SpectralCoherence(cosine(100, count))).toBeLessThan(0.01);
+    });
+
+    it('uses power and stays stable across amplitude scales', () => {
+      const high = cosine(100);
+      const mixed = cosine(4).map((value, i) => value + 2 * high[i]);
+      for (const scale of [1e-250, 1, 1e250]) {
+        expect(layer9SpectralCoherence(mixed.map((value) => scale * value))).toBeCloseTo(0.2, 7);
+      }
+    });
+
+    it('uses an explicit frequency cutoff and distinguishes silence from missing input', () => {
+      expect(layer9SpectralCoherence(cosine(64))).toBeLessThan(0.01);
+      expect(layer9SpectralCoherence(cosine(64), 1e-5, 0.3)).toBeGreaterThan(0.99);
+      expect(layer9SpectralCoherence(Array(16).fill(0))).toBe(0);
+      expect(layer9SpectralCoherence(Array(16).fill(1))).toBeGreaterThan(0.99);
+      expect(layer9SpectralCoherence([2])).toBeGreaterThan(0.99);
+    });
+
+    it('rejects nonfinite measurements and invalid configuration', () => {
+      for (const bad of [NaN, Infinity, -Infinity]) {
+        expect(() => layer9SpectralCoherence([bad])).toThrow();
+      }
+      for (const cutoff of [0, -0.1, 0.6, NaN]) {
+        expect(() => layer9SpectralCoherence([1], 1e-5, cutoff)).toThrow();
+      }
+      for (const eps of [-1, NaN, Infinity]) {
+        expect(() => layer9SpectralCoherence([1], eps)).toThrow();
+      }
+    });
+
     it('should return S_spec ∈ [0,1]', () => {
       const signal = [1, 2, 3, 4, 5, 4, 3, 2];
       const result = layer9SpectralCoherence(signal);
@@ -297,6 +340,10 @@ describe('SCBE 14-Layer Pipeline', () => {
       expect(result.layers.l9_spectral).toBeGreaterThanOrEqual(0);
       expect(result.layers.l10_spin).toBeGreaterThanOrEqual(0);
       expect(result.layers.l12_harmonic).toBeGreaterThan(0);
+      expect(result.layers.l2_coordinateOrder).toBe(L02_CANONICAL_ORDER);
+      expect(result.layers.l7_compositionOrder).toBe(L07_CANONICAL_ORDER);
+      expect(result.layers.l9_observation.status).toBe('OBSERVED');
+      expect(result.layers.l14_telemetry.kind).toBe('L14A_AUDIO_COHERENCE_INPUT');
     });
 
     it('should return ALLOW for safe context vectors', () => {
@@ -328,6 +375,71 @@ describe('SCBE 14-Layer Pipeline', () => {
 
       // Unstable audio should have higher riskPrime
       expect(resultUnstable.riskPrime).toBeGreaterThan(resultStable.riskPrime);
+    });
+  });
+
+  describe('Canonical profile adapters', () => {
+    it('round-trips the L02 block/interleaved permutation', () => {
+      const block = [1, 3, 5, 2, 4, 6];
+      const interleaved = convertLayer2Realification(
+        block,
+        'BLOCK_REAL_THEN_IMAG',
+        'INTERLEAVED_REAL_IMAG'
+      );
+      expect(interleaved).toEqual([1, 2, 3, 4, 5, 6]);
+      expect(
+        convertLayer2Realification(interleaved, 'INTERLEAVED_REAL_IMAG', 'BLOCK_REAL_THEN_IMAG')
+      ).toEqual(block);
+    });
+
+    it('conjugates L07 shifts between composition orders', () => {
+      const c = Math.cos(0.4);
+      const s = Math.sin(0.4);
+      const Q = [
+        [c, -s],
+        [s, c],
+      ];
+      const canonical = [0.1, -0.03];
+      const native = adaptLayer7Shift(
+        canonical,
+        Q,
+        'ROTATE_THEN_TRANSLATE',
+        'TRANSLATE_THEN_ROTATE'
+      );
+      const restored = adaptLayer7Shift(
+        native,
+        Q,
+        'TRANSLATE_THEN_ROTATE',
+        'ROTATE_THEN_TRANSLATE'
+      );
+      expect(restored[0]).toBeCloseTo(canonical[0], 12);
+      expect(restored[1]).toBeCloseTo(canonical[1], 12);
+    });
+
+    it('keeps L09 missing, silence, and short input distinct', () => {
+      expect(layer9SpectralObservation(null).status).toBe('MISSING');
+      expect(layer9SpectralObservation(Array(8).fill(0))).toMatchObject({
+        status: 'SILENT',
+        score: 0,
+      });
+      expect(layer9SpectralObservation([1, -1])).toMatchObject({
+        status: 'TOO_SHORT',
+        score: null,
+        decisionValue: 0.5,
+      });
+    });
+
+    it('keeps L14 input evidence and output sonification in different types', () => {
+      expect(audioCoherenceTelemetry(0.8)).toMatchObject({
+        kind: 'L14A_AUDIO_COHERENCE_INPUT',
+        samples: null,
+        executionOrder: 'PRE_L13',
+      });
+      expect(verdictSonificationTelemetry([0.1, -0.2])).toMatchObject({
+        kind: 'L14B_VERDICT_SONIFICATION_OUTPUT',
+        scalar: null,
+        executionOrder: 'POST_L13',
+      });
     });
   });
 

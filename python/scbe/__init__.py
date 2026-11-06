@@ -82,7 +82,7 @@ from .atomic_tokenization import (
     element_to_tau,
     element_to_trit_vector,
 )
-from .atomic_tokenization import map_token_to_atomic_state, map_token_to_element
+from .atomic_tokenization import map_token_to_atomic_state, map_token_to_element, read_molecule, read_spectrum
 from .chemical_fusion import FusionParams, FusionResult, fuse_atomic_states, fuse_tokens
 from .ca_opcode_table import (
     CAOpcodeEntry,
@@ -179,6 +179,8 @@ __all__ += [
     "element_to_trit_vector",
     "map_token_to_element",
     "map_token_to_atomic_state",
+    "read_molecule",
+    "read_spectrum",
     "FusionParams",
     "FusionResult",
     "fuse_atomic_states",

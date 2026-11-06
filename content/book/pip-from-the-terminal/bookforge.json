@@ -1,0 +1,35 @@
+{
+  "title": "pip from the Terminal",
+  "subtitle": "A Working Guide to Python Environments, Packages, Wheels, Lock Files, and Safer Installs",
+  "author": "Issac Daniel Davis",
+  "copyright_year": 2026,
+  "publisher": "Issac Daniel Davis",
+  "isbn": "Print ISBN: assign in KDP before final cover",
+  "edition_statement": "First edition, October 2026",
+  "creative_nonfiction_notice": "Technical examples were tested against Python 3.12.10 and pip 26.2.2. Software changes; verify commands against the cited current documentation.",
+  "source": "manuscript.md",
+  "output_dir": "build",
+  "binding": "paperback",
+  "trim": "6x9",
+  "page_count": 26,
+  "print": {
+    "paper": "white",
+    "ink": "bw",
+    "cover_finish": "matte"
+  },
+  "typography": {
+    "body_font": "Georgia",
+    "body_size_pt": 10.5,
+    "leading_pt": 13.8,
+    "first_line_indent_in": 0.18,
+    "chapter_title_size_pt": 18,
+    "part_title_size_pt": 19
+  },
+  "margins": {
+    "top_in": 0.65,
+    "bottom_in": 0.7,
+    "inside_in": 0.75,
+    "outside_in": 0.55
+  },
+  "interior_engine": "reportlab"
+}

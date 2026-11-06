@@ -1,0 +1,10 @@
+[project]
+name = "condensed-boundary-density"
+version = "0.1.0"
+description = "Auditable prototype for poly-nodal boundary-cell condensation"
+requires-python = ">=3.11"
+dependencies = ["numpy>=1.24", "matplotlib>=3.7"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

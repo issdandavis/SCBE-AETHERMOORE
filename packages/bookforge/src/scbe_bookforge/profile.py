@@ -25,7 +25,7 @@ KDP_HARDCOVER_TRIM_SIZES = {
 SPINE_PER_PAGE = {
     "bw_white":      0.002252,
     "bw_cream":      0.0025,
-    "color_standard":0.002347,
+    "color_standard":0.002252,
     "color_premium": 0.002347,
 }
 
@@ -61,6 +61,14 @@ class Profile:
     bleed: bool = False
     cover_finish: str = "matte"
     page_count: Optional[int] = None  # required for cover wrap
+
+    # Cover art and page decoration
+    cover_art: Optional[Path] = None
+    simulated_gold: bool = False
+    cover_background_color: str = "#173442"
+    ornament_style: str = "none"  # none | water_channel | rose | gold_rule
+    ornament_color: str = "#2A7180"
+    ornament_opacity: float = 0.22
 
     # Typography
     body_font: str = "Georgia"
@@ -138,6 +146,10 @@ def load_profile(path: Path, *, base_dir: Optional[Path] = None) -> Profile:
     margins = raw.get("margins", {})
     epigraph = raw.get("epigraph") or {}
     print_block = raw.get("print", {})
+    cover_block = raw.get("cover") or {}
+    ornament_block = raw.get("ornament") or {}
+    cover_art_value = str(cover_block.get("art", "")).strip()
+    cover_art = (base / cover_art_value).resolve() if cover_art_value else None
 
     return Profile(
         source_md=source_md,
@@ -162,6 +174,12 @@ def load_profile(path: Path, *, base_dir: Optional[Path] = None) -> Profile:
         bleed=bool(print_block.get("bleed_in", 0) or print_block.get("bleed", False)),
         cover_finish=print_block.get("cover_finish", "matte"),
         page_count=raw.get("page_count"),
+        cover_art=cover_art,
+        simulated_gold=bool(cover_block.get("simulated_gold", False)),
+        cover_background_color=str(cover_block.get("background_color", "#173442")),
+        ornament_style=str(ornament_block.get("style", "none")).lower(),
+        ornament_color=str(ornament_block.get("color", "#2A7180")),
+        ornament_opacity=float(ornament_block.get("opacity", 0.22)),
         body_font=typography.get("body_font", "Georgia"),
         body_size_pt=float(typography.get("body_size_pt", 10.75)),
         leading_pt=float(typography.get("leading_pt", 14.0)),

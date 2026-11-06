@@ -422,7 +422,7 @@ def call_google(lane: dict[str, Any], prompt: str, api_key: str) -> dict[str, An
     payload = {
         "contents": [{"role": "user", "parts": [{"text": prompt}]}],
         "generationConfig": {
-            "temperature": float(lane.get("temperature", 0.2)),
+            # Use Google's defaults; newer Gemini models reject sampling overrides.
             "maxOutputTokens": int(lane.get("max_tokens", 320)),
         },
     }

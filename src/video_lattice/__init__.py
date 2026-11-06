@@ -51,6 +51,7 @@ from .realtime_perception import (
 from .vector_index import LocalVectorIndex, SearchResult, VectorRecord, cosine_similarity, normalize_vector
 from .tiny_engine import Entity, Sprite, Tile, TinyWorld, demo_world
 from .gpt_world import WorldDirector, WorldDelta, WorldCommand, RoundTableDirector, RoundTableReport
+from .knock_v import SCHEMA as KNOCK_V_SCHEMA, build_knock_v, inspect_window, load_transcript
 
 __all__ = [
     "PoincareLattice",
@@ -100,4 +101,8 @@ __all__ = [
     "WorldCommand",
     "RoundTableDirector",
     "RoundTableReport",
+    "KNOCK_V_SCHEMA",
+    "build_knock_v",
+    "inspect_window",
+    "load_transcript",
 ]

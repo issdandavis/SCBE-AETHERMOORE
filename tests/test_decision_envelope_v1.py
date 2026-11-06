@@ -253,3 +253,124 @@ def test_harmonic_wall_cost_monotonic_with_resource_scarcity() -> None:
         thermal_max=85.0,
     )
     assert high_scarcity > low_scarcity
+
+
+def _numeric_action():
+    return ActionState(
+        mission_phase="SURFACE_OPS",
+        agent_id="agent-1",
+        capability="nav.move",
+        target="site-A",
+        risk_tier=LOW,
+        power=55.0,
+        bandwidth=12.0,
+        thermal=70.0,
+    )
+
+
+@pytest.mark.parametrize("field", ["power", "bandwidth", "thermal"])
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), -float("inf")])
+def test_malformed_action_resource_denies(field, value):
+    now = 1_700_000_000_000
+    signed = sign_envelope_hmac(_mk_env(now), b"unit-test-signing-key")
+    assert verify_envelope_hmac(signed, _key_lookup, now_ms=now) == (True, "ok")
+    action = _numeric_action()
+    setattr(action, field, value)
+    result = evaluate_action_inside_envelope(signed, action, _key_lookup, now_ms=now)
+    assert result.boundary == DENY and not result.in_envelope
+    assert result.reason == f"invalid_action:{field}"
+
+
+@pytest.mark.parametrize("value", [0, -1, 5])
+def test_malformed_action_risk_denies(value):
+    now = 1_700_000_000_000
+    signed = sign_envelope_hmac(_mk_env(now), b"unit-test-signing-key")
+    action = _numeric_action()
+    action.risk_tier = value
+    result = evaluate_action_inside_envelope(signed, action, _key_lookup, now_ms=now)
+    assert result.boundary == DENY and not result.in_envelope
+    assert result.reason == "invalid_action:risk_tier"
+
+
+@pytest.mark.parametrize("field", ["power_min", "bandwidth_min", "thermal_max"])
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), -float("inf"), -1.0])
+def test_malformed_signed_resource_constraint_denies(field, value):
+    now = 1_700_000_000_000
+    env = _mk_env(now)
+    setattr(env.constraints.resources, field, value)
+    # Authenticate the malformed policy, so signature failure cannot mask schema failure.
+    signed = sign_envelope_hmac(env, b"unit-test-signing-key")
+    ok, reason = verify_envelope_hmac(signed, _key_lookup, now_ms=now)
+    assert not ok and f"constraints.resources.{field}" in reason
+    result = evaluate_action_inside_envelope(signed, _numeric_action(), _key_lookup, now_ms=now)
+    assert result.boundary == DENY and not result.in_envelope
+    assert result.reason.startswith("invalid_envelope:")
+
+
+@pytest.mark.parametrize("value", [0, -1, 5])
+@pytest.mark.parametrize("field", ["max_risk_tier", "boundary"])
+def test_malformed_signed_enum_constraint_denies(field, value):
+    now = 1_700_000_000_000
+    env = _mk_env(now)
+    if field == "max_risk_tier":
+        env.constraints.max_risk_tier = value
+    else:
+        env.rules[0].boundary = value
+    signed = sign_envelope_hmac(env, b"unit-test-signing-key")
+    ok, reason = verify_envelope_hmac(signed, _key_lookup, now_ms=now)
+    assert not ok and field in reason
+    result = evaluate_action_inside_envelope(signed, _numeric_action(), _key_lookup, now_ms=now)
+    assert result.boundary == DENY and not result.in_envelope
+
+
+@pytest.mark.parametrize("field", ["power", "bandwidth"])
+def test_malformed_negative_resource_denies_even_with_zero_floor(field):
+    now = 1_700_000_000_000
+    env = _mk_env(now)
+    setattr(env.constraints.resources, f"{field}_min", 0)
+    signed = sign_envelope_hmac(env, b"unit-test-signing-key")
+    action = _numeric_action()
+    setattr(action, field, -1)
+    result = evaluate_action_inside_envelope(signed, action, _key_lookup, now_ms=now)
+    assert result.boundary == DENY and not result.in_envelope
+    assert result.reason == f"invalid_action:{field}"
+
+
+@pytest.mark.parametrize("mode", ["thresholds", "zero_constraints", "negative_temperature"])
+def test_numeric_validation_preserves_valid_allow(mode):
+    now = 1_700_000_000_000
+    env = _mk_env(now)
+    action = _numeric_action()
+    if mode == "thresholds":
+        action.power, action.bandwidth, action.thermal = 40, 10, 85
+    elif mode == "zero_constraints":
+        env.constraints.resources.power_min = 0
+        env.constraints.resources.bandwidth_min = 0
+        env.constraints.resources.thermal_max = 0  # Existing disabled-ceiling convention.
+        action.power, action.bandwidth, action.thermal = 0, 0, 120
+    else:
+        action.thermal = -20  # Units are caller-defined; Celsius may be negative.
+    signed = sign_envelope_hmac(env, b"unit-test-signing-key")
+    result = evaluate_action_inside_envelope(signed, action, _key_lookup, now_ms=now)
+    assert result.boundary == AUTO_ALLOW and result.in_envelope
+
+
+@pytest.mark.parametrize("mode", ["unsigned", "tampered", "expired", "wrong_key"])
+def test_numeric_validity_never_replaces_authentication(mode):
+    now = 1_700_000_000_000
+    env = _mk_env(now)
+    signed = env if mode == "unsigned" else sign_envelope_hmac(env, b"unit-test-signing-key")
+    lookup = _key_lookup
+    if mode == "tampered":
+        signed.constraints.resources.power_min = 0
+    elif mode == "expired":
+        now += 60_001
+    elif mode == "wrong_key":
+
+        def wrong_key_lookup(issuer, key_id):
+            return b"wrong-fixture-key"
+
+        lookup = wrong_key_lookup
+    result = evaluate_action_inside_envelope(signed, _numeric_action(), lookup, now_ms=now)
+    assert result.boundary == DENY and not result.in_envelope
+    assert result.reason.startswith("invalid_envelope:")

@@ -61,3 +61,31 @@ def test_visual_system_html2canvas_script_uses_sri() -> None:
     assert "html2canvas.min.js" in html
     assert 'integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H"' in html
     assert 'crossorigin="anonymous"' in html
+
+
+def test_colab_bridge_delegates_to_checkout_script_without_opening_profile():
+    # --help exits at argparse, before any profile, credential or network access.
+    assert scbe_system_cli._colab_bridge_script(ROOT) == ROOT / "scripts/colab/colab_n8n_bridge.py"
+    result = scbe_system_cli._run_colab_bridge(ROOT, ["--help"])
+    assert result.returncode == 0, result.stderr
+    assert "--token-env" in result.stdout
+    assert "--status" in result.stdout
+
+
+def test_colab_bridge_passes_token_via_environment_not_process_arguments(monkeypatch):
+    sentinel = "dummy-colab-token"
+    backend, env = scbe_system_cli._prepare_colab_bridge_secret_inputs(f"http://127.0.0.1:8888/?token={sentinel}")
+    calls = []
+
+    def capture(command, **kwargs):
+        calls.append((command, kwargs))
+        return None
+
+    monkeypatch.setattr(scbe_system_cli.subprocess, "run", capture)
+    scbe_system_cli._run_colab_bridge(
+        ROOT, ["--set", "--backend-url", backend, "--token-env", "SCBE_COLAB_BRIDGE_TOKEN"], env_overrides=env
+    )
+    command, kwargs = calls[0]
+    assert sentinel not in " ".join(command)
+    assert kwargs["env"]["SCBE_COLAB_BRIDGE_TOKEN"] == sentinel
+    assert backend == "http://127.0.0.1:8888"

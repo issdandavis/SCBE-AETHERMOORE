@@ -13,12 +13,15 @@
  */
 
 import { createHmac } from 'crypto';
+import { readFileSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
 
 // ============================================================================
 // Types
 // ============================================================================
 
-export type ProviderName = 'anthropic' | 'openai' | 'google' | 'mistral' | 'cohere';
+export type ProviderName = 'clay' | 'anthropic' | 'openai' | 'google' | 'mistral' | 'cohere';
 
 export interface ProviderConfig {
   name: ProviderName;
@@ -34,6 +37,8 @@ export interface ProviderResponse {
   provider: ProviderName;
   model: string;
   latencyMs: number;
+  usageAvailable?: boolean;
+  provenance?: unknown;
 }
 
 export interface ProviderError {
@@ -55,13 +60,46 @@ export interface CallOptions {
 
 /** Load provider priority from environment */
 function getProviderPriority(): ProviderName[] {
-  const priority = process.env.SCBE_PROVIDER_PRIORITY || 'anthropic,openai,google';
+  const priority = process.env.SCBE_PROVIDER_PRIORITY || 'clay';
   return priority.split(',').map((p) => p.trim().toLowerCase() as ProviderName);
 }
 
 /** Get configuration for all providers */
 function getProviderConfigs(): Map<ProviderName, ProviderConfig> {
   const configs = new Map<ProviderName, ProviderConfig>();
+  // Private PC-local credential, never bundled into a client or source control.
+  let clayKey = '';
+  let clayUrl = 'http://127.0.0.1:8792/v1';
+  try {
+    const path =
+      process.env.CLAY_BACKEND_CONFIG ||
+      join(process.env.LOCALAPPDATA || homedir(), 'ClayTablet', 'backend-client.json');
+    const local = JSON.parse(readFileSync(path, 'utf8'));
+    const url = new URL(local.base_url);
+    if (
+      url.origin !== 'http://127.0.0.1:8792' ||
+      url.pathname !== '/v1' ||
+      url.username ||
+      url.password ||
+      url.search ||
+      url.hash ||
+      typeof local.api_key !== 'string' ||
+      local.api_key.length < 32
+    ) {
+      throw new Error('Invalid local Clay configuration');
+    }
+    clayKey = local.api_key;
+    clayUrl = local.base_url;
+  } catch {
+    // Unavailable is reported by the router; it never chooses a cloud model implicitly.
+  }
+  configs.set('clay', {
+    name: 'clay',
+    apiKey: clayKey,
+    model: 'clay',
+    baseUrl: clayUrl,
+    available: !!clayKey,
+  });
 
   // Anthropic
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
@@ -119,6 +157,42 @@ function getProviderConfigs(): Map<ProviderName, ProviderConfig> {
 // ============================================================================
 // Provider Implementations
 // ============================================================================
+
+async function callClay(
+  config: ProviderConfig,
+  prompt: string,
+  options: CallOptions
+): Promise<ProviderResponse> {
+  const start = Date.now();
+  const messages = options.systemPrompt ? [{ role: 'system', content: options.systemPrompt }] : [];
+  messages.push({ role: 'user', content: prompt });
+  const response = await fetch(`${config.baseUrl}/chat/completions`, {
+    method: 'POST',
+    redirect: 'error',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${config.apiKey}` },
+    body: JSON.stringify({ model: 'clay', messages, stream: false, source_app: 'scbe-agentic' }),
+    signal: AbortSignal.timeout(options.timeout || 120000),
+  });
+  const data = await response.json();
+  if (!response.ok)
+    throw new Error(`Native Clay: ${data.error?.message || data.error || response.status}`);
+  if (
+    data.model !== 'clay' ||
+    data.clay?.provider !== 'clay' ||
+    typeof data.choices?.[0]?.message?.content !== 'string'
+  ) {
+    throw new Error('Native Clay returned an invalid response');
+  }
+  return {
+    output: data.choices[0].message.content,
+    tokensUsed: 0,
+    usageAvailable: false,
+    provider: 'clay',
+    model: 'clay',
+    latencyMs: Date.now() - start,
+    provenance: data.clay.provenance,
+  };
+}
 
 async function callAnthropic(
   config: ProviderConfig,
@@ -229,7 +303,7 @@ async function callGoogle(
       contents,
       generationConfig: {
         maxOutputTokens: options.maxTokens || 4096,
-        temperature: options.temperature ?? 0.7,
+        // Google owns sampling defaults; custom sampling is deprecated on Gemini 3.x.
       },
     }),
     signal: AbortSignal.timeout(options.timeout || 30000),
@@ -345,6 +419,7 @@ const PROVIDER_CALLERS: Record<
   ProviderName,
   (config: ProviderConfig, prompt: string, options: CallOptions) => Promise<ProviderResponse>
 > = {
+  clay: callClay,
   anthropic: callAnthropic,
   openai: callOpenAI,
   google: callGoogle,
@@ -369,9 +444,14 @@ export async function callProvider(
 ): Promise<ProviderResponse> {
   const priority = getProviderPriority();
   const configs = getProviderConfigs();
-  const fallbackEnabled = process.env.SCBE_PROVIDER_FALLBACK_ENABLED !== 'false';
+  const fallbackEnabled = process.env.SCBE_PROVIDER_FALLBACK_ENABLED === 'true';
   const maxRetries = parseInt(process.env.SCBE_PROVIDER_MAX_RETRIES || '2', 10);
-  const timeout = parseInt(process.env.SCBE_PROVIDER_TIMEOUT_MS || '30000', 10);
+  const timeout =
+    options.timeout ||
+    parseInt(
+      process.env.SCBE_PROVIDER_TIMEOUT_MS || (priority[0] === 'clay' ? '120000' : '30000'),
+      10
+    );
 
   const errors: ProviderError[] = [];
 
@@ -384,12 +464,13 @@ export async function callProvider(
         error: 'API key not configured',
         retryable: false,
       });
+      if (!fallbackEnabled) break;
       continue;
     }
 
     const caller = PROVIDER_CALLERS[providerName];
 
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
+    for (let attempt = 0; attempt < (providerName === 'clay' ? 1 : maxRetries); attempt++) {
       try {
         const result = await caller(config, prompt, { ...options, timeout });
         return result;
@@ -403,7 +484,7 @@ export async function callProvider(
           retryable: isRetryable,
         });
 
-        if (!isRetryable || attempt === maxRetries - 1) {
+        if (providerName === 'clay' || !isRetryable || attempt === maxRetries - 1) {
           break;
         }
 
@@ -465,7 +546,12 @@ export async function callSpecificProvider(
   }
 
   const caller = PROVIDER_CALLERS[providerName];
-  const timeout = parseInt(process.env.SCBE_PROVIDER_TIMEOUT_MS || '30000', 10);
+  const timeout =
+    options.timeout ||
+    parseInt(
+      process.env.SCBE_PROVIDER_TIMEOUT_MS || (providerName === 'clay' ? '120000' : '30000'),
+      10
+    );
 
   return caller(config, prompt, { ...options, timeout });
 }

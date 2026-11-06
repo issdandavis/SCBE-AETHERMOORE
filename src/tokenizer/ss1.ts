@@ -11,7 +11,11 @@
  * - O(1) encode/decode (no neural networks)
  *
  * @module tokenizer/ss1
- * @version 1.0.0
+ * Profile: ss1_transport_v2_1. This tutorial/TTS wordlist is not the same
+ * wire vocabulary as the RWP-v3 Python profile; both are bijective and must
+ * remain explicitly versioned so a decoder never guesses between them.
+ *
+ * @version 2.1.0
  */
 
 import { createHmac, randomBytes } from 'crypto';
@@ -58,6 +62,9 @@ const PHI = 1.618033988749895;
 
 /** Base frequency (A4) */
 const BASE_FREQ = 440;
+
+/** Stable identity of this exact byte-to-token vocabulary. */
+export const SS1_PROFILE_ID = 'ss1_transport_v2_1' as const;
 
 /** Tongue configurations */
 export const TONGUES: Record<TongueCode, TongueInfo> = {
@@ -347,7 +354,7 @@ const DR_SUFFIXES = [
 ];
 
 /** Vocabulary lookup tables */
-const VOCABULARIES: Record<TongueCode, { prefixes: string[]; suffixes: string[] }> = {
+export const VOCABULARIES: Record<TongueCode, { prefixes: string[]; suffixes: string[] }> = {
   KO: { prefixes: KO_PREFIXES, suffixes: KO_SUFFIXES },
   AV: { prefixes: AV_PREFIXES, suffixes: AV_SUFFIXES },
   RU: { prefixes: RU_PREFIXES, suffixes: RU_SUFFIXES },

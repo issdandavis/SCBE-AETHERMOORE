@@ -909,9 +909,26 @@ async function main() {
     const intent = String(flags.intent || '').trim();
     const governedStateFlag =
       flags['governed-state'] === true || flags['governed-state'] === 'true';
+    const permissionMode = flags['permission-mode']
+      ? String(flags['permission-mode']).trim()
+      : undefined;
+    const permissionModes = new Set([
+      'observe',
+      'workspace-write',
+      'cloud-dispatch',
+      'maintenance',
+    ]);
+    if (permissionMode && !permissionModes.has(permissionMode)) {
+      process.stderr.write(
+        'Invalid --permission-mode. Use observe, workspace-write, cloud-dispatch, or maintenance.\n'
+      );
+      process.exitCode = 2;
+      return;
+    }
     const pipelineOpts = {
       repoRoot: flags['repo-root'] ? String(flags['repo-root']) : undefined,
       python: flags.python ? String(flags.python) : undefined,
+      permissionMode,
       governedState: governedStateFlag
         ? {
             enabled: true,
@@ -924,7 +941,9 @@ async function main() {
 
     if (action === 'compile') {
       if (!intent) {
-        process.stderr.write('Usage: scbe-agent-bus pipeline compile --intent "..." [--json]\n');
+        process.stderr.write(
+          'Usage: scbe-agent-bus pipeline compile --intent "..." [--permission-mode <mode>] [--json]\n'
+        );
         process.exitCode = 2;
         return;
       }
@@ -960,7 +979,9 @@ async function main() {
 
     if (action === 'run') {
       if (!intent) {
-        process.stderr.write('Usage: scbe-agent-bus pipeline run --intent "..." [--json]\n');
+        process.stderr.write(
+          'Usage: scbe-agent-bus pipeline run --intent "..." [--permission-mode <mode>] [--json]\n'
+        );
         process.exitCode = 2;
         return;
       }
@@ -1031,8 +1052,8 @@ async function main() {
 
     process.stderr.write(
       'Usage:\n' +
-        '  scbe-agent-bus pipeline run --intent "..." [--json] [--repo-root <path>] [--python <exe>] [--governed-state] [--session-id <id>]\n' +
-        '  scbe-agent-bus pipeline compile --intent "..." [--json] [--repo-root <path>] [--python <exe>]\n' +
+        '  scbe-agent-bus pipeline run --intent "..." [--json] [--repo-root <path>] [--python <exe>] [--permission-mode <mode>] [--governed-state] [--session-id <id>]\n' +
+        '  scbe-agent-bus pipeline compile --intent "..." [--json] [--repo-root <path>] [--python <exe>] [--permission-mode <mode>]\n' +
         '  scbe-agent-bus pipeline state [--session-id <id>] [--state-root <path>] [--state-path <path>] [--init] [--json]\n'
     );
     process.exitCode = 2;

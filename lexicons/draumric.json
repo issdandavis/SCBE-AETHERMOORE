@@ -65,5 +65,20 @@
     "raul'daul": "bind-gate (access binding)",
     "naik'reil": "token-anchor (anchored credential)",
     "haus'naur": "identity-oath (identity attestation)"
+  },
+  "function_words": {
+    "schema": "scbe.function-word-bindings.v1",
+    "registry": "function_primitives.json",
+    "coverage": "shared_registry_v1",
+    "encoding": "stista_framed_sequence",
+    "native_bindings": {
+      "nei": [
+        "part.negation"
+      ],
+      "hau": [
+        "pron.reflexive"
+      ]
+    },
+    "note": "Shared semantic IDs use existing codec sequences; native bindings select relevant existing senses, never replace the original gloss or provenance."
   }
 }

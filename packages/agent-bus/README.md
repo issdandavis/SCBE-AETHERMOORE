@@ -18,7 +18,10 @@ Use it when an agent can touch something that matters — files, money, deployme
 ## Requirements
 
 - **Node.js >= 18**
-- No native build step, no Python, no Docker.
+- Event intake and workspace receipts need no Python or Docker.
+- Plan execution requires a trusted GeoSeal compiler, evaluator and isolated
+  executor. See [secure host setup](SECURE_EXECUTION.md). An unconfigured
+  `pipeline run` blocks; it never falls back to running the plan on the host.
 
 ## Install
 
@@ -43,10 +46,18 @@ console.log(result.ok, result.result);
 Expected output:
 
 ```
-true { summary: '...', receiptId: 'evt_01H...' }
+true {
+  status: 'accepted',
+  mode: 'local_receipt',
+  receipt_id: 'evt_...'
+}
 ```
 
-`result.ok === false` means the gate **refused** the action. That is a normal outcome, not an error — read `result.reason` for which rule fired.
+The package-native default validates and records the event without pretending a
+model or command ran. To execute work, set `event.tool` to a registered governed
+CLI tool or pass the event into a connected conversational runtime.
+
+`result.ok === false` means the gate **refused** the action. That is a normal outcome, not an error — read `result.reason` for which rule fired. Raw `operationCommand` values are refused unless represented by a registered tool.
 
 ## Security
 
@@ -65,13 +76,19 @@ If you deliberately expose the backend beyond loopback, put an authenticating re
 
 ## Command reference
 
-| command                           | does                             | example                                  |
-| --------------------------------- | -------------------------------- | ---------------------------------------- |
-| `scbe-agent-bus serve`            | start the local backend          | `scbe-agent-bus serve --port 8787`       |
-| `scbe-agent-bus send`             | one-shot dispatch, no server     | `scbe-agent-bus send "review this diff"` |
-| `scbe-agent-bus ui`               | terminal UI over the backend     | `scbe-agent-bus ui`                      |
-| `scbe-agent-bus workspace export` | export a workspace + audit chain | `scbe-agent-bus workspace export ./out`  |
-| `scbe-agent-bus workspace verify` | verify a chain offline           | `scbe-agent-bus workspace verify ./out`  |
+| command                           | does                                                      | example                                                                                         |
+| --------------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `scbe-agent-bus serve`            | start the local backend                                   | `scbe-agent-bus serve --port 8787`                                                              |
+| `scbe-agent-bus send`             | one-shot dispatch, no server                              | `scbe-agent-bus send "review this diff"`                                                        |
+| `scbe-agent-bus ui`               | terminal UI over the backend                              | `scbe-agent-bus ui`                                                                             |
+| `scbe-agent-bus workspace export` | export a workspace + audit chain                          | `scbe-agent-bus workspace export ./out`                                                         |
+| `scbe-agent-bus workspace verify` | verify a chain offline                                    | `scbe-agent-bus workspace verify ./out`                                                         |
+| `scbe-agent-bus pipeline compile` | compile an auditable GeoSeal plan                         | `scbe-agent-bus pipeline compile --intent "run tests" --permission-mode workspace-write --json` |
+| `scbe-agent-bus pipeline run`     | compile and gate; blocks without a trusted execution host | `scbe-agent-bus pipeline run --intent "inspect status" --permission-mode observe --json`        |
+
+Pipeline permission modes are `observe`, `workspace-write`, `cloud-dispatch`,
+and `maintenance`. A policy denial is returned as a structured plan with its
+reason and hashes even though the CLI exits nonzero.
 
 ## TypeScript API
 
@@ -99,7 +116,7 @@ If you are an agent reading this to decide how to call the package:
 1. **Entry point is `runEvent`.** One call, one envelope back. You do not need the server for this.
 2. **Check `result.ok` before using `result.result`.** `ok: false` is a refusal with a `reason`, not a crash.
 3. **`privacy: 'local_only'`** keeps the payload on the machine. Use it unless the caller explicitly allowed egress.
-4. **Every call produces a receipt id.** Cite it when you report what you did.
+4. **Every `runEvent` call produces a receipt id.** Cite it when you report what you did.
 5. **Do not shell out to work around a refusal.** The refusal is the product.
 
 ## Troubleshooting

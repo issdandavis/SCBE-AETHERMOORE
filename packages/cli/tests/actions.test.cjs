@@ -144,7 +144,11 @@ async function waitForJson(url) {
 test('actions --json lists true runnable bundles', () => {
   const result = runCli(['actions', '--json']);
 
-  assert.equal(result.status, 0, result.stderr);
+  assert.equal(
+    result.status,
+    0,
+    `stdout:\n${result.stdout || '<empty>'}\nstderr:\n${result.stderr || '<empty>'}`
+  );
   const payload = JSON.parse(result.stdout);
   assert.equal(payload.schema_version, 'scbe_action_catalog_v1');
   assert.ok(payload.count >= 10);
@@ -193,7 +197,11 @@ test('action can run a governed receipt smoke', () => {
 test('action can run the integrated desktop bridge smoke', async () => {
   const result = runCli(['action', 'desktop.bridge-smoke', '--json'], { timeout: 90_000 });
 
-  assert.equal(result.status, 0, result.stderr);
+  assert.equal(
+    result.status,
+    0,
+    `stdout:\n${result.stdout || '<empty>'}\nstderr:\n${result.stderr || '<empty>'}`
+  );
   const payload = JSON.parse(result.stdout);
   assert.equal(payload.schema_version, 'scbe_action_result_v1');
   assert.equal(payload.action_id, 'desktop.bridge-smoke');
@@ -203,7 +211,7 @@ test('action can run the integrated desktop bridge smoke', async () => {
   assert.equal(payload.stdout_json.health.ok, true);
   assert.equal(payload.stdout_json.terminal.success, true);
   assert.equal(payload.stdout_json.browser.success, true);
-  assert.match(payload.stdout_json.browser.title, /Example Domain/i);
+  assert.match(payload.stdout_json.browser.title, /SCBE Bridge Smoke Fixture/i);
 
   // Regression (leaked-bridge bug): the smoke must reap the bridge it spawned.
   // On Windows the teardown previously killed the cmd.exe wrapper pid, orphaning

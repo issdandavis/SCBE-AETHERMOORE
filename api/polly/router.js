@@ -38,7 +38,8 @@ module.exports = async function router(req, res) {
   const fn =
     candidates.find(
       (candidate) =>
-        typeof candidate === 'string' && Object.prototype.hasOwnProperty.call(HANDLERS, candidate)
+        typeof candidate === 'string' &&
+        Object.prototype.hasOwnProperty.call(HANDLERS, candidate)
     ) || '';
   if (!Object.prototype.hasOwnProperty.call(HANDLERS, fn)) {
     // Everything in the map was already directly routable before consolidation, so the

@@ -5,6 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[2]
 MODULE_PATH = ROOT / "scripts" / "benchmark" / "arc_style_grid_benchmark.py"
 
@@ -18,7 +20,13 @@ def _load_module():
     return module
 
 
-def test_arc_style_grid_benchmark_passes_local_fixtures(tmp_path: Path) -> None:
+@pytest.fixture
+def installed_neurogolf():
+    if importlib.util.find_spec("neurogolf") is None:
+        pytest.skip("Optional solver moved to github.com/issdandavis/neurogolf; not shipped by SCBE")
+
+
+def test_arc_style_grid_benchmark_passes_local_fixtures(tmp_path: Path, installed_neurogolf) -> None:
     module = _load_module()
 
     report = module.build_report(tmp_path)
@@ -43,7 +51,7 @@ def test_arc_style_grid_benchmark_passes_local_fixtures(tmp_path: Path) -> None:
     assert (tmp_path / "LATEST.md").exists()
 
 
-def test_arc_style_grid_receipts_are_unique(tmp_path: Path) -> None:
+def test_arc_style_grid_receipts_are_unique(tmp_path: Path, installed_neurogolf) -> None:
     module = _load_module()
     report = module.build_report(tmp_path)
 
@@ -53,7 +61,7 @@ def test_arc_style_grid_receipts_are_unique(tmp_path: Path) -> None:
     assert all(len(receipt) == 64 for receipt in receipts)
 
 
-def test_arc_style_grid_cli_smoke(tmp_path: Path) -> None:
+def test_arc_style_grid_cli_smoke(tmp_path: Path, installed_neurogolf) -> None:
     proc = subprocess.run(
         [
             sys.executable,
@@ -73,3 +81,46 @@ def test_arc_style_grid_cli_smoke(tmp_path: Path) -> None:
     assert proc.returncode == 0, proc.stderr
     assert "arc-style grid benchmark:" in proc.stdout
     assert (tmp_path / "latest_report.json").exists()
+
+
+def test_help_works_without_loading_optional_solver(capsys, monkeypatch) -> None:
+    module = _load_module()
+
+    def forbidden():
+        pytest.fail("Help must not initialize a solver")
+
+    monkeypatch.setattr(module, "neurogolf_api", forbidden)
+    with pytest.raises(SystemExit) as result:
+        module.main(["--help"])
+    assert result.value.code == 0
+    assert "--out-dir" in capsys.readouterr().out
+
+
+def test_missing_solver_has_actionable_error_and_creates_no_report(tmp_path, capsys, monkeypatch) -> None:
+    module = _load_module()
+
+    def missing(name):
+        raise ModuleNotFoundError("No module named neurogolf", name="neurogolf")
+
+    monkeypatch.setattr(module.importlib, "import_module", missing)
+    out = tmp_path / "absent"
+    with pytest.raises(module.NeuroGolfUnavailable):
+        module.build_report(out)
+    with pytest.raises(SystemExit) as result:
+        module.main(["--out-dir", str(out)])
+    assert result.value.code == 2
+    assert "github.com/issdandavis/neurogolf" in capsys.readouterr().err
+    assert not out.exists()
+
+
+@pytest.mark.parametrize("missing_name", ["onnx", "neurogolf.solver"])
+def test_broken_installed_solver_dependency_is_not_hidden(missing_name, monkeypatch) -> None:
+    module = _load_module()
+
+    def broken(name):
+        raise ModuleNotFoundError(f"No module named {missing_name}", name=missing_name)
+
+    monkeypatch.setattr(module.importlib, "import_module", broken)
+    with pytest.raises(ModuleNotFoundError) as result:
+        module.neurogolf_api()
+    assert result.value.name == missing_name

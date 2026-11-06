@@ -85,5 +85,13 @@
     "kess'med'ael": "growing wisdom eternal",
     "med'thul'dan": "wisdom spiral turning",
     "jin'med'cal": "subtle wisdom clear"
+  },
+  "function_words": {
+    "schema": "scbe.function-word-bindings.v1",
+    "registry": "function_primitives.json",
+    "coverage": "shared_registry_v1",
+    "encoding": "stista_framed_sequence",
+    "native_bindings": {},
+    "note": "Shared semantic IDs use existing codec sequences; native bindings select relevant existing senses, never replace the original gloss or provenance."
   }
 }

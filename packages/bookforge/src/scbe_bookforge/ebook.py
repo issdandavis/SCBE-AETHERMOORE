@@ -59,7 +59,9 @@ def build_epub(profile: Profile, *, out_path: Optional[Path] = None) -> Path:
         "pandoc", str(p.source_md),
         "-o", str(out_path),
         "--toc", "--toc-depth=2",
-        "--epub-chapter-level=1",
+        # Manuscript conventions use H1 for the book title and H2 for chapters.
+        # Split at H2 so each chapter becomes its own EPUB content document.
+        "--split-level=2",
         "--css", str(css_path),
         "--metadata", f"title={p.title}",
     ]

@@ -6,6 +6,7 @@ const path = require('node:path');
 const test = require('node:test');
 
 const CLI = path.resolve(__dirname, '..', 'bin', 'scbe.js');
+const TASK_CORPUS = path.resolve(__dirname, '..', 'scripts', 'bench_task_corpus.cjs');
 
 // Single source of truth for the registered evidence lanes. Update this set when
 // a lane is intentionally added/removed; the count + presence assertions below
@@ -211,4 +212,30 @@ test('bench is recognized as known command (no typo suggestion)', () => {
   const result = runCli(['bench', 'list']);
   assert.notEqual(result.status, 2, 'should not trigger typo guard');
   assert.doesNotMatch(result.stderr || '', /Did you mean/);
+});
+
+test('task corpus loads full codegen lanes and supports category exclusion', () => {
+  const listed = spawnSync(process.execPath, [TASK_CORPUS, '--list'], {
+    encoding: 'utf8',
+    timeout: 10_000,
+  });
+  assert.equal(listed.status, 0, listed.stderr);
+  assert.match(listed.stdout, /codegen-js-clamp-module/);
+  assert.match(listed.stdout, /codegen-hard-crosslang-prime-manifest/);
+
+  const chart = spawnSync(
+    process.execPath,
+    [
+      TASK_CORPUS,
+      '--chart',
+      '--provider',
+      'offline',
+      '--exclude-category=codegen,codegen-hard',
+    ],
+    { encoding: 'utf8', timeout: 10_000 }
+  );
+  assert.equal(chart.status, 0, chart.stderr);
+  assert.match(chart.stdout, /Tasks: 12/);
+  assert.doesNotMatch(chart.stdout, /codegen-js-clamp-module/);
+  assert.doesNotMatch(chart.stdout, /codegen-hard-js-fix-average/);
 });

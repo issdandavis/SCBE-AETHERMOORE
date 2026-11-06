@@ -48,17 +48,25 @@ from typing import Any, Dict, List, Optional, Tuple
 
 
 def _resolve_version() -> str:
-    # Single source of truth: the installed package metadata, which tracks pyproject.
-    # The literal below is only reached from a source tree with no installed distribution;
-    # keep it equal to pyproject.toml `version` on every bump. It had gone stale at 4.3.0
-    # after the 4.3.1 bump -- harmless while the metadata path resolves, but it is the value
-    # anyone gets from an uninstalled checkout, so it should not lie.
+    # A source checkout must prefer its own manifest over an older globally installed
+    # distribution with the same name. An installed wheel has no adjacent pyproject and
+    # therefore resolves through package metadata. The literal is the final zip/source
+    # fallback and stays in lockstep with pyproject.toml.
+    local_manifest = Path(__file__).resolve().with_name("pyproject.toml")
+    if local_manifest.exists():
+        try:
+            import tomllib
+
+            with local_manifest.open("rb") as handle:
+                return str(tomllib.load(handle)["project"]["version"])
+        except (OSError, KeyError, TypeError, tomllib.TOMLDecodeError):
+            pass
     try:
         from importlib.metadata import version as _pkg_version
 
         return _pkg_version("scbe-aethermoore")
     except Exception:
-        return "4.3.1"
+        return "4.3.2"
 
 
 VERSION = _resolve_version()
@@ -1586,6 +1594,36 @@ LOCAL_CODE_SYSTEMS = [
         "path": "python/scbe/atomic_tokenization.py",
         "role": "semantic element mapping and six-channel tongue trit state",
         "incorporated_in": ["scbe chem atomize", "scbe map"],
+    },
+    {
+        "id": "molecule_face",
+        "path": "python/scbe/molecule_face.py",
+        "role": "real molecule identity, exact mass, adduct neutral mass, and spectrum records",
+        "incorporated_in": ["scbe chem molecule", "scbe chem spectrum"],
+    },
+    {
+        "id": "chemistry_math_set",
+        "path": "python/scbe/chemistry_math_set.py",
+        "role": "AI Chemistry Set catalog: balance, exact mass, average mass, adduct, identity",
+        "incorporated_in": ["scbe chem set"],
+    },
+    {
+        "id": "chemistry_science_score",
+        "path": "python/scbe/chemistry_science_score.py",
+        "role": "science micro-point threshold kept separate from the chemistry math score",
+        "incorporated_in": ["scbe chem set science", "scbe chem set crucible"],
+    },
+    {
+        "id": "chemistry_compound_receipt",
+        "path": "python/scbe/chemistry_compound_receipt.py",
+        "role": "compound receipt for math, word, and code faces, chain, and overlap",
+        "incorporated_in": ["scbe chem set compound"],
+    },
+    {
+        "id": "chemistry_sieve_spectrum",
+        "path": "python/scbe/chemistry_sieve_spectrum.py",
+        "role": "prime or not-prime marks on proton, neutron, and electron counts",
+        "incorporated_in": ["scbe chem set spectrum"],
     },
     {
         "id": "chemical_fusion",
@@ -3754,6 +3792,215 @@ def cmd_chem_convert(args: argparse.Namespace) -> int:
     return 0
 
 
+def _chem_reader_unavailable(args: argparse.Namespace) -> int:
+    message = "chem reader requires rdkit; install it to read molecules and spectra (pip install rdkit)"
+    if getattr(args, "json_output", False):
+        print(json.dumps({"available": False, "error": message}))
+    else:
+        print(f"error: {message}", file=sys.stderr)
+    return 3
+
+
+def cmd_chem_molecule(args: argparse.Namespace) -> int:
+    smiles = _arg_or_stdin(getattr(args, "smiles", None))
+    if not smiles:
+        print('usage: scbe chem molecule --smiles "CCO"', file=sys.stderr)
+        return 2
+    try:
+        from python.scbe.atomic_tokenization import read_molecule
+
+        payload = dict(read_molecule(smiles))
+    except ImportError:
+        return _chem_reader_unavailable(args)
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    payload["claim_boundary"] = CHEM_CLAIM_BOUNDARY
+    if getattr(args, "json_output", False):
+        print(json.dumps(payload))
+        return 0
+    heavy = ",".join(f"{symbol}{count}" for symbol, count in payload["heavy_atom_composition"].items())
+    print(f"chem molecule: {payload['formula']} {payload['inchikey14']}")
+    print(f"  exact_mass: {payload['exact_mass']:.6f}")
+    print(f"  heavy: {heavy}")
+    print(f"  boundary: {CHEM_CLAIM_BOUNDARY}")
+    return 0
+
+
+def cmd_chem_spectrum(args: argparse.Namespace) -> int:
+    try:
+        from python.scbe.atomic_tokenization import read_spectrum
+
+        payload = dict(
+            read_spectrum(
+                args.precursor,
+                args.adduct,
+                smiles=getattr(args, "smiles", None),
+                measured_bias_ppm=getattr(args, "bias_ppm", 0.0),
+            )
+        )
+    except ImportError:
+        return _chem_reader_unavailable(args)
+    except KeyError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    except (TypeError, ValueError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    payload["claim_boundary"] = CHEM_CLAIM_BOUNDARY
+    if getattr(args, "json_output", False):
+        print(json.dumps(payload))
+        return 0
+    print(f"chem spectrum: {payload['adduct']} neutral_mass={payload['neutral_mass']:.6f}")
+    molecule = payload.get("molecule")
+    if molecule:
+        print(f"  molecule: {molecule['formula']} {molecule['inchikey14']}")
+    else:
+        print("  molecule: none")
+    print(f"  bias_ppm: {payload['measured_bias_ppm']}")
+    print(f"  boundary: {CHEM_CLAIM_BOUNDARY}")
+    return 0
+
+
+def _csv_args(value: str | None) -> list[str]:
+    if not value:
+        return []
+    return [part.strip() for part in str(value).split(",") if part.strip()]
+
+
+def cmd_chem_set(args: argparse.Namespace) -> int:
+    operation = getattr(args, "set_cmd", None) or "ops"
+    try:
+        if operation == "crucible":
+            from python.scbe.chemistry_crucible import run_black_box
+
+            payload = run_black_box()
+        elif operation == "science":
+            from python.scbe.chemistry_science_score import score_formulas
+
+            payload = score_formulas(args.formula, args.reference)
+        elif operation == "compound":
+            from python.scbe.chemistry_compound_receipt import cell
+
+            payload = cell(
+                formula=args.formula,
+                reference=args.reference,
+                word=args.word,
+                code=args.code,
+                board_index=args.board,
+            )
+        elif operation == "spectrum":
+            from python.scbe.chemistry_sieve_spectrum import spectrum
+
+            chain = _csv_args(getattr(args, "chain", None))
+            tokens = [
+                {
+                    "formula": args.formula,
+                    "word": args.word,
+                    "code": args.code,
+                    "board_index": args.board,
+                }
+            ]
+            for offset, formula in enumerate(chain, start=1):
+                tokens.append(
+                    {
+                        "formula": formula,
+                        "word": formula,
+                        "code": formula,
+                        "board_index": args.board + offset,
+                    }
+                )
+            payload = spectrum(args.word, tokens)
+        else:
+            from python.scbe.chemistry_math_set import run
+
+            if operation == "balance":
+                payload = run(
+                    "balance",
+                    equation=getattr(args, "equation", None),
+                    reactants=_csv_args(getattr(args, "reactants", None)),
+                    products=_csv_args(getattr(args, "products", None)),
+                )
+            elif operation == "exact":
+                payload = run("exact", smiles=getattr(args, "smiles", None))
+            elif operation == "average":
+                payload = run("average", formula=getattr(args, "formula", None))
+            elif operation == "adduct":
+                payload = run(
+                    "adduct",
+                    precursor_mz=args.precursor,
+                    adduct=args.adduct,
+                    measured_bias_ppm=getattr(args, "bias_ppm", 0.0),
+                )
+            elif operation == "same":
+                payload = run("same", smiles=getattr(args, "smiles", None), other=getattr(args, "other", None))
+            else:
+                payload = run("ops")
+    except ImportError:
+        return _chem_reader_unavailable(args)
+    except (KeyError, TypeError, ValueError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    if getattr(args, "json_output", False):
+        print(json.dumps(payload))
+        return 0 if payload.get("ok", True) else 2
+    if operation == "crucible":
+        print("chem set crucible")
+        for trial in payload["trials"]:
+            print(
+                f"  {trial['name']}: match={trial['match_accuracy']:.3f} "
+                f"math={trial['math_accuracy']:.3f} "
+                f"science={trial['science_score']}/{trial['science_threshold']}"
+            )
+            if not trial["science_admitted"]:
+                print(f"    below threshold: {' '.join(trial['science_failed'])}")
+                print(f"    venn={trial['venn']['region']}")
+        print(
+            f"  match_mean={payload['match_accuracy_mean']:.3f} "
+            f"math_mean={payload['math_accuracy_mean']:.3f} "
+            f"science_admitted={payload['science_admitted_count']}/{len(payload['trials'])}"
+        )
+        return 0
+    if operation == "science":
+        print(f"science {payload['science_score']}/{payload['threshold']}")
+        print(f"admitted: {str(payload['admitted']).lower()}")
+        if payload["failed"]:
+            print(f"failed: {' '.join(payload['failed'])}")
+        print(f"venn: {payload['venn']['region']}")
+        print("math is not part of this score")
+        return 0
+    if operation == "compound":
+        print(payload["drawing"])
+        return 0
+    if operation == "spectrum":
+        print(payload["drawing"])
+        return 0
+    result = payload.get("result") or {}
+    if operation == "ops":
+        print("chem set ops")
+        for row in result.get("operations", []):
+            print(f"  {row['name']}: {row['mass_basis']}")
+        return 0
+    if operation == "balance":
+        print(result.get("balanced_equation") or payload.get("error"))
+        return 0 if payload.get("ok", True) else 2
+    if operation == "exact":
+        print(f"{result.get('formula')} {result.get('inchikey14')} exact_mass={result.get('exact_mass')}")
+        return 0
+    if operation == "average":
+        print(f"{result.get('formula')} average_g_mol={result.get('molar_mass_g_mol')}")
+        return 0
+    if operation == "adduct":
+        print(f"neutral_mass={result.get('neutral_mass')}")
+        return 0
+    if operation == "same":
+        print("same" if result.get("same") else "different")
+        print(f"  {result.get('left_inchikey14')} {result.get('right_inchikey14')}")
+        return 0
+    print(json.dumps(payload))
+    return 0
+
+
 def cmd_chem_orbitals(args: argparse.Namespace) -> int:
     from src.geoseed.orbital_model import orbital_summary
 
@@ -4773,7 +5020,7 @@ Commands by category:
   AI              ask (a) · do · chat · ai · self-improve
   Notes/Vault     find (f) · open · vault · recent · docs
   Files           move · del · push · undo
-  Chemistry       chem (atomize/bonds/convert/orbitals)
+  Chemistry       chem (atomize/molecule/spectrum/set/bonds/convert/orbitals)
   System          status (st) · health · doctor · selftest · system
   (tip: run `scbe <command> -h` for details, or just type plain English)
 
@@ -5506,6 +5753,80 @@ Legacy (backward compat):
     cc.add_argument("--engine", choices=["rdkit", "openbabel"], default="rdkit")
     cc.add_argument("--json", dest="json_output", action="store_true")
     cc.set_defaults(func=cmd_chem_convert)
+
+    cmol = chem_sub.add_parser("molecule", help="Real-molecule identity, exact mass, and element rows from SMILES")
+    cmol.add_argument("--smiles", help="SMILES input (or pipe via stdin)")
+    cmol.add_argument("--json", dest="json_output", action="store_true")
+    cmol.set_defaults(func=cmd_chem_molecule)
+
+    cspec = chem_sub.add_parser("spectrum", help="Neutral mass from a precursor m/z and an adduct")
+    cspec.add_argument("--precursor", type=float, required=True, help="precursor m/z")
+    cspec.add_argument("--adduct", required=True, help='adduct such as "[M+H]+"')
+    cspec.add_argument("--smiles", help="optional SMILES; attaches the molecule record")
+    cspec.add_argument(
+        "--bias-ppm",
+        type=float,
+        default=0.0,
+        help="measured precursor bias in ppm; 0 leaves the mass unchanged",
+    )
+    cspec.add_argument("--json", dest="json_output", action="store_true")
+    cspec.set_defaults(func=cmd_chem_spectrum)
+
+    cset = chem_sub.add_parser("set", help="AI Chemistry Set math catalog and crucible trial")
+    set_sub = cset.add_subparsers(dest="set_cmd")
+    set_ops = set_sub.add_parser("ops", help="List catalog operations and their mass basis")
+    set_ops.add_argument("--json", dest="json_output", action="store_true")
+    set_ops.set_defaults(func=cmd_chem_set)
+    set_bal = set_sub.add_parser("balance", help="Balance an equation by atom conservation")
+    set_bal.add_argument("--equation", help='equation such as "C3H8 + O2 -> CO2 + H2O"')
+    set_bal.add_argument("--reactants", help="comma-separated reactant formulas")
+    set_bal.add_argument("--products", help="comma-separated product formulas")
+    set_bal.add_argument("--json", dest="json_output", action="store_true")
+    set_bal.set_defaults(func=cmd_chem_set)
+    set_exact = set_sub.add_parser("exact", help="Monoisotopic mass and InChIKey14 from SMILES")
+    set_exact.add_argument("--smiles", required=True)
+    set_exact.add_argument("--json", dest="json_output", action="store_true")
+    set_exact.set_defaults(func=cmd_chem_set)
+    set_avg = set_sub.add_parser("average", help="Average molar mass from a formula")
+    set_avg.add_argument("--formula", required=True)
+    set_avg.add_argument("--json", dest="json_output", action="store_true")
+    set_avg.set_defaults(func=cmd_chem_set)
+    set_add = set_sub.add_parser("adduct", help="Neutral mass from a precursor m/z and an adduct")
+    set_add.add_argument("--precursor", type=float, required=True)
+    set_add.add_argument("--adduct", required=True)
+    set_add.add_argument("--bias-ppm", type=float, default=0.0)
+    set_add.add_argument("--json", dest="json_output", action="store_true")
+    set_add.set_defaults(func=cmd_chem_set)
+    set_same = set_sub.add_parser("same", help="Compare two SMILES by InChIKey14")
+    set_same.add_argument("--smiles", required=True)
+    set_same.add_argument("--other", required=True)
+    set_same.add_argument("--json", dest="json_output", action="store_true")
+    set_same.set_defaults(func=cmd_chem_set)
+    set_crucible = set_sub.add_parser("crucible", help="Score agent compound cards in the chemistry black box")
+    set_crucible.add_argument("--json", dest="json_output", action="store_true")
+    set_crucible.set_defaults(func=cmd_chem_set)
+    set_science = set_sub.add_parser("science", help="Score formula micro-points against a reference formula")
+    set_science.add_argument("--formula", required=True, help="candidate formula")
+    set_science.add_argument("--reference", required=True, help="reference formula")
+    set_science.add_argument("--json", dest="json_output", action="store_true")
+    set_science.set_defaults(func=cmd_chem_set)
+    set_compound = set_sub.add_parser("compound", help="Receipt for math, word, and code on one board cell")
+    set_compound.add_argument("--formula", required=True)
+    set_compound.add_argument("--reference", required=True)
+    set_compound.add_argument("--word", required=True)
+    set_compound.add_argument("--code", required=True)
+    set_compound.add_argument("--board", type=int, required=True, help="board index from 0 through 255")
+    set_compound.add_argument("--json", dest="json_output", action="store_true")
+    set_compound.set_defaults(func=cmd_chem_set)
+    set_spectrum = set_sub.add_parser("spectrum", help="Mark proton, neutron, and electron counts prime or not")
+    set_spectrum.add_argument("--formula", required=True)
+    set_spectrum.add_argument("--word", required=True)
+    set_spectrum.add_argument("--code", required=True)
+    set_spectrum.add_argument("--board", type=int, required=True, help="board index from 0 through 255")
+    set_spectrum.add_argument("--chain", help="comma-separated formulas to mark the same way")
+    set_spectrum.add_argument("--json", dest="json_output", action="store_true")
+    set_spectrum.set_defaults(func=cmd_chem_set)
+    cset.set_defaults(func=cmd_chem_set)
 
     co = chem_sub.add_parser("orbitals", help="Summarize GeoSeed phi-shell orbitals")
     co.add_argument("--profiles", action="store_true", help="include sampled radial density profiles")

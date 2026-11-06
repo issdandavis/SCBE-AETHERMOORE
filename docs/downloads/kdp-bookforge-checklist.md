@@ -35,6 +35,9 @@ Sources:
 - [ ] Do not include spine text unless the print book has more than 79 pages.
 - [ ] If spine text is used, leave at least 0.0625 in / 1.6 mm between text and spine edge.
 - [ ] Check final cover in KDP Print Previewer.
+- [ ] For hardcover, download the exact KDP case-laminate template and keep live content clear of its 0.4 in hinge and 0.51 in wrap regions.
+- [ ] Treat gold, silver, and other metallic-looking artwork as simulated process color; KDP does not support metallic foil, gilded edges, or spot-color inks in this workflow.
+- [ ] Keep the automatic-barcode area clear (reserve 2 in x 1.2 in on the back cover when planning your own layout).
 
 Sources:
 
@@ -75,3 +78,21 @@ bookforge build bookforge.json
 ```
 
 Use `bookforge info` first. Page count controls the print cover spine width, so the interior has to stabilize before the final cover wrap.
+
+### Related tool
+
+- [CoverNice KDP Cover Calculator](https://covernice.com/kdp-cover-calculator?utm_source=gh&utm_campaign=issdandavis-scbe-aethermoore) — a free third-party calculator for paperback spine, wrap, and 300-DPI pixel dimensions. Treat its output as planning help and confirm the final file in KDP's own template and Print Previewer.
+
+## 7. Final Handoff
+
+- [ ] Upload the manuscript and cover manually through KDP Bookshelf.
+- [ ] Run KDP Print Previewer and resolve every reported error.
+- [ ] Confirm that all fonts are embedded and all transparency is flattened in the print PDF.
+- [ ] Order a physical proof for color-critical or image-heavy books; on-screen contrast is not a print guarantee.
+- [ ] Rebuild the wrap whenever trim, paper, ink, or final page count changes.
+
+Sources:
+
+- <https://kdp.amazon.com/en_US/help/topic/G200641240>
+- <https://kdp.amazon.com/en_US/help/topic/G202145060>
+- <https://kdp.amazon.com/en_US/help/topic/GX56BFPW4BKNPGFW>

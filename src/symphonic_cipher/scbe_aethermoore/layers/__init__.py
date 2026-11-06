@@ -40,6 +40,7 @@ from .fourteen_layer_pipeline import (
     layer_7_phase,
     layer_8_multi_well,
     layer_9_spectral_coherence,
+    layer_9_spectral_observation,
     layer_10_spin_coherence,
     layer_11_triadic_distance,
     layer_12_harmonic_scaling,
@@ -67,6 +68,20 @@ from .fourteen_layer_pipeline import (
     THETA_2,
     EPS,
 )
+from ..layer_contracts import (
+    L02_CANONICAL_ORDER,
+    L07_CANONICAL_ORDER,
+    L07_FULL_NATIVE_ORDER,
+    ObservationStatus,
+    PhaseCompositionOrder,
+    RealificationOrder,
+    SpectralObservation,
+    TelemetryEnvelope,
+    TelemetryKind,
+    adapt_mobius_shift,
+    convert_realification,
+    validate_l14_dependency_order,
+)
 
 __all__ = [
     # Pipeline
@@ -84,6 +99,7 @@ __all__ = [
     "layer_7_phase",
     "layer_8_multi_well",
     "layer_9_spectral_coherence",
+    "layer_9_spectral_observation",
     "layer_10_spin_coherence",
     "layer_11_triadic_distance",
     "layer_12_harmonic_scaling",
@@ -110,4 +126,16 @@ __all__ = [
     "THETA_1",
     "THETA_2",
     "EPS",
+    "L02_CANONICAL_ORDER",
+    "L07_CANONICAL_ORDER",
+    "L07_FULL_NATIVE_ORDER",
+    "ObservationStatus",
+    "PhaseCompositionOrder",
+    "RealificationOrder",
+    "SpectralObservation",
+    "TelemetryEnvelope",
+    "TelemetryKind",
+    "adapt_mobius_shift",
+    "convert_realification",
+    "validate_l14_dependency_order",
 ]

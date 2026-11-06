@@ -1,20 +1,22 @@
 {
   "name": "scbe-aethermoore-cli",
   "version": "4.5.0",
-  "description": "SCBE Aethermoor CLI — governed AI operations platform with 60+ governed commands: 14-layer harmonic pipeline, Sacred Tongues tokenizer, post-quantum receipts (ML-KEM-768 + ML-DSA-65), multi-agent bus with audit-chain workspaces, deterministic BigInt governance abacus, SCONE-class Solidity contract scanner, adversarial prompt inspector, squad routing with multi-provider cross-validation, flow operator loop, and AI-first governed shell.",
+  "description": "Conversation-first coding agent for terminal and browser with curated tools, persistent sessions, permissions, custom slash commands, and SCBE governance underneath.",
   "author": "Issac Daniel Davis <issdandavis@gmail.com>",
   "license": "MIT OR Apache-2.0",
   "type": "commonjs",
   "bin": {
     "scbe": "bin/scbe.js",
-    "geoseal": "bin/scbe.js",
-    "scbe-geoseal": "bin/scbe.js",
+    "geoseal": "bin/geoseal.js",
+    "scbe-geoseal": "bin/geoseal.js",
+    "scbe-web": "bin/scbe-web.js",
     "scbe-task": "bin/scbe-task.js"
   },
   "files": [
     "bin",
     "lib",
     "mcp",
+    "web",
     "skills",
     "scripts/scbe_tb_agent.py",
     "scripts/shell_benchmark.cjs",
@@ -28,6 +30,9 @@
     "scripts/scbe_workflow.cjs",
     "tests",
     "README.md",
+    "CLI_HOST.md",
+    "GUIDED_EVIDENCE_BUS.md",
+    "CHANGELOG.md",
     "LICENSE",
     "LICENSE-APACHE",
     "LICENSE-NOTICE.md"
@@ -36,7 +41,7 @@
     "help": "node ./bin/scbe.js --help",
     "selftest": "node ./bin/scbe.js selftest",
     "mcp": "node mcp/scbe-mcp-server.cjs",
-    "test": "node --test tests/*.test.cjs",
+    "test": "node --require ./tests/test-env.cjs --test --test-concurrency=1 tests/*.test.cjs",
     "bench:shell": "node scripts/shell_benchmark.cjs",
     "bench:corpus": "node scripts/bench_task_corpus.cjs",
     "bench:matrix": "node scripts/bench_harness_matrix.cjs",
@@ -46,6 +51,8 @@
     "desktop": "node scripts/desktop_subsystem.cjs",
     "actions": "node scripts/action_runner.cjs",
     "workflow": "node scripts/scbe_workflow.cjs",
+    "release:gate": "node scripts/release_gate.cjs",
+    "prepublishOnly": "npm run release:gate",
     "pack:dry": "npm pack --dry-run --json"
   },
   "engines": {
@@ -57,7 +64,7 @@
     "playwright-core": "^1.58.2",
     "react": "^18.3.1",
     "scbe-aethermoore": "^4.1.0",
-    "scbe-agent-bus": ">=0.4.1 <1"
+    "scbe-agent-bus": ">=0.5.0 <1"
   },
   "keywords": [
     "scbe",

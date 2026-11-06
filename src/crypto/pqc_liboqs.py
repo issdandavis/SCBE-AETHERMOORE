@@ -18,14 +18,44 @@ Patent: USPTO #63/961,403
 import hashlib
 import hmac
 import os
+from ctypes.util import find_library
+from pathlib import Path
 from typing import Tuple, Optional
 from dataclasses import dataclass
 
 
+def _native_liboqs_present() -> bool:
+    """Return whether liboqs is already installed, without importing ``oqs``.
+
+    liboqs-python bootstraps a missing native library during import by cloning
+    and building liboqs in ``tempfile.TemporaryDirectory``.  An interrupted
+    process can strand that large checkout, so optional-backend discovery must
+    stay read-only.  Installation belongs to an explicit setup step.
+    """
+    if find_library("oqs") or find_library("liboqs"):
+        return True
+
+    install_path = os.getenv("OQS_INSTALL_PATH")
+    try:
+        install_root = Path(install_path) if install_path else Path.home() / "_oqs"
+    except (OSError, RuntimeError):
+        return False
+
+    library_names = ("oqs.dll", "liboqs.dll", "liboqs.so", "liboqs.dylib")
+    candidates = [install_root / directory / name for directory in ("bin", "lib", "lib64") for name in library_names]
+    for directory in os.getenv("PATH", "").split(os.pathsep):
+        if directory:
+            candidates.extend(Path(directory) / name for name in library_names)
+    return any(candidate.is_file() for candidate in candidates)
+
+
 def _load_oqs_module():
-    """Load liboqs-python without letting optional backend bootstrap kill import."""
+    """Load liboqs-python only when its native library is already installed."""
     import contextlib
     import sys
+
+    if not _native_liboqs_present():
+        return None
 
     try:
         # liboqs-python prints an informational banner to STDOUT on import
@@ -37,8 +67,8 @@ def _load_oqs_module():
 
         return oqs_module
     except (Exception, SystemExit):
-        # liboqs-python can raise SystemExit while trying to bootstrap missing
-        # shared libraries. PQC is optional here, so fall back instead.
+        # A broken/incompatible native install is still an optional-backend
+        # failure. Do not invoke liboqs-python's implicit installer here.
         return None
 
 

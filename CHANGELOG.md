@@ -32,6 +32,18 @@
 
 ### Fixed
 
+- **npm pack builds before validating the tarball**: the strict pack guard no
+  longer rejects a clean checkout for a missing generated `dist/src/index.d.ts`.
+  The `prepack` lifecycle now performs the TypeScript build and hard-link
+  normalization before checking the exact publish contents.
+
+- **Version resolution for 4.3.2**: a source checkout now reads its adjacent
+  `pyproject.toml` before consulting globally installed distribution metadata,
+  so an older installed release cannot make the checkout report the wrong
+  version. npm, Python metadata, `__version__`, and the CLI fallback are synced.
+
+- **GeoSeal npm capability boundary** (`bin/geoseal.cjs`): source-only spine commands now fail immediately with an actionable error when the npm tarball does not contain `scbe.py` (including structured output under `--json`). `geoseal doctor --json` now reports separate support rows for Node-native, service-backed, optional Python-module, and source-checkout-only commands.
+
 - **`tests/test_cli_version.py` derives the expected version from `pyproject.toml`**: it hard-coded `EXPECTED = "4.3.0"` and stayed there across the 4.3.1 bump, so three tests failed against entirely correct code — `package.json`, `pyproject.toml`, and the installed metadata were all 4.3.1 and in sync, exactly as CLAUDE.md claims. A stale literal in a test reads as a package defect, which is the expensive direction to be wrong in. Now read via `tomllib`, so a bump cannot desynchronise it. `scbe.py::_resolve_version`'s uninstalled-source fallback was separately stale at 4.3.0 (unreached whenever the distribution is installed, but it is what an uninstalled checkout reports) and is corrected with a comment naming the invariant.
 
 - **Repo hygiene**: untracked ~1,270 generated/junk files that violated `.gitignore` (docs-build-smoke/ build output, src/.hypothesis/ test caches, SQLite databases, Notion export dumps, the 17 MB generated `full_codebase_map.json`, personal `.home/` mirror, scratch files). `.gitignore` updated so they cannot return.

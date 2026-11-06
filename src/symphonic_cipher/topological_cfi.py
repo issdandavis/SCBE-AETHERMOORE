@@ -4,12 +4,13 @@ Topological Control-Flow Integrity (TLCFI) Module
 =================================================
 Implements patent claims for topological linearization CFI:
 - Control-flow graph extraction and analysis
-- Hamiltonian path testing (Dirac/Ore criteria)
+- Directed Hamiltonian path diagnostics
 - Dimensional lifting for non-Hamiltonian graphs
 - Principal curve computation through embedded states
-- Runtime deviation detection with O(1) checks
+- Frozen directed-edge enforcement with expected O(1) hash lookups
 
-Achieves 90%+ detection rate for ROP/JOP attacks at <0.5% overhead.
+Embeddings are diagnostic, not a substitute for execution policy. End-to-end
+attack detection and overhead require separate measured benchmarks.
 
 Author: Issac Davis / SpiralVerse OS
 Date: January 15, 2026
@@ -49,7 +50,6 @@ class BasicBlock:
         return self.id
 
 
-@dataclass
 @dataclass
 class HyperbolicPoint:
     """2D point in the Poincare disk model (|z| < 1)."""
@@ -111,6 +111,8 @@ class ControlFlowGraph:
 
     def add_edge(self, edge: CFGEdge):
         """Add a control-flow edge."""
+        if edge in self.edges:
+            return
         self.edges.add(edge)
         if edge.source not in self.adjacency:
             self.adjacency[edge.source] = []
@@ -170,6 +172,8 @@ class HamiltonianTester:
         in_deg = {v: 0 for v in self.cfg.vertices}
         out_deg = {v: 0 for v in self.cfg.vertices}
         for edge in self.cfg.edges:
+            if edge.source == edge.target:
+                continue  # self-loops do not connect distinct Hamiltonian vertices
             if edge.source in out_deg:
                 out_deg[edge.source] += 1
             if edge.target in in_deg:
@@ -316,7 +320,7 @@ class HamiltonianTester:
             non-Hamiltonian by callers so the dimensional lift still runs.
         """
         n = self.cfg.vertex_count()
-        if n < 3:
+        if n < 2:
             return True, "trivial"
 
         possible, why = self.necessary_conditions()
@@ -334,9 +338,10 @@ class HamiltonianTester:
 
 
 class DimensionalLifter:
-    """
-    Lifts non-Hamiltonian graphs to higher dimensions to induce
-    Hamiltonian connectivity. Per patent: d' >= 4 dimensions.
+    """Embed graph vertices for diagnostics without changing legal edges.
+
+    Higher dimension and distance variance do not establish Hamiltonicity.
+    The historical method name is retained for callers, not as a proof claim.
     """
 
     def __init__(self, cfg: ControlFlowGraph):
@@ -385,8 +390,8 @@ class DimensionalLifter:
 
     def lift_to_hamiltonian(self) -> Tuple[Dict[int, np.ndarray], int]:
         """
-        Iteratively increase dimension until graph becomes
-        Hamiltonian-connected in the lifted space.
+        Select an embedding dimension using a distance-variance heuristic.
+        The original graph connectivity is unchanged.
         """
         for dim in range(MIN_DIMENSION_LIFT, MAX_DIMENSION_LIFT + 1):
             self.embeddings = self.spectral_embedding(dim)
@@ -480,23 +485,18 @@ class PrincipalCurve:
     def deviation(self, point: np.ndarray) -> float:
         """
         Compute orthogonal deviation from principal curve.
-        This is the key metric for CFI violation detection.
+        Diagnostic only: proximity must never grant a control-flow permission.
         """
         _, closest = self.project(point)
         return float(np.linalg.norm(point - closest))
 
 
 class TopologicalCFI:
-    """
-    Main Topological Control-Flow Integrity system.
-    Implements the full patent claims:
-    - CFG extraction and analysis
-    - Hamiltonian testing
-    - Dimensional lifting
-    - Principal curve computation
-    - O(1) runtime deviation checks
+    """Frozen directed policy enforcement with geometric diagnostics.
 
-    Achieves 90%+ ROP detection at <0.5% overhead.
+    A curve through known blocks cannot distinguish a legal edge from a jump
+    to another known block. Runtime authorization therefore uses the original
+    directed edges, not proximity. This is not proof of semantic program safety.
     """
 
     def __init__(self):
@@ -510,18 +510,35 @@ class TopologicalCFI:
         self.violation_count: int = 0
         self.check_count: int = 0
         self.hamiltonian_tested: bool = False
+        self._policy_ready = False
+        self._allowed_vertices = frozenset()
+        self._allowed_edges = frozenset()
 
     def initialize(self, cfg: ControlFlowGraph) -> Dict[str, any]:
         """
         Initialize CFI system with a control-flow graph.
-        Pre-computes all embeddings for O(1) runtime checks.
+        Freeze an explicit policy; rebuild only through this method.
+        A failed rebuild revokes the previous policy rather than failing open.
         """
+        self._policy_ready = False
+        self.hamiltonian_tested = False
+        self._allowed_vertices = frozenset()
+        self._allowed_edges = frozenset()
+        self.curve = None
+        self.embeddings = {}
+        vertices = frozenset(cfg.vertices)
+        edges = frozenset((edge.source, edge.target) for edge in cfg.edges)
+        if any(type(v) is not int for v in vertices) or any(
+            type(a) is not int or type(b) is not int or a not in vertices or b not in vertices for a, b in edges
+        ):
+            raise ValueError("CFI policy requires integer vertices and edges with known endpoints")
         self.cfg = cfg
         results = {"status": "initialized"}
 
         # Step 1: Test Hamiltonicity
         self.hamiltonian_tester = HamiltonianTester(cfg)
         self.is_hamiltonian, reason = self.hamiltonian_tester.is_hamiltonian()
+        self.hamiltonian_tested = True
         results["hamiltonian"] = self.is_hamiltonian
         results["hamiltonian_reason"] = reason
 
@@ -542,40 +559,36 @@ class TopologicalCFI:
         results["curve_fitted"] = curve_fitted
         results["num_vertices"] = cfg.vertex_count()
         results["num_edges"] = cfg.edge_count()
+        self._allowed_vertices = vertices
+        self._allowed_edges = edges
+        self._policy_ready = bool(vertices)
+        results["policy_ready"] = self._policy_ready
+        results["enforcement"] = "frozen_directed_edges"
+        results["geometry_proves_connectivity"] = False
 
         return results
 
     def check_transition(self, from_block: int, to_block: int) -> CFIResult:
         """
-        O(1) runtime check for control-flow transition validity.
+        Expected O(1) hash lookup against the initialized directed policy.
         This is called at every control-flow transition.
         """
         self.check_count += 1
 
-        if self.curve is None or not self.embeddings:
+        if not self._policy_ready:
             return CFIResult.UNKNOWN
-
-        # Get embeddings for both blocks
-        from_embed = self.embeddings.get(from_block)
-        to_embed = self.embeddings.get(to_block)
-
-        if from_embed is None or to_embed is None:
-            # Unknown block - potential violation
-            self.violation_count += 1
-            return CFIResult.VIOLATION
-
-        # Compute deviation from principal curve
-        # This is the key O(1) check
-        deviation = self.curve.deviation(to_embed)
-
-        if deviation > DEVIATION_THRESHOLD:
+        if (
+            type(from_block) is not int
+            or type(to_block) is not int
+            or (from_block, to_block) not in self._allowed_edges
+        ):
             self.violation_count += 1
             return CFIResult.VIOLATION
 
         return CFIResult.VALID
 
     def get_detection_stats(self) -> Dict[str, float]:
-        """Get detection statistics."""
+        """Observed rejection fraction; not a labelled attack detection rate."""
         if self.check_count == 0:
             return {"detection_rate": 0.0, "checks": 0, "violations": 0}
         return {
@@ -586,42 +599,24 @@ class TopologicalCFI:
 
     def verify_execution_path(self, path: List[str]) -> Dict[str, Any]:
         """
-        Compatibility API: verify a symbolic execution path.
-
-        A path is treated as Hamiltonian-valid when it contains no repeated nodes.
+        Verify canonical string block IDs against the initialized policy.
+        Legitimate cycles are allowed. Uniqueness alone is not authorization.
         """
-        self.hamiltonian_tested = True
-
-        if not path or len(path) < 2:
-            return {
-                "valid": False,
-                "hamiltonian_tested": True,
-                "reason": "violation: path too short",
-                "hash": hashlib.sha256(str(path).encode()).hexdigest(),
-            }
-
-        seen = set()
-        repeated = []
-        for node in path:
-            if node in seen:
-                repeated.append(node)
-            seen.add(node)
-
-        path_hash = hashlib.sha256("->".join(path).encode()).hexdigest()
-
-        if repeated:
-            return {
-                "valid": False,
-                "hamiltonian_tested": True,
-                "reason": f"violation: repeated nodes detected ({sorted(set(repeated))})",
-                "hash": path_hash,
-            }
-
+        ids = {str(v): v for v in self._allowed_vertices}
+        valid = (
+            self._policy_ready
+            and isinstance(path, (list, tuple))
+            and len(path) >= 2
+            and all(type(node) is str and node in ids for node in path)
+        )
+        if valid:
+            valid = all(self.check_transition(ids[a], ids[b]) == CFIResult.VALID for a, b in zip(path, path[1:]))
         return {
-            "valid": True,
-            "hamiltonian_tested": True,
-            "reason": "verified",
-            "hash": path_hash,
+            "valid": bool(valid),
+            "hamiltonian_tested": self.hamiltonian_tested,
+            "policy_verified": bool(valid),
+            "reason": "verified directed policy" if valid else "violation: missing policy or illegal path",
+            "hash": hashlib.sha256(repr(path).encode()).hexdigest(),
         }
 
 

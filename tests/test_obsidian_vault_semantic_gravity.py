@@ -159,7 +159,7 @@ This benchmark and evaluation report verifies training data quality and experime
     assert "tongue_sectors" in graph
     assert graph["stats"]["max_semantic_gravity"] > 0.0
 
-    governance_node = next(node for node in graph["nodes"] if node["id"] == "Governance Mesh")
+    governance_node = next(node for node in graph["nodes"] if node["id"] == "Architecture/Governance Mesh")
     assert "subjects" in governance_node
     assert "tasks" in governance_node
     assert "relations" in governance_node

@@ -18,11 +18,17 @@ Section tongues (canonical mapping):
 - redaction → Umbroth (um) - veil
 
 Integration: RWP v3.0 protocol with Argon2id → ML-KEM-768 → XChaCha20-Poly1305
+
+Vocabulary profile: rwp_v3_wordlist_v1_1. This cryptographic wire profile is
+intentionally distinct from src/tokenizer/ss1.ts profile ss1_transport_v2_1.
+Decode with the profile that encoded the payload; do not merge wordlists.
 """
 
 from dataclasses import dataclass
 from typing import Dict, List, Tuple
 import hashlib
+
+TOKENIZER_PROFILE_ID = "rwp_v3_wordlist_v1_1"
 
 # ============================================================
 # TONGUE SPECIFICATIONS (RFC-compliant deterministic encoding)

@@ -31,6 +31,7 @@ if str(_repo_root / "src") not in sys.path:
     sys.path.insert(0, str(_repo_root / "src"))
 
 from crypto.sacred_tongues import (
+    TOKENIZER_PROFILE_ID,
     TONGUES,
     SacredTongueTokenizer,
 )
@@ -82,6 +83,7 @@ class SacredTonguesHFTokenizer:
 
     def __init__(self, default_tongue: str = "ko"):
         self.scbe_tokenizer = SacredTongueTokenizer(TONGUES)
+        self.tokenizer_profile_id = TOKENIZER_PROFILE_ID
         self.default_tongue = default_tongue
 
         # Build ID tables
@@ -208,6 +210,7 @@ class SacredTonguesHFTokenizer:
         os.makedirs(save_dir, exist_ok=True)
         config = {
             "tokenizer_class": "SacredTonguesHFTokenizer",
+            "tokenizer_profile_id": self.tokenizer_profile_id,
             "vocab_size": self.vocab_size,
             "default_tongue": self.default_tongue,
             "tongue_order": self.TONGUE_ORDER,

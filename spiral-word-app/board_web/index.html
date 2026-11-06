@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Spiral Word · Scene board</title>
+    <link rel="stylesheet" href="/board/assets/board.css" />
+  </head>
+  <body>
+    <header>
+      <div class="brand">◎ <strong>Spiral Word</strong><span>THE SCENE BOARD</span></div>
+      <div class="header-actions">
+        <label class="sr-only" for="documents">Document</label
+        ><select id="documents"></select
+        ><button id="new-board">New document</button>
+      </div>
+    </header>
+    <main>
+      <div class="intro">
+        <div>
+          <p class="eyebrow">THREE VOICES. ONE PAGE.</p>
+          <h1 id="title">A place for every part of the story.</h1>
+          <p id="current-section">
+            Give each voice its own space. Bring them together in the scene.
+          </p>
+        </div>
+        <div class="actions">
+          <button id="save" class="primary">Save changes</button
+          ><button id="preview-button">Preview scene</button
+          ><button id="export">Export Word</button>
+        </div>
+      </div>
+      <nav aria-label="Page sections">
+        <div id="sections"></div>
+        <button id="new-section">+ Section</button>
+      </nav>
+      <div class="section-tools">
+        <label class="sr-only" for="section-search">Find a section by title or words</label>
+        <input id="section-search" type="search" placeholder="Find a section by title or words…" />
+        <button id="rename-section">Rename section</button>
+        <button id="earlier-section">Move earlier</button>
+        <button id="later-section">Move later</button>
+        <button id="rename-document">Rename document</button>
+        <button id="history-button">Revisions / resolve edits</button>
+      </div>
+      <p id="status" role="status" aria-live="polite">Opening your writing desk…</p>
+      <div class="board">
+        <article class="lane left" data-lane="left">
+          <div class="lane-heading">
+            <span class="badge">01</span>
+            <h2>First voice</h2>
+            <span class="dot"></span>
+          </div>
+          <label>Speaker<input id="left-speaker" value="Mira" maxlength="80" /></label
+          ><label
+            >Write as<select id="left-format">
+              <option value="dialogue">Dialogue</option>
+              <option value="prose">Prose</option>
+              <option value="markdown">Markdown</option>
+              <option value="notes">Notes</option>
+            </select></label
+          ><label class="sr-only" for="left-text">Left panel writing</label
+          ><textarea
+            id="left-text"
+            placeholder="What does this person say, notice, or hold back?"
+          ></textarea>
+          <div class="lane-footer">
+            <span id="left-count">0 words</span><button id="insert-left">Place in scene ↗</button>
+          </div>
+        </article>
+        <article class="lane center" data-lane="center">
+          <div class="lane-heading">
+            <span class="badge">02</span>
+            <h2>The scene</h2>
+            <span class="dot"></span>
+          </div>
+          <label>Narrator<input id="center-speaker" value="Narrator" maxlength="80" /></label
+          ><label
+            >Write as<select id="center-format">
+              <option value="prose">Prose</option>
+              <option value="markdown">Markdown</option>
+              <option value="dialogue">Dialogue</option>
+              <option value="notes">Notes</option>
+            </select></label
+          ><label class="sr-only" for="center-text">Center scene writing</label
+          ><textarea
+            id="center-text"
+            placeholder="Set the scene. Place a voice where it belongs."
+          ></textarea>
+          <div class="lane-footer">
+            <span id="center-count">0 words</span><span>Ctrl / ⌘ + S to save</span>
+          </div>
+          <p class="hint">
+            Use <code>{{left:1}}</code> for the first line, or <code>{{right}}</code> for the whole
+            right panel. Numbered references follow line positions when you insert or remove
+            dialogue.
+          </p>
+        </article>
+        <article class="lane right" data-lane="right">
+          <div class="lane-heading">
+            <span class="badge">03</span>
+            <h2>Second voice</h2>
+            <span class="dot"></span>
+          </div>
+          <label>Speaker<input id="right-speaker" value="Ren" maxlength="80" /></label
+          ><label
+            >Write as<select id="right-format">
+              <option value="dialogue">Dialogue</option>
+              <option value="prose">Prose</option>
+              <option value="markdown">Markdown</option>
+              <option value="notes">Notes</option>
+            </select></label
+          ><label class="sr-only" for="right-text">Right panel writing</label
+          ><textarea
+            id="right-text"
+            placeholder="A reply, a different view, an unfinished thought…"
+          ></textarea>
+          <div class="lane-footer">
+            <span id="right-count">0 words</span><button id="insert-right">↖ Place in scene</button>
+          </div>
+        </article>
+      </div>
+      <section class="assistant">
+        <div>
+          <h2>A writing partner, when you want one.</h2>
+          <p>Draft from all three panels. Review the suggestion before changing your scene.</p>
+        </div>
+        <div class="ai-controls">
+          <label class="sr-only" for="provider">AI provider</label
+          ><select id="provider">
+            <option value="">Choose a configured provider</option></select
+          ><label class="sr-only" for="instruction">Draft direction</label
+          ><input
+            id="instruction"
+            placeholder="Keep it quiet and tense; preserve both voices."
+          /><button id="draft" disabled>Suggest a scene</button>
+        </div>
+      </section>
+      <section id="proposal-box" class="reading" hidden>
+        <div class="reading-head">
+          <h2>Suggested scene</h2>
+          <button id="apply">Use in center panel</button><button id="discard">Keep my scene</button>
+        </div>
+        <pre id="proposal"></pre>
+      </section>
+      <section id="preview-box" class="reading" hidden>
+        <div class="reading-head">
+          <h2>Your pages, together</h2>
+          <button id="close-preview">Close preview</button>
+        </div>
+        <div id="preview"></div>
+      </section>
+      <footer>Your source panels stay yours. Changing the scene keeps the original voices.</footer>
+    </main>
+    <dialog id="history-dialog">
+      <h2>Review this panel’s revisions</h2>
+      <p id="history-note">Your current draft stays in the panel until you choose a version.</p>
+      <label
+        >Panel
+        <select id="history-lane">
+          <option value="left">First voice</option>
+          <option value="center">The scene</option>
+          <option value="right">Second voice</option>
+        </select></label
+      >
+      <label
+        >Saved version
+        <select id="history-revision"></select
+      ></label>
+      <label class="sr-only" for="history-text">Saved revision text</label>
+      <textarea id="history-text" readonly></textarea>
+      <div class="actions">
+        <button id="use-revision">Use selected version as draft</button>
+        <button id="keep-local">Keep my draft over latest saved version</button>
+        <button id="close-history">Close</button>
+      </div>
+    </dialog>
+    <script src="/board/assets/board.js"></script>
+  </body>
+</html>

@@ -12,6 +12,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
+from scripts.apollo import youtube_transcript_collector as collector
 from scripts.apollo.youtube_transcript_collector import (
     _TRANSCRIPT_DELAY,
     get_transcript,
@@ -178,3 +179,40 @@ class TestVideoMetadata:
         assert pattern.match("3blue1brown_sD0NjbwqlYw.txt")
         assert pattern.match("own_channel_PTT5R9TEhds.txt")
         assert not pattern.match("bad file name.txt")
+
+
+class TestAnalysisOnlyCollection:
+    def test_collect_never_generates_training_pairs_without_rights_admission(self, monkeypatch, tmp_path):
+        channel = {
+            "name": "Fixture Channel",
+            "handle": "@fixture",
+            "tongue": "CA",
+            "domain": "math",
+            "rating": 5,
+        }
+        monkeypatch.setattr(collector, "load_channels", lambda: [channel])
+        monkeypatch.setattr(
+            collector,
+            "search_channel_videos",
+            lambda *args, **kwargs: [{"id": "abcdefghijk", "title": "Fixture Video"}],
+        )
+        monkeypatch.setattr(collector, "get_transcript", lambda video_id: "A safe analysis transcript.")
+        monkeypatch.setattr(
+            collector,
+            "generate_sft_from_transcript",
+            lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("training generation reached")),
+        )
+        monkeypatch.setattr(collector, "OUTPUT_DIR", tmp_path / "transcripts")
+        monkeypatch.setattr(collector, "STATE_PATH", tmp_path / "state.json")
+        monkeypatch.setattr(collector, "SFT_DIR", tmp_path / "sft")
+
+        result = collector.collect_channel("Fixture Channel", max_videos=1)
+
+        assert result["collected"] == 1
+        assert result["sft_pairs"] == 0
+        assert result["training_eligible"] is False
+        state = json.loads((tmp_path / "state.json").read_text(encoding="utf-8"))
+        item = state["collected"]["abcdefghijk"]
+        assert item["usage"] == "analysis_only"
+        assert item["training_eligible"] is False
+        assert not (tmp_path / "sft").exists()

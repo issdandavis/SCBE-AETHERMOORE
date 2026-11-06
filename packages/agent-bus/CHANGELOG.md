@@ -1,5 +1,29 @@
 # Changelog
 
+## Unreleased
+
+- Require a trusted secure execution context for compiled plans; remove the
+  implicit host fallback and make legacy `execPlan()` return a migration refusal.
+- Pin the topology runtime, evaluator and representation profile at the
+  capability authority, and require all four representation digests.
+- Keep compiler configuration and secure contexts in the HTTP host or queue
+  worker. Reject client execution options, omit secrets from queue receipts,
+  and require authentication on execution-enabled HTTP servers.
+- Disable direct registered-tool dispatch by default. Document trusted host
+  setup and remaining containment checks in `SECURE_EXECUTION.md`.
+- Add a clean-tarball install-to-`runEvent()` release gate.
+- Make no-tool `runEvent()` calls and queued events package-native so installed
+  consumers no longer depend on the repository-only `scripts/scbe-system-cli.py`.
+- Add receipt IDs and machine-readable reasons to direct event results.
+- Refuse raw `operationCommand` execution unless callers select a registered
+  governed tool.
+- Honor an explicit GeoSeal binary before repository-local discovery, avoiding
+  slow or hanging Python probes in workers and tests.
+- Resolve Windows `.cmd` shims without `shell: true`, so packaged GeoSeal and
+  registered CLI tools preserve argument boundaries across platforms.
+- Keep process-launching Vitest files sequential and isolate the compile-failure
+  test from globally installed GeoSeal commands, eliminating false hangs.
+
 ## 0.5.0
 
 - Add the typed `TaskApiClient` for queued task runs, status polling, evidence

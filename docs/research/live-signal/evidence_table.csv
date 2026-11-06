@@ -1,0 +1,7 @@
+claim,source,published_at,verified_with,confidence
+"NASA publishes supported RSS feeds for recent site content","https://www.nasa.gov/rss-feeds/","2026-05-05 page update","https://www.nasa.gov/feed/ returned HTTP 200 on 2026-08-20",high
+"arXiv supports paged Atom API queries with submitted-date sorting","https://github.com/arXiv/arxiv-docs/blob/develop/source/help/api/user-manual.md","retrieved 2026-08-20","https://export.arxiv.org/api/query returned Atom HTTP 200 on 2026-08-20",high
+"Crossref supports filtered and sorted public works metadata queries","https://www.crossref.org/documentation/retrieve-metadata/rest-api/rest-api-filters/","retrieved 2026-08-20","https://api.crossref.org/v1/works returned JSON HTTP 200 on 2026-08-20",high
+"GDELT DOC 2.0 supports article-list JSON but is currently unsuitable as the primary lane","https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/","2017-06-20","Operational query returned HTTP 429 on 2026-08-20",high
+"ReliefWeb v2 requires a pre-approved app name for current use","https://apidoc.reliefweb.int/index.html","retrieved 2026-08-20","aethermoore.com probe returned HTTP 403 on 2026-08-20",high
+"Four established world-news RSS lanes were operational","https://feeds.bbci.co.uk/news/world/rss.xml","probed 2026-08-20","Al Jazeera Le Monde International and NPR World RSS also returned HTTP 200",medium

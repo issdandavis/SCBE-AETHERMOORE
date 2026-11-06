@@ -32,6 +32,8 @@ from governance import (
 )
 from ai_ports import ai_ports
 from export import docx_bytes
+from scene_board_api import router as scene_board_router
+from mla_api import router as mla_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -72,6 +74,10 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+# Reuse the same provider/governance/export surfaces for sectioned writing.
+app.include_router(scene_board_router)
+app.include_router(mla_router)
 
 
 # ---------------------------------------------------------------------------

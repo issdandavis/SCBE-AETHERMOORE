@@ -21,13 +21,30 @@ import math
 import os
 import re
 from collections import Counter, defaultdict
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from itertools import combinations
 from pathlib import Path
 from typing import Dict, Iterable, List, Set, Tuple
+from urllib.parse import unquote
+
+import yaml
 
 ROOT = Path(__file__).resolve().parent.parent.parent
-DEFAULT_VAULT_PATH = ROOT / "notes" if (ROOT / "notes").exists() else Path(r"C:\Users\issda\Documents\Avalon Files")
+
+
+def default_vault() -> Path:
+    config = Path(os.environ.get("APPDATA", "")) / "obsidian/obsidian.json"
+    try:
+        candidates = json.loads(config.read_text(encoding="utf-8"))["vaults"].values()
+        active = [Path(row["path"]) for row in candidates if row.get("open") and Path(row["path"]).is_dir()]
+        if len(active) == 1:
+            return active[0]
+    except (OSError, ValueError, KeyError, TypeError):
+        pass
+    return ROOT / "notes" if (ROOT / "notes").exists() else Path(r"C:\Users\issda\Documents\Avalon Files")
+
+
+DEFAULT_VAULT_PATH = default_vault()
 VAULT_PATH = Path(os.environ.get("OBSIDIAN_VAULT", str(DEFAULT_VAULT_PATH)))
 CLOUD_TARGETS = [
     Path(r"C:\Users\issda\Dropbox\Obsidian-Sync"),
@@ -192,7 +209,7 @@ def _compile_signal_sources(
 
 
 def _keyword_hits(text: str, keywords: Iterable[str]) -> int:
-    return sum(1 for keyword in keywords if keyword in text)
+    return sum(1 for keyword in keywords if re.search(r"(?<!\w)" + re.escape(keyword) + r"(?!\w)", text))
 
 
 def _extract_label_matches(signal_text: str, label_keywords: Dict[str, List[str]]) -> List[str]:
@@ -212,14 +229,15 @@ def compute_tongue_profile(
     primary_tongue: str,
 ) -> Dict[str, float]:
     raw_scores = {tongue: 0.0 for tongue in TONGUE_ORDER}
-    max_phi_weight = max(TONGUE_PHI_WEIGHTS.values())
     for signal_text, source_weight in _compile_signal_sources(name, folder, headings, tags, content):
         if not signal_text:
             continue
         for tongue, keywords in TONGUE_KEYWORDS.items():
-            raw_scores[tongue] += _keyword_hits(signal_text, keywords) * source_weight * TONGUE_PHI_WEIGHTS[tongue]
+            raw_scores[tongue] += _keyword_hits(signal_text, keywords) * source_weight
 
-    raw_scores[primary_tongue] += max_phi_weight
+    # Classification is evidence-weighted; phi acts in gravity, not a second
+    # hidden prior that makes later tongues win before gravity is even applied.
+    raw_scores[primary_tongue] += max(1.0, max(raw_scores.values()))
     total = sum(raw_scores.values())
     if total <= 0:
         return {tongue: round(1.0 / len(TONGUE_ORDER), 6) for tongue in TONGUE_ORDER}
@@ -348,29 +366,115 @@ def classify_tongue(name: str, folder: str, content: str) -> str:
     return "AV"  # default: metadata/context
 
 
+MANAGED_SECTION = re.compile(r"\n?<!-- stista-index:start -->.*?<!-- stista-index:end -->\n?", re.DOTALL)
+
+
+def note_id(note: VaultNote) -> str:
+    return note.path.replace("\\", "/").removesuffix(".md")
+
+
+def source_content(content: str) -> str:
+    """Generated classifications must never become evidence for themselves."""
+    content = MANAGED_SECTION.sub("", content)
+    if content.startswith("---\n"):
+        end = content.find("\n---", 3)
+        if end >= 0:
+            return (
+                re.sub(r"^stista_(?!override:)[^\n]*\n", "", content[: end + 1], flags=re.MULTILINE)
+                + content[end + 1 :]
+            )
+    return content
+
+
+def frontmatter_tags(content: str) -> List[str]:
+    match = re.match(r"\A---\s*\n(.*?)\n---(?:\n|$)", content, re.DOTALL)
+    if not match:
+        return []
+    try:
+        metadata = yaml.safe_load(match.group(1))
+    except yaml.YAMLError:
+        return []
+    if not isinstance(metadata, dict):
+        return []
+    tags = metadata.get("tags", [])
+    if isinstance(tags, str):
+        tags = re.split(r"[,\s]+", tags)
+    return [str(tag).lstrip("#") for tag in tags] if isinstance(tags, list) else []
+
+
+def resolve_links(notes: List[VaultNote]) -> None:
+    """Resolve paths, headings and local basenames without merging collisions."""
+    by_id = {note_id(note).casefold(): note for note in notes}
+    by_name = defaultdict(list)
+    for note in notes:
+        by_name[note.name.casefold()].append(note)
+        note.incoming_links = []
+    for note in notes:
+        resolved = []
+        for raw in note.outgoing_links:
+            target = unquote(raw.split("#", 1)[0]).replace("\\", "/").removesuffix(".md")
+            import posixpath
+
+            local = posixpath.normpath((Path(note.path).parent / target).as_posix())
+            candidate = by_id.get(local.casefold()) or by_id.get(target.casefold())
+            if not target:
+                candidate = note
+            if candidate is None and "/" not in target:
+                matches = by_name.get(target.casefold(), [])
+                if len(matches) == 1:
+                    candidate = matches[0]
+            if candidate:
+                target = note_id(candidate)
+                candidate.incoming_links.append(note_id(note))
+            resolved.append(target)
+        note.outgoing_links = sorted(set(resolved))
+
+
 def scan_vault() -> List[VaultNote]:
     """Scan all markdown files in the vault."""
     notes = []
-    for md_file in VAULT_PATH.rglob("*.md"):
-        if ".obsidian" in str(md_file):
+    for md_file in sorted(VAULT_PATH.rglob("*.md")):
+        if ".obsidian" in md_file.relative_to(VAULT_PATH).parts:
             continue
         try:
-            content = md_file.read_text(encoding="utf-8", errors="replace")
+            raw_bytes = md_file.read_bytes()
+            content = raw_bytes.decode("utf-8-sig", errors="replace").replace("\r\n", "\n")
         except Exception:
             continue
 
-        rel_path = str(md_file.relative_to(VAULT_PATH))
+        raw_content = content
+        content = source_content(content)
+        rel_path = md_file.relative_to(VAULT_PATH).as_posix()
         name = md_file.stem
         folder = str(md_file.parent.relative_to(VAULT_PATH)) if md_file.parent != VAULT_PATH else ""
 
         headings = [m.group(2) for m in HEADING.finditer(content)]
-        tags = list(set(TAG.findall(content)))
-        links = list(set(WIKI_LINK.findall(content)))
+        tags = sorted(set(TAG.findall(raw_content)) | set(frontmatter_tags(raw_content)))
+        evidence_tags = sorted(set(TAG.findall(content)) | set(frontmatter_tags(content)))
+        links = sorted(set(WIKI_LINK.findall(raw_content)))
         words = len(content.split())
-        content_hash = hashlib.blake2s(content.encode()[:4096], digest_size=8).hexdigest()
+        content_hash = hashlib.sha256(raw_bytes).hexdigest()
         tongue = classify_tongue(name, folder, content)
-        tongue_profile = compute_tongue_profile(name, folder, headings, tags, content, tongue)
-        subjects, tasks, relations = extract_semantic_labels(name, folder, headings, tags, content)
+        tongue_profile = compute_tongue_profile(name, folder, headings, evidence_tags, content, tongue)
+        subjects, tasks, relations = extract_semantic_labels(name, folder, headings, evidence_tags, content)
+        fm = re.match(r"\A---\s*\n(.*?)\n---(?:\n|$)", raw_content, re.DOTALL)
+        if fm:
+            try:
+                metadata = yaml.safe_load(fm.group(1))
+                if isinstance(metadata, dict) and metadata.get("stista_method") == "keyword-role-heuristic-v2":
+                    profile = {code: float(metadata[f"stista_mix_{code.lower()}"]) for code in TONGUE_ORDER}
+                    primary = metadata["stista_primary"]
+                    if (
+                        primary in TONGUE_ORDER
+                        and all(math.isfinite(v) and 0 <= v <= 1 for v in profile.values())
+                        and abs(sum(profile.values()) - 1) < 1e-5
+                    ):
+                        tongue, tongue_profile = primary, profile
+                        subjects = sorted(
+                            set(subjects) | {t.removeprefix("topic/") for t in tags if t.startswith("topic/")}
+                        )
+            except (yaml.YAMLError, KeyError, TypeError, ValueError):
+                pass
 
         notes.append(
             VaultNote(
@@ -396,12 +500,7 @@ def scan_vault() -> List[VaultNote]:
         )
 
     # Build incoming links
-    name_map = {n.name: n for n in notes}
-    for note in notes:
-        for link_target in note.outgoing_links:
-            target = name_map.get(link_target)
-            if target:
-                target.incoming_links.append(note.name)
+    resolve_links(notes)
 
     for note in notes:
         if note.outgoing_links or note.incoming_links:
@@ -412,9 +511,12 @@ def scan_vault() -> List[VaultNote]:
     return notes
 
 
-def build_graph(notes: List[VaultNote]) -> Dict:
+def build_graph(notes: List[VaultNote], max_semantic_neighbors: int | None = None) -> Dict:
     """Build a knowledge graph from vault notes."""
+    notes = [replace(note, name=note_id(note)) for note in notes]
     name_map = {note.name: note for note in notes}
+    if len(name_map) != len(notes):
+        raise ValueError("Duplicate vault-relative node identities")
     explicit_target_pairs = set()
     explicit_connected = set()
     nodes = []
@@ -423,6 +525,8 @@ def build_graph(notes: List[VaultNote]) -> Dict:
         nodes.append(
             {
                 "id": note.name,
+                "label": Path(note.path).stem,
+                "classification_method": "keyword-role-heuristic-v2",
                 "path": note.path,
                 "folder": note.folder,
                 "tongue": note.tongue,
@@ -519,9 +623,18 @@ def build_graph(notes: List[VaultNote]) -> Dict:
             edges.append(edge)
 
     explicit_edge_keys = {(edge["source"], edge["target"]) for edge in edges}
-    for (source_name, target_name), metrics in sorted(pair_metrics.items()):
+    semantic_degree = Counter()
+    ranked_pairs = sorted(pair_metrics.items(), key=lambda item: (-item[1]["semantic_gravity"], item[0]))
+    for (source_name, target_name), metrics in ranked_pairs:
         if (source_name, target_name) in explicit_edge_keys or (target_name, source_name) in explicit_edge_keys:
             continue
+        if max_semantic_neighbors is not None and (
+            semantic_degree[source_name] >= max_semantic_neighbors
+            or semantic_degree[target_name] >= max_semantic_neighbors
+        ):
+            continue
+        semantic_degree[source_name] += 1
+        semantic_degree[target_name] += 1
         semantic_edge = {
             "source": source_name,
             "target": target_name,
@@ -714,7 +827,7 @@ def add_connections(suggestions: List[Dict], dry_run: bool = True) -> int:
             base = auto_block_re.sub("\n", modified).rstrip()
 
             links_lines = "\n".join(f"- [[{t}]]" for t in sorted(append_targets))
-            auto_block = "\n\n## Auto links\n" f"{auto_start}\n" f"{links_lines}\n" f"{auto_end}\n"
+            auto_block = f"\n\n## Auto links\n{auto_start}\n{links_lines}\n{auto_end}\n"
             modified = base + auto_block
 
         if modified != content and not dry_run:

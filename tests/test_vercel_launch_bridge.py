@@ -71,6 +71,7 @@ def test_vercel_launch_rewrites_root_and_launch_to_agent_page() -> None:
     assert "'api/agent'" in ignore_source
     assert "'api/polly'" in ignore_source
     assert "'api/billing'" in ignore_source
+    assert "'docs/research-signal.html'" in ignore_source
     assert "'docs/app-config.json'" in ignore_source
     assert "'docs/ai-chemistry-set.html'" in ignore_source
     assert "'docs/ai-materials-bench.html'" in ignore_source
@@ -113,6 +114,11 @@ def test_vercel_launch_rewrites_root_and_launch_to_agent_page() -> None:
     assert ("^/hire/?$", "/api/agent/hire.js") in routes
     assert ("^/SCBE-AETHERMOORE/hire\\.html$", "/api/agent/hire.js") in routes
     assert ("^/products/?$", "/api/agent/products.js") in routes
+    assert ("^/research-signal/?$", "/api/agent/research-signal.js") in routes
+    assert (
+        "^/SCBE-AETHERMOORE/research-signal\\.html$",
+        "/api/agent/research-signal.js",
+    ) in routes
     assert ("^/atomic-lab/?$", "/api/agent/atomic-lab-page.js") in routes
     assert ("^/ai-chemistry-set/?$", "/api/agent/ai-chemistry-set-page.js") in routes
     assert ("^/ai-materials-bench/?$", "/api/agent/ai-materials-bench-page.js") in routes
@@ -211,6 +217,7 @@ def test_vercelignore_ships_launch_handler_with_api_bridge() -> None:
     assert "!docs/robots.txt" in ignore
     assert "!docs/sitemap.xml" in ignore
     assert "!docs/index.html" in ignore
+    assert "!docs/research-signal.html" in ignore
     assert "!docs/atomic-lab.html" in ignore
     assert "!docs/ai-chemistry-set.html" in ignore
     assert "!docs/ai-materials-bench.html" in ignore
@@ -253,10 +260,12 @@ def test_launch_page_links_to_public_docs_and_bridge_endpoints() -> None:
     assert "Content-Type" in hire_handler
     assert "SCBE Customer Launch" in source
     assert "Payment Center" in source
+    assert "Research Signal" in source
     assert "Workflow Snapshot" in source
     assert "Hosted Run Intake" in source
     assert 'href="/payments"' in source
     assert 'href="/products"' in source
+    assert 'href="/research-signal"' in source
     assert 'href="/workflow-snapshot"' in source
     assert 'href="/hosted-run"' in source
     assert 'href="/service-credits"' in source

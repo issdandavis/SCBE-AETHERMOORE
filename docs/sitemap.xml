@@ -217,6 +217,18 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://aethermoore.com/research-signal</loc>
+    <lastmod>2026-08-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://aethermoore.com/SCBE-AETHERMOORE/research/live-signal/tongue_braid_residual_note.md</loc>
+    <lastmod>2026-08-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.65</priority>
+  </url>
+  <url>
     <loc>https://aethermoore.com/SCBE-AETHERMOORE/research/RESEARCH_PACKET_STANDARD.md</loc>
     <lastmod>2026-06-17</lastmod>
     <changefreq>monthly</changefreq>

@@ -356,29 +356,115 @@ function loadPlaywrightChromium() {
   };
 }
 
+async function startBridgeSmokeFixture() {
+  const html = [
+    '<!doctype html>',
+    '<html><head><title>SCBE Bridge Smoke Fixture</title></head>',
+    '<body><main><h1>SCBE bridge smoke fixture</h1></main></body></html>',
+  ].join('');
+  const server = http.createServer((_req, res) => {
+    res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+    res.end(html);
+  });
+  await new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', resolve);
+  });
+  const address = server.address();
+  if (!address || typeof address === 'string') {
+    server.close();
+    throw new Error('bridge smoke fixture did not acquire a local port');
+  }
+  return {
+    url: `http://127.0.0.1:${address.port}/`,
+    close: () =>
+      new Promise((resolve) => {
+        server.close(() => resolve());
+      }),
+  };
+}
+
+function browserLaunchEnv() {
+  const env = { ...process.env };
+  if (process.platform !== 'win32') return env;
+
+  // CLI tests and isolated agent sessions intentionally redirect USERPROFILE
+  // so SCBE state cannot leak into the operator's home. Chrome also consumes
+  // USERPROFILE for OS integration even when --user-data-dir is explicit, and
+  // can hang if it points at a minimal scratch directory. HOMEDRIVE/HOMEPATH
+  // remain the Windows account profile and are safe to restore only for the
+  // isolated browser child.
+  const nativeProfile = `${env.HOMEDRIVE || ''}${env.HOMEPATH || ''}`;
+  if (nativeProfile && fs.existsSync(nativeProfile)) {
+    env.USERPROFILE = nativeProfile;
+    env.HOME = nativeProfile;
+  }
+  return env;
+}
+
 async function launchBrowserRuntime(chromium) {
   const executablePath = resolveBrowserExecutable();
   const attempts = [];
-  const options = [];
-  if (executablePath) options.push({ headless: true, executablePath });
-  options.push({ headless: true });
   let lastError = null;
-  for (const launchOptions of options) {
+
+  // Current Chrome releases reject remote debugging against what they believe
+  // is the default profile. Playwright normally supplies an ephemeral
+  // --user-data-dir for launch(), but some Windows Chrome builds still reject
+  // that generated profile. An explicit persistent context is both isolated
+  // from the operator's real profile and accepted by those builds.
+  if (executablePath) {
+    const profileDir = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-browser-profile-'));
     try {
-      const browser = await chromium.launch(launchOptions);
-      return { browser, executablePath: launchOptions.executablePath || null };
+      const context = await chromium.launchPersistentContext(profileDir, {
+        headless: true,
+        executablePath,
+        env: browserLaunchEnv(),
+      });
+      return {
+        browser: context,
+        executablePath,
+        close: async () => {
+          try {
+            await context.close();
+          } finally {
+            removeBrowserProfile(profileDir);
+          }
+        },
+      };
     } catch (err) {
       lastError = err;
-      attempts.push(
-        launchOptions.executablePath
-          ? `executablePath=${launchOptions.executablePath}: ${err.message}`
-          : `bundled: ${err.message}`
-      );
+      attempts.push(`executablePath=${executablePath}: ${err.message}`);
+      removeBrowserProfile(profileDir);
     }
   }
+
+  try {
+    const browser = await chromium.launch({ headless: true, env: browserLaunchEnv() });
+    return {
+      browser,
+      executablePath: null,
+      close: () => browser.close(),
+    };
+  } catch (err) {
+    lastError = err;
+    attempts.push(`bundled: ${err.message}`);
+  }
+
   throw new Error(
     attempts.join(' | ') || (lastError ? lastError.message : 'browser launch failed')
   );
+}
+
+function removeBrowserProfile(profileDir) {
+  const resolved = path.resolve(profileDir);
+  const tempRoot = path.resolve(os.tmpdir());
+  if (
+    path.dirname(resolved) !== tempRoot ||
+    !path.basename(resolved).startsWith('scbe-browser-profile-')
+  ) {
+    return;
+  }
+  fs.rmSync(resolved, { recursive: true, force: true });
 }
 
 function psSingle(value) {
@@ -413,7 +499,15 @@ function startDevServer(port, logPath, bridgeUrl = '') {
     if (child.status !== 0) {
       throw new Error(firstLine((child.stdout || '') + (child.stderr || 'Start-Process failed')));
     }
-    return { pid: Number.parseInt(child.stdout.trim(), 10) || null, err_path: errPath };
+    const pid = Number.parseInt(String(child.stdout || '').trim(), 10);
+    if (!Number.isSafeInteger(pid) || pid <= 0) {
+      throw new Error(
+        `desktop dev launcher did not return a pid: ${firstLine(
+          (child.stdout || '') + (child.stderr || '<no launcher output>')
+        )}`
+      );
+    }
+    return { pid, err_path: errPath };
   }
 
   const out = fs.openSync(logPath, 'a');
@@ -437,32 +531,29 @@ function startDevServer(port, logPath, bridgeUrl = '') {
 function startActionBridgeProcess(port, logPath, desktopUrl = '') {
   const errPath = logPath.replace(/\.log$/i, '.err.log');
   if (process.platform === 'win32') {
-    const launcherPath = path.join(ARTIFACT_ROOT, `run-bridge-${port}.cmd`);
-    fs.writeFileSync(
-      launcherPath,
-      [
-        '@echo off',
-        desktopUrl ? `set SCBE_DESKTOP_URL=${desktopUrl}` : '',
-        `cd /d ${JSON.stringify(REPO_ROOT)}`,
-        `${cmdToken(process.execPath)} ${JSON.stringify(__filename)} bridge --port ${port} > ${JSON.stringify(logPath)} 2> ${JSON.stringify(errPath)}`,
-        '',
-      ].join('\r\n'),
-      'utf8'
-    );
-    const command = [
-      "$p = Start-Process -FilePath 'cmd.exe'",
-      `-ArgumentList @('/d', '/c', ${psSingle(launcherPath)})`,
-      '-WindowStyle Hidden',
-      '-PassThru;',
-      '$p.Id',
-    ].join(' ');
-    const child = spawnSync('powershell.exe', ['-NoProfile', '-Command', command], {
-      encoding: 'utf8',
-    });
-    if (child.status !== 0) {
-      throw new Error(firstLine((child.stdout || '') + (child.stderr || 'Start-Process failed')));
+    const out = fs.openSync(logPath, 'a');
+    const err = fs.openSync(errPath, 'a');
+    let child;
+    try {
+      child = spawn(process.execPath, [__filename, 'bridge', '--port', String(port)], {
+        cwd: REPO_ROOT,
+        detached: true,
+        windowsHide: true,
+        stdio: ['ignore', out, err],
+        env: {
+          ...process.env,
+          ...(desktopUrl ? { SCBE_DESKTOP_URL: desktopUrl } : {}),
+        },
+      });
+    } finally {
+      fs.closeSync(out);
+      fs.closeSync(err);
     }
-    return { pid: Number.parseInt(child.stdout.trim(), 10) || null, err_path: errPath };
+    if (!child || !Number.isSafeInteger(child.pid) || child.pid <= 0) {
+      throw new Error('bridge launcher did not return a process id');
+    }
+    child.unref();
+    return { pid: child.pid, err_path: errPath };
   }
 
   const out = fs.openSync(logPath, 'a');
@@ -479,12 +570,9 @@ function startActionBridgeProcess(port, logPath, desktopUrl = '') {
   return { pid: child.pid, err_path: logPath };
 }
 
-// Reap a spawned bridge AND its descendants. On Windows the bridge is launched
-// through a `Start-Process cmd.exe` wrapper (for output redirection), so the
-// recorded pid is the cmd.exe wrapper, not the node bridge grandchild — killing
-// just that pid orphans the node server (it keeps answering and holds its log
-// file open). `taskkill /T` kills the whole tree. On POSIX the bridge is a
-// detached process-group leader, so a negative-pid signal kills the group.
+// Reap a spawned bridge AND its descendants. Windows receives the real detached
+// Node pid and `taskkill /T` clears its tree. On POSIX the bridge is a detached
+// process-group leader, so a negative-pid signal kills the group.
 function stopProcessTree(pid) {
   if (!pid) return;
   if (process.platform === 'win32') {
@@ -660,6 +748,8 @@ function runPowerShellCommand({ command, cwd } = {}) {
   const shell = process.platform === 'win32' ? 'powershell.exe' : 'pwsh';
   const marker = `__SCBE_CWD_${Date.now()}_${Math.random().toString(36).slice(2)}__=`;
   const wrappedCommand = [
+    'Import-Module Microsoft.PowerShell.Management',
+    'Import-Module Microsoft.PowerShell.Utility',
     `$ErrorActionPreference = 'Continue'`,
     `Set-Location -LiteralPath ${psSingle(runCwd)}`,
     text,
@@ -754,7 +844,7 @@ async function captureScreen({ url, out } = {}) {
       },
     };
   } finally {
-    await browser.close();
+    await launched.close();
   }
 }
 
@@ -809,7 +899,7 @@ async function openBrowserPage({ url, out } = {}) {
       },
     };
   } finally {
-    await browser.close();
+    await launched.close();
   }
 }
 
@@ -1003,7 +1093,9 @@ async function runOpen(args) {
 async function runBridgeSmoke(args) {
   const asJson = hasFlag(args, '--json');
   const preferredPort = Number.parseInt(flagValue(args, '--port', '3678'), 10) || 3678;
-  const browserUrl = flagValue(args, '--url', 'https://example.com');
+  const requestedBrowserUrl = flagValue(args, '--url', '');
+  const browserFixture = requestedBrowserUrl ? null : await startBridgeSmokeFixture();
+  const browserUrl = requestedBrowserUrl || browserFixture.url;
   const command = flagValue(args, '--command', 'Write-Output "SCBE_BRIDGE_SMOKE_OK"');
   const port = await findPort(preferredPort);
   ensureDir(ARTIFACT_ROOT);
@@ -1057,6 +1149,7 @@ async function runBridgeSmoke(args) {
     payload.error = err && err.message ? err.message : String(err);
   } finally {
     stopProcessTree(bridge.pid);
+    if (browserFixture) await browserFixture.close();
   }
   if (asJson) {
     process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);

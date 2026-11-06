@@ -38,7 +38,7 @@ secret_store = _load_module("test_secret_store_real", "src/security/secret_store
 sys.modules["src.security.secret_store"] = secret_store
 colab_bridge = _load_module(
     "test_colab_n8n_bridge",
-    "external/codex-skills-live/scbe-n8n-colab-bridge/scripts/colab_n8n_bridge.py",
+    "scripts/colab/colab_n8n_bridge.py",
 )
 
 

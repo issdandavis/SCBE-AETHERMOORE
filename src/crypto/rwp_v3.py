@@ -26,8 +26,10 @@ import json
 
 try:
     from .pqc_liboqs import get_pqc_governance_status as _shared_pqc_governance_status
+    from .pqc_liboqs import oqs as _shared_oqs
 except ImportError:
     _shared_pqc_governance_status = None
+    _shared_oqs = None
 
 # Crypto primitives
 try:
@@ -50,16 +52,8 @@ _FORCE_SKIP_LIBOQS = os.getenv("SCBE_FORCE_SKIP_LIBOQS", "").strip().lower() in 
     "yes",
 }
 
-if not _FORCE_SKIP_LIBOQS:
-    try:
-        import oqs  # liboqs-python for ML-KEM/ML-DSA
-
-        OQS_AVAILABLE = True
-    except BaseException:
-        # liboqs-python not installed, shared libs missing, or bootstrap errors
-        OQS_AVAILABLE = False
-else:
-    OQS_AVAILABLE = False
+oqs = None if _FORCE_SKIP_LIBOQS else _shared_oqs
+OQS_AVAILABLE = oqs is not None
 
 
 def _select_kem_algorithm() -> str:

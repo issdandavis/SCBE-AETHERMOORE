@@ -537,17 +537,13 @@ test('infer command routes geoseal and termux worksheets with typo tolerance', (
   assert.match(result.stdout, /execute: no/);
 });
 
-// A bare sentence that does NOT begin with a known command verb falls through to
-// the worksheet/NL stage, and must route to the generic worksheet — which detects
-// the skill keywords (geoseal, termux, with "termunx" typo tolerance) — rather
-// than a weak natural-language guess or a workspace ingest.
-// (An input that DOES begin with a real verb such as `geoseal` is correctly
-// handled by that command's own dispatch and is not a worksheet case — the
-// earlier skip used such an input, which was the test's bug, not a routing gap.)
-test('bare sentence routes to worksheet before weak natural-language guess', () => {
-  const result = runCli(
-    'please summarize the README using geoseal governance with a termunx fallback'.split(' ')
-  );
+// Conversation-first `scbe <prompt>` is reserved for the agent. The explicit
+// legacy resolver retains the deterministic worksheet/NL ordering for scripts.
+test('explicit resolve routes to worksheet before weak natural-language guess', () => {
+  const result = runCli([
+    'resolve',
+    ...'please summarize the README using geoseal governance with a termunx fallback'.split(' '),
+  ]);
 
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /worksheet: worksheet\.generic/);

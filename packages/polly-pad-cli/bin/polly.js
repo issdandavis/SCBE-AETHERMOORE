@@ -1501,51 +1501,94 @@ async function tryAnthropic(prompt) {
   }
 }
 
-function hasAnyEnv(names) {
-  return names.some((name) => Boolean(process.env[name]));
+const FREE_MODEL_ROUTES = [
+  {
+    name: 'cerebras',
+    keyNames: ['CEREBRAS_API_KEY'],
+    endpoint: 'https://api.cerebras.ai/v1/chat/completions',
+    model: () => process.env.CEREBRAS_MODEL || 'gpt-oss-120b',
+    timeoutMs: 15000,
+  },
+  {
+    name: 'groq',
+    keyNames: ['GROQ_API_KEY'],
+    endpoint: 'https://api.groq.com/openai/v1/chat/completions',
+    model: () => process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+    timeoutMs: 20000,
+  },
+  {
+    name: 'huggingface',
+    keyNames: ['HF_TOKEN', 'HUGGINGFACE_TOKEN', 'HUGGING_FACE_HUB_TOKEN'],
+    endpoint: 'https://router.huggingface.co/v1/chat/completions',
+    model: () => process.env.HF_MODEL || 'Qwen/Qwen2.5-Coder-32B-Instruct',
+    timeoutMs: 30000,
+  },
+];
+
+function firstEnvValue(names) {
+  for (const name of names) {
+    if (process.env[name]) return process.env[name];
+  }
+  return '';
 }
 
-function findRepoRootForRouter() {
-  return detectGitRoot(__dirname);
-}
-
-async function tryTerminalAiRouter(prompt) {
-  if (process.env.POLLY_DISABLE_TERMINAL_ROUTER === '1') return null;
-  if (!hasAnyEnv(['CEREBRAS_API_KEY', 'GROQ_API_KEY', 'HF_TOKEN'])) return null;
-
-  const repoRoot = findRepoRootForRouter();
-  if (!repoRoot) return null;
-  const routerPath = path.join(repoRoot, 'scripts', 'system', 'terminal_ai_router.py');
-  if (!fs.existsSync(routerPath)) return null;
-
-  try {
-    const result = spawnSync(
-      process.env.PYTHON || 'python',
-      [
-        routerPath,
-        'call',
-        '--prompt',
-        prompt,
-        '--providers',
-        'cerebras,groq,huggingface',
-        '--max-output-tokens',
-        '2048',
-        '--response-only',
-      ],
-      {
-        cwd: repoRoot,
-        encoding: 'utf8',
-        timeout: 45000,
-        maxBuffer: 1024 * 1024 * 4,
-        env: Object.assign({}, process.env),
-      }
-    );
-    const text = String(result.stdout || '').trim();
-    if (result.status !== 0 || !text) return null;
-    return { text, model_used: 'terminal-ai-router', source: 'free-first-router' };
-  } catch (_) {
+async function tryFreeRouter(prompt) {
+  if (
+    process.env.POLLY_DISABLE_FREE_ROUTER === '1' ||
+    process.env.POLLY_DISABLE_TERMINAL_ROUTER === '1'
+  ) {
     return null;
   }
+
+  for (const route of FREE_MODEL_ROUTES) {
+    const key = firstEnvValue(route.keyNames);
+    if (!key) continue;
+    const model = route.model();
+    try {
+      const res = await fetchWithTimeout(
+        route.endpoint,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + key,
+          },
+          body: JSON.stringify({
+            model,
+            messages: [
+              {
+                role: 'system',
+                content: 'You are Polly, an SCBE terminal assistant. Be concise and evidence-aware.',
+              },
+              { role: 'user', content: prompt },
+            ],
+            max_tokens: 2048,
+          }),
+        },
+        route.timeoutMs
+      );
+      if (!res.ok) continue;
+      const data = await res.json();
+      const text =
+        data &&
+        data.choices &&
+        data.choices[0] &&
+        data.choices[0].message &&
+        data.choices[0].message.content
+          ? String(data.choices[0].message.content).trim()
+          : '';
+      if (text) {
+        return {
+          text,
+          model_used: route.name + ':' + model,
+          source: 'free-first-router',
+        };
+      }
+    } catch (_) {
+      // Try the next configured free route.
+    }
+  }
+  return null;
 }
 
 async function tryOpenAI(prompt) {
@@ -1606,8 +1649,8 @@ function templateFallback(prompt) {
 async function routeToModel(prompt) {
   const ollama = await tryOllama(prompt);
   if (ollama && ollama.text) return ollama;
-  const terminalRouter = await tryTerminalAiRouter(prompt);
-  if (terminalRouter && terminalRouter.text) return terminalRouter;
+  const freeRouter = await tryFreeRouter(prompt);
+  if (freeRouter && freeRouter.text) return freeRouter;
   if (process.env.POLLY_DISABLE_PAID_APIS === '1') return templateFallback(prompt);
   const anthropic = await tryAnthropic(prompt);
   if (anthropic && anthropic.text) return anthropic;
@@ -3150,6 +3193,40 @@ const COMMANDS = {
 // Arg parser
 // ---------------------------------------------------------------------------
 
+const VALUE_FLAGS = new Set([
+  'cwd',
+  'evidence-file',
+  'f',
+  'file',
+  'files',
+  'filter',
+  'from',
+  'hex',
+  'input',
+  'lang',
+  'langs',
+  'language',
+  'limit',
+  'max-output-chars',
+  'max-seconds',
+  'max-sources',
+  'objective',
+  'out',
+  'params',
+  'poll-ms',
+  'processor',
+  'request-file',
+  't',
+  'text',
+  'timeout',
+  'timeout-ms',
+  'to',
+  'url',
+  'wait-timeout-ms',
+  'x',
+  'y',
+]);
+
 function parseArgs(argv) {
   const args = [];
   const flags = {};
@@ -3159,14 +3236,24 @@ function parseArgs(argv) {
       const eqIdx = a.indexOf('=');
       if (eqIdx !== -1) {
         flags[a.slice(2, eqIdx)] = a.slice(eqIdx + 1);
-      } else if (i + 1 < argv.length && !argv[i + 1].startsWith('-')) {
+      } else if (
+        VALUE_FLAGS.has(a.slice(2)) &&
+        i + 1 < argv.length &&
+        !argv[i + 1].startsWith('-')
+      ) {
         flags[a.slice(2)] = argv[i + 1];
         i++;
       } else {
         flags[a.slice(2)] = true;
       }
     } else if (a.startsWith('-') && a.length === 2) {
-      flags[a.slice(1)] = true;
+      const name = a.slice(1);
+      if (VALUE_FLAGS.has(name) && i + 1 < argv.length && !argv[i + 1].startsWith('-')) {
+        flags[name] = argv[i + 1];
+        i++;
+      } else {
+        flags[name] = true;
+      }
     } else {
       args.push(a);
     }
@@ -3250,13 +3337,14 @@ Global flags:
 
 LLM routing priority:
   1. Ollama (localhost:11434, llama3.2, 8s timeout)
-  2. Free-first terminal router (Cerebras -> Groq -> HuggingFace)
+  2. Package-native free-first router (Cerebras -> Groq -> HuggingFace)
   3. Anthropic (ANTHROPIC_API_KEY, claude-haiku-4-5-20251001, 30s)
   4. OpenAI   (OPENAI_API_KEY, gpt-4o-mini, 30s)
   5. Template fallback (no model required)
 
 Set POLLY_DISABLE_PAID_APIS=1 to stop after Ollama/free-router attempts.
 Set POLLY_DISABLE_OLLAMA=1 to skip local/Ollama-cloud routing.
+Set POLLY_DISABLE_FREE_ROUTER=1 to skip Cerebras/Groq/HuggingFace routing.
 
 Examples:
   polly init MyProject

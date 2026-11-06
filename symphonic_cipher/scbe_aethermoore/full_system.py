@@ -14,6 +14,7 @@ This provides end-to-end governance from raw intent to final decision.
 
 import numpy as np
 import hashlib
+import json
 import os
 import time
 from dataclasses import dataclass, field
@@ -226,8 +227,12 @@ class SCBEFullSystem:
 
         # === PHASE 2: 9D State Construction ===
 
-        # Generate 6D context
-        context_vec = generate_context(t, self.state.secret_key)
+        # One request-derived 6D record feeds both State9D and PY_FULL14.
+        # The six fields are semantic coordinates, not the six tokenizer tongues.
+        context_vec = np.array(
+            [identity_hash, intent_complex, 0.95, t, commitment, 0.9],
+            dtype=object,
+        )
 
         # Time dimension
         tau = t % 1000  # Bounded time
@@ -249,16 +254,17 @@ class SCBEFullSystem:
         # === PHASE 3: 14-Layer Pipeline ===
 
         risk_assessment, layer_states = self.pipeline.process(
-            identity=identity_hash,
-            intent=intent_complex,
-            trajectory=0.95,  # Could be computed from history
-            timing=t,
-            commitment=commitment,
-            signature=0.9,  # Could be actual signature verification
+            identity=float(state_9d.context[0]),
+            intent=complex(state_9d.context[1]),
+            trajectory=float(state_9d.context[2]),
+            timing=float(state_9d.context[3]),
+            commitment=float(state_9d.context[4]),
+            signature=float(state_9d.context[5]),
+            # Event time is an explicit sidecar; bounded tau remains independent.
             t=t,
-            tau=tau,
-            eta=eta,
-            q=q,
+            tau=state_9d.tau,
+            eta=state_9d.eta,
+            q=state_9d.q,
             ref_u=self.state.reference_embedding,
             ref_tau=self.state.reference_state.tau if self.state.reference_state else 0.0,
             ref_eta=self.state.reference_state.eta if self.state.reference_state else ETA_TARGET,
@@ -331,18 +337,7 @@ class SCBEFullSystem:
         chi = self.default_poly.euler_characteristic
         topology_valid = (chi == 2)
 
-        # === PHASE 9: Audit Chain ===
-
-        # Create audit entry
-        audit_data = f"{identity}|{intent}|{t}|{risk_assessment.decision}".encode()
-        nonce = os.urandom(12)
-        prev_tag = self.state.audit_chain[-1][2] if self.state.audit_chain else self.state.audit_iv
-        audit_tag = hmac_chain_tag(audit_data, nonce, prev_tag, self.state.secret_key)
-
-        self.state.audit_chain.append((audit_data, nonce, audit_tag))
-        chain_position = len(self.state.audit_chain)
-
-        # === PHASE 10: Final Decision Logic ===
+        # === PHASE 9: Final Decision Logic ===
 
         # Check if this is a cold start (no reference state established)
         is_cold_start = self.state.reference_state is None
@@ -357,6 +352,28 @@ class SCBEFullSystem:
             q_fidelity=q_fidelity,
             is_cold_start=is_cold_start
         )
+
+        # === PHASE 10: Authenticate the final decision ===
+        # L13 and the wrapper may legitimately differ when another check escalates.
+        # Record both, after composition, so the audit describes the actual result.
+        audit_data = json.dumps(
+            {
+                "schema": "scbe.full-system-decision.v2",
+                "identity": identity,
+                "intent": intent,
+                "timestamp": t,
+                "pipeline_decision": str(risk_assessment.decision),
+                "decision": decision.value,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        ).encode("utf-8")
+        nonce = os.urandom(12)
+        prev_tag = self.state.audit_chain[-1][2] if self.state.audit_chain else self.state.audit_iv
+        audit_tag = hmac_chain_tag(audit_data, nonce, prev_tag, self.state.secret_key)
+        self.state.audit_chain.append((audit_data, nonce, audit_tag))
+        chain_position = len(self.state.audit_chain)
 
         # === PHASE 11: Update State ===
 
@@ -426,7 +443,89 @@ class SCBEFullSystem:
         topology_valid: bool,
         tau_flow: float,
         q_fidelity: float,
-        is_cold_start: bool = False
+        is_cold_start: bool = False,
+    ) -> Tuple[GovernanceDecision, float, str]:
+        """Compose decisions monotonically: later checks can only restrict access."""
+        layer_decision = risk_assessment.decision
+        if isinstance(layer_decision, str) and layer_decision == "SNAP":
+            return GovernanceDecision.SNAP, 0.0, "SNAP: Layer 13 requires containment"
+        if isinstance(topology_valid, (bool, np.bool_)) and not topology_valid:
+            return GovernanceDecision.SNAP, 0.0, "SNAP: Topological fracture detected"
+
+        permitted_levels = {
+            "ALLOW": (RiskLevel.LOW,),
+            "REVIEW": (RiskLevel.MEDIUM,),
+            "DENY": (RiskLevel.HIGH, RiskLevel.CRITICAL),
+        }
+        numbers = (
+            risk_assessment.raw_risk,
+            risk_assessment.scaled_risk,
+            risk_assessment.coherence,
+            entropy_rate,
+            manifold_divergence,
+            tau_flow,
+            q_fidelity,
+            self.epsilon,
+        )
+        if (
+            not isinstance(layer_decision, str)
+            or layer_decision not in permitted_levels
+            or risk_assessment.level not in permitted_levels[layer_decision]
+            or not isinstance(topology_valid, (bool, np.bool_))
+            or not isinstance(is_cold_start, (bool, np.bool_))
+            or not isinstance(self.state.mode, GovernanceMode)
+            or entropy_zone not in ("NEGENTROPY", "OPTIMAL", "HIGH_ENTROPY")
+            or any(
+                isinstance(value, (bool, np.bool_))
+                or not isinstance(value, (int, float, np.integer, np.floating))
+                or not np.isfinite(value)
+                for value in numbers
+            )
+        ):
+            return GovernanceDecision.DENY, 0.0, "DENY: Invalid governance evidence"
+        if (
+            not 0 <= risk_assessment.raw_risk <= risk_assessment.scaled_risk <= 1
+            or not 0 <= risk_assessment.coherence <= 1
+            or entropy_rate < 0
+            or manifold_divergence < 0
+            or not 0 <= q_fidelity <= 1 + 1e-12
+            or self.epsilon <= 0
+        ):
+            return GovernanceDecision.DENY, 0.0, "DENY: Out-of-range governance evidence"
+
+        if manifold_divergence > self.epsilon:
+            return GovernanceDecision.SNAP, 0.0, "SNAP: Geometric divergence exceeds policy"
+        if layer_decision == "DENY":
+            return GovernanceDecision.DENY, 0.0, "DENY: Layer 13 refusal is binding"
+        if self.state.mode == GovernanceMode.LOCKDOWN:
+            return GovernanceDecision.DENY, 0.0, "DENY: System is in LOCKDOWN"
+        if tau_flow <= DOT_TAU_MIN:
+            return GovernanceDecision.DENY, 0.0, "DENY: Causality violation"
+
+        decision, confidence, explanation = self._compute_context_decision(
+            risk_assessment,
+            entropy_zone,
+            entropy_rate,
+            manifold_divergence,
+            topology_valid,
+            tau_flow,
+            q_fidelity,
+            is_cold_start,
+        )
+        if layer_decision == "REVIEW" and decision == GovernanceDecision.ALLOW:
+            return GovernanceDecision.QUARANTINE, min(confidence, 0.7), "QUARANTINE: Layer 13 requires review"
+        return decision, confidence, explanation
+
+    def _compute_context_decision(
+        self,
+        risk_assessment: RiskAssessment,
+        entropy_zone: str,
+        entropy_rate: float,
+        manifold_divergence: float,
+        topology_valid: bool,
+        tau_flow: float,
+        q_fidelity: float,
+        is_cold_start: bool = False,
     ) -> Tuple[GovernanceDecision, float, str]:
         """
         Compute final governance decision with confidence and explanation.
@@ -477,42 +576,8 @@ class SCBEFullSystem:
             confidence *= 0.3
             return GovernanceDecision.SNAP, confidence, f"SNAP: {'; '.join(violations)}"
 
-        # Check 14-layer risk
-        # Note: The harmonic scaling H(d,R) = R^(d²) is very aggressive
-        # For d > 3.5, H > 100 which triggers CRITICAL
-        # We use the raw d* (distance to nearest realm) as a more stable metric
-        d_star = risk_assessment.raw_risk  # This is actually H(d), need d_star from realm
-
-        # Use scaled_risk which incorporates coherence and realm weight
-        # CRITICAL only if truly anomalous (not just large triadic distance)
-        if risk_assessment.level == RiskLevel.CRITICAL:
-            # Check if this is a false positive from high d_tri
-            # True critical = low coherence + high manifold divergence
-            if manifold_divergence > self.epsilon * 2:
-                violations.append("Critical geometric divergence")
-                return GovernanceDecision.SNAP, confidence * 0.1, f"SNAP: {'; '.join(violations)}"
-            elif risk_assessment.coherence < 0.5:
-                # Low coherence + CRITICAL = real concern
-                violations.append("Critical risk with low coherence")
-                confidence *= 0.4
-            else:
-                # High coherence but large distance - likely normal operation far from origin
-                # Just reduce confidence, don't add violation
-                confidence *= 0.8
-
-        if risk_assessment.level == RiskLevel.HIGH:
-            if risk_assessment.coherence < 0.7:
-                violations.append("High risk with degraded coherence")
-                confidence *= 0.6
-
-        # Mode-based adjustments
-        if self.state.mode == GovernanceMode.LOCKDOWN:
-            if violations:
-                return GovernanceDecision.DENY, confidence * 0.3, f"DENY (LOCKDOWN): {'; '.join(violations)}"
-
-        if self.state.mode == GovernanceMode.HEIGHTENED:
-            if risk_assessment.level == RiskLevel.MEDIUM:
-                return GovernanceDecision.QUARANTINE, confidence * 0.6, f"QUARANTINE (HEIGHTENED): Medium risk"
+        # Layer decisions and emergency mode are enforced by the caller.
+        # Supplemental checks may escalate REVIEW; they cannot soften it.
 
         # Check for any violations
         if len(violations) >= 2:

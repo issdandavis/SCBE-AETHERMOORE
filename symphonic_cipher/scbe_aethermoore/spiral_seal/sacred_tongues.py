@@ -4,6 +4,10 @@ Sacred Tongue Tokenizer - SS1 Spell-Text Encoding
 Deterministic 256-word lists (16 prefixes × 16 suffixes) for each of the
 six Sacred Tongues. Each byte maps to exactly one token of the form
 "prefix'suffix". Section helpers add tongue prefixes (e.g., "ko:" for nonce).
+
+Vocabulary profile: rwp_v3_wordlist_v1_1. It is wire-compatible with the
+Python RWP profile and intentionally distinct from TypeScript
+ss1_transport_v2_1; callers must not infer a profile from the label "SS1".
 """
 
 from __future__ import annotations
@@ -11,6 +15,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, List, Tuple, Any
+
+TOKENIZER_PROFILE_ID = "rwp_v3_wordlist_v1_1"
 
 
 # =============================================================================

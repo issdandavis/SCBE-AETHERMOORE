@@ -34,6 +34,7 @@ class Lexicon:
 
     def __init__(self) -> None:
         self.words: Dict[str, Dict[str, str]] = {code: {} for code in _GRID_CODE}
+        self.functions = None
 
     def add(self, tongue: str, word: str, meaning: str = "") -> None:
         self.words[tongue][word.lower().strip()] = meaning
@@ -45,6 +46,18 @@ class Lexicon:
                 self.add(tongue, w)
 
     def merge(self, other: "Lexicon") -> "Lexicon":
+        if other.functions is not None:
+            from copy import deepcopy
+
+            if self.functions is None:
+                self.functions = deepcopy(other.functions)
+            elif self.functions.registry_hash != other.functions.registry_hash:
+                raise ValueError("Cannot merge different function registries")
+            else:
+                for tongue, spec in other.functions.bindings.items():
+                    if tongue in self.functions.bindings and self.functions.bindings[tongue] != spec:
+                        raise ValueError("Conflicting tongue function bindings")
+                self.functions.bindings.update(deepcopy(other.functions.bindings))
         for tongue, wm in other.words.items():
             self.words.setdefault(tongue, {}).update(wm)
         return self
@@ -80,7 +93,24 @@ class Lexicon:
         for section in ("particles", "roots", "words"):
             for word, gloss in (data.get(section) or {}).items():
                 self.add(tongue, word, gloss)
+        if "function_words" in data:
+            from .function_lexicon import FunctionLexicon
+
+            registry_name = data["function_words"]["registry"]
+            if Path(registry_name).name != registry_name:
+                raise ValueError("Function registry must be a sibling file")
+            registry = Path(path).resolve().parent / registry_name
+            candidate = FunctionLexicon(registry)
+            if self.functions is not None and self.functions.registry_hash != candidate.registry_hash:
+                raise ValueError("Conflicting function registry authorities")
+            if self.functions is None:
+                self.functions = candidate
+            self.functions.bind_conlang(data)
         return self
+
+    def function_meaning(self, word: str, **filters) -> list:
+        """Shared speech senses, separate from native word->tongue classification."""
+        return [] if self.functions is None else self.functions.lookup(word, **filters)
 
 
 def load_seed() -> Lexicon:

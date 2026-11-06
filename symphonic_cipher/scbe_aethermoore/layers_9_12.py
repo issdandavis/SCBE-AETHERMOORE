@@ -14,7 +14,7 @@ Mathematical Foundation (Axioms A9-A12):
 - A9:  S_spec = 1 - r_HF ∈ [0,1]
 - A10: C_spin = |mean(e^{iφ})| ∈ [0,1]
 - A11: d_tri = √(λ₁d₁² + λ₂d₂² + λ₃d₃²)
-- A12: R̂ = 1 - exp(-R_base × H(d*,R))
+- A12: H_score = 1/(1+d*+2pd); R̂ = 1 - exp(-(R_base/H_score)/rho)
 
 Key Properties (Proven):
 - Bounded coherence [0,1]
@@ -394,28 +394,28 @@ class RiskAnalysis:
     components: Dict[str, float]  # Individual risk contributions
 
 
-def harmonic_scaling(d_star: float, R: float = PHI, max_exp: float = 50.0,
-                      use_vertical_wall: bool = True) -> float:
+def harmonic_scaling(d_star: float, phase_deviation: float = 0.0) -> float:
+    """Return the canonical bounded Layer 12 safety score.
+
+    ``H_score = 1 / (1 + d_star + 2*phase_deviation)``.  Exponential
+    distance costs are exposed separately by :func:`quadratic_exp_cost` so a
+    caller cannot silently bind an old cost base to ``phase_deviation``.
     """
-    Compute harmonic scaling factor.
+    values = (d_star, phase_deviation)
+    if not all(np.isfinite(value) and value >= 0.0 for value in values):
+        raise ValueError("distance and phase_deviation must be finite and nonnegative")
+    return float(1.0 / (1.0 + d_star + 2.0 * phase_deviation))
 
-    Two modes (A12):
-        - Vertical Wall: H = exp(d*²) [UNBOUNDED - Patent Claim]
-        - Soft Wall:     H = R^{d*²}  [Bounded growth]
 
-    Properties (Theorem 4):
-        - H ≥ 1 for d* ≥ 0
-        - H monotonically increasing in d*
-        - Vertical Wall: ∂H/∂d* = 2d* × H (exponential growth)
-    """
-    exponent = min(d_star ** 2, max_exp)  # Prevent overflow
-
-    if use_vertical_wall:
-        # A12 Vertical Wall: H = exp(d*²) - UNBOUNDED
-        return float(np.exp(exponent))
-    else:
-        # Soft wall: H = R^{d*²}
-        return float(R ** exponent)
+def quadratic_exp_cost(d_star: float, base: float = PHI, max_exponent: float = 50.0) -> float:
+    """Return the separately named ``QUADRATIC_EXP_COST`` compatibility regime."""
+    if not np.isfinite(d_star) or d_star < 0.0:
+        raise ValueError("distance must be finite and nonnegative")
+    if not np.isfinite(base) or base <= 1.0:
+        raise ValueError("cost base must be finite and greater than one")
+    if not np.isfinite(max_exponent) or max_exponent <= 0.0:
+        raise ValueError("max_exponent must be finite and positive")
+    return float(base ** min(d_star**2, max_exponent))
 
 
 def compute_risk(
@@ -426,65 +426,46 @@ def compute_risk(
     s_audio: float,
     d_star: float,
     weights: Optional[RiskWeights] = None,
-    R: float = PHI,
+    *,
+    phase_deviation: float = 0.0,
     rho: float = 1.0,
     allow_threshold: float = 0.3,
-    deny_threshold: float = 0.7
+    deny_threshold: float = 0.7,
 ) -> RiskAnalysis:
+    """Compute bounded risk using the named ``BOUNDED_SCORE`` regime.
+
+    ``H = 1/(1+d_star+2*phase_deviation)``
+    ``r_prime = r_base/H``
+    ``r_hat = 1-exp(-r_prime/rho)``
+
+    The inverse score makes risk nondecreasing with distance.  The old ``R``
+    cost-base argument is intentionally absent; callers needing the historical
+    exponential cost must call :func:`quadratic_exp_cost` explicitly.
     """
-    Layer 12: Compute final risk score.
-
-    R_base = Σ w_k(1 - s_k) + w_d × d̃_tri
-    H = R^{d*²}
-    R' = R_base × H
-    R̂ = 1 - exp(-R'/ρ)
-
-    Args:
-        s_spec: Spectral coherence [0,1]
-        c_spin: Spin coherence [0,1]
-        d_tri_norm: Normalized triadic distance [0,1]
-        tau: Trust score [0,1]
-        s_audio: Audio coherence [0,1]
-        d_star: Realm distance (for harmonic scaling)
-        weights: RiskWeights for aggregation
-        R: Harmonic base (default: golden ratio)
-        rho: Saturation parameter
-        allow_threshold: Risk below this → ALLOW
-        deny_threshold: Risk above this → DENY
-
-    Returns:
-        RiskAnalysis with decision
-
-    Properties (Theorem 4):
-        - R̂ ∈ [0,1]
-        - R̂ monotonically increasing in d_star, d_tri
-        - R̂ monotonically decreasing in s_spec, c_spin, tau, s_audio
-    """
+    inputs = (s_spec, c_spin, d_tri_norm, tau, s_audio, d_star, phase_deviation)
+    if not all(np.isfinite(value) for value in inputs):
+        raise ValueError("risk inputs must be finite")
+    if d_star < 0.0 or phase_deviation < 0.0:
+        raise ValueError("distance and phase_deviation must be nonnegative")
+    if not np.isfinite(rho) or rho <= 0.0:
+        raise ValueError("rho must be finite and positive")
+    if not (0.0 <= allow_threshold < deny_threshold <= 1.0):
+        raise ValueError("thresholds must satisfy 0 <= allow < deny <= 1")
     if weights is None:
         weights = RiskWeights()
 
-    # Component risks (1 - coherence = risk contribution)
     risk_spectral = weights.w_spectral * (1.0 - s_spec)
     risk_spin = weights.w_spin * (1.0 - c_spin)
     risk_triadic = weights.w_triadic * d_tri_norm
     risk_trust = weights.w_trust * (1.0 - tau)
     risk_audio = weights.w_audio * (1.0 - s_audio)
+    r_base = float(
+        np.clip(risk_spectral + risk_spin + risk_triadic + risk_trust + risk_audio, 0.0, 1.0)
+    )
 
-    # Base risk (Axiom A12)
-    r_base = risk_spectral + risk_spin + risk_triadic + risk_trust + risk_audio
-    r_base = float(np.clip(r_base, 0, 1))
-
-    # Harmonic scaling
-    H = harmonic_scaling(d_star, R)
-
-    # Amplified risk
-    r_prime = r_base * H
-
-    # Normalized risk with soft saturation
-    r_hat = 1.0 - np.exp(-r_prime / rho)
-    r_hat = float(np.clip(r_hat, 0, 1))
-
-    # Decision
+    H = harmonic_scaling(d_star, phase_deviation=phase_deviation)
+    r_prime = r_base / H
+    r_hat = float(np.clip(1.0 - np.exp(-r_prime / rho), 0.0, 1.0))
     if r_hat < allow_threshold:
         decision = "ALLOW"
     elif r_hat < deny_threshold:
@@ -504,7 +485,7 @@ def compute_risk(
             "triadic": risk_triadic,
             "trust": risk_trust,
             "audio": risk_audio,
-        }
+        },
     )
 
 
@@ -516,37 +497,41 @@ def risk_gradient(
     s_audio: float,
     d_star: float,
     weights: Optional[RiskWeights] = None,
-    R: float = PHI
+    *,
+    phase_deviation: float = 0.0,
+    rho: float = 1.0,
 ) -> Dict[str, float]:
-    """
-    Compute gradient of R̂ w.r.t. each input.
+    """Analytical gradient of the live bounded-score risk formula.
 
-    Used for sensitivity analysis and adversarial detection.
+    Component derivatives are zero when the base-risk clip is saturated.  At
+    an exact clip boundary the derivative is conventionally reported as zero.
     """
     if weights is None:
         weights = RiskWeights()
-
-    # Current risk
-    analysis = compute_risk(s_spec, c_spin, d_tri_norm, tau, s_audio, d_star, weights, R)
-
-    # Numerical gradient (small perturbation)
-    eps = 1e-6
-    gradients = {}
-
-    for name, val, w in [
-        ("s_spec", s_spec, -weights.w_spectral),
-        ("c_spin", c_spin, -weights.w_spin),
-        ("d_tri", d_tri_norm, weights.w_triadic),
-        ("tau", tau, -weights.w_trust),
-        ("s_audio", s_audio, -weights.w_audio),
-    ]:
-        # Analytical gradient for base risk
-        gradients[name] = w * analysis.H * np.exp(-analysis.r_prime)
-
-    # d_star gradient (through H)
-    dH_dd = 2 * d_star * np.log(R) * analysis.H
-    gradients["d_star"] = analysis.r_base * dH_dd * np.exp(-analysis.r_prime)
-
+    analysis = compute_risk(
+        s_spec,
+        c_spin,
+        d_tri_norm,
+        tau,
+        s_audio,
+        d_star,
+        weights,
+        phase_deviation=phase_deviation,
+        rho=rho,
+    )
+    raw_base = float(sum(analysis.components.values()))
+    base_active = 0.0 < raw_base < 1.0
+    common = float(np.exp(-analysis.r_prime / rho) / rho)
+    base_scale = common / analysis.H if base_active else 0.0
+    gradients = {
+        "s_spec": -weights.w_spectral * base_scale,
+        "c_spin": -weights.w_spin * base_scale,
+        "d_tri": weights.w_triadic * base_scale,
+        "tau": -weights.w_trust * base_scale,
+        "s_audio": -weights.w_audio * base_scale,
+        "d_star": analysis.r_base * common,
+        "phase_deviation": 2.0 * analysis.r_base * common,
+    }
     return gradients
 
 
@@ -753,20 +738,17 @@ def self_test() -> Dict[str, Any]:
     except Exception as e:
         results["decision_thresholds"] = f"✗ FAIL ({e})"
 
-    # Test 8: Harmonic scaling properties (Vertical Wall)
+    # Test 8: Canonical bounded-score properties
     total += 1
     try:
-        # Vertical Wall: H = exp(d*²)
-        h0 = harmonic_scaling(0.0, use_vertical_wall=True)
-        h1 = harmonic_scaling(1.0, use_vertical_wall=True)
-        h2 = harmonic_scaling(2.0, use_vertical_wall=True)
-
-        # H(0) = exp(0) = 1, H(1) = exp(1) = e, H(2) = exp(4) ≈ 54.6
-        if abs(h0 - 1.0) < 0.01 and abs(h1 - np.e) < 0.01 and h2 > h1:
+        h0 = harmonic_scaling(0.0)
+        h1 = harmonic_scaling(1.0)
+        h2 = harmonic_scaling(2.0)
+        if abs(h0 - 1.0) < 1e-12 and h0 > h1 > h2 > 0.0:
             passed += 1
-            results["harmonic_scaling"] = f"✓ PASS (Vertical Wall: H(0)={h0:.2f}, H(1)={h1:.2f}, H(2)={h2:.2f})"
+            results["harmonic_scaling"] = f"✓ PASS (BOUNDED_SCORE: H(0)={h0:.2f}, H(1)={h1:.2f}, H(2)={h2:.2f})"
         else:
-            results["harmonic_scaling"] = f"✗ FAIL (H not matching exp(d*²))"
+            results["harmonic_scaling"] = "✗ FAIL (bounded score is not monotone)"
     except Exception as e:
         results["harmonic_scaling"] = f"✗ FAIL ({e})"
 

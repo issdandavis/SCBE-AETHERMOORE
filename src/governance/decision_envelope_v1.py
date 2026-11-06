@@ -632,8 +632,12 @@ def validate_envelope_schema(envelope: Any) -> list[str]:
 
     if len(envelope.constraints.mission_phase_allowlist) == 0:
         errors.append("constraints.mission_phase_allowlist must be non-empty")
-    if int(envelope.constraints.max_risk_tier) == RISK_UNSPECIFIED:
-        errors.append("constraints.max_risk_tier must be set")
+    if int(envelope.constraints.max_risk_tier) not in (LOW, MEDIUM, HIGH, CRITICAL):
+        errors.append("constraints.max_risk_tier must be a known, specified risk tier")
+    for field in ("power_min", "bandwidth_min", "thermal_max"):
+        value = float(getattr(envelope.constraints.resources, field))
+        if not math.isfinite(value) or value < 0:
+            errors.append(f"constraints.resources.{field} must be finite and nonnegative")
 
     if len(envelope.rules) == 0:
         errors.append("rules must contain at least one rule")
@@ -643,8 +647,8 @@ def validate_envelope_schema(envelope: Any) -> list[str]:
             errors.append(f"{prefix}.capability is required")
         if not str(rule.target).strip():
             errors.append(f"{prefix}.target is required")
-        if int(rule.boundary) == BOUNDARY_UNSPECIFIED:
-            errors.append(f"{prefix}.boundary must be set")
+        if int(rule.boundary) not in (AUTO_ALLOW, QUARANTINE, DENY):
+            errors.append(f"{prefix}.boundary must be a known, specified boundary")
         if int(rule.boundary) in (QUARANTINE, DENY):
             if not str(rule.recovery.path_id).strip():
                 errors.append(f"{prefix}.recovery.path_id required for boundary={boundary_name(int(rule.boundary))}")
@@ -938,6 +942,17 @@ def evaluate_action_inside_envelope(
     if not ok:
         out.reason = f"invalid_envelope:{reason}"
         return out
+
+    # Protobuf accepts nonfinite doubles and unknown enum numbers. Comparisons
+    # with NaN are false, so validate before resource floors or ceilings are used.
+    if int(action.risk_tier) not in (LOW, MEDIUM, HIGH, CRITICAL):
+        out.reason = "invalid_action:risk_tier"
+        return out
+    for field in ("power", "bandwidth", "thermal"):
+        value = float(getattr(action, field))
+        if not math.isfinite(value) or (field != "thermal" and value < 0):
+            out.reason = f"invalid_action:{field}"
+            return out
 
     if not _in_allowlist(str(action.agent_id), list(envelope.scope.agent_allowlist)):
         out.reason = "agent_out_of_scope"

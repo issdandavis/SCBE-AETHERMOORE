@@ -3,31 +3,13 @@
 SCBE-AETHERMOORE Dual Lattice Framework
 ========================================
 
-Implements Claim 62: Dual-Lattice Quantum Security Consensus
+Historical dual-lattice / settling-wave SIMULATION.
 
-The dual lattice is a consensus mechanism requiring simultaneous validation
-from two independent lattice-based PQC algorithms:
-
-    - ML-KEM (Kyber): Primal lattice for key encapsulation (MLWE hardness)
-    - ML-DSA (Dilithium): Dual lattice for signatures (MSIS hardness)
-
-"Settling" Mechanism:
-    - Unstable chaotic equations at init
-    - Become stable ONLY when both lattices agree within time window Δt < ε
-    - Resolves to key K(t_arrival) at interference maximum
-
-Mathematical Foundation:
-    Consensus = Kyber_valid ∧ Dilithium_valid ∧ (Δt < ε)
-
-    If consensus:
-        K(t) = Σ C_n sin(ω_n t + φ_n) mod P   (constructive interference)
-    Else:
-        K(t) = chaotic noise                   (fail-to-noise)
-
-Security Properties:
-    - Breaking one algorithm insufficient (AND logic)
-    - Requires breaking BOTH MLWE and MSIS simultaneously
-    - Provable min(security_Kyber, security_Dilithium) = ~2^192
+This module is not ML-KEM or ML-DSA. Its simulated signature check and public
+time-derived demo key are unsuitable for authorization or encryption. Construction
+requires allow_simulation=True. For actual KEM/signature/AEAD use the existing
+src.crypto.pqc_liboqs and src.crypto.rwp_v3 modules with PQC explicitly enabled.
+A wave maximum is visualization, not secret entropy or a trusted time lock.
 
 Integration with SCBE:
     - Axiom A3: Weighted dual norms (positive definiteness)
@@ -49,6 +31,7 @@ from dataclasses import dataclass, field
 from typing import Tuple, Dict, Any, Optional, List
 from enum import Enum
 import time
+import secrets
 
 # =============================================================================
 # CONSTANTS
@@ -246,7 +229,13 @@ class DualLatticeConsensus:
         - Produces K(t) via constructive interference
     """
 
-    def __init__(self, params: Optional[ConsensusParams] = None):
+    def __init__(self, params: Optional[ConsensusParams] = None, *, allow_simulation: bool = False):
+        if allow_simulation is not True:
+            raise RuntimeError(
+                "dual_lattice is a non-secure simulation; use the real PQC/AEAD "
+                "path or explicitly pass allow_simulation=True for demonstrations"
+            )
+        self.simulation_only = True
         self.params = params or ConsensusParams()
         self.kyber = SimulatedKyber()
         self.dilithium = SimulatedDilithium()
@@ -263,7 +252,7 @@ class DualLatticeConsensus:
 
     def _compute_settling_key(self, t_arrival: float) -> bytes:
         """
-        Compute K(t) at settling time via constructive interference.
+        Compute a PUBLIC, NON-SECRET demonstration value, never an encryption key.
 
         K(t) = Σ C_n sin(ω_n t + φ_n)
 
@@ -287,7 +276,7 @@ class DualLatticeConsensus:
 
         When consensus fails, return unpredictable noise.
         """
-        chaos = np.random.bytes(32)
+        chaos = secrets.token_bytes(32)
         return hashlib.sha3_256(chaos + str(time.time()).encode()).digest()
 
     def submit_kyber(self, ciphertext: bytes, public_key: bytes) -> None:
@@ -418,7 +407,7 @@ def compute_settling_wave(
     t_arrival: float
 ) -> np.ndarray:
     """
-    Compute the settling wave K(t).
+    Compute a visualization only; the wave is NOT a cryptographic time lock.
 
     K(t) = Σ C_n sin(ω_n t + φ_n)
 
@@ -479,7 +468,7 @@ def self_test() -> Dict[str, Any]:
     # Test 3: Consensus AND logic (both valid → settled)
     total += 1
     try:
-        consensus = DualLatticeConsensus()
+        consensus = DualLatticeConsensus(allow_simulation=True)
 
         # Submit both within time window
         kyber_keys = consensus.kyber.keygen()
@@ -501,7 +490,7 @@ def self_test() -> Dict[str, Any]:
     # Test 4: Consensus failure (only one submitted)
     total += 1
     try:
-        consensus = DualLatticeConsensus()
+        consensus = DualLatticeConsensus(allow_simulation=True)
         kyber_keys = consensus.kyber.keygen()
 
         consensus.submit_kyber(b"test_ct", kyber_keys.public_key)
@@ -520,8 +509,8 @@ def self_test() -> Dict[str, Any]:
     # Test 5: Key uniqueness (different consensus → different keys)
     total += 1
     try:
-        consensus1 = DualLatticeConsensus()
-        consensus2 = DualLatticeConsensus()
+        consensus1 = DualLatticeConsensus(allow_simulation=True)
+        consensus2 = DualLatticeConsensus(allow_simulation=True)
 
         # First consensus
         k1 = consensus1.kyber.keygen()
@@ -623,7 +612,7 @@ def self_test() -> Dict[str, Any]:
     # Test 9: Fail-to-noise on mismatch
     total += 1
     try:
-        consensus = DualLatticeConsensus()
+        consensus = DualLatticeConsensus(allow_simulation=True)
 
         # Only submit Kyber (Dilithium missing → fail)
         kyber_keys = consensus.kyber.keygen()
@@ -650,7 +639,7 @@ def self_test() -> Dict[str, Any]:
     # Test 10: Reset functionality
     total += 1
     try:
-        consensus = DualLatticeConsensus()
+        consensus = DualLatticeConsensus(allow_simulation=True)
 
         kyber_keys = consensus.kyber.keygen()
         consensus.submit_kyber(b"ct", kyber_keys.public_key)
@@ -700,7 +689,7 @@ if __name__ == "__main__":
     print("DUAL LATTICE CONSENSUS DEMO")
     print("=" * 70)
 
-    consensus = DualLatticeConsensus()
+    consensus = DualLatticeConsensus(allow_simulation=True)
 
     print("\n1. Generate key pairs...")
     kyber_keys = consensus.kyber.keygen()

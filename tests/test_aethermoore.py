@@ -69,6 +69,7 @@ from symphonic_cipher.scbe_aethermoore.pqc.pqc_harmonic import (
     derive_key_from_vector,
     vector_proximity_key,
     analyze_harmonic_security,
+    print_security_table,
     HarmonicKyberOrchestrator,
 )
 
@@ -147,21 +148,10 @@ class TestHarmonicScaling:
             harmonic_scale(1, 0.0)
 
     def test_security_bits(self):
-        """Test security bits calculation."""
-        # S_bits = base + d^2 * log2(R)
-        # For d=6, R=1.5: S = 128 + 36 * log2(1.5) ≈ 149.06
-        s_bits = security_bits(128, 6)
-        expected = 128 + (6 * 6) * math.log2(1.5)
-        assert abs(s_bits - expected) < 0.01
-
-        # For d=6, R=2.0: S = 128 + 36 * log2(2) = 164
-        s_bits2 = security_bits(128, 6, 1.5)
-        expected2 = 128 + (6 * 6) * math.log2(1.5)
-        assert abs(s_bits2 - expected2) < 0.01
-
-        s_bits3 = security_bits(128, 6, 2.0)
-        expected3 = 128 + (6 * 6) * math.log2(2.0)
-        assert abs(s_bits3 - expected3) < 0.01
+        """Geometry must not inflate a caller-supplied strength baseline."""
+        assert security_bits(128, 6) == 128
+        assert security_bits(128, 6, 1.5) == 128
+        assert security_bits(128, 6, 2.0) == 128
 
 
 class TestHarmonicDistance:
@@ -588,7 +578,23 @@ class TestPQCHarmonic:
         assert analysis["base_security_bits"] == 192
         assert analysis["dimension"] == 6
         assert analysis["d_squared"] == 36
-        assert analysis["effective_security_bits"] > 192
+        assert analysis["effective_security_bits"] == 192
+        assert analysis["enhancement_bits"] == 0
+        assert analysis["cryptographic_enhancement_proven"] is False
+        assert analysis["computational_multiplier"] is None
+        assert analysis["equivalent_aes"] is None
+        assert analysis["governance_multiplier"] == analysis["H_value"]
+
+    def test_security_report_does_not_certify_unknown_algorithm(self):
+        with pytest.raises(ValueError, match="Unknown base algorithm"):
+            analyze_harmonic_security("not-a-cryptosystem")
+
+    def test_security_table_keeps_geometric_scores_separate(self):
+        table = print_security_table()
+        assert "Governance Scores" in table
+        assert "Geometry adds no proven security bits" in table
+        assert table.count("128 bits") == 7  # six dimensions and the baseline note
+        assert "AES-149" not in table
 
 
 class TestHarmonicPQCSession:
@@ -613,7 +619,7 @@ class TestHarmonicPQCSession:
         assert session.dimension == 6
         assert session.harmonic_ratio == 1.5
         assert len(session.encryption_key.base_key) == 32
-        assert session.effective_security_bits > 192
+        assert session.effective_security_bits == 192
 
     def test_verify_harmonic_session(self):
         """Test verifying a harmonic PQC session."""
@@ -687,9 +693,8 @@ class TestHarmonicKyberOrchestrator:
         analysis = orch.get_security_analysis()
 
         assert analysis["dimension"] == 6
-        # New formula: security_bits = base + log2(1+d+2*pd)
-        # Kyber768 base=192, so effective > 192
-        assert analysis["effective_security_bits"] > 192
+        # Nominal baseline metadata is not increased by harmonic scaling.
+        assert analysis["effective_security_bits"] == 192
 
 
 # =============================================================================
@@ -749,12 +754,10 @@ class TestAethermoorIntegration:
         base_bits = 128
         dimension = 6
 
-        # Calculate enhanced security using the harmonic wall formula:
-        # S_bits = base + d^2 * log2(R)
+        # Geometry remains a score, not a cryptographic work-factor proof.
         enhanced_bits = security_bits(base_bits, dimension)
 
-        # Should be > 128 (128 + 36 * log2(1.5) ≈ 149.06)
-        assert enhanced_bits > base_bits
+        assert enhanced_bits == base_bits
 
         # Harmonic wall grows super-exponentially with dimension
         h_value = harmonic_scale(dimension)

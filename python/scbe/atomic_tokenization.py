@@ -15,6 +15,10 @@ publication-facing ideas in a compact runtime form:
 where tokens are mapped with language and context sensitivity into a semantic
 element family. Those element features are then projected into a six-channel
 trit vector aligned to KO, AV, RU, CA, UM, and DR.
+
+read_molecule and read_spectrum are the real-chemistry door: a SMILES string
+and a precursor/adduct pair become an identity, an exact mass, and a neutral
+mass. They do not change the linguistic map from a word to an element.
 """
 
 from __future__ import annotations
@@ -710,3 +714,49 @@ def tokens_to_tau_sequence(
         ).tau.as_dict()
         for token in tokens
     ]
+
+
+def read_molecule(smiles: str) -> Dict[str, object]:
+    """Return the real-molecule record for one SMILES string.
+
+    The linguistic classifier is not consulted. Importing this module does
+    not import RDKit; the chemistry reader loads it when this function runs.
+    """
+    from python.scbe.molecule_face import read_molecule as read_real_molecule
+
+    return read_real_molecule(smiles)
+
+
+def read_spectrum(
+    precursor_mz: float,
+    adduct: str,
+    *,
+    smiles: Optional[str] = None,
+    measured_bias_ppm: float = 0.0,
+    ms2_mzs: Optional[Sequence[float]] = None,
+    ms2_intensities: Optional[Sequence[float]] = None,
+    collision_energy_ev: Optional[Sequence[float]] = None,
+    ionization_mode: Optional[str] = None,
+    spectrum_id: Optional[str] = None,
+    instrument_type: Optional[str] = None,
+) -> Dict[str, object]:
+    """Return a spectrum record with the adduct-corrected neutral mass.
+
+    measured_bias_ppm defaults to 0, and the neutral mass is then the
+    precursor m/z minus the adduct delta. A molecule is attached only when
+    smiles is provided. An unknown adduct raises KeyError.
+    """
+    from python.scbe.molecule_face import read_spectrum as read_real_spectrum
+
+    return read_real_spectrum(
+        precursor_mz,
+        adduct,
+        smiles=smiles,
+        measured_bias_ppm=measured_bias_ppm,
+        ms2_mzs=ms2_mzs,
+        ms2_intensities=ms2_intensities,
+        collision_energy_ev=collision_energy_ev,
+        ionization_mode=ionization_mode,
+        spectrum_id=spectrum_id,
+        instrument_type=instrument_type,
+    )

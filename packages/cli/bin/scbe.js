@@ -18,6 +18,8 @@ const {
   renderToolsHuman,
 } = require('../lib/tools-manifest');
 const { ErrorCodes, emitError, wantsJson, installGlobalErrorHandlers } = require('../lib/errors');
+const { runAgentShell } = require('../lib/agent-shell');
+const { runWebCommand } = require('../lib/agent-web-server');
 
 let utteranceLog = null;
 try {
@@ -55,11 +57,13 @@ const SERVICE_CREDITS = {
 
 const CLI_HELP = `scbe-aethermoore-cli
 
-Personal command platform — local commands, agent rooms, workflows, 14-layer
-harmonic pipeline, Sacred Tongues tokenization, post-quantum cryptography,
-and multi-agent bus.
+Conversational coding and operations agent with local/hosted model sockets,
+curated tools, resumable sessions, custom slash commands, and the SCBE
+governance/receipt stack behind the interface.
 
 Usage:
+  scbe                              Start the conversational agent
+  scbe [prompt]                     Start the agent with an initial prompt
   scbe <command> [subcommand] [options]
   scbe --help | -h
   scbe --version | -v
@@ -145,6 +149,9 @@ Core commands:
 ─────────────────────────────────────────────────────────────────────────────
   SHELL — personal interactive and scriptable shells
 ─────────────────────────────────────────────────────────────────────────────
+  chat [prompt]            Conversational agent: iterative tools, sessions,
+                           slash commands, permissions, and custom commands
+  web [--port N]           First-party local web interface over the same runtime
   shell                   Rich TUI shell with autocorrect ledger (default mode)
   shell --tui             Alias for default rich mode
   shell --ai              AI-first: plain-English intent routing to squad
@@ -505,6 +512,9 @@ Core commands:
 ─────────────────────────────────────────────────────────────────────────────
   EXAMPLES
 ─────────────────────────────────────────────────────────────────────────────
+  scbe                                  # conversational agent
+  scbe "review the current diff"        # agent with an initial prompt
+  scbe web                              # local first-party web interface
   scbe shell                            # governed rich TUI shell (default)
   scbe shell --tui                      # alias for rich mode
   scbe shell --ai                       # plain-English intent routing
@@ -642,8 +652,18 @@ function versionPacket() {
 }
 
 function resolveRepoScript(relativePath) {
-  const target = path.resolve(repoRoot(), relativePath);
-  if (fs.existsSync(target)) return target;
+  const packageRoot = path.resolve(__dirname, '..');
+  const packageRelative = String(relativePath || '').replace(
+    /^packages[\\/]cli[\\/]/i,
+    ''
+  );
+  const candidates = [
+    path.resolve(repoRoot(), relativePath),
+    path.resolve(packageRoot, packageRelative),
+  ];
+  for (const target of candidates) {
+    if (fs.existsSync(target)) return target;
+  }
   return null;
 }
 
@@ -668,6 +688,7 @@ function runCapture(command, args, options = {}) {
     cwd: options.cwd || repoRoot(),
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
+    windowsHide: true,
     shell: Boolean(options.shell),
     timeout: options.timeout || 5000,
   });
@@ -709,48 +730,18 @@ function commandProbe(command, args = ['--version'], options = {}) {
   };
 }
 
-let _powershellCommand = null;
-
-function resolvePowerShellCommand() {
-  if (process.platform !== 'win32') return null;
-  if (_powershellCommand !== null) return _powershellCommand;
-  const candidates = [
-    process.env.SCBE_POWERSHELL,
-    'pwsh.exe',
-    'pwsh',
-    'powershell.exe',
-    'powershell',
-  ].filter(Boolean);
-  for (const candidate of candidates) {
-    const result = spawnSync(
-      candidate,
-      [
-        '-NoLogo',
-        '-NoProfile',
-        '-NonInteractive',
-        '-Command',
-        '$PSVersionTable.PSVersion.ToString()',
-      ],
-      {
-        encoding: 'utf8',
-        stdio: ['ignore', 'pipe', 'pipe'],
-        timeout: 5000,
-      }
-    );
-    if (result.status === 0) {
-      _powershellCommand = candidate;
-      return _powershellCommand;
-    }
-  }
-  _powershellCommand = '';
-  return null;
-}
+const { resolvePowerShellCommand } = require('../lib/native-shell');
 
 function spawnShellCommand(command, options = {}) {
   const stdio = options.capture ? ['ignore', 'pipe', 'pipe'] : 'inherit';
   if (process.platform === 'win32') {
     const powershell = resolvePowerShellCommand();
     if (powershell) {
+      // -Command normalizes native failures to 1. Preserve the program's code
+      // for command-session callers while retaining cmdlet failures as errors.
+      const source = options.preserveExitCode
+        ? `${command}\nif (-not $?) { if ($null -ne $LASTEXITCODE -and $LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; exit 1 }`
+        : command;
       return spawnSync(
         powershell,
         [
@@ -760,23 +751,28 @@ function spawnShellCommand(command, options = {}) {
           '-ExecutionPolicy',
           'Bypass',
           '-Command',
-          command,
+          source,
         ],
         {
           cwd: options.cwd,
           stdio,
           encoding: 'utf8',
+          windowsHide: true,
           ...(options.timeoutMs ? { timeout: options.timeoutMs } : {}),
           ...(options.maxBuffer ? { maxBuffer: options.maxBuffer } : {}),
         }
       );
     }
   }
+  if (process.platform === 'win32') {
+    return { status: null, error: Object.assign(new Error('No usable PowerShell backend.'), { code: 'SHELL_UNAVAILABLE' }), stdout: '', stderr: '' };
+  }
   return spawnSync(command, {
     cwd: options.cwd,
     shell: true,
     stdio,
     encoding: 'utf8',
+    windowsHide: true,
     ...(options.timeoutMs ? { timeout: options.timeoutMs } : {}),
     ...(options.maxBuffer ? { maxBuffer: options.maxBuffer } : {}),
   });
@@ -812,8 +808,7 @@ function parseJsonFromText(text) {
   return null;
 }
 
-function appendHistory(row) {
-  const target = historyPath();
+function appendHistory(row, target = historyPath()) {
   fs.mkdirSync(path.dirname(target), { recursive: true });
   fs.appendFileSync(target, `${JSON.stringify(row)}\n`, 'utf8');
 }
@@ -867,6 +862,7 @@ function gateCommand(command, options = {}) {
     cwd: repoRoot(),
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
+    windowsHide: true,
     timeout: 5000,
   });
   if (child.status !== 0) {
@@ -1096,6 +1092,8 @@ function runShellCommand(command, options = {}) {
     },
     compass,
     governance: gate,
+    ...(options.invocation ? { tool: options.invocation.name } : {}),
+    ...(options.geo ? { coordination: options.geo } : {}),
     exit_code: 126,
     duration_ms: 0,
     success: false,
@@ -1108,7 +1106,7 @@ function runShellCommand(command, options = {}) {
       summary: `GeoSeal blocked command at tier ${gate.tier}`,
       next_step: 'Inspect governance.findings and rerun with a narrower command.',
     };
-    appendHistory(row);
+    appendHistory(row, options.historyPath);
     if (!options.json) {
       const ue = ui({ stream: process.stderr });
       const tone = String(gate.tier).toLowerCase() === 'quarantine' ? 'quarantine' : 'deny';
@@ -1139,14 +1137,21 @@ function runShellCommand(command, options = {}) {
       )} ${uo.badge(gate.tier, 'allow')} ${uo.dim('·')} ${uo.dim(`${startedAt.slice(11, 19)}Z`)}\n`
     );
   }
-  const child = spawnShellCommand(command, {
-    cwd,
-    capture: options.capture,
-    timeoutMs: options.timeoutMs,
-  });
+  const child = options.invocation
+    ? require('../lib/cli-host').spawnHostedProcess(options.invocation, {
+        cwd,
+        timeoutMs: options.timeoutMs,
+      })
+    : spawnShellCommand(command, {
+        cwd,
+        capture: options.capture,
+        timeoutMs: options.timeoutMs,
+        preserveExitCode: Boolean(options.includeOutput),
+        ...(options.includeOutput ? { maxBuffer: 1048576 } : {}),
+      });
   row.exit_code = typeof child.status === 'number' ? child.status : 1;
   row.duration_ms = Date.now() - start;
-  row.success = row.exit_code === 0;
+  row.success = row.exit_code === 0 && !child.error;
   if (options.capture) {
     row.stdout_preview = String(child.stdout || '').slice(-2000);
     row.stderr_preview = String(child.stderr || '').slice(-2000);
@@ -1154,11 +1159,34 @@ function runShellCommand(command, options = {}) {
   if (!row.success) {
     row.failure = classifyFailure(command, row, child);
   }
-  appendHistory(row);
+  appendHistory(row, options.historyPath);
+  if (options.includeOutput) {
+    let remaining = 1048576;
+    let truncated = false;
+    const bounded = (value) => {
+      const bytes = Buffer.from(String(value || ''), 'utf8');
+      let text = bytes.subarray(0, remaining).toString('utf8');
+      // A cut multibyte character can decode to a longer replacement character.
+      while (Buffer.byteLength(text, 'utf8') > remaining) text = text.slice(0, -1);
+      truncated ||= bytes.length > remaining;
+      remaining -= Buffer.byteLength(text, 'utf8');
+      return text;
+    };
+    row.stdout = bounded(child.stdout);
+    row.stderr = bounded(child.stderr);
+    row.output_truncated = truncated || child.error?.code === 'ENOBUFS';
+    if (child.error) row.process_error = child.error.code || child.error.message;
+  }
   return row;
 }
 
 function classifyFailure(command, row, child) {
+  const { processDiagnosis, NEXT_STEPS } = require('../lib/process-diagnostics');
+  const diagnosis = processDiagnosis({ ...child, status: row.exit_code });
+  if (['permission_denied', 'authentication_required', 'provider_access_denied', 'startup_failed', 'shell_unavailable', 'timeout', 'output_limit', 'missing_executable'].includes(diagnosis)) {
+    return { kind: diagnosis, summary: diagnosis.replaceAll('_', ' '), next_step: NEXT_STEPS[diagnosis] };
+  }
+
   const text = `${child?.stderr || ''}\n${child?.stdout || ''}`.toLowerCase();
   if (text.includes('module not found') || text.includes('cannot find module')) {
     return {
@@ -5076,7 +5104,11 @@ async function handleCoreShellCommand(line, options = {}) {
       return true;
     }
     const target = positional[1] || '.';
-    const rgArgs = ['--line-number'];
+    // A shell launched below an ignored parent (for example a profile-wide
+    // `.gitignore` that contains `*`) must still search the directory the user
+    // explicitly selected. Keep ignore files inside the target effective while
+    // preventing an ancestor outside that target from hiding every file.
+    const rgArgs = ['--line-number', '--no-ignore-parent'];
     if (ignoreCase) rgArgs.push('--ignore-case');
     if (fileGlob) rgArgs.push('--glob', fileGlob);
     rgArgs.push('--regexp', pattern, target);
@@ -5430,8 +5462,6 @@ function runInteractiveShell(flags = {}) {
 
     const history = [];
     let instruction = null;
-    let busy = false;
-    let stdinClosed = false;
     // Single source of truth for task state.
     const taskBoard = {
       objective: null,
@@ -5462,8 +5492,7 @@ function runInteractiveShell(flags = {}) {
 
     const rl = readline.createInterface({ input: process.stdin, terminal: false });
 
-    rl.on('line', async (rawLine) => {
-      if (busy) return; // serialize: ignore messages while processing
+    async function processAgentLine(rawLine) {
       const line = rawLine.trim();
       if (!line) return;
 
@@ -5513,8 +5542,6 @@ function runInteractiveShell(flags = {}) {
         return;
       }
 
-      busy = true;
-      rl.pause();
       taskBoard.turn++;
 
       // max_turns guard: hard step turn limit
@@ -5529,9 +5556,6 @@ function runInteractiveShell(flags = {}) {
             board: { ...taskBoard },
           }) + '\n'
         );
-        busy = false;
-        if (stdinClosed) process.exit(0);
-        rl.resume();
         return;
       }
 
@@ -5577,8 +5601,6 @@ function runInteractiveShell(flags = {}) {
               board: { ...taskBoard },
             }) + '\n'
           );
-          busy = false;
-          if (stdinClosed) process.exit(0);
           return;
         }
       }
@@ -5619,9 +5641,6 @@ function runInteractiveShell(flags = {}) {
               board: { ...taskBoard },
             }) + '\n'
           );
-          busy = false;
-          if (stdinClosed) process.exit(0);
-          rl.resume();
           return;
         }
       }
@@ -5667,9 +5686,6 @@ function runInteractiveShell(flags = {}) {
                 board: { ...taskBoard },
               }) + '\n'
             );
-            busy = false;
-            if (stdinClosed) process.exit(0);
-            rl.resume();
             return;
           }
           taskBoard.done = true;
@@ -5684,9 +5700,6 @@ function runInteractiveShell(flags = {}) {
             board: { ...taskBoard },
           }) + '\n'
         );
-        busy = false;
-        if (stdinClosed) process.exit(0);
-        if (!(taskBoard.done || doneSignal)) rl.resume();
         return;
       }
 
@@ -5730,9 +5743,6 @@ function runInteractiveShell(flags = {}) {
             board: { ...taskBoard },
           }) + '\n'
         );
-        busy = false;
-        if (stdinClosed) process.exit(0);
-        rl.resume();
         return;
       }
 
@@ -5757,7 +5767,16 @@ function runInteractiveShell(flags = {}) {
         try {
           const r = spawnSync(
             process.execPath,
-            [busBin, 'pipeline', 'compile', '--intent', translated, '--json'],
+            [
+              busBin,
+              'pipeline',
+              'compile',
+              '--intent',
+              translated,
+              '--permission-mode',
+              'workspace-write',
+              '--json',
+            ],
             { encoding: 'utf8', timeout: 15000, maxBuffer: 1024 * 512 }
           );
           if (r.stdout) {
@@ -5803,9 +5822,6 @@ function runInteractiveShell(flags = {}) {
             board: { ...taskBoard },
           }) + '\n'
         );
-        busy = false;
-        if (stdinClosed) process.exit(0);
-        rl.resume();
         return;
       }
 
@@ -5847,9 +5863,6 @@ function runInteractiveShell(flags = {}) {
               board: { ...taskBoard },
             }) + '\n'
           );
-          busy = false;
-          if (stdinClosed) process.exit(0);
-          rl.resume();
           return;
         }
         taskBoard.done = true;
@@ -5882,14 +5895,21 @@ function runInteractiveShell(flags = {}) {
         }) + '\n'
       );
 
-      busy = false;
-      if (stdinClosed) process.exit(0);
-      if (!responseDone) rl.resume();
-    });
+    }
 
-    rl.on('close', () => {
-      stdinClosed = true;
-      if (!busy) process.exit(0);
+    // Readline can emit several buffered lines before an async handler finishes.
+    // Consume in order and drain EOF instead of dropping work behind a busy flag.
+    (async () => {
+      for await (const rawLine of rl) {
+        try {
+          await processAgentLine(rawLine);
+        } catch (error) {
+          process.stdout.write(JSON.stringify({ error: error.message, done: false, commands: [] }) + '\n');
+        }
+      }
+    })().catch((error) => {
+      process.stderr.write(`agent-json: ${error.message}\n`);
+      process.exitCode = 1;
     });
     return;
   }
@@ -10855,7 +10875,11 @@ const argv = process.argv.slice(2);
 // --json instead of a raw stack trace (SCBE_DEBUG=1 keeps the stack in human mode).
 installGlobalErrorHandlers(argv);
 if (argv.length === 0) {
-  runTerminalFrontend([]);
+  runAgentShell().catch((error) => {
+    process.stderr.write(`scbe agent: ${error.message || error}\n`);
+    process.exitCode = 1;
+  });
+  return;
 }
 if (argv[0] === '--help' || argv[0] === '-h' || argv[0] === 'help') {
   process.stdout.write(colorizeHelp(CLI_HELP, ui({})));
@@ -10872,6 +10896,23 @@ if (argv[0] === 'tools' || argv[0] === 'list-tools') {
   process.exit(0);
 }
 
+if (argv[0] === 'chat') {
+  const initialPrompt = argv.slice(1).join(' ').trim();
+  runAgentShell({ initialPrompt }).catch((error) => {
+    process.stderr.write(`scbe agent: ${error.message || error}\n`);
+    process.exitCode = 1;
+  });
+  return;
+}
+
+if (argv[0] === 'web') {
+  runWebCommand(argv.slice(1)).catch((error) => {
+    process.stderr.write(`scbe web: ${error.message || error}\n`);
+    process.exitCode = 1;
+  });
+  return;
+}
+
 if (argv[0] === 'rns') {
   // Exact carry-free Residue Number System arithmetic over Fermat primes.
   runPythonScript('scripts/research/fermat_rns.py', argv.slice(1));
@@ -10880,8 +10921,10 @@ if (argv[0] === 'rns') {
 if (argv[0] === 'geoseal' || argv[0] === 'geocli') {
   // GeoSeal coding toolchain (weighted code packets, tongue compile/run,
   // code round-trip, project scaffold, atomic tokenizer) — each step receipted.
-  // bin/geoseal.cjs sets up the `python -m geoseal_cli` passthrough.
-  runNodeScript('bin/geoseal.cjs', argv.slice(1));
+  const child = spawnSync(process.execPath, [resolveGeosealBin(), ...argv.slice(1)], {
+    stdio: 'inherit',
+  });
+  process.exit(typeof child.status === 'number' ? child.status : 1);
 }
 
 if (argv[0] === 'stasm') {
@@ -11063,6 +11106,40 @@ if (argv[0] === 'exec' || argv[0] === 'x') {
 }
 
 if (argv[0] === 'shell') {
+  if (argv.includes('--command-session')) {
+    const supported = new Set(['shell', '--command-session', '--agent-json', '--describe', '--diagnose', '--help', '--minimal']);
+    if (argv.some((arg) => !supported.has(arg))) {
+      process.stderr.write('geoseal shell: unknown option; use geoseal shell --help\n');
+      process.exitCode = 2;
+      return;
+    }
+    const { runCommandShell } = require('../lib/command-shell');
+    const { scbeHome } = require('../lib/provider-registry');
+    const { workspaceKey } = require('../lib/session-store');
+    const commandHistory = path.join(scbeHome(), 'command-history', `${workspaceKey(process.cwd())}.jsonl`);
+    runCommandShell({
+      json: argv.includes('--agent-json'),
+      describe: argv.includes('--describe'),
+      diagnose: argv.includes('--diagnose'),
+      help: argv.includes('--help'),
+      execute: (command, context) => runShellCommand(command, {
+        ...context, json: true, quiet: true, capture: true, includeOutput: true,
+        historyPath: commandHistory,
+      }),
+      ask: (question) => requestAdvisor(question),
+    }).then((code) => { process.exitCode = code; }).catch((error) => {
+      process.stderr.write(`geoseal shell: ${error.message}\n`);
+      process.exitCode = 1;
+    });
+    return;
+  }
+  if (argv.includes('--ai') && !argv.includes('--agent-json')) {
+    runAgentShell().catch((error) => {
+      process.stderr.write(`scbe agent: ${error.message || error}\n`);
+      process.exitCode = 1;
+    });
+    return;
+  }
   runInteractiveShell({
     minimal: argv.includes('--minimal'),
     ai: argv.includes('--ai'),
@@ -11339,6 +11416,88 @@ if (argv[0] === 'emit') {
   }
 }
 
+// Keep the legacy deterministic utterance router available without competing
+// with the conversation-first `scbe <prompt>` surface.
+if (argv[0] === 'resolve') {
+  const flags = {
+    json: argv.includes('--json'),
+    yes: argv.includes('--yes') || argv.includes('-y'),
+  };
+  const rawInput = argv
+    .slice(1)
+    .filter((arg) => arg !== '--json' && arg !== '--yes' && arg !== '-y')
+    .join(' ')
+    .trim();
+  if (!rawInput) {
+    if (flags.json) {
+      emitError(
+        {
+          code: ErrorCodes.INVALID_ARGUMENT,
+          message: 'resolve requires an utterance.',
+          command: 'resolve',
+          hint: 'Usage: scbe resolve <utterance> [--yes] [--json]',
+        },
+        { json: true }
+      );
+    }
+    process.stderr.write('Usage: scbe resolve <utterance> [--yes] [--json]\n');
+    process.exit(2);
+  }
+  const worksheet = buildMechanicalWorksheet(rawInput);
+  if (
+    worksheet?.intent === 'compute.spoken_math' ||
+    (worksheet?.intent === 'worksheet.generic' && worksheet.skills.some((skill) => skill.available))
+  ) {
+    printMechanicalWorksheet(worksheet, { json: flags.json });
+    process.exit(0);
+  }
+  runNaturalLanguage(rawInput, flags);
+}
+
+// Preserve machine-friendly typo errors before treating unmatched words as a
+// conversation. Otherwise a near-miss such as `scbe likoqs --json` can open a
+// model request and wait for the full provider timeout.
+{
+  const strictCommands = wantsJson(argv) || process.env.SCBE_STRICT_COMMANDS === '1';
+  const suggestion = strictCommands ? suggestCommand(argv[0]) : null;
+  if (suggestion) {
+    if (wantsJson(argv)) {
+      emitError(
+        {
+          code: ErrorCodes.UNKNOWN_COMMAND,
+          message: `'${argv[0]}' is not a scbe command.`,
+          command: argv[0],
+          suggestions: [suggestion],
+          hint: "Run 'scbe tools --json' for the full command list.",
+        },
+        { json: true }
+      );
+    }
+    process.stderr.write(
+      `scbe: '${argv[0]}' is not a scbe command. Did you mean 'scbe ${suggestion}'?\n` +
+        `      Run 'scbe help' for the full command list.\n`
+    );
+    process.exit(2);
+  }
+}
+
+// The flagship invocation is conversation-first: any unmatched `scbe <words>`
+// is an initial prompt. Dedicated GeoSeal shims set SCBE_INVOKED_AS so their own
+// command grammar can continue to fall through to bin/geoseal.cjs.
+if (process.env.SCBE_INVOKED_AS !== 'geoseal') {
+  const rawPrompt = argv
+    .filter((arg) => arg !== '--json')
+    .join(' ')
+    .trim();
+  if (rawPrompt) {
+    runAgentShell({ initialPrompt: rawPrompt }).catch((error) => {
+      process.stderr.write(`scbe agent: ${error.message || error}\n`);
+      process.exitCode = 1;
+    });
+    return;
+  }
+}
+
 {
   const asJson = argv.includes('--json');
   const rawInput = argv
@@ -11370,34 +11529,6 @@ if (!KNOWN_COMMANDS.includes(argv[0]) && argv[0] && !argv[0].startsWith('--')) {
     process.exit(0);
   }
   // confidence < 0.3: fall through to typo guard and geoseal passthrough
-}
-
-// Typo guard: if argv[0] looks like a near-miss of a known scbe command,
-// suggest the corrected form and exit. We don't auto-execute the suggestion —
-// running a different command than the user typed is the classic
-// typo-amplification trap. Unknown-but-not-close inputs fall through to the
-// geoseal passthrough below, which has its own command set.
-{
-  const suggestion = suggestCommand(argv[0]);
-  if (suggestion) {
-    if (wantsJson(argv)) {
-      emitError(
-        {
-          code: ErrorCodes.UNKNOWN_COMMAND,
-          message: `'${argv[0]}' is not a scbe command.`,
-          command: argv[0],
-          suggestions: [suggestion],
-          hint: "Run 'scbe tools --json' for the full command list.",
-        },
-        { json: true }
-      );
-    }
-    process.stderr.write(
-      `scbe: '${argv[0]}' is not a scbe command. Did you mean 'scbe ${suggestion}'?\n` +
-        `      Run 'scbe help' for the full command list.\n`
-    );
-    process.exit(2);
-  }
 }
 
 const target = resolveGeosealBin();

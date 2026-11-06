@@ -1,16 +1,10 @@
 """
-PQC Harmonic Enhancement Module - AETHERMOORE Integration
+PQC Harmonic Context Module - AETHERMOORE Integration
 
-Integrates Post-Quantum Cryptography with AETHERMOORE harmonic scaling
-to provide super-exponential security enhancement:
-
-    S_enhanced = S_base × H(d, R) = S_base × R^(d²)
-
-Key Features:
-- Harmonic-enhanced key derivation with dimension-based stretching
-- Security level calculation using harmonic scaling formula
-- 6D vector-keyed session management
-- Integration with HAL-Attention for secure attention weighting
+Harmonic scaling provides context labels, governance scores and KDF parameters.
+It does not multiply key entropy, certify an implementation, or prove extra
+post-quantum security bits. The historical baseline lookup is nominal metadata;
+actual resistance depends on the selected primitive and its real backend.
 
 Document ID: AETHER-PQC-2026-001
 Version: 1.0.0
@@ -660,7 +654,8 @@ def analyze_harmonic_security(
     base_algorithm: str, dimension: int = DEFAULT_D_MAX, R: float = DEFAULT_R
 ) -> Dict[str, Any]:
     """
-    Analyze security enhancement from harmonic scaling.
+    Report nominal baseline metadata separately from a geometric governance score.
+    This does not assess the backend or certify a cryptographic work factor.
 
     Args:
         base_algorithm: Name of base algorithm (e.g., "Kyber768")
@@ -670,7 +665,9 @@ def analyze_harmonic_security(
     Returns:
         Security analysis dict
     """
-    base_bits = BASE_SECURITY_BITS.get(base_algorithm, 128)
+    if base_algorithm not in BASE_SECURITY_BITS:
+        raise ValueError(f"Unknown base algorithm: {base_algorithm}")
+    base_bits = BASE_SECURITY_BITS[base_algorithm]
     h_value = harmonic_scale(dimension, R)
     eff_bits = security_bits(base_bits, dimension, R)
     enhancement_bits = eff_bits - base_bits
@@ -684,16 +681,19 @@ def analyze_harmonic_security(
         "H_value": h_value,
         "effective_security_bits": eff_bits,
         "enhancement_bits": enhancement_bits,
-        "computational_multiplier": h_value,
-        "equivalent_aes": f"AES-{int(eff_bits)}",
-        "quantum_resistance": ("NIST Level 3+" if base_algorithm == "Kyber768" else "varies"),
-        "formula": f"S = {base_bits} + {dimension}² × log₂({R}) = {eff_bits:.2f} bits",
+        "governance_multiplier": h_value,
+        "computational_multiplier": None,
+        "equivalent_aes": None,
+        "quantum_resistance": "not assessed by harmonic scaling",
+        "cryptographic_enhancement_proven": False,
+        "baseline_is_nominal_metadata": True,
+        "formula": f"Reported baseline = {base_bits}; geometry adds 0 proven bits",
     }
 
 
 def print_security_table(R: float = DEFAULT_R) -> str:
     """
-    Generate a formatted security enhancement table.
+    Show geometric score growth without presenting it as extra key strength.
 
     Args:
         R: Harmonic ratio
@@ -702,22 +702,22 @@ def print_security_table(R: float = DEFAULT_R) -> str:
         Formatted table string
     """
     lines = [
-        "AETHERMOORE Harmonic Security Enhancement Table",
+        "AETHERMOORE Harmonic Governance Scores (not security bits)",
         f"R = {R} (Perfect Fifth Ratio)",
         "=" * 70,
-        f"{'d':>3} | {'d²':>4} | {'H(d,R)':>15} | {'log₂(H)':>10} | {'AES Equiv':>12}",
+        f"{'d':>3} | {'d²':>4} | {'H(d,R)':>15} | {'log₂(H)':>10} | {'Baseline':>12}",
         "-" * 70,
     ]
 
     for d in range(1, 7):
         h = harmonic_scale(d, R)
         log2_h = math.log2(h)
-        aes = 128 + int(log2_h)
-        lines.append(f"{d:>3} | {d*d:>4} | {h:>15,.2f} | {log2_h:>10.2f} | AES-{aes:>7}")
+        baseline = security_bits(128, d, R)
+        lines.append(f"{d:>3} | {d*d:>4} | {h:>15,.2f} | {log2_h:>10.2f} | {baseline:>7.0f} bits")
 
     lines.append("=" * 70)
     lines.append("Base: AES-128 (128 bits)")
-    lines.append("Enhancement: d² × log₂(R) additional bits per dimension")
+    lines.append("Geometry adds no proven security bits; backend not assessed.")
 
     return "\n".join(lines)
 

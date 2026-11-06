@@ -1,0 +1,1168 @@
+In this video
+
+
+
+Chapters
+
+Transcript
+Search in video
+Assembly
+0:00
+assembly a low-level programming
+0:01
+language allowing humans to give
+0:03
+instructions to the computer's Hardware
+0:05
+you see computers can only do things in
+0:06
+terms of zero or one so assembly was
+0:08
+created in order to make computer
+0:10
+instructions more workable for human
+0:11
+beings this works by using an assembler
+0:14
+that translates the human readable code
+0:15
+into one's and zeros assembly is one of
+0:17
+the world's first programming languages
+0:19
+it used to be the standard to run
+0:20
+supercomputers back in the day but you
+0:21
+still find it used currently to work
+0:23
+with CPU memory and it's used sometimes
+0:25
+in browsers via web assembly Fortran one
+Fortran
+0:28
+of the world's first highle languages
+0:30
+the difference between a highle language
+0:31
+and a lowlevel language is in a
+0:33
+low-level language you can manipulate
+0:34
+the computer's memory much more directly
+0:36
+it also executes much faster than a
+0:38
+highle language the drawback is is that
+0:40
+it's much harder to learn a highle
+0:42
+language is much easier to understand
+0:43
+and there's a lot of support but the
+0:45
+code is much slower Fortran was created
+0:47
+by IBM in the 1950s the name stands for
+0:49
+a formula translator programming in
+0:51
+Fortran would be done by using a punch
+0:53
+card then would be fed into a card
+0:54
+reader and would be translated into code
+0:56
+that the computer can understand this
+0:58
+translating process is called compiling
+1:00
+which basically changes the code that
+1:01
+humans can read into the ones and zeros
+1:03
+computers can understand comtran also
+Comtran
+1:05
+known as commercial translator is
+1:07
+another programming language developed
+1:08
+by IBM it served as the business
+1:10
+equivalent to Fortran in which Fortran
+1:12
+was used for scientific Computing it was
+1:14
+influenced by another programming
+1:15
+language called flomatic a programming
+1:17
+language for data processing that ran on
+1:19
+this giant supercomputer called the
+1:20
+univac 1 lisp also known as list
+Lisp
+1:23
+processing was created soon after
+1:25
+Fortran it's known for using a lot of
+1:26
+parentheses in its code it was an
+1:28
+Innovative language which in insired
+1:30
+these Concepts in programming cobal
+COBOL
+1:32
+standing for common business oriented
+1:33
+language was the programming language
+1:35
+developed in 1959 for you guessed it
+1:37
+businesses even though it was made so
+1:39
+long ago it is still used today by many
+1:41
+financial institutions to process
+1:43
+transactions the code looks like plain
+1:44
+English sentences but this would later
+1:46
+be translated onto a punch card one of
+1:48
+the first adopters of the language was
+1:50
+the US Department of Defense IBM RPG IBM
+IBM RPG
+1:53
+report program generator is a
+1:54
+programming language created by IBM
+1:56
+meant to run on IBM systems it's one of
+1:58
+the only programming languages to makes
+2:00
+use of rows and columns for its code
+ALGOL 60
+2:02
+alol 60 short for algorithmic language
+2:04
+1960 is not a very well-known
+2:06
+programming language but is one of the
+2:08
+languages that inspired one of the most
+2:10
+well-known programming languages in the
+2:11
+world C it was also one of the first
+2:13
+programming languages to use nested
+2:15
+functions APL standing for a programming
+APL
+2:18
+language first appeared in the 1960s is
+2:20
+a programming language developed for
+2:21
+mathematical equations mostly algebra it
+2:23
+uses a lot of math and Greek symbols
+2:25
+directly in the code simula a
+Simula
+2:27
+programming language made many decades
+2:29
+ago that was one of the world's first
+2:31
+object-oriented language objectoriented
+2:33
+programming is a way for programmers to
+2:35
+use blocks of code that are reusable and
+2:37
+can interact with each other instead of
+2:38
+pure functions and logic in
+2:40
+object-oriented programming you use
+2:41
+blocks of code called objects objects
+2:43
+are created by things called classes
+2:45
+which contain properties and can use
+2:47
+methods to explain it simply you can
+2:49
+create a class called Pokémon name the
+2:51
+object Charmander give it properties
+2:53
+such as fire type and allow it to
+2:55
+execute methods such as flamethrower and
+Speakeasy
+2:57
+scratch Speak Easy A programming
+2:59
+language that was mainly M used by
+3:00
+physicists in the' 60s it's known for
+3:02
+using a colore in its code basic the
+BASIC
+3:04
+beginners allpurpose symbolic
+3:06
+instruction code was created at
+3:08
+Dartmouth in 1963 it was created with
+3:10
+the purpose of getting the average lay
+3:11
+person to be able to learn how to code
+3:13
+you see before that time programming had
+3:15
+only been the domain of scientists and
+3:17
+mathematicians this was because of its
+3:19
+easy to understand syntax syntax is
+3:21
+basically the rules to writing in a
+3:23
+programming language Ms Ms aka the
+MUMPS
+3:25
+Massachusetts General Hospital utility
+3:27
+multiprogramming system or sometimes
+3:29
+just m for short was created to manage
+3:31
+Hospital laboratory Information Systems
+3:33
+it was also used to manage electronic
+3:35
+health records its code tends to be very
+3:36
+tur which means you can take most of its
+3:38
+word commands and abbreviate them into
+3:40
+simple short letters logo an educational
+Logo
+3:43
+programming language made in the' 60s
+3:44
+which makes use of what is known as a
+3:46
+turtle graphic not an actual Turtle it's
+3:48
+the name of the cursor used to draw
+3:50
+geometric shapes as determined by the
+3:51
+code Pascal a programming language that
+Pascal
+3:53
+was very popular in the' 70s even being
+3:56
+the default language for many computers
+3:57
+back in the day it was one of the first
+3:59
+programming language to be used by an
+4:00
+IDE which is an integrated development
+4:02
+environment basically a dedicated
+4:04
+program to write its code one of the
+4:05
+most well-known programs created with
+4:07
+Pascal was Photoshop C A programming
+C
+4:09
+language created in the' 70s that is one
+4:11
+of the most popular programming
+4:13
+languages of all time created at Bell
+4:14
+Labs it is the basis of many operating
+4:17
+systems such as Windows and Linux it
+4:19
+also inspired many programming languages
+4:20
+that came after it such as C++ c
+4:23
+objectiv c go Java JavaScript PHP Python
+4:27
+and many more it's known for its
+4:28
+lowlevel ACC access to the computer's
+4:30
+memory by using code called pointers
+4:32
+computer memory was much more of a
+4:34
+finite resource than the past so
+4:36
+programmers had to be much more careful
+4:37
+about how they allocated it otherwise
+4:39
+it'll cause problems such as memory
+4:41
+leaks which is basically when programs
+4:42
+use up too much memory in your computer
+4:44
+causing the computer to become painfully
+4:46
+slow Small Talk a programming language
+Smalltalk
+4:48
+in the' 70s that was known for its
+4:50
+object-oriented programming it inspired
+4:52
+many object-oriented programming
+4:53
+languages that came after it prologue
+Prolog
+4:55
+known as the first logic programming
+4:56
+language it is known for being modeled
+4:58
+after formal logic in philosophy ml also
+ML
+5:01
+known as meta language pioneered
+5:03
+statically typed functional programming
+5:05
+which basically means giving information
+5:06
+certain types such as strings integers
+5:09
+Floats or booleans strings are just
+5:11
+words and letters integers are whole
+5:12
+numbers floats are real numbers so they
+5:15
+can be decimals and Boolean is something
+5:16
+that can be either true or false SQL SQL
+SQL
+5:19
+also known as structured query language
+5:22
+also even called SQL is a language used
+5:24
+for creating and managing databases you
+5:26
+store information in things called
+5:27
+tables and structure them with rows and
+5:29
+columns the code also looks like plain
+5:31
+English sentences it is used by many
+5:33
+systems even today to store their data
+5:34
+such as usernames and passwords
+5:36
+transactions account information and
+5:38
+more basically think of it as a system
+5:39
+of Excel spreadsheets C++ an extension
+C
+5:42
+of the C programming language the major
+5:44
+difference is C++ has object-oriented
+5:46
+programming unlike the original C which
+5:48
+didn't it's also known for its steep
+5:50
+learning curve C++ is one of the most
+5:52
+important programming languages of all
+5:53
+time even still in wide use today still
+5:56
+being the main programming language in
+5:58
+creating operating systems web browsers
+6:00
+databases and games Ada a programming
+Ada
+6:02
+language made in the 1980s that is
+6:04
+mainly used by the US Department of
+6:06
+Defense it is named after the credited
+6:07
+world's first programmer Ada l mat Lab
+Matlab
+6:10
+Mat lab or Matrix library is a
+6:12
+mathematics programming language used by
+6:14
+data scientists and Engineers it's a
+6:16
+mathematics based programming language
+6:18
+that can be used for statistics Robotics
+6:20
+and artificial intelligence it's still
+6:22
+widely used today mainly by Academia
+Objective-C
+6:24
+Objective C A programming language
+6:26
+inspired by C that was created in the
+6:27
+1980s which became the main language for
+6:29
+Apple Computers even being the main
+6:31
+language for the early iPhones although
+6:33
+its popularity has fallen over the years
+6:35
+mainly due to Apple replacing it by a
+6:37
+newer programming language called Swift
+6:39
+in the mid-2020s lab view made by
+Labview
+6:41
+national instruments in the 1980s it is
+6:43
+a programming language that doesn't
+6:44
+really use traditional code instead it's
+6:46
+a graphical programming language where
+6:48
+you build user interfaces and handle
+6:49
+code using images llang a programming
+Erlang
+6:52
+language designed for the Telecom
+6:53
+industry Pearl a language that was
+Perl
+6:55
+designed to work very well with text
+6:56
+it's used for system administration
+6:58
+Network programming finance and more
+7:00
+Pearl has been known as the duct tape
+7:02
+that holds the internet together if
+7:03
+you've ever seen the code it actually
+7:04
+looks pretty wacky Wolfram created by
+Wolfram
+7:06
+Steven Wolfram it's a language that can
+7:08
+perform data visualization image
+7:10
+processing mathematics and pretty much
+7:12
+anything you can think of it can even
+7:13
+tell you the shortest route around
+7:14
+Europe hcll it's a functional
+Haskell
+7:16
+programming language with its unique
+7:17
+feature of its variables being immutable
+7:19
+which means you can't change them the
+7:21
+language is based on Lambda calculus
+Visual Basic
+7:23
+Visual Basic a programming language
+7:24
+developed by Microsoft in the early '90s
+7:26
+it's used to create Microsoft programs
+7:28
+and applications by using guis or
+7:30
+graphical user interfaces basically
+7:32
+anything you can interact with with your
+7:34
+mouse on the screen is part of the
+7:35
+graphical user interface it also has a
+7:37
+very popular IDE of the same name Lua a
+Lua
+7:39
+language known for its speed and being
+7:41
+able to be embedded into other programs
+7:43
+it's also known for being very easy to
+Delphi
+7:45
+learn Deli nothing much to say about it
+7:47
+it's basically Pascal but with
+7:48
+objectoriented programming it even comes
+7:50
+with its own code editor oaml oaml is a
+OCaml
+7:52
+functional based programming language
+7:54
+like haskel and earling functional
+7:56
+programming languages are good at doing
+7:57
+math and objectoriented programming
+7:59
+languages are good for building
+8:00
+Enterprise level software python python
+Python
+8:02
+is a general purpose programming
+8:03
+language and you can use it to make
+8:05
+pretty much anything from desktop
+8:07
+applications to websites creating bots
+8:09
+or API handling servers and databases
+8:11
+game development image processing
+8:13
+statistics and so much more that it
+8:15
+would need its own video python is
+8:16
+currently one of the most popular
+8:18
+programming languages for creating AI
+8:20
+it's also one of the most popular
+8:21
+programming languages in general in fact
+8:23
+most beginner programmers start with
+8:24
+python as their first programming
+8:26
+language not only for its vast utility
+8:28
+but also how easy it is to learn one of
+8:30
+its only drawbacks is that it tends to
+8:32
+be pretty slow compared to other
+8:33
+programming languages like C++ Ruby Ruby
+Ruby
+8:36
+is a language very similar to python
+8:38
+even the code looks similar Ruby is easy
+8:40
+to learn and the code is also very
+8:41
+readable one of the most popular uses of
+8:43
+Ruby is to combine it with a framework
+8:45
+called on Rails to create websites
+8:47
+adopting the full name Ruby on Rails
+8:49
+Ruby on Rails is currently the backbones
+8:50
+to many websites we know currently such
+8:52
+as Hulu Airbnb coinbase Shopify twitch
+8:56
+SoundCloud and many more a lot of its
+8:58
+popularity was was its ability to be
+8:59
+able to create full stack websites full
+9:02
+stack is the combination of the
+9:03
+front-end and the backend development of
+9:04
+a website a website's front-end is
+9:06
+basically everything you can see with
+9:07
+your eyes basically the entire interface
+9:10
+the text the images the buttons and the
+9:11
+videos are all part of the front end the
+9:13
+back end is the non-visual part of the
+9:15
+website which is mainly the servers and
+9:16
+databases account information
+9:18
+authentication and data storage is
+9:20
+what's part of the back end Java
+Java
+9:21
+remember the thing some programs ask you
+9:23
+to install on your computer yeah that's
+9:24
+an actual programming language it gained
+9:26
+popularity immediately after it's
+9:28
+released and it's still popular today a
+9:30
+big advantage that Java has is that it
+9:31
+allows you to create programs that are
+9:32
+very platform independent that's because
+9:34
+Java can be compiled into B code which
+9:36
+can be understood by many operating
+9:38
+systems all your computer would need is
+9:39
+a Java runtime environment to do this
+9:41
+which is what you're installing every
+9:42
+time your computer asks you to install
+9:44
+Java Java can be used to create many
+9:46
+things like video games such as
+9:47
+Minecraft or mobile apps on Android a
+9:49
+meme amongst beginner programmers is
+9:51
+that Java's code tends to be prey verbos
+R
+9:53
+R A programming language in which its
+9:55
+main purpose is statistics it's a widely
+9:57
+popular programming language used to
+9:58
+organ organized data and data
+10:00
+visualization it's very useful for
+10:02
+researchers conducting epidemiological
+10:04
+studies if you're a researcher studying
+10:06
+in fields such as economics psychology
+10:08
+biology medicine Etc learning how to
+10:11
+code in either python or R is a very
+Javascript
+10:13
+useful skill JavaScript JavaScript is
+10:15
+not the same as Java in fact it has
+10:17
+nothing to do with Java JavaScript is a
+10:19
+programming language that is mainly only
+10:21
+used in web browsers in fact 98% of the
+10:24
+internet uses JavaScript JavaScript is
+10:26
+responsible for the main functional
+10:28
+aspect of the website it's it's based on
+10:29
+the ecmascript standard and is often Us
+10:31
+in conjunction with HTML and CSS but
+10:34
+sometimes you can create websites which
+10:35
+is pure JavaScript using Frameworks such
+10:37
+as react and with react mobile you can
+10:39
+create mobile apps HTML and CSS HTML and
+HTML & CSS
+10:42
+CSS are both scripting languages to
+10:44
+create websites HTML deals with the pure
+10:46
+content and structure of the website it
+10:48
+uses code called HTML tags in order to
+10:51
+build the content on the web page CSS is
+10:53
+used for the design or aesthetic look of
+10:55
+the website it deals with the
+10:57
+arrangement of content colors borders
+10:59
+gradients opacities and can even perform
+11:01
+animations PHP PHP AKA personal homepage
+PHP
+11:05
+but sometimes also called hypertext
+11:07
+pre-processor is a programming language
+11:09
+mainly used on web servers you can
+11:11
+actually embed PHP directly into HTML
+11:13
+PHP although waning in popularity is
+11:15
+still the backbone of many major
+11:17
+websites today it was the language Mark
+11:19
+zuger bird first built Facebook in
+Actionscript
+11:20
+action script a language based on
+11:22
+JavaScript in which its main purpose was
+11:24
+its use in Flash have you ever played a
+11:26
+flash game back in the day that was most
+11:27
+likely made using AC script it was first
+11:30
+created by macromedia which released
+11:32
+action script 1 and version 2.0 but when
+11:34
+macromedia was later bought out by Adobe
+11:36
+Adobe released action script 3.0 even
+11:38
+though as of 2020 Adobe Flash has died
+11:40
+out you can still use action script with
+11:42
+Adobe animate C A programming language
+C
+11:45
+made in the early 2000s by Microsoft it
+11:47
+was influenced by C++ and Java C's most
+11:50
+common uses are being used in web
+11:51
+servers with the Net Framework and video
+11:53
+game development with the unity engine
+Scala
+11:55
+Scala Scala was made as an alternative
+11:57
+to Java it also uses many of Java's same
+11:59
+technology such as the Java virtual
+12:01
+machine but unlike Java it has many
+12:03
+features of functional programming
+Powershell
+12:04
+Powershell basically the Windows command
+12:06
+line on steroids come with its own
+12:07
+scripting language FSH f is the sister
+F
+12:10
+language to C with the difference of it
+12:12
+being able to support functional
+12:13
+programming Julia a programming language
+Julia
+12:15
+made in the early 2010s in order to
+12:17
+perform high level computations data
+12:19
+analysis and visualization and
+12:20
+Mathematics its main advantage is that
+12:22
+it's much faster than other programming
+12:24
+languages that do this the code is a lot
+12:25
+easier to read and it's much easier to
+Elm
+12:27
+learn oh a programming language designed
+12:29
+to create graphical user interfaces for
+12:31
+websites it can be compiled into
+12:32
+JavaScript Nim a programming language
+Nim
+12:34
+with the Simplicity of python combined
+12:36
+with the memory allocation of C++ Raku
+Raku
+12:38
+nothing much to say it's basically Pearl
+12:40
+but version six although it has a pretty
+12:43
+wacky logo scratch a programming
+Scratch
+12:45
+language made in MIT that is completely
+12:48
+Visual and block based no seriously the
+12:50
+code fits together like Lego blocks it
+12:52
+was made with the purpose for teaching
+12:53
+children how to code despite its
+12:55
+Simplicity you can make pretty complex
+12:56
+things with It Go formerly known as go
+Go
+12:58
+Lang was created at Google to be a
+13:00
+modern version of C the code can be
+13:02
+similar to python but it's much faster
+13:04
+due to its compiling method it's mainly
+13:05
+used in servers with Frameworks like
+Holy-C
+13:07
+Docker holy C A programming language
+13:09
+created by Terry a Davis in 2005 made
+13:12
+with assembly it was used to create an
+13:13
+operating system called Temple OS an
+13:16
+operating system inspired by a
+13:17
+revelation from God the main interest in
+13:19
+this programming language is due to the
+13:21
+backstory of the developer although
+13:22
+being a talented programmer suffered
+13:24
+from and ultimately succumbed from his
+13:26
+battle with schizophrenia cotlin known
+Kotlin
+13:27
+as the easier form of java is a language
+13:30
+used to create mobile apps on Android OS
+13:32
+the most popular IDE to code cotlin in
+13:34
+is Android Studio typescript basically
+Typescript
+13:36
+JavaScript but with static typing Dart a
+Dart
+13:39
+programming language created by Google
+13:40
+that you can use to create web
+13:42
+applications or mobile apps using the
+13:43
+flutter framework Swift developed by
+Swift
+13:45
+Apple to replace Objective C it is the
+13:47
+standard programming language to create
+13:49
+anything in iOS and it comes with its
+13:51
+own code editor called xcode you can
+13:53
+only code in Swift if you have an Apple
+13:54
+computer or use a virtual machine rust
+Rust
+13:56
+okay this is the true modern version of
+13:58
+CN C++ it's good if you want to write
+14:00
+simple code while also handling memory
+14:02
+issues it's a very popular programming
+14:04
+language and it's used to make
+14:05
+applications where performance is
+14:07
+extremely important such as game engines
+14:08
+or operating systems solidity a
+Solidity
+14:11
+programming language created for the
+14:12
+ethereum network programs created in
+14:14
+solidity are called smart contracts
+14:16
+these Smart Tracks are later deployed to
+14:17
+the blockchain however once smart
+14:19
+contracts are deployed to the blockchain
+14:21
+they cannot be changed or altered again
+14:23
+so before a contract is deployed usually
+14:25
+developers test them thoroughly
+14:26
+beforehand this is done using testing
+14:28
+environments such as truffle and hard
+14:29
+hat depending on the smart contract can
+14:31
+cost memory and even money in the form
+14:33
+of ethereum to work its main uses are
+14:35
+for creating web 3.0 decentralized apps
+14:37
+decentralized Finance applications or
+14:39
+defi to even your own tokens or nfts the
+14:42
+type of smart contract you'll make will
+14:43
+depend on the ERC format you're adhering
+14:45
+to ERC standing for ethereum request for
+Elixir
+14:48
+comment Elixir a popular programming
+14:50
+language that was created in Brazil it
+14:51
+runs on the llang beam virtual machine
+14:54
+which compiles the language into bite
+14:55
+code you can do with Elixir the same
+14:57
+things you can do with llang the
+14:58
+language which is commonly used for
+14:59
+Telecom e-commerce and finance Zig
+Zig
+15:02
+another programming language intended to
+15:04
+be the successor of C it was created in
+15:06
+the mid 20110 and is slowly gaining in
+Power FX
+15:08
+popularity Microsoft power FS a language
+15:10
+created in 2021 by Microsoft it is used
+15:13
+in a low code program called power apps
+15:15
+a low code program is a program that
+15:16
+allows you to create applications with
+15:18
+little to no code but if you want to add
+15:20
+extra logic or functionality to your app
+15:22
+it would be done using power effects
+15:23
+also the language is based on Microsoft
+15:25
+Excel be sure to share this video and
+15:27
+thanks for watching
+Every Programming Language Ever Explained in 15 Minutes
+Flash Bytes
+Flash Bytes
+43.6K subscribers
+
+Subscribe
+
+16K
+
+
+Share
+
+Ask
+
+Save
+
+463,343 views  Jan 12, 2024
+Every Programming Language Ever Explained in 15 Minutes
+---------------------------------------------------------
+Chapters
+
+0:00 Assembly
+0:27 Fortran
+1:04 Comtran
+1:21 Lisp
+1:31 COBOL
+1:52 IBM RPG
+2:02 ALGOL 60
+2:16 APL
+2:26 Simula
+2:57 Speakeasy
+3:04 BASIC
+3:24 MUMPS
+3:41 Logo
+3:52 Pascal
+4:08 C
+4:47 Smalltalk
+4:54 Prolog
+5:00 ML
+5:18 SQL
+5:41 C++
+6:01 Ada
+6:10 Matlab
+6:24 Objective-C
+6:40 Labview
+6:51 Erlang
+6:54 Perl
+7:05 Wolfram
+7:15 Haskell
+7:23 Visual Basic
+7:39 Lua
+7:45 Delphi
+7:51 OCaml
+8:01 Python
+8:35 Ruby
+9:21 Java
+9:53 R
+10:13 Javascript
+10:40 HTML & CSS
+11:02 PHP
+11:20 Actionscript
+11:43 C#
+11:55 Scala
+12:04 Powershell
+12:08 F#
+12:14 Julia
+12:27 Elm
+12:33 Nim
+12:38 Raku
+12:44 Scratch
+12:57 Go
+13:07 Holy-C
+13:27 Kotlin
+13:35 Typescript
+13:38 Dart
+13:44 Swift
+13:56 Rust
+14:10 Solidity
+14:48 Elixir
+15:01 Zig
+15:08 Power FX
+Tracing the evolution of programming from low-level assembly to high-level languages like Python and C#, Flash Bytes explores the history and use cases for each. The overview covers key milestones from punch cards to modern web frameworks, highlighting how different tools handle memory management and functionality.
+Summary
+
+How this was made
+Auto-dubbed
+Audio tracks for some languages were automatically generated. Learn more
+Ask
+Get answers, explore topics, and more
+
+Ask questions
+Chapters
+
+View all
+Transcript
+Follow along using the transcript.
+
+
+Show transcript
+
+Flash Bytes
+43.6K subscribers
+Videos
+About

@@ -18,9 +18,8 @@ import type { GeoSealPlan } from '../src/pipeline.js';
 
 const mockSpawnSync = vi.fn();
 
-vi.mock('node:child_process', () => ({
+vi.mock('../src/process-runner.js', () => ({
   spawnSync: (...args: unknown[]) => mockSpawnSync(...args),
-  spawn: vi.fn(),
 }));
 
 // Import pipeline after the mock is registered.
@@ -95,22 +94,54 @@ describe('compilePlan: semantic attachment', () => {
     expect(plan).toBeNull();
   });
 
-  it('falls back to an installed geoseal binary when repo-local compile fails', () => {
-    mockSpawnSync
-      .mockReturnValueOnce(failResult())
-      .mockReturnValueOnce(successResult(fakePlanJson()));
+  it('uses an explicit installed geoseal binary before repo-local discovery', () => {
+    mockSpawnSync.mockReturnValueOnce(successResult(fakePlanJson()));
     const plan = compilePlan('compile this through installed geoseal', {
       repoRoot: process.cwd(),
       geosealBin: 'mock-geoseal',
     });
     expect(plan).not.toBeNull();
-    expect(mockSpawnSync).toHaveBeenCalledTimes(2);
-    expect(mockSpawnSync.mock.calls[1]?.[0]).toBe('mock-geoseal');
-    expect(mockSpawnSync.mock.calls[1]?.[1]).toEqual([
+    expect(mockSpawnSync).toHaveBeenCalledTimes(1);
+    expect(mockSpawnSync.mock.calls[0]?.[0]).toBe('mock-geoseal');
+    expect(mockSpawnSync.mock.calls[0]?.[1]).toEqual([
       'compile',
       '--json',
       'compile this through installed geoseal',
     ]);
+  });
+
+  it('passes an explicit permission profile to GeoSeal', () => {
+    mockSpawnSync.mockReturnValueOnce(successResult(fakePlanJson()));
+    const plan = compilePlan('run the focused tests', {
+      repoRoot: process.cwd(),
+      geosealBin: 'mock-geoseal',
+      permissionMode: 'workspace-write',
+    });
+    expect(plan).not.toBeNull();
+    expect(mockSpawnSync.mock.calls[0]?.[1]).toEqual([
+      'compile',
+      '--permission-mode',
+      'workspace-write',
+      '--json',
+      'run the focused tests',
+    ]);
+  });
+
+  it('preserves a structured GeoSeal denial returned with a nonzero exit', () => {
+    mockSpawnSync.mockReturnValueOnce({
+      status: 2,
+      stdout: fakePlanJson({
+        policy: { ok: false, decision: 'DENY', reason: 'profile_denies_execute_tests' },
+      }),
+      stderr: '',
+    });
+    const plan = compilePlan('run tests', {
+      repoRoot: process.cwd(),
+      geosealBin: 'mock-geoseal',
+    });
+    expect(plan).not.toBeNull();
+    expect(plan!.policy.decision).toBe('DENY');
+    expect(plan!.policy.reason).toBe('profile_denies_execute_tests');
   });
 
   it('plan.semantic.atoms includes expected atom IDs for governance intent', () => {

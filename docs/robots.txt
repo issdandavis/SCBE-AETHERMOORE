@@ -11,6 +11,8 @@ AI-Map-Source: https://aethermoore.com/SCBE-AETHERMOORE/robot.md
 LLMs: https://aethermoore.com/SCBE-AETHERMOORE/llms.txt
 Guides: https://aethermoore.com/SCBE-AETHERMOORE/guides.html
 Books: https://aethermoore.com/SCBE-AETHERMOORE/books.html
+Research-Signal: https://aethermoore.com/research-signal
+Research-Signal-RSS: https://aethermoore.com/api/agent/research-signal-feed?format=rss
 Payments: https://aethermoore.com/SCBE-AETHERMOORE/payments.html
 Privacy-Policy: https://aethermoore.com/SCBE-AETHERMOORE/legal/privacy.html
 Terms-of-Service: https://aethermoore.com/SCBE-AETHERMOORE/legal/terms.html

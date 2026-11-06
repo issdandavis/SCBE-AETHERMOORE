@@ -1,9 +1,12 @@
-const BOOKFORGE_CACHE = "bookforge-studio-v1";
+const BOOKFORGE_CACHE = "bookforge-studio-v4";
 const BOOKFORGE_ASSETS = [
   "bookforge-writing-studio.html",
   "bookforge.webmanifest",
   "bookforge-sw.js",
   "static/bookforge-icon.svg",
+  "static/bookforge-studio.css",
+  "static/bookforge-studio-core.js",
+  "static/bookforge-studio.js",
   "static/packages/package-products.css",
   "static/packages/package-products.js",
   "downloads/kdp-bookforge-checklist.md",

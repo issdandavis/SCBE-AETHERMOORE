@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib
 import json
 import sys
 import time
@@ -26,9 +27,25 @@ SRC_ROOT = REPO_ROOT / "src"
 if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
-from neurogolf.arc_io import load_arc_task  # noqa: E402
-from neurogolf.family_lattice import task_topology  # noqa: E402
-from neurogolf.solver import execute_program, synthesize_program  # noqa: E402
+
+class NeuroGolfUnavailable(RuntimeError):
+    """The optional ARC solver moved to a separate repository."""
+
+
+def neurogolf_api():
+    try:
+        arc_io = importlib.import_module("neurogolf.arc_io")
+        family_lattice = importlib.import_module("neurogolf.family_lattice")
+        solver = importlib.import_module("neurogolf.solver")
+    except ModuleNotFoundError as exc:
+        if exc.name != "neurogolf":
+            raise  # A broken installed package is not an absent optional lane.
+        raise NeuroGolfUnavailable(
+            "This benchmark needs the optional NeuroGolf lane, moved out of SCBE. "
+            "See github.com/issdandavis/neurogolf for its setup instructions."
+        ) from exc
+    return arc_io.load_arc_task, family_lattice.task_topology, solver.execute_program, solver.synthesize_program
+
 
 DEFAULT_OUT = REPO_ROOT / "artifacts" / "benchmarks" / "arc_style_grid"
 
@@ -240,6 +257,7 @@ def write_fixture(root: Path, fixture: ArcStyleFixture) -> Path:
 
 
 def run_identity_baseline(path: Path, fixture: ArcStyleFixture) -> LaneResult:
+    load_arc_task, task_topology, _, _ = neurogolf_api()
     task = load_arc_task(path)
     start = time.perf_counter()
     predicted_np = task.test_inputs[0].copy()
@@ -271,6 +289,7 @@ def run_identity_baseline(path: Path, fixture: ArcStyleFixture) -> LaneResult:
 
 
 def run_neurogolf_lane(path: Path, fixture: ArcStyleFixture) -> LaneResult:
+    load_arc_task, task_topology, execute_program, synthesize_program = neurogolf_api()
     task = load_arc_task(path)
     start = time.perf_counter()
     try:
@@ -400,6 +419,7 @@ def render_markdown(report: dict[str, Any]) -> str:
 
 
 def build_report(out_dir: Path) -> dict[str, Any]:
+    neurogolf_api()  # Fail before creating fixture files or a report.
     fixture_dir = out_dir / "fixtures"
     identity_results: list[LaneResult] = []
     neurogolf_results: list[LaneResult] = []
@@ -488,7 +508,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
-    report = build_report(args.out_dir)
+    try:
+        report = build_report(args.out_dir)
+    except NeuroGolfUnavailable as exc:
+        parser.error(str(exc))
     if args.json:
         print(json.dumps(report, indent=2, sort_keys=True))
     else:

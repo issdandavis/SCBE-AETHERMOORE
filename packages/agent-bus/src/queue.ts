@@ -17,11 +17,12 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
 import type { AgentBusEvent, AgentBusResult, RunOptions } from './index.js';
 import { runBeforeRunPlugins, runAfterRunPlugins } from './plugins.js';
 import { autoDiscoverTools, getTool, buildToolArgv } from './tools.js';
 import { runPipeline } from './pipeline.js';
+import { createLocalEventResult } from './local-event.js';
+import { spawn } from './process-runner.js';
 
 export interface QueuedEvent {
   run_id: string;
@@ -122,7 +123,13 @@ export function enqueueEvent(
     run_id: runId,
     status: 'pending',
     event,
-    options,
+    // Receipts contain descriptive settings only. Authority objects contain
+    // private keys and must never be serialized into the queue or HTTP status.
+    options: {
+      repoRoot: options.repoRoot,
+      permissionMode: options.permissionMode,
+      continueOnError: options.continueOnError,
+    },
     created_at: new Date().toISOString(),
     retry_count: 0,
     max_retries: maxRetries,
@@ -179,7 +186,8 @@ function executeEventAsync(
   return new Promise((resolve) => {
     const normalized = receipt.event;
 
-    // Route to a registered CLI tool when event.tool is set; fall back to scbe-system-cli.py.
+    // Route named work to a registered CLI tool. Events without a tool produce
+    // a package-native intake receipt and never depend on a source checkout.
     let spawnCmd: string;
     let spawnArgs: string[];
 
@@ -231,34 +239,14 @@ function executeEventAsync(
       spawnCmd = built.command;
       spawnArgs = built.args;
     } else {
-      const cli = path.join(repoRoot, 'scripts', 'scbe-system-cli.py');
-      spawnCmd = python;
-      spawnArgs = [
-        cli,
-        '--repo-root',
-        repoRoot,
-        'agentbus',
-        'run',
-        '--task',
-        normalized.task,
-        '--task-type',
-        normalized.taskType || 'general',
-        '--series-id',
-        normalized.seriesId || receipt.run_id,
-        '--privacy',
-        normalized.privacy || 'local_only',
-        '--budget-cents',
-        String(normalized.budgetCents || 0),
-        '--dispatch-provider',
-        normalized.dispatchProvider || 'offline',
-        '--json',
-      ];
-      if (normalized.operationCommand) {
-        spawnArgs.push('--operation-command', normalized.operationCommand);
-      }
-      if (normalized.dispatch !== false) {
-        spawnArgs.push('--dispatch');
-      }
+      resolve(
+        createLocalEventResult(normalized, {
+          eventIndex: 1,
+          seriesId: receipt.run_id,
+          startedAt: receipt.started_at,
+        })
+      );
+      return;
     }
 
     const startedAt = new Date().toISOString();
@@ -336,7 +324,7 @@ function executeEventAsync(
  * Process one pending event.
  * Returns true if an event was processed, false if queue is empty.
  */
-export async function processOneEvent(): Promise<boolean> {
+export async function processOneEvent(trustedOptions: RunOptions = {}): Promise<boolean> {
   ensureDirs();
   const d = dirs();
   const pendingFiles = listReceipts(d.pending);
@@ -387,7 +375,8 @@ export async function processOneEvent(): Promise<boolean> {
   } else {
     receipt.event = allowedEvent;
     if (allowedEvent.taskType === 'pipeline') {
-      const pipelineResult = await runPipeline(allowedEvent.task, receipt.options);
+      // Execution configuration belongs to this worker, not a serialized event.
+      const pipelineResult = await runPipeline(allowedEvent.task, trustedOptions);
       if (pipelineResult.blocked) {
         result = {
           schema_version: 'scbe-agentbus-node-result-v1',
@@ -426,9 +415,9 @@ export async function processOneEvent(): Promise<boolean> {
         };
       }
     } else {
-      const repoRoot = path.resolve(receipt.options.repoRoot || process.cwd());
-      const python = receipt.options.python || process.env.PYTHON || 'python';
-      result = await executeEventAsync(receipt, repoRoot, python);
+      const repoRoot = path.resolve(trustedOptions.repoRoot || process.cwd());
+      const python = trustedOptions.python || process.env.PYTHON || 'python';
+      result = await executeEventAsync({ ...receipt, options: trustedOptions }, repoRoot, python);
     }
   }
 
@@ -482,8 +471,8 @@ export async function processOneEvent(): Promise<boolean> {
  * Runs until the queue is empty, then resolves.
  * Call this from a setInterval or cron for persistent workers.
  */
-export async function drainQueue(): Promise<void> {
-  while (await processOneEvent()) {
+export async function drainQueue(trustedOptions: RunOptions = {}): Promise<void> {
+  while (await processOneEvent(trustedOptions)) {
     // continue draining
   }
 }
@@ -492,12 +481,15 @@ export async function drainQueue(): Promise<void> {
  * Start a background worker that polls the queue every `intervalMs`.
  * Returns a handle with `stop()` to shut down gracefully.
  */
-export function startQueueWorker(intervalMs = 5000): { stop: () => void } {
+export function startQueueWorker(
+  intervalMs = 5000,
+  trustedOptions: RunOptions = {}
+): { stop: () => void } {
   let running = true;
   async function tick() {
     if (!running) return;
     try {
-      await processOneEvent();
+      await processOneEvent(trustedOptions);
     } catch (err) {
       process.stderr.write(
         `[agent-bus] queue worker error: ${err instanceof Error ? err.message : String(err)}\n`

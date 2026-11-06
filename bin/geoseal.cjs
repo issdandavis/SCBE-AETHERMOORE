@@ -10,6 +10,30 @@ const ROOT = path.resolve(__dirname, "..");
 const PACKAGE_JSON_PATH = path.join(ROOT, "package.json");
 const PACKAGE_JSON = JSON.parse(fs.readFileSync(PACKAGE_JSON_PATH, "utf8"));
 
+function resolveInstalledAgentCliShell() {
+  const candidate = path.resolve(
+    ROOT,
+    "..",
+    "scbe-aethermoore-cli",
+    "bin",
+    "geoseal.js"
+  );
+  return candidate !== path.resolve(__filename) && fs.existsSync(candidate)
+    ? candidate
+    : null;
+}
+
+function shouldDelegateAgentShell(argv) {
+  if (argv.length > 0 && argv[0] !== "shell") return false;
+  return !argv.some(
+    (arg) =>
+      arg === "--api-base" ||
+      arg.startsWith("--api-base=") ||
+      arg === "--command" ||
+      arg.startsWith("--command=")
+  );
+}
+
 const COMMAND_HELP = `GeoSeal Shell
 
 Usage:
@@ -23,6 +47,12 @@ Modes:
      Without --api-base, geoseal falls through to:
        python -m src.geoseal_cli
      Use SCBE_GEOSEAL_PYTHON to pin the Python executable.
+
+  3. Source-checkout commands
+     spine, bits, hex, trits, inc, templates, map, substrate, systems,
+     and code-systems require the repository's scbe.py. The npm package does
+     not ship that source-only entry point. Run geoseal doctor --json for the
+     machine-readable support matrix.
 
 Hosted run path:
   Local/npm/Ollama-first use stays free under the open-source license.
@@ -67,7 +97,6 @@ Useful commands:
   geoseal cursor-status --json
   geoseal cursor-overlord --json
   geoseal fleet-distributions --json
-  geoseal agent-io-contract --output-dir artifacts/agent_io_contract --json
   geoseal tokenizer-code-lanes --command shl --tongues all --output artifacts/tokenizer_code_lanes/shl_lanes.json
   geoseal verify-code-lanes "$(cat artifacts/tokenizer_code_lanes/shl_lanes.json)" --json
   geoseal decode-code-lanes "$(cat artifacts/tokenizer_code_lanes/shl_lanes.json)" --output-dir artifacts/tokenizer_code_lanes/decoded --from-binary --write-binary --json
@@ -81,7 +110,6 @@ Useful commands:
   geoseal spine map "release payload after compare" --json
   geoseal spine decode --from hex 68656c6c6f --json
   geoseal spine templates --json
-  geoseal ai2ai-bridge --content "def add(a, b): return a + b" --language python --json
   geoseal code-packet --content "def add(a, b): return a + b" --language python
   geoseal tongue-compile --content "ko:set r0, 2" --json
   geoseal tongue-run --content "ko:set r0, 2\nko:print r0\nko:halt" --json
@@ -147,6 +175,40 @@ const SCBE_SPINE_COMMANDS = new Set([
   "systems",
   "code-systems",
 ]);
+const NODE_NATIVE_COMMANDS = Object.freeze([
+  "help",
+  "version",
+  "doctor",
+  "permissions",
+  "custom-commands",
+  "run-command",
+  "providers",
+  "provider-registry",
+  "lanes",
+  "product-lanes",
+  "rooms",
+  "stage",
+  "stage-frame",
+  "frames",
+  "command-check",
+  "preflight",
+  "code-cube",
+  "codecube",
+  "tokenizer-code-lanes",
+  "verify-code-lanes",
+  "decode-code-lanes",
+  "service-status",
+  "service-stop",
+]);
+const SERVICE_BACKED_COMMANDS = Object.freeze(
+  [...new Set(["ask", "do", ...Object.keys(COMMAND_MAP)])].sort()
+);
+const OPTIONAL_PYTHON_COMMANDS = Object.freeze([
+  "shell",
+  "tongue-compile",
+  "tongue-run",
+]);
+const SCBE_SOURCE_ENTRY = path.join(ROOT, "scbe.py");
 const CUSTOM_COMMANDS_DIR = path.join(ROOT, ".geoseal", "commands");
 
 const STAGE_ROOMS = {
@@ -1507,39 +1569,55 @@ function resolveActiveServiceBase(flags) {
   return { apiBase: base, pid, authHeaders: headers, statePath };
 }
 
-function probePythonModule(moduleName) {
+function probePythonModules(moduleNames) {
+  const names = [...new Set(moduleNames.map((name) => String(name)).filter(Boolean))];
   for (const executable of pythonExecutables()) {
     const script = [
-      "import importlib.util, json",
-      `name=${JSON.stringify(moduleName)}`,
-      "spec=importlib.util.find_spec(name)",
-      "print(json.dumps({'module': name, 'found': spec is not None, 'origin': getattr(spec, 'origin', None)}))",
-    ].join("; ");
+      "import importlib.util",
+      "import json",
+      `names = ${JSON.stringify(names)}`,
+      "results = []",
+      "for name in names:",
+      "    try:",
+      "        spec = importlib.util.find_spec(name)",
+      "        results.append({'module': name, 'found': spec is not None, 'origin': getattr(spec, 'origin', None), 'error': None})",
+      "    except Exception as exc:",
+      "        results.append({'module': name, 'found': False, 'origin': None, 'error': str(exc)})",
+      "print(json.dumps(results))",
+    ].join("\n");
     const result = spawnSync(executable, ["-c", script], {
       encoding: "utf8",
       shell: false,
       cwd: ROOT,
       timeout: 8000,
     });
-    if (!result.error) {
-      let detail = {};
+    if (!result.error && result.status === 0) {
+      let details = [];
       try {
-        detail = JSON.parse(String(result.stdout || "{}"));
+        details = JSON.parse(String(result.stdout || "[]"));
       } catch (_err) {
-        detail = {};
+        details = [];
       }
-      return {
-        executable,
-        module: moduleName,
-        ok: result.status === 0 && detail.found === true,
-        status: result.status,
-        origin: detail.origin || null,
-        stdout_preview: String(result.stdout || "").slice(0, 600),
-        stderr_preview: String(result.stderr || "").slice(0, 600),
-      };
+      return names.map((moduleName) => {
+        const detail = details.find((entry) => entry && entry.module === moduleName) || {};
+        return {
+          executable,
+          module: moduleName,
+          ok: detail.found === true,
+          status: result.status,
+          origin: detail.origin || null,
+          error: detail.error || null,
+          stdout_preview: String(result.stdout || "").slice(0, 600),
+          stderr_preview: String(result.stderr || "").slice(0, 600),
+        };
+      });
     }
   }
-  return { module: moduleName, ok: false, error: "no usable Python executable found" };
+  return names.map((moduleName) => ({
+    module: moduleName,
+    ok: false,
+    error: "no usable Python executable found",
+  }));
 }
 
 async function probeServiceHealth(apiBase, timeoutMs) {
@@ -1738,29 +1816,27 @@ function runServiceStop(flags) {
 
 function runDoctor(flags) {
   const active = resolveActiveServiceBase(flags);
+  const configuredApiBase = apiBase(flags);
+  const probedPythonModules = probePythonModules([
+    "src.geoseal_cli",
+    "geoseal_cli",
+    "uvicorn",
+    "src.api.geoseal_service",
+  ]);
+  const pythonModules = probedPythonModules.slice(0, 2);
+  const servicePythonModules = probedPythonModules.slice(2);
+  const pythonPassthroughAvailable = pythonModules.some((entry) => entry.ok);
+  const serviceLauncherAvailable = servicePythonModules.every((entry) => entry.ok);
+  const sourceEntryAvailable = fs.existsSync(SCBE_SOURCE_ENTRY);
   const advertisedCommands = [
-    "doctor",
-    "permissions",
-    "custom-commands",
-    "run-command",
-    "providers",
-    "provider-registry",
-    "lanes",
-    "product-lanes",
-    "ask",
-    "do",
-    "status",
-    "chat",
-    ...Object.keys(COMMAND_MAP).filter((name) => name !== "status" && name !== "chat"),
-    "service",
-    "service-status",
-    "service-stop",
-    "agent-io-contract",
-    "tokenizer-code-lanes",
-    "verify-code-lanes",
-    "decode-code-lanes",
-    "ai2ai-bridge",
-  ];
+    ...new Set([
+      ...NODE_NATIVE_COMMANDS,
+      ...SERVICE_BACKED_COMMANDS,
+      ...OPTIONAL_PYTHON_COMMANDS,
+      ...SCBE_SPINE_COMMANDS,
+      "service",
+    ]),
+  ].sort();
   const payload = {
     ok: true,
     version: PACKAGE_JSON.version,
@@ -1780,10 +1856,55 @@ function runDoctor(flags) {
       path: command.path,
       execution_mode: command.execution_mode,
     })),
-    python_modules: [probePythonModule("src.geoseal_cli"), probePythonModule("geoseal_cli")],
+    capability_matrix: {
+      schema_version: "geoseal_capability_matrix_v1",
+      node_native: {
+        support: "available",
+        available_now: true,
+        requirement: "Node.js only",
+        commands: NODE_NATIVE_COMMANDS,
+      },
+      service_backed: {
+        support: active
+          ? "active_service"
+          : configuredApiBase
+            ? "configured_unverified"
+            : "service_required",
+        available_now: Boolean(active),
+        configured: Boolean(active || configuredApiBase),
+        api_base: active ? active.apiBase : configuredApiBase || null,
+        requirement: "A reachable GeoSeal API service; local source files are not required by this client.",
+        commands: SERVICE_BACKED_COMMANDS,
+      },
+      optional_python_module: {
+        support: pythonPassthroughAvailable ? "available" : "not_installed",
+        available_now: pythonPassthroughAvailable,
+        requirement: "An installed src.geoseal_cli or geoseal_cli Python module.",
+        commands: OPTIONAL_PYTHON_COMMANDS,
+        alternate_service_routes: ["portal-box", "stream-wheel"],
+        modules: pythonModules,
+        service_launcher: {
+          command: "service",
+          support: serviceLauncherAvailable ? "available" : "not_installed",
+          available_now: serviceLauncherAvailable,
+          requirement: "Both uvicorn and src.api.geoseal_service must be importable.",
+          modules: servicePythonModules,
+        },
+      },
+      source_only: {
+        support: sourceEntryAvailable ? "available_in_source_checkout" : "not_shipped_in_npm",
+        available_now: sourceEntryAvailable,
+        requirement: "Run from a SCBE-AETHERMOORE source checkout containing scbe.py.",
+        required_file: "scbe.py",
+        commands: [...SCBE_SPINE_COMMANDS].sort(),
+      },
+    },
+    python_modules: pythonModules,
+    python_service_modules: servicePythonModules,
     notes: [
       "API commands require --api-base/SCBE_API_BASE or a live autodetected service.",
       "Python passthrough commands are limited to the installed geoseal_cli parser.",
+      "SCBE spine commands require scbe.py and are intentionally source-checkout only; scbe.py is not shipped in the npm package.",
     ],
   };
   const text = [
@@ -1792,6 +1913,10 @@ function runDoctor(flags) {
     `Active service: ${payload.active_service ? payload.active_service.api_base : "none"}`,
     `API commands: ${payload.api_commands.length}`,
     `Python module src.geoseal_cli: ${payload.python_modules[0].ok ? paint("ok", "green", { json: Boolean(flags.json) }) : paint("fail", "red", { json: Boolean(flags.json) })}`,
+    `Node-native commands: ${payload.capability_matrix.node_native.commands.length} available`,
+    `Service-backed commands: ${payload.capability_matrix.service_backed.support}`,
+    `Optional Python commands: ${payload.capability_matrix.optional_python_module.support}`,
+    `Source-only commands: ${payload.capability_matrix.source_only.support}`,
   ].join("\n");
   writeJsonOrText(flags, payload, text);
 }
@@ -2193,8 +2318,27 @@ function runPythonPassthrough(args) {
   process.exit(1);
 }
 
-function runScbePassthrough(args) {
-  const script = path.join(ROOT, "scbe.py");
+function runScbePassthrough(args, flags, command) {
+  const script = SCBE_SOURCE_ENTRY;
+  if (!fs.existsSync(script)) {
+    const payload = {
+      schema_version: "geoseal_command_support_v1",
+      ok: false,
+      error: "source_only_command_unavailable",
+      command,
+      support_mode: "source_only",
+      availability: "not_shipped_in_npm",
+      required_file: "scbe.py",
+      message: `${command} requires the source-checkout scbe.py entry point, which is not included in the npm package.`,
+      fixes: [
+        "Run this command from a SCBE-AETHERMOORE source checkout that contains scbe.py.",
+        "Run geoseal doctor --json to inspect commands that are available in this installation.",
+      ],
+    };
+    writeJsonOrText(flags, payload, `${payload.message}\nTry: ${payload.fixes[1]}`);
+    process.exitCode = 2;
+    return;
+  }
   for (const executable of pythonExecutables()) {
     const result = spawnSync(executable, [script, ...args], {
       stdio: "inherit",
@@ -2213,6 +2357,18 @@ function runScbePassthrough(args) {
 
 async function main() {
   const argv = process.argv.slice(2);
+  const agentCliShell = shouldDelegateAgentShell(argv)
+    ? resolveInstalledAgentCliShell()
+    : null;
+  if (agentCliShell) {
+    const child = spawnSync(process.execPath, [agentCliShell, ...argv], {
+      stdio: "inherit",
+      shell: false,
+      windowsHide: true,
+    });
+    process.exitCode = typeof child.status === "number" ? child.status : 1;
+    return;
+  }
   const { positionals, flags } = parseArgs(argv);
   const command = positionals[0];
 
@@ -2225,7 +2381,7 @@ async function main() {
     return;
   }
   if (SCBE_SPINE_COMMANDS.has(command)) {
-    runScbePassthrough(argv);
+    runScbePassthrough(argv, flags, command);
     return;
   }
   if (command === "doctor") {

@@ -24,6 +24,8 @@ Canonical repository: https://github.com/issdandavis/SCBE-AETHERMOORE
 - Humanization Pass download: https://aethermoore.com/SCBE-AETHERMOORE/downloads/humanization-pass-checklist.md
 - AI Security Governance download: https://aethermoore.com/SCBE-AETHERMOORE/downloads/security-governance-checklist.md
 - Research library: https://aethermoore.com/SCBE-AETHERMOORE/research/
+- Live research and world signal: https://aethermoore.com/research-signal
+- Source-labeled Research Signal RSS: https://aethermoore.com/api/agent/research-signal-feed?format=rss
 - Research packet standard: https://aethermoore.com/SCBE-AETHERMOORE/research/RESEARCH_PACKET_STANDARD.md
 - M-TEF research compendium: https://aethermoore.com/SCBE-AETHERMOORE/research/mtef_research_compendium_2026-06-17.md
 - M-TEF PDF packet: https://aethermoore.com/SCBE-AETHERMOORE/research/mtef_research_compendium_2026-06-17.pdf

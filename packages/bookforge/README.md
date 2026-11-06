@@ -1,6 +1,6 @@
 # scbe-bookforge
 
-Markdown to KDP-ready paperback, hardcover, and Kindle EPUB. XeLaTeX-driven interior typography with a ReportLab fallback, plus a calibrated cover-wrap PDF that gets the spine math right.
+Markdown to a KDP print/Kindle handoff packet. It builds paperback interiors and wraps, Kindle EPUBs, and editable DOCX files. Hardcover interiors are supported, but a final case-laminate cover must be laid out against the exact template downloaded from KDP for that book; Bookforge intentionally refuses to guess hinge and wrap geometry.
 
 Built because we got tired of Word templates and Vellum subscriptions for self-publishing on Amazon KDP.
 
@@ -14,6 +14,7 @@ manuscript.md  ─►  bookforge build  ─►  interior.pdf  +  cover-wrap.pdf 
 - **Cover wrap PDF**: full back + spine + front with bleed. Spine width is computed from page count and paper type using the actual KDP formula (`pages × 0.0025 in` for cream B&W).
 - **EPUB**: pandoc-native, with title/subtitle/author/identifier metadata.
 - **DOCX**: pandoc-native, with TOC.
+- **Local Book Studio**: open `docs/bookforge-writing-studio.html` in the repository site to import a manuscript and cover locally, tune edition and ornament options, generate a draft blurb/cover brief, inspect image values, and export a preflight packet. Its Story Fire Graph maps chapters, recurring characters, and high-intensity moments into a filterable local timeline with JSON export. Files stay in the browser unless you explicitly download an export.
 
 ## Install
 
@@ -101,6 +102,12 @@ Outputs land in `output_dir`.
 | `print.paper` | `"cream"` | `cream` or `white` (affects spine math) |
 | `print.ink` | `"bw"` | `bw`, `color_standard`, `color_premium` |
 | `print.cover_finish` | `"matte"` | Informational |
+| `cover_art` | `null` | Optional front-cover image path, relative to the profile |
+| `cover.simulated_gold` | `false` | Uses process-color gold artwork. This is not metallic foil, gilding, or spot ink. |
+| `cover.background_color` | `"#0b1720"` | Back/spine process-color background |
+| `ornament.style` | `"none"` | `none`, `water_channel`, `rose`, or `gold_rule` for ReportLab interiors |
+| `ornament.color` | `"#587b73"` | Process-color ornament color |
+| `ornament.opacity` | `0.28` | Ornament opacity from 0 to 1 |
 | `typography.body_font` | `"Georgia"` | Any installed font; bookforge looks for it via fontspec (XeLaTeX) or `C:\Windows\Fonts` (ReportLab) |
 | `typography.body_size_pt` | `10.75` | |
 | `typography.leading_pt` | `14.0` | |
@@ -148,12 +155,20 @@ Bookforge uses the KDP formulas:
 |---|---|
 | Cream, B&W | 0.0025 |
 | White, B&W | 0.002252 |
-| Color, standard | 0.002347 |
+| Color, standard | 0.002252 |
 | Color, premium | 0.002347 |
 
 `spine_width = page_count × per_page`. Cover wrap dimensions = `(0.125 + trim_w + spine + trim_w + 0.125) × (0.125 + trim_h + 0.125)`.
 
 If KDP's previewer flags your cover by more than ~0.05", regenerate using the page count KDP reports for the interior you uploaded.
+
+These factors are for paperback. Hardcover covers require KDP's exact case-laminate template and include hinge and wrap regions that cannot be derived from paperback bleed math alone.
+
+## Print-color limits
+
+Bookforge's image inspector reports effective DPI, luminance, clipped shadows/highlights, and saturation, and its browser editor can make non-destructive preview adjustments before exporting a PNG. It does not perform ICC soft proofing or replace a physical proof. KDP does not print metallic spot colors, so the gold option is a simulated CMYK/process-color look. Always inspect the uploaded files in KDP Print Previewer and order a proof for color-critical work.
+
+Bookforge prepares files; it does not publish them or claim a private KDP upload API. Upload the exported manuscript and cover through your KDP Bookshelf and approve them in Print Previewer.
 
 ## Programmatic use
 

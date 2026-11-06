@@ -59,18 +59,17 @@ describe('queue', () => {
     expect(didWork).toBe(false);
   });
 
-  it('processOneEvent handles a bad scbe-system-cli.py gracefully', async () => {
-    // The event will fail because scbe-system-cli.py doesn't exist in tmpdir,
-    // but it should still move to completed/failed.
+  it('processOneEvent completes without a source checkout', async () => {
     const runId = enqueueEvent({ task: 'hello' }, { repoRoot: process.cwd() }, 0);
     const didWork = await processOneEvent();
     expect(didWork).toBe(true);
 
     const status = getEventStatus(runId);
     expect(status).not.toBeNull();
-    expect(status!.status).toBe('failed');
+    expect(status!.status, JSON.stringify(status!.result)).toBe('completed');
     expect(status!.result).toBeDefined();
-    expect(status!.result!.ok).toBe(false);
+    expect(status!.result!.ok).toBe(true);
+    expect((status!.result!.result as Record<string, unknown>).status).toBe('accepted');
   });
 
   it('plugin beforeRun can deny an event', async () => {
@@ -116,7 +115,7 @@ describe('queue', () => {
     expect(status.completed + status.failed).toBe(1);
   });
 
-  it('processOneEvent routes pipeline taskType through runPipeline', async () => {
+  it('queued pipeline plans still require a trusted isolated execution context', async () => {
     const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agent-bus-fake-geoseal-'));
     const fakeJs = path.join(fakeDir, 'fake-geoseal.js');
     const fakePlan = {
@@ -155,12 +154,12 @@ describe('queue', () => {
       { task: 'list files in current directory', taskType: 'pipeline' },
       { repoRoot, geosealBin: fakeBin }
     );
-    await processOneEvent();
+    await processOneEvent({ repoRoot, geosealBin: fakeBin });
 
     const status = getEventStatus(runId);
-    expect(status!.status).toBe('completed');
-    // Pipeline should compile, get ALLOW, and execute successfully
-    expect(status!.result!.ok).toBe(true);
+    expect(status!.status, JSON.stringify(status!.result)).toBe('failed');
+    expect(status!.result!.ok).toBe(false);
+    expect(status!.result!.stderr_tail).toMatch(/secure_execution_required/);
     expect(status!.result!.result).toBeTruthy();
   });
 });

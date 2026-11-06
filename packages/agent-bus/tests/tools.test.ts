@@ -183,7 +183,7 @@ describe('queue: tool routing', () => {
     });
 
     const runId = enqueueEvent({ task: 'hi', tool: 'echo-json' }, { allowToolDispatch: true }, 0);
-    await processOneEvent();
+    await processOneEvent({ allowToolDispatch: true });
 
     const status = getEventStatus(runId);
     expect(status).not.toBeNull();
@@ -199,7 +199,7 @@ describe('queue: tool routing', () => {
     });
 
     const runId = enqueueEvent({ task: 'fail', tool: 'exit-1' }, { allowToolDispatch: true }, 0);
-    await processOneEvent();
+    await processOneEvent({ allowToolDispatch: true });
 
     const status = getEventStatus(runId);
     expect(status!.status).toBe('failed');
@@ -212,7 +212,7 @@ describe('queue: tool routing', () => {
       { allowToolDispatch: true },
       0
     );
-    await processOneEvent();
+    await processOneEvent({ allowToolDispatch: true });
 
     const status = getEventStatus(runId);
     expect(status!.status).toBe('failed');
@@ -236,7 +236,7 @@ describe('queue: tool routing', () => {
       { allowToolDispatch: true },
       0
     );
-    await processOneEvent();
+    await processOneEvent({ allowToolDispatch: true });
 
     const status = getEventStatus(runId);
     expect(status!.status).toBe('completed');
@@ -262,7 +262,12 @@ describe('direct runEvent: tool routing', () => {
       ],
     });
 
-    const result = await runEvent({ task: 'direct-task', tool: 'direct-echo' });
+    const refused = await runEvent({ task: 'direct-task', tool: 'direct-echo' });
+    expect(refused.reason).toBe('tool_dispatch_disabled');
+    const result = await runEvent(
+      { task: 'direct-task', tool: 'direct-echo' },
+      { allowToolDispatch: true }
+    );
 
     expect(result.ok).toBe(true);
     expect(result.exit_code).toBe(0);
@@ -272,10 +277,39 @@ describe('direct runEvent: tool routing', () => {
   });
 
   it('fails direct events with unknown tools without falling through to Python agentbus', async () => {
-    const result = await runEvent({ task: 'direct-task', tool: 'missing-tool' });
+    const result = await runEvent(
+      { task: 'direct-task', tool: 'missing-tool' },
+      { allowToolDispatch: true }
+    );
 
     expect(result.ok).toBe(false);
     expect(result.exit_code).toBeNull();
     expect(result.stderr_tail).toMatch(/unknown tool/);
+  });
+
+  it('accepts no-tool events without a source checkout or Python', async () => {
+    const emptyRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'agent-bus-installed-'));
+    try {
+      const result = await runEvent(
+        { task: 'Summarize the changed training files.', taskType: 'review' },
+        { repoRoot: emptyRoot, python: 'definitely-not-installed-python' }
+      );
+
+      expect(result.ok).toBe(true);
+      expect(result.receipt_id).toMatch(/^evt_[a-f0-9]{24}$/);
+      expect(result.event.task_sha256).toMatch(/^[a-f0-9]{64}$/);
+      expect((result.result as Record<string, unknown>).status).toBe('accepted');
+    } finally {
+      fs.rmSync(emptyRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('refuses raw operation commands unless they name a registered tool', async () => {
+    const result = await runEvent({ task: 'run this', operationCommand: 'echo unsafe' });
+
+    expect(result.ok).toBe(false);
+    expect(result.exit_code).toBe(403);
+    expect(result.reason).toBe('operation_command_requires_registered_tool');
+    expect(JSON.stringify(result.result)).not.toContain('echo unsafe');
   });
 });

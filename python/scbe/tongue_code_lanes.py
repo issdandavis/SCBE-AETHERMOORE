@@ -8,6 +8,10 @@ instead of passive metadata. It supports two distinct views:
     The paradigm mapping documented in TONGUE_ISOMORPHISM_PROOF.md
 - opcode_runtime:
     Concrete execution-lane mappings used by tongue-specific opcode tables
+
+These named profiles coexist with ``training_canonical_v3`` in
+``src/symphonic/tongue_lang_map.py``. Profile differences are context, not
+conflicts to resolve by overwriting one map with another.
 """
 
 from __future__ import annotations

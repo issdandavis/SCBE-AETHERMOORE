@@ -1,7 +1,7 @@
 'use strict';
 
 const assert = require('node:assert/strict');
-const { spawnSync } = require('node:child_process');
+const { spawn, spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -42,6 +42,44 @@ function runCli(args, options = {}) {
   return result;
 }
 
+async function withBrowserFixture(run) {
+  const fixtureCode = [
+    "const http = require('node:http');",
+    "const html = '<!doctype html><html><head><title>SCBE Browser Fixture</title></head><body><main><h1>SCBE browser fixture</h1></main></body></html>';",
+    "const server = http.createServer((_req, res) => { res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); res.end(html); });",
+    "server.listen(0, '127.0.0.1', () => process.stdout.write(String(server.address().port) + '\\n'));",
+    "process.on('SIGTERM', () => server.close(() => process.exit(0)));",
+  ].join('');
+  const fixture = spawn(process.execPath, ['-e', fixtureCode], {
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  const port = await new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('browser fixture did not start')), 5_000);
+    fixture.once('error', reject);
+    fixture.stdout.once('data', (chunk) => {
+      clearTimeout(timer);
+      resolve(Number.parseInt(String(chunk).trim(), 10));
+    });
+  });
+  try {
+    return await run(`http://127.0.0.1:${port}/`);
+  } finally {
+    fixture.kill();
+  }
+}
+
+function skipWhenBrowserIsAbsent(t, result) {
+  const output = `${result.stdout || ''}\n${result.stderr || ''}`;
+  const systemLaunchWasAttempted = output.includes('executablePath=');
+  const runtimeIsAbsent = output.includes('No Playwright runtime available');
+  const bundledBrowserIsAbsent = output.includes("Executable doesn't exist at");
+  if (runtimeIsAbsent || (!systemLaunchWasAttempted && bundledBrowserIsAbsent)) {
+    t.skip('requires a local Chromium-compatible browser executable');
+    return true;
+  }
+  return false;
+}
+
 test('help documents the terminal frontend and short aliases', () => {
   const result = runCli(['--help']);
 
@@ -62,13 +100,14 @@ test('help documents the terminal frontend and short aliases', () => {
   assert.match(result.stdout, /scbe x git status --short/);
 });
 
-test('bare scbe opens the compact terminal panel instead of the long manual', () => {
+test('bare scbe opens the conversational agent instead of the terminal panel or manual', () => {
   const result = runCli([]);
 
   assert.equal(result.status, 0, result.stderr);
   assert.doesNotMatch(result.stdout, new RegExp(ESC));
-  assert.match(result.stdout, /SCBE TERMINAL/);
-  assert.match(result.stdout, /Quick nav/);
+  assert.match(result.stdout, /SCBE agent/);
+  assert.match(result.stdout, /you ›/);
+  assert.doesNotMatch(result.stdout, /SCBE TERMINAL|Quick nav/);
   assert.doesNotMatch(result.stdout, /scbe-aethermoore-cli/);
 });
 
@@ -216,31 +255,37 @@ test('desktop subsystem emits app capability benchmark JSON', { skip: DESKTOP_SK
   );
 });
 
-test('desktop subsystem can open a real browser page as JSON', () => {
-  const result = runCli(['desktop', 'browse', 'https://example.com', '--json'], {
-    timeout: 90_000,
-  });
+test('desktop subsystem can open a real browser page as JSON', async (t) => {
+  await withBrowserFixture(async (url) => {
+    const result = runCli(['desktop', 'browse', url, '--json'], {
+      timeout: 45_000,
+    });
 
-  assert.equal(result.status, 0, result.stderr);
-  const payload = JSON.parse(result.stdout);
-  assert.equal(payload.schema_version, 'scbe_browser_page_v1');
-  assert.equal(payload.success, true);
-  assert.match(payload.title, /Example Domain/);
-  assert.match(payload.final_url || payload.requested_url, /example\.com/);
-  assert.ok(payload.bytes > 0);
+    if (skipWhenBrowserIsAbsent(t, result)) return;
+    assert.equal(result.status, 0, result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.equal(payload.schema_version, 'scbe_browser_page_v1');
+    assert.equal(payload.success, true);
+    assert.equal(payload.title, 'SCBE Browser Fixture');
+    assert.equal(payload.final_url || payload.requested_url, url);
+    assert.ok(payload.bytes > 0);
+  });
 });
 
-test('desktop subsystem can capture a real page as JSON', () => {
-  const result = runCli(['desktop', 'capture', 'https://example.com', '--json'], {
-    timeout: 90_000,
-  });
+test('desktop subsystem can capture a real page as JSON', async (t) => {
+  await withBrowserFixture(async (url) => {
+    const result = runCli(['desktop', 'capture', url, '--json'], {
+      timeout: 45_000,
+    });
 
-  assert.equal(result.status, 0, result.stderr);
-  const payload = JSON.parse(result.stdout);
-  assert.equal(payload.schema_version, 'scbe_screen_capture_v1');
-  assert.equal(payload.success, true);
-  assert.match(payload.url, /example\.com/);
-  assert.ok(payload.bytes > 0);
+    if (skipWhenBrowserIsAbsent(t, result)) return;
+    assert.equal(result.status, 0, result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.equal(payload.schema_version, 'scbe_screen_capture_v1');
+    assert.equal(payload.success, true);
+    assert.equal(payload.url, url);
+    assert.ok(payload.bytes > 0);
+  });
 });
 
 test(
@@ -299,16 +344,19 @@ test('rich shell slash advisor uses the one-shot advisor lane', () => {
   assert.match(result.stdout, /advisor says use scbe test/);
 });
 
-test('rich shell slash browser uses the real browser capture lane', () => {
-  const result = runCli(['shell'], {
-    input: '/browser https://example.com\n:exit\n',
-    timeout: 90_000,
-  });
+test('rich shell slash browser uses the real browser capture lane', async (t) => {
+  await withBrowserFixture(async (url) => {
+    const result = runCli(['shell'], {
+      input: `/browser ${url}\n:exit\n`,
+      timeout: 45_000,
+    });
 
-  assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /\[browser\].*desktop .*browse .*example\.com/i);
-  assert.match(result.stdout, /Example Domain/);
-  assert.doesNotMatch(result.stdout + result.stderr, /ParserError|Unexpected token|not recognized/);
+    if (skipWhenBrowserIsAbsent(t, result)) return;
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /\[browser\].*desktop .*browse .*127\.0\.0\.1/i);
+    assert.match(result.stdout, /SCBE Browser Fixture/);
+    assert.doesNotMatch(result.stdout + result.stderr, /ParserError|Unexpected token|not recognized/);
+  });
 });
 
 test('rich shell bracket command runs obvious command bodies through receipts', () => {

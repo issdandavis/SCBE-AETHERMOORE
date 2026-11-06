@@ -96,6 +96,24 @@ class TestSafeContextEval:
     def test_empty_expression(self):
         assert SafeContextEval.evaluate("", {}) is True
 
+    def test_mapping_get_for_governance_receipts(self):
+        context = {"_last_result": {"verdict": "ESCALATE", "risk": 0.8}}
+        assert SafeContextEval.evaluate("_last_result.get('verdict') == 'ESCALATE'", context) is True
+        assert SafeContextEval.evaluate("_last_result.get('risk', 0) >= 0.75", context) is True
+
+    def test_rejects_dunder_calls_comprehensions_and_object_methods(self):
+        context = {"topic": {"domain": "academic"}}
+        expressions = [
+            "().__class__.__base__.__subclasses__()",
+            "__import__('os').system('whoami')",
+            "[x for x in [1, 2, 3]]",
+            "topic.clear()",
+            "(lambda: 1)()",
+        ]
+        for expression in expressions:
+            assert SafeContextEval.evaluate(expression, context) is False
+        assert context == {"topic": {"domain": "academic"}}
+
 
 class TestBranchingEngine:
     def test_first_match_strategy(self):
@@ -168,6 +186,27 @@ class TestBranchingEngine:
         # Only yes_path should be valid
         assert len(result.paths) == 1
         assert "yes_path" in result.paths[0].scenes_visited
+
+    def test_all_four_governance_states_route_to_only_their_branch(self):
+        for decision in ("ALLOW", "QUARANTINE", "ESCALATE", "DENY"):
+            graph = SceneGraph("four_state_policy")
+            graph.add_scene("start")
+            graph.add_choice(
+                "start",
+                [
+                    Choice(state.lower(), condition=f"decision == '{state}'")
+                    for state in ("ALLOW", "QUARANTINE", "ESCALATE", "DENY")
+                ],
+            )
+            for state in ("ALLOW", "QUARANTINE", "ESCALATE", "DENY"):
+                graph.add_finish(state.lower())
+            result = BranchingEngine().explore_sync(
+                graph,
+                context={"decision": decision},
+                strategy=ExploreStrategy.ALL_PATHS,
+            )
+            assert len(result.paths) == 1
+            assert result.paths[0].scenes_visited[-1] == decision.lower()
 
     def test_coverage_calculation(self):
         g = build_research_pipeline_graph("test")

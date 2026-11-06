@@ -1,0 +1,1686 @@
+{
+  "schema": "scbe.function-primitives.v1",
+  "version": 1,
+  "coverage": "Extensible speech-function inventory v1; not an exhaustive universal language or automatic parser.",
+  "provenance": {
+    "entries": "New authored semantic entries, grounded in UD and existing conlang roles; English forms are sense examples, not native translations.",
+    "course": "User-provided ENGL&101 Content Words Vs Function Words Exercises. Original generated lessons; no assignment answers.",
+    "sources": [
+      "https://universaldependencies.org/u/pos/index.html",
+      "https://universaldependencies.org/u/feat/Polarity.html",
+      "https://universaldependencies.org/u/feat/DeixisRef.html",
+      "https://wals.info/chapter/39"
+    ]
+  },
+  "role_definitions": {
+    "speaker": "Produces the current utterance.",
+    "addressee": "Intended recipient of the current utterance.",
+    "hearer": "Recorded as hearing; attention and comprehension are separate.",
+    "listener": "Recorded as attending; agreement and understanding are separate.",
+    "bystander": "Present but not addressed; may or may not hear.",
+    "nonparticipant": "Outside this exchange; no implied knowledge.",
+    "omniscient_narrator": "Fictional view over supplied story facts; never evidence of a participant's knowledge."
+  },
+  "stance_definitions": {
+    "negative": "Opposed emphasis toward an explicitly named topic.",
+    "neutral": "Uncommitted or balanced emphasis, not missing knowledge.",
+    "positive": "Supportive emphasis toward an explicitly named topic."
+  },
+  "entries": [
+    {
+      "id": "det.definite",
+      "kind": "function",
+      "family": "article",
+      "upos": "DET",
+      "forms": [
+        "the"
+      ],
+      "definition": "Present the referent as identifiable in this context.",
+      "features": {
+        "Definite": "Def",
+        "PronType": "Art"
+      }
+    },
+    {
+      "id": "det.indefinite",
+      "kind": "function",
+      "family": "article",
+      "upos": "DET",
+      "forms": [
+        "a",
+        "an"
+      ],
+      "definition": "Introduce one nonspecific countable referent.",
+      "features": {
+        "Definite": "Ind",
+        "PronType": "Art",
+        "Number": "Sing"
+      }
+    },
+    {
+      "id": "det.proximal",
+      "kind": "function",
+      "family": "determiner",
+      "upos": "DET",
+      "forms": [
+        "this",
+        "these"
+      ],
+      "definition": "Point to a contextually near referent.",
+      "features": {
+        "PronType": "Dem",
+        "Deixis": "Prox"
+      }
+    },
+    {
+      "id": "det.distal",
+      "kind": "function",
+      "family": "determiner",
+      "upos": "DET",
+      "forms": [
+        "that",
+        "those"
+      ],
+      "definition": "Point to a contextually distant referent.",
+      "features": {
+        "PronType": "Dem",
+        "Deixis": "Remt"
+      }
+    },
+    {
+      "id": "det.some",
+      "kind": "function",
+      "family": "determiner",
+      "upos": "DET",
+      "forms": [
+        "some"
+      ],
+      "definition": "Select an unspecified amount or subset.",
+      "features": {
+        "Quantifier": "existential"
+      }
+    },
+    {
+      "id": "det.all",
+      "kind": "function",
+      "family": "determiner",
+      "upos": "DET",
+      "forms": [
+        "all",
+        "every",
+        "each"
+      ],
+      "definition": "Distribute reference over a contextually delimited set.",
+      "features": {
+        "Quantifier": "universal"
+      }
+    },
+    {
+      "id": "det.none",
+      "kind": "function",
+      "family": "determiner",
+      "upos": "DET",
+      "forms": [
+        "no"
+      ],
+      "definition": "Exclude members of the scoped set.",
+      "features": {
+        "PronType": "Neg",
+        "Quantifier": "zero"
+      }
+    },
+    {
+      "id": "det.many",
+      "kind": "function",
+      "family": "determiner",
+      "upos": "DET",
+      "forms": [
+        "many",
+        "much"
+      ],
+      "definition": "Describe a contextually large quantity.",
+      "features": {
+        "Quantity": "large"
+      }
+    },
+    {
+      "id": "det.few",
+      "kind": "function",
+      "family": "determiner",
+      "upos": "DET",
+      "forms": [
+        "few",
+        "little"
+      ],
+      "definition": "Describe a contextually small quantity.",
+      "features": {
+        "Quantity": "small"
+      }
+    },
+    {
+      "id": "det.any",
+      "kind": "function",
+      "family": "determiner",
+      "upos": "DET",
+      "forms": [
+        "any"
+      ],
+      "definition": "Leave selection free or dependent on clause scope.",
+      "features": {
+        "Quantifier": "context_dependent"
+      }
+    },
+    {
+      "id": "det.both",
+      "kind": "function",
+      "family": "determiner",
+      "upos": "DET",
+      "forms": [
+        "both"
+      ],
+      "definition": "Refer to the two members of an established pair.",
+      "features": {
+        "Number": "Dual"
+      }
+    },
+    {
+      "id": "det.either",
+      "kind": "function",
+      "family": "determiner",
+      "upos": "DET",
+      "forms": [
+        "either"
+      ],
+      "definition": "Select one of two alternatives; scope supplies inclusive or exclusive reading.",
+      "features": {
+        "Selection": "alternative"
+      }
+    },
+    {
+      "id": "det.possessive",
+      "kind": "function",
+      "family": "determiner",
+      "upos": "DET",
+      "forms": [
+        "my",
+        "your",
+        "his",
+        "her",
+        "its",
+        "our",
+        "their"
+      ],
+      "definition": "Relate a noun phrase to a possessor.",
+      "features": {
+        "Poss": "Yes"
+      }
+    },
+    {
+      "id": "det.interrogative",
+      "kind": "function",
+      "family": "determiner",
+      "upos": "DET",
+      "forms": [
+        "which",
+        "what",
+        "whose"
+      ],
+      "definition": "Ask which referent fills the noun phrase.",
+      "features": {
+        "PronType": "Int"
+      }
+    },
+    {
+      "id": "adp.of",
+      "kind": "function",
+      "family": "preposition",
+      "upos": "ADP",
+      "forms": [
+        "of"
+      ],
+      "definition": "Attach a dependent relation such as contents, part, origin or possession.",
+      "features": {
+        "Relation": "of"
+      }
+    },
+    {
+      "id": "adp.with",
+      "kind": "function",
+      "family": "preposition",
+      "upos": "ADP",
+      "forms": [
+        "with"
+      ],
+      "definition": "Mark accompaniment or instrument; choose the sense using context.",
+      "features": {
+        "Relation": "with"
+      }
+    },
+    {
+      "id": "adp.without",
+      "kind": "function",
+      "family": "preposition",
+      "upos": "ADP",
+      "forms": [
+        "without"
+      ],
+      "definition": "Mark absence or exclusion relative to a scoped entity.",
+      "features": {
+        "Relation": "without"
+      }
+    },
+    {
+      "id": "adp.under",
+      "kind": "function",
+      "family": "preposition",
+      "upos": "ADP",
+      "forms": [
+        "under",
+        "below"
+      ],
+      "definition": "Place something lower than a reference in the named frame.",
+      "features": {
+        "Relation": "under"
+      }
+    },
+    {
+      "id": "adp.above",
+      "kind": "function",
+      "family": "preposition",
+      "upos": "ADP",
+      "forms": [
+        "above",
+        "over"
+      ],
+      "definition": "Place something higher than a reference in the named frame.",
+      "features": {
+        "Relation": "above"
+      }
+    },
+    {
+      "id": "adp.beside",
+      "kind": "function",
+      "family": "preposition",
+      "upos": "ADP",
+      "forms": [
+        "beside",
+        "next to"
+      ],
+      "definition": "Place something adjacent to a reference.",
+      "features": {
+        "Relation": "beside"
+      }
+    },
+    {
+      "id": "adp.inside",
+      "kind": "function",
+      "family": "preposition",
+      "upos": "ADP",
+      "forms": [
+        "in",
+        "inside",
+        "within"
+      ],
+      "definition": "Place something in a bounded region.",
+      "features": {
+        "Relation": "inside"
+      }
+    },
+    {
+      "id": "adp.outside",
+      "kind": "function",
+      "family": "preposition",
+      "upos": "ADP",
+      "forms": [
+        "outside"
+      ],
+      "definition": "Place something beyond a bounded region.",
+      "features": {
+        "Relation": "outside"
+      }
+    },
+    {
+      "id": "adp.on",
+      "kind": "function",
+      "family": "preposition",
+      "upos": "ADP",
+      "forms": [
+        "on"
+      ],
+      "definition": "Relate something to a supporting or contacting surface.",
+      "features": {
+        "Relation": "on"
+      }
+    },
+    {
+      "id": "adp.at",
+      "kind": "function",
+      "family": "preposition",
+      "upos": "ADP",
+      "forms": [
+        "at"
+      ],
+      "definition": "Anchor location to a reference site.",
+      "features": {
+        "Relation": "at"
+      }
+    },
+    {
+      "id": "adp.before",
+      "kind": "function",
+      "family": "preposition",
+      "upos": "ADP",
+      "forms": [
+        "before"
+      ],
+      "definition": "Order an event earlier than a reference time.",
+      "features": {
+        "Relation": "before"
+      }
+    },
+    {
+      "id": "adp.after",
+      "kind": "function",
+      "family": "preposition",
+      "upos": "ADP",
+      "forms": [
+        "after"
+      ],
+      "definition": "Order an event later than a reference time.",
+      "features": {
+        "Relation": "after"
+      }
+    },
+    {
+      "id": "adp.during",
+      "kind": "function",
+      "family": "preposition",
+      "upos": "ADP",
+      "forms": [
+        "during"
+      ],
+      "definition": "Locate an event within a reference interval.",
+      "features": {
+        "Relation": "during"
+      }
+    },
+    {
+      "id": "adp.through",
+      "kind": "function",
+      "family": "preposition",
+      "upos": "ADP",
+      "forms": [
+        "through"
+      ],
+      "definition": "Mark traversal of a region or mediation by something.",
+      "features": {
+        "Relation": "through"
+      }
+    },
+    {
+      "id": "adp.toward",
+      "kind": "function",
+      "family": "preposition",
+      "upos": "ADP",
+      "forms": [
+        "toward",
+        "towards",
+        "to"
+      ],
+      "definition": "Mark a goal-directed relation.",
+      "features": {
+        "Relation": "toward"
+      }
+    },
+    {
+      "id": "adp.from",
+      "kind": "function",
+      "family": "preposition",
+      "upos": "ADP",
+      "forms": [
+        "from"
+      ],
+      "definition": "Mark a source relation.",
+      "features": {
+        "Relation": "from"
+      }
+    },
+    {
+      "id": "adp.between",
+      "kind": "function",
+      "family": "preposition",
+      "upos": "ADP",
+      "forms": [
+        "between",
+        "among"
+      ],
+      "definition": "Relate an item to multiple reference entities.",
+      "features": {
+        "Relation": "between"
+      }
+    },
+    {
+      "id": "adp.for",
+      "kind": "function",
+      "family": "preposition",
+      "upos": "ADP",
+      "forms": [
+        "for"
+      ],
+      "definition": "Mark purpose or beneficiary as specified by context.",
+      "features": {
+        "Relation": "for"
+      }
+    },
+    {
+      "id": "adp.by",
+      "kind": "function",
+      "family": "preposition",
+      "upos": "ADP",
+      "forms": [
+        "by"
+      ],
+      "definition": "Mark agent, means or proximity as specified by context.",
+      "features": {
+        "Relation": "by"
+      }
+    },
+    {
+      "id": "adp.against",
+      "kind": "function",
+      "family": "preposition",
+      "upos": "ADP",
+      "forms": [
+        "against"
+      ],
+      "definition": "Mark opposition or contact as specified by context.",
+      "features": {
+        "Relation": "against"
+      }
+    },
+    {
+      "id": "join.and",
+      "kind": "function",
+      "family": "conjunction",
+      "upos": "CCONJ",
+      "forms": [
+        "and"
+      ],
+      "definition": "Coordinate propositions without by itself asserting causation.",
+      "features": {
+        "Link": "and"
+      }
+    },
+    {
+      "id": "join.but",
+      "kind": "function",
+      "family": "conjunction",
+      "upos": "CCONJ",
+      "forms": [
+        "but"
+      ],
+      "definition": "Coordinate propositions with a contrast to an expectation.",
+      "features": {
+        "Link": "but"
+      }
+    },
+    {
+      "id": "join.or",
+      "kind": "function",
+      "family": "conjunction",
+      "upos": "CCONJ",
+      "forms": [
+        "or"
+      ],
+      "definition": "Present alternatives; exclusive versus inclusive meaning requires context.",
+      "features": {
+        "Link": "or"
+      }
+    },
+    {
+      "id": "join.nor",
+      "kind": "function",
+      "family": "conjunction",
+      "upos": "CCONJ",
+      "forms": [
+        "nor"
+      ],
+      "definition": "Coordinate negative alternatives with explicit scope.",
+      "features": {
+        "Link": "nor"
+      }
+    },
+    {
+      "id": "join.so",
+      "kind": "function",
+      "family": "conjunction",
+      "upos": "CCONJ",
+      "forms": [
+        "so"
+      ],
+      "definition": "Present the second proposition as a consequence of the first.",
+      "features": {
+        "Link": "so"
+      }
+    },
+    {
+      "id": "join.because",
+      "kind": "function",
+      "family": "conjunction",
+      "upos": "SCONJ",
+      "forms": [
+        "because"
+      ],
+      "definition": "Introduce a stated reason, without independently proving it.",
+      "features": {
+        "Link": "because"
+      }
+    },
+    {
+      "id": "join.although",
+      "kind": "function",
+      "family": "conjunction",
+      "upos": "SCONJ",
+      "forms": [
+        "although",
+        "though",
+        "even though"
+      ],
+      "definition": "Introduce a concession against an expected consequence.",
+      "features": {
+        "Link": "although"
+      }
+    },
+    {
+      "id": "join.if",
+      "kind": "function",
+      "family": "conjunction",
+      "upos": "SCONJ",
+      "forms": [
+        "if"
+      ],
+      "definition": "Introduce a condition.",
+      "features": {
+        "Link": "if"
+      }
+    },
+    {
+      "id": "join.unless",
+      "kind": "function",
+      "family": "conjunction",
+      "upos": "SCONJ",
+      "forms": [
+        "unless"
+      ],
+      "definition": "Introduce an exception condition.",
+      "features": {
+        "Link": "unless"
+      }
+    },
+    {
+      "id": "join.while",
+      "kind": "function",
+      "family": "conjunction",
+      "upos": "SCONJ",
+      "forms": [
+        "while"
+      ],
+      "definition": "Link overlap in time or contrast; context determines the sense.",
+      "features": {
+        "Link": "while"
+      }
+    },
+    {
+      "id": "join.when",
+      "kind": "function",
+      "family": "conjunction",
+      "upos": "SCONJ",
+      "forms": [
+        "when"
+      ],
+      "definition": "Introduce a temporal condition.",
+      "features": {
+        "Link": "when"
+      }
+    },
+    {
+      "id": "join.that",
+      "kind": "function",
+      "family": "conjunction",
+      "upos": "SCONJ",
+      "forms": [
+        "that"
+      ],
+      "definition": "Introduce the content of an embedded clause.",
+      "features": {
+        "Link": "that"
+      }
+    },
+    {
+      "id": "join.whether",
+      "kind": "function",
+      "family": "conjunction",
+      "upos": "SCONJ",
+      "forms": [
+        "whether"
+      ],
+      "definition": "Introduce an unresolved alternative.",
+      "features": {
+        "Link": "whether"
+      }
+    },
+    {
+      "id": "join.before",
+      "kind": "function",
+      "family": "conjunction",
+      "upos": "SCONJ",
+      "forms": [
+        "before"
+      ],
+      "definition": "Introduce a clause used as a later time reference.",
+      "features": {
+        "Link": "before"
+      }
+    },
+    {
+      "id": "join.after",
+      "kind": "function",
+      "family": "conjunction",
+      "upos": "SCONJ",
+      "forms": [
+        "after"
+      ],
+      "definition": "Introduce a clause used as an earlier time reference.",
+      "features": {
+        "Link": "after"
+      }
+    },
+    {
+      "id": "pron.speaker.subject",
+      "kind": "function",
+      "family": "pronoun",
+      "upos": "PRON",
+      "forms": [
+        "I"
+      ],
+      "definition": "Refer to the current quoted or utterance speaker as subject.",
+      "features": {
+        "Person": "1",
+        "Number": "Sing",
+        "Case": "Nom",
+        "Reference": "speaker"
+      }
+    },
+    {
+      "id": "pron.speaker.object",
+      "kind": "function",
+      "family": "pronoun",
+      "upos": "PRON",
+      "forms": [
+        "me"
+      ],
+      "definition": "Refer to the current speaker as object.",
+      "features": {
+        "Person": "1",
+        "Number": "Sing",
+        "Case": "Acc",
+        "Reference": "speaker"
+      }
+    },
+    {
+      "id": "pron.addressee",
+      "kind": "function",
+      "family": "pronoun",
+      "upos": "PRON",
+      "forms": [
+        "you"
+      ],
+      "definition": "Refer to the intended addressee or addressees; not every hearer.",
+      "features": {
+        "Person": "2",
+        "Reference": "addressee"
+      }
+    },
+    {
+      "id": "pron.third.male.subject",
+      "kind": "function",
+      "family": "pronoun",
+      "upos": "PRON",
+      "forms": [
+        "he"
+      ],
+      "definition": "Refer to an explicitly bound third person using he.",
+      "features": {
+        "Person": "3",
+        "Case": "Nom",
+        "Reference": "bound"
+      }
+    },
+    {
+      "id": "pron.third.male.object",
+      "kind": "function",
+      "family": "pronoun",
+      "upos": "PRON",
+      "forms": [
+        "him"
+      ],
+      "definition": "Refer to an explicitly bound third person using him.",
+      "features": {
+        "Person": "3",
+        "Case": "Acc",
+        "Reference": "bound"
+      }
+    },
+    {
+      "id": "pron.third.female.subject",
+      "kind": "function",
+      "family": "pronoun",
+      "upos": "PRON",
+      "forms": [
+        "she"
+      ],
+      "definition": "Refer to an explicitly bound third person using she.",
+      "features": {
+        "Person": "3",
+        "Case": "Nom",
+        "Reference": "bound"
+      }
+    },
+    {
+      "id": "pron.third.female.object",
+      "kind": "function",
+      "family": "pronoun",
+      "upos": "PRON",
+      "forms": [
+        "her"
+      ],
+      "definition": "Refer to an explicitly bound third person using her.",
+      "features": {
+        "Person": "3",
+        "Case": "Acc",
+        "Reference": "bound"
+      }
+    },
+    {
+      "id": "pron.third.it",
+      "kind": "function",
+      "family": "pronoun",
+      "upos": "PRON",
+      "forms": [
+        "it"
+      ],
+      "definition": "Refer to a contextually bound entity, or an expletive in other constructions.",
+      "features": {
+        "Person": "3",
+        "Reference": "bound"
+      }
+    },
+    {
+      "id": "pron.third.they",
+      "kind": "function",
+      "family": "pronoun",
+      "upos": "PRON",
+      "forms": [
+        "they",
+        "them"
+      ],
+      "definition": "Refer to one or more contextually bound third persons.",
+      "features": {
+        "Person": "3",
+        "Reference": "bound"
+      }
+    },
+    {
+      "id": "pron.we.unspecified",
+      "kind": "function",
+      "family": "pronoun",
+      "upos": "PRON",
+      "forms": [
+        "we",
+        "us"
+      ],
+      "definition": "Refer to the speaker and an explicitly supplied group.",
+      "features": {
+        "Person": "1",
+        "Number": "Plur",
+        "Reference": "group"
+      }
+    },
+    {
+      "id": "pron.we.inclusive",
+      "kind": "function",
+      "family": "pronoun",
+      "upos": "PRON",
+      "forms": [
+        "we",
+        "us"
+      ],
+      "definition": "Include both the speaker and addressee in the supplied group.",
+      "features": {
+        "Person": "1",
+        "Number": "Plur",
+        "Clusivity": "In",
+        "Reference": "group"
+      }
+    },
+    {
+      "id": "pron.we.exclusive",
+      "kind": "function",
+      "family": "pronoun",
+      "upos": "PRON",
+      "forms": [
+        "we",
+        "us"
+      ],
+      "definition": "Include the speaker but exclude addressees from the supplied group.",
+      "features": {
+        "Person": "1",
+        "Number": "Plur",
+        "Clusivity": "Ex",
+        "Reference": "group"
+      }
+    },
+    {
+      "id": "pron.reflexive",
+      "kind": "function",
+      "family": "pronoun",
+      "upos": "PRON",
+      "forms": [
+        "myself",
+        "yourself",
+        "herself",
+        "himself",
+        "itself",
+        "ourselves",
+        "yourselves",
+        "themselves"
+      ],
+      "definition": "Bind reference to the relevant local antecedent.",
+      "features": {
+        "Reflex": "Yes",
+        "Reference": "antecedent"
+      }
+    },
+    {
+      "id": "pron.reciprocal",
+      "kind": "function",
+      "family": "pronoun",
+      "upos": "PRON",
+      "forms": [
+        "each other",
+        "one another"
+      ],
+      "definition": "Relate members of a supplied group reciprocally.",
+      "features": {
+        "PronType": "Rcp",
+        "Reference": "group"
+      }
+    },
+    {
+      "id": "pron.proximal",
+      "kind": "function",
+      "family": "pronoun",
+      "upos": "PRON",
+      "forms": [
+        "this",
+        "these"
+      ],
+      "definition": "Stand for a near referent in a specified frame.",
+      "features": {
+        "PronType": "Dem",
+        "Deixis": "Prox",
+        "Reference": "bound"
+      }
+    },
+    {
+      "id": "pron.distal",
+      "kind": "function",
+      "family": "pronoun",
+      "upos": "PRON",
+      "forms": [
+        "that",
+        "those"
+      ],
+      "definition": "Stand for a distant referent in a specified frame.",
+      "features": {
+        "PronType": "Dem",
+        "Deixis": "Remt",
+        "Reference": "bound"
+      }
+    },
+    {
+      "id": "pron.who.question",
+      "kind": "function",
+      "family": "pronoun",
+      "upos": "PRON",
+      "forms": [
+        "who",
+        "whom"
+      ],
+      "definition": "Ask for a person binding.",
+      "features": {
+        "PronType": "Int",
+        "Question": "who"
+      }
+    },
+    {
+      "id": "pron.who.relative",
+      "kind": "function",
+      "family": "pronoun",
+      "upos": "PRON",
+      "forms": [
+        "who",
+        "whom"
+      ],
+      "definition": "Bind a relative clause to a person antecedent.",
+      "features": {
+        "PronType": "Rel",
+        "Reference": "antecedent"
+      }
+    },
+    {
+      "id": "pron.what.question",
+      "kind": "function",
+      "family": "pronoun",
+      "upos": "PRON",
+      "forms": [
+        "what"
+      ],
+      "definition": "Ask for an entity or event binding.",
+      "features": {
+        "PronType": "Int",
+        "Question": "what"
+      }
+    },
+    {
+      "id": "pron.which.question",
+      "kind": "function",
+      "family": "pronoun",
+      "upos": "PRON",
+      "forms": [
+        "which"
+      ],
+      "definition": "Ask for a selection among contextual alternatives.",
+      "features": {
+        "PronType": "Int",
+        "Question": "which"
+      }
+    },
+    {
+      "id": "pron.indefinite",
+      "kind": "function",
+      "family": "pronoun",
+      "upos": "PRON",
+      "forms": [
+        "someone",
+        "somebody",
+        "something"
+      ],
+      "definition": "Introduce an unspecified person or entity.",
+      "features": {
+        "PronType": "Ind"
+      }
+    },
+    {
+      "id": "pron.negative",
+      "kind": "function",
+      "family": "pronoun",
+      "upos": "PRON",
+      "forms": [
+        "nobody",
+        "no one",
+        "nothing"
+      ],
+      "definition": "State an empty set of referents in the scoped domain.",
+      "features": {
+        "PronType": "Neg"
+      }
+    },
+    {
+      "id": "pron.possessive",
+      "kind": "function",
+      "family": "pronoun",
+      "upos": "PRON",
+      "forms": [
+        "mine",
+        "yours",
+        "hers",
+        "ours",
+        "theirs"
+      ],
+      "definition": "Stand for a referent related to the specified possessor.",
+      "features": {
+        "Poss": "Yes",
+        "Reference": "bound"
+      }
+    },
+    {
+      "id": "aux.be.present",
+      "kind": "function",
+      "family": "helping_verb",
+      "upos": "AUX",
+      "forms": [
+        "am",
+        "is",
+        "are"
+      ],
+      "definition": "Support a present progressive or passive construction.",
+      "features": {
+        "Tense": "Pres"
+      }
+    },
+    {
+      "id": "aux.be.past",
+      "kind": "function",
+      "family": "helping_verb",
+      "upos": "AUX",
+      "forms": [
+        "was",
+        "were"
+      ],
+      "definition": "Support a past progressive or passive construction.",
+      "features": {
+        "Tense": "Past"
+      }
+    },
+    {
+      "id": "aux.be.base",
+      "kind": "function",
+      "family": "helping_verb",
+      "upos": "AUX",
+      "forms": [
+        "be",
+        "been",
+        "being"
+      ],
+      "definition": "Support a construction whose tense/aspect comes from its clause.",
+      "features": {}
+    },
+    {
+      "id": "aux.have.perfect",
+      "kind": "function",
+      "family": "helping_verb",
+      "upos": "AUX",
+      "forms": [
+        "have",
+        "has",
+        "had"
+      ],
+      "definition": "Support perfect aspect; tense depends on the selected form.",
+      "features": {
+        "Aspect": "Perf"
+      }
+    },
+    {
+      "id": "aux.do.support",
+      "kind": "function",
+      "family": "helping_verb",
+      "upos": "AUX",
+      "forms": [
+        "do",
+        "does",
+        "did"
+      ],
+      "definition": "Support negation, questions or emphasis.",
+      "features": {
+        "Auxiliary": "support"
+      }
+    },
+    {
+      "id": "aux.will",
+      "kind": "function",
+      "family": "helping_verb",
+      "upos": "AUX",
+      "forms": [
+        "will",
+        "shall"
+      ],
+      "definition": "Mark a future-oriented prediction or commitment in context.",
+      "features": {
+        "Modality": "future_or_commitment"
+      }
+    },
+    {
+      "id": "aux.would",
+      "kind": "function",
+      "family": "helping_verb",
+      "upos": "AUX",
+      "forms": [
+        "would"
+      ],
+      "definition": "Mark a conditional, reported future or habitual construction.",
+      "features": {
+        "Modality": "conditional"
+      }
+    },
+    {
+      "id": "aux.can",
+      "kind": "function",
+      "family": "helping_verb",
+      "upos": "AUX",
+      "forms": [
+        "can",
+        "could"
+      ],
+      "definition": "Mark ability or possibility, with sense and time supplied by context.",
+      "features": {
+        "Modality": "ability_or_possibility"
+      }
+    },
+    {
+      "id": "aux.may",
+      "kind": "function",
+      "family": "helping_verb",
+      "upos": "AUX",
+      "forms": [
+        "may",
+        "might"
+      ],
+      "definition": "Mark possibility or permission; the context chooses the sense.",
+      "features": {
+        "Modality": "possibility_or_permission"
+      }
+    },
+    {
+      "id": "aux.must",
+      "kind": "function",
+      "family": "helping_verb",
+      "upos": "AUX",
+      "forms": [
+        "must"
+      ],
+      "definition": "Mark obligation or an inference, according to the clause context.",
+      "features": {
+        "Modality": "necessity"
+      }
+    },
+    {
+      "id": "aux.should",
+      "kind": "function",
+      "family": "helping_verb",
+      "upos": "AUX",
+      "forms": [
+        "should",
+        "ought to"
+      ],
+      "definition": "Mark recommendation or expectation.",
+      "features": {
+        "Modality": "recommendation"
+      }
+    },
+    {
+      "id": "part.negation",
+      "kind": "function",
+      "family": "particle",
+      "upos": "PART",
+      "forms": [
+        "not",
+        "n't"
+      ],
+      "definition": "Negate the explicitly named scope.",
+      "features": {
+        "Polarity": "Neg"
+      }
+    },
+    {
+      "id": "part.infinitive",
+      "kind": "function",
+      "family": "particle",
+      "upos": "PART",
+      "forms": [
+        "to"
+      ],
+      "definition": "Mark an infinitival construction, distinct from directional to.",
+      "features": {
+        "VerbForm": "Inf"
+      }
+    },
+    {
+      "id": "part.focus",
+      "kind": "function",
+      "family": "particle",
+      "upos": "PART",
+      "forms": [
+        "only",
+        "even",
+        "also"
+      ],
+      "definition": "Restrict, highlight or add the focused constituent as specified.",
+      "features": {
+        "Focus": "context_dependent"
+      }
+    },
+    {
+      "id": "adv.where",
+      "kind": "function",
+      "family": "deictic_discourse",
+      "upos": "ADV",
+      "forms": [
+        "where"
+      ],
+      "definition": "Ask for a location frame.",
+      "features": {
+        "Question": "where"
+      }
+    },
+    {
+      "id": "adv.when",
+      "kind": "function",
+      "family": "deictic_discourse",
+      "upos": "ADV",
+      "forms": [
+        "when"
+      ],
+      "definition": "Ask for a time frame.",
+      "features": {
+        "Question": "when"
+      }
+    },
+    {
+      "id": "adv.why",
+      "kind": "function",
+      "family": "deictic_discourse",
+      "upos": "ADV",
+      "forms": [
+        "why"
+      ],
+      "definition": "Ask for a reason supported by evidence.",
+      "features": {
+        "Question": "why"
+      }
+    },
+    {
+      "id": "adv.how",
+      "kind": "function",
+      "family": "deictic_discourse",
+      "upos": "ADV",
+      "forms": [
+        "how"
+      ],
+      "definition": "Ask for a mechanism, manner or degree specified by context.",
+      "features": {
+        "Question": "how"
+      }
+    },
+    {
+      "id": "adv.here",
+      "kind": "function",
+      "family": "deictic_discourse",
+      "upos": "ADV",
+      "forms": [
+        "here"
+      ],
+      "definition": "Locate something near the active deictic reference.",
+      "features": {
+        "Deixis": "Prox"
+      }
+    },
+    {
+      "id": "adv.there",
+      "kind": "function",
+      "family": "deictic_discourse",
+      "upos": "ADV",
+      "forms": [
+        "there"
+      ],
+      "definition": "Locate something away from the active deictic reference; expletives need another sense.",
+      "features": {
+        "Deixis": "Remt"
+      }
+    },
+    {
+      "id": "adv.now",
+      "kind": "function",
+      "family": "deictic_discourse",
+      "upos": "ADV",
+      "forms": [
+        "now",
+        "currently"
+      ],
+      "definition": "Anchor an event to the active reference time.",
+      "features": {
+        "TimeReference": "present"
+      }
+    },
+    {
+      "id": "adv.then",
+      "kind": "function",
+      "family": "deictic_discourse",
+      "upos": "ADV",
+      "forms": [
+        "then"
+      ],
+      "definition": "Anchor an event to a contextually supplied time.",
+      "features": {
+        "TimeReference": "bound"
+      }
+    },
+    {
+      "id": "adv.degree.more",
+      "kind": "function",
+      "family": "deictic_discourse",
+      "upos": "ADV",
+      "forms": [
+        "more"
+      ],
+      "definition": "Increase a contextual degree.",
+      "features": {
+        "Degree": "Cmp",
+        "Direction": "increase"
+      }
+    },
+    {
+      "id": "adv.degree.less",
+      "kind": "function",
+      "family": "deictic_discourse",
+      "upos": "ADV",
+      "forms": [
+        "less"
+      ],
+      "definition": "Decrease a contextual degree.",
+      "features": {
+        "Degree": "Cmp",
+        "Direction": "decrease"
+      }
+    },
+    {
+      "id": "adv.degree.equal",
+      "kind": "function",
+      "family": "deictic_discourse",
+      "upos": "ADV",
+      "forms": [
+        "as"
+      ],
+      "definition": "Mark equality of degree in a paired construction.",
+      "features": {
+        "DegreeRelation": "equal"
+      }
+    },
+    {
+      "id": "adv.evidence.reported",
+      "kind": "function",
+      "family": "deictic_discourse",
+      "upos": "ADV",
+      "forms": [
+        "reportedly"
+      ],
+      "definition": "Attribute information to a report rather than direct observation.",
+      "features": {
+        "Evidence": "reported"
+      }
+    },
+    {
+      "id": "adv.evidence.inferred",
+      "kind": "function",
+      "family": "deictic_discourse",
+      "upos": "ADV",
+      "forms": [
+        "apparently"
+      ],
+      "definition": "Present a contextual inference with its evidence kept separate.",
+      "features": {
+        "Evidence": "inferred"
+      }
+    },
+    {
+      "id": "adv.discourse.therefore",
+      "kind": "function",
+      "family": "deictic_discourse",
+      "upos": "ADV",
+      "forms": [
+        "therefore"
+      ],
+      "definition": "Mark an asserted inferential consequence.",
+      "features": {
+        "Discourse": "consequence"
+      }
+    },
+    {
+      "id": "adv.discourse.however",
+      "kind": "function",
+      "family": "deictic_discourse",
+      "upos": "ADV",
+      "forms": [
+        "however"
+      ],
+      "definition": "Mark a discourse contrast.",
+      "features": {
+        "Discourse": "contrast"
+      }
+    },
+    {
+      "id": "speech.yes",
+      "kind": "function",
+      "family": "speech_act",
+      "upos": "INTJ",
+      "forms": [
+        "yes"
+      ],
+      "definition": "Affirm the scoped proposition.",
+      "features": {
+        "Polarity": "Pos",
+        "SpeechAct": "affirm"
+      }
+    },
+    {
+      "id": "speech.no",
+      "kind": "function",
+      "family": "speech_act",
+      "upos": "INTJ",
+      "forms": [
+        "no"
+      ],
+      "definition": "Reject the scoped proposition.",
+      "features": {
+        "Polarity": "Neg",
+        "SpeechAct": "reject"
+      }
+    },
+    {
+      "id": "speech.greeting",
+      "kind": "function",
+      "family": "speech_act",
+      "upos": "INTJ",
+      "forms": [
+        "hello",
+        "hi"
+      ],
+      "definition": "Open a social exchange.",
+      "features": {
+        "SpeechAct": "greet"
+      }
+    },
+    {
+      "id": "speech.acknowledgment",
+      "kind": "function",
+      "family": "speech_act",
+      "upos": "INTJ",
+      "forms": [
+        "okay",
+        "understood"
+      ],
+      "definition": "Express an acknowledgment; it does not prove comprehension.",
+      "features": {
+        "SpeechAct": "acknowledge"
+      }
+    },
+    {
+      "id": "content.noun.concrete",
+      "kind": "content",
+      "family": "noun",
+      "upos": "NOUN",
+      "forms": [
+        "dog",
+        "table",
+        "cup",
+        "robot",
+        "garden",
+        "bird"
+      ],
+      "definition": "Name a physical entity or place.",
+      "features": {
+        "ContentType": "concrete_entity"
+      }
+    },
+    {
+      "id": "content.noun.abstract",
+      "kind": "content",
+      "family": "noun",
+      "upos": "NOUN",
+      "forms": [
+        "justice",
+        "freedom",
+        "knowledge",
+        "courage"
+      ],
+      "definition": "Name an abstract concept.",
+      "features": {
+        "ContentType": "abstract_entity"
+      }
+    },
+    {
+      "id": "content.noun.emotion",
+      "kind": "content",
+      "family": "noun",
+      "upos": "NOUN",
+      "forms": [
+        "love",
+        "fear",
+        "hope",
+        "envy"
+      ],
+      "definition": "Name an emotion or experience in nominal use.",
+      "features": {
+        "ContentType": "emotion"
+      }
+    },
+    {
+      "id": "content.verb.action",
+      "kind": "content",
+      "family": "verb",
+      "upos": "VERB",
+      "forms": [
+        "run",
+        "help",
+        "paint",
+        "build",
+        "listen"
+      ],
+      "definition": "Express an action as a lexical predicate.",
+      "features": {
+        "ContentType": "action"
+      }
+    },
+    {
+      "id": "content.verb.state",
+      "kind": "content",
+      "family": "verb",
+      "upos": "VERB",
+      "forms": [
+        "know",
+        "believe",
+        "seem"
+      ],
+      "definition": "Express a state as a lexical predicate.",
+      "features": {
+        "ContentType": "state"
+      }
+    },
+    {
+      "id": "content.verb.possession",
+      "kind": "content",
+      "family": "verb",
+      "upos": "VERB",
+      "forms": [
+        "have",
+        "has",
+        "had"
+      ],
+      "definition": "Express lexical possession, distinct from auxiliary have.",
+      "features": {
+        "ContentType": "possession"
+      }
+    },
+    {
+      "id": "content.verb.do",
+      "kind": "content",
+      "family": "verb",
+      "upos": "VERB",
+      "forms": [
+        "do",
+        "does",
+        "did"
+      ],
+      "definition": "Express a lexical action, distinct from auxiliary do.",
+      "features": {
+        "ContentType": "action"
+      }
+    },
+    {
+      "id": "content.adjective",
+      "kind": "content",
+      "family": "adjective",
+      "upos": "ADJ",
+      "forms": [
+        "red",
+        "blue",
+        "warm",
+        "honest",
+        "happy",
+        "sad"
+      ],
+      "definition": "Describe a referent in attributive or predicative use.",
+      "features": {
+        "ContentType": "property"
+      }
+    },
+    {
+      "id": "content.adverb.manner",
+      "kind": "content",
+      "family": "adverb",
+      "upos": "ADV",
+      "forms": [
+        "quickly",
+        "slowly",
+        "carefully",
+        "fast"
+      ],
+      "definition": "Describe the manner of an event.",
+      "features": {
+        "ContentType": "manner"
+      }
+    },
+    {
+      "id": "content.adverb.time",
+      "kind": "content",
+      "family": "adverb",
+      "upos": "ADV",
+      "forms": [
+        "yesterday",
+        "tomorrow"
+      ],
+      "definition": "Supply a time relative to context.",
+      "features": {
+        "ContentType": "time"
+      }
+    },
+    {
+      "id": "content.numeral",
+      "kind": "content",
+      "family": "numeral",
+      "upos": "NUM",
+      "forms": [
+        "one",
+        "two",
+        "three",
+        "1",
+        "2",
+        "3"
+      ],
+      "definition": "Supply a quantity; content in the supplied course taxonomy.",
+      "features": {
+        "ContentType": "quantity"
+      }
+    }
+  ]
+}

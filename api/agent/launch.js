@@ -5,6 +5,7 @@ const { serveDocsHtml } = require('./_static_file');
 // SCBE Customer Launch bridge markers.
 // Payment Center: href="/payments"
 // Products: href="/products"
+// Research Signal: href="/research-signal"
 // Workflow Snapshot: href="/workflow-snapshot"
 // Hosted Run Intake: href="/hosted-run"
 // Service Credits: href="/service-credits"

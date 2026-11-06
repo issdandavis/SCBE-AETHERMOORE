@@ -29,32 +29,29 @@ class TestSCBEFullSystem:
         assert system.state.total_evaluations == 0
         assert system.state.threat_level == 0.0
 
-    def test_cold_start_allows_baseline(self):
-        """First evaluation should ALLOW to establish baseline."""
+    def test_cold_start_preserves_pipeline_decision(self):
+        """First use does not grant authorization or install rejected state."""
         system = SCBEFullSystem()
-        result = system.evaluate_intent(
-            identity="test_user",
-            intent="test_action"
-        )
-        assert result.decision == GovernanceDecision.ALLOW
-        assert "cold start" in result.explanation.lower()
-        assert system.state.reference_state is not None
+        result = system.evaluate_intent(identity="test_user", intent="test_action", timestamp=1.0)
+        ranks = {"ALLOW": 0, "REVIEW": 1, "QUARANTINE": 1, "DENY": 2, "SNAP": 3}
+        assert ranks[result.decision.value] >= ranks[result.risk_assessment.decision]
+        assert (system.state.reference_state is not None) == (result.decision == GovernanceDecision.ALLOW)
 
     def test_sequential_evaluations(self):
-        """Sequential evaluations should work and update state."""
+        """Sequential refusals still produce metrics without trusting the input."""
         system = SCBEFullSystem()
-
-        # First - cold start
-        r1 = system.evaluate_intent("user", "action1")
-        assert r1.decision == GovernanceDecision.ALLOW
-
-        # Second - normal evaluation
-        r2 = system.evaluate_intent("user", "action2")
-        assert r2.decision in [GovernanceDecision.ALLOW, GovernanceDecision.QUARANTINE]
-
-        # Check state updated
+        results = [
+            system.evaluate_intent("user", "action1", timestamp=1.0),
+            system.evaluate_intent("user", "action2", timestamp=1.01),
+        ]
+        ranks = {"ALLOW": 0, "REVIEW": 1, "QUARANTINE": 1, "DENY": 2, "SNAP": 3}
+        for result in results:
+            assert ranks[result.decision.value] >= ranks[result.risk_assessment.decision]
         assert system.state.total_evaluations == 2
-        assert system.state.reference_state is not None  # Has reference state
+        allowed = sum(result.decision == GovernanceDecision.ALLOW for result in results)
+        assert system.state.total_allows == allowed
+        assert (system.state.reference_state is not None) == bool(allowed)
+        assert system.verify_audit_chain()
 
     def test_audit_chain_integrity(self):
         """Audit chain should maintain integrity."""
@@ -148,11 +145,17 @@ class TestQuickEvaluate:
         assert isinstance(decision, GovernanceDecision)
         assert isinstance(explanation, str)
 
-    def test_quick_evaluate_cold_start(self):
-        """quick_evaluate should handle cold start."""
+    def test_quick_evaluate_cold_start_refuses_lockdown(self, monkeypatch):
+        """The convenience entry point retains emergency policy on first use."""
+        import importlib
+
+        module = importlib.import_module(SCBEFullSystem.__module__)
+        system = SCBEFullSystem(mode=GovernanceMode.LOCKDOWN)
+        monkeypatch.setattr(module, "SCBEFullSystem", lambda: system)
         decision, explanation = quick_evaluate("user", "action")
-        assert decision == GovernanceDecision.ALLOW
-        assert "cold start" in explanation.lower()
+        assert decision in (GovernanceDecision.DENY, GovernanceDecision.SNAP)
+        assert system.state.reference_state is None
+        assert explanation
 
 
 class TestTheoremVerification:
@@ -232,29 +235,21 @@ class TestIntegration:
     """Integration tests."""
 
     def test_full_workflow(self):
-        """Complete workflow should work end-to-end."""
+        """A sequence is fully audited, including requests that fail governance."""
         system = SCBEFullSystem()
-
-        # 1. Initialize with cold start
-        r1 = system.evaluate_intent("alice", "login")
-        assert r1.decision == GovernanceDecision.ALLOW
-
-        # 2. Normal operations
-        r2 = system.evaluate_intent("alice", "read_document")
-        r3 = system.evaluate_intent("alice", "write_document")
-
-        # 3. Check audit chain
+        results = [
+            system.evaluate_intent("alice", intent, timestamp=1.0 + i / 100)
+            for i, intent in enumerate(("login", "read_document", "write_document"))
+        ]
+        ranks = {"ALLOW": 0, "REVIEW": 1, "QUARANTINE": 1, "DENY": 2, "SNAP": 3}
+        for result in results:
+            assert ranks[result.decision.value] >= ranks[result.risk_assessment.decision]
         assert system.verify_audit_chain()
         assert len(system.state.audit_chain) == 3
-
-        # 4. Check status
         status = system.get_system_status()
         assert status["total_evaluations"] == 3
-        assert status["has_reference_state"] == True
-
-        # 5. Verify theorems still hold
-        theorems = verify_all_theorems()
-        assert all(theorems.values())
+        assert status["has_reference_state"] == any(r.decision == GovernanceDecision.ALLOW for r in results)
+        assert all(verify_all_theorems().values())
 
     def test_multi_user_scenario(self):
         """Multiple users should be tracked correctly."""

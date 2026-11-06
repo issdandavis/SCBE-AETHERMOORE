@@ -1,6 +1,6 @@
-# Sacred Tongue to Programming Language Map
+# Sacred Tongue to Programming Language Map — Training Canonical Profile
 
-> Canonical mapping of the Six Sacred Tongues to their primary programming languages, with spectral rationale, phase geometry, and phi-weighted training frequencies.
+> Named profile `training_canonical_v3`: a training-language skin of the Six Sacred Tongues, with spectral rationale, phase geometry, and phi-weighted training frequencies. It coexists with the `computational_isomorphism` and `opcode_runtime` profiles; it does not overwrite them.
 
 ## Core Mapping
 
@@ -95,7 +95,7 @@ Note: TypeScript appears under both AV (primary home) and DR (secondary) because
 The foundation trio (Python-TypeScript-Rust) forms the primary interop triangle:
 
 ```
-Python (AV) <--PyO3--> Rust (UM) <--wasm-bindgen--> TypeScript (DR)
+Python (KO) <--PyO3--> Rust (RU) <--wasm-bindgen--> TypeScript (AV)
     ^                                                       |
     |                                                       |
     +------------------subprocess/IPC---------------------+
@@ -103,10 +103,10 @@ Python (AV) <--PyO3--> Rust (UM) <--wasm-bindgen--> TypeScript (DR)
 
 Key bridge technologies:
 
-- **PyO3/maturin**: Rust <-> Python (UM <-> AV bridge)
-- **wasm-bindgen/napi-rs**: Rust <-> TypeScript (UM <-> DR bridge)
-- **ctypes/cffi**: C <-> Python (CA <-> AV bridge)
-- **cgo**: Go <-> C/Rust (DR <-> CA/UM bridge)
+- **PyO3/maturin**: Rust <-> Python (RU <-> KO bridge)
+- **wasm-bindgen/napi-rs**: Rust <-> TypeScript (RU <-> AV bridge)
+- **ctypes/cffi**: C <-> Python (CA <-> KO bridge)
+- **cgo**: Go <-> C/Rust (DR-secondary <-> CA/RU bridge)
 - **extern "C"**: Universal FFI anchor (CA as lingua franca)
 
 ## Musical Mode Correspondence

@@ -1,0 +1,10 @@
+{
+  "hook": "Know which Python you are changing before pip changes it.",
+  "blurb_paragraphs": [
+    "pip is simple until a machine has two Python installations, a stale virtual environment, a native extension, or a deployment that must work without the internet.",
+    "This field guide starts with interpreter identity and follows the whole path: virtual environments, installs, requirements, constraints, dependency groups, PEP 723 scripts, lock files, wheels, offline wheelhouses, security checks, package builds, and repair commands.",
+    "Examples are written for Windows, macOS, and Linux and were checked against Python 3.12.10 and pip 26.2.2. Each chapter points back to official open-source project documentation so readers can verify what changed after publication."
+  ],
+  "author_bio": "Issac Daniel Davis builds practical publishing, security, and Python automation systems. He maintains SCBE-AETHERMOORE and the open-source Bookforge publishing toolchain.",
+  "bottom_left_caption": "A PRACTICAL PYTHON FIELD GUIDE"
+}

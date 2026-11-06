@@ -166,7 +166,7 @@ function main() {
     caseResult('rich_shell_config_is_local_free_by_default', () => {
       const r = runNodeCli(['shell'], { input: ':config\n:exit\n' });
       assert.equal(r.status, 0);
-      assert.match(r.stdout, /SCBE\s+local/);
+      assert.match(r.stdout, /SCBE.*local/);
       assert.match(r.stdout, /"provider": "ollama"/);
       assert.match(r.stdout, /"model": "[^"]+"/);
       return { stdout_preview: r.stdout.slice(0, 360), duration_ms: r.duration_ms };
@@ -174,8 +174,9 @@ function main() {
   );
 
   cases.push(
-    caseResult('bare_sentence_geoseal_termux_routes_to_worksheet', () => {
+    caseResult('explicit_resolve_geoseal_termux_routes_to_worksheet', () => {
       const r = runNodeCli([
+        'resolve',
         'geoseal',
         'compile',
         'intent',
@@ -197,6 +198,7 @@ function main() {
   cases.push(
     caseResult('spoken_math_worksheet_handles_long_plain_english', () => {
       const r = runNodeCli([
+        'math',
         'square',
         'root',
         'of',

@@ -162,6 +162,28 @@ def test_path_claim_boundary_blocks_out_of_scope_path() -> None:
     assert any(finding.rule == "unclaimed-path" for finding in decision.findings)
 
 
+def test_path_claim_boundary_blocks_sibling_prefix() -> None:
+    decision = scan_command("python C:/safe_evil/tool.py", claimed_paths=["C:/safe"])
+
+    assert decision.tier == "DENY"
+    assert any(finding.rule == "unclaimed-path" for finding in decision.findings)
+
+
+def test_path_claim_boundary_blocks_parent_traversal() -> None:
+    decision = scan_command("python C:/safe/../outside/tool.py", claimed_paths=["C:/safe"])
+
+    assert decision.tier == "DENY"
+    assert any(finding.rule == "unclaimed-path" for finding in decision.findings)
+
+
+def test_path_claim_boundary_allows_exact_path_and_descendant() -> None:
+    exact = scan_command("python C:/safe/tool.py", claimed_paths=["C:/safe/tool.py"])
+    descendant = scan_command("python C:/safe/sub/tool.py", claimed_paths=["C:/safe"])
+
+    assert exact.tier == "ALLOW"
+    assert descendant.tier == "ALLOW"
+
+
 def test_runtime_resolver_rewrites_python_alias_to_sys_executable() -> None:
     from src.crypto.geoseal_execution_gate import _resolve_runtime
 

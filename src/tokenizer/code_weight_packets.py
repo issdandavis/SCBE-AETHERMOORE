@@ -336,6 +336,43 @@ def resolve_element(token: str, semantic_class: str | None = None) -> dict[str, 
     return element
 
 
+def stisa_molecule(smiles: str) -> dict[str, Any]:
+    """STISA record for a real molecule. Linguistic proxy buckets are not used."""
+    from python.scbe.molecule_face import read_molecule
+
+    return read_molecule(smiles)
+
+
+def stisa_spectrum(
+    precursor_mz: float,
+    adduct: str,
+    *,
+    smiles: str | None = None,
+    measured_bias_ppm: float = 0.0,
+    ms2_mzs: list[float] | None = None,
+    ms2_intensities: list[float] | None = None,
+    collision_energy_ev: float | list[float] | None = None,
+    ionization_mode: str | None = None,
+    spectrum_id: str | None = None,
+    instrument_type: str | None = None,
+) -> dict[str, Any]:
+    """STISA record for one precursor peak. An unknown adduct raises KeyError."""
+    from python.scbe.molecule_face import read_spectrum
+
+    return read_spectrum(
+        precursor_mz,
+        adduct,
+        smiles=smiles,
+        measured_bias_ppm=measured_bias_ppm,
+        ms2_mzs=ms2_mzs,
+        ms2_intensities=ms2_intensities,
+        collision_energy_ev=collision_energy_ev,
+        ionization_mode=ionization_mode,
+        spectrum_id=spectrum_id,
+        instrument_type=instrument_type,
+    )
+
+
 def analyze_chemical_composition(
     tokens: list[str],
     elements: list[dict[str, Any]],
@@ -658,4 +695,6 @@ __all__ = [
     "resolve_element",
     "semantic_class_for_domain",
     "semantic_operation_signature_from_tokens",
+    "stisa_molecule",
+    "stisa_spectrum",
 ]

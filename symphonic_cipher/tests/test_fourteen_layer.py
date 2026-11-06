@@ -383,25 +383,25 @@ class TestLayer13Decision:
 
     def test_low_risk_allows(self):
         """Low d_star should give ALLOW."""
-        risk = layer_13_decision(d_star=0.1, H_d=1.1, coherence=0.9, realm_idx=0)
+        risk = layer_13_decision(d_star=0.1, H_d=layer_12_harmonic_scaling(0.1), coherence=0.9, realm_idx=0)
         assert risk.decision == "ALLOW"
         assert risk.level == RiskLevel.LOW
 
     def test_high_risk_denies(self):
         """High d_star should give DENY."""
-        risk = layer_13_decision(d_star=3.0, H_d=5.0, coherence=0.9, realm_idx=0)
+        risk = layer_13_decision(d_star=3.0, H_d=layer_12_harmonic_scaling(3.0), coherence=0.9, realm_idx=0)
         assert risk.decision == "DENY"
         assert risk.level == RiskLevel.HIGH
 
     def test_critical_snaps(self):
-        """Very high H_d should give SNAP."""
-        risk = layer_13_decision(d_star=0.5, H_d=150, coherence=0.9, realm_idx=0)
+        """Very low safety from the real scaling layer should give SNAP."""
+        risk = layer_13_decision(d_star=0.5, H_d=layer_12_harmonic_scaling(1000.0), coherence=0.9, realm_idx=0)
         assert risk.decision == "SNAP"
         assert risk.level == RiskLevel.CRITICAL
 
     def test_medium_reviews(self):
         """Medium d_star should give REVIEW."""
-        risk = layer_13_decision(d_star=1.0, H_d=2.0, coherence=0.9, realm_idx=0)
+        risk = layer_13_decision(d_star=1.0, H_d=layer_12_harmonic_scaling(1.0), coherence=0.9, realm_idx=0)
         assert risk.decision == "REVIEW"
         assert risk.level == RiskLevel.MEDIUM
 

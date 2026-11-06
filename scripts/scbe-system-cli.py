@@ -959,7 +959,7 @@ def _colab_bridge_status(repo_root: Path) -> dict[str, object]:
 
 
 def _colab_bridge_script(repo_root: Path) -> Path:
-    return repo_root / "external" / "codex-skills-live" / "scbe-n8n-colab-bridge" / "scripts" / "colab_n8n_bridge.py"
+    return repo_root / "scripts" / "colab" / "colab_n8n_bridge.py"
 
 
 def _run_colab_bridge(

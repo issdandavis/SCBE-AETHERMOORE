@@ -1,4 +1,3 @@
-import { spawnSync } from 'node:child_process';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { createInterface } from 'node:readline/promises';
@@ -8,6 +7,18 @@ import path from 'node:path';
 import { WorkspaceExportManifestSchema, parseReceipt } from './schemas.js';
 import { detectTaskType, decompose, scoreDialogue } from './semantic-bridge.js';
 import { autoDiscoverTools, buildToolArgv, getTool } from './tools.js';
+import { createEventReceiptId, createLocalEventResult } from './local-event.js';
+import { spawnSync } from './process-runner.js';
+
+export {
+  CommandSession,
+  COMMAND_SESSION_SCHEMA,
+  COMMAND_SESSION_OPERATIONS,
+  COMMAND_SESSION_REQUEST_SCHEMA,
+  type CommandSessionState,
+  type CommandSessionOptions,
+  type CommandSessionReply,
+} from './command-session.js';
 
 // Plugin + queue subsystems
 export {
@@ -81,6 +92,7 @@ export {
   type TrajectoryGateResult,
   compilePlan,
   execPlan,
+  executePipelinePlan,
   runPipeline,
   parseShellTemplate,
   resolveRepoRoot,
@@ -92,6 +104,41 @@ export {
   reachableMoveSet,
   evaluateTrajectoryGate,
 } from './pipeline.js';
+// Authenticated capability and isolated execution boundary
+export {
+  CAPABILITY_SCHEMA,
+  RECEIPT_SCHEMA,
+  TOPOLOGY_EVIDENCE_SCHEMA,
+  TOPOLOGY_RUNTIME_PROFILES,
+  type TopologyTrustPolicy,
+  CapabilityAuthority,
+  FileReplayStore,
+  FileReceiptJournal,
+  DockerSandboxExecutor,
+  canonicalJson,
+  sha256Hex,
+  digestJson,
+  parseCapabilityArgv,
+  executeAuthorizedPlan,
+  executeCompiledPlanSecure,
+  issueAndExecutePlan,
+  type WorkspaceAccess,
+  type IsolationKind,
+  type CapabilityLimits,
+  type TopologicalAuthorizationEvidence,
+  type CapabilityClaims,
+  type SignedCapability,
+  type CapabilityGrant,
+  type CapabilityExpectation,
+  type ExecutorRequest,
+  type ExecutorResult,
+  type IsolatedExecutor,
+  type ExecutionReceiptRecord,
+  type SignedExecutionReceipt,
+  type SecureExecutionContext,
+  type SecureExecutionResult,
+  type SecurePipelineOptions,
+} from './secure-execution.js';
 
 // Structured output contracts
 export {
@@ -311,7 +358,7 @@ export interface AgentBusEvent {
   budgetCents?: number;
   dispatch?: boolean;
   dispatchProvider?: string;
-  /** Name of a registered CliTool to dispatch to instead of scbe-system-cli.py. */
+  /** Name of a registered CliTool to execute after the event is accepted. */
   tool?: string;
 }
 
@@ -319,6 +366,8 @@ export interface RunOptions {
   repoRoot?: string;
   geosealBin?: string;
   python?: string;
+  /** GeoSeal capability profile used while compiling the proposed command. */
+  permissionMode?: 'observe' | 'workspace-write' | 'cloud-dispatch' | 'maintenance';
   continueOnError?: boolean;
   /**
    * Opt-in gate for routing queued events to registered CLI tools via event.tool.
@@ -338,6 +387,12 @@ export interface RunOptions {
         statePath?: string;
         root?: string;
       };
+  /**
+   * Trusted host-only capability and isolated-executor context.
+   * Required for plan execution. Missing configuration blocks execution;
+   * it never falls back to a host process. Never populate this from event JSON.
+   */
+  secureExecution?: import('./secure-execution.js').SecurePipelineOptions;
 }
 
 export interface AgentBusResult {
@@ -355,6 +410,10 @@ export interface AgentBusResult {
     operation_command_chars: number;
   };
   result: unknown;
+  /** Stable identifier for the event receipt, when available. */
+  receipt_id?: string;
+  /** Machine-readable acceptance or refusal reason. */
+  reason?: string;
   /** Full dimensional decomposition attached when atoms match the task text. */
   semantic?: import('./semantic-bridge.js').DecompositionResult;
   /** Discourse profile from compound atom patterns (null = none detected). */
@@ -372,11 +431,14 @@ export interface AgentBusServerHandle {
 export interface AgentBusServerOptions extends RunOptions {
   host?: string;
   port?: number;
+  /** Trusted server credential; required when execution is enabled. Never queued. */
+  authToken?: string;
 }
 
 export interface AgentBusClientOptions {
   baseUrl?: string;
   fetchImpl?: typeof fetch;
+  authToken?: string;
 }
 
 export interface WorkspaceOptions {
@@ -1757,15 +1819,37 @@ export async function runEvent(
         operation_command_chars: normalized.operationCommand.length,
       },
       result: { enqueued: true, run_id: runId },
+      receipt_id: runId,
+      reason: 'enqueued',
       run_id: runId,
     };
   }
 
   const repoRoot = path.resolve(options.repoRoot || process.cwd());
-  const python = options.python || process.env.PYTHON || 'python';
   const startedAt = new Date().toISOString();
+  const receiptId = createEventReceiptId(normalized, 1, startedAt);
 
   if (normalized.tool) {
+    if (options.allowToolDispatch !== true) {
+      return {
+        schema_version: 'scbe-agentbus-node-result-v1',
+        event_index: 1,
+        started_at: startedAt,
+        finished_at: new Date().toISOString(),
+        ok: false,
+        exit_code: null,
+        reason: 'tool_dispatch_disabled',
+        stderr_tail: 'tool dispatch is disabled; enable only in trusted host configuration',
+        event: {
+          task_sha256: null,
+          task_chars: normalized.task.length,
+          series_id: normalized.seriesId,
+          operation_command_chars: normalized.operationCommand.length,
+        },
+        result: null,
+        receipt_id: receiptId,
+      };
+    }
     autoDiscoverTools();
     const registeredTool = getTool(normalized.tool);
     if (!registeredTool) {
@@ -1785,6 +1869,8 @@ export async function runEvent(
           operation_command_chars: normalized.operationCommand.length,
         },
         result: null,
+        receipt_id: receiptId,
+        reason: 'unknown_tool',
         ...(d.tokenCount > 0 ? { semantic: d } : {}),
         ...(d.discourseProfile ? { discourse_profile: d.discourseProfile } : {}),
         ...(d.discourseProfile ? { dialogue_score: scoreDialogue(normalized.task) } : {}),
@@ -1822,68 +1908,15 @@ export async function runEvent(
         stdout: stdout.slice(-4000),
         parsed: payload,
       },
+      receipt_id: receiptId,
+      reason: result.status === 0 ? 'tool_completed' : 'tool_failed',
       ...(d.tokenCount > 0 ? { semantic: d } : {}),
       ...(d.discourseProfile ? { discourse_profile: d.discourseProfile } : {}),
       ...(d.discourseProfile ? { dialogue_score: scoreDialogue(normalized.task) } : {}),
     };
   }
 
-  const cli = path.join(repoRoot, 'scripts', 'scbe-system-cli.py');
-  const argv = [
-    cli,
-    '--repo-root',
-    repoRoot,
-    'agentbus',
-    'run',
-    '--task',
-    normalized.task,
-    '--task-type',
-    normalized.taskType,
-    '--series-id',
-    normalized.seriesId,
-    '--privacy',
-    normalized.privacy,
-    '--budget-cents',
-    String(normalized.budgetCents),
-    '--dispatch-provider',
-    normalized.dispatchProvider,
-    '--json',
-  ];
-  if (normalized.operationCommand) {
-    argv.push('--operation-command', normalized.operationCommand);
-  }
-  if (normalized.dispatch) {
-    argv.push('--dispatch');
-  }
-
-  const result = spawnSync(python, argv, {
-    cwd: repoRoot,
-    encoding: 'utf-8',
-    maxBuffer: 1024 * 1024 * 8,
-  });
-  const payload = parseJson(result.stdout || '{}') as Record<string, unknown> | null;
-  const taskPayload =
-    payload && typeof payload.task === 'object' ? (payload.task as Record<string, unknown>) : null;
-  const d = decompose(normalized.task);
-  return {
-    schema_version: 'scbe-agentbus-node-result-v1',
-    event_index: 1,
-    started_at: startedAt,
-    finished_at: new Date().toISOString(),
-    ok: result.status === 0 && Boolean(payload),
-    exit_code: result.status,
-    stderr_tail: tail(result.stderr || ''),
-    event: {
-      task_sha256: typeof taskPayload?.sha256 === 'string' ? taskPayload.sha256 : null,
-      task_chars: normalized.task.length,
-      series_id: normalized.seriesId,
-      operation_command_chars: normalized.operationCommand.length,
-    },
-    result: payload,
-    ...(d.tokenCount > 0 ? { semantic: d } : {}),
-    ...(d.discourseProfile ? { discourse_profile: d.discourseProfile } : {}),
-    ...(d.discourseProfile ? { dialogue_score: scoreDialogue(normalized.task) } : {}),
-  };
+  return createLocalEventResult(normalized, { eventIndex: 1, startedAt });
 }
 
 export async function runBatch(
@@ -1955,9 +1988,28 @@ export async function startAgentBusServer(
   options: AgentBusServerOptions = {}
 ): Promise<AgentBusServerHandle> {
   const host = options.host || '127.0.0.1';
-  const port = Number(options.port || 8787);
+  const port = Number(options.port ?? 8787);
+  const authToken = options.authToken;
+  if ((options.secureExecution || options.allowToolDispatch) && !authToken) {
+    throw new Error('execution-enabled Agent Bus requires a host-configured authToken');
+  }
+  if (authToken !== undefined && (typeof authToken !== 'string' || authToken.length < 32)) {
+    throw new Error('Agent Bus authToken must contain at least 32 characters');
+  }
   const server = createServer(async (req, res) => {
     try {
+      if (authToken && req.url !== '/health') {
+        const presented = req.headers.authorization || '';
+        const supplied = crypto.createHash('sha256').update(presented).digest();
+        const expected = crypto
+          .createHash('sha256')
+          .update('Bearer ' + authToken)
+          .digest();
+        if (!crypto.timingSafeEqual(supplied, expected)) {
+          sendJson(res, 401, { ok: false, error: 'unauthorized' });
+          return;
+        }
+      }
       if (req.method === 'GET' && req.url === '/health') {
         const { getQueueStatus } = await import('./queue.js');
         const { getCircuitStates } = await import('./resilience.js');
@@ -2037,7 +2089,14 @@ export async function startAgentBusServer(
           return;
         }
         const { runPipeline } = await import('./pipeline.js');
-        const result = await runPipeline(intent, body.options || options);
+        if (body.options !== undefined) {
+          sendJson(res, 400, {
+            ok: false,
+            error: 'pipeline options are configured by the trusted host',
+          });
+          return;
+        }
+        const result = await runPipeline(intent, options);
         sendJson(res, result.blocked ? 403 : 200, result);
         return;
       }
@@ -2052,7 +2111,14 @@ export async function startAgentBusServer(
           return;
         }
         const { compilePlan } = await import('./pipeline.js');
-        const plan = compilePlan(intent, body.options || options);
+        if (body.options !== undefined) {
+          sendJson(res, 400, {
+            ok: false,
+            error: 'pipeline options are configured by the trusted host',
+          });
+          return;
+        }
+        const plan = compilePlan(intent, options);
         if (plan) {
           sendJson(res, 200, { ok: true, plan });
         } else {
@@ -2067,7 +2133,7 @@ export async function startAgentBusServer(
   });
   await new Promise<void>((resolve) => server.listen(port, host, resolve));
   return {
-    url: `http://${host}:${port}`,
+    url: `http://${host}:${(server.address() as { port: number }).port}`,
     server,
     close: () =>
       new Promise((resolve, reject) => server.close((err) => (err ? reject(err) : resolve()))),
@@ -2082,7 +2148,10 @@ export async function postAgentBusEvent(
   const baseUrl = (options.baseUrl || 'http://127.0.0.1:8787').replace(/\/+$/, '');
   const res = await fetcher(`${baseUrl}/v1/events`, {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers: {
+      'content-type': 'application/json',
+      ...(options.authToken ? { authorization: 'Bearer ' + options.authToken } : {}),
+    },
     body: JSON.stringify(event),
   });
   const payload = await res.json();

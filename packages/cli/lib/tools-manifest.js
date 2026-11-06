@@ -178,8 +178,38 @@ const COMMAND_SPECS = [
     summary: 'Show the natural-language utterance log.',
     usage: 'scbe utterances',
   },
+  {
+    name: 'resolve',
+    aliases: [],
+    category: 'core',
+    json: true,
+    stability: 'real',
+    summary: 'Resolve an utterance through the deterministic command router without entering chat.',
+    usage: 'scbe resolve <utterance> [--yes] [--json]',
+    examples: ['scbe resolve "show local package manifest" --json'],
+  },
 
   // ── SHELL ─────────────────────────────────────────────────────────────────
+  {
+    name: 'chat',
+    aliases: [],
+    category: 'shell',
+    json: false,
+    stability: 'real',
+    summary: 'Conversation-first agent with iterative curated tools, sessions, permissions, and slash commands.',
+    usage: 'scbe chat [prompt]',
+    examples: ['scbe', 'scbe "review the current diff"', 'scbe chat'],
+  },
+  {
+    name: 'web',
+    aliases: [],
+    category: 'shell',
+    json: true,
+    stability: 'real',
+    summary: 'Start the first-party loopback web interface over the same agent runtime.',
+    usage: 'scbe web [--port N] [--host 127.0.0.1] [--json]',
+    examples: ['scbe web', 'scbe web --port 4180'],
+  },
   {
     name: 'shell',
     aliases: [],

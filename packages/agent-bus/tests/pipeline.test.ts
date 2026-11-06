@@ -71,7 +71,38 @@ describe('execPlan', () => {
     expect(result.stderr_tail).toMatch(/empty command template/);
   });
 
-  it('runs node -e and captures stdout as JSON result', () => {
+  it('refuses a denied plan at the low-level execution boundary', () => {
+    const plan: GeoSealPlan = {
+      ...basePlan,
+      policy: { ok: false, decision: 'DENY', reason: 'blocked by policy' },
+      command: {
+        key: 'must-not-run',
+        template: 'node -e "process.exit(99)"',
+        runnable: true,
+      },
+    };
+    const result = execPlan(plan, { repoRoot: process.cwd() });
+    expect(result.ok).toBe(false);
+    expect(result.exit_code).toBeNull();
+    expect(result.stderr_tail).toMatch(/plan blocked: policy=DENY/);
+  });
+
+  it('refuses a non-runnable plan even if its policy says ALLOW', () => {
+    const plan: GeoSealPlan = {
+      ...basePlan,
+      command: {
+        key: 'must-not-run',
+        template: 'node -e "process.exit(99)"',
+        runnable: false,
+      },
+    };
+    const result = execPlan(plan, { repoRoot: process.cwd() });
+    expect(result.ok).toBe(false);
+    expect(result.exit_code).toBeNull();
+    expect(result.stderr_tail).toMatch(/runnable=false/);
+  });
+
+  it('refuses host execution even for an ALLOW command', () => {
     const plan: GeoSealPlan = {
       ...basePlan,
       command: {
@@ -81,11 +112,13 @@ describe('execPlan', () => {
       },
     };
     const result = execPlan(plan, { repoRoot: process.cwd() });
-    expect(result.ok).toBe(true);
-    expect((result.result as Record<string, unknown>)?.val).toBe(42);
+    expect(result.ok).toBe(false);
+    expect(result.exit_code).toBeNull();
+    expect(result.reason).toBe('secure_execution_required');
+    expect(result.result).toBeNull();
   });
 
-  it('captures non-JSON stdout as raw_output', () => {
+  it('does not execute a raw-output command through the retired API', () => {
     const plan: GeoSealPlan = {
       ...basePlan,
       command: {
@@ -95,18 +128,20 @@ describe('execPlan', () => {
       },
     };
     const result = execPlan(plan, { repoRoot: process.cwd() });
-    expect(result.ok).toBe(true);
-    expect((result.result as Record<string, unknown>)?.raw_output).toBe('hello world');
+    expect(result.ok).toBe(false);
+    expect(result.reason).toBe('secure_execution_required');
+    expect(result.result).toBeNull();
   });
 
-  it('records exit_code and ok=false for failing commands', () => {
+  it('does not report a child exit code when no child was permitted', () => {
     const plan: GeoSealPlan = {
       ...basePlan,
       command: { key: 'fail', template: 'node -e "process.exit(2)"', runnable: true },
     };
     const result = execPlan(plan, { repoRoot: process.cwd() });
     expect(result.ok).toBe(false);
-    expect(result.exit_code).toBe(2);
+    expect(result.exit_code).toBeNull();
+    expect(result.reason).toBe('secure_execution_required');
   });
 
   it('populates event metadata from plan hashes', () => {
@@ -135,8 +170,9 @@ describe('runPipeline policy gate', async () => {
     const { runPipeline } = await import('../src/pipeline.js');
     // compilePlan will fail (no Python geoseal available in test env) → blocked=true
     const result = await runPipeline('__test_intent_that_will_not_find_geoseal__', {
-      repoRoot: process.cwd(),
-      python: 'node', // pass wrong python to force compile failure
+      // An explicit missing binary keeps this hermetic even when the developer
+      // machine has a globally-installed geoseal.cmd.
+      geosealBin: path.join(os.tmpdir(), 'definitely-missing-geoseal'),
     });
     expect(result.blocked).toBe(true);
     expect(result.plan).toBeNull();

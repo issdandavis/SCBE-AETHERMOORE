@@ -19,9 +19,9 @@
  * Extra keys are rejected at validation time.
  */
 
-import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from './process-runner.js';
 
 // ─── Public types ────────────────────────────────────────────────────────────
 

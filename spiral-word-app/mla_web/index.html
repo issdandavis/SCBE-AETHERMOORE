@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <title>Spiral Word · MLA Studio</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <div><strong>◎ Spiral Word</strong><small>MLA STUDIO</small></div>
+      <button id="export" class="primary">Export Word</button>
+    </header>
+    <main>
+      <section class="welcome">
+        <p class="eyebrow">YOUR WORDS. A WELL-BUILT PAGE.</p>
+        <h1>Make room for your writing.</h1>
+        <p>John Anderson · English 101 · Guided MLA format</p>
+      </section>
+      <nav aria-label="Writing views">
+        <button id="edit-tab" aria-pressed="true">Build document</button
+        ><button id="preview-tab" aria-pressed="false">Page preview</button
+        ><button id="check-tab">Check format</button>
+      </nav>
+      <p id="status" role="status" aria-live="polite">Your draft saves on this device.</p>
+      <div class="workspace">
+        <section id="builder" aria-label="Document builder">
+          <div class="card">
+            <h2>01 / First-page heading</h2>
+            <p>Four lines identify you, your instructor, your course, and the date.</p>
+            <div class="two">
+              <label>First name<input id="firstName" autocomplete="given-name" /></label
+              ><label>Last name<input id="lastName" autocomplete="family-name" /></label>
+            </div>
+            <label>Instructor<input id="instructor" /></label
+            ><label>Course name and number<input id="course" /></label
+            ><label>Assignment date<input id="date" type="date" /></label>
+          </div>
+          <div class="card">
+            <h2>02 / Title and your writing</h2>
+            <label>Title<input id="title" placeholder="A title in your own words" /></label
+            ><small>Use title case. The exported title is centered, plain, and 12 pt.</small
+            ><label
+              >Paragraphs<textarea
+                id="body"
+                rows="10"
+                placeholder="Write your own paragraph here. Press Enter for each new paragraph."
+              ></textarea></label
+            ><span id="words">0 words</span
+            ><label
+              >Works Cited entries (optional)<textarea
+                id="works"
+                rows="4"
+                placeholder="One entry per line. Check citation details with your instructor."
+              ></textarea></label
+            ><small
+              >Starts on a new page with hanging indents. Citation accuracy and italics need review
+              in Word.</small
+            >
+          </div>
+          <div class="card">
+            <h2>03 / Save and reuse</h2>
+            <label
+              >Export name<select id="filename-mode">
+                <option value="template">LastName, FirstName My MLA Template.docx</option>
+                <option value="essay">LastName, FirstName Essay Title.docx</option>
+              </select></label
+            ><label
+              >Template label<input
+                id="template-name"
+                placeholder="English 101 · My reusable layout"
+            /></label>
+            <div class="buttons">
+              <button id="save-template">Save reusable template</button
+              ><button id="load-template">Open template</button
+              ><button id="new-draft">New draft</button>
+            </div>
+            <small
+              >Opening a template keeps the heading and starts fresh writing. Existing templates are
+              not overwritten.</small
+            >
+          </div>
+          <details class="card">
+            <summary>Tools, API, and plugins</summary>
+            <p>
+              Export a project to move your editable draft between devices. Plugins add assignment
+              checks; they cannot execute code or send your writing anywhere.
+            </p>
+            <div class="buttons">
+              <button id="export-project">Export project</button
+              ><label class="file-button"
+                >Import project<input
+                  id="import-project"
+                  type="file"
+                  accept="application/json,.json" /></label
+              ><label class="file-button"
+                >Add rules plugin<input
+                  id="import-plugin"
+                  type="file"
+                  accept="application/json,.json" /></label
+              ><button id="remove-plugin">Remove rules plugin</button
+              ><button id="api-check">Check local API</button>
+            </div>
+            <p id="plugin-label">No additional assignment rules.</p>
+            <small
+              >Server mode exposes /mla/profile, /mla/validate, and /mla/export.docx. The phone
+              works offline. The browser API is window.SpiralWord; see the developer guide.</small
+            >
+          </details>
+        </section>
+        <section id="preview-panel" aria-label="Page preview">
+          <div class="paper-caption">
+            <h2>See how it fits</h2>
+            <label><input id="show-guides" type="checkbox" checked /> Highlight page parts</label>
+            <p>
+              Scaled layout preview. Word calculates final pagination and uses Times New Roman if
+              installed.
+            </p>
+          </div>
+          <article id="paper" class="paper guides">
+            <div class="running" data-zone="lastName">
+              <span id="preview-running">Davis 1</span>
+            </div>
+            <div class="heading" id="preview-heading" data-zone="heading"></div>
+            <h3 id="preview-title" data-zone="title">Your Title</h3>
+            <div id="preview-body" data-zone="body"></div>
+          </article>
+          <article id="works-paper" class="paper" hidden>
+            <div class="running" id="works-running"></div>
+            <h3>Works Cited</h3>
+            <div id="preview-works"></div>
+          </article>
+          <aside id="checklist" class="card" tabindex="-1">
+            <h2>Ready to hand in?</h2>
+            <ul id="checks"></ul>
+            <p class="format-lock">
+              Format applied: 1-inch margins · Times New Roman 12 pt · double spacing · zero extra
+              paragraph gaps · ½-inch first-line indents · automatic page numbers.
+            </p>
+            <p>
+              Export the actual Word file and upload it to Canvas yourself. A link to this editor is
+              not your submission. Review title case, spelling, citation details, and your
+              assignment directions.
+            </p>
+          </aside>
+        </section>
+      </div>
+    </main>
+    <footer>Your writing stays on this device unless you export it or use the local API.</footer>
+    <script src="core.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

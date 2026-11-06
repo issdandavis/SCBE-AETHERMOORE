@@ -1,0 +1,9 @@
+{
+  "id": "stista-gravity",
+  "name": "STISTA gravity",
+  "version": "0.1.0",
+  "minAppVersion": "1.5.0",
+  "description": "Explore your local notes through six tongue sectors, editable topic groups, and phi-weighted gravity.",
+  "author": "Issac Davis",
+  "isDesktopOnly": true
+}

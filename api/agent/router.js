@@ -44,6 +44,8 @@ const HANDLERS = {
   'offers-file': () => require('./offers-file.js'),
   payments: () => require('./payments.js'),
   products: () => require('./products.js'),
+  'research-signal': () => require('./research-signal.js'),
+  'research-signal-feed': () => require('./research-signal-feed.js'),
   'robot-md': () => require('./robot-md.js'),
   'robot-page': () => require('./robot-page.js'),
   robots: () => require('./robots.js'),
@@ -79,7 +81,8 @@ module.exports = async function router(req, res) {
   const fn =
     candidates.find(
       (candidate) =>
-        typeof candidate === 'string' && Object.prototype.hasOwnProperty.call(HANDLERS, candidate)
+        typeof candidate === 'string' &&
+        Object.prototype.hasOwnProperty.call(HANDLERS, candidate)
     ) || '';
   if (!Object.prototype.hasOwnProperty.call(HANDLERS, fn)) {
     // Everything in the map was already directly routable before consolidation, so the

@@ -13,15 +13,15 @@ Mathematical Implementation of the complete layer stack:
     Layer 9:  Spectral Coherence (S_spec = 1 - r_HF)
     Layer 10: Spin Coherence (C_spin)
     Layer 11: Triadic Temporal Distance (d_tri)
-    Layer 12: Harmonic Scaling (H(d,R) = R^(d²))
+    Layer 12: Bounded Safety (H = 1/(1+d+2*pd))
     Layer 13: Decision & Risk (Risk' with thresholds θ₁, θ₂)
     Layer 14: Audio Axis (S_audio)
 
 Core Theorems:
-    A. Metric Invariance: d_H preserved through breathing/phase transforms
+    A. Phase Metric Invariance: d_H preserved through the supported phase transform
     B. End-to-End Continuity: Pipeline is composition of smooth maps
     C. Risk Monotonicity: d_tri ↑ ⟹ H(d,R) ↑ (superexponential)
-    D. Diffeomorphism: T_breath and T_phase are diffeomorphisms of 𝔹ⁿ
+    D. Diffeomorphism: positive T_breath and supported T_phase are diffeomorphisms of 𝔹ⁿ
 """
 
 import numpy as np
@@ -29,6 +29,20 @@ from dataclasses import dataclass
 from typing import Tuple, List, Optional, Dict, Any
 from enum import Enum
 import hashlib
+
+from ..layer_contracts import (
+    L02_CANONICAL_ORDER,
+    L07_CANONICAL_ORDER,
+    L07_FULL_NATIVE_ORDER,
+    ObservationStatus,
+    PhaseCompositionOrder,
+    RealificationOrder,
+    TelemetryEnvelope,
+    adapt_mobius_shift,
+    convert_realification,
+    first_plane_rotation,
+    spectral_observation,
+)
 
 
 # =============================================================================
@@ -38,7 +52,8 @@ import hashlib
 PHI = (1 + np.sqrt(5)) / 2  # Golden ratio
 R_BASE = PHI                 # Base for harmonic scaling
 ALPHA_EMBED = 0.99           # Poincaré embedding scale
-B_BREATH_MAX = 1.5           # Max breathing amplitude
+B_BREATH_MIN = 0.5  # Strictly positive radial floor
+B_BREATH_MAX = 2.0  # Inclusive radial ceiling
 OMEGA_BREATH = 2 * np.pi / 60  # Breathing frequency
 N_REALMS = 5                 # Number of multi-well realms
 THETA_1 = 0.5                # Low risk threshold
@@ -85,7 +100,11 @@ def layer_1_complex_context(
 # LAYER 2: REALIFICATION
 # =============================================================================
 
-def layer_2_realify(c: np.ndarray) -> np.ndarray:
+def layer_2_realify(
+    c: np.ndarray,
+    *,
+    order: RealificationOrder = RealificationOrder.INTERLEAVED,
+) -> np.ndarray:
     """
     Layer 2: Realification Φ₁: ℂᴰ → ℝ²ᴰ
 
@@ -99,7 +118,11 @@ def layer_2_realify(c: np.ndarray) -> np.ndarray:
     for z in c:
         real_vec.append(np.real(z))
         real_vec.append(np.imag(z))
-    return np.array(real_vec, dtype=np.float64)
+    return convert_realification(
+        real_vec,
+        source=RealificationOrder.INTERLEAVED,
+        target=order,
+    )
 
 
 # =============================================================================
@@ -185,8 +208,9 @@ def layer_5_hyperbolic_distance(u: np.ndarray, v: np.ndarray) -> float:
 
     d_H(u, v) = arcosh(1 + 2||u-v||² / ((1-||u||²)(1-||v||²)))
 
-    This is THE invariant of the system - preserved through all
-    subsequent geometric transforms (breathing, phase, etc.).
+    This is the canonical metric used by the geometric layers. The Layer 6
+    breathing map is a radial deformation and can change d_H; the supported
+    Layer 7 phase map preserves d_H when applied to both endpoints.
 
     Properties:
         - d_H(u, u) = 0
@@ -215,42 +239,45 @@ def layer_5_hyperbolic_distance(u: np.ndarray, v: np.ndarray) -> float:
 # LAYER 6: BREATHING TRANSFORM
 # =============================================================================
 
-def breathing_factor(t: float, b_max: float = B_BREATH_MAX, omega: float = OMEGA_BREATH) -> float:
-    """
-    Compute breathing factor b(t) = 1 + b_max · sin(ωt)
+def breathing_factor(
+    t: float,
+    b_max: float = B_BREATH_MAX,
+    omega: float = OMEGA_BREATH,
+    b_min: float = B_BREATH_MIN,
+) -> float:
+    """Return a finite breathing factor in the strictly positive interval.
 
-    This creates expansion/contraction cycles in the hyperbolic space.
+    The positional ``b_max`` and ``omega`` parameters are retained for callers of
+    the older API.  ``b_min`` is appended so the schedule can never cross zero.
     """
-    return 1.0 + b_max * np.sin(omega * t)
+    values = (t, b_min, b_max, omega)
+    if not all(np.isfinite(value) for value in values):
+        raise ValueError("breathing parameters must be finite")
+    if b_min <= 0 or b_max < b_min:
+        raise ValueError("breathing bounds must satisfy 0 < b_min <= b_max")
+    unit = (1.0 + np.sin(omega * t)) / 2.0
+    return float(b_min + (b_max - b_min) * unit)
 
 
 def layer_6_breathing(u: np.ndarray, t: float) -> np.ndarray:
+    """Layer 6: positive radial breathing diffeomorphism of the open ball.
+
+    ``T_b(u) = tanh(b(t) * artanh(||u||)) * u / ||u||`` for ``b(t) > 0``.
+    It expands or contracts radius and is smooth and invertible, but it is not a
+    hyperbolic isometry.  Inputs outside the declared open-ball domain fail closed.
     """
-    Layer 6: Breathing Transform T_breath(u; t)
-
-    T_breath(u; t) = tanh(b(t) · artanh(||u||)) · u/||u||
-
-    Properties:
-        - Diffeomorphism of 𝔹ⁿ onto itself
-        - Preserves hyperbolic distance (isometry)
-        - Expands/contracts based on breathing cycle
-        - b > 1 expands, b < 1 contracts
-
-    Theorem: T_breath is an isometry of (𝔹ⁿ, d_H)
-    """
-    norm = np.linalg.norm(u)
+    point = np.asarray(u, dtype=np.float64)
+    if point.ndim != 1 or not np.all(np.isfinite(point)):
+        raise ValueError("breathing input must be a finite one-dimensional point")
+    norm = float(np.linalg.norm(point))
+    if norm >= 1.0:
+        raise ValueError("breathing input must lie inside the open Poincare ball")
     if norm < EPS:
-        return np.zeros_like(u)
-
-    # Clamp for numerical stability
-    norm = min(norm, 1.0 - EPS)
+        return np.zeros_like(point)
 
     b = breathing_factor(t)
-    artanh_norm = np.arctanh(norm)
-    new_norm = np.tanh(b * artanh_norm)
-
-    return new_norm * u / norm
-
+    new_norm = np.tanh(b * np.arctanh(norm))
+    return new_norm * point / norm
 
 # =============================================================================
 # LAYER 7: PHASE TRANSFORM (MÖBIUS)
@@ -290,7 +317,13 @@ def mobius_addition(a: np.ndarray, u: np.ndarray) -> np.ndarray:
     return result
 
 
-def layer_7_phase(u: np.ndarray, phi: float, a: np.ndarray = None) -> np.ndarray:
+def layer_7_phase(
+    u: np.ndarray,
+    phi: float,
+    a: np.ndarray = None,
+    *,
+    composition_order: PhaseCompositionOrder = L07_FULL_NATIVE_ORDER,
+) -> np.ndarray:
     """
     Layer 7: Phase Transform T_phase(u; φ, a)
 
@@ -305,6 +338,16 @@ def layer_7_phase(u: np.ndarray, phi: float, a: np.ndarray = None) -> np.ndarray
     """
     if a is None:
         a = np.zeros_like(u)
+
+    requested_order = PhaseCompositionOrder(composition_order)
+    if requested_order is L07_CANONICAL_ORDER:
+        rotation = first_plane_rotation(len(u), phi)
+        a = adapt_mobius_shift(
+            a,
+            rotation,
+            source=L07_CANONICAL_ORDER,
+            target=L07_FULL_NATIVE_ORDER,
+        )
 
     # Apply Möbius translation
     translated = mobius_addition(a, u)
@@ -349,36 +392,95 @@ def generate_realm_centers(dim: int, n_realms: int = N_REALMS) -> List[np.ndarra
     return centers
 
 
-def layer_8_multi_well(u: np.ndarray, realm_centers: List[np.ndarray] = None) -> Tuple[float, int]:
+
+REALM_FRAME_PRE_L6 = "PY_FULL14:L4_PRE_BREATH"
+REALM_FRAME_POST_L7 = "PY_FULL14:L7_POST_PHASE"
+
+
+def transform_realm_centers(
+    realm_centers: List[np.ndarray],
+    t: float,
+    phase_angle: float,
+    translation: np.ndarray,
+) -> List[np.ndarray]:
+    """Carry pre-L6 centers through the same L6/L7 map as the live state."""
+    if not realm_centers:
+        raise ValueError("at least one realm center is required")
+    offset = np.asarray(translation, dtype=np.float64)
+    if offset.ndim != 1 or not np.all(np.isfinite(offset)):
+        raise ValueError("translation must be a finite one-dimensional point")
+
+    transformed = []
+    for center in realm_centers:
+        point = np.asarray(center, dtype=np.float64)
+        if point.shape != offset.shape:
+            raise ValueError("realm center and state dimensions must match")
+        transformed.append(
+            layer_7_phase(
+                layer_6_breathing(point, t),
+                phase_angle,
+                offset,
+                composition_order=L07_CANONICAL_ORDER,
+            )
+        )
+    return transformed
+
+
+def layer_8_multi_well(
+    u: np.ndarray,
+    realm_centers: List[np.ndarray] = None,
+    *,
+    state_frame: str = None,
+    centers_frame: str = None,
+) -> Tuple[float, int]:
+    """Return distance to the nearest realm center in one declared frame.
+
+    Frame tags are optional only for legacy direct callers.  The active pipeline
+    supplies both tags and fails closed if state and centers are not comparable.
     """
-    Layer 8: Multi-Well Realms
+    if (state_frame is None) != (centers_frame is None):
+        raise ValueError("state_frame and centers_frame must be supplied together")
+    if state_frame is not None:
+        if not isinstance(state_frame, str) or not isinstance(centers_frame, str):
+            raise TypeError("realm frame tags must be strings")
+        state_frame = state_frame.strip()
+        centers_frame = centers_frame.strip()
+        if not state_frame or not centers_frame:
+            raise ValueError("realm frame tags must be non-empty")
+        if state_frame != centers_frame:
+            raise ValueError("state and realm centers must use the same frame")
 
-    d* = min_k d_H(ũ, μ_k)
-
-    Finds the nearest realm center and returns the minimum distance.
-    This determines which "governance realm" the state belongs to.
-
-    Returns: (d_star, realm_index)
-    """
+    point = np.asarray(u, dtype=np.float64)
+    if point.ndim != 1 or not np.all(np.isfinite(point)) or np.linalg.norm(point) >= 1.0:
+        raise ValueError("realm state must be a finite point inside the open Poincare ball")
     if realm_centers is None:
-        realm_centers = generate_realm_centers(len(u))
+        realm_centers = generate_realm_centers(len(point))
+    if not realm_centers:
+        raise ValueError("at least one realm center is required")
 
-    min_dist = float('inf')
+    min_dist = float("inf")
     min_idx = 0
+    for k, center in enumerate(realm_centers):
+        mu_k = np.asarray(center, dtype=np.float64)
+        if mu_k.ndim != 1 or not np.all(np.isfinite(mu_k)):
+            raise ValueError("realm centers must be finite one-dimensional points")
+        if len(mu_k) != len(point):
+            if state_frame is not None:
+                raise ValueError("tagged realm center and state dimensions must match")
+            # Preserve the historical untagged compatibility path.
+            adjusted = np.zeros(len(point))
+            width = min(len(adjusted), len(mu_k), N_REALMS)
+            adjusted[:width] = mu_k[:width]
+            mu_k = adjusted
+        if np.linalg.norm(mu_k) >= 1.0:
+            raise ValueError("realm centers must lie inside the open Poincare ball")
 
-    for k, mu_k in enumerate(realm_centers):
-        # Ensure dimensions match
-        if len(mu_k) != len(u):
-            mu_k = np.zeros(len(u))
-            mu_k[:min(len(mu_k), N_REALMS)] = realm_centers[k][:min(len(mu_k), N_REALMS)]
-
-        dist = layer_5_hyperbolic_distance(u, mu_k)
+        dist = layer_5_hyperbolic_distance(point, mu_k)
         if dist < min_dist:
             min_dist = dist
             min_idx = k
 
     return min_dist, min_idx
-
 
 # =============================================================================
 # LAYER 9: SPECTRAL COHERENCE
@@ -411,6 +513,20 @@ def layer_9_spectral_coherence(signal: np.ndarray, sample_rate: float = 44100) -
     r_hf = high_freq_energy / total_energy
 
     return 1.0 - r_hf
+
+
+def layer_9_spectral_observation(signal: np.ndarray, sample_rate: float = 44100):
+    """Return the canonical score plus an explicit missing/silent/short mask."""
+    values = None if signal is None else np.asarray(signal)
+    measured = None
+    if values is not None and values.size >= 4 and float(np.max(np.abs(values))) > 0.0:
+        measured = layer_9_spectral_coherence(values, sample_rate)
+    return spectral_observation(
+        values,
+        measured_score=measured,
+        sample_rate_hz=float(sample_rate),
+        cutoff_hz=float(sample_rate) / 4.0,
+    )
 
 
 # =============================================================================
@@ -490,21 +606,25 @@ def layer_11_triadic_distance(
 
 
 # =============================================================================
-# LAYER 12: HARMONIC SCALING (SUPEREXPONENTIAL)
+# LAYER 12: HARMONIC SCALING (BOUNDED SAFETY)
 # =============================================================================
 
+def _finite_scalar(value) -> bool:
+    return (
+        isinstance(value, (int, float, np.integer, np.floating))
+        and not isinstance(value, (bool, np.bool_))
+        and bool(np.isfinite(value))
+    )
+
+
 def layer_12_harmonic_scaling(d: float, phase_deviation: float = 0.0) -> float:
-    """
-    Layer 12: Bounded Harmonic Scaling H(d) = 1/(1 + d + 2*pd)
+    """Bounded safety, H=1/(1+d+2*phase_deviation); lower means less safe.
 
-    Safety score bounded in (0, 1]:
-        - d = 0 → H = 1 (safe)
-        - d → ∞ → H → 0 (dangerous)
-
-    Theorem C (Risk Monotonicity):
-        d₁ < d₂ ⟹ H(d₁) > H(d₂) (lower score = higher risk)
+    Zero is a valid neutral distance. Missing or invalid numbers are not zero.
     """
-    return 1.0 / (1.0 + d + 2.0 * phase_deviation)
+    if not all(_finite_scalar(v) and v >= 0 for v in (d, phase_deviation)):
+        raise ValueError("Distances and phase deviation must be finite and nonnegative")
+    return 1.0 / (1.0 + float(d) + 2.0 * float(phase_deviation))
 
 
 # =============================================================================
@@ -536,49 +656,38 @@ def layer_13_decision(
     coherence: float,
     realm_idx: int,
     theta_1: float = THETA_1,
-    theta_2: float = THETA_2
+    theta_2: float = THETA_2,
 ) -> RiskAssessment:
+    """Combine realm distance, bounded safety and coherence monotonically.
+
+    Raw risk is 1-H_d. Coherence loss and realm sensitivity may raise risk;
+    they cannot undo a distance-based rejection. Distance thresholds map to
+    bounded risk thresholds via d/(1+d). Risk >= .99 requests emergency SNAP.
+    Invalid measurements/configuration fail closed with finite telemetry.
     """
-    Layer 13: Decision & Risk Assessment
-
-    Risk' = H(d*) · (1 - coherence) · realm_weight
-
-    Decision thresholds:
-        - d* < θ₁: LOW risk → ALLOW
-        - θ₁ ≤ d* < θ₂: MEDIUM risk → REVIEW
-        - d* ≥ θ₂: HIGH risk → DENY
-        - H(d*) > 100: CRITICAL → SNAP
-    """
-    # Realm-specific weight (different realms have different sensitivity)
-    realm_weights = [1.0, 1.2, 0.8, 1.5, 1.1]
-    realm_weight = realm_weights[realm_idx % len(realm_weights)]
-
-    # Compute adjusted risk
-    raw_risk = H_d
-    scaled_risk = H_d * (1 - coherence + 0.1) * realm_weight
-
-    # Determine level and decision
-    if H_d > 100:
-        level = RiskLevel.CRITICAL
-        decision = "SNAP"
-    elif d_star >= theta_2:
-        level = RiskLevel.HIGH
-        decision = "DENY"
-    elif d_star >= theta_1:
-        level = RiskLevel.MEDIUM
-        decision = "REVIEW"
-    else:
-        level = RiskLevel.LOW
-        decision = "ALLOW"
-
-    return RiskAssessment(
-        raw_risk=raw_risk,
-        scaled_risk=scaled_risk,
-        level=level,
-        realm_index=realm_idx,
-        coherence=coherence,
-        decision=decision
+    valid = (
+        all(_finite_scalar(v) for v in (d_star, H_d, coherence, theta_1, theta_2))
+        and d_star >= 0 and 0 <= H_d <= 1 and 0 <= coherence <= 1
+        and 0 < theta_1 < theta_2
+        and isinstance(realm_idx, (int, np.integer))
+        and not isinstance(realm_idx, (bool, np.bool_)) and realm_idx >= 0
     )
+    if not valid:
+        return RiskAssessment(1.0, 1.0, RiskLevel.CRITICAL, -1, 0.0, "DENY")
+
+    realm_weights = [1.0, 1.2, 0.8, 1.5, 1.1]
+    raw_risk = 1.0 - float(H_d)
+    evidence_risk = max(raw_risk, 1.0 - float(coherence))
+    scaled_risk = min(1.0, max(evidence_risk, evidence_risk * realm_weights[realm_idx % len(realm_weights)]))
+    if scaled_risk >= 0.99:
+        level, decision = RiskLevel.CRITICAL, "SNAP"
+    elif d_star >= theta_2 or scaled_risk >= theta_2 / (1.0 + theta_2):
+        level, decision = RiskLevel.HIGH, "DENY"
+    elif d_star >= theta_1 or scaled_risk >= theta_1 / (1.0 + theta_1):
+        level, decision = RiskLevel.MEDIUM, "REVIEW"
+    else:
+        level, decision = RiskLevel.LOW, "ALLOW"
+    return RiskAssessment(raw_risk, scaled_risk, level, realm_idx, coherence, decision)
 
 
 # =============================================================================
@@ -645,10 +754,10 @@ class FourteenLayerPipeline:
     Complete 14-Layer SCBE Phase-Breath Hyperbolic Governance Pipeline.
 
     Theorems verified by construction:
-        A. Metric Invariance: d_H preserved through T_breath, T_phase
+        A. Phase Metric Invariance: d_H preserved through supported T_phase
         B. End-to-End Continuity: All maps are smooth (C^∞)
         C. Risk Monotonicity: d ↑ ⟹ H(d,R) ↑
-        D. Diffeomorphism: T_breath, T_phase are diffeomorphisms of 𝔹ⁿ
+        D. Diffeomorphism: positive T_breath and supported T_phase are diffeomorphisms of 𝔹ⁿ
     """
 
     def __init__(
@@ -663,6 +772,7 @@ class FourteenLayerPipeline:
         self.theta_1 = theta_1
         self.theta_2 = theta_2
         self.realm_centers = None
+        self.realm_centers_frame = REALM_FRAME_PRE_L6
         self.langues_metric = None
         self.layer_states: List[PipelineState] = []
 
@@ -701,8 +811,18 @@ class FourteenLayerPipeline:
         self._record(1, "Complex Context", c, {"dim": len(c)})
 
         # Layer 2: Realification
-        x = layer_2_realify(c)
-        self._record(2, "Realification", x, {"dim": len(x), "norm": np.linalg.norm(x)})
+        x = layer_2_realify(c, order=L02_CANONICAL_ORDER)
+        self._record(
+            2,
+            "Realification",
+            x,
+            {
+                "dim": len(x),
+                "norm": np.linalg.norm(x),
+                "coordinate_order": L02_CANONICAL_ORDER.value,
+                "native_coordinate_order": RealificationOrder.INTERLEAVED.value,
+            },
+        )
 
         # Layer 3: Weighted Transform
         if self.langues_metric is None:
@@ -727,7 +847,7 @@ class FourteenLayerPipeline:
             "norm_change": np.linalg.norm(u_breath) - np.linalg.norm(u)
         })
 
-        # Verify Theorem A: d_H preserved
+        # Measure breathing deformation; it intentionally changes d_H
         d_H_after_breath = layer_5_hyperbolic_distance(
             layer_6_breathing(u, t),
             layer_6_breathing(ref_u, t)
@@ -736,21 +856,65 @@ class FourteenLayerPipeline:
         # Layer 7: Phase Transform
         if translation is None:
             translation = np.zeros_like(u_breath)
-        u_phase = layer_7_phase(u_breath, phase_angle, translation)
+        u_phase = layer_7_phase(
+            u_breath,
+            phase_angle,
+            translation,
+            composition_order=L07_CANONICAL_ORDER,
+        )
         self._record(7, "Phase Transform", u_phase, {
             "phase_angle": phase_angle,
-            "norm": np.linalg.norm(u_phase)
+            "norm": np.linalg.norm(u_phase),
+            "composition_order": L07_CANONICAL_ORDER.value,
+            "native_composition_order": L07_FULL_NATIVE_ORDER.value,
+            "shift_conjugated": True,
         })
 
         # Layer 8: Multi-Well Realms
+        # Centers are stored in the L4/pre-breath frame for durable calibration.
+        # Compare only after carrying copies through this request's L6/L7 map.
         if self.realm_centers is None:
-            self.realm_centers = generate_realm_centers(len(u_phase))
-        d_star, realm_idx = layer_8_multi_well(u_phase, self.realm_centers)
-        self._record(8, "Multi-Well Realms", d_star, {"d_star": d_star, "realm": realm_idx})
+            self.realm_centers = generate_realm_centers(len(u))
+            self.realm_centers_frame = REALM_FRAME_PRE_L6
+        if self.realm_centers_frame != REALM_FRAME_PRE_L6:
+            raise ValueError("stored realm centers must use the PY_FULL14 pre-L6 frame")
+        realm_centers_post_l7 = transform_realm_centers(
+            self.realm_centers, t, phase_angle, translation
+        )
+        d_star, realm_idx = layer_8_multi_well(
+            u_phase,
+            realm_centers_post_l7,
+            state_frame=REALM_FRAME_POST_L7,
+            centers_frame=REALM_FRAME_POST_L7,
+        )
+        self._record(
+            8,
+            "Multi-Well Realms",
+            d_star,
+            {
+                "d_star": d_star,
+                "realm": realm_idx,
+                "state_frame": REALM_FRAME_POST_L7,
+                "centers_frame": REALM_FRAME_POST_L7,
+                "source_centers_frame": self.realm_centers_frame,
+                "centers_transformed": True,
+            },
+        )
 
         # Layer 9: Spectral Coherence (using realified signal)
-        S_spec = layer_9_spectral_coherence(x)
-        self._record(9, "Spectral Coherence", S_spec, {"S_spec": S_spec})
+        spectral = layer_9_spectral_observation(x, sample_rate=1.0)
+        S_spec = spectral.decision_value()
+        self._record(
+            9,
+            "Spectral Coherence",
+            S_spec,
+            {
+                "S_spec": S_spec,
+                "observation_status": spectral.status.value,
+                "sample_rate_hz": spectral.sample_rate_hz,
+                "cutoff_hz": spectral.cutoff_hz,
+            },
+        )
 
         # Layer 10: Spin Coherence
         C_spin = layer_10_spin_coherence(q)
@@ -778,9 +942,12 @@ class FourteenLayerPipeline:
 
         # Layer 14: Audio Axis
         audio = layer_14_audio_axis(np.abs(intent), coherence, risk.level)
+        audio_telemetry = TelemetryEnvelope.sonification(audio)
         self._record(14, "Audio Axis", audio, {
             "duration": len(audio) / 44100,
-            "max_amplitude": np.max(np.abs(audio))
+            "max_amplitude": np.max(np.abs(audio)),
+            "telemetry_kind": audio_telemetry.kind.value,
+            "execution_order": "POST_L13",
         })
 
         return risk, self.layer_states
@@ -895,9 +1062,9 @@ def verify_theorem_C_risk_monotonicity(n_tests: int = 100) -> Tuple[bool, Dict[s
     """
     Theorem C: Risk Monotonicity
 
-    d₁ < d₂ ⟹ H(d₁, R) < H(d₂, R) for R > 1
+    d₁ < d₂ ⟹ H(d₁) > H(d₂) for nonnegative distances
 
-    The harmonic scaling function is strictly monotonically increasing.
+    The bounded safety function is strictly monotonically decreasing.
     """
     results = {"passed": 0, "failed": 0, "violations": []}
 

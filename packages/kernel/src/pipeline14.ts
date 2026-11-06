@@ -67,8 +67,45 @@ export function layer1ComplexState(t: number[], D: number): { real: number[]; im
  * Isometric embedding Φ_1: ℂ^D → ℝ^{2D}
  * A2: x = [Re(c), Im(c)]
  */
-export function layer2Realification(complex: { real: number[]; imag: number[] }): number[] {
-  return [...complex.real, ...complex.imag];
+export type RealificationOrder = 'BLOCK_REAL_THEN_IMAG' | 'INTERLEAVED_REAL_IMAG';
+export const L02_CANONICAL_ORDER: RealificationOrder = 'BLOCK_REAL_THEN_IMAG';
+
+export function convertLayer2Realification(
+  values: number[],
+  source: RealificationOrder,
+  target: RealificationOrder
+): number[] {
+  if (
+    !Array.isArray(values) ||
+    values.length === 0 ||
+    values.length % 2 !== 0 ||
+    !values.every(Number.isFinite)
+  ) {
+    throw new Error('L02 vector must be finite, non-empty, and even-length');
+  }
+  if (source === target) return values.slice();
+  const width = values.length / 2;
+  if (source === 'BLOCK_REAL_THEN_IMAG') {
+    return values.slice(0, width).flatMap((real, index) => [real, values[width + index]]);
+  }
+  return [
+    ...values.filter((_, index) => index % 2 === 0),
+    ...values.filter((_, index) => index % 2 === 1),
+  ];
+}
+
+export function layer2Realification(
+  complex: { real: number[]; imag: number[] },
+  order: RealificationOrder = L02_CANONICAL_ORDER
+): number[] {
+  if (complex.real.length !== complex.imag.length || complex.real.length === 0) {
+    throw new Error('L02 real and imaginary coordinates must have equal non-zero width');
+  }
+  return convertLayer2Realification(
+    [...complex.real, ...complex.imag],
+    'BLOCK_REAL_THEN_IMAG',
+    order
+  );
 }
 
 // =============================================================================
@@ -83,6 +120,99 @@ export function layer2Realification(complex: { real: number[]; imag: number[] })
  *
  * A3: Applies symmetric positive-definite weighting using golden ratio.
  */
+function symmetricMatrixSquareRoot(G: number[][], n: number): number[][] {
+  if (!Array.isArray(G) || G.length !== n || n === 0) {
+    throw new Error('G must be a non-empty square matrix matching x');
+  }
+  if (
+    G.some(
+      (row) =>
+        !Array.isArray(row) || row.length !== n || row.some((value) => !Number.isFinite(value))
+    )
+  ) {
+    throw new Error('G must be square and finite');
+  }
+
+  const scale = Math.max(...G.flat().map((value) => Math.abs(value)));
+  const tolerance = 1e-12 * Math.max(scale, Number.MIN_VALUE);
+  const A = G.map((row) => row.slice());
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      if (Math.abs(A[i][j] - A[j][i]) > tolerance) {
+        throw new Error('G must be symmetric positive-definite');
+      }
+      const symmetric = 0.5 * (A[i][j] + A[j][i]);
+      A[i][j] = symmetric;
+      A[j][i] = symmetric;
+    }
+  }
+
+  const eigenvectors: number[][] = Array.from({ length: n }, (_, i) =>
+    Array.from({ length: n }, (_, j) => (i === j ? 1 : 0))
+  );
+  let converged = n === 1;
+  const maxIterations = Math.max(32, 100 * n * n);
+  for (let iteration = 0; iteration < maxIterations && !converged; iteration++) {
+    let p = 0;
+    let q = 1;
+    let largest = 0;
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        const magnitude = Math.abs(A[i][j]);
+        if (magnitude > largest) {
+          largest = magnitude;
+          p = i;
+          q = j;
+        }
+      }
+    }
+    if (largest <= tolerance) {
+      converged = true;
+      break;
+    }
+
+    const app = A[p][p];
+    const aqq = A[q][q];
+    const apq = A[p][q];
+    const angle = 0.5 * Math.atan2(2 * apq, aqq - app);
+    const c = Math.cos(angle);
+    const s = Math.sin(angle);
+
+    for (let i = 0; i < n; i++) {
+      if (i === p || i === q) continue;
+      const aip = A[i][p];
+      const aiq = A[i][q];
+      A[i][p] = A[p][i] = c * aip - s * aiq;
+      A[i][q] = A[q][i] = s * aip + c * aiq;
+    }
+    A[p][p] = c * c * app - 2 * s * c * apq + s * s * aqq;
+    A[q][q] = s * s * app + 2 * s * c * apq + c * c * aqq;
+    A[p][q] = A[q][p] = 0;
+
+    for (let i = 0; i < n; i++) {
+      const vip = eigenvectors[i][p];
+      const viq = eigenvectors[i][q];
+      eigenvectors[i][p] = c * vip - s * viq;
+      eigenvectors[i][q] = s * vip + c * viq;
+    }
+  }
+  if (!converged) throw new Error('G eigendecomposition did not converge');
+
+  const eigenvalues = A.map((row, index) => row[index]);
+  if (eigenvalues.some((value) => !Number.isFinite(value) || value <= tolerance)) {
+    throw new Error('G must be symmetric positive-definite');
+  }
+  const squareRoot = Array.from({ length: n }, () => new Array(n).fill(0));
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      for (let k = 0; k < n; k++) {
+        squareRoot[i][j] += eigenvectors[i][k] * Math.sqrt(eigenvalues[k]) * eigenvectors[j][k];
+      }
+    }
+  }
+  return squareRoot;
+}
+
 export function layer3WeightedTransform(x: number[], G?: number[][]): number[] {
   const n = x.length;
   const D = Math.floor(n / 2);
@@ -113,15 +243,10 @@ export function layer3WeightedTransform(x: number[], G?: number[][]): number[] {
     return result;
   }
 
-  // Apply G^{1/2} via matrix multiplication (simplified)
-  // For a diagonal G, this is straightforward
-  const result: number[] = new Array(n).fill(0);
-  for (let i = 0; i < n; i++) {
-    for (let j = 0; j < n; j++) {
-      result[i] += Math.sqrt(Math.abs(G[i][j])) * x[j];
-    }
-  }
-  return result;
+  // A supplied metric uses its true symmetric matrix square root.
+  // This preserves ||G^(1/2)x||^2 = x^T G x for every validated SPD G.
+  const squareRoot = symmetricMatrixSquareRoot(G, n);
+  return squareRoot.map((row) => row.reduce((sum, value, j) => sum + value * x[j], 0));
 }
 
 // =============================================================================
@@ -301,12 +426,49 @@ export function mobiusRotate(u: number[], Q: number[][]): number[] {
  *
  * A7: Uses correct Möbius addition (gyrovector) for distance preservation.
  */
-export function layer7PhaseTransform(u: number[], a: number[], Q: number[][]): number[] {
+export type PhaseCompositionOrder = 'ROTATE_THEN_TRANSLATE' | 'TRANSLATE_THEN_ROTATE';
+export const L07_CANONICAL_ORDER: PhaseCompositionOrder = 'ROTATE_THEN_TRANSLATE';
+
+export function adaptLayer7Shift(
+  shift: number[],
+  Q: number[][],
+  source: PhaseCompositionOrder,
+  target: PhaseCompositionOrder
+): number[] {
+  const n = shift.length;
+  if (n === 0 || Q.length !== n || Q.some((row) => row.length !== n)) {
+    throw new Error('L07 shift and rotation dimensions differ');
+  }
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      let dot = 0;
+      for (let k = 0; k < n; k++) dot += Q[k][i] * Q[k][j];
+      if (Math.abs(dot - (i === j ? 1 : 0)) > 1e-9)
+        throw new Error('L07 rotation must be orthogonal');
+    }
+  }
+  if (source === target) return shift.slice();
+  if (source === 'TRANSLATE_THEN_ROTATE') {
+    return Q.map((row) => row.reduce((sum, value, index) => sum + value * shift[index], 0));
+  }
+  return Q.map((_, column) => Q.reduce((sum, row, index) => sum + row[column] * shift[index], 0));
+}
+
+export function layer7PhaseTransform(
+  u: number[],
+  a: number[],
+  Q: number[][],
+  compositionOrder: PhaseCompositionOrder = L07_CANONICAL_ORDER
+): number[] {
+  const canonicalShift =
+    compositionOrder === L07_CANONICAL_ORDER
+      ? a
+      : adaptLayer7Shift(a, Q, compositionOrder, L07_CANONICAL_ORDER);
   // Step 1: Apply rotation Q (rotation about origin preserves distance)
   const uRotated = mobiusRotate(u, Q);
 
   // Step 2: Translate by a using Möbius addition
-  return mobiusAdd(a, uRotated);
+  return mobiusAdd(canonicalShift, uRotated);
 }
 
 // =============================================================================
@@ -341,40 +503,90 @@ export function layer8RealmDistance(
  * Input: Time-domain signal
  * Output: S_spec ∈ [0,1]
  *
- * A9: Low-frequency energy ratio as pattern stability measure.
+ * A9: Power at |frequency| < cutoff / total power (cycles/sample).
+ * Default cutoff 0.25 is half Nyquist. Count both conjugate bins.
+ * Missing input returns 0.5; supplied silence returns 0.0. eps is applied
+ * after amplitude normalization, in normalized power units.
  */
-export function layer9SpectralCoherence(signal: number[] | null, eps: number = 1e-5): number {
+export function layer9SpectralCoherence(
+  signal: number[] | null,
+  eps: number = 1e-5,
+  lowFrequencyCutoff: number = 0.25
+): number {
+  if (!Number.isFinite(eps) || eps < 0) {
+    throw new Error('eps must be finite and nonnegative');
+  }
+  if (!Number.isFinite(lowFrequencyCutoff) || lowFrequencyCutoff <= 0 || lowFrequencyCutoff > 0.5) {
+    throw new Error('lowFrequencyCutoff must be in (0, 0.5]');
+  }
   if (!signal || signal.length === 0) {
     return 0.5;
   }
 
-  // Simple DFT magnitude spectrum (no external FFT library needed)
+  if (!signal.every(Number.isFinite)) {
+    throw new Error('signal must contain finite numbers');
+  }
+  const amplitude = signal.reduce((largest, value) => Math.max(largest, Math.abs(value)), 0);
+  if (amplitude === 0) return 0;
+  const normalized = signal.map((value) => value / amplitude);
+  // Simple DFT power spectrum (no external FFT library needed).
   const N = signal.length;
-  const fftMag: number[] = [];
+  let lowEnergy = 0;
+  let totalEnergy = 0;
 
   for (let k = 0; k < N; k++) {
     let realSum = 0;
     let imagSum = 0;
     for (let n = 0; n < N; n++) {
       const angle = (-2 * Math.PI * k * n) / N;
-      realSum += signal[n] * Math.cos(angle);
-      imagSum += signal[n] * Math.sin(angle);
+      realSum += normalized[n] * Math.cos(angle);
+      imagSum += normalized[n] * Math.sin(angle);
     }
-    fftMag.push(Math.sqrt(realSum * realSum + imagSum * imagSum));
+    const power = realSum * realSum + imagSum * imagSum;
+    totalEnergy += power;
+    if (Math.min(k, N - k) / N < lowFrequencyCutoff) lowEnergy += power;
   }
 
-  const half = Math.floor(N / 2);
-
-  // Low-frequency energy
-  let lowEnergy = 0;
-  for (let i = 0; i < half; i++) {
-    lowEnergy += fftMag[i];
-  }
-
-  const totalEnergy = fftMag.reduce((sum, val) => sum + val, 0) + eps;
-  const sSpec = lowEnergy / totalEnergy;
+  const sSpec = lowEnergy / (totalEnergy + eps);
 
   return Math.max(0, Math.min(1, sSpec));
+}
+
+export type ObservationStatus = 'OBSERVED' | 'MISSING' | 'SILENT' | 'TOO_SHORT';
+export interface SpectralObservation {
+  status: ObservationStatus;
+  score: number | null;
+  decisionValue: number;
+  sampleRateHz: number;
+  cutoffHz: number;
+}
+
+export function layer9SpectralObservation(
+  signal: number[] | null,
+  eps: number = 1e-5,
+  sampleRateHz: number = 1.0,
+  lowFrequencyCutoff: number = 0.25
+): SpectralObservation {
+  const cutoffHz = sampleRateHz * lowFrequencyCutoff;
+  if (
+    !Number.isFinite(sampleRateHz) ||
+    sampleRateHz <= 0 ||
+    !(cutoffHz > 0 && cutoffHz < sampleRateHz / 2)
+  ) {
+    throw new Error('L09 requires positive sample rate and a cutoff below Nyquist');
+  }
+  if (!signal || signal.length === 0) {
+    return { status: 'MISSING', score: null, decisionValue: 0.5, sampleRateHz, cutoffHz };
+  }
+  if (!signal.every(Number.isFinite)) throw new Error('L09 signal must be finite');
+  if (signal.every((value) => value === 0)) {
+    return { status: 'SILENT', score: 0, decisionValue: 0, sampleRateHz, cutoffHz };
+  }
+  if (signal.length < 4) {
+    return { status: 'TOO_SHORT', score: null, decisionValue: 0.5, sampleRateHz, cutoffHz };
+  }
+  const score = layer9SpectralCoherence(signal, eps, lowFrequencyCutoff);
+  return { status: 'OBSERVED', score, decisionValue: score, sampleRateHz, cutoffHz };
 }
 
 // =============================================================================
@@ -500,6 +712,41 @@ export function layer13RiskDecision(
 // LAYER 14: Audio Axis
 // =============================================================================
 
+export type TelemetryEnvelope =
+  | { kind: 'L14A_AUDIO_COHERENCE_INPUT'; scalar: number; samples: null; executionOrder: 'PRE_L13' }
+  | {
+      kind: 'L14B_VERDICT_SONIFICATION_OUTPUT';
+      scalar: null;
+      samples: number[];
+      executionOrder: 'POST_L13';
+    };
+
+export function audioCoherenceTelemetry(score: number): TelemetryEnvelope {
+  if (!Number.isFinite(score) || score < 0 || score > 1)
+    throw new Error('L14A requires a bounded scalar');
+  return {
+    kind: 'L14A_AUDIO_COHERENCE_INPUT',
+    scalar: score,
+    samples: null,
+    executionOrder: 'PRE_L13',
+  };
+}
+
+export function verdictSonificationTelemetry(samples: number[]): TelemetryEnvelope {
+  if (
+    !samples.length ||
+    !samples.every((value) => Number.isFinite(value) && Math.abs(value) <= 1 + 1e-12)
+  ) {
+    throw new Error('L14B requires a finite, non-empty, unit-amplitude waveform');
+  }
+  return {
+    kind: 'L14B_VERDICT_SONIFICATION_OUTPUT',
+    scalar: null,
+    samples: samples.slice(),
+    executionOrder: 'POST_L13',
+  };
+}
+
 /**
  * Layer 14: Audio Telemetry Coherence
  *
@@ -573,18 +820,22 @@ export interface Pipeline14Result {
   layers: {
     l1_complex: { real: number[]; imag: number[] };
     l2_real: number[];
+    l2_coordinateOrder: RealificationOrder;
     l3_weighted: number[];
     l4_poincare: number[];
     l5_distance: number;
     l6_breathed: number[];
     l7_transformed: number[];
+    l7_compositionOrder: PhaseCompositionOrder;
     l8_realmDist: number;
     l9_spectral: number;
+    l9_observation: SpectralObservation;
     l10_spin: number;
     l11_triadic: number;
     l12_harmonic: number;
     l13_decision: Decision;
     l14_audio: number;
+    l14_telemetry: TelemetryEnvelope;
   };
   riskComponents: {
     riskBase: number;
@@ -640,7 +891,7 @@ export function scbe14LayerPipeline(t: number[], config: Pipeline14Config = {}):
   const l1_complex = layer1ComplexState(t, D);
 
   // === LAYER 2: Realification ===
-  const l2_real = layer2Realification(l1_complex);
+  const l2_real = layer2Realification(l1_complex, L02_CANONICAL_ORDER);
 
   // === LAYER 3: Weighted Transform ===
   const l3_weighted = layer3WeightedTransform(l2_real);
@@ -656,13 +907,19 @@ export function scbe14LayerPipeline(t: number[], config: Pipeline14Config = {}):
   const l6_breathed = layer6BreathingTransform(l4_poincare, breathingFactor);
 
   // === LAYER 7: Phase Transform ===
-  const l7_transformed = layer7PhaseTransform(l6_breathed, phaseShift, rotation);
+  const l7_transformed = layer7PhaseTransform(
+    l6_breathed,
+    phaseShift,
+    rotation,
+    L07_CANONICAL_ORDER
+  );
 
   // === LAYER 8: Realm Distance ===
   const { dStar: l8_realmDist } = layer8RealmDistance(l7_transformed, realms);
 
   // === LAYER 9: Spectral Coherence ===
-  const l9_spectral = layer9SpectralCoherence(t);
+  const l9_observation = layer9SpectralObservation(t);
+  const l9_spectral = l9_observation.decisionValue;
 
   // === LAYER 10: Spin Coherence ===
   // Use phases from L1 for spin coherence
@@ -682,6 +939,7 @@ export function scbe14LayerPipeline(t: number[], config: Pipeline14Config = {}):
 
   // === LAYER 14: Audio Axis ===
   const l14_audio = layer14AudioAxis(t);
+  const l14_telemetry = audioCoherenceTelemetry(l14_audio);
 
   // === Compute Base Risk ===
   // Verify weights sum to 1.0 (approx)
@@ -710,18 +968,22 @@ export function scbe14LayerPipeline(t: number[], config: Pipeline14Config = {}):
     layers: {
       l1_complex,
       l2_real,
+      l2_coordinateOrder: L02_CANONICAL_ORDER,
       l3_weighted,
       l4_poincare,
       l5_distance,
       l6_breathed,
       l7_transformed,
+      l7_compositionOrder: L07_CANONICAL_ORDER,
       l8_realmDist,
       l9_spectral,
+      l9_observation,
       l10_spin,
       l11_triadic,
       l12_harmonic,
       l13_decision,
       l14_audio,
+      l14_telemetry,
     },
     riskComponents: {
       riskBase,

@@ -26,6 +26,7 @@ const relevantPaths = [
   'api/polly',
   'api/billing',
   'docs/index.html',
+  'docs/research-signal.html',
   'docs/atomic-lab.html',
   'docs/ai-chemistry-set.html',
   'docs/ai-materials-bench.html',

@@ -1,6 +1,6 @@
 # SCBE Black Box
 
-Status: proof-of-value MVP
+Status: verified proof and lead product
 
 ## Product
 
@@ -53,15 +53,21 @@ Evidence: 2026-06-16T03:14:00Z Microsoft-Windows-Kernel-Power #41...
 
 That is the buyer moment. They do not need to care about the internal SCBE stack.
 
-## Payment Shape
+## Commercial Role
 
-Use the Workcell/Black Box download as the low-friction entry:
+Use the Black Box as the low-friction proof that SCBE produces useful evidence.
+The primary paid door is the existing `$99` AI Agent Workflow Snapshot, which
+already has a dedicated checkout and a clear human-delivered outcome.
 
-- `$9` one-time: Black Box local report pack
-- `$29` one-time: Workcell + Black Box bundle
+- free proof: run the Black Box locally and show the plain-English findings
+- `$19` one-time: manually fulfilled Black Box download while dedicated digital
+  delivery is not yet connected
+- `$99` one-time: AI Agent Workflow Snapshot, the primary paid starter service
 - `$9/mo` later: hosted alerting/text-message lane
 
-The monthly product should wait until alerting exists. The one-time product can ship now.
+Do not advertise instant Black Box delivery until checkout-to-download delivery
+has been independently verified. The monthly product should wait until alerting
+exists.
 
 ## Next Build
 

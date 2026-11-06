@@ -1,5 +1,41 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Bare `scbe [optional prompt]` conversational agent with iterative native and
+  fallback tool calls, persistent workspace sessions, compaction, and receipts.
+- Fourteen-tool default registry, three permission modes, user/project custom prompt
+  commands, and the requested slash-command lifecycle.
+- Guided evidence routes that retain complete source artifacts off-context and
+  return bounded E-number citations, keyword retrieval, and cross-source matches.
+- Canonical four-digest, previous-root receipt chains for agent tool outcomes
+  and guided evidence packets, with local verification commands.
+- Packaged loopback web interface sharing the terminal runtime, including the
+  optional coding-primitives and j-space wafer mechanics views.
+- Provider registry for Ollama, Kimi/Moonshot, xAI/Grok, OpenAI/ChatGPT,
+  Anthropic, Groq, Cerebras, Fireworks, custom compatible endpoints, and offline.
+- Clean-tarball install-to-first-prompt release gate.
+
+### Fixed
+
+- Preserve typo/error contracts before conversational fallback to prevent
+  accidental model waits.
+- Resolve packaged action/desktop scripts without a monorepo checkout and route
+  both GeoSeal shims directly to the core package.
+- Protect the local web API with Host/Origin checks, a random process token,
+  JSON-only mutation requests, and one-shot command approvals.
+- Keep provider endpoints and credential environment names provider-scoped,
+  scrub persisted key values, and sanitize terminal control sequences from
+  model/tool output.
+- Make command timeouts terminate descendant processes and bound optional regex
+  search in an isolated worker.
+- Keep the test suite hermetic and sequential so temporary homes cannot trigger
+  liboqs native builds or starve subprocess timeout tests.
+- Launch system Chrome with an explicit isolated persistent profile and use
+  local fixtures for browser integration tests.
+
 ## 4.5.0 - 2026-07-24
 
 ### Added

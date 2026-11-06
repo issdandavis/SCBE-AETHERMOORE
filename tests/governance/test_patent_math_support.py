@@ -46,7 +46,7 @@ def test_runtime_gate_centroid_update_is_incremental_running_mean():
     assert gate._centroid.tolist() == pytest.approx(expected.tolist())
 
 
-def test_runtime_gate_cost_formula_matches_claimed_clamped_expression():
+def test_runtime_gate_cost_at_origin_matches_weighted_radial_distance():
     gate = RuntimeGate()
     gate._centroid = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
     coords = [0.5, 0.25, 0.0, 0.0, 0.0, 0.0]
@@ -54,6 +54,8 @@ def test_runtime_gate_cost_formula_matches_claimed_clamped_expression():
     phi = 1.618033988749895
     weights = np.array([phi**k for k in range(6)])
     weighted_dist = float(np.sqrt(np.sum(weights * np.array(coords) ** 2)))
+    # The half-radius tanh embedding has d_H(0, embed(x)) = ||sqrt(W) x||.
+    # Away from the origin the full Poincare expression is required.
     d_star = min(weighted_dist, 5.0)
     expected = math.pi ** (phi * d_star)
 

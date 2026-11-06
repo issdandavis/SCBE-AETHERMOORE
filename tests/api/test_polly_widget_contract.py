@@ -10,7 +10,7 @@ the widget since 2026-03 (separately fixed in PR #1523).
 
 This test locks the contract from both sides:
 - Server side: api/polly/chat.js MUST return the assistant reply under `text:`
-- Client side: docs/static/polly-hf-chat.js AND kindle-app/www/static/...
+- Client side: the docs widget and both current Polly sidebar clients
   MUST accept `data.text` (with optional `data.response` fallback for any
   legacy backend)
 
@@ -22,6 +22,8 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -110,13 +112,13 @@ def test_sidebar_has_useful_product_and_agent_starters() -> None:
         assert prompt in src
 
 
-def test_kindle_widget_accepts_text_key_from_chat_response() -> None:
-    """kindle-app PWA widget must accept the same response shape."""
-    src = _read(ROOT / "kindle-app" / "www" / "static" / "polly-hf-chat.js")
-    assert "data.text" in src, (
-        "kindle-app/www/static/polly-hf-chat.js must read assistant reply "
-        "from `data.text` (mirror of docs/static/polly-hf-chat.js)"
-    )
+@pytest.mark.parametrize("filename", ["polly-sidebar.js", "polly-sidebar-agent.js"])
+def test_current_sidebar_accepts_text_key_from_chat_response(filename: str) -> None:
+    """Cover shipping clients; Kindle was intentionally retired in #2663."""
+    src = _read(ROOT / "docs" / "static" / filename)
+    assert re.search(
+        r"\bdata\.text\s*\|\|\s*data\.response\b", src
+    ), f"{filename} must prefer data.text, with its existing legacy response fallback"
 
 
 def test_widget_does_not_only_read_response_key() -> None:
@@ -127,7 +129,6 @@ def test_widget_does_not_only_read_response_key() -> None:
     """
     for path in [
         ROOT / "docs" / "static" / "polly-hf-chat.js",
-        ROOT / "kindle-app" / "www" / "static" / "polly-hf-chat.js",
     ]:
         src = _read(path)
         # Find the requestScbePolly function body

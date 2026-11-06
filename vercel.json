@@ -89,6 +89,14 @@
       "dest": "/api/agent/router.js?fn=products"
     },
     {
+      "src": "^/research-signal/?$",
+      "dest": "/api/agent/router.js?fn=research-signal"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/research-signal\\.html$",
+      "dest": "/api/agent/router.js?fn=research-signal"
+    },
+    {
       "src": "^/atomic-lab/?$",
       "dest": "/api/agent/router.js?fn=atomic-lab-page"
     },

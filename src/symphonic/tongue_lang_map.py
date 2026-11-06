@@ -10,7 +10,13 @@ oscillator from phi_phase.run_six_tongues.
 
 If a tongue->language pairing turns out wrong, change it here only --
 nothing downstream hard-codes the values.
+
+This is the named ``training_canonical_v3`` profile. It is not a replacement
+for the computational-isomorphism or opcode-runtime profiles in
+``python/scbe/tongue_code_lanes.py``.
 """
+
+PROFILE_NAME = "training_canonical_v3"
 
 # Tongue weight = phi^(l-1). Heavier tongues get heavier-syntax languages.
 TONGUE_LANG = {

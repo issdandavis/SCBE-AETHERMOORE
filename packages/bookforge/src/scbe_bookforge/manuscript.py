@@ -8,9 +8,11 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class Block:
-    kind: str   # "heading" | "para" | "scene_break"
+    kind: str   # heading | para | scene_break | code | list_item | blockquote
     text: str
     level: int = 0
+    marker: str = ""
+    language: str = ""
 
 
 SCAFFOLD_PREFIXES = (
@@ -42,6 +44,9 @@ def parse_markdown(source: str) -> list[Block]:
     """Light markdown parser sufficient for the ReportLab fallback."""
     blocks: list[Block] = []
     para: list[str] = []
+    code: list[str] = []
+    code_language = ""
+    in_code = False
 
     def flush_para() -> None:
         if para:
@@ -52,6 +57,21 @@ def parse_markdown(source: str) -> list[Block]:
 
     for raw_line in source.splitlines():
         line = raw_line.rstrip()
+        fence = re.match(r"^\s*```\s*([^`]*)$", line)
+        if fence:
+            flush_para()
+            if in_code:
+                blocks.append(Block("code", "\n".join(code), language=code_language))
+                code.clear()
+                code_language = ""
+                in_code = False
+            else:
+                in_code = True
+                code_language = fence.group(1).strip()
+            continue
+        if in_code:
+            code.append(line)
+            continue
         if not line.strip():
             flush_para()
             continue
@@ -64,6 +84,22 @@ def parse_markdown(source: str) -> list[Block]:
             flush_para()
             blocks.append(Block("heading", m.group(2).strip(), level=len(m.group(1))))
             continue
+        m = re.match(r"^(\s*)([-+*]|\d+[.)])\s+(.+)$", line)
+        if m:
+            flush_para()
+            indent_level = max(1, (len(m.group(1).expandtabs(4)) // 2) + 1)
+            marker = m.group(2)
+            if marker in {"-", "+", "*"}:
+                marker = "•"
+            blocks.append(Block("list_item", m.group(3).strip(), level=indent_level, marker=marker))
+            continue
+        m = re.match(r"^>\s?(.*)$", line)
+        if m:
+            flush_para()
+            blocks.append(Block("blockquote", m.group(1).strip()))
+            continue
         para.append(line)
+    if in_code:
+        blocks.append(Block("code", "\n".join(code), language=code_language))
     flush_para()
     return blocks

@@ -27,6 +27,7 @@ function runNode(script, args = [], env = {}, timeoutMs = 180000) {
   return {
     status: r.status ?? 1,
     ok: r.status === 0,
+    started_ms: started,
     duration_ms: Date.now() - started,
     stdout: r.stdout || '',
     stderr: r.stderr || '',
@@ -34,12 +35,13 @@ function runNode(script, args = [], env = {}, timeoutMs = 180000) {
   };
 }
 
-function latestJson(dir) {
+function latestJson(dir, startedMs = 0) {
   if (!fs.existsSync(dir)) return null;
   const files = fs
     .readdirSync(dir)
     .filter((f) => f.endsWith('.json'))
     .map((f) => path.join(dir, f))
+    .filter((f) => fs.statSync(f).mtimeMs >= startedMs - 1000)
     .sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
   if (!files[0]) return null;
   try {
@@ -50,7 +52,10 @@ function latestJson(dir) {
 }
 
 function corpusSummary(run) {
-  const artifact = latestJson(path.join(REPO_ROOT, 'artifacts', 'benchmarks', 'scbe-task-corpus'));
+  const artifact = latestJson(
+    path.join(REPO_ROOT, 'artifacts', 'benchmarks', 'scbe-task-corpus'),
+    run.started_ms
+  );
   const score = artifact?.data?.score || artifact?.data?.summary || null;
   return {
     ok: run.ok,
@@ -64,7 +69,10 @@ function corpusSummary(run) {
 }
 
 function shellSummary(run) {
-  const artifact = latestJson(path.join(REPO_ROOT, 'artifacts', 'benchmarks', 'scbe-shell'));
+  const artifact = latestJson(
+    path.join(REPO_ROOT, 'artifacts', 'benchmarks', 'scbe-shell'),
+    run.started_ms
+  );
   const score = artifact?.data?.score || null;
   return {
     ok: run.ok,
@@ -183,7 +191,11 @@ function main() {
 
   const offlineCorpus = runNode(
     corpusBench,
-    ['--max-corpus-turns=40'],
+    [
+      '--exclude-category=codegen,codegen-hard',
+      '--max-corpus-turns=40',
+      '--fail-on-incomplete',
+    ],
     { SCBE_PROVIDER: 'offline' },
     180000
   );

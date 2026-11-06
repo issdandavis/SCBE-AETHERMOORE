@@ -26,6 +26,25 @@ from typing import Dict, Tuple, List, Optional, Sequence
 from src.synesthesia_embedding import flavor_scent_alignment, synesthesia_risk_factor
 
 try:
+    from src.symphonic_cipher.scbe_aethermoore.layer_contracts import (
+        L02_CANONICAL_ORDER,
+        L07_CANONICAL_ORDER,
+        RealificationOrder,
+        TelemetryEnvelope,
+        convert_realification,
+        spectral_observation,
+    )
+except ImportError:  # pragma: no cover - direct src-path import compatibility
+    from symphonic_cipher.scbe_aethermoore.layer_contracts import (
+        L02_CANONICAL_ORDER,
+        L07_CANONICAL_ORDER,
+        RealificationOrder,
+        TelemetryEnvelope,
+        convert_realification,
+        spectral_observation,
+    )
+
+try:
     from src.harmonic.governance_logger import audit_state_transition
 except ImportError:  # pragma: no cover - fallback when imported from src path directly
     from harmonic.governance_logger import audit_state_transition
@@ -393,28 +412,64 @@ def layer_8_realm_distance(u: np.ndarray, realms: List[np.ndarray], eps: float =
 # =============================================================================
 # LAYER 9: Spectral Coherence
 # =============================================================================
-def layer_9_spectral_coherence(signal: Optional[np.ndarray], eps: float = 1e-5) -> float:
+def layer_9_spectral_coherence(
+    signal: Optional[np.ndarray], eps: float = 1e-5, *, low_frequency_cutoff: float = 0.25
+) -> float:
     """
     Layer 9: Spectral Coherence via FFT
 
     Input: Time-domain signal
     Output: S_spec ∈ [0,1]
 
-    A9: Low-frequency energy ratio as pattern stability measure.
+    A9: Power at abs(frequency) < low_frequency_cutoff / total power.
+    Frequencies are cycles/sample; default 0.25 is half the Nyquist frequency.
+    Both conjugate FFT bins count for real signals. Missing signal returns 0.5;
+    a supplied all-zero signal returns 0.0 (no observed spectral energy).
+    Normalize amplitude before the FFT to prevent overflow/underflow. eps is
+    applied in this normalized power space, not in raw measurement units.
     """
-    if signal is None or len(signal) == 0:
+    if not np.isfinite(eps) or eps < 0:
+        raise ValueError("eps must be finite and nonnegative")
+    if not np.isfinite(low_frequency_cutoff) or not 0 < low_frequency_cutoff <= 0.5:
+        raise ValueError("low_frequency_cutoff must be in (0, 0.5]")
+    if signal is None:
         return 0.5
+    values = np.asarray(signal)
+    if values.ndim != 1 or not np.all(np.isfinite(values)):
+        raise ValueError("signal must be a finite one-dimensional array")
+    if values.size == 0:
+        return 0.5
+    amplitude = max(float(np.max(np.abs(values.real))), float(np.max(np.abs(values.imag))))
+    if amplitude == 0:
+        return 0.0
+    power = np.abs(np.fft.fft(values / amplitude)) ** 2
+    frequencies = np.fft.fftfreq(values.size)
+    low_energy = np.sum(power[np.abs(frequencies) < low_frequency_cutoff])
+    return float(np.clip(low_energy / (np.sum(power) + eps), 0.0, 1.0))
 
-    # FFT magnitude spectrum
-    fft_mag = np.abs(np.fft.fft(signal))
-    half = len(fft_mag) // 2
 
-    # Low-frequency energy
-    low_energy = np.sum(fft_mag[:half])
-    total_energy = np.sum(fft_mag) + eps
-
-    S_spec = low_energy / total_energy
-    return np.clip(S_spec, 0.0, 1.0)
+def layer_9_spectral_observation(
+    signal: Optional[np.ndarray],
+    eps: float = 1e-5,
+    *,
+    sample_rate_hz: float = 1.0,
+    low_frequency_cutoff: float = 0.25,
+):
+    """Return L09 evidence with units and a nonnumeric missing-state mask."""
+    values = None if signal is None else np.asarray(signal)
+    measured = None
+    if values is not None and values.size >= 4 and float(np.max(np.abs(values))) > 0.0:
+        measured = layer_9_spectral_coherence(
+            values,
+            eps,
+            low_frequency_cutoff=low_frequency_cutoff,
+        )
+    return spectral_observation(
+        values,
+        measured_score=measured,
+        sample_rate_hz=sample_rate_hz,
+        cutoff_hz=sample_rate_hz * low_frequency_cutoff,
+    )
 
 
 # =============================================================================
@@ -662,7 +717,11 @@ def scbe_14layer_pipeline(
     c = layer_1_complex_state(t, D)
 
     # L2: Realification
-    x = layer_2_realification(c)
+    x = convert_realification(
+        layer_2_realification(c),
+        source=RealificationOrder.BLOCK,
+        target=L02_CANONICAL_ORDER,
+    )
 
     # L3: Weighted transform
     x_G = layer_3_weighted_transform(x, G)
@@ -682,7 +741,8 @@ def scbe_14layer_pipeline(
     d_star, all_distances = layer_8_realm_distance(u_final, realms)
 
     # L9: Spectral coherence
-    S_spec = layer_9_spectral_coherence(telemetry_signal)
+    spectral = layer_9_spectral_observation(telemetry_signal)
+    S_spec = spectral.decision_value()
 
     # L10: Spin coherence (use original phases from complex state)
     phases = np.angle(c)
@@ -716,6 +776,7 @@ def scbe_14layer_pipeline(
 
     # L14: Audio coherence
     S_audio = layer_14_audio_axis(audio_frame)
+    audio_telemetry = TelemetryEnvelope.coherence(S_audio)
 
     # L13: Composite risk
     assert abs(w_d + w_c + w_s + w_tau + w_a - 1.0) < 1e-6, "Weights must sum to 1"
@@ -789,6 +850,8 @@ def scbe_14layer_pipeline(
             "s_audio": float(S_audio),
             "s_spec": float(S_spec),
             "c_spin": float(C_spin),
+            "l09_observation_status": spectral.status.value,
+            "l14_telemetry_kind": audio_telemetry.kind.value,
         },
         strict=False,
     )
@@ -808,6 +871,15 @@ def scbe_14layer_pipeline(
             "S_spec": S_spec,
             "tau": tau,
             "S_audio": S_audio,
+        },
+        "layer_contracts": {
+            "L02_coordinate_order": L02_CANONICAL_ORDER.value,
+            "L07_composition_order": L07_CANONICAL_ORDER.value,
+            "L09_observation_status": spectral.status.value,
+            "L09_sample_rate_hz": spectral.sample_rate_hz,
+            "L09_cutoff_hz": spectral.cutoff_hz,
+            "L14_telemetry_kind": audio_telemetry.kind.value,
+            "L14_execution_order": "PRE_L13",
         },
         "synesthesia": synesthesia,
         "synesthesia_override_reason": synesthesia_override_reason,

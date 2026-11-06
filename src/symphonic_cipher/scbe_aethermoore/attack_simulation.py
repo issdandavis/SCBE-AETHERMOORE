@@ -50,7 +50,7 @@ from .layers_9_12 import (
     compute_spectral_coherence,
     compute_spin_coherence,
     compute_triadic_distance,
-    harmonic_scaling,
+    quadratic_exp_cost,
 )
 
 # =============================================================================
@@ -239,7 +239,7 @@ class SCBEDefenseSystem:
         diagnostics["d_tri"] = triadic.d_tri_norm
 
         # --- Layer 12: Harmonic Scaling ---
-        H = harmonic_scaling(d_star, use_vertical_wall=True)
+        H = quadratic_exp_cost(d_star, base=float(np.e))
         diagnostics["H"] = H
 
         # --- Update Pressure Based on Metrics ---

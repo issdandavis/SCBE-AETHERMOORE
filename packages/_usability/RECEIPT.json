@@ -1,0 +1,127 @@
+{
+  "schema": "scbe_usability_receipt_v1",
+  "measured_at": "2026-11-06T23:49:05.634Z",
+  "surface": "local",
+  "tmp": "C:\\Users\\issda\\AppData\\Local\\Temp\\scbe-usability-KG5nf9",
+  "tarballs": {
+    "scbe-aethermoore-cli": "C:\\Users\\issda\\AppData\\Local\\Temp\\scbe-usability-KG5nf9\\tarballs\\scbe-aethermoore-cli-4.5.0.tgz",
+    "scbe-aethermoore": "C:\\Users\\issda\\AppData\\Local\\Temp\\scbe-usability-KG5nf9\\tarballs\\scbe-aethermoore-4.3.2.tgz",
+    "scbe-agent-bus": "C:\\Users\\issda\\AppData\\Local\\Temp\\scbe-usability-KG5nf9\\tarballs\\scbe-agent-bus-0.5.0.tgz",
+    "scbe-polly-pad-cli": "C:\\Users\\issda\\AppData\\Local\\Temp\\scbe-usability-KG5nf9\\tarballs\\scbe-polly-pad-cli-0.2.0.tgz",
+    "clay-system": "C:\\Users\\issda\\AppData\\Local\\Temp\\scbe-usability-KG5nf9\\tarballs\\clay-system-0.1.3.tgz"
+  },
+  "passed": 10,
+  "failed": 0,
+  "rows": [
+    {
+      "package": "scbe-aethermoore-cli",
+      "surface": "local",
+      "command": "scbe selftest",
+      "expected_exit": 0,
+      "expected_stdout_match": "scbe_aethermoore_cli_selftest_v1",
+      "pass": true,
+      "exit": 0,
+      "stdout_head": "{ \"schema_version\": \"scbe_aethermoore_cli_selftest_v1\", \"ok\": true, \"results\": [ { \"command\": \"scbe version --json\", \"ok\": true, \"status\": 0, \"stdout_preview\": \"{\\n \\\"schema_version\\\": \\\"scbe_aethermoore_cli_version_v1\\\",\\n \\\"cli_package\\\":",
+      "why": "ok"
+    },
+    {
+      "package": "scbe-aethermoore-cli",
+      "surface": "local",
+      "command": "scbe --help",
+      "expected_exit": 0,
+      "expected_stdout_match": "scan",
+      "pass": true,
+      "exit": 0,
+      "stdout_head": "scbe-aethermoore-cli Conversational coding and operations agent with local/hosted model sockets, curated tools, resumable sessions, custom slash commands, and the SCBE governance/receipt stack behind the interface. Usage: scbe Start the con",
+      "why": "ok"
+    },
+    {
+      "package": "scbe-aethermoore-cli",
+      "surface": "local",
+      "command": "scbe-task --help",
+      "expected_exit": 0,
+      "expected_stdout_match": "do_not_promote_to_fact",
+      "pass": true,
+      "exit": 0,
+      "stdout_head": "scbe-task - governed async task client Usage: scbe-task health|capabilities [--url http://127.0.0.1:8766] scbe-task submit --objective \"...\" [--processor core] [--wait] [--json] scbe-task submit --request-file task.json [--wait] [--json] sc",
+      "why": "ok"
+    },
+    {
+      "package": "scbe-aethermoore-cli",
+      "surface": "local",
+      "command": "scbe version --json",
+      "expected_exit": 0,
+      "expected_stdout_match": "scbe_aethermoore_cli_version_v1",
+      "pass": true,
+      "exit": 0,
+      "stdout_head": "{ \"schema_version\": \"scbe_aethermoore_cli_version_v1\", \"cli_package\": \"scbe-aethermoore-cli\", \"cli_version\": \"4.5.0\", \"core_package\": \"scbe-aethermoore\", \"core_version\": \"4.3.3\", \"node\": \"v24.16.0\", \"platform\": \"win32\" }",
+      "why": "ok"
+    },
+    {
+      "package": "scbe-aethermoore",
+      "surface": "local",
+      "command": "scbe-scan \"clean text\"",
+      "expected_exit": 0,
+      "expected_stdout_match": "OK",
+      "pass": true,
+      "exit": 0,
+      "stdout_head": "[OK] ALLOW score=1.0000 d*=0.0000 pd=0.0000 len=10",
+      "why": "ok"
+    },
+    {
+      "package": "scbe-aethermoore",
+      "surface": "local",
+      "command": "scbe-scan --help",
+      "expected_exit": 0,
+      "expected_stdout_match": "Usage",
+      "pass": true,
+      "exit": 0,
+      "stdout_head": "scbe-scan Usage: scbe-scan \"text to evaluate\" scbe-scan --json \"text to evaluate\" scbe-scan --batch prompts.txt Options: --json Emit full JSON records. --batch Read one prompt per line from a UTF-8 file. Note: this Node CLI prints the numer",
+      "why": "ok"
+    },
+    {
+      "package": "scbe-agent-bus",
+      "surface": "local",
+      "command": "scbe-agent-bus --help",
+      "expected_exit": 0,
+      "expected_stdout_match": "serve",
+      "pass": true,
+      "exit": 0,
+      "stdout_head": "SCBE Agent Bus Usage: scbe-agent-bus serve --port 8787 [--worker] scbe-agent-bus ui --base-url http://127.0.0.1:8787 scbe-agent-bus send --task \"review changed files\" --task-type review --json scbe-agent-bus send --task \"heavy job\" --enqueu",
+      "why": "ok"
+    },
+    {
+      "package": "scbe-polly-pad-cli",
+      "surface": "local",
+      "command": "polly",
+      "expected_exit": 0,
+      "expected_stdout_match": "init",
+      "pass": true,
+      "exit": 0,
+      "stdout_head": "polly v0.2.0 — governed terminal workpad for AI operators Usage: polly <command> [options] Commands: init [name] Create a new .polly workspace in the current directory status Show workspace state (--json for full JSON) next Show next task, ",
+      "why": "ok"
+    },
+    {
+      "package": "scbe-polly-pad-cli",
+      "surface": "local",
+      "command": "polly init",
+      "expected_exit": 0,
+      "expected_stdout_match": ".polly",
+      "pass": true,
+      "exit": 0,
+      "stdout_head": "Polly workspace initialized: C:\\Users\\issda\\AppData\\Local\\Temp\\scbe-usability-KG5nf9\\work-TzEnmI\\.polly Pad name: default Quick start: polly status # see workspace state polly next # get the next operator packet polly task add <text> # add ",
+      "why": "ok"
+    },
+    {
+      "package": "clay-system",
+      "surface": "local",
+      "command": "clay doctor",
+      "expected_exit": 0,
+      "expected_stdout_match": "Loom checkout",
+      "pass": true,
+      "exit": 0,
+      "stdout_head": "Clay shim : clay-system 0.1.3 Node : v24.16.0 Loom checkout : C:\\dev\\loom clay.ps1 exists : yes git on PATH : yes npm on PATH : yes PowerShell : yes",
+      "why": "ok"
+    }
+  ]
+}

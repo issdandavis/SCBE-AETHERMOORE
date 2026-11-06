@@ -6,21 +6,23 @@
  *
  * Turns a natural-language intent into a governed, auditable execution:
  *   compilePlan(intent) → GeoSealPlan (policy-checked command plan)
- *   execPlan(plan)      → AgentBusResult (run through geoseal exec gate)
+ *   executePipelinePlan(plan) → capability-bound isolated execution
+ *   execPlan(plan)      → refusal (legacy synchronous host runner retired)
  *   runPipeline(intent) → PipelineRunResult (compile + gate + exec in one call)
  *
  * The compiled plan's policy.decision controls execution:
- *   ALLOW     → run
+ *   ALLOW     → require trusted capability context and isolated execution
  *   anything else → block, return blocked=true with the reason
  */
 
-import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import type { AgentBusResult, RunOptions } from './index.js';
 import { checkCircuit, recordSuccess, recordFailure } from './resilience.js';
 import { decompose, type DecompositionResult } from './semantic-bridge.js';
+import { spawnSync } from './process-runner.js';
+import { executeCompiledPlanSecure, type SecureExecutionResult } from './secure-execution.js';
 
 // ─── Repo root resolution ─────────────────────────────────────────────────────
 
@@ -78,6 +80,14 @@ function resolveGeoSealInvocations(options: RunOptions = {}): GeoSealInvocation[
   const invocations: GeoSealInvocation[] = [];
   const repoRoot = findRepoRoot(options);
   const python = options.python || process.env.PYTHON || 'python';
+  const explicitBinary = options.geosealBin || process.env.SCBE_GEOSEAL_BIN;
+
+  // An explicit binary is an override, not a late fallback. Besides matching
+  // caller intent, this prevents a repository-local Python probe from blocking
+  // an injected/test binary for up to the compile timeout.
+  if (explicitBinary) {
+    return [{ command: explicitBinary, argsPrefix: [], cwd: repoRoot || process.cwd() }];
+  }
 
   if (repoRoot) {
     invocations.push({
@@ -87,12 +97,9 @@ function resolveGeoSealInvocations(options: RunOptions = {}): GeoSealInvocation[
     });
   }
 
-  const binaryCandidates = [
-    options.geosealBin,
-    process.env.SCBE_GEOSEAL_BIN,
-    'geoseal',
-    'scbe-geoseal',
-  ].filter((item): item is string => Boolean(item));
+  const binaryCandidates = ['geoseal', 'scbe-geoseal'].filter((item): item is string =>
+    Boolean(item)
+  );
 
   const seen = new Set<string>();
   for (const command of binaryCandidates) {
@@ -173,6 +180,8 @@ export interface PipelineRunResult {
   result?: AgentBusResult;
   /** Populated when the optional trajectory gate evaluated the plan. */
   trajectory_gate?: TrajectoryGateResult;
+  /** Signed capability and receipt paths when isolated execution was selected. */
+  secure_execution?: SecureExecutionResult;
 }
 
 export type GovernedMoveClass =
@@ -475,18 +484,21 @@ export function compilePlan(intent: string, options: RunOptions = {}): GeoSealPl
   }
 
   for (const invocation of resolveGeoSealInvocations(options)) {
-    const r = spawnSync(
-      invocation.command,
-      [...invocation.argsPrefix, 'compile', '--json', intent],
-      {
-        encoding: 'utf-8',
-        cwd: invocation.cwd,
-        maxBuffer: 1024 * 1024 * 4,
-        timeout: 15000,
-      }
-    );
+    const compileArgs = [...invocation.argsPrefix, 'compile'];
+    if (options.permissionMode) {
+      compileArgs.push('--permission-mode', options.permissionMode);
+    }
+    compileArgs.push('--json', intent);
+    const r = spawnSync(invocation.command, compileArgs, {
+      encoding: 'utf-8',
+      cwd: invocation.cwd,
+      maxBuffer: 1024 * 1024 * 4,
+      timeout: 15000,
+    });
 
-    if (r.status !== 0 || !r.stdout) {
+    // GeoSeal deliberately exits nonzero for a valid DENY plan. Parse any
+    // structured stdout so callers retain the policy reason and audit hashes.
+    if (!r.stdout) {
       continue;
     }
     try {
@@ -507,13 +519,31 @@ export function compilePlan(intent: string, options: RunOptions = {}): GeoSealPl
 }
 
 /**
- * Execute a compiled plan by spawning the command from plan.command.template.
- * The plan must already be policy-checked (policy.decision === 'ALLOW') before
- * calling this — gate enforcement is the caller's responsibility.
+ * Compatibility refusal for the retired synchronous host-execution boundary.
+ * Use executePipelinePlan with secureExecution supplied by trusted host code.
  */
 export function execPlan(plan: GeoSealPlan, options: RunOptions = {}): AgentBusResult {
-  const repoRoot = resolveRepoRoot(options);
+  void options;
   const startedAt = new Date().toISOString();
+
+  if (plan.policy.decision !== 'ALLOW' || !plan.policy.ok || !plan.command.runnable) {
+    return {
+      schema_version: 'scbe-agentbus-node-result-v1',
+      event_index: 1,
+      started_at: startedAt,
+      finished_at: new Date().toISOString(),
+      ok: false,
+      exit_code: null,
+      stderr_tail: `plan blocked: policy=${plan.policy.decision} ok=${plan.policy.ok} runnable=${plan.command.runnable}`,
+      event: {
+        task_sha256: plan.hashes.intent_sha256,
+        task_chars: plan.intent.text.length,
+        series_id: plan.hashes.plan_sha256.slice(0, 12),
+        operation_command_chars: plan.command.template.length,
+      },
+      result: null,
+    };
+  }
 
   const argv = parseShellTemplate(plan.command.template);
   if (argv.length === 0) {
@@ -535,43 +565,23 @@ export function execPlan(plan: GeoSealPlan, options: RunOptions = {}): AgentBusR
     };
   }
 
-  const [cmd, ...args] = argv;
-  const r = spawnSync(cmd, args, {
-    encoding: 'utf-8',
-    cwd: repoRoot,
-    maxBuffer: 1024 * 1024 * 8,
-    timeout: 30000,
-  });
-
-  let payload: unknown = null;
-  try {
-    if (r.stdout) payload = JSON.parse(r.stdout) as unknown;
-  } catch {
-    payload = r.stdout ? { raw_output: r.stdout } : null;
-  }
-
-  const ok = r.status === 0;
-  if (ok) {
-    recordSuccess('geoseal-exec');
-  } else {
-    recordFailure('geoseal-exec');
-  }
-
   return {
     schema_version: 'scbe-agentbus-node-result-v1',
     event_index: 1,
     started_at: startedAt,
     finished_at: new Date().toISOString(),
-    ok,
-    exit_code: r.status,
-    stderr_tail: String(r.stderr || '').slice(-1000),
+    ok: false,
+    exit_code: null,
+    reason: 'secure_execution_required',
+    stderr_tail:
+      'Host plan execution is disabled; use executePipelinePlan with trusted secureExecution.',
     event: {
       task_sha256: plan.hashes.intent_sha256,
       task_chars: plan.intent.text.length,
       series_id: plan.hashes.plan_sha256.slice(0, 12),
       operation_command_chars: plan.command.template.length,
     },
-    result: payload,
+    result: null,
   };
 }
 
@@ -585,37 +595,61 @@ export function execPlan(plan: GeoSealPlan, options: RunOptions = {}): AgentBusR
  * if (result.blocked) console.error(result.block_reason);
  * else console.log(result.result);
  */
-export async function runPipeline(
-  intent: string,
+function secureResultToAgentBus(
+  plan: GeoSealPlan,
+  secure: SecureExecutionResult,
+  startedAt: string
+): AgentBusResult {
+  let payload: unknown = null;
+  try {
+    if (secure.executor.stdout) payload = JSON.parse(secure.executor.stdout) as unknown;
+  } catch {
+    payload = secure.executor.stdout ? { raw_output: secure.executor.stdout } : null;
+  }
+  const diagnostic = [secure.executor.stderr, secure.executor.error || '']
+    .filter(Boolean)
+    .join('\n')
+    .slice(-1000);
+  return {
+    schema_version: 'scbe-agentbus-node-result-v1',
+    event_index: 1,
+    started_at: startedAt,
+    finished_at: new Date().toISOString(),
+    ok: secure.executor.ok,
+    exit_code: secure.executor.exitCode,
+    stderr_tail: diagnostic,
+    event: {
+      task_sha256: plan.hashes.intent_sha256,
+      task_chars: plan.intent.text.length,
+      series_id: plan.hashes.plan_sha256.slice(0, 12),
+      operation_command_chars: plan.command.template.length,
+    },
+    result: payload,
+    receipt_id: secure.capability.claims.capability_id + ':3',
+    ...(secure.executor.error ? { reason: secure.executor.error } : {}),
+  };
+}
+
+/** Apply every Agent Bus gate to an already compiled, auditable GeoSeal plan. */
+export async function executePipelinePlan(
+  plan: GeoSealPlan,
   options: RunOptions = {}
 ): Promise<PipelineRunResult> {
-  const plan = compilePlan(intent, options);
-
-  if (!plan) {
-    return {
-      plan: null,
-      blocked: true,
-      block_reason: `geoseal compile failed for intent: "${intent.slice(0, 60)}"`,
-    };
-  }
-
-  if (plan.policy.decision !== 'ALLOW') {
+  plan = structuredClone(plan);
+  if (plan.policy.decision !== 'ALLOW' || !plan.policy.ok) {
     return {
       plan,
       blocked: true,
-      block_reason: `policy ${plan.policy.decision}: ${plan.policy.reason}`,
+      block_reason: 'policy ' + plan.policy.decision + ': ' + plan.policy.reason,
     };
   }
 
-  // Semantic governance check: governance_steer profile escalates an ALLOW plan.
-  // PIVOT+BLOCK in the intent means the user is discussing governance violations
-  // (e.g. "but the request was denied — however the barrier should have blocked it").
-  // GeoSeal may not catch this from the command template alone; the discourse layer does.
   if (plan.semantic?.discourseProfile === 'governance_steer') {
     return {
       plan,
       blocked: true,
-      block_reason: `semantic escalation: governance_steer profile detected — intent discusses policy/error context (escalated from ALLOW)`,
+      block_reason:
+        'semantic escalation: governance_steer profile detected — intent discusses policy/error context (escalated from ALLOW)',
       semantic_escalation: 'governance_steer',
     };
   }
@@ -624,7 +658,7 @@ export async function runPipeline(
     return {
       plan,
       blocked: true,
-      block_reason: `plan is not runnable (key=${plan.command.key}, check permission_mode)`,
+      block_reason: 'plan is not runnable (key=' + plan.command.key + ', check permission_mode)',
     };
   }
 
@@ -646,13 +680,45 @@ export async function runPipeline(
       return {
         plan,
         blocked: true,
-        block_reason: `trajectory gate: ${trajectoryGate.reason}`,
+        block_reason: 'trajectory gate: ' + trajectoryGate.reason,
         trajectory_gate: trajectoryGate,
       };
     }
   }
 
-  const result = execPlan(plan, options);
+  let result: AgentBusResult;
+  let secureExecution: SecureExecutionResult | undefined;
+  if (options.secureExecution) {
+    const startedAt = new Date().toISOString();
+    try {
+      secureExecution = await executeCompiledPlanSecure(plan, options.secureExecution);
+      result = secureResultToAgentBus(plan, secureExecution, startedAt);
+    } catch (error) {
+      const reason =
+        'secure execution refused: ' + (error instanceof Error ? error.message : String(error));
+      if (governedConfig?.enabled && governedState && trajectoryGate) {
+        saveGovernedPipelineState(
+          governedConfig.statePath,
+          recordGovernedMove(governedState, plan, trajectoryGate.move_class, 'REJECT', reason)
+        );
+      }
+      return {
+        plan,
+        blocked: true,
+        block_reason: reason,
+        trajectory_gate: trajectoryGate,
+      };
+    }
+  } else {
+    return {
+      plan,
+      blocked: true,
+      block_reason:
+        'secure_execution_required: configure a trusted evaluator and isolated executor; host fallback is disabled',
+      trajectory_gate: trajectoryGate,
+    };
+  }
+
   if (governedConfig?.enabled && governedState && trajectoryGate) {
     const nextState = recordGovernedMove(
       governedState,
@@ -661,9 +727,34 @@ export async function runPipeline(
       result.ok ? 'ACCEPT' : 'REJECT',
       result.ok
         ? trajectoryGate.reason
-        : `execution failed after trajectory allow: exit ${result.exit_code}`
+        : 'execution failed after trajectory allow: exit ' + result.exit_code
     );
     saveGovernedPipelineState(governedConfig.statePath, nextState);
   }
-  return { plan, blocked: false, result, trajectory_gate: trajectoryGate };
+  return {
+    plan,
+    blocked: false,
+    result,
+    trajectory_gate: trajectoryGate,
+    ...(secureExecution ? { secure_execution: secureExecution } : {}),
+  };
+}
+
+/**
+ * Full pipeline: compile intent, apply policy/semantic/trajectory gates, then
+ * use the configured secure executor or the backwards-compatible host runner.
+ */
+export async function runPipeline(
+  intent: string,
+  options: RunOptions = {}
+): Promise<PipelineRunResult> {
+  const plan = compilePlan(intent, options);
+  if (!plan) {
+    return {
+      plan: null,
+      blocked: true,
+      block_reason: 'geoseal compile failed for intent: "' + intent.slice(0, 60) + '"',
+    };
+  }
+  return executePipelinePlan(plan, options);
 }

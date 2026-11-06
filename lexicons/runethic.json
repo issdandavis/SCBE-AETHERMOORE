@@ -21,5 +21,17 @@
     "thul'ora": "spiral-present",
     "thul'ar": "spiral-ancient",
     "thul'ael": "spiral-eternal"
+  },
+  "function_words": {
+    "schema": "scbe.function-word-bindings.v1",
+    "registry": "function_primitives.json",
+    "coverage": "shared_registry_v1",
+    "encoding": "stista_framed_sequence",
+    "native_bindings": {
+      "nuu": [
+        "adv.now"
+      ]
+    },
+    "note": "Shared semantic IDs use existing codec sequences; native bindings select relevant existing senses, never replace the original gloss or provenance."
   }
 }

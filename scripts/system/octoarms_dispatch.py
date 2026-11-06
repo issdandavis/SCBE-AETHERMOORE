@@ -221,16 +221,18 @@ def _hydra_swarm_run(
 
 
 def _browse_evidence_run(repo_root: Path, url: str, browse_path: Path) -> dict[str, Any]:
-    skill_script = (
+    bundled_script = repo_root / "scripts" / "hydra" / "hydra_terminal_browse.mjs"
+    profile_script = (
         Path.home() / ".codex" / "skills" / "hydra-node-terminal-browsing" / "scripts" / "hydra_terminal_browse.mjs"
     )
-    if not skill_script.exists():
+    skill_script = bundled_script if bundled_script.is_file() else profile_script
+    if not skill_script.is_file():
         return {
             "command": ["node", str(skill_script), "--url", url],
             "command_text": f"node {skill_script} --url {url}",
             "returncode": 2,
             "stdout": "",
-            "stderr": f"Missing hydra terminal browsing script: {skill_script}",
+            "stderr": f"Missing hydra terminal browsing script; checked {bundled_script} and {profile_script}",
         }
     command = [
         "node",

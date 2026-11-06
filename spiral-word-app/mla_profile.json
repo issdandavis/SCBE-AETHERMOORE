@@ -1,0 +1,26 @@
+{
+  "id": "anderson-english101-2026-v1",
+  "label": "John Anderson · English 101",
+  "font": "Times New Roman",
+  "font_pt": 12,
+  "margin_inches": 1,
+  "header_inches": 0.5,
+  "line_spacing": 2,
+  "paragraph_before_pt": 0,
+  "paragraph_after_pt": 0,
+  "first_indent_inches": 0.5,
+  "paper": "US Letter",
+  "filename_pattern": "LastName, FirstName My MLA Template.docx",
+  "source": "https://youtu.be/KrMkbJ5a5hc",
+  "authority": "User-supplied instructor transcript and written course-name correction",
+  "defaults": {
+    "firstName": "Issac",
+    "lastName": "Davis",
+    "instructor": "John Anderson",
+    "course": "English 101",
+    "date": "2026-09-24",
+    "title": "",
+    "body": "",
+    "works": ""
+  }
+}
