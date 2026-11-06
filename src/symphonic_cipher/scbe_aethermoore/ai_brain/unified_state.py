@@ -68,9 +68,14 @@ def safe_poincare_embed(vector: List[float], epsilon: float = BRAIN_EPSILON) -> 
     Returns:
         Point strictly inside the Poincare ball.
     """
-    n = _vec_norm(vector)
-    if n < epsilon:
-        return [0.0] * len(vector)
+    if len(vector) == 0 or not all(map(math.isfinite, vector)):
+        raise ValueError("Embedding requires finite, nonempty coordinates")
+    n = math.hypot(*vector)
+    if not math.isfinite(n):
+        raise ValueError("Embedding norm must be representable")
+    if n == 0 or n < min(epsilon, BRAIN_EPSILON):
+        # lim tanh(n / 2) / n = 1/2: preserve small nonzero movements.
+        return [v / 2 for v in vector]
 
     mapped_norm = math.tanh(n / 2)
     clamped_norm = min(mapped_norm, POINCARE_MAX_NORM)
@@ -88,17 +93,23 @@ def hyperbolic_distance_safe(u: List[float], v: List[float]) -> float:
 
     Returns:
         Hyperbolic distance.
+
+    Raises:
+        ValueError: For mismatched, non-finite, boundary, or out-of-ball points.
     """
-    diff = _vec_sub(u, v)
-    diff_norm_sq = sum(x * x for x in diff)
-    u_norm_sq = sum(x * x for x in u)
-    v_norm_sq = sum(x * x for x in v)
+    if len(u) == 0 or len(u) != len(v):
+        raise ValueError("Poincare points must have equal, nonzero dimensions")
+    if not all(math.isfinite(x) for x in (*u, *v)):
+        raise ValueError("Poincare coordinates must be finite")
+    u_norm_sq = math.fsum(x * x for x in u)
+    v_norm_sq = math.fsum(x * x for x in v)
+    if u_norm_sq >= 1 or v_norm_sq >= 1:
+        raise ValueError("Poincare points must be strictly inside the unit ball")
 
-    u_factor = max(BRAIN_EPSILON, 1 - u_norm_sq)
-    v_factor = max(BRAIN_EPSILON, 1 - v_norm_sq)
-
-    arg = 1 + (2 * diff_norm_sq) / (u_factor * v_factor)
-    return math.acosh(max(1, arg))
+    # acosh(1 + 2*a*a) == 2*asinh(a), without cancellation in 1 + tiny.
+    # Do not clamp an invalid point or its denominator into an authorized region.
+    denominator = math.sqrt(1 - u_norm_sq) * math.sqrt(1 - v_norm_sq)
+    return 2 * math.asinh(math.dist(u, v) / denominator)
 
 
 @dataclass

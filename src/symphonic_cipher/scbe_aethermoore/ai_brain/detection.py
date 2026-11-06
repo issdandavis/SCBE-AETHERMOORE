@@ -89,7 +89,7 @@ def detect_phase_distance(
 
     for point in trajectory:
         actual_phase = point.state[16] if len(point.state) > 16 else 0
-        phase_diff = abs(actual_phase - expected_phase)
+        phase_diff = abs(actual_phase - expected_phase) % (2 * math.pi)
         circular_diff = min(phase_diff, 2 * math.pi - phase_diff)
         total_phase_error += circular_diff / math.pi
 
