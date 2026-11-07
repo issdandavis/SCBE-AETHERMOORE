@@ -310,3 +310,8 @@ restores Loom's exact five-W and prime-sieve implementation files through a
 separate local, hash-bound, internal-research authorization; those two files are
 not represented as MIT or redistributable. V5 also passes the structural gate,
 but remains unscored and cannot replace an independent retrieval holdout.
+
+Prospective holdout harvesting now requires a timezone-aware authored timestamp
+strictly after the frozen catalog cutoff (`3d4ee3d1e`). The old voice corpus lacks
+that evidence and is rejected without writing a queue. Only newly exported,
+scrubbed user-authored requests may satisfy the next source-disjoint gate.

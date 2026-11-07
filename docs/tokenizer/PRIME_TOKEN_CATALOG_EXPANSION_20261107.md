@@ -128,3 +128,18 @@ passed all checks, and the largest source now contributes `0.16474` of sections.
 This v5 artifact supersedes v4 only as the current development candidate. It has
 not been scored, promoted, packaged, deployed, or connected to a probability
 sidecar or neural checkpoint.
+
+## Prospective independent-query boundary
+
+Commit `3d4ee3d1e` adds an exclusive `--authored-after-utc` cutoff to the private
+query harvester. In prospective mode every input row must carry a timezone-aware
+`authored_at_utc`; rows at or before the frozen cutoff are excluded, and missing
+or timezone-naive timestamps fail closed. The normalized cutoff and accepted row
+timestamps enter the queue hash.
+
+The existing 2026-08 direct-speech corpus has no authored timestamps. A live
+attempt to use it with the v5 freeze cutoff failed on line 1 and wrote no review
+queue, as required. It remains development/training material only. A future
+source-disjoint evaluation must use a newly exported, scrubbed, timestamped set
+of user-authored requests created after the v5 catalog freeze; synthetic spin
+conversations are not eligible.
