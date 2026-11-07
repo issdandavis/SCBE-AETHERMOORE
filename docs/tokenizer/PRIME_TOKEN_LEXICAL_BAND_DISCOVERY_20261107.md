@@ -1,6 +1,7 @@
 # Lexical-Band Auxiliary Cascade Discovery Protocol
 
-Status: preregistered before implementation or scoring; no promotion authority.
+Status: development selection complete; width `0.005` frozen for a new holdout;
+no promotion authority.
 
 ## Problem
 
@@ -66,3 +67,38 @@ The discovery is CPU-only, uses the existing immutable catalog, writes less than
 100 MiB, and should finish within 30 minutes. Stop on catalog-hash drift,
 benchmark leakage, an existing output path, fewer than three shuffled controls,
 or failure to reproduce width zero as the current lexical-first ranking.
+
+## Development result
+
+Implementation commit `d1c935b2c` predates every result below. All five widths
+used the original 31-request independent development benchmark, catalog SHA-256
+`0c051ab5c27da8f70fd0d77830994e03bf55cda0224c696d06ac3cedf404b403`,
+and shuffled seeds 11, 29, and 47.
+
+| Width | Candidate MRR | Lexical MRR | No-intervention MRR | Shuffled mean MRR | Improved / harmed | Eligible |
+|---:|---:|---:|---:|---:|---:|:---:|
+| 0.000 | 0.515921 | 0.514308 | 0.510546 | 0.515921 | 1 / 0 | no |
+| 0.005 | 0.516015 | 0.514308 | 0.510546 | 0.514946 | 2 / 0 | yes |
+| 0.010 | 0.516015 | 0.514308 | 0.510546 | 0.514377 | 2 / 0 | yes |
+| 0.020 | 0.515921 | 0.514308 | 0.510546 | 0.516028 | 1 / 0 | no |
+| 0.050 | 0.512719 | 0.514308 | 0.510546 | 0.517043 | 3 / 2 | no |
+
+Widths `0.005` and `0.010` tied on candidate MRR. The preregistered tie rule
+therefore selects the smaller `0.005` width. This is a discovery qualification,
+not a capability pass: the gain over lexical-only is only `0.001707`, and no
+two-pooled-SD gate passed. Freeze `0.005` before reviewing the third holdout.
+
+Runtime receipts:
+
+- width 0.000 SHA-256:
+  `9503ac56c7aaa478a7d9ec651227c17bb46d1ba8471974be5732b4a101253751`;
+- width 0.005 SHA-256:
+  `c1a2da513daac46a635122758f587e64d96a07bf45e994901f2d028c241abccf`;
+- width 0.010 SHA-256:
+  `d46ca1ad332ee4ad69d2eee07622cbedf7967135af34eeeeb42999001b952769`;
+- width 0.020 SHA-256:
+  `b51e05900735d067fe32b14239976a401f73744f9c33e0bee1bb83e48266c05d`;
+- width 0.050 SHA-256:
+  `a47774e6717878e9ffbd270b6e0a1688534778504b48388933cda7064cb2d7f7`;
+- directory:
+  `C:/dev/clay-training-runs/prime-token-catalog-20261106/lexical-band-discovery-20261107/`.

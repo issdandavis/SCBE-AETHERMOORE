@@ -244,3 +244,8 @@ lexical-first holdout is also consumed and cannot validate this candidate. The
 predeclared discovery grid, controls, selection rule, third-holdout requirement,
 compute budget, rollback boundary, and stop conditions are frozen in
 `docs/tokenizer/PRIME_TOKEN_LEXICAL_BAND_DISCOVERY_20261107.md`.
+
+The committed implementation revision is `six-view-lexical-band-v1` at commit
+`d1c935b2c`. The development grid selected width `0.005` by its predeclared
+smallest-width tie rule. Its MRR advantage over lexical-only was only `0.001707`,
+so the candidate remains unproven and requires a third hash-disjoint holdout.
