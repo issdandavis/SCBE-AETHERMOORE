@@ -34,6 +34,10 @@ def main() -> int:
     )
     parser.add_argument("--minimum-queries", type=int, default=30)
     parser.add_argument(
+        "--authored-after-utc",
+        help="prospective-only cutoff; every dataset row must include timezone-aware authored_at_utc",
+    )
+    parser.add_argument(
         "--explicit-route-scope",
         action="store_true",
         help="seal the preregistered balanced explicit-route review scope",
@@ -47,9 +51,14 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.input_queue:
+        if args.authored_after_utc:
+            parser.error("--authored-after-utc requires --dataset")
         queue = json.loads(Path(args.input_queue).read_text(encoding="utf-8"))
     else:
-        queue = harvest_review_queue(args.dataset)
+        queue = harvest_review_queue(
+            args.dataset,
+            authored_after_utc=args.authored_after_utc,
+        )
     if args.explicit_route_scope:
         if not args.input_queue:
             parser.error("--explicit-route-scope requires --input-queue")

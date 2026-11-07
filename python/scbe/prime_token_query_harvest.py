@@ -8,6 +8,7 @@ session chunks and scrubbed direct-speech rows retain source-session provenance.
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
+from datetime import datetime
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -104,15 +105,34 @@ def _topic_groups(text: str) -> list[str]:
     return [name for name, pattern in TOPIC_PATTERNS.items() if pattern.search(text)]
 
 
+def _parse_authored_at(value: Any, *, label: str) -> datetime:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{label} needs authored_at_utc for prospective harvesting")
+    normalized = value.strip().replace("Z", "+00:00")
+    try:
+        parsed = datetime.fromisoformat(normalized)
+    except ValueError as exc:
+        raise ValueError(f"{label} has invalid authored_at_utc") from exc
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise ValueError(f"{label} authored_at_utc must include a timezone")
+    return parsed
+
+
 def harvest_review_queue(
     dataset: str | Path,
     *,
     min_chars: int = 20,
     max_chars: int = 1600,
+    authored_after_utc: str | None = None,
 ) -> dict[str, Any]:
     """Return a deterministic queue without assigning relevance labels."""
     if min_chars < 1 or max_chars < min_chars:
         raise ValueError("invalid request length bounds")
+    authored_after = (
+        _parse_authored_at(authored_after_utc, label="prospective cutoff")
+        if authored_after_utc is not None
+        else None
+    )
     dataset_path = Path(dataset).resolve()
     candidates: list[dict[str, Any]] = []
     seen: set[str] = set()
@@ -140,6 +160,13 @@ def harvest_review_queue(
                 )
             if not session_id or not isinstance(text, str):
                 raise ValueError(f"invalid chunk record on line {line_number}")
+            row_authored_at = None
+            if authored_after is not None:
+                row_authored_at = _parse_authored_at(
+                    row.get("authored_at_utc"), label=f"line {line_number}"
+                )
+                if row_authored_at <= authored_after:
+                    continue
             sessions.add(session_id)
             for request in requests:
                 request = request.strip()
@@ -169,6 +196,9 @@ def harvest_review_queue(
                         "session_id": session_id,
                         "chunk_index": chunk_index,
                         "source_schema": schema,
+                        "authored_at_utc": (
+                            row_authored_at.isoformat() if row_authored_at else None
+                        ),
                         "turn_ordinal": ordinal,
                         "topic_groups": groups,
                         "query": request,
@@ -183,6 +213,9 @@ def harvest_review_queue(
             "accepted_input_schemas": sorted(input_schemas),
             "min_chars": min_chars,
             "max_chars": max_chars,
+            "authored_after_utc": (
+                authored_after.isoformat() if authored_after is not None else None
+            ),
             "topic_patterns": {
                 name: pattern.pattern for name, pattern in TOPIC_PATTERNS.items()
             },

@@ -84,6 +84,61 @@ def test_harvest_accepts_scrubbed_direct_speech_with_source_provenance(
     assert candidate["topic_groups"] == ["prime_sieve", "source_research"]
 
 
+def test_prospective_harvest_requires_and_enforces_authored_cutoff(tmp_path: Path) -> None:
+    path = tmp_path / "prospective.jsonl"
+    rows = [
+        {
+            "schema": "clay.direct-speech-turn.v1",
+            "source_session": "before-freeze",
+            "turn": 1,
+            "authored_at_utc": "2026-11-07T08:59:59Z",
+            "text": "Research the prime sieve source before the catalog freeze.",
+        },
+        {
+            "schema": "clay.direct-speech-turn.v1",
+            "source_session": "after-freeze",
+            "turn": 2,
+            "authored_at_utc": "2026-11-07T09:00:01-00:00",
+            "text": "Research the prime sieve source after the catalog freeze.",
+        },
+    ]
+    path.write_text("\n".join(json.dumps(row) for row in rows) + "\n", encoding="utf-8")
+
+    queue = harvest_review_queue(path, authored_after_utc="2026-11-07T09:00:00Z")
+
+    assert queue["candidate_count"] == 1
+    assert queue["session_ids"] == ["after-freeze"]
+    assert queue["selection_policy"]["authored_after_utc"] == "2026-11-07T09:00:00+00:00"
+    assert queue["candidates"][0]["authored_at_utc"] == "2026-11-07T09:00:01+00:00"
+
+
+def test_prospective_harvest_refuses_ambiguous_timestamp(tmp_path: Path) -> None:
+    path = tmp_path / "prospective.jsonl"
+    path.write_text(
+        json.dumps(
+            {
+                "schema": "clay.direct-speech-turn.v1",
+                "source_session": "missing-time",
+                "turn": 1,
+                "text": "Research the prime sieve without a timestamp.",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="needs authored_at_utc"):
+        harvest_review_queue(path, authored_after_utc="2026-11-07T09:00:00Z")
+
+
+def test_prospective_harvest_refuses_naive_cutoff(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="include a timezone"):
+        harvest_review_queue(
+            _dataset(tmp_path / "chunks.jsonl"),
+            authored_after_utc="2026-11-07T09:00:00",
+        )
+
+
 def test_review_labels_are_hash_bound_and_minimum_enforced(tmp_path: Path) -> None:
     queue = harvest_review_queue(_dataset(tmp_path / "chunks.jsonl"))
     labels = {
