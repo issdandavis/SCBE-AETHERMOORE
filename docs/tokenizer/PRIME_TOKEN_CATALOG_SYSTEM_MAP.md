@@ -266,3 +266,12 @@ with both consumed 31-query sets, and passes catalog source-disjoint validation.
 Labels now bind the exact canonical review queue rather than only the source
 dataset hash. The candidate remains development-only until this sealed holdout
 is scored once against all preregistered controls.
+
+The one-shot score at commit `f8cb2bff9` returned `NO_GAIN`. Lexical-band,
+lexical-only, no-intervention, and every shuffled-binding seed all scored MRR
+1.0; all 34 query outcomes were unchanged and all declared gates failed. The
+full six-view reference scored MRR 0.985294 after moving one query from rank 1
+to rank 2. Because the complete accepted stratum maps to one sieve source, this
+is an authentic source-record-disjoint ceiling test, not cross-source evidence.
+The result is retained without changing any probability table, tokenizer,
+serving pointer, or model weight.

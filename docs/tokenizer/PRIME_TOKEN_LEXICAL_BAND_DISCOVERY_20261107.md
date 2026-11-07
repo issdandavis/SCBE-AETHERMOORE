@@ -1,7 +1,6 @@
 # Lexical-Band Auxiliary Cascade Discovery Protocol
 
-Status: development selection complete; width `0.005` frozen for a new holdout;
-no promotion authority.
+Status: third holdout complete; `NO_GAIN`; width `0.005` is not promoted.
 
 ## Problem
 
@@ -176,3 +175,41 @@ No candidate retrieval was run while collecting, reviewing, or validating this
 set. Width `0.005` remains unproven until the committed evaluator is run once on
 this sealed private benchmark against lexical-only, no-intervention, and all
 three shuffled-binding controls.
+
+## Third-holdout result
+
+Status: `NO_GAIN`; no promotion.
+
+Commit `f8cb2bff9` sealed the direct-speech harvester, queue-binding check,
+receipts, and benchmark before scoring. The one-shot evaluation used width
+`0.005`, result limit 20, and shuffled-control seeds 11, 29, and 47.
+
+| Arm | MRR | Recall@1 | Recall@5 |
+|---|---:|---:|---:|
+| lexical-band candidate | 1.000000 | 1.000000 | 1.000000 |
+| lexical-only | 1.000000 | 1.000000 | 1.000000 |
+| no intervention | 1.000000 | 1.000000 | 1.000000 |
+| shuffled binding, each of 3 seeds | 1.000000 | 1.000000 | 1.000000 |
+| rejected full six-view reference | 0.985294 | 0.970588 | 1.000000 |
+
+All 34 candidate outcomes were unchanged relative to lexical-only. Candidate
+minus lexical-only, no-intervention, and mean shuffled binding was exactly zero;
+all three two-pooled-SD gates failed. The selected band therefore adds no
+measurable retrieval capability on this holdout.
+
+This holdout is authentic and source-record-disjoint, but intentionally reviews
+one complete topic stratum: every accepted query maps to `clay_sieve.py`.
+Lexical retrieval already saturates it, so the result is a strong ceiling/no-gain
+check rather than evidence of cross-source generalization. The full six-view
+reference moved one query from rank 1 to rank 2 and did not improve any query.
+
+Result receipt:
+
+- result SHA-256:
+  `fa826eb4f8ad5e3bdc4a5ff885a0b4d0097476720637f275e2fefd17993a9b9d`;
+- result path:
+  `C:/dev/clay-training-runs/prime-token-catalog-20261106/lexical-band-holdout-voice-v2-20261107/RESULT.json`.
+
+No tokenizer, lookup probability, serving pointer, model checkpoint, or active
+weight changed. The lexical-band candidate remains preserved as negative
+research evidence only.
