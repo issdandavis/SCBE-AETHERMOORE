@@ -29,6 +29,7 @@ SEARCH_SCHEMA = "scbe.prime-token-goal-search.v1"
 PROBABILITY_SCHEMA = "scbe.prime-token-probability.v1"
 ALGORITHM_REVISION = "six-view-topology-v3"
 LEXICAL_FIRST_REVISION = "six-view-lexical-first-v1"
+LEXICAL_BAND_REVISION = "six-view-lexical-band-v1"
 DEFAULT_TOKENIZER = Path(
     r"C:\dev\clay_home\tokenizers\clay_open_core_bpe_v1\tokenizer.json"
 )
@@ -1470,6 +1471,141 @@ def search_lexical_first(
         "boundary": (
             "Auxiliary views can only break an exact lexical-score tie or order lexical-zero fallbacks; "
             "they cannot displace stronger lexical evidence."
+        ),
+    }
+
+
+def search_lexical_banded(
+    database: str | Path,
+    goal: str,
+    *,
+    lexical_band_width: float,
+    limit: int = 20,
+    topology_steps: int = 2,
+    damping: float = 0.35,
+    control: str = "aligned",
+    control_seed: int = 0,
+    source_kinds: Sequence[str] = (),
+) -> dict[str, Any]:
+    """Use auxiliary evidence only within anchored lexical-score bands.
+
+    Bands are contiguous in descending lexical order and anchored to their
+    strongest lexical score. This prevents pairwise-near candidates from
+    chaining across a wider lexical interval. Width zero is exactly the
+    lexical-first ranking rule.
+    """
+    if limit < 1:
+        raise ValueError("limit must be positive")
+    if not 0.0 <= lexical_band_width <= 1.0:
+        raise ValueError("lexical_band_width must be between 0 and 1")
+    catalog_path = Path(database).resolve()
+    connection = sqlite3.connect(catalog_path)
+    try:
+        section_count = int(
+            connection.execute("SELECT COUNT(*) FROM sections").fetchone()[0]
+        )
+    finally:
+        connection.close()
+    candidate_limit = max(limit, section_count)
+    lexical = search_goal(
+        catalog_path,
+        goal,
+        limit=candidate_limit,
+        topology_steps=topology_steps,
+        damping=damping,
+        ablate_views=[view for view in VIEW_NAMES if view != "lexical"],
+        control="aligned",
+        source_kinds=source_kinds,
+    )
+    auxiliary = search_goal(
+        catalog_path,
+        goal,
+        limit=candidate_limit,
+        topology_steps=topology_steps,
+        damping=damping,
+        control=control,
+        control_seed=control_seed,
+        source_kinds=source_kinds,
+    )
+    lexical_by_section = {row["section_id"]: row for row in lexical["results"]}
+    auxiliary_by_section = {row["section_id"]: row for row in auxiliary["results"]}
+    section_ids = set(lexical_by_section) | set(auxiliary_by_section)
+
+    def lexical_score(section_id: str) -> float:
+        return float(lexical_by_section.get(section_id, {}).get("score", 0.0))
+
+    def auxiliary_score(section_id: str) -> float:
+        return float(auxiliary_by_section.get(section_id, {}).get("score", 0.0))
+
+    lexical_order = sorted(section_ids, key=lambda item: (-lexical_score(item), item))
+    bands: list[tuple[float, list[str]]] = []
+    for section_id in lexical_order:
+        score = lexical_score(section_id)
+        if not bands or bands[-1][0] - score > lexical_band_width:
+            bands.append((score, [section_id]))
+        else:
+            bands[-1][1].append(section_id)
+
+    ranked: list[tuple[str, int, float]] = []
+    for band_index, (anchor_score, members) in enumerate(bands):
+        ordered_members = sorted(
+            members,
+            key=lambda item: (-auxiliary_score(item), item),
+        )
+        ranked.extend(
+            (section_id, band_index, anchor_score) for section_id in ordered_members
+        )
+
+    results = []
+    for section_id, band_index, anchor_score in ranked[:limit]:
+        lexical_row = lexical_by_section.get(section_id)
+        auxiliary_row = auxiliary_by_section.get(section_id)
+        row = dict(auxiliary_row or lexical_row or {})
+        primary_score = lexical_score(section_id)
+        secondary_score = auxiliary_score(section_id)
+        row["score"] = primary_score
+        row["probability"] = None
+        row["cascade_scores"] = {
+            "lexical_primary": primary_score,
+            "auxiliary_within_band": secondary_score,
+            "lexical_band_width": lexical_band_width,
+            "lexical_band_index": band_index,
+            "lexical_band_anchor": anchor_score,
+        }
+        results.append(row)
+    search_id = stable_id(
+        "lexical-band-search",
+        lexical["search_id"],
+        auxiliary["search_id"],
+        lexical_band_width,
+        LEXICAL_BAND_REVISION,
+    )
+    return {
+        "schema": SEARCH_SCHEMA,
+        "algorithm_revision": LEXICAL_BAND_REVISION,
+        "search_id": search_id,
+        "catalog_sha256": lexical["catalog_sha256"],
+        "goal": goal,
+        "control": control,
+        "control_seed": control_seed,
+        "control_offset": auxiliary["control_offset"],
+        "query_analysis": auxiliary["query_analysis"],
+        "query_view_status": auxiliary["query_view_status"],
+        "views": list(VIEW_NAMES),
+        "lexical_band_width": lexical_band_width,
+        "ranking_rule": [
+            "lexical_score_band_descending",
+            "full_six_view_score_descending_inside_anchored_band",
+            "section_id_ascending",
+        ],
+        "child_search_ids": {
+            "lexical": lexical["search_id"],
+            "auxiliary": auxiliary["search_id"],
+        },
+        "results": results,
+        "boundary": (
+            "Auxiliary views reorder only candidates inside a fixed anchored lexical-score band; "
+            "the emitted score remains lexical and no probability or neural weight is changed."
         ),
     }
 

@@ -6,12 +6,14 @@ import pytest
 
 from python.scbe.prime_token_benchmark import (
     evaluate_catalog,
+    evaluate_lexical_banded_catalog,
     evaluate_lexical_first_catalog,
 )
 from python.scbe.prime_token_catalog import (
     InputRecord,
     PrimeTokenCatalogBuilder,
     search_goal,
+    search_lexical_banded,
     search_lexical_first,
 )
 
@@ -153,3 +155,40 @@ def test_lexical_first_is_lexical_primary_and_runs_controls(tmp_path):
         "no_intervention",
         "shuffled_binding",
     }
+
+
+def test_lexical_band_zero_reproduces_ties_and_full_width_reproduces_auxiliary(
+    tmp_path,
+):
+    database = _fixture(tmp_path)
+    goal = "prime sieve survivors"
+    lexical_first = search_lexical_first(database, goal, limit=5)
+    zero_band = search_lexical_banded(database, goal, lexical_band_width=0.0, limit=5)
+    full_band = search_lexical_banded(database, goal, lexical_band_width=1.0, limit=5)
+    auxiliary = search_goal(database, goal, limit=5)
+
+    assert [row["section_id"] for row in zero_band["results"]] == [
+        row["section_id"] for row in lexical_first["results"]
+    ]
+    assert [row["section_id"] for row in full_band["results"]] == [row["section_id"] for row in auxiliary["results"]]
+    assert all(row["probability"] is None for row in zero_band["results"])
+
+    result = evaluate_lexical_banded_catalog(
+        database,
+        _benchmark(),
+        benchmark_sha256="d" * 64,
+        lexical_band_width=0.01,
+        control_seeds=(3, 5, 7),
+        limit=5,
+    )
+    assert result["status"] == "UNDERPOWERED"
+    assert result["candidate_arm"] == "lexical_banded"
+    assert result["lexical_band_width"] == 0.01
+    assert set(result["arms"]) == {
+        "lexical_banded",
+        "full",
+        "lexical_only",
+        "no_intervention",
+        "shuffled_binding",
+    }
+    assert sum(result["query_changes_vs_lexical"].values()) == 3

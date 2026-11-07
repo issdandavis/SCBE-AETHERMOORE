@@ -13,9 +13,11 @@ from typing import Any
 
 from python.scbe.prime_token_catalog import (
     ALGORITHM_REVISION,
+    LEXICAL_BAND_REVISION,
     LEXICAL_FIRST_REVISION,
     VIEW_NAMES,
     search_goal,
+    search_lexical_banded,
     search_lexical_first,
     sha256_file,
 )
@@ -388,6 +390,148 @@ def evaluate_lexical_first_catalog(
         "result_limit": limit,
         "arms": arm_runs,
         "gates": gates,
+        "underpowered_reasons": underpowered_reasons,
+        "claim_boundary": (
+            "The candidate is a deterministic retrieval cascade, not learned model capability. "
+            "No probability table, serving pointer, tokenizer, or neural weight is promoted."
+        ),
+    }
+
+
+def evaluate_lexical_banded_catalog(
+    database: str | Path,
+    benchmark: Mapping[str, Any],
+    *,
+    benchmark_sha256: str,
+    lexical_band_width: float,
+    control_seeds: Sequence[int] = (0, 1, 2),
+    limit: int = 20,
+) -> dict[str, Any]:
+    """Evaluate one frozen lexical-band width against explicit controls."""
+    database_path = Path(database).resolve()
+    if len(set(control_seeds)) < 3:
+        raise ValueError("at least three distinct control seeds are required")
+    if limit < 5:
+        raise ValueError("limit must be at least 5")
+    if not 0.0 <= lexical_band_width <= 1.0:
+        raise ValueError("lexical_band_width must be between 0 and 1")
+    queries = _validate_queries(database_path, benchmark)
+    arm_runs: dict[str, list[dict[str, Any]]] = {}
+    configs = {
+        "lexical_banded": ("cascade", "aligned", (0,)),
+        "full": ("goal", "aligned", (0,)),
+        "lexical_only": ("lexical", "aligned", (0,)),
+        "no_intervention": ("no_intervention", "aligned", (0,)),
+        "shuffled_binding": ("cascade", "shuffled", tuple(control_seeds)),
+    }
+    for arm_name, (mode, control, seeds) in configs.items():
+        runs = []
+        for seed in seeds:
+            outcomes = []
+            control_offset = 0
+            for query in queries:
+                if mode == "cascade":
+                    receipt = search_lexical_banded(
+                        database_path,
+                        query["query"],
+                        lexical_band_width=lexical_band_width,
+                        limit=limit,
+                        control=control,
+                        control_seed=seed,
+                    )
+                else:
+                    ablations: Sequence[str] = ()
+                    if mode == "lexical":
+                        ablations = [view for view in VIEW_NAMES if view != "lexical"]
+                    elif mode == "no_intervention":
+                        ablations = ("five_w", "prime", "source")
+                    receipt = search_goal(
+                        database_path,
+                        query["query"],
+                        limit=limit,
+                        ablate_views=ablations,
+                    )
+                control_offset = int(receipt["control_offset"])
+                rank = _rank(receipt["results"], query["relevant_source_uri"])
+                outcomes.append(
+                    {
+                        "query_id": query["id"],
+                        "query_source_uri": query["query_source_uri"],
+                        "relevant_source_uri": query["relevant_source_uri"],
+                        "rank": rank,
+                        "reciprocal_rank": 0.0 if rank is None else 1.0 / rank,
+                        "search_id": receipt["search_id"],
+                    }
+                )
+            runs.append(
+                {
+                    "control_seed": seed,
+                    "control_offset": control_offset,
+                    "metrics": _metrics(outcomes),
+                    "outcomes": outcomes,
+                }
+            )
+        arm_runs[arm_name] = runs
+
+    candidate_rr = [
+        float(row["reciprocal_rank"])
+        for row in arm_runs["lexical_banded"][0]["outcomes"]
+    ]
+    lexical_rr = [
+        float(row["reciprocal_rank"]) for row in arm_runs["lexical_only"][0]["outcomes"]
+    ]
+    query_differences = [
+        candidate - lexical
+        for candidate, lexical in zip(candidate_rr, lexical_rr, strict=True)
+    ]
+    gates: dict[str, Any] = {}
+    for control_name in ("lexical_only", "no_intervention"):
+        control_rr = [
+            float(row["reciprocal_rank"])
+            for row in arm_runs[control_name][0]["outcomes"]
+        ]
+        gates[control_name] = _paired_gate(candidate_rr, control_rr)
+    shuffled_rr = []
+    candidate_repeated = []
+    for run in arm_runs["shuffled_binding"]:
+        shuffled_rr.extend(float(row["reciprocal_rank"]) for row in run["outcomes"])
+        candidate_repeated.extend(candidate_rr)
+    gates["shuffled_binding"] = _paired_gate(candidate_repeated, shuffled_rr)
+    underpowered_reasons = []
+    if len(queries) < MIN_CAPABILITY_QUERIES:
+        underpowered_reasons.append(
+            f"{len(queries)} queries is below the preregistered {MIN_CAPABILITY_QUERIES}-query capability floor"
+        )
+    if benchmark.get("query_provenance") != "independent_external":
+        underpowered_reasons.append(
+            "queries are curated paraphrases rather than independent external requests"
+        )
+    all_gates_pass = all(gate["passes_two_pooled_sd"] for gate in gates.values())
+    status = (
+        "UNDERPOWERED"
+        if underpowered_reasons
+        else ("CANDIDATE_PASS" if all_gates_pass else "NO_GAIN")
+    )
+    return {
+        "schema": CASCADE_RESULT_SCHEMA,
+        "status": status,
+        "candidate_arm": "lexical_banded",
+        "catalog": str(database_path),
+        "catalog_sha256": sha256_file(database_path),
+        "benchmark_sha256": benchmark_sha256,
+        "algorithm_revision": LEXICAL_BAND_REVISION,
+        "lexical_band_width": lexical_band_width,
+        "query_count": len(queries),
+        "query_provenance": benchmark.get("query_provenance", "UNKNOWN"),
+        "control_seeds": list(control_seeds),
+        "result_limit": limit,
+        "arms": arm_runs,
+        "gates": gates,
+        "query_changes_vs_lexical": {
+            "improved": sum(value > 0 for value in query_differences),
+            "harmed": sum(value < 0 for value in query_differences),
+            "unchanged": sum(value == 0 for value in query_differences),
+        },
         "underpowered_reasons": underpowered_reasons,
         "claim_boundary": (
             "The candidate is a deterministic retrieval cascade, not learned model capability. "

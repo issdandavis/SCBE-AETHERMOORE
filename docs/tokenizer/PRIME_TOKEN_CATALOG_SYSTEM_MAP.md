@@ -214,3 +214,33 @@ controls averaged 0.2040. Prime and atomic ablations improved MRR but did not be
 lexical-only; speech ablation regressed. No two-pooled-SD gate passed. Details and
 the next independent-query gate are in
 `docs/tokenizer/PRIME_TOKEN_CATALOG_BENCHMARK_RESULT_20261107.md`.
+
+## Lexical-Band Discovery Map — 2026-11-07
+
+The post-benchmark inventory receipt is
+`C:/dev/clay-training-runs/prime-token-catalog-20261106/SYSTEM_INVENTORY_20261107.json`,
+SHA-256 `41cf010c205079ed84f68c93baa770ad4822a46efa2c8f3aae0126a01b65227e`.
+It covers the clean SCBE and isolated Loom worktrees and does not replace the
+earlier three-root implementation inventory.
+
+The next bounded node reuses both existing child searches:
+
+```text
+query -> lexical-only scores -----------+
+                                         -> anchored lexical score bands
+query -> aligned/shuffled six-view scores+   -> auxiliary ordering inside a band
+                                             -> unchanged lexical score output
+                                             -> controlled evaluator + receipt
+```
+
+The new capability under test is restricted auxiliary routing when lexical
+evidence is close, not a new tokenizer or learned semantic layer. Inputs are the
+existing catalog path, goal text, control seed, result limit, and fixed band
+width. Outputs preserve the search receipt schema and add the band width,
+band-anchor score, lexical score, auxiliary score, and stable child search IDs.
+
+The first independent 31-request set is development-only. The already-observed
+lexical-first holdout is also consumed and cannot validate this candidate. The
+predeclared discovery grid, controls, selection rule, third-holdout requirement,
+compute budget, rollback boundary, and stop conditions are frozen in
+`docs/tokenizer/PRIME_TOKEN_LEXICAL_BAND_DISCOVERY_20261107.md`.

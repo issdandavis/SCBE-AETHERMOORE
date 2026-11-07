@@ -14,6 +14,7 @@ if str(ROOT) not in sys.path:
 
 from python.scbe.prime_token_benchmark import (  # noqa: E402
     evaluate_catalog,
+    evaluate_lexical_banded_catalog,
     evaluate_lexical_first_catalog,
     load_benchmark,
 )
@@ -26,20 +27,35 @@ def main() -> int:
     parser.add_argument("--output", required=True)
     parser.add_argument("--control-seed", type=int, action="append", default=[])
     parser.add_argument("--limit", type=int, default=20)
-    parser.add_argument("--candidate", choices=("full", "lexical-first"), default="full")
+    parser.add_argument(
+        "--candidate",
+        choices=("full", "lexical-first", "lexical-banded"),
+        default="full",
+    )
+    parser.add_argument("--lexical-band-width", type=float)
     args = parser.parse_args()
     output = Path(args.output).resolve()
     if output.exists():
         raise FileExistsError(f"refusing to overwrite {output}")
     benchmark, benchmark_hash = load_benchmark(args.benchmark)
-    evaluator = evaluate_lexical_first_catalog if args.candidate == "lexical-first" else evaluate_catalog
-    result = evaluator(
-        args.database,
-        benchmark,
-        benchmark_sha256=benchmark_hash,
-        control_seeds=args.control_seed or (0, 1, 2),
-        limit=args.limit,
-    )
+    common = {
+        "benchmark_sha256": benchmark_hash,
+        "control_seeds": args.control_seed or (0, 1, 2),
+        "limit": args.limit,
+    }
+    if args.candidate == "lexical-first":
+        result = evaluate_lexical_first_catalog(args.database, benchmark, **common)
+    elif args.candidate == "lexical-banded":
+        if args.lexical_band_width is None:
+            parser.error("--lexical-band-width is required for lexical-banded")
+        result = evaluate_lexical_banded_catalog(
+            args.database,
+            benchmark,
+            lexical_band_width=args.lexical_band_width,
+            **common,
+        )
+    else:
+        result = evaluate_catalog(args.database, benchmark, **common)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps({key: result[key] for key in ("status", "query_count", "gates")}, indent=2))
