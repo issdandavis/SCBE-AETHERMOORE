@@ -1,0 +1,74 @@
+{
+  "schema": "scbe.prime-token-benchmark.v1",
+  "title": "Prime token catalog local source-record-disjoint mechanics benchmark",
+  "query_provenance": "curated_paraphrase",
+  "label_policy": "Expected source labels are evaluator-only and never enter query features.",
+  "queries": [
+    {
+      "id": "sieve-routing",
+      "query_source_uri": "benchmark://prime-token-v1/sieve-routing",
+      "query": "Which implementation routes survivors, strike factors, gap midpoints, and the next root square through separate sieve addresses?",
+      "relevant_source_suffix": "dev/loom/clay_sieve.py"
+    },
+    {
+      "id": "wall-five-w",
+      "query_source_uri": "benchmark://prime-token-v1/wall-five-w",
+      "query": "Where is a blocked one-way route explained with who what when where why and an under-bridge alternative?",
+      "relevant_source_suffix": "dev/loom/wall_5w.py"
+    },
+    {
+      "id": "signal-open-questions",
+      "query_source_uri": "benchmark://prime-token-v1/signal-open-questions",
+      "query": "Which note asks whether RSS is enough, how geographic diversity should be measured, and when scheduled snapshots are warranted?",
+      "relevant_source_suffix": "docs/research/live-signal/open_questions.md"
+    },
+    {
+      "id": "signal-source-brief",
+      "query_source_uri": "benchmark://prime-token-v1/signal-source-brief",
+      "query": "Which research brief selects public discovery feeds while rejecting rate-limited or app-name-gated upstreams?",
+      "relevant_source_suffix": "docs/research/live-signal/research_brief.md"
+    },
+    {
+      "id": "tongue-residual",
+      "query_source_uri": "benchmark://prime-token-v1/tongue-residual",
+      "query": "Where are the 189 residual-blind antipodal tongue corruptions counted and checked with an independently parsed cage?",
+      "relevant_source_suffix": "docs/research/live-signal/tongue_braid_residual_note.md"
+    },
+    {
+      "id": "book-build-receipt",
+      "query_source_uri": "benchmark://prime-token-v1/book-build-receipt",
+      "query": "Which receipt records page dimensions, spine calculation, artifact hashes, smoke tests, and remaining human publication gates?",
+      "relevant_source_suffix": "content/book/pip-from-the-terminal/BUILD_RECEIPT.md"
+    },
+    {
+      "id": "book-kdp-metadata",
+      "query_source_uri": "benchmark://prime-token-v1/book-kdp-metadata",
+      "query": "Where are the paperback identity, store keywords, category candidates, pricing decisions, and AI disclosure drafted?",
+      "relevant_source_suffix": "content/book/pip-from-the-terminal/kdp-metadata.md"
+    },
+    {
+      "id": "book-manuscript",
+      "query_source_uri": "benchmark://prime-token-v1/book-manuscript",
+      "query": "Which long-form guide explains interpreter identity, virtual environments, wheels, lock files, offline installs, and package repair?",
+      "relevant_source_suffix": "content/book/pip-from-the-terminal/manuscript.md"
+    },
+    {
+      "id": "book-readme",
+      "query_source_uri": "benchmark://prime-token-v1/book-readme",
+      "query": "Which short project overview names the canonical publication sources and shows the Bookforge build and cover commands?",
+      "relevant_source_suffix": "content/book/pip-from-the-terminal/README.md"
+    },
+    {
+      "id": "book-source-ledger",
+      "query_source_uri": "benchmark://prime-token-v1/book-source-ledger",
+      "query": "Where are official pip, PyPA, wheel, audit, environment, and Amazon publishing references recorded with dated version boundaries?",
+      "relevant_source_suffix": "content/book/pip-from-the-terminal/SOURCES.md"
+    },
+    {
+      "id": "book-system-map",
+      "query_source_uri": "benchmark://prime-token-v1/book-system-map",
+      "query": "Which map traces official documentation and local command evidence through Markdown, Bookforge, generated formats, and human preview?",
+      "relevant_source_suffix": "content/book/pip-from-the-terminal/SYSTEM_MAP.md"
+    }
+  ]
+}

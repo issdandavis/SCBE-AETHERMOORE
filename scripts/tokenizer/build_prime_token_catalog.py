@@ -57,6 +57,7 @@ def search(args: argparse.Namespace) -> int:
         damping=args.damping,
         ablate_views=args.ablate,
         control=args.control,
+        control_seed=args.control_seed,
         source_kinds=args.prefer_source_kind,
     )
     if args.model_anchor_sha256:
@@ -107,6 +108,7 @@ def parser() -> argparse.ArgumentParser:
     search_parser.add_argument("--damping", type=float, default=0.35)
     search_parser.add_argument("--ablate", action="append", default=[])
     search_parser.add_argument("--control", choices=("aligned", "shuffled"), default="aligned")
+    search_parser.add_argument("--control-seed", type=int, default=0)
     search_parser.add_argument("--prefer-source-kind", action="append", default=[])
     search_parser.add_argument("--model-anchor-sha256")
     search_parser.add_argument("--token-limit", type=int, default=256)

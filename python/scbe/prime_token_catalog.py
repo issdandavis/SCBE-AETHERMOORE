@@ -27,7 +27,7 @@ from python.scbe.function_lexicon import FunctionLexicon
 SCHEMA = "scbe.prime-token-catalog.v1"
 SEARCH_SCHEMA = "scbe.prime-token-goal-search.v1"
 PROBABILITY_SCHEMA = "scbe.prime-token-probability.v1"
-ALGORITHM_REVISION = "six-view-topology-v2"
+ALGORITHM_REVISION = "six-view-topology-v3"
 DEFAULT_TOKENIZER = Path(r"C:\dev\clay_home\tokenizers\clay_open_core_bpe_v1\tokenizer.json")
 DEFAULT_TOKENIZER_SHA256 = "6c14a5cd26188678f920273cff49483f535e340caa98e3a7eb4d3285286c37c6"
 WORD_RE = re.compile(r"[^\W_]+(?:['’-][^\W_]+)*", re.UNICODE)
@@ -1054,6 +1054,7 @@ def search_goal(
     damping: float = 0.35,
     ablate_views: Sequence[str] = (),
     control: str = "aligned",
+    control_seed: int = 0,
     source_kinds: Sequence[str] = (),
 ) -> dict[str, Any]:
     """Search ideas/evidence, then use grammar only as returned constraints.
@@ -1075,6 +1076,7 @@ def search_goal(
         catalog_hash,
         goal,
         control,
+        control_seed,
         sorted(ablated),
         sorted(source_kind.strip() for source_kind in source_kinds if source_kind.strip()),
         topology_steps,
@@ -1087,11 +1089,16 @@ def search_goal(
     query, query_analysis = _query_features(goal, lexicon)
     query["source"].update(f"kind:{source_kind.strip()}" for source_kind in source_kinds if source_kind.strip())
     section_ids = [row[0] for row in connection.execute("SELECT section_id FROM sections ORDER BY section_id")]
-    rotate = (
-        {section_id: section_ids[(index + 1) % len(section_ids)] for index, section_id in enumerate(section_ids)}
-        if section_ids
-        else {}
-    )
+    if len(section_ids) > 1:
+        offset = 1
+        if control_seed:
+            offset = 1 + int(stable_id("control-offset", control_seed, ALGORITHM_REVISION), 16) % (len(section_ids) - 1)
+        rotate = {
+            section_id: section_ids[(index + offset) % len(section_ids)] for index, section_id in enumerate(section_ids)
+        }
+    else:
+        offset = 0
+        rotate = {}
     scores: dict[str, dict[str, float]] = defaultdict(lambda: defaultdict(float))
     evidence: dict[str, dict[str, list[str]]] = defaultdict(lambda: defaultdict(list))
     for view_name in VIEW_NAMES:
@@ -1230,6 +1237,8 @@ def search_goal(
         "catalog_sha256": catalog_hash,
         "goal": goal,
         "control": control,
+        "control_seed": control_seed,
+        "control_offset": offset if control == "shuffled" else 0,
         "ablated_views": sorted(ablated),
         "query_analysis": query_analysis,
         "query_view_status": {view_name: ("PRESENT" if query[view_name] else "ABSENT") for view_name in VIEW_NAMES},

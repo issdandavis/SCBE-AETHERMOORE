@@ -96,11 +96,19 @@ def test_goal_surfing_separates_ideas_from_grammar_constraints(tmp_path):
 def test_size_matched_shuffle_and_ablation_are_explicit_controls(tmp_path):
     database, _manifest = _catalog(tmp_path)
     aligned = search_goal(database, "tomorrow inside the laboratory", limit=4, control="aligned")
-    shuffled = search_goal(database, "tomorrow inside the laboratory", limit=4, control="shuffled")
+    shuffled = search_goal(
+        database,
+        "tomorrow inside the laboratory",
+        limit=4,
+        control="shuffled",
+        control_seed=17,
+    )
     ablated = search_goal(database, "tomorrow inside the laboratory", limit=4, ablate_views=["five_w"])
 
     assert aligned["control"] == "aligned"
     assert shuffled["control"] == "shuffled"
+    assert shuffled["control_seed"] == 17
+    assert shuffled["control_offset"] > 0
     assert ablated["ablated_views"] == ["five_w"]
     assert len(aligned["results"]) == len(shuffled["results"])
     aligned_by_id = {row["section_id"]: row["score"] for row in aligned["results"]}

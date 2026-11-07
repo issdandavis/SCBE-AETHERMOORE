@@ -73,3 +73,11 @@ Internet material may be added only as downloaded, attributed records with sourc
 kind, content hash and license metadata. The catalog core performs no network
 fetch. This provides the pre-tagging layer needed before a separately authorized
 large-corpus ingestion or frozen-core input-sidecar experiment.
+
+## Successor Evaluation
+
+The 2026-11-07 controlled benchmark supersedes the one-query pilot as ranking
+evidence. Full six-view retrieval scored below lexical-only and no-intervention
+baselines on 11 curated source-record-disjoint queries. The result is underpowered
+and blocks promotion; see
+`docs/tokenizer/PRIME_TOKEN_CATALOG_BENCHMARK_RESULT_20261107.md`.

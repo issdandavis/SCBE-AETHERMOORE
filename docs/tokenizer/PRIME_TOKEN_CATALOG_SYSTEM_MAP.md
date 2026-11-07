@@ -196,3 +196,21 @@ Verification: Black and Flake8 passed; 48 focused and adjacent regression tests
 passed. Runtime outputs are not committed. The incomplete first storage-heavy
 attempt is held reversibly at
 `C:/Users/issda/.quarantine/held-deletions/20261107T004424184Z-7a13dc21/local-pilot`.
+
+## Benchmark Update — 2026-11-07
+
+The source-record-disjoint evaluator is implemented in
+`python/scbe/prime_token_benchmark.py`, exposed by
+`scripts/tokenizer/evaluate_prime_token_catalog.py`, and uses the committed query
+manifest at `research/tokenizer/prime_token_catalog_benchmark_v1.json`.
+
+Seeded one-to-one shuffled controls now record their permutation offset under
+algorithm revision `six-view-topology-v3`. Query source IDs and relevance labels
+remain evaluator-only and are rejected if a query source appears in the catalog.
+
+The first 11-query result is `UNDERPOWERED` and negative for the candidate:
+full MRR 0.5329, lexical-only 0.6617, and no-intervention 0.5872. Three shuffled
+controls averaged 0.2040. Prime and atomic ablations improved MRR but did not beat
+lexical-only; speech ablation regressed. No two-pooled-SD gate passed. Details and
+the next independent-query gate are in
+`docs/tokenizer/PRIME_TOKEN_CATALOG_BENCHMARK_RESULT_20261107.md`.
