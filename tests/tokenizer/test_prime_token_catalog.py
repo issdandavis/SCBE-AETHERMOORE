@@ -10,11 +10,13 @@ import sqlite3
 import pytest
 
 from python.scbe.prime_token_catalog import (
+    CATALOG_AUDIT_SCHEMA,
     DEFAULT_TOKENIZER_SHA256,
     InputRecord,
     PrimeTokenCatalogBuilder,
     SOURCE_MANIFEST_SCHEMA,
     VIEW_NAMES,
+    audit_catalog_sources,
     search_goal,
     update_probability_lookup,
 )
@@ -245,3 +247,62 @@ def test_source_manifest_refuses_hash_drift_before_ingest(tmp_path):
     connection = sqlite3.connect(tmp_path / "catalog" / "catalog.sqlite3")
     assert connection.execute("SELECT COUNT(*) FROM sources").fetchone()[0] == 0
     connection.close()
+
+
+def test_catalog_source_audit_passes_diverse_rights_bound_fixture(tmp_path):
+    output = tmp_path / "catalog"
+    builder = PrimeTokenCatalogBuilder(output, section_chars=512, range_size=128)
+    for index, source_kind in enumerate(("academic", "documentation", "publication") * 2):
+        builder.ingest_record(
+            InputRecord(
+                text=f"Source {index} records evidence about who routed the measured system and why.",
+                source_uri=f"local://source-{index}",
+                source_kind=source_kind,
+                license_name="fixture-license",
+            )
+        )
+    builder.finalize()
+
+    result = audit_catalog_sources(output / "catalog.sqlite3")
+
+    assert result["schema"] == CATALOG_AUDIT_SCHEMA
+    assert result["status"] == "STRUCTURAL_GATE_PASS"
+    assert result["source_count"] == 6
+    assert result["source_kind_counts"] == {
+        "academic": 2,
+        "documentation": 2,
+        "publication": 2,
+    }
+    assert result["unknown_license_sources"] == 0
+    assert all(result["checks"].values())
+    assert all(not source_ids for source_ids in result["missing_source_ids_by_view"].values())
+
+
+def test_catalog_source_audit_fails_unknown_rights_and_concentration(tmp_path):
+    output = tmp_path / "catalog"
+    builder = PrimeTokenCatalogBuilder(output, section_chars=512, range_size=128)
+    builder.ingest_record(
+        InputRecord(
+            text="One oversized unknown-rights source. " * 200,
+            source_uri="local://unknown",
+            source_kind="academic",
+            license_name="unknown",
+        )
+    )
+    for index in range(5):
+        builder.ingest_record(
+            InputRecord(
+                text=f"Small source {index} records one routed fact.",
+                source_uri=f"local://small-{index}",
+                source_kind="documentation" if index < 3 else "publication",
+                license_name="fixture-license",
+            )
+        )
+    builder.finalize()
+
+    result = audit_catalog_sources(output / "catalog.sqlite3")
+
+    assert result["status"] == "STRUCTURAL_GATE_FAIL"
+    assert result["unknown_license_sources"] == 1
+    assert not result["checks"]["all_sources_have_explicit_license"]
+    assert not result["checks"]["largest_source_section_share_at_most_0_40"]

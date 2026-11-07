@@ -16,6 +16,7 @@ from python.scbe.prime_token_catalog import (  # noqa: E402
     DEFAULT_TOKENIZER,
     DEFAULT_TOKENIZER_SHA256,
     PrimeTokenCatalogBuilder,
+    audit_catalog_sources,
     search_goal,
     update_probability_lookup,
 )
@@ -90,6 +91,12 @@ def probability(args: argparse.Namespace) -> int:
     return 0
 
 
+def audit(args: argparse.Namespace) -> int:
+    result = audit_catalog_sources(args.database)
+    _write_or_print(result, args.receipt)
+    return 0 if result["status"] == "STRUCTURAL_GATE_PASS" else 1
+
+
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(description=__doc__)
     commands = root.add_subparsers(dest="command", required=True)
@@ -135,6 +142,11 @@ def parser() -> argparse.ArgumentParser:
     probability_parser.add_argument("--probability-database")
     probability_parser.add_argument("--receipt")
     probability_parser.set_defaults(run=probability)
+
+    audit_parser = commands.add_parser("audit", help="verify source diversity, rights, views, and manifest binding")
+    audit_parser.add_argument("--database", required=True)
+    audit_parser.add_argument("--receipt")
+    audit_parser.set_defaults(run=audit)
     return root
 
 

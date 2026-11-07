@@ -26,6 +26,7 @@ from python.scbe.function_lexicon import FunctionLexicon
 
 SCHEMA = "scbe.prime-token-catalog.v1"
 SOURCE_MANIFEST_SCHEMA = "scbe.prime-token-source-manifest.v1"
+CATALOG_AUDIT_SCHEMA = "scbe.prime-token-catalog-audit.v1"
 SEARCH_SCHEMA = "scbe.prime-token-goal-search.v1"
 PROBABILITY_SCHEMA = "scbe.prime-token-probability.v1"
 ALGORITHM_REVISION = "six-view-topology-v3"
@@ -1190,6 +1191,115 @@ class PrimeTokenCatalogBuilder:
             )
         )
         return manifest
+
+
+def audit_catalog_sources(database: str | Path) -> dict[str, Any]:
+    """Verify source diversity, rights metadata, view coverage, and catalog binding."""
+    catalog_path = Path(database).resolve()
+    if not catalog_path.is_file():
+        raise FileNotFoundError(catalog_path)
+    catalog_hash = sha256_file(catalog_path)
+    manifest_path = catalog_path.with_name("MANIFEST.json")
+    manifest: dict[str, Any] | None = None
+    expected_catalog_hash = ""
+    if manifest_path.is_file():
+        loaded = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if not isinstance(loaded, dict):
+            raise ValueError("catalog manifest must be an object")
+        manifest = loaded
+        for output in manifest.get("outputs", []):
+            if (
+                isinstance(output, dict)
+                and Path(str(output.get("path", ""))).name == catalog_path.name
+            ):
+                expected_catalog_hash = str(output.get("sha256") or "").casefold()
+                break
+
+    connection = sqlite3.connect(catalog_path)
+    connection.row_factory = sqlite3.Row
+    source_rows = [
+        dict(row)
+        for row in connection.execute(
+            """
+            SELECT src.source_id, src.source_uri, src.source_kind, src.license_name,
+                   COUNT(DISTINCT sec.section_id) AS sections,
+                   COUNT(DISTINCT CASE WHEN sf.view_name='lexical' THEN sec.section_id END) AS lexical,
+                   COUNT(DISTINCT CASE WHEN sf.view_name='five_w' THEN sec.section_id END) AS five_w,
+                   COUNT(DISTINCT CASE WHEN sf.view_name='speech' THEN sec.section_id END) AS speech,
+                   COUNT(DISTINCT CASE WHEN sf.view_name='atomic' THEN sec.section_id END) AS atomic,
+                   COUNT(DISTINCT CASE WHEN sf.view_name='prime' THEN sec.section_id END) AS prime,
+                   COUNT(DISTINCT CASE WHEN sf.view_name='source' THEN sec.section_id END) AS source
+            FROM sources src
+            LEFT JOIN sections sec ON sec.source_id=src.source_id
+            LEFT JOIN section_features sf ON sf.section_id=sec.section_id
+            GROUP BY src.source_id
+            ORDER BY sections DESC, src.source_id
+            """
+        )
+    ]
+    connection.close()
+
+    source_kind_counts = Counter(str(row["source_kind"]) for row in source_rows)
+    license_counts = Counter(str(row["license_name"]) for row in source_rows)
+    missing_by_view = {
+        view: [str(row["source_id"]) for row in source_rows if int(row[view]) == 0]
+        for view in VIEW_NAMES
+    }
+    total_sections = sum(int(row["sections"]) for row in source_rows)
+    largest = source_rows[0] if source_rows else None
+    largest_share = (
+        int(largest["sections"]) / total_sections
+        if largest is not None and total_sections
+        else 0.0
+    )
+    unknown_licenses = sum(
+        count
+        for license_name, count in license_counts.items()
+        if not license_name.strip() or license_name.casefold() == "unknown"
+    )
+    checks = {
+        "manifest_present": manifest is not None,
+        "catalog_hash_matches_manifest": bool(expected_catalog_hash)
+        and expected_catalog_hash == catalog_hash,
+        "at_least_six_sources": len(source_rows) >= 6,
+        "at_least_three_source_kinds": len(source_kind_counts) >= 3,
+        "all_sources_have_explicit_license": unknown_licenses == 0,
+        "all_sources_cover_all_views": all(not ids for ids in missing_by_view.values()),
+        "largest_source_section_share_at_most_0_40": largest_share <= 0.40,
+    }
+    passed = all(checks.values())
+    return {
+        "schema": CATALOG_AUDIT_SCHEMA,
+        "status": "STRUCTURAL_GATE_PASS" if passed else "STRUCTURAL_GATE_FAIL",
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "database": str(catalog_path),
+        "catalog_sha256": catalog_hash,
+        "manifest": str(manifest_path) if manifest is not None else None,
+        "manifest_sha256": sha256_file(manifest_path) if manifest is not None else None,
+        "expected_catalog_sha256": expected_catalog_hash or None,
+        "source_count": len(source_rows),
+        "section_count": total_sections,
+        "source_kind_counts": dict(sorted(source_kind_counts.items())),
+        "license_counts": dict(sorted(license_counts.items())),
+        "unknown_license_sources": unknown_licenses,
+        "missing_source_ids_by_view": missing_by_view,
+        "largest_source": (
+            {
+                "source_id": largest["source_id"],
+                "source_uri": largest["source_uri"],
+                "sections": largest["sections"],
+                "section_share": largest_share,
+            }
+            if largest is not None
+            else None
+        ),
+        "checks": checks,
+        "sources": source_rows,
+        "boundary": (
+            "Structural source audit only. This is not a retrieval score, capability result, "
+            "probability update, tokenizer change, serving change, or weight promotion."
+        ),
+    }
 
 
 def _query_features(
