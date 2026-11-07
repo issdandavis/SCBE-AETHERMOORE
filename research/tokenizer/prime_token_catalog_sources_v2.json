@@ -1,0 +1,240 @@
+{
+  "schema": "scbe.prime-token-source-manifest.v1",
+  "status": "DEVELOPMENT_INPUTS_ONLY_NO_PROMOTION",
+  "purpose": "Broaden attributed local coverage for activation, gating, routing, six-tongue, publication, benchmark, and research concepts before a new independent holdout is authored.",
+  "selection_boundary": "Selected from explicit research goals and repository maps, not from rejected holdout query text. The prior 60 reviewed queries remain development-consumed and ineligible for future holdout scoring.",
+  "rights_review": "Each file is covered by the repository-root MIT license metadata. Confirm the license scope before distributing source text outside the repository.",
+  "sources": [
+    {
+      "path": "../../content/book/pip-from-the-terminal/BUILD_RECEIPT.md",
+      "sha256": "d42d9d8d31002c542631e3190ee947f2db4fe5728077e37201671a1f8e078d77",
+      "source_kind": "publication",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../../content/book/pip-from-the-terminal/README.md",
+      "sha256": "8dcceefec6fbeed3c7634dc41fa4207d9bc5500b1c06cd07335cf308eb24e763",
+      "source_kind": "publication",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../../content/book/pip-from-the-terminal/SOURCES.md",
+      "sha256": "5fbc35f62b431eb63ec9ecf2be94929323d30a56af7e7e2702c4b5a53388df1c",
+      "source_kind": "publication",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../../content/book/pip-from-the-terminal/SYSTEM_MAP.md",
+      "sha256": "03f461cb33809d706c3e1aabaa37ebe5344480a78856c0f4d740e74fe78d597e",
+      "source_kind": "publication",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../../content/book/pip-from-the-terminal/kdp-metadata.md",
+      "sha256": "f0c016e512e012e4e1ba7d445870d4476820b1fba753983e0ebcd10d4fa97643",
+      "source_kind": "publication",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../../content/book/pip-from-the-terminal/manuscript.md",
+      "sha256": "5fd163c29aef618a31dba2ed2ed8b2880bf767fd29f2194aa1dd544f79f743e6",
+      "source_kind": "publication",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../../docs/research/live-signal/open_questions.md",
+      "sha256": "ed30e321b987132045d4d219e093e4304e1c231f90faa3eab261d3728be3f4af",
+      "source_kind": "academic",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../../docs/research/live-signal/research_brief.md",
+      "sha256": "fb1b33f1ab230620d161ffbd73cb28a27eb547fdda41136fdf592a68cb8b8688",
+      "source_kind": "academic",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../../docs/research/live-signal/tongue_braid_residual_note.md",
+      "sha256": "78078697bfe08d294fd8101624149aceb15dbc567af10f95872c986e299d1b52",
+      "source_kind": "academic",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../../docs/ABACUS_ARCHITECTURE.md",
+      "sha256": "067054a1c984b7a9bb30937e0474846f65aef0f9eb2d08553707c5105033d253",
+      "source_kind": "documentation",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../../docs/ARCHITECTURE.md",
+      "sha256": "bfb786b7436119507cdd479b602483761dd9b65e974dc44a7c502a41d70a6eba",
+      "source_kind": "documentation",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../../docs/LANGUES_WEIGHTING_SYSTEM.md",
+      "sha256": "593d1c56820d4909363e3c8086068e71df9c3d8cd84a6565263f9eb9bf270541",
+      "source_kind": "documentation",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../../docs/LAYER_INDEX.md",
+      "sha256": "c430bdd3a6bcb5e756f3355e197841d325a8776a72a5bb0ffe7008af7c6f355b",
+      "source_kind": "documentation",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../../docs/answer_stage_protocol.md",
+      "sha256": "a65a558690dea106c4735621de1dfe2db1f66d1847a12155da3e1e12db275e44",
+      "source_kind": "documentation",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../../docs/AGENTIC_EMAIL_ARCHITECTURE.md",
+      "sha256": "65d8813832efd2f94e5f9353733892b20f65db7afef37d71efdf27a2fc8df08f",
+      "source_kind": "documentation",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../../docs/AGENTIC_MEMORY_MAINTENANCE_RESEARCH.md",
+      "sha256": "b44e14ee35fb946b1d92a8ffe23e1a9728261ff968a02cf08abe4ee39f0be778",
+      "source_kind": "documentation",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../../docs/CODING_SYSTEMS_MASTER_REFERENCE.md",
+      "sha256": "a0636da187ff8ffc70bb7e90fc02d26d40f1f717c0345b25e849bc5c96bab902",
+      "source_kind": "documentation",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../../docs/CONCEPTS.md",
+      "sha256": "fe3a25d3f2534ae4a62ffd70641fa01d0ad592d7dcb1fcb7592a99ed7ae8977a",
+      "source_kind": "documentation",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../../docs/CORE_AXIOMS_CANONICAL_INDEX.md",
+      "sha256": "7ebd70afd71d62151a0677494dd20370019766b564dba36f879353bc314ec60e",
+      "source_kind": "documentation",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../../docs/M6_SEED_MULTI_NODAL_NETWORK_SPEC.md",
+      "sha256": "779dc72f5d36dee6a6a6e6dd793bba468b0aecdf12746bd5c05684964033a5d8",
+      "source_kind": "documentation",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../../docs/FOLDING_FAN_GRID.md",
+      "sha256": "8a6c712d926e1e7877385e5d08ab5ccccf6ff6590e1a0aa13b27eb86e5ae372b",
+      "source_kind": "documentation",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../aether-manifold/rotations.md",
+      "sha256": "0c5c2277789918d6b5f743fa7322072f4acdf3475cdc6db5487d3c06936c1f52",
+      "source_kind": "academic",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../condensed-boundary-density/SYSTEM_MAP.md",
+      "sha256": "fb088a7b00e88c05163bfd8ea6fd12d5d0409b8f06cd22a1626f7b6227993d31",
+      "source_kind": "academic",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../condensed-boundary-density/SPEC.md",
+      "sha256": "f1381758f56c93ed2dcd316c90ab4000520d685dba5f80c3a14d39479abc2eef",
+      "source_kind": "academic",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../benchmarks/benchmarking-reference.md",
+      "sha256": "829f5867f0e5f3fd7d936782d3474a96fc27647f16457d1d8afe714dca239f09",
+      "source_kind": "academic",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../benchmarks/coordination-test.md",
+      "sha256": "f9c1c4cc6739861cfc92bc18357b8f76e28d206460a5c33359d8abfa9bbce31b",
+      "source_kind": "academic",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../materials/waves/research_brief.md",
+      "sha256": "062d1836dca24762a6b10cd7ec46725a54d73a73ff8abdeb4dcf82fa3f130567",
+      "source_kind": "academic",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../materials/waves/open_questions.md",
+      "sha256": "1a468a01f276ccbd2372594cf60d75b119dc99b76fe2693f31879ddbaf928107",
+      "source_kind": "academic",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../../content/articles/2026-03-06-governance-metrics-and-six-tongues.md",
+      "sha256": "ccb05910103286b3d25b32c1a11e21d9153dacf32dba979f34510edb9ac105dd",
+      "source_kind": "publication",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../../content/articles/2026-03-05-25d-quadtree-octree-hybrid.md",
+      "sha256": "2c0d0392f52fba47ed5620f9441bf13e48e343bafc291189eecb9332de57e311",
+      "source_kind": "publication",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../../content/articles/2026-03-05-polyglot-parity-testing.md",
+      "sha256": "4d44df26b567f782cf6c1e42ca517ed3492480eb9229e7c49e6a45f48f4143a2",
+      "source_kind": "publication",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../../content/articles/2026-03-06-n8n-multi-agent-routing-playbook.md",
+      "sha256": "8bab0d1a5893ce20a342d07cbea4f927fdae0cc86c99c2225cdc3f7f8019a664",
+      "source_kind": "publication",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    },
+    {
+      "path": "../../content/articles/2026-03-06-n8n-hyperbolic-lattice-bridge.md",
+      "sha256": "53a38260f4f82580753126aff832ed7b8df68349621b7904183214da00457d56",
+      "source_kind": "publication",
+      "license": "MIT",
+      "rights_basis": "repository-root-license"
+    }
+  ]
+}

@@ -291,3 +291,10 @@ session-capped candidates, below the frozen 30-query floor. No benchmark file or
 retrieval score was produced. The routed implementation and negative collection
 receipt remain preserved; creating a real cross-source gate now requires a
 broader attributed catalog or a new independent request pool, not relaxed labels.
+
+The first rights-bound development expansion is recorded in
+`docs/tokenizer/PRIME_TOKEN_CATALOG_EXPANSION_20261107.md`. Its strict input
+manifest binds 33 local sources to content hashes, source kinds, licenses, and
+rights bases. The resulting catalog remains unscored and unpromoted. The prior
+60-query review set is development-consumed; only a newly authored independent
+pool may evaluate the expanded catalog.
