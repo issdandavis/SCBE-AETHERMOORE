@@ -1,7 +1,7 @@
 # Hardware–Software–AI Interchange and Discernment Routing
 
-Status: RESEARCH BRIEF; DESIGN HYPOTHESIS; NOT A CAPABILITY OR HARDWARE CLAIM  
-Date: 2026-11-07  
+Status: RESEARCH BRIEF; DESIGN HYPOTHESIS; NOT A CAPABILITY OR HARDWARE CLAIM
+Date: 2026-11-07
 Runtime scope: SCBE repository-wide design; no claim of parity among runtime profiles
 
 ## Abstract
@@ -196,6 +196,20 @@ measured correct-token margin error. If a learned gate is later justified,
 gradients are restricted to a new zero/identity-initialized sidecar and evaluated
 against an equal-budget ordinary control.
 
+The architecture and goal should shape a route field rather than force a token.
+Legal typed transitions form the road system; the goal supplies a potential and
+output boundary; seeds release route mass. A bounded Pareto frontier preserves
+routes that trade goal fit, evidence, novelty, cost, and retention differently.
+Canonical state hashes merge duplicate computation without merging provenance.
+Reversible transforms act like mirrors, while lossy transforms must declare what
+cannot be reflected back.
+
+Long mirror-hall runs can be summarized by sparse transition-operator powers or
+convergence only when the field is stationary. Such compounding is not evidence
+of trillions of independent trials. History-dependent routing must count actual
+executed turns, retain bounded witness paths, detect cycles, and compare against
+short-horizon explicit rollout.
+
 ## Routing Logic
 
 The minimum real router is a deterministic reference implementation:
@@ -288,4 +302,3 @@ Research Brief. Primary sources were collected and claim boundaries written.
 No physical prototype, cross-substrate benchmark, or independent review has
 been completed. The source PDF remains a design-seed artifact, not evidence or
 training data.
-

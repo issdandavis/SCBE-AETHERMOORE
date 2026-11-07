@@ -25,4 +25,3 @@ E23,software crisis,primary conference report,"The 1968 NATO report documented g
 E24,information hiding,primary paper,"Parnas argued that system structure and controlled information distribution shape maintainability.","Information hiding is not secrecy; contracts still require sufficient documentation.",https://cseweb.ucsd.edu/~wgg/CSE218/Parnas-IFIP71-information-distribution.PDF
 E25,history of computing,primary publisher page,"Ceruzzi traces computing through repeated institutional and technical transformations.","The PDF's specific historical summaries must be checked against the assigned text.",https://mitpress.mit.edu/9780262532037/a-history-of-modern-computing/
 E26,power-limited scaling,primary conference paper,"The failure of Dennard scaling constrains how many transistors can be active and useful simultaneously.","Workload technology and architecture assumptions govern the numerical result.",https://ieeexplore.ieee.org/abstract/document/6307773/
-

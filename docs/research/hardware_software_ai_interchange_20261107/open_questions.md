@@ -1,6 +1,6 @@
 # Open Questions: Hardware–Software–AI Interchange
 
-Status: unresolved research and build queue  
+Status: unresolved research and build queue
 Date: 2026-11-07
 
 ## Highest-Priority Questions
@@ -72,4 +72,3 @@ Date: 2026-11-07
 - Stop local model training while C: free space remains below 5 GiB.
 - Do not promote an adapter or activation layer without multi-seed evidence over
   both baseline and size-matched control at the declared uncertainty gate.
-

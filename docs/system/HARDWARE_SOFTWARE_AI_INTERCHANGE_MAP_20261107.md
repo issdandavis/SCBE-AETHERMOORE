@@ -1,6 +1,6 @@
 # Hardware–Software–AI Interchange Map
 
-Status: DESIGN MAP; REFERENCE ROUTER IMPLEMENTED; CROSS-SUBSTRATE CAPABILITY UNPROVEN  
+Status: DESIGN MAP; REFERENCE ROUTER IMPLEMENTED; CROSS-SUBSTRATE CAPABILITY UNPROVEN
 Date: 2026-11-07
 
 This map supplements, but does not override,
@@ -91,4 +91,3 @@ fluidic computer, improved model output, better retrieval, hardware energy
 savings, or production readiness. Those claims require measured backends and
 the controls in
 `docs/research/hardware_software_ai_interchange_20261107/research_brief.md`.
-
