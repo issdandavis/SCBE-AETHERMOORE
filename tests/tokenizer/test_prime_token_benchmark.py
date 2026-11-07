@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from python.scbe.prime_token_benchmark import (
+    audit_benchmark_disjointness,
     evaluate_catalog,
     evaluate_explicit_routed_catalog,
     evaluate_lexical_banded_catalog,
@@ -110,13 +111,62 @@ def test_benchmark_rejects_query_source_leakage(tmp_path):
     benchmark = _benchmark()
     benchmark["queries"][0]["query_source_uri"] = "local://catalog/prime.md"
 
-    with pytest.raises(ValueError, match="query source entered"):
+    with pytest.raises(ValueError, match="query text or source entered"):
         evaluate_catalog(
             _fixture(tmp_path),
             benchmark,
             benchmark_sha256="b" * 64,
             control_seeds=(0, 1, 2),
             limit=5,
+        )
+
+
+def test_benchmark_rejects_query_text_leakage_under_a_different_uri(tmp_path):
+    benchmark = _benchmark()
+    database = _fixture(tmp_path)
+    benchmark["queries"][0][
+        "query"
+    ] = "The prime sieve marks multiples, preserves survivors, and records exact strike factors."
+
+    audit = audit_benchmark_disjointness(
+        database,
+        benchmark,
+        benchmark_sha256="b" * 64,
+    )
+
+    assert audit["status"] == "EXACT_LEAKAGE_DETECTED"
+    assert audit["collision_count"] == 1
+    assert audit["collisions"][0]["query_id"] == "prime"
+    assert "source_content_sha256" in audit["collisions"][0]["reasons"]
+    assert "source_token_sha256" in audit["collisions"][0]["reasons"]
+    with pytest.raises(ValueError, match="query text or source entered"):
+        evaluate_catalog(
+            database,
+            benchmark,
+            benchmark_sha256="b" * 64,
+            control_seeds=(0, 1, 2),
+            limit=5,
+        )
+
+
+def test_disjoint_audit_passes_without_scoring_and_binds_query_hashes(tmp_path):
+    benchmark = _benchmark()
+    database = _fixture(tmp_path)
+    audit = audit_benchmark_disjointness(
+        database,
+        benchmark,
+        benchmark_sha256="c" * 64,
+    )
+
+    assert audit["status"] == "NO_EXACT_LEAKAGE_DETECTED"
+    assert audit["collision_count"] == 0
+    assert audit["query_count"] == 3
+    benchmark["queries"][0]["query_sha256"] = "0" * 64
+    with pytest.raises(ValueError, match="query text hash mismatch"):
+        audit_benchmark_disjointness(
+            database,
+            benchmark,
+            benchmark_sha256="c" * 64,
         )
 
 

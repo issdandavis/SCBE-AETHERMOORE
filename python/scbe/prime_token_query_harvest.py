@@ -373,6 +373,7 @@ def build_reviewed_benchmark(
             {
                 "id": candidate["candidate_id"],
                 "query_source_uri": query_source,
+                "query_sha256": request_hash,
                 "query": candidate["query"],
                 "relevant_source_suffix": suffix,
                 "review": {

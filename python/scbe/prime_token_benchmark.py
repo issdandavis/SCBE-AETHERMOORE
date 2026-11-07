@@ -17,6 +17,8 @@ from python.scbe.prime_token_catalog import (
     LEXICAL_BAND_REVISION,
     LEXICAL_FIRST_REVISION,
     VIEW_NAMES,
+    WORD_RE,
+    normalize_word,
     search_goal,
     search_explicit_routed,
     search_lexical_banded,
@@ -27,6 +29,7 @@ from python.scbe.prime_token_catalog import (
 BENCHMARK_SCHEMA = "scbe.prime-token-benchmark.v1"
 RESULT_SCHEMA = "scbe.prime-token-benchmark-result.v1"
 CASCADE_RESULT_SCHEMA = "scbe.prime-token-cascade-benchmark-result.v1"
+DISJOINT_AUDIT_SCHEMA = "scbe.prime-token-disjoint-audit.v1"
 MIN_CAPABILITY_QUERIES = 30
 ARMS: dict[str, dict[str, Any]] = {
     "full": {"control": "aligned", "ablate_views": []},
@@ -64,27 +67,86 @@ def load_benchmark(path: str | Path) -> tuple[dict[str, Any], str]:
     return payload, sha256(raw).hexdigest()
 
 
-def _catalog_sources(database: Path) -> list[str]:
+def _sequence_sha256(words: Sequence[str]) -> str:
+    digest = sha256()
+    for word in words:
+        digest.update(word.encode("utf-8"))
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
+def _query_token_sha256(text: str) -> str:
+    return _sequence_sha256(
+        [normalize_word(match.group(0)) for match in WORD_RE.finditer(text)]
+    )
+
+
+def _grouped_token_hashes(
+    connection: sqlite3.Connection,
+    *,
+    key_column: str,
+) -> set[str]:
+    hashes: set[str] = set()
+    current_key: str | None = None
+    digest = sha256()
+    query = f"""
+        SELECT o.{key_column}, t.normalized
+        FROM occurrences o JOIN tokens t ON t.token_id = o.token_id
+        ORDER BY o.{key_column}, o.global_ordinal
+    """
+    for raw_key, raw_word in connection.execute(query):
+        key = str(raw_key)
+        if current_key is not None and key != current_key:
+            hashes.add(digest.hexdigest())
+            digest = sha256()
+        current_key = key
+        digest.update(str(raw_word).encode("utf-8"))
+        digest.update(b"\0")
+    if current_key is not None:
+        hashes.add(digest.hexdigest())
+    return hashes
+
+
+def _catalog_identity(database: Path) -> dict[str, Any]:
+    if not database.is_file():
+        raise FileNotFoundError(database)
     connection = sqlite3.connect(database)
     try:
-        return [
-            str(row[0])
-            for row in connection.execute(
-                "SELECT source_uri FROM sources ORDER BY source_uri"
+        source_rows = list(
+            connection.execute(
+                "SELECT source_uri, content_sha256 FROM sources ORDER BY source_uri"
             )
-        ]
+        )
+        return {
+            "source_uris": [str(row[0]) for row in source_rows],
+            "source_content_sha256": {str(row[1]) for row in source_rows},
+            "section_text_sha256": {
+                str(row[0])
+                for row in connection.execute(
+                    "SELECT DISTINCT text_sha256 FROM sections"
+                )
+            },
+            "source_token_sha256": _grouped_token_hashes(
+                connection, key_column="source_id"
+            ),
+            "section_token_sha256": _grouped_token_hashes(
+                connection, key_column="section_id"
+            ),
+        }
     finally:
         connection.close()
 
 
-def _validate_queries(
+def _inspect_queries(
     database: Path, benchmark: Mapping[str, Any]
-) -> list[dict[str, Any]]:
-    sources = _catalog_sources(database)
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, int]]:
+    identity = _catalog_identity(database)
+    sources = identity["source_uris"]
     source_keys = {_normal_path(source) for source in sources}
     ids: set[str] = set()
     query_sources: set[str] = set()
-    validated: list[dict[str, str]] = []
+    validated: list[dict[str, Any]] = []
+    collisions: list[dict[str, Any]] = []
     for index, raw in enumerate(benchmark["queries"]):
         if not isinstance(raw, dict):
             raise ValueError(f"query {index} must be an object")
@@ -98,10 +160,32 @@ def _validate_queries(
             raise ValueError(
                 f"query {query_id} is missing text, query source, or relevance label"
             )
-        if _normal_path(query_source) in source_keys:
-            raise ValueError(f"query source entered the retrieval catalog: {query_id}")
         if query_source in query_sources:
             raise ValueError(f"query source must be unique per record: {query_id}")
+        query_sha256 = sha256(text.encode("utf-8")).hexdigest()
+        declared_query_sha256 = str(raw.get("query_sha256") or "").strip()
+        if declared_query_sha256 and declared_query_sha256 != query_sha256:
+            raise ValueError(f"query text hash mismatch: {query_id}")
+        query_token_sha256 = _query_token_sha256(text)
+        reasons = []
+        if _normal_path(query_source) in source_keys:
+            reasons.append("query_source_uri")
+        if query_sha256 in identity["source_content_sha256"]:
+            reasons.append("source_content_sha256")
+        if query_sha256 in identity["section_text_sha256"]:
+            reasons.append("section_text_sha256")
+        if query_token_sha256 in identity["source_token_sha256"]:
+            reasons.append("source_token_sha256")
+        if query_token_sha256 in identity["section_token_sha256"]:
+            reasons.append("section_token_sha256")
+        if reasons:
+            collisions.append(
+                {
+                    "query_id": query_id,
+                    "query_sha256": query_sha256,
+                    "reasons": reasons,
+                }
+            )
         matches = [
             source for source in sources if _normal_path(source).endswith(suffix)
         ]
@@ -121,12 +205,70 @@ def _validate_queries(
             {
                 "id": query_id,
                 "query": text,
+                "query_sha256": query_sha256,
                 "query_source_uri": query_source,
                 "relevant_source_uri": matches[0],
                 "review_stratum": review_stratum,
             }
         )
+    counts = {
+        "catalog_sources": len(identity["source_uris"]),
+        "distinct_source_content_hashes": len(identity["source_content_sha256"]),
+        "distinct_section_text_hashes": len(identity["section_text_sha256"]),
+        "distinct_source_token_hashes": len(identity["source_token_sha256"]),
+        "distinct_section_token_hashes": len(identity["section_token_sha256"]),
+    }
+    return validated, collisions, counts
+
+
+def _validate_queries(
+    database: Path, benchmark: Mapping[str, Any]
+) -> list[dict[str, Any]]:
+    validated, collisions, _ = _inspect_queries(database, benchmark)
+    if collisions:
+        query_ids = ", ".join(row["query_id"] for row in collisions[:3])
+        remainder = len(collisions) - min(len(collisions), 3)
+        suffix = f" (+{remainder} more)" if remainder else ""
+        raise ValueError(
+            f"query text or source entered the retrieval catalog: {query_ids}{suffix}"
+        )
     return validated
+
+
+def audit_benchmark_disjointness(
+    database: str | Path,
+    benchmark: Mapping[str, Any],
+    *,
+    benchmark_sha256: str,
+) -> dict[str, Any]:
+    """Audit exact and normalized query/catalog identity without running retrieval."""
+    database_path = Path(database).resolve()
+    validated, collisions, catalog_counts = _inspect_queries(database_path, benchmark)
+    return {
+        "schema": DISJOINT_AUDIT_SCHEMA,
+        "status": (
+            "EXACT_LEAKAGE_DETECTED" if collisions else "NO_EXACT_LEAKAGE_DETECTED"
+        ),
+        "catalog": str(database_path),
+        "catalog_sha256": sha256_file(database_path),
+        "benchmark_sha256": benchmark_sha256,
+        "query_count": len(validated),
+        "collision_count": len(collisions),
+        "collisions": collisions,
+        "catalog_counts": catalog_counts,
+        "checks": [
+            "query_source_uri",
+            "source_content_sha256",
+            "section_text_sha256",
+            "source_token_sha256",
+            "section_token_sha256",
+        ],
+        "claim_boundary": (
+            "This receipt checks exact URI, byte-hash, and normalized token-stream identity only. "
+            "It does not establish prospective authorship, semantic independence, retrieval capability, "
+            "or permission to promote a probability table, deployment, tokenizer, or neural weight."
+        ),
+    }
 
 
 def _rank(results: Sequence[Mapping[str, Any]], relevant_source: str) -> int | None:

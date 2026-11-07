@@ -13,6 +13,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from python.scbe.prime_token_benchmark import (  # noqa: E402
+    audit_benchmark_disjointness,
     evaluate_catalog,
     evaluate_explicit_routed_catalog,
     evaluate_lexical_banded_catalog,
@@ -34,11 +35,31 @@ def main() -> int:
         default="full",
     )
     parser.add_argument("--lexical-band-width", type=float)
+    parser.add_argument(
+        "--audit-only",
+        action="store_true",
+        help="write an exact/normalized query leakage receipt without scoring retrieval",
+    )
     args = parser.parse_args()
     output = Path(args.output).resolve()
     if output.exists():
         raise FileExistsError(f"refusing to overwrite {output}")
     benchmark, benchmark_hash = load_benchmark(args.benchmark)
+    if args.audit_only:
+        result = audit_benchmark_disjointness(
+            args.database,
+            benchmark,
+            benchmark_sha256=benchmark_hash,
+        )
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        print(
+            json.dumps(
+                {key: result[key] for key in ("status", "query_count", "collision_count")},
+                indent=2,
+            )
+        )
+        return 0
     common = {
         "benchmark_sha256": benchmark_hash,
         "control_seeds": args.control_seed or (0, 1, 2),

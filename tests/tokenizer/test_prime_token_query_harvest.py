@@ -162,6 +162,7 @@ def test_review_labels_are_hash_bound_and_minimum_enforced(tmp_path: Path) -> No
     assert benchmark["query_provenance"] == "independent_external"
     assert len(benchmark["queries"]) == 1
     assert benchmark["queries"][0]["query_source_uri"].startswith("private-session://")
+    assert benchmark["queries"][0]["query_sha256"] == queue["candidates"][0]["query_sha256"]
     with pytest.raises(ValueError, match="at least 2"):
         build_reviewed_benchmark(queue, labels, minimum_queries=2)
 
