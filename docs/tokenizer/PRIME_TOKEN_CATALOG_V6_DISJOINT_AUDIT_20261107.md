@@ -78,17 +78,17 @@ or neural-weight promotion was produced by this audit.
 
 ## Prospective collector follow-up
 
-The reusable multi-session collector was added at Loom commit `3db063a`. It
-reuses the verified direct-speech parser and secret scrubber, treats file mtime
-only as a scan prefilter, rejects internal context, and requires each admitted
-record timestamp to be strictly after the catalog freeze. Five focused tests
-pass.
+The reusable multi-session collector was added at Loom commit `3db063a`, and
+commit `10a0483` made any direct-speech scrubber hash drift fail closed. It
+reuses the verified parser and secret scrubber, treats file mtime only as a scan
+prefilter, rejects internal context, and requires each admitted record timestamp
+to be strictly after the catalog freeze. Six focused tests pass.
 
-The first immutable run is
-`C:/dev/clay-training-runs/prime-token-catalog-20261106/prospective-collector-20261107/scan-001/`.
+The current immutable run is
+`C:/dev/clay-training-runs/prime-token-catalog-20261106/prospective-collector-20261107/scan-002/`.
 It discovered nine local rollout logs; all nine had modification times before
-the v6 freeze, so their bodies were not read. The emitted direct-speech dataset
-is empty and its SHA-256 is
+the v6 freeze, so their bodies were not read. The pinned scrubber hash matched.
+The emitted direct-speech dataset is empty and its SHA-256 is
 `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`.
 The SCBE harvester independently bound the resulting zero-candidate review
 queue to catalog SHA-256
