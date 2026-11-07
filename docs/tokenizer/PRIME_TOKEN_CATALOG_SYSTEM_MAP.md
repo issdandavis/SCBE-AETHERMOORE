@@ -338,3 +338,8 @@ them before retrieval. The remaining historical sets are either underpowered or
 development-consumed. Consequently, the only valid next capability path is a
 new post-freeze prospective pool; no historical result may be relabeled as a v6
 holdout.
+
+Prospective collection at commit `713195820` derives its cutoff from the exact
+catalog manifest and carries the manifest/catalog hashes through review into the
+benchmark. The evaluator checks that binding before retrieval, preventing a
+valid pool for one catalog version from silently becoming evidence for another.

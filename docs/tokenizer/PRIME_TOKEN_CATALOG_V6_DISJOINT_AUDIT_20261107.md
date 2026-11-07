@@ -49,5 +49,12 @@ catalog sources, and no source above 40 percent. Only then may the existing
 lexical, no-intervention, route-null, shuffled-binding, macro-source, and
 two-pooled-standard-deviation gates run once.
 
+Commit `713195820` makes the prospective boundary executable. The query
+harvester accepts `--after-catalog-manifest`, derives the exclusive cutoff from
+the manifest, and binds both the manifest and catalog hashes into the review
+queue. The reviewed benchmark carries that boundary forward, and the evaluator
+refuses to run it against any other catalog hash. This replaces manual cutoff
+copying for the next collection.
+
 No retrieval score, probability update, deployment change, tokenizer change,
 or neural-weight promotion was produced by this audit.

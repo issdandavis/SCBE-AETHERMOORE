@@ -198,3 +198,9 @@ curated, while the latter is pre-freeze, development-consumed, and concentrated
 on one relevant source. V6 therefore remains unscored. The exact receipts and
 prospective boundary are recorded in
 `docs/tokenizer/PRIME_TOKEN_CATALOG_V6_DISJOINT_AUDIT_20261107.md`.
+
+The prospective harvester is now bound directly to a catalog manifest at commit
+`713195820`. `--after-catalog-manifest` derives the exclusive authored-time
+cutoff and embeds the manifest and catalog hashes in the queue and reviewed
+benchmark. Evaluation fails if that benchmark is later pointed at a different
+catalog.
