@@ -14,6 +14,7 @@ if str(ROOT) not in sys.path:
 
 from python.scbe.prime_token_benchmark import (  # noqa: E402
     evaluate_catalog,
+    evaluate_explicit_routed_catalog,
     evaluate_lexical_banded_catalog,
     evaluate_lexical_first_catalog,
     load_benchmark,
@@ -29,7 +30,7 @@ def main() -> int:
     parser.add_argument("--limit", type=int, default=20)
     parser.add_argument(
         "--candidate",
-        choices=("full", "lexical-first", "lexical-banded"),
+        choices=("full", "lexical-first", "lexical-banded", "explicit-routed"),
         default="full",
     )
     parser.add_argument("--lexical-band-width", type=float)
@@ -45,6 +46,15 @@ def main() -> int:
     }
     if args.candidate == "lexical-first":
         result = evaluate_lexical_first_catalog(args.database, benchmark, **common)
+    elif args.candidate == "explicit-routed":
+        if args.lexical_band_width not in (None, 0.005):
+            parser.error("explicit-routed freezes --lexical-band-width at 0.005")
+        result = evaluate_explicit_routed_catalog(
+            args.database,
+            benchmark,
+            lexical_band_width=0.005,
+            **common,
+        )
     elif args.candidate == "lexical-banded":
         if args.lexical_band_width is None:
             parser.error("--lexical-band-width is required for lexical-banded")

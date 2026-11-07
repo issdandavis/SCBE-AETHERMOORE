@@ -6,6 +6,7 @@ import pytest
 
 from python.scbe.prime_token_benchmark import (
     evaluate_catalog,
+    evaluate_explicit_routed_catalog,
     evaluate_lexical_banded_catalog,
     evaluate_lexical_first_catalog,
 )
@@ -53,18 +54,21 @@ def _benchmark() -> dict:
                 "query_source_uri": "benchmark://fixture/prime",
                 "query": "which sieve keeps survivors and strike factors",
                 "relevant_source_suffix": "prime.md",
+                "review": {"review_stratum": "prime_sieve"},
             },
             {
                 "id": "wall",
                 "query_source_uri": "benchmark://fixture/wall",
                 "query": "why turn beneath a bridge when the road is one way",
                 "relevant_source_suffix": "wall.md",
+                "review": {"review_stratum": "five_w"},
             },
             {
                 "id": "package",
                 "query_source_uri": "benchmark://fixture/package",
                 "query": "how are offline wheels built and hash checked",
                 "relevant_source_suffix": "package.md",
+                "review": {"review_stratum": "publication"},
             },
         ],
     }
@@ -233,3 +237,40 @@ def test_explicit_routed_search_keeps_lexical_score_and_limits_views(tmp_path):
     )
     assert lexical_fallback["explicit_route"]["selected_views"] == []
     assert lexical_fallback["auxiliary_views"] == []
+
+
+def test_explicit_route_evaluator_runs_null_shuffled_and_macro_controls(tmp_path):
+    result = evaluate_explicit_routed_catalog(
+        _fixture(tmp_path),
+        _benchmark(),
+        benchmark_sha256="e" * 64,
+        control_seeds=(3, 5, 7),
+        limit=5,
+    )
+
+    assert result["status"] == "UNDERPOWERED"
+    assert result["candidate_arm"] == "explicit_routed"
+    assert result["algorithm_revision"] == "six-view-explicit-route-v1"
+    assert set(result["arms"]) == {
+        "explicit_routed",
+        "route_null",
+        "full",
+        "lexical_banded",
+        "lexical_only",
+        "no_intervention",
+        "shuffled_binding",
+    }
+    assert len(result["arms"]["shuffled_binding"]) == 3
+    assert set(result["gates"]) == {
+        "lexical_only",
+        "no_intervention",
+        "route_null",
+        "shuffled_binding_seed_3",
+        "shuffled_binding_seed_5",
+        "shuffled_binding_seed_7",
+    }
+    assert result["arms"]["explicit_routed"][0]["macro_source_metrics"]["sources"] == 3
+    assert result["diversity"]["topic_strata_count"] == 3
+    assert result["diversity"]["relevant_source_count"] == 3
+    assert "fewer than six distinct relevant catalog sources" in result["underpowered_reasons"]
+    assert sum(result["route_usage"].values()) == 3

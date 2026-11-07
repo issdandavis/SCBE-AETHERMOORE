@@ -20,6 +20,13 @@ REVIEW_QUEUE_SCHEMA = "scbe.prime-token-independent-review-queue.v1"
 REVIEW_LABEL_SCHEMA = "scbe.prime-token-independent-review-labels.v1"
 SESSION_CHUNK_SCHEMA = "clay.session.chunk.v1"
 DIRECT_SPEECH_SCHEMA = "clay.direct-speech-turn.v1"
+EXPLICIT_ROUTE_SCOPE_REVISION = "prime-token-explicit-route-scope-v1"
+EXPLICIT_ROUTE_SCOPE_COUNTS = {
+    "five_w": 4,
+    "publication": 20,
+    "tongue_braid": 20,
+    "source_research": 20,
+}
 
 # Broad topic selectors were fixed before reviewing individual requests. They
 # contain no phrase copied from a target document or the 11-query benchmark.
@@ -190,6 +197,93 @@ def harvest_review_queue(
     return queue
 
 
+def query_hashes_from_benchmark(benchmark: Mapping[str, Any]) -> set[str]:
+    """Return exact private-query hashes consumed by one benchmark."""
+    if benchmark.get("schema") != BENCHMARK_SCHEMA:
+        raise ValueError("unknown benchmark schema")
+    queries = benchmark.get("queries")
+    if not isinstance(queries, list):
+        raise ValueError("benchmark queries must be a list")
+    hashes = set()
+    for index, row in enumerate(queries):
+        if not isinstance(row, Mapping):
+            raise ValueError(f"benchmark query {index} must be an object")
+        text = row.get("query")
+        if not isinstance(text, str) or not text.strip():
+            raise ValueError(f"benchmark query {index} has no text")
+        hashes.add(sha256(text.strip().encode("utf-8")).hexdigest())
+    return hashes
+
+
+def build_explicit_route_review_scope(
+    queue: Mapping[str, Any],
+    *,
+    excluded_query_sha256: Iterable[str] = (),
+) -> dict[str, Any]:
+    """Seal the preregistered balanced multi-source review scope."""
+    if queue.get("schema") != REVIEW_QUEUE_SCHEMA:
+        raise ValueError("unknown review-queue schema")
+    actual_queue_hash = review_queue_sha256(queue)
+    if queue.get("queue_sha256") != actual_queue_hash:
+        raise ValueError("review queue content hash mismatch")
+    excluded = {str(value).strip().casefold() for value in excluded_query_sha256}
+    if any(not re.fullmatch(r"[0-9a-f]{64}", value) for value in excluded):
+        raise ValueError("excluded query hashes must be lowercase SHA-256 values")
+    candidates = queue.get("candidates")
+    if not isinstance(candidates, list):
+        raise ValueError("review queue candidates must be a list")
+    selected: list[dict[str, Any]] = []
+    for stratum, required in EXPLICIT_ROUTE_SCOPE_COUNTS.items():
+        eligible = sorted(
+            (
+                row
+                for row in candidates
+                if isinstance(row, Mapping)
+                and row.get("topic_groups") == [stratum]
+                and str(row.get("query_sha256") or "").casefold() not in excluded
+            ),
+            key=lambda row: str(row["query_sha256"]),
+        )
+        stratum_rows = []
+        used_sessions: set[str] = set()
+        for row in eligible:
+            session_id = str(row.get("session_id") or "").strip()
+            if not session_id or session_id in used_sessions:
+                continue
+            candidate = dict(row)
+            candidate["review_stratum"] = stratum
+            stratum_rows.append(candidate)
+            used_sessions.add(session_id)
+            if len(stratum_rows) == required:
+                break
+        if len(stratum_rows) != required:
+            raise ValueError(
+                f"explicit-route scope requires {required} unique-session {stratum} candidates; "
+                f"found {len(stratum_rows)}"
+            )
+        selected.extend(stratum_rows)
+    scope = {
+        "schema": REVIEW_QUEUE_SCHEMA,
+        "dataset": queue["dataset"],
+        "dataset_sha256": queue["dataset_sha256"],
+        "session_ids": sorted({str(row["session_id"]) for row in selected}),
+        "selection_policy": {
+            "scope_revision": EXPLICIT_ROUTE_SCOPE_REVISION,
+            "source_queue_sha256": actual_queue_hash,
+            "excluded_query_sha256": sorted(excluded),
+            "exclusive_topic_groups": True,
+            "per_stratum_counts": dict(EXPLICIT_ROUTE_SCOPE_COUNTS),
+            "ordering": "query_sha256 ascending within stratum",
+            "session_cap": "one candidate per source session within each stratum",
+            "review_requirement": "every scoped candidate must receive one hash-bound decision",
+        },
+        "candidate_count": len(selected),
+        "candidates": selected,
+    }
+    scope["queue_sha256"] = review_queue_sha256(scope)
+    return scope
+
+
 def load_labels(path: str | Path) -> dict[str, Any]:
     labels = json.loads(Path(path).read_text(encoding="utf-8"))
     if labels.get("schema") != REVIEW_LABEL_SCHEMA:
@@ -252,9 +346,16 @@ def build_reviewed_benchmark(
                     "reviewer": reviewer,
                     "reviewed_at_utc": reviewed_at,
                     "topic_groups": candidate["topic_groups"],
+                    "review_stratum": candidate.get("review_stratum"),
                     "rationale": str(label.get("rationale") or "").strip(),
                 },
             }
+        )
+    scope_revision = str(queue.get("selection_policy", {}).get("scope_revision") or "")
+    if scope_revision == EXPLICIT_ROUTE_SCOPE_REVISION and used != set(by_hash):
+        missing = len(set(by_hash) - used)
+        raise ValueError(
+            f"explicit-route scope requires a decision for every candidate; {missing} are missing"
         )
     if len(queries) < minimum_queries:
         raise ValueError(
@@ -271,6 +372,8 @@ def build_reviewed_benchmark(
         "label_policy": "Reviewer labels are evaluator-only and never enter query features.",
         "private_runtime_only": True,
         "source_dataset_sha256": queue["dataset_sha256"],
+        "review_scope_sha256": actual_queue_hash,
+        "review_scope_revision": scope_revision or None,
         "queries": queries,
     }
 

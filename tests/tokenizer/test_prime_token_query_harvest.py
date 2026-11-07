@@ -6,9 +6,12 @@ from pathlib import Path
 import pytest
 
 from python.scbe.prime_token_query_harvest import (
+    EXPLICIT_ROUTE_SCOPE_REVISION,
     REVIEW_LABEL_SCHEMA,
+    build_explicit_route_review_scope,
     build_reviewed_benchmark,
     harvest_review_queue,
+    query_hashes_from_benchmark,
     review_queue_sha256,
 )
 
@@ -138,3 +141,96 @@ def test_review_queue_hash_binds_policy_and_candidates(tmp_path: Path) -> None:
     }
     with pytest.raises(ValueError, match="queue content hash"):
         build_reviewed_benchmark(queue, labels, minimum_queries=1)
+
+
+def _explicit_route_dataset(path: Path) -> Path:
+    rows = []
+    texts = [
+        *(f"Use five w who what when where why for request {index}." for index in range(4)),
+        *(f"Publish manuscript package request {index} for readers." for index in range(22)),
+        *(f"Trace the tongue braid request {index} through layers." for index in range(22)),
+        *(f"Research source metadata request {index} with evidence." for index in range(22)),
+        "A prime sieve request is outside this balanced scope.",
+        "Research and publish overlap and must not enter an exclusive stratum.",
+    ]
+    for index, text in enumerate(texts):
+        rows.append(
+            {
+                "schema": "clay.direct-speech-turn.v1",
+                "source_session": f"scope-session-{index}",
+                "turn": index,
+                "text": text,
+            }
+        )
+    path.write_text(
+        "\n".join(json.dumps(row) for row in rows) + "\n",
+        encoding="utf-8",
+    )
+    return path
+
+
+def test_explicit_route_scope_is_balanced_exclusive_and_hash_bound(tmp_path):
+    queue = harvest_review_queue(_explicit_route_dataset(tmp_path / "voice.jsonl"))
+    excluded = {next(row["query_sha256"] for row in queue["candidates"] if row["topic_groups"] == ["publication"])}
+    scope = build_explicit_route_review_scope(
+        queue,
+        excluded_query_sha256=excluded,
+    )
+
+    assert scope["candidate_count"] == 64
+    assert scope["selection_policy"]["scope_revision"] == EXPLICIT_ROUTE_SCOPE_REVISION
+    assert scope["queue_sha256"] == review_queue_sha256(scope)
+    assert not excluded & {row["query_sha256"] for row in scope["candidates"]}
+    counts = {
+        stratum: sum(row["review_stratum"] == stratum for row in scope["candidates"])
+        for stratum in ("five_w", "publication", "tongue_braid", "source_research")
+    }
+    assert counts == {
+        "five_w": 4,
+        "publication": 20,
+        "tongue_braid": 20,
+        "source_research": 20,
+    }
+    assert len(scope["session_ids"]) == 64
+
+
+def test_explicit_route_scope_requires_complete_review_and_preserves_stratum(tmp_path):
+    queue = harvest_review_queue(_explicit_route_dataset(tmp_path / "voice.jsonl"))
+    scope = build_explicit_route_review_scope(queue)
+    labels = {
+        "schema": REVIEW_LABEL_SCHEMA,
+        "queue_sha256": scope["queue_sha256"],
+        "reviewer": "test-reviewer",
+        "reviewed_at_utc": "2026-11-07T00:00:00Z",
+        "labels": [
+            {
+                "query_sha256": row["query_sha256"],
+                "decision": "accept",
+                "relevant_source_suffix": "fixture.md",
+            }
+            for row in scope["candidates"]
+        ],
+    }
+    benchmark = build_reviewed_benchmark(scope, labels)
+    assert benchmark["review_scope_sha256"] == scope["queue_sha256"]
+    assert benchmark["review_scope_revision"] == EXPLICIT_ROUTE_SCOPE_REVISION
+    assert {row["review"]["review_stratum"] for row in benchmark["queries"]} == {
+        "five_w",
+        "publication",
+        "tongue_braid",
+        "source_research",
+    }
+
+    labels["labels"].pop()
+    with pytest.raises(ValueError, match="decision for every candidate"):
+        build_reviewed_benchmark(scope, labels)
+
+
+def test_query_hashes_from_benchmark_are_exact():
+    benchmark = {
+        "schema": "scbe.prime-token-benchmark.v1",
+        "queries": [{"query": "Exact private query."}],
+    }
+    assert query_hashes_from_benchmark(benchmark) == {
+        "f49966146f4059fdbefa022cc8936f3d4b8b937e3038f2241479d1f70a53dd04"
+    }
