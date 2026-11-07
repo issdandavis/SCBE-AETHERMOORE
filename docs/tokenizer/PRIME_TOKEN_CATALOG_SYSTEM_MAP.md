@@ -345,3 +345,51 @@ benchmark. The evaluator checks that binding before retrieval, preventing a
 valid pool for one catalog version from silently becoming evidence for another.
 It also verifies each retained query's timezone-aware authored timestamp is
 strictly after that bound catalog freeze (`f592123e7`).
+
+## Prospective Codex Collector Design — 2026-11-07
+
+The next bounded component connects newly closed local Codex sessions to the
+already frozen prospective-review gate. It is collection infrastructure, not a
+retrieval result or training-data path.
+
+```text
+local Codex rollout JSONL files
+  -> mtime prefilter only
+  -> Loom's exact user.text parser + internal-context rejection + secret scrub
+  -> immutable post-freeze direct-speech JSONL + source/hash receipt
+  -> SCBE harvest_prime_token_queries.py
+  -> v6-manifest-bound review queue
+  -> human hash-bound relevance labels (only after >=30 accepted requests)
+  -> existing source-disjoint evaluator + lexical/null/shuffled/ablation controls
+```
+
+The canonical value is one exact scrubbed user turn, identified by source-file
+path hash, source line, authored timestamp, and exact query SHA-256. File mtime
+only avoids rescanning known-old multi-gigabyte logs; it never establishes
+prospective authorship. Every admitted row must carry a timezone-aware record
+timestamp strictly after the catalog manifest's frozen generation time, and the
+SCBE queue independently enforces the same boundary.
+
+Reused nodes are the Loom direct-speech extractor at
+`experiments/clay_codex_session_harvest_20261107/harvest_codex_session.py`, the
+v6 `MANIFEST.json`, and the existing SCBE query harvester and evaluator. The
+only new node is a multi-session, immutable collector around the Loom parser.
+Raw session text never enters Git, the catalog, model weights, the probability
+table, or the shared context ledger.
+
+The downstream risk is accidentally treating system/tool transcript material
+or pre-freeze requests as independent evidence. The collector must therefore
+fail closed on a changed source, unknown manifest schema, missing timezone,
+non-user metadata, internal markers, output reuse, or scrubber-source drift.
+An empty or under-30 queue is retained as `INSUFFICIENT_PROSPECTIVE_QUERIES`;
+the minimum is not relaxed and no labels or scores are synthesized.
+
+The first bounded scan is CPU-only, reads only files whose modification time is
+after the v6 freeze, writes under
+`C:/dev/clay-training-runs/prime-token-catalog-20261106/prospective-collector-20261107/`,
+and is expected to use less than 100 MiB additional disk. The pre-build
+inventory is SHA-256
+`2eb0df1a2c9baef7e3c4a392d130a7f3d34f39e4fe185b1c5560037af05df434`.
+Rollback is path-bounded deletion or quarantine of that new runtime output;
+source logs, catalog files, checkpoints, tokenizer, and serving pointers remain
+untouched.
