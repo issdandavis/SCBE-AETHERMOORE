@@ -12,7 +12,9 @@ from python.scbe.prime_token_benchmark import (
 from python.scbe.prime_token_catalog import (
     InputRecord,
     PrimeTokenCatalogBuilder,
+    explicit_route,
     search_goal,
+    search_explicit_routed,
     search_lexical_banded,
     search_lexical_first,
 )
@@ -192,3 +194,42 @@ def test_lexical_band_zero_reproduces_ties_and_full_width_reproduces_auxiliary(
         "shuffled_binding",
     }
     assert sum(result["query_changes_vs_lexical"].values()) == 3
+
+
+def test_explicit_route_is_bounded_deterministic_and_has_null_control():
+    route = explicit_route("Why does this prime sieve code preserve a composite factor?")
+    assert route["selected_views"] == ["prime", "five_w"]
+    assert route["source_kinds"] == ["code"]
+    assert route["marker_hits"]["prime"] == ["prime", "sieve", "factor", "composite"]
+
+    null_route = explicit_route(
+        "Why does this prime sieve code preserve a composite factor?",
+        null_control=True,
+    )
+    assert null_route["matched_views"] == route["matched_views"]
+    assert null_route["selected_views"] == ["source", "speech"]
+    assert null_route["source_kinds"] == ["code"]
+
+
+def test_explicit_routed_search_keeps_lexical_score_and_limits_views(tmp_path):
+    database = _fixture(tmp_path)
+    routed = search_explicit_routed(
+        database,
+        "prime sieve survivors",
+        lexical_band_width=0.005,
+        limit=5,
+    )
+    assert routed["algorithm_revision"] == "six-view-explicit-route-v1"
+    assert routed["explicit_route"]["selected_views"] == ["prime"]
+    assert routed["auxiliary_views"] == ["prime"]
+    assert routed["ranking_rule"][0] == "lexical_score_band_descending"
+    assert all(row["probability"] is None for row in routed["results"])
+
+    lexical_fallback = search_explicit_routed(
+        database,
+        "survivors remain exact",
+        lexical_band_width=0.005,
+        limit=5,
+    )
+    assert lexical_fallback["explicit_route"]["selected_views"] == []
+    assert lexical_fallback["auxiliary_views"] == []

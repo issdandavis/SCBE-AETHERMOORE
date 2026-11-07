@@ -30,6 +30,7 @@ PROBABILITY_SCHEMA = "scbe.prime-token-probability.v1"
 ALGORITHM_REVISION = "six-view-topology-v3"
 LEXICAL_FIRST_REVISION = "six-view-lexical-first-v1"
 LEXICAL_BAND_REVISION = "six-view-lexical-band-v1"
+EXPLICIT_ROUTE_REVISION = "six-view-explicit-route-v1"
 DEFAULT_TOKENIZER = Path(
     r"C:\dev\clay_home\tokenizers\clay_open_core_bpe_v1\tokenizer.json"
 )
@@ -40,6 +41,46 @@ WORD_RE = re.compile(r"[^\W_]+(?:['’-][^\W_]+)*", re.UNICODE)
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 MAX_RELATIONSHIPS_PER_OCCURRENCE = 12
 VIEW_NAMES = ("lexical", "five_w", "speech", "atomic", "prime", "source")
+EXPLICIT_ROUTE_VIEWS = ("five_w", "speech", "atomic", "prime", "source")
+EXPLICIT_ROUTE_MARKERS = {
+    "five_w": ("who", "what", "when", "where", "why", "how", "5w", "five w"),
+    "speech": (
+        "grammar",
+        "syntax",
+        "noun",
+        "verb",
+        "pronoun",
+        "tense",
+        "speech function",
+    ),
+    "atomic": (
+        "atomic",
+        "tongue",
+        "braid",
+        "trit",
+        "semantic element",
+        "sacred tongue",
+    ),
+    "prime": (
+        "prime",
+        "sieve",
+        "factor",
+        "composite",
+        "eratosthenes",
+        "modulus",
+        "residue",
+    ),
+    "source": (
+        "source",
+        "file",
+        "code",
+        "paper",
+        "research",
+        "documentation",
+        "publish",
+        "book",
+    ),
+}
 VIEW_WEIGHTS = {
     "lexical": 2.0,
     "five_w": 1.0,
@@ -1486,6 +1527,7 @@ def search_lexical_banded(
     control: str = "aligned",
     control_seed: int = 0,
     source_kinds: Sequence[str] = (),
+    auxiliary_views: Sequence[str] | None = None,
 ) -> dict[str, Any]:
     """Use auxiliary evidence only within anchored lexical-score bands.
 
@@ -1498,6 +1540,16 @@ def search_lexical_banded(
         raise ValueError("limit must be positive")
     if not 0.0 <= lexical_band_width <= 1.0:
         raise ValueError("lexical_band_width must be between 0 and 1")
+    selected_auxiliary = (
+        tuple(view for view in VIEW_NAMES if view != "lexical")
+        if auxiliary_views is None
+        else tuple(dict.fromkeys(auxiliary_views))
+    )
+    if set(selected_auxiliary) - set(EXPLICIT_ROUTE_VIEWS):
+        raise ValueError("auxiliary_views must contain only non-lexical views")
+    auxiliary_ablations = [
+        view for view in EXPLICIT_ROUTE_VIEWS if view not in set(selected_auxiliary)
+    ]
     catalog_path = Path(database).resolve()
     connection = sqlite3.connect(catalog_path)
     try:
@@ -1526,6 +1578,7 @@ def search_lexical_banded(
         control=control,
         control_seed=control_seed,
         source_kinds=source_kinds,
+        ablate_views=auxiliary_ablations,
     )
     lexical_by_section = {row["section_id"]: row for row in lexical["results"]}
     auxiliary_by_section = {row["section_id"]: row for row in auxiliary["results"]}
@@ -1592,6 +1645,7 @@ def search_lexical_banded(
         "query_analysis": auxiliary["query_analysis"],
         "query_view_status": auxiliary["query_view_status"],
         "views": list(VIEW_NAMES),
+        "auxiliary_views": list(selected_auxiliary),
         "lexical_band_width": lexical_band_width,
         "ranking_rule": [
             "lexical_score_band_descending",
@@ -1608,6 +1662,110 @@ def search_lexical_banded(
             "the emitted score remains lexical and no probability or neural weight is changed."
         ),
     }
+
+
+def explicit_route(goal: str, *, null_control: bool = False) -> dict[str, Any]:
+    """Select at most two auxiliary views from explicit query intent markers."""
+    normalized_words = [
+        normalize_word(match.group(0)) for match in WORD_RE.finditer(goal)
+    ]
+    word_set = set(normalized_words)
+    normalized_text = " ".join(normalized_words)
+    marker_hits: dict[str, list[str]] = {}
+    for view_name in EXPLICIT_ROUTE_VIEWS:
+        hits = []
+        for marker in EXPLICIT_ROUTE_MARKERS[view_name]:
+            normalized_marker = " ".join(
+                normalize_word(match.group(0)) for match in WORD_RE.finditer(marker)
+            )
+            if not normalized_marker:
+                continue
+            present = (
+                normalized_marker in word_set
+                if " " not in normalized_marker
+                else re.search(
+                    rf"(?<!\w){re.escape(normalized_marker)}(?!\w)",
+                    normalized_text,
+                )
+                is not None
+            )
+            if present:
+                hits.append(marker)
+        marker_hits[view_name] = hits
+    ordered = sorted(
+        (view for view in EXPLICIT_ROUTE_VIEWS if marker_hits[view]),
+        key=lambda view: (-len(marker_hits[view]), EXPLICIT_ROUTE_VIEWS.index(view)),
+    )[:2]
+    selected = list(ordered)
+    if null_control:
+        selected = [
+            EXPLICIT_ROUTE_VIEWS[
+                (EXPLICIT_ROUTE_VIEWS.index(view) + 1) % len(EXPLICIT_ROUTE_VIEWS)
+            ]
+            for view in selected
+        ]
+    source_kinds = []
+    source_words = set(marker_hits["source"])
+    if "code" in source_words:
+        source_kinds.append("code")
+    if source_words & {"paper", "research"}:
+        source_kinds.append("academic")
+    if source_words & {"documentation", "publish", "book"}:
+        source_kinds.append("documentation")
+    return {
+        "selected_views": selected,
+        "matched_views": list(ordered),
+        "marker_hits": marker_hits,
+        "source_kinds": source_kinds,
+        "null_control": null_control,
+    }
+
+
+def search_explicit_routed(
+    database: str | Path,
+    goal: str,
+    *,
+    lexical_band_width: float = 0.005,
+    limit: int = 20,
+    topology_steps: int = 2,
+    damping: float = 0.35,
+    control: str = "aligned",
+    control_seed: int = 0,
+    null_control: bool = False,
+) -> dict[str, Any]:
+    """Route explicit query intents through a thin lexical-band sidecar."""
+    route = explicit_route(goal, null_control=null_control)
+    child = search_lexical_banded(
+        database,
+        goal,
+        lexical_band_width=lexical_band_width,
+        limit=limit,
+        topology_steps=topology_steps,
+        damping=damping,
+        control=control,
+        control_seed=control_seed,
+        source_kinds=route["source_kinds"],
+        auxiliary_views=route["selected_views"],
+    )
+    child_search_id = child["search_id"]
+    child["algorithm_revision"] = EXPLICIT_ROUTE_REVISION
+    child["search_id"] = stable_id(
+        "explicit-route-search",
+        child_search_id,
+        route,
+        EXPLICIT_ROUTE_REVISION,
+    )
+    child["explicit_route"] = route
+    child["child_search_ids"] = {
+        "lexical_band": child_search_id,
+        **child["child_search_ids"],
+    }
+    child["ranking_rule"][1] = "explicit_routed_score_descending_inside_anchored_band"
+    child["boundary"] = (
+        "Lexical scores and anchored bands remain authoritative; at most two "
+        "explicitly routed auxiliary views may reorder only within a band."
+    )
+    return child
 
 
 def _probability_schema(connection: sqlite3.Connection) -> None:

@@ -32,6 +32,11 @@ the highest positive counts, breaking ties in the table order above. With no
 match, select no auxiliary view. The router does not inspect catalog results,
 relevance labels, source paths, or model output.
 
+Source-kind evidence is inferred only from explicit source markers: `code`
+selects catalog kind `code`; `paper` or `research` selects `academic`; and
+`documentation`, `publish`, or `book` selects `documentation`. The generic
+markers `source` and `file` select the view but add no guessed source kind.
+
 Run lexical-only and a routed search over the same complete section set. The
 routed search ablates every non-selected auxiliary view. Partition lexical order
 into contiguous bands anchored to each band's strongest lexical score using the
@@ -52,7 +57,8 @@ Evaluate the candidate against all of the following on identical queries:
 4. the rejected ungated lexical-band field at width `0.005` as a diagnostic
    reference;
 5. a size-matched route-null control that rotates every selected auxiliary view
-   by one position through the five-view table while preserving route count;
+   by one position through the five-view table while preserving route count and
+   leaving source-kind inference unchanged;
 6. one-to-one shuffled feature binding with seeds `11`, `29`, and `47` while
    preserving the candidate's selected views.
 
