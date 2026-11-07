@@ -25,6 +25,7 @@ from python.scbe.chemistry_sieve_spectrum import primes_through
 from python.scbe.function_lexicon import FunctionLexicon
 
 SCHEMA = "scbe.prime-token-catalog.v1"
+SOURCE_MANIFEST_SCHEMA = "scbe.prime-token-source-manifest.v1"
 SEARCH_SCHEMA = "scbe.prime-token-goal-search.v1"
 PROBABILITY_SCHEMA = "scbe.prime-token-probability.v1"
 ALGORITHM_REVISION = "six-view-topology-v3"
@@ -585,6 +586,7 @@ class PrimeTokenCatalogBuilder:
         self.section_count = 0
         self.occurrence_count = 0
         self.relationship_count = 0
+        self.source_manifests: list[dict[str, Any]] = []
         self._closed = False
 
     def _write_jsonl(self, handle, value: Mapping[str, Any]) -> None:
@@ -718,6 +720,71 @@ class PrimeTokenCatalogBuilder:
                 raise FileNotFoundError(path)
         for path in sorted(set(files), key=lambda item: str(item).casefold()):
             self.ingest_file(path, source_kind=source_kind, license_name=license_name)
+
+    def ingest_source_manifest(self, manifest_path: str | Path) -> None:
+        """Ingest exact, hash-bound files with per-source attribution metadata."""
+        path = Path(manifest_path).resolve()
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(payload, dict) or payload.get("schema") != SOURCE_MANIFEST_SCHEMA:
+            raise ValueError(f"source manifest schema must be {SOURCE_MANIFEST_SCHEMA}")
+        sources = payload.get("sources")
+        if not isinstance(sources, list) or not sources:
+            raise ValueError("source manifest needs a nonempty sources list")
+
+        validated: list[tuple[Path, str, str]] = []
+        seen: set[Path] = set()
+        for index, row in enumerate(sources):
+            label = f"source manifest row {index}"
+            if not isinstance(row, dict):
+                raise ValueError(f"{label} must be an object")
+            raw_source = row.get("path")
+            if not isinstance(raw_source, str) or not raw_source.strip():
+                raise ValueError(f"{label} needs a path")
+            source_path = Path(raw_source)
+            if not source_path.is_absolute():
+                source_path = path.parent / source_path
+            source_path = source_path.resolve()
+            if source_path in seen:
+                raise ValueError(f"{label} duplicates {source_path}")
+            seen.add(source_path)
+            if not source_path.is_file():
+                raise FileNotFoundError(source_path)
+
+            expected_hash = str(row.get("sha256") or "").casefold()
+            if not SHA256_RE.fullmatch(expected_hash):
+                raise ValueError(f"{label} needs a lowercase SHA-256")
+            actual_hash = sha256_file(source_path)
+            if actual_hash != expected_hash:
+                raise ValueError(
+                    f"{label} hash mismatch for {source_path}: "
+                    f"expected {expected_hash}, got {actual_hash}"
+                )
+
+            source_kind = str(row.get("source_kind") or "").strip()
+            license_name = str(row.get("license") or "").strip()
+            rights_basis = str(row.get("rights_basis") or "").strip()
+            if not source_kind or source_kind.casefold() == "auto":
+                raise ValueError(f"{label} needs an explicit source_kind")
+            if not license_name or license_name.casefold() == "unknown":
+                raise ValueError(f"{label} needs an explicit license")
+            if not rights_basis or rights_basis.casefold() == "unknown":
+                raise ValueError(f"{label} needs an explicit rights_basis")
+            validated.append((source_path, source_kind, license_name))
+
+        for source_path, source_kind, license_name in validated:
+            self.ingest_file(
+                source_path,
+                source_kind=source_kind,
+                license_name=license_name,
+            )
+        self.source_manifests.append(
+            {
+                "path": str(path),
+                "sha256": sha256_file(path),
+                "declared_sources": len(validated),
+                "rights_metadata": "explicit_per_source",
+            }
+        )
 
     def _ingest_sections(
         self,
@@ -1088,6 +1155,7 @@ class PrimeTokenCatalogBuilder:
             "algorithm_revision": ALGORITHM_REVISION,
             "views": list(VIEW_NAMES),
             "source_count": self.source_count,
+            "source_manifests": list(self.source_manifests),
             "section_count": self.section_count,
             "occurrence_count": self.occurrence_count,
             "relationship_memberships": self.relationship_count,

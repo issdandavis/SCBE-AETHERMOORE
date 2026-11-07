@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 import sqlite3
@@ -12,6 +13,7 @@ from python.scbe.prime_token_catalog import (
     DEFAULT_TOKENIZER_SHA256,
     InputRecord,
     PrimeTokenCatalogBuilder,
+    SOURCE_MANIFEST_SCHEMA,
     VIEW_NAMES,
     search_goal,
     update_probability_lookup,
@@ -146,3 +148,100 @@ def test_catalog_refuses_to_overwrite_and_bad_anchor(tmp_path):
     search = search_goal(database, "launch evidence", limit=2)
     with pytest.raises(ValueError, match="SHA-256"):
         update_probability_lookup(database, search, model_anchor_sha256="not-a-hash")
+
+
+def test_source_manifest_binds_hash_and_rights_metadata(tmp_path):
+    source = tmp_path / "research.md"
+    source.write_text("Measured evidence for a routed research source.\n", encoding="utf-8")
+    source_hash = hashlib.sha256(source.read_bytes()).hexdigest()
+    manifest_path = tmp_path / "sources.json"
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "schema": SOURCE_MANIFEST_SCHEMA,
+                "sources": [
+                    {
+                        "path": "research.md",
+                        "sha256": source_hash,
+                        "source_kind": "academic",
+                        "license": "owner-authored-proprietary",
+                        "rights_basis": "owner-authored",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    builder = PrimeTokenCatalogBuilder(tmp_path / "catalog", section_chars=512, range_size=128)
+    builder.ingest_source_manifest(manifest_path)
+    result = builder.finalize()
+
+    assert result["source_count"] == 1
+    assert result["source_manifests"] == [
+        {
+            "path": str(manifest_path.resolve()),
+            "sha256": hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
+            "declared_sources": 1,
+            "rights_metadata": "explicit_per_source",
+        }
+    ]
+    connection = sqlite3.connect(tmp_path / "catalog" / "catalog.sqlite3")
+    assert connection.execute("SELECT source_kind, license_name FROM sources").fetchone() == (
+        "academic",
+        "owner-authored-proprietary",
+    )
+    connection.close()
+
+
+@pytest.mark.parametrize("missing_field", ["license", "rights_basis"])
+def test_source_manifest_refuses_missing_commercial_rights(tmp_path, missing_field):
+    source = tmp_path / "research.md"
+    source.write_text("Bounded source.\n", encoding="utf-8")
+    row = {
+        "path": str(source),
+        "sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+        "source_kind": "academic",
+        "license": "owner-authored-proprietary",
+        "rights_basis": "owner-authored",
+    }
+    row.pop(missing_field)
+    manifest_path = tmp_path / "sources.json"
+    manifest_path.write_text(
+        json.dumps({"schema": SOURCE_MANIFEST_SCHEMA, "sources": [row]}),
+        encoding="utf-8",
+    )
+
+    builder = PrimeTokenCatalogBuilder(tmp_path / "catalog", section_chars=512, range_size=128)
+    with pytest.raises(ValueError, match=missing_field):
+        builder.ingest_source_manifest(manifest_path)
+
+
+def test_source_manifest_refuses_hash_drift_before_ingest(tmp_path):
+    source = tmp_path / "research.md"
+    source.write_text("Changed source.\n", encoding="utf-8")
+    manifest_path = tmp_path / "sources.json"
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "schema": SOURCE_MANIFEST_SCHEMA,
+                "sources": [
+                    {
+                        "path": str(source),
+                        "sha256": "0" * 64,
+                        "source_kind": "academic",
+                        "license": "owner-authored-proprietary",
+                        "rights_basis": "owner-authored",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    builder = PrimeTokenCatalogBuilder(tmp_path / "catalog", section_chars=512, range_size=128)
+    with pytest.raises(ValueError, match="hash mismatch"):
+        builder.ingest_source_manifest(manifest_path)
+    connection = sqlite3.connect(tmp_path / "catalog" / "catalog.sqlite3")
+    assert connection.execute("SELECT COUNT(*) FROM sources").fetchone()[0] == 0
+    connection.close()

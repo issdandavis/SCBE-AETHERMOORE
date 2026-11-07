@@ -35,6 +35,8 @@ def _write_or_print(payload: dict, output: str | None) -> None:
 
 
 def build(args: argparse.Namespace) -> int:
+    if not args.input and not args.source_manifest:
+        raise ValueError("build needs --input or --source-manifest")
     builder = PrimeTokenCatalogBuilder(
         args.output,
         tokenizer_path=args.tokenizer,
@@ -42,7 +44,10 @@ def build(args: argparse.Namespace) -> int:
         section_chars=args.section_chars,
         range_size=args.range_size,
     )
-    builder.ingest_paths(args.input, source_kind=args.source_kind, license_name=args.license)
+    if args.input:
+        builder.ingest_paths(args.input, source_kind=args.source_kind, license_name=args.license)
+    for source_manifest in args.source_manifest:
+        builder.ingest_source_manifest(source_manifest)
     manifest = builder.finalize()
     print(json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True))
     return 0
@@ -90,7 +95,13 @@ def parser() -> argparse.ArgumentParser:
     commands = root.add_subparsers(dest="command", required=True)
 
     build_parser = commands.add_parser("build", help="build an immutable catalog")
-    build_parser.add_argument("--input", action="append", required=True, help="file or directory; repeatable")
+    build_parser.add_argument("--input", action="append", default=[], help="file or directory; repeatable")
+    build_parser.add_argument(
+        "--source-manifest",
+        action="append",
+        default=[],
+        help="hash-bound per-source attribution manifest; repeatable",
+    )
     build_parser.add_argument("--output", required=True)
     build_parser.add_argument("--source-kind", default="auto")
     build_parser.add_argument("--license", default="unknown")
