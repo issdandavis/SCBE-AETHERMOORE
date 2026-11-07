@@ -298,3 +298,9 @@ manifest binds 33 local sources to content hashes, source kinds, licenses, and
 rights bases. The resulting catalog remains unscored and unpromoted. The prior
 60-query review set is development-consumed; only a newly authored independent
 pool may evaluate the expanded catalog.
+
+The expanded catalog passes the structural source gate at commit `d4a7f82ea`:
+manifest and catalog hashes agree, all 33 sources expose all six views, three
+source kinds are present, no license is unknown, and the largest source holds
+17.175 percent of sections. This proves catalog readiness only. Retrieval
+capability remains unmeasured until a new independent query pool exists.

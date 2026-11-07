@@ -55,6 +55,32 @@ Runtime directory:
 
 Every output hash in `MANIFEST.json` was independently recomputed and matched.
 
+## Structural source gate
+
+Commit `d4a7f82ea` adds a deterministic pre-score audit for catalog integrity,
+source diversity, explicit rights labels, per-source six-view coverage, and
+source concentration. The audit fails closed and is covered by both passing and
+adversarial fixtures.
+
+The frozen 33-source catalog returned `STRUCTURAL_GATE_PASS`:
+
+- catalog hash matched `MANIFEST.json`;
+- 10 academic, 12 documentation, and 11 publication sources;
+- 33 explicit MIT labels and zero unknown licenses;
+- every source contains lexical, five-W, speech, atomic, prime, and source
+  features;
+- the largest source contributes 214 of 1,246 sections, or `0.17175`, below the
+  frozen `0.40` concentration ceiling.
+
+Receipt:
+`C:/dev/clay-training-runs/prime-token-catalog-20261106/catalog-v4-rights-20261107/SOURCE_AUDIT.json`
+
+Receipt SHA-256:
+`e94b84d6cd901c8985f78243dc4ff380526382bfbe2886bea4cc8c109678560d`
+
+This passes only the catalog-structure prerequisite. It does not replace the
+missing independently authored query pool and is not a retrieval result.
+
 ## Claim boundary and next gate
 
 No retrieval evaluation, probability-sidecar update, serving change, tokenizer
