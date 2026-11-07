@@ -56,6 +56,13 @@ queue. The reviewed benchmark carries that boundary forward, and the evaluator
 refuses to run it against any other catalog hash. This replaces manual cutoff
 copying for the next collection.
 
+Commit `f592123e7` also carries each accepted query's authored timestamp into
+the benchmark. Before checking identity or running retrieval, the evaluator now
+requires every prospective query timestamp to be timezone-aware and strictly
+later than the bound catalog freeze. The catalog hash and cutoff can therefore
+be verified from the standalone benchmark rather than trusted from the
+harvester that produced it.
+
 The first manifest-bound collection ran against the verified 2,119-row Codex
 corpus and returned zero candidates, because every retained row predates v6.
 That is the expected fail-closed result, not an evaluation failure. The empty

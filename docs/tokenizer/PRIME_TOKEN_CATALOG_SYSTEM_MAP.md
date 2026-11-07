@@ -343,3 +343,5 @@ Prospective collection at commit `713195820` derives its cutoff from the exact
 catalog manifest and carries the manifest/catalog hashes through review into the
 benchmark. The evaluator checks that binding before retrieval, preventing a
 valid pool for one catalog version from silently becoming evidence for another.
+It also verifies each retained query's timezone-aware authored timestamp is
+strictly after that bound catalog freeze (`f592123e7`).
