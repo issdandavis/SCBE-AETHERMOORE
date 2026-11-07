@@ -393,3 +393,19 @@ inventory is SHA-256
 Rollback is path-bounded deletion or quarantine of that new runtime output;
 source logs, catalog files, checkpoints, tokenizer, and serving pointers remain
 untouched.
+
+Implementation is committed in the isolated Loom worktree as `3db063a`. Five
+focused scrubber/collector tests pass. The first immutable scan at
+`prospective-collector-20261107/scan-001/` discovered nine rollout files and
+skipped all nine by the prefilter because their modification times predate the
+v6 freeze. No source body was opened, no direct-speech row was emitted, and the
+empty dataset has the standard SHA-256
+`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`.
+
+SCBE independently converted that dataset into a v6-manifest-bound queue with
+zero candidates. The queue content hash is
+`fee2d53ed7a7459d124aa4df7de732fd3a50fce34cb45f658e36ce89bc2c0c50`;
+the collection report file hash is
+`b5705465a3a13f531007539d95f0ef080523554782d30549de7439462ad26b9b`.
+Status remains `INSUFFICIENT_PROSPECTIVE_QUERIES`. No labels, retrieval scores,
+probability updates, catalog changes, or weight writes occurred.

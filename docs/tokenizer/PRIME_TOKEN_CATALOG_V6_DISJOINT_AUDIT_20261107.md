@@ -75,3 +75,27 @@ and file SHA-256
 
 No retrieval score, probability update, deployment change, tokenizer change,
 or neural-weight promotion was produced by this audit.
+
+## Prospective collector follow-up
+
+The reusable multi-session collector was added at Loom commit `3db063a`. It
+reuses the verified direct-speech parser and secret scrubber, treats file mtime
+only as a scan prefilter, rejects internal context, and requires each admitted
+record timestamp to be strictly after the catalog freeze. Five focused tests
+pass.
+
+The first immutable run is
+`C:/dev/clay-training-runs/prime-token-catalog-20261106/prospective-collector-20261107/scan-001/`.
+It discovered nine local rollout logs; all nine had modification times before
+the v6 freeze, so their bodies were not read. The emitted direct-speech dataset
+is empty and its SHA-256 is
+`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`.
+The SCBE harvester independently bound the resulting zero-candidate review
+queue to catalog SHA-256
+`1839d609bc8e7263263e4c83d1bac2c3645285a9a664abfc6e9f292cc0b2fba0`
+and manifest SHA-256
+`ccfff2e570b29a2e0c2b18bf10986d6d83a13bb4df50f9ef7c7cf5353dfc3dbc`.
+
+This improves collection readiness but does not change the evidence state:
+there are still zero admissible post-freeze queries, the 30-query floor remains
+in force, and no v6 retrieval score is authorized.
