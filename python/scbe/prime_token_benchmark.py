@@ -11,10 +11,18 @@ import sqlite3
 from statistics import mean, stdev
 from typing import Any
 
-from python.scbe.prime_token_catalog import ALGORITHM_REVISION, VIEW_NAMES, search_goal, sha256_file
+from python.scbe.prime_token_catalog import (
+    ALGORITHM_REVISION,
+    LEXICAL_FIRST_REVISION,
+    VIEW_NAMES,
+    search_goal,
+    search_lexical_first,
+    sha256_file,
+)
 
 BENCHMARK_SCHEMA = "scbe.prime-token-benchmark.v1"
 RESULT_SCHEMA = "scbe.prime-token-benchmark-result.v1"
+CASCADE_RESULT_SCHEMA = "scbe.prime-token-cascade-benchmark-result.v1"
 MIN_CAPABILITY_QUERIES = 30
 ARMS: dict[str, dict[str, Any]] = {
     "full": {"control": "aligned", "ablate_views": []},
@@ -55,12 +63,19 @@ def load_benchmark(path: str | Path) -> tuple[dict[str, Any], str]:
 def _catalog_sources(database: Path) -> list[str]:
     connection = sqlite3.connect(database)
     try:
-        return [str(row[0]) for row in connection.execute("SELECT source_uri FROM sources ORDER BY source_uri")]
+        return [
+            str(row[0])
+            for row in connection.execute(
+                "SELECT source_uri FROM sources ORDER BY source_uri"
+            )
+        ]
     finally:
         connection.close()
 
 
-def _validate_queries(database: Path, benchmark: Mapping[str, Any]) -> list[dict[str, str]]:
+def _validate_queries(
+    database: Path, benchmark: Mapping[str, Any]
+) -> list[dict[str, str]]:
     sources = _catalog_sources(database)
     source_keys = {_normal_path(source) for source in sources}
     ids: set[str] = set()
@@ -76,14 +91,20 @@ def _validate_queries(database: Path, benchmark: Mapping[str, Any]) -> list[dict
         if not query_id or query_id in ids:
             raise ValueError(f"query {index} has a missing or duplicate id")
         if not text or not query_source or not suffix:
-            raise ValueError(f"query {query_id} is missing text, query source, or relevance label")
+            raise ValueError(
+                f"query {query_id} is missing text, query source, or relevance label"
+            )
         if _normal_path(query_source) in source_keys:
             raise ValueError(f"query source entered the retrieval catalog: {query_id}")
         if query_source in query_sources:
             raise ValueError(f"query source must be unique per record: {query_id}")
-        matches = [source for source in sources if _normal_path(source).endswith(suffix)]
+        matches = [
+            source for source in sources if _normal_path(source).endswith(suffix)
+        ]
         if len(matches) != 1:
-            raise ValueError(f"query {query_id} relevance suffix matched {len(matches)} catalog sources")
+            raise ValueError(
+                f"query {query_id} relevance suffix matched {len(matches)} catalog sources"
+            )
         ids.add(query_id)
         query_sources.add(query_source)
         validated.append(
@@ -106,23 +127,35 @@ def _rank(results: Sequence[Mapping[str, Any]], relevant_source: str) -> int | N
 
 def _metrics(rows: Sequence[Mapping[str, Any]]) -> dict[str, float | int]:
     count = len(rows)
-    reciprocal = [0.0 if row["rank"] is None else 1.0 / int(row["rank"]) for row in rows]
+    reciprocal = [
+        0.0 if row["rank"] is None else 1.0 / int(row["rank"]) for row in rows
+    ]
     return {
         "queries": count,
         "mrr": mean(reciprocal) if reciprocal else 0.0,
         "recall_at_1": sum(row["rank"] == 1 for row in rows) / count if count else 0.0,
-        "recall_at_5": sum(row["rank"] is not None and int(row["rank"]) <= 5 for row in rows) / count if count else 0.0,
+        "recall_at_5": (
+            sum(row["rank"] is not None and int(row["rank"]) <= 5 for row in rows)
+            / count
+            if count
+            else 0.0
+        ),
         "missed_within_limit": sum(row["rank"] is None for row in rows),
     }
 
 
-def _paired_gate(candidate: Sequence[float], control: Sequence[float]) -> dict[str, Any]:
+def _paired_gate(
+    candidate: Sequence[float], control: Sequence[float]
+) -> dict[str, Any]:
     if len(candidate) != len(control) or not candidate:
         raise ValueError("paired gate requires nonempty equal-length samples")
     differences = [left - right for left, right in zip(candidate, control, strict=True)]
     difference_mean = mean(differences)
     pooled_sd = math.sqrt(
-        ((stdev(candidate) ** 2 if len(candidate) > 1 else 0.0) + (stdev(control) ** 2 if len(control) > 1 else 0.0))
+        (
+            (stdev(candidate) ** 2 if len(candidate) > 1 else 0.0)
+            + (stdev(control) ** 2 if len(control) > 1 else 0.0)
+        )
         / 2.0
     )
     threshold = 2.0 * pooled_sd
@@ -191,7 +224,10 @@ def evaluate_catalog(
     full_rr = [float(row["reciprocal_rank"]) for row in arm_runs["full"][0]["outcomes"]]
     gates: dict[str, Any] = {}
     for control_name in ("lexical_only", "no_intervention"):
-        control_rr = [float(row["reciprocal_rank"]) for row in arm_runs[control_name][0]["outcomes"]]
+        control_rr = [
+            float(row["reciprocal_rank"])
+            for row in arm_runs[control_name][0]["outcomes"]
+        ]
         gates[control_name] = _paired_gate(full_rr, control_rr)
     shuffled_rr = []
     full_repeated = []
@@ -205,9 +241,15 @@ def evaluate_catalog(
             f"{len(queries)} queries is below the preregistered {MIN_CAPABILITY_QUERIES}-query capability floor"
         )
     if benchmark.get("query_provenance") != "independent_external":
-        underpowered_reasons.append("queries are curated paraphrases rather than independent external requests")
+        underpowered_reasons.append(
+            "queries are curated paraphrases rather than independent external requests"
+        )
     all_gates_pass = all(gate["passes_two_pooled_sd"] for gate in gates.values())
-    status = "UNDERPOWERED" if underpowered_reasons else ("CANDIDATE_PASS" if all_gates_pass else "NO_GAIN")
+    status = (
+        "UNDERPOWERED"
+        if underpowered_reasons
+        else ("CANDIDATE_PASS" if all_gates_pass else "NO_GAIN")
+    )
     return {
         "schema": RESULT_SCHEMA,
         "status": status,
@@ -225,5 +267,130 @@ def evaluate_catalog(
         "claim_boundary": (
             "Source records and relevance labels are disjoint from the catalog query features. "
             "This receipt is not evidence of learned model capability or weight promotion."
+        ),
+    }
+
+
+def evaluate_lexical_first_catalog(
+    database: str | Path,
+    benchmark: Mapping[str, Any],
+    *,
+    benchmark_sha256: str,
+    control_seeds: Sequence[int] = (0, 1, 2),
+    limit: int = 20,
+) -> dict[str, Any]:
+    """Evaluate the frozen lexical-primary, auxiliary-tiebreak cascade."""
+    database_path = Path(database).resolve()
+    if len(set(control_seeds)) < 3:
+        raise ValueError("at least three distinct control seeds are required")
+    if limit < 5:
+        raise ValueError("limit must be at least 5")
+    queries = _validate_queries(database_path, benchmark)
+    arm_runs: dict[str, list[dict[str, Any]]] = {}
+    configs = {
+        "lexical_first": ("cascade", "aligned", (0,)),
+        "full": ("goal", "aligned", (0,)),
+        "lexical_only": ("lexical", "aligned", (0,)),
+        "no_intervention": ("no_intervention", "aligned", (0,)),
+        "shuffled_binding": ("cascade", "shuffled", tuple(control_seeds)),
+    }
+    for arm_name, (mode, control, seeds) in configs.items():
+        runs = []
+        for seed in seeds:
+            outcomes = []
+            control_offset = 0
+            for query in queries:
+                if mode == "cascade":
+                    receipt = search_lexical_first(
+                        database_path,
+                        query["query"],
+                        limit=limit,
+                        control=control,
+                        control_seed=seed,
+                    )
+                else:
+                    ablations: Sequence[str] = ()
+                    if mode == "lexical":
+                        ablations = [view for view in VIEW_NAMES if view != "lexical"]
+                    elif mode == "no_intervention":
+                        ablations = ("five_w", "prime", "source")
+                    receipt = search_goal(
+                        database_path,
+                        query["query"],
+                        limit=limit,
+                        ablate_views=ablations,
+                    )
+                control_offset = int(receipt["control_offset"])
+                rank = _rank(receipt["results"], query["relevant_source_uri"])
+                outcomes.append(
+                    {
+                        "query_id": query["id"],
+                        "query_source_uri": query["query_source_uri"],
+                        "relevant_source_uri": query["relevant_source_uri"],
+                        "rank": rank,
+                        "reciprocal_rank": 0.0 if rank is None else 1.0 / rank,
+                        "search_id": receipt["search_id"],
+                    }
+                )
+            runs.append(
+                {
+                    "control_seed": seed,
+                    "control_offset": control_offset,
+                    "metrics": _metrics(outcomes),
+                    "outcomes": outcomes,
+                }
+            )
+        arm_runs[arm_name] = runs
+
+    candidate_rr = [
+        float(row["reciprocal_rank"])
+        for row in arm_runs["lexical_first"][0]["outcomes"]
+    ]
+    gates: dict[str, Any] = {}
+    for control_name in ("lexical_only", "no_intervention"):
+        control_rr = [
+            float(row["reciprocal_rank"])
+            for row in arm_runs[control_name][0]["outcomes"]
+        ]
+        gates[control_name] = _paired_gate(candidate_rr, control_rr)
+    shuffled_rr = []
+    candidate_repeated = []
+    for run in arm_runs["shuffled_binding"]:
+        shuffled_rr.extend(float(row["reciprocal_rank"]) for row in run["outcomes"])
+        candidate_repeated.extend(candidate_rr)
+    gates["shuffled_binding"] = _paired_gate(candidate_repeated, shuffled_rr)
+    underpowered_reasons = []
+    if len(queries) < MIN_CAPABILITY_QUERIES:
+        underpowered_reasons.append(
+            f"{len(queries)} queries is below the preregistered {MIN_CAPABILITY_QUERIES}-query capability floor"
+        )
+    if benchmark.get("query_provenance") != "independent_external":
+        underpowered_reasons.append(
+            "queries are curated paraphrases rather than independent external requests"
+        )
+    all_gates_pass = all(gate["passes_two_pooled_sd"] for gate in gates.values())
+    status = (
+        "UNDERPOWERED"
+        if underpowered_reasons
+        else ("CANDIDATE_PASS" if all_gates_pass else "NO_GAIN")
+    )
+    return {
+        "schema": CASCADE_RESULT_SCHEMA,
+        "status": status,
+        "candidate_arm": "lexical_first",
+        "catalog": str(database_path),
+        "catalog_sha256": sha256_file(database_path),
+        "benchmark_sha256": benchmark_sha256,
+        "algorithm_revision": LEXICAL_FIRST_REVISION,
+        "query_count": len(queries),
+        "query_provenance": benchmark.get("query_provenance", "UNKNOWN"),
+        "control_seeds": list(control_seeds),
+        "result_limit": limit,
+        "arms": arm_runs,
+        "gates": gates,
+        "underpowered_reasons": underpowered_reasons,
+        "claim_boundary": (
+            "The candidate is a deterministic retrieval cascade, not learned model capability. "
+            "No probability table, serving pointer, tokenizer, or neural weight is promoted."
         ),
     }

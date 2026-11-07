@@ -28,8 +28,13 @@ SCHEMA = "scbe.prime-token-catalog.v1"
 SEARCH_SCHEMA = "scbe.prime-token-goal-search.v1"
 PROBABILITY_SCHEMA = "scbe.prime-token-probability.v1"
 ALGORITHM_REVISION = "six-view-topology-v3"
-DEFAULT_TOKENIZER = Path(r"C:\dev\clay_home\tokenizers\clay_open_core_bpe_v1\tokenizer.json")
-DEFAULT_TOKENIZER_SHA256 = "6c14a5cd26188678f920273cff49483f535e340caa98e3a7eb4d3285286c37c6"
+LEXICAL_FIRST_REVISION = "six-view-lexical-first-v1"
+DEFAULT_TOKENIZER = Path(
+    r"C:\dev\clay_home\tokenizers\clay_open_core_bpe_v1\tokenizer.json"
+)
+DEFAULT_TOKENIZER_SHA256 = (
+    "6c14a5cd26188678f920273cff49483f535e340caa98e3a7eb4d3285286c37c6"
+)
 WORD_RE = re.compile(r"[^\W_]+(?:['’-][^\W_]+)*", re.UNICODE)
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 MAX_RELATIONSHIPS_PER_OCCURRENCE = 12
@@ -52,7 +57,9 @@ ROLE_COLORS = {
     "why": "#DC2626",
     "unknown": "#64748B",
 }
-COLOR_MAPPING_ID = sha256(json.dumps(ROLE_COLORS, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+COLOR_MAPPING_ID = sha256(
+    json.dumps(ROLE_COLORS, sort_keys=True, separators=(",", ":")).encode("utf-8")
+).hexdigest()
 WHEN_WORDS = {
     "after",
     "already",
@@ -173,9 +180,15 @@ def infer_source_kind(path: Path) -> str:
     lower = str(path).casefold()
     if path.suffix.casefold() in CODE_SUFFIXES:
         return "code"
-    if any(marker in lower for marker in ("conversation", "transcript", "session", "chat", "dialog")):
+    if any(
+        marker in lower
+        for marker in ("conversation", "transcript", "session", "chat", "dialog")
+    ):
         return "conversation"
-    if any(marker in lower for marker in ("paper", "academic", "arxiv", "research", "citation")):
+    if any(
+        marker in lower
+        for marker in ("paper", "academic", "arxiv", "research", "citation")
+    ):
         return "academic"
     if path.suffix.casefold() in {".md", ".rst"}:
         return "documentation"
@@ -206,17 +219,25 @@ class FrozenTokenizerView:
             raise FileNotFoundError(f"frozen tokenizer not found: {self.path}")
         self.sha256 = sha256_file(self.path)
         if self.sha256 != expected_sha256.casefold():
-            raise ValueError(f"tokenizer hash mismatch: expected {expected_sha256}, found {self.sha256}")
+            raise ValueError(
+                f"tokenizer hash mismatch: expected {expected_sha256}, found {self.sha256}"
+            )
         try:
             from tokenizers import Tokenizer
-        except ImportError as exc:  # pragma: no cover - dependency is present in the supported environment
-            raise RuntimeError("the pinned tokenizer requires the tokenizers package") from exc
+        except (
+            ImportError
+        ) as exc:  # pragma: no cover - dependency is present in the supported environment
+            raise RuntimeError(
+                "the pinned tokenizer requires the tokenizers package"
+            ) from exc
         self.tokenizer = Tokenizer.from_file(str(self.path))
         self.vocab_size = int(self.tokenizer.get_vocab_size())
 
     def encode(self, text: str) -> tuple[list[int], list[tuple[int, int]]]:
         encoded = self.tokenizer.encode(text, add_special_tokens=False)
-        return [int(value) for value in encoded.ids], [(int(a), int(b)) for a, b in encoded.offsets]
+        return [int(value) for value in encoded.ids], [
+            (int(a), int(b)) for a, b in encoded.offsets
+        ]
 
 
 class PrimeOracle:
@@ -257,7 +278,9 @@ class PrimeOracle:
         return {"kind": "composite", "prime": False, "factors": factors}
 
 
-def iter_sections(stream: Iterable[str], max_chars: int = 8192) -> Iterator[tuple[int, int, str]]:
+def iter_sections(
+    stream: Iterable[str], max_chars: int = 8192
+) -> Iterator[tuple[int, int, str]]:
     """Yield bounded paragraph-like sections while retaining exact character offsets."""
     if max_chars < 256:
         raise ValueError("max_chars must be at least 256")
@@ -323,11 +346,16 @@ def _atomic_payload(surface: str) -> tuple[dict[str, Any], list[tuple[str, str]]
         ("atomic", f"resolved:{int(state.semantic_resolved)}"),
         ("atomic", f"element:{state.element.symbol}"),
     ]
-    features.extend(("atomic", f"tau:{tongue}:{value}") for tongue, value in state.tau.as_dict().items())
+    features.extend(
+        ("atomic", f"tau:{tongue}:{value}")
+        for tongue, value in state.tau.as_dict().items()
+    )
     return payload, features
 
 
-def _speech_payload(lexicon: FunctionLexicon, surface: str) -> tuple[list[dict[str, Any]], list[tuple[str, str]]]:
+def _speech_payload(
+    lexicon: FunctionLexicon, surface: str
+) -> tuple[list[dict[str, Any]], list[tuple[str, str]]]:
     candidates = lexicon.lookup(surface)[:16]
     compact = [
         {
@@ -369,7 +397,11 @@ def _five_w(words: Sequence[dict[str, Any]]) -> dict[str, Any]:
 
         upos = {row["upos"] for row in speech}
         families = {row["family"] for row in speech}
-        if normalized in WHO_WORDS or "PRON" in upos or (surface[:1].isupper() and surface[1:].islower()):
+        if (
+            normalized in WHO_WORDS
+            or "PRON" in upos
+            or (surface[:1].isupper() and surface[1:].islower())
+        ):
             mark("who", 1.25)
         if atomic["semantic_class"] in {"ACTION", "ENTITY", "MODIFIER"} or upos & {
             "NOUN",
@@ -379,11 +411,17 @@ def _five_w(words: Sequence[dict[str, Any]]) -> dict[str, Any]:
         }:
             mark(
                 "what",
-                (0.65 if speech and all(row["kind"] == "function" for row in speech) else 1.0),
+                (
+                    0.65
+                    if speech and all(row["kind"] == "function" for row in speech)
+                    else 1.0
+                ),
             )
         if normalized in WHEN_WORDS or atomic["semantic_class"] == "TEMPORAL":
             mark("when", 1.5)
-        if normalized in WHERE_WORDS or ("preposition" in families and normalized not in WHEN_WORDS):
+        if normalized in WHERE_WORDS or (
+            "preposition" in families and normalized not in WHEN_WORDS
+        ):
             mark("where", 1.1)
         if normalized in WHY_WORDS or normalized in {"cause", "causes", "caused"}:
             mark("why", 1.6)
@@ -402,7 +440,8 @@ def _five_w(words: Sequence[dict[str, Any]]) -> dict[str, Any]:
     )
     total = sum(scores[role] for role in ROLE_ORDER[:-1])
     normalized_scores = {
-        role: (scores[role] / total if total else (1.0 if role == "unknown" else 0.0)) for role in ROLE_ORDER
+        role: (scores[role] / total if total else (1.0 if role == "unknown" else 0.0))
+        for role in ROLE_ORDER
     }
     return {
         "scores": normalized_scores,
@@ -490,9 +529,15 @@ class PrimeTokenCatalogBuilder:
         self.db_path = self.output_dir / "catalog.sqlite3"
         self.connection = sqlite3.connect(self.db_path)
         _schema(self.connection)
-        self.sections_out = (self.output_dir / "sections.jsonl").open("x", encoding="utf-8", newline="\n")
-        self.tokens_out = (self.output_dir / "tokens.jsonl").open("x", encoding="utf-8", newline="\n")
-        self.occurrences_out = (self.output_dir / "occurrences.jsonl").open("x", encoding="utf-8", newline="\n")
+        self.sections_out = (self.output_dir / "sections.jsonl").open(
+            "x", encoding="utf-8", newline="\n"
+        )
+        self.tokens_out = (self.output_dir / "tokens.jsonl").open(
+            "x", encoding="utf-8", newline="\n"
+        )
+        self.occurrences_out = (self.output_dir / "occurrences.jsonl").open(
+            "x", encoding="utf-8", newline="\n"
+        )
         self.preview_rows: list[dict[str, Any]] = []
         self.source_count = 0
         self.section_count = 0
@@ -506,7 +551,9 @@ class PrimeTokenCatalogBuilder:
     def _source_row(self, record: InputRecord) -> tuple[str, str, int]:
         raw = record.text.encode("utf-8")
         content_hash = sha256(raw).hexdigest()
-        source_id = stable_id("source", record.source_id_hint or record.source_uri, content_hash)
+        source_id = stable_id(
+            "source", record.source_id_hint or record.source_uri, content_hash
+        )
         self.connection.execute(
             "INSERT INTO sources VALUES (?, ?, ?, ?, ?, ?)",
             (
@@ -543,7 +590,9 @@ class PrimeTokenCatalogBuilder:
         if not source_path.is_file():
             raise FileNotFoundError(source_path)
         if source_path.suffix.casefold() in {".jsonl", ".ndjson"}:
-            self._ingest_jsonl(source_path, source_kind=source_kind, license_name=license_name)
+            self._ingest_jsonl(
+                source_path, source_kind=source_kind, license_name=license_name
+            )
             return
         kind = infer_source_kind(source_path) if source_kind == "auto" else source_kind
         content_hash = sha256_file(source_path)
@@ -554,8 +603,12 @@ class PrimeTokenCatalogBuilder:
             (source_id, str(source_path), kind, license_name, content_hash, byte_count),
         )
         self.source_count += 1
-        with source_path.open("r", encoding="utf-8", errors="replace", newline="") as handle:
-            self._ingest_sections(source_id, kind, iter_sections(handle, self.section_chars))
+        with source_path.open(
+            "r", encoding="utf-8", errors="replace", newline=""
+        ) as handle:
+            self._ingest_sections(
+                source_id, kind, iter_sections(handle, self.section_chars)
+            )
         self.connection.commit()
 
     def _ingest_jsonl(self, path: Path, *, source_kind: str, license_name: str) -> None:
@@ -567,7 +620,12 @@ class PrimeTokenCatalogBuilder:
                 if not isinstance(row, dict) or not isinstance(row.get("text"), str):
                     raise ValueError(f"{path}:{line_no}: JSONL row needs a text string")
                 kind = str(
-                    row.get("source_kind") or (infer_source_kind(path) if source_kind == "auto" else source_kind)
+                    row.get("source_kind")
+                    or (
+                        infer_source_kind(path)
+                        if source_kind == "auto"
+                        else source_kind
+                    )
                 )
                 uri = str(row.get("source_uri") or f"{path}#L{line_no}")
                 license_value = str(row.get("license") or license_name)
@@ -630,7 +688,9 @@ class PrimeTokenCatalogBuilder:
             if not text.strip():
                 continue
             section_ordinal += 1
-            self._ingest_section(source_id, source_kind, section_ordinal, start_char, end_char, text)
+            self._ingest_section(
+                source_id, source_kind, section_ordinal, start_char, end_char, text
+            )
             if self.section_count % 128 == 0:
                 self.connection.commit()
 
@@ -709,7 +769,9 @@ class PrimeTokenCatalogBuilder:
                 word["surface"],
             )
             utf8_hex = word["normalized"].encode("utf-8").hex()
-            is_function = bool(word["speech"]) and all(row["kind"] == "function" for row in word["speech"])
+            is_function = bool(word["speech"]) and all(
+                row["kind"] == "function" for row in word["speech"]
+            )
             inserted_token = self.connection.execute(
                 "INSERT OR IGNORE INTO tokens VALUES (?, ?, ?, ?, ?, ?)",
                 (
@@ -767,10 +829,16 @@ class PrimeTokenCatalogBuilder:
                 ("source", f"kind:{source_kind}"),
                 ("source", f"source:{source_id}"),
             ]
-            features.extend(("lexical", f"bpe:{token_id_value}") for token_id_value in word["bpe_ids"][:16])
+            features.extend(
+                ("lexical", f"bpe:{token_id_value}")
+                for token_id_value in word["bpe_ids"][:16]
+            )
             features.extend(word["atomic_features"])
             features.extend(word["speech_features"])
-            features.extend(("prime", f"factor:{factor}") for factor in sorted(set(prime["factors"])))
+            features.extend(
+                ("prime", f"factor:{factor}")
+                for factor in sorted(set(prime["factors"]))
+            )
             for view_name, feature_key in dict.fromkeys(features):
                 section_features[(view_name, feature_key)] += 1
             relationship_features = [
@@ -793,7 +861,9 @@ class PrimeTokenCatalogBuilder:
                 )
             if prime["factors"]:
                 relationship_features.append(("prime", f"factor:{prime['factors'][0]}"))
-            unique_relationships = list(dict.fromkeys(relationship_features))[:MAX_RELATIONSHIPS_PER_OCCURRENCE]
+            unique_relationships = list(dict.fromkeys(relationship_features))[
+                :MAX_RELATIONSHIPS_PER_OCCURRENCE
+            ]
             for view_name, feature_key in unique_relationships:
                 inserted = self.connection.execute(
                     "INSERT OR IGNORE INTO relation_members VALUES (?, ?, ?)",
@@ -901,11 +971,15 @@ class PrimeTokenCatalogBuilder:
             )
         baseline_order = {
             row["token_id"]: rank
-            for rank, row in enumerate(sorted(scored, key=lambda x: (-x["baseline"], x["token_id"])), 1)
+            for rank, row in enumerate(
+                sorted(scored, key=lambda x: (-x["baseline"], x["token_id"])), 1
+            )
         }
         secondary_order = {
             row["token_id"]: rank
-            for rank, row in enumerate(sorted(scored, key=lambda x: (-x["secondary"], x["token_id"])), 1)
+            for rank, row in enumerate(
+                sorted(scored, key=lambda x: (-x["secondary"], x["token_id"])), 1
+            )
         }
         self.connection.executemany(
             "INSERT INTO token_rank VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -1000,11 +1074,17 @@ class PrimeTokenCatalogBuilder:
             ),
         }
         manifest_path = self.output_dir / "MANIFEST.json"
-        manifest_path.write_bytes(json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True).encode("utf-8"))
+        manifest_path.write_bytes(
+            json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True).encode(
+                "utf-8"
+            )
+        )
         return manifest
 
 
-def _query_features(goal: str, lexicon: FunctionLexicon) -> tuple[dict[str, set[str]], dict[str, Any]]:
+def _query_features(
+    goal: str, lexicon: FunctionLexicon
+) -> tuple[dict[str, set[str]], dict[str, Any]]:
     words: list[dict[str, Any]] = []
     features: dict[str, set[str]] = {view: set() for view in VIEW_NAMES}
     for match in WORD_RE.finditer(goal):
@@ -1040,7 +1120,10 @@ def _softmax(values: Mapping[str, float]) -> dict[str, float]:
     if not values:
         return {}
     peak = max(values.values())
-    exp = {key: math.exp(max(-60.0, min(60.0, value - peak))) for key, value in values.items()}
+    exp = {
+        key: math.exp(max(-60.0, min(60.0, value - peak)))
+        for key, value in values.items()
+    }
     total = sum(exp.values()) or 1.0
     return {key: value / total for key, value in exp.items()}
 
@@ -1078,7 +1161,9 @@ def search_goal(
         control,
         control_seed,
         sorted(ablated),
-        sorted(source_kind.strip() for source_kind in source_kinds if source_kind.strip()),
+        sorted(
+            source_kind.strip() for source_kind in source_kinds if source_kind.strip()
+        ),
         topology_steps,
         damping,
         ALGORITHM_REVISION,
@@ -1087,14 +1172,26 @@ def search_goal(
     connection.row_factory = sqlite3.Row
     lexicon = FunctionLexicon()
     query, query_analysis = _query_features(goal, lexicon)
-    query["source"].update(f"kind:{source_kind.strip()}" for source_kind in source_kinds if source_kind.strip())
-    section_ids = [row[0] for row in connection.execute("SELECT section_id FROM sections ORDER BY section_id")]
+    query["source"].update(
+        f"kind:{source_kind.strip()}"
+        for source_kind in source_kinds
+        if source_kind.strip()
+    )
+    section_ids = [
+        row[0]
+        for row in connection.execute(
+            "SELECT section_id FROM sections ORDER BY section_id"
+        )
+    ]
     if len(section_ids) > 1:
         offset = 1
         if control_seed:
-            offset = 1 + int(stable_id("control-offset", control_seed, ALGORITHM_REVISION), 16) % (len(section_ids) - 1)
+            offset = 1 + int(
+                stable_id("control-offset", control_seed, ALGORITHM_REVISION), 16
+            ) % (len(section_ids) - 1)
         rotate = {
-            section_id: section_ids[(index + offset) % len(section_ids)] for index, section_id in enumerate(section_ids)
+            section_id: section_ids[(index + offset) % len(section_ids)]
+            for index, section_id in enumerate(section_ids)
         }
     else:
         offset = 0
@@ -1119,7 +1216,9 @@ def search_goal(
             target = row["section_id"]
             if control == "shuffled" and view_name != "lexical":
                 target = rotate[target]
-            idf = 1.0 + math.log((len(section_ids) + 1) / (int(row["section_frequency"]) + 1))
+            idf = 1.0 + math.log(
+                (len(section_ids) + 1) / (int(row["section_frequency"]) + 1)
+            )
             scores[target][view_name] += float(row["feature_value"]) * idf
             evidence[target][view_name].append(row["feature_key"])
     maxima = {
@@ -1142,7 +1241,9 @@ def search_goal(
                 )
             )
         total_weight = sum(weight for weight, _value in weighted) or 1.0
-        base[section_id] = sum(weight * value for weight, value in weighted) / total_weight
+        base[section_id] = (
+            sum(weight * value for weight, value in weighted) / total_weight
+        )
     if base and topology_steps > 0:
         frontier = sorted(base, key=base.get, reverse=True)[: max(100, limit * 10)]
         placeholders = ",".join("?" for _ in frontier)
@@ -1167,14 +1268,17 @@ def search_goal(
                     deltas[member].append(group_mean - center)
             current = {
                 section_id: (1.0 - damping) * base[section_id]
-                + damping * (score + (sum(deltas[section_id]) / max(1, len(deltas[section_id]))))
+                + damping
+                * (score + (sum(deltas[section_id]) / max(1, len(deltas[section_id]))))
                 for section_id, score in current.items()
             }
         final_scores = current
     else:
         final_scores = base
     probabilities = _softmax(final_scores)
-    ranked = sorted(final_scores, key=lambda section_id: (-final_scores[section_id], section_id))[:limit]
+    ranked = sorted(
+        final_scores, key=lambda section_id: (-final_scores[section_id], section_id)
+    )[:limit]
     results: list[dict[str, Any]] = []
     for section_id in ranked:
         section = connection.execute(
@@ -1224,7 +1328,10 @@ def search_goal(
                 "color": section["color"],
                 "preview": section["text_preview"],
                 "view_scores": dict(scores[section_id]),
-                "evidence_path": {view: sorted(set(keys)) for view, keys in evidence[section_id].items()},
+                "evidence_path": {
+                    view: sorted(set(keys))
+                    for view, keys in evidence[section_id].items()
+                },
                 "content_tokens": content_tokens[:24],
                 "grammar_constraints": grammar_constraints[:24],
             }
@@ -1241,7 +1348,10 @@ def search_goal(
         "control_offset": offset if control == "shuffled" else 0,
         "ablated_views": sorted(ablated),
         "query_analysis": query_analysis,
-        "query_view_status": {view_name: ("PRESENT" if query[view_name] else "ABSENT") for view_name in VIEW_NAMES},
+        "query_view_status": {
+            view_name: ("PRESENT" if query[view_name] else "ABSENT")
+            for view_name in VIEW_NAMES
+        },
         "views": list(VIEW_NAMES),
         "view_weights": dict(VIEW_WEIGHTS),
         "topology": {
@@ -1251,6 +1361,116 @@ def search_goal(
         },
         "results": results,
         "boundary": "Grammar is returned as a constraint layer; content ideas and evidence drive retrieval.",
+    }
+
+
+def search_lexical_first(
+    database: str | Path,
+    goal: str,
+    *,
+    limit: int = 20,
+    topology_steps: int = 2,
+    damping: float = 0.35,
+    control: str = "aligned",
+    control_seed: int = 0,
+    source_kinds: Sequence[str] = (),
+) -> dict[str, Any]:
+    """Keep lexical retrieval authoritative and use other views only for ties.
+
+    The ranking is lexicographic, not a weighted scalar: the lexical-only score
+    is the primary key and the full six-view score is the secondary key. A
+    candidate with any higher lexical score can never be displaced by auxiliary
+    evidence. Full-field ranking therefore acts only on exact lexical ties or
+    the all-zero lexical fallback set.
+    """
+    if limit < 1:
+        raise ValueError("limit must be positive")
+    catalog_path = Path(database).resolve()
+    connection = sqlite3.connect(catalog_path)
+    try:
+        section_count = int(
+            connection.execute("SELECT COUNT(*) FROM sections").fetchone()[0]
+        )
+    finally:
+        connection.close()
+    candidate_limit = max(limit, section_count)
+    lexical = search_goal(
+        catalog_path,
+        goal,
+        limit=candidate_limit,
+        topology_steps=topology_steps,
+        damping=damping,
+        ablate_views=[view for view in VIEW_NAMES if view != "lexical"],
+        control="aligned",
+        source_kinds=source_kinds,
+    )
+    auxiliary = search_goal(
+        catalog_path,
+        goal,
+        limit=candidate_limit,
+        topology_steps=topology_steps,
+        damping=damping,
+        control=control,
+        control_seed=control_seed,
+        source_kinds=source_kinds,
+    )
+    lexical_by_section = {row["section_id"]: row for row in lexical["results"]}
+    auxiliary_by_section = {row["section_id"]: row for row in auxiliary["results"]}
+    section_ids = set(lexical_by_section) | set(auxiliary_by_section)
+    ranked = sorted(
+        section_ids,
+        key=lambda section_id: (
+            -float(lexical_by_section.get(section_id, {}).get("score", 0.0)),
+            -float(auxiliary_by_section.get(section_id, {}).get("score", 0.0)),
+            section_id,
+        ),
+    )
+    results = []
+    for section_id in ranked[:limit]:
+        lexical_row = lexical_by_section.get(section_id)
+        auxiliary_row = auxiliary_by_section.get(section_id)
+        row = dict(auxiliary_row or lexical_row or {})
+        lexical_score = float((lexical_row or {}).get("score", 0.0))
+        auxiliary_score = float((auxiliary_row or {}).get("score", 0.0))
+        row["score"] = lexical_score
+        row["probability"] = None
+        row["cascade_scores"] = {
+            "lexical_primary": lexical_score,
+            "auxiliary_tiebreak": auxiliary_score,
+        }
+        results.append(row)
+    search_id = stable_id(
+        "lexical-first-search",
+        lexical["search_id"],
+        auxiliary["search_id"],
+        LEXICAL_FIRST_REVISION,
+    )
+    return {
+        "schema": SEARCH_SCHEMA,
+        "algorithm_revision": LEXICAL_FIRST_REVISION,
+        "search_id": search_id,
+        "catalog_sha256": lexical["catalog_sha256"],
+        "goal": goal,
+        "control": control,
+        "control_seed": control_seed,
+        "control_offset": auxiliary["control_offset"],
+        "query_analysis": auxiliary["query_analysis"],
+        "query_view_status": auxiliary["query_view_status"],
+        "views": list(VIEW_NAMES),
+        "ranking_rule": [
+            "lexical_only_score_descending",
+            "full_six_view_score_descending_on_exact_lexical_ties",
+            "section_id_ascending",
+        ],
+        "child_search_ids": {
+            "lexical": lexical["search_id"],
+            "auxiliary": auxiliary["search_id"],
+        },
+        "results": results,
+        "boundary": (
+            "Auxiliary views can only break an exact lexical-score tie or order lexical-zero fallbacks; "
+            "they cannot displace stronger lexical evidence."
+        ),
     }
 
 
@@ -1328,7 +1548,11 @@ def update_probability_lookup(
         ).fetchall()
         for token_id, is_function, normalized, secondary_score in rows:
             grammar_discount = 0.25 if is_function else 1.0
-            score = section_weight * grammar_discount * (1.0 + math.log1p(float(secondary_score or 0.0)))
+            score = (
+                section_weight
+                * grammar_discount
+                * (1.0 + math.log1p(float(secondary_score or 0.0)))
+            )
             token_scores[token_id] += score
             if len(token_evidence[token_id]) < 8:
                 token_evidence[token_id].append(
@@ -1349,7 +1573,9 @@ def update_probability_lookup(
         ).fetchone()
         old = float(old_row[0]) if old_row else 0.0
         evidence_json = canonical_json(token_evidence[token_id]).decode("utf-8")
-        event_id = stable_id("probability-event", goal_id, token_id, now, probability, evidence_json)
+        event_id = stable_id(
+            "probability-event", goal_id, token_id, now, probability, evidence_json
+        )
         lookup.execute(
             "INSERT INTO probability_events VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (

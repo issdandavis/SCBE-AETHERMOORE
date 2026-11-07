@@ -12,7 +12,11 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from python.scbe.prime_token_benchmark import evaluate_catalog, load_benchmark  # noqa: E402
+from python.scbe.prime_token_benchmark import (  # noqa: E402
+    evaluate_catalog,
+    evaluate_lexical_first_catalog,
+    load_benchmark,
+)
 
 
 def main() -> int:
@@ -22,12 +26,14 @@ def main() -> int:
     parser.add_argument("--output", required=True)
     parser.add_argument("--control-seed", type=int, action="append", default=[])
     parser.add_argument("--limit", type=int, default=20)
+    parser.add_argument("--candidate", choices=("full", "lexical-first"), default="full")
     args = parser.parse_args()
     output = Path(args.output).resolve()
     if output.exists():
         raise FileExistsError(f"refusing to overwrite {output}")
     benchmark, benchmark_hash = load_benchmark(args.benchmark)
-    result = evaluate_catalog(
+    evaluator = evaluate_lexical_first_catalog if args.candidate == "lexical-first" else evaluate_catalog
+    result = evaluator(
         args.database,
         benchmark,
         benchmark_sha256=benchmark_hash,
