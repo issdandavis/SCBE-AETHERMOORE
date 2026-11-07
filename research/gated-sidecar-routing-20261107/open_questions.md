@@ -34,8 +34,10 @@ Date: 2026-11-07
 
 ## Registry and product unknowns
 
-1. Where should the canonical specialist registry live, and which existing
-   Clay weight catalog can be extended instead of duplicated?
+1. The canonical arrangement is now inventoried: keep the candidate overlay
+   separate from the copyless weight vault and the singular `CURRENT.json`
+   operational pointer. A future additive product-contract schema remains to be
+   validated; see `specialist_registry_gap_analysis.md`.
 2. What statuses and evidence fields are required to retain failed runs without
    accidentally exposing them to production traffic?
 3. Should customers buy one specialist, a governed bundle, or a deployment with
