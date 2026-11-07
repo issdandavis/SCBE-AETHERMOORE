@@ -96,3 +96,35 @@ The next admissible capability test requires:
    multi-source diversity, and two-pooled-standard-deviation gates once.
 
 Until then this catalog is a deterministic development artifact only.
+
+## Internal Loom source restoration
+
+The original pilot's `wall_5w.py` and `clay_sieve.py` sources live in the
+user-owned Loom repository, which has no repository license. They were therefore
+not relabeled as MIT. Their current bytes and file histories were verified, then
+bound in a separate local manifest under the user's explicit internal-research
+authorization. That manifest expressly does not authorize redistribution.
+
+Internal source-manifest SHA-256:
+`d88e758254efdc444c57aebd63a2e2b5f10b68fbc696a76cb8dc956f64e0ef97`
+
+The combined development catalog is at:
+`C:/dev/clay-training-runs/prime-token-catalog-20261106/catalog-v5-rights-20261107/`
+
+- Sources: 35 (10 academic, 2 code, 12 documentation, 11 publication)
+- Sections: 1,299
+- Word occurrences: 32,810
+- Relationship memberships: 61,305
+- Rights labels: 33 MIT, 2 owner-authorized internal research, 0 unknown
+- Catalog SHA-256:
+  `fc3e8d03ae01f57b38494a16822b4f0d01eb2287327dc83245ee5aa9f5fdd733`
+- Manifest SHA-256:
+  `7dbbbbc41846dcb29265c3f2757c6e860abab32951e6b2adf5173c3399e389b3`
+- Structural-audit SHA-256:
+  `d5b994e0cc6301b0ba9e1be262e1b3a0191bef72da7996d1c1305512fb7c533e`
+
+All five generated-output hashes matched the manifest. The structural gate
+passed all checks, and the largest source now contributes `0.16474` of sections.
+This v5 artifact supersedes v4 only as the current development candidate. It has
+not been scored, promoted, packaged, deployed, or connected to a probability
+sidecar or neural checkpoint.

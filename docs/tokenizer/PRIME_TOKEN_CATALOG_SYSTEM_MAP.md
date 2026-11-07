@@ -304,3 +304,9 @@ manifest and catalog hashes agree, all 33 sources expose all six views, three
 source kinds are present, no license is unknown, and the largest source holds
 17.175 percent of sections. This proves catalog readiness only. Retrieval
 capability remains unmeasured until a new independent query pool exists.
+
+The current development candidate is the 35-source v5 rights-bound catalog. It
+restores Loom's exact five-W and prime-sieve implementation files through a
+separate local, hash-bound, internal-research authorization; those two files are
+not represented as MIT or redistributable. V5 also passes the structural gate,
+but remains unscored and cannot replace an independent retrieval holdout.
