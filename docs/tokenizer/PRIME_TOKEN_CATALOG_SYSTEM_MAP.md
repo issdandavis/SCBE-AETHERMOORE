@@ -284,3 +284,10 @@ balanced private holdout requires at least three strata, six relevant catalog
 sources, and a 40-percent per-source cap before scoring. Route-null and shuffled
 controls must both fail before view identity can receive credit. No holdout text
 was reviewed and no candidate result was observed when this design was frozen.
+
+The subsequent balanced collection stopped with
+`INSUFFICIENT_CROSS_SOURCE_HOLDOUT`: complete review accepted only 16 of 60
+session-capped candidates, below the frozen 30-query floor. No benchmark file or
+retrieval score was produced. The routed implementation and negative collection
+receipt remain preserved; creating a real cross-source gate now requires a
+broader attributed catalog or a new independent request pool, not relaxed labels.

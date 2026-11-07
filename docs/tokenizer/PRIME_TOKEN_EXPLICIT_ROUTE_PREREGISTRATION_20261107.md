@@ -128,3 +128,43 @@ serving pointer, package default, deployment, or neural checkpoint.
 The failed and inert candidates remain preserved as evidence. This experiment
 adds a thinner routed atmosphere above lexical retrieval; it does not discard or
 overwrite earlier catalog views.
+
+## Collection result
+
+Status: `INSUFFICIENT_CROSS_SOURCE_HOLDOUT`; no retrieval scoring performed.
+
+The evaluator and balanced-scope machinery were frozen at commit `4693d8e32`;
+hash-only session-cap amendments were committed as `e64d90ef2` and
+`3011c771d` before semantic review. The final immutable scope contains 60
+candidates from 42 underlying source sessions: 3 `five_w`, 20 `publication`,
+17 `tongue_braid`, and 20 `source_research`. It excludes 107 exact query hashes
+consumed by the four earlier benchmark sets.
+
+Every scoped candidate received one hash-bound semantic decision. Sixteen were
+accepted and 44 rejected. Accepted counts were 1 five-W, 8 publication, 5
+tongue/braid, and 2 source/research queries, covering 15 source sessions and 8
+distinct catalog sources. This is below the frozen 30-query floor. The benchmark
+builder therefore raised before writing `BENCHMARK.json`; the evaluator was not
+called and no MRR or capability result exists.
+
+Runtime receipts:
+
+- source queue binding:
+  `30c84e28a807e6df06c158cbcde044032ee850781e15c2a91f7deb4f73ecd91d`;
+- review-scope file SHA-256:
+  `2faeffacae5f8b3d8cb36bcf74bd65638913ac24c3e3656a1826ea02b4e9b185`;
+- canonical scope binding:
+  `c7cf0f42b14bdfa73edf80017203545ffc9e3431dcdda18d6d0786d7aa1d9262`;
+- complete review-label SHA-256:
+  `a6f028a286b2b61512fdcb7eb300cb8ed490ff5a62776ee54d1760a63e94d805`;
+- stop-receipt SHA-256:
+  `34de006acf8d8703f14d8b72edf5f36887e72e9f672dd51c39808d00599c2d2b`;
+- runtime directory:
+  `C:/dev/clay-training-runs/prime-token-catalog-20261106/explicit-route-holdout-20261107/`.
+
+The catalog remains SHA-256
+`0c051ab5c27da8f70fd0d77830994e03bf55cda0224c696d06ac3cedf404b403`.
+No probability table, tokenizer, serving pointer, package default, deployment,
+or neural weight changed. A later cross-source test needs a broader catalog or a
+new independently authored query pool; relabeling these 44 mismatches to reach
+30 is forbidden.
