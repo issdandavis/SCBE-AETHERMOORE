@@ -56,5 +56,15 @@ queue. The reviewed benchmark carries that boundary forward, and the evaluator
 refuses to run it against any other catalog hash. This replaces manual cutoff
 copying for the next collection.
 
+The first manifest-bound collection ran against the verified 2,119-row Codex
+corpus and returned zero candidates, because every retained row predates v6.
+That is the expected fail-closed result, not an evaluation failure. The empty
+queue is at
+`C:/dev/clay-training-runs/prime-token-catalog-20261106/catalog-v6-prospective-queue-20261107/REVIEW_QUEUE.json`,
+with queue SHA-256
+`7619edd410757c18a28284bbc8306c22bd3ef7bcb828e6d38b82f456b73a340f`
+and file SHA-256
+`7da3d28b09ceb9ebdd84dee5c8b66b98d74d124cf7bc3a827b10716e2efdb5d9`.
+
 No retrieval score, probability update, deployment change, tokenizer change,
 or neural-weight promotion was produced by this audit.

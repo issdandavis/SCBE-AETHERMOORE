@@ -204,3 +204,7 @@ The prospective harvester is now bound directly to a catalog manifest at commit
 cutoff and embeds the manifest and catalog hashes in the queue and reviewed
 benchmark. Evaluation fails if that benchmark is later pointed at a different
 catalog.
+
+The first v6-bound pass over the harvested Codex corpus produced a hash-bound
+empty queue: zero records were authored after the v6 freeze. No historical row
+was silently recycled into the prospective pool.
