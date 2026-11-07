@@ -22,7 +22,7 @@ SESSION_CHUNK_SCHEMA = "clay.session.chunk.v1"
 DIRECT_SPEECH_SCHEMA = "clay.direct-speech-turn.v1"
 EXPLICIT_ROUTE_SCOPE_REVISION = "prime-token-explicit-route-scope-v1"
 EXPLICIT_ROUTE_SCOPE_COUNTS = {
-    "five_w": 4,
+    "five_w": 3,
     "publication": 20,
     "tongue_braid": 20,
     "source_research": 20,

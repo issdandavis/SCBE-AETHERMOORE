@@ -75,7 +75,8 @@ lexical-first, or sieve-stratum holdouts.
 
 Before reading candidate text, create one deterministic review scope:
 
-- all four exclusive `five_w` candidates;
+- one exclusive `five_w` candidate per hashed source session, ordered by query
+  SHA-256;
 - the first 20 exclusive `publication` candidates by query SHA-256;
 - the first 20 exclusive `tongue_braid` candidates by query SHA-256;
 - the first 20 exclusive `source_research` candidates by query SHA-256.
@@ -84,6 +85,13 @@ Keep at most one candidate per hashed source session within each stratum. If a
 collision occurs, take the next query by SHA-256. Review every selected candidate
 and record accept/reject plus exactly one catalog source suffix for each accepted
 query. Do not run retrieval during selection or review.
+
+Hash-only structural audit amendment: the four exclusive `five_w` hashes occupy
+only three source sessions; two belong to the same session. No query text or
+retrieval result was opened during that audit. Preserve the session cap and take
+the lower query hash from the duplicated session, yielding three `five_w`
+candidates and 63 total scoped candidates. Do not weaken source-session
+independence merely to retain the original count of four.
 
 The benchmark is admissible only with at least 30 accepted queries, at least
 three topic strata, at least six distinct relevant catalog sources, and no one

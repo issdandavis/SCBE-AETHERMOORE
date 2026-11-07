@@ -154,10 +154,11 @@ def _explicit_route_dataset(path: Path) -> Path:
         "Research and publish overlap and must not enter an exclusive stratum.",
     ]
     for index, text in enumerate(texts):
+        session_index = 0 if index == 3 else index
         rows.append(
             {
                 "schema": "clay.direct-speech-turn.v1",
-                "source_session": f"scope-session-{index}",
+                "source_session": f"scope-session-{session_index}",
                 "turn": index,
                 "text": text,
             }
@@ -177,7 +178,7 @@ def test_explicit_route_scope_is_balanced_exclusive_and_hash_bound(tmp_path):
         excluded_query_sha256=excluded,
     )
 
-    assert scope["candidate_count"] == 64
+    assert scope["candidate_count"] == 63
     assert scope["selection_policy"]["scope_revision"] == EXPLICIT_ROUTE_SCOPE_REVISION
     assert scope["queue_sha256"] == review_queue_sha256(scope)
     assert not excluded & {row["query_sha256"] for row in scope["candidates"]}
@@ -186,12 +187,12 @@ def test_explicit_route_scope_is_balanced_exclusive_and_hash_bound(tmp_path):
         for stratum in ("five_w", "publication", "tongue_braid", "source_research")
     }
     assert counts == {
-        "five_w": 4,
+        "five_w": 3,
         "publication": 20,
         "tongue_braid": 20,
         "source_research": 20,
     }
-    assert len(scope["session_ids"]) == 64
+    assert len(scope["session_ids"]) == 63
 
 
 def test_explicit_route_scope_requires_complete_review_and_preserves_stratum(tmp_path):
