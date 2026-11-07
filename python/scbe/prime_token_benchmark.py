@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from datetime import datetime
 from hashlib import sha256
 import json
 import math
@@ -53,6 +54,18 @@ ARMS: dict[str, dict[str, Any]] = {
 
 def _normal_path(value: str) -> str:
     return value.replace("\\", "/").casefold()
+
+
+def _aware_timestamp(value: Any, *, label: str) -> datetime:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{label} is missing a timestamp")
+    try:
+        parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ValueError(f"{label} has an invalid timestamp") from exc
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise ValueError(f"{label} timestamp must include a timezone")
+    return parsed
 
 
 def load_benchmark(path: str | Path) -> tuple[dict[str, Any], str]:
@@ -141,6 +154,7 @@ def _inspect_queries(
     database: Path, benchmark: Mapping[str, Any]
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, int]]:
     prospective_boundary = benchmark.get("prospective_boundary")
+    prospective_cutoff = None
     if prospective_boundary is not None:
         if not isinstance(prospective_boundary, Mapping):
             raise ValueError("prospective boundary must be an object")
@@ -149,6 +163,10 @@ def _inspect_queries(
         ).strip()
         if boundary_catalog_hash != sha256_file(database):
             raise ValueError("prospective benchmark targets a different catalog hash")
+        prospective_cutoff = _aware_timestamp(
+            prospective_boundary.get("catalog_generated_at_utc"),
+            label="prospective catalog boundary",
+        )
     identity = _catalog_identity(database)
     sources = identity["source_uris"]
     source_keys = {_normal_path(source) for source in sources}
@@ -162,6 +180,7 @@ def _inspect_queries(
         query_id = str(raw.get("id") or "").strip()
         text = str(raw.get("query") or "").strip()
         query_source = str(raw.get("query_source_uri") or "").strip()
+        authored_at = str(raw.get("authored_at_utc") or "").strip()
         suffix = _normal_path(str(raw.get("relevant_source_suffix") or "").strip())
         if not query_id or query_id in ids:
             raise ValueError(f"query {index} has a missing or duplicate id")
@@ -171,6 +190,14 @@ def _inspect_queries(
             )
         if query_source in query_sources:
             raise ValueError(f"query source must be unique per record: {query_id}")
+        if prospective_cutoff is not None:
+            query_authored_at = _aware_timestamp(
+                authored_at, label=f"prospective query {query_id}"
+            )
+            if query_authored_at <= prospective_cutoff:
+                raise ValueError(
+                    f"prospective query is not strictly after catalog freeze: {query_id}"
+                )
         query_sha256 = sha256(text.encode("utf-8")).hexdigest()
         declared_query_sha256 = str(raw.get("query_sha256") or "").strip()
         if declared_query_sha256 and declared_query_sha256 != query_sha256:
@@ -216,6 +243,7 @@ def _inspect_queries(
                 "query": text,
                 "query_sha256": query_sha256,
                 "query_source_uri": query_source,
+                "authored_at_utc": authored_at or None,
                 "relevant_source_uri": matches[0],
                 "review_stratum": review_stratum,
             }

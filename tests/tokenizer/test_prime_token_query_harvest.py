@@ -85,7 +85,9 @@ def test_harvest_accepts_scrubbed_direct_speech_with_source_provenance(
     assert candidate["topic_groups"] == ["prime_sieve", "source_research"]
 
 
-def test_prospective_harvest_requires_and_enforces_authored_cutoff(tmp_path: Path) -> None:
+def test_prospective_harvest_requires_and_enforces_authored_cutoff(
+    tmp_path: Path,
+) -> None:
     path = tmp_path / "prospective.jsonl"
     rows = [
         {
@@ -193,6 +195,7 @@ def test_prospective_harvest_derives_and_binds_catalog_boundary(tmp_path: Path) 
     }
     benchmark = build_reviewed_benchmark(queue, labels, minimum_queries=1)
     assert benchmark["prospective_boundary"] == queue["prospective_boundary"]
+    assert benchmark["queries"][0]["authored_at_utc"] == "2026-11-07T09:36:45+00:00"
     with pytest.raises(ValueError, match="choose authored_after_utc or catalog_manifest"):
         harvest_review_queue(
             dataset,

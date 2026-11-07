@@ -1,6 +1,7 @@
 """Controlled evaluation for the six-view catalog."""
 
 from pathlib import Path
+from hashlib import sha256
 
 import pytest
 
@@ -179,6 +180,37 @@ def test_prospective_benchmark_must_target_the_evaluated_catalog(tmp_path):
             _fixture(tmp_path),
             benchmark,
             benchmark_sha256="d" * 64,
+        )
+
+
+def test_prospective_benchmark_requires_every_query_after_freeze(tmp_path):
+    database = _fixture(tmp_path)
+    benchmark = _benchmark()
+    benchmark["prospective_boundary"] = {
+        "catalog_sha256": sha256(database.read_bytes()).hexdigest(),
+        "catalog_generated_at_utc": "2026-11-07T09:36:44Z",
+    }
+
+    with pytest.raises(ValueError, match="missing a timestamp"):
+        audit_benchmark_disjointness(
+            database,
+            benchmark,
+            benchmark_sha256="e" * 64,
+        )
+    for query in benchmark["queries"]:
+        query["authored_at_utc"] = "2026-11-07T09:36:45+00:00"
+    audit = audit_benchmark_disjointness(
+        database,
+        benchmark,
+        benchmark_sha256="e" * 64,
+    )
+    assert audit["status"] == "NO_EXACT_LEAKAGE_DETECTED"
+    benchmark["queries"][0]["authored_at_utc"] = "2026-11-07T09:36:44Z"
+    with pytest.raises(ValueError, match="not strictly after"):
+        audit_benchmark_disjointness(
+            database,
+            benchmark,
+            benchmark_sha256="e" * 64,
         )
 
 
