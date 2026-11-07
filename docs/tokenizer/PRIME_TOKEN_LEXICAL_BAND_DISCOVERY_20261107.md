@@ -130,3 +130,49 @@ Collection receipts:
   `C:/dev/clay-training-runs/prime-token-catalog-20261106/third-holdout-source-20261107/`;
 - queue runtime:
   `C:/dev/clay-training-runs/prime-token-catalog-20261106/lexical-band-holdout-20261107/REVIEW_QUEUE_V2.json`.
+
+## Expanded pre-design source audit
+
+Status: `PRIVATE_HOLDOUT_ASSEMBLED_NOT_SCORED`.
+
+The eight-request stop above remains the correct result for the narrowly scanned
+current Codex and Claude stores. A separate pre-design asset was then located:
+the August 2026 `issac_voice.jsonl` harvest. It contains 6,085 scrubbed user
+turns from 1,626 source files and preserves a hashed source-session plus turn
+number for every row. It contains user-role direct speech only; assistant
+reasoning is stored in a different file and was not read into this benchmark.
+
+The fixed broad topic patterns selected 320 requests across 464 hashed sessions.
+The complete 48-request `prime_sieve` stratum was reviewed to avoid selecting
+only favorable examples. Thirty-four requests have `dev/loom/clay_sieve.py` as
+a genuine catalog-relevant source; fourteen false positives, pasted task
+context, or unsupported advanced-number-theory requests were rejected. The
+accepted set clears the 30-query floor, has 34 unique query-source URIs, passes
+catalog source-disjoint validation, and has zero query-hash overlap with either
+consumed 31-request benchmark.
+
+The review-label binding was strengthened before labels were sealed. Labels now
+target a canonical SHA-256 of the exact queue, including dataset receipt,
+selection policy, source provenance, candidate hashes, and private query text.
+The evaluator rejects a mutated queue even when its underlying dataset hash is
+unchanged.
+
+Private runtime receipts:
+
+- source dataset SHA-256:
+  `d10baf665d25af3991b0cb3f362056be7fab43f098e9b72297e671cf512327bd`;
+- canonical queue binding SHA-256:
+  `30c84e28a807e6df06c158cbcde044032ee850781e15c2a91f7deb4f73ecd91d`;
+- review queue file SHA-256:
+  `ca0b1811c063c1478cb1a02adf8a2b3f6675437022b3e32f4313f15647496d80`;
+- hash-only review-label file SHA-256:
+  `34fc676fccbd8cf12101529e7f68a0081c6d7572ade92e1b39fd2354433719c5`;
+- assembled benchmark SHA-256:
+  `62ba3c31ccb898c361abf687879188c07408ffc28d46eeb05796e85764f50b6d`;
+- runtime directory:
+  `C:/dev/clay-training-runs/prime-token-catalog-20261106/lexical-band-holdout-voice-v2-20261107/`.
+
+No candidate retrieval was run while collecting, reviewing, or validating this
+set. Width `0.005` remains unproven until the committed evaluator is run once on
+this sealed private benchmark against lexical-only, no-intervention, and all
+three shuffled-binding controls.

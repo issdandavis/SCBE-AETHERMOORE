@@ -1,7 +1,8 @@
 """Harvest independent private-session requests for reviewed retrieval evaluation.
 
 Raw request text stays in runtime output. Git-tracked labels can use hashes and
-source suffixes without embedding the private conversation text.
+source suffixes without embedding the private conversation text. Both scrubbed
+session chunks and scrubbed direct-speech rows retain source-session provenance.
 """
 
 from __future__ import annotations
@@ -17,6 +18,8 @@ from python.scbe.prime_token_benchmark import BENCHMARK_SCHEMA, MIN_CAPABILITY_Q
 
 REVIEW_QUEUE_SCHEMA = "scbe.prime-token-independent-review-queue.v1"
 REVIEW_LABEL_SCHEMA = "scbe.prime-token-independent-review-labels.v1"
+SESSION_CHUNK_SCHEMA = "clay.session.chunk.v1"
+DIRECT_SPEECH_SCHEMA = "clay.direct-speech-turn.v1"
 
 # Broad topic selectors were fixed before reviewing individual requests. They
 # contain no phrase copied from a target document or the 11-query benchmark.
@@ -65,6 +68,19 @@ def sha256_file(path: str | Path) -> str:
     return digest.hexdigest()
 
 
+def review_queue_sha256(queue: Mapping[str, Any]) -> str:
+    """Bind labels to the exact harvested queue, policy, provenance, and text."""
+    payload = dict(queue)
+    payload.pop("queue_sha256", None)
+    encoded = json.dumps(
+        payload,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    ).encode("utf-8")
+    return sha256(encoded).hexdigest()
+
+
 def _normalized_request(text: str) -> str:
     return " ".join(text.split()).casefold()
 
@@ -95,16 +111,33 @@ def harvest_review_queue(
     seen: set[str] = set()
     global_ordinal = 0
     sessions: set[str] = set()
+    input_schemas: set[str] = set()
     with dataset_path.open(encoding="utf-8") as handle:
         for line_number, line in enumerate(handle, 1):
             row = json.loads(line)
-            session_id = str(row.get("session_id") or "").strip()
-            text = row.get("text")
+            schema = str(row.get("schema") or SESSION_CHUNK_SCHEMA).strip()
+            input_schemas.add(schema)
+            if schema == DIRECT_SPEECH_SCHEMA:
+                session_id = str(row.get("source_session") or "").strip()
+                chunk_index = int(row.get("turn", line_number - 1))
+                text = row.get("text")
+                requests = (text,) if isinstance(text, str) else ()
+            elif schema == SESSION_CHUNK_SCHEMA:
+                session_id = str(row.get("session_id") or "").strip()
+                chunk_index = int(row.get("chunk_index", line_number - 1))
+                text = row.get("text")
+                requests = _request_turns(text) if isinstance(text, str) else ()
+            else:
+                raise ValueError(
+                    f"unknown input schema on line {line_number}: {schema}"
+                )
             if not session_id or not isinstance(text, str):
                 raise ValueError(f"invalid chunk record on line {line_number}")
             sessions.add(session_id)
-            chunk_index = int(row.get("chunk_index", line_number - 1))
-            for request in _request_turns(text):
+            for request in requests:
+                request = request.strip()
+                if not request:
+                    continue
                 ordinal = global_ordinal
                 global_ordinal += 1
                 folded = request.casefold()
@@ -128,17 +161,19 @@ def harvest_review_queue(
                         "query_sha256": request_hash,
                         "session_id": session_id,
                         "chunk_index": chunk_index,
+                        "source_schema": schema,
                         "turn_ordinal": ordinal,
                         "topic_groups": groups,
                         "query": request,
                     }
                 )
-    return {
+    queue = {
         "schema": REVIEW_QUEUE_SCHEMA,
         "dataset": str(dataset_path),
         "dataset_sha256": sha256_file(dataset_path),
         "session_ids": sorted(sessions),
         "selection_policy": {
+            "accepted_input_schemas": sorted(input_schemas),
             "min_chars": min_chars,
             "max_chars": max_chars,
             "topic_patterns": {
@@ -151,6 +186,8 @@ def harvest_review_queue(
         "candidate_count": len(candidates),
         "candidates": candidates,
     }
+    queue["queue_sha256"] = review_queue_sha256(queue)
+    return queue
 
 
 def load_labels(path: str | Path) -> dict[str, Any]:
@@ -171,10 +208,13 @@ def build_reviewed_benchmark(
     """Join hash-bound reviewer decisions to private text and emit a benchmark."""
     if queue.get("schema") != REVIEW_QUEUE_SCHEMA:
         raise ValueError("unknown review-queue schema")
+    actual_queue_hash = review_queue_sha256(queue)
+    if queue.get("queue_sha256") != actual_queue_hash:
+        raise ValueError("review queue content hash mismatch")
     if labels.get("schema") != REVIEW_LABEL_SCHEMA:
         raise ValueError("unknown review-label schema")
-    if labels.get("queue_sha256") != queue.get("dataset_sha256"):
-        raise ValueError("labels do not target this queue dataset hash")
+    if labels.get("queue_sha256") != actual_queue_hash:
+        raise ValueError("labels do not target this exact review queue")
     reviewer = str(labels.get("reviewer") or "").strip()
     reviewed_at = str(labels.get("reviewed_at_utc") or "").strip()
     if not reviewer or not reviewed_at:

@@ -256,3 +256,13 @@ one, below the 30-query floor. Parser commit `c4ed93cda` rejects retained-source
 and tool-transcript artifacts that an initial invalid queue admitted. The
 selected width remains development-only until enough authentic, independently
 authored, query-hash-disjoint requests exist.
+
+An expanded pre-design audit subsequently found the August 2026 scrubbed direct-
+speech corpus, which retains hashed source-session and turn provenance for 6,085
+user-authored rows. The existing fixed topic policy yielded 320 candidates. A
+complete review of its 48-request prime-sieve stratum accepted 34 and rejected
+14; the sealed private benchmark has unique query-source records, zero overlap
+with both consumed 31-query sets, and passes catalog source-disjoint validation.
+Labels now bind the exact canonical review queue rather than only the source
+dataset hash. The candidate remains development-only until this sealed holdout
+is scored once against all preregistered controls.
