@@ -155,6 +155,8 @@ def _explicit_route_dataset(path: Path) -> Path:
     ]
     for index, text in enumerate(texts):
         session_index = 0 if index == 3 else index
+        if 43 <= index <= 47:
+            session_index = 26 + (index - 43)
         rows.append(
             {
                 "schema": "clay.direct-speech-turn.v1",
@@ -178,7 +180,7 @@ def test_explicit_route_scope_is_balanced_exclusive_and_hash_bound(tmp_path):
         excluded_query_sha256=excluded,
     )
 
-    assert scope["candidate_count"] == 63
+    assert scope["candidate_count"] == 60
     assert scope["selection_policy"]["scope_revision"] == EXPLICIT_ROUTE_SCOPE_REVISION
     assert scope["queue_sha256"] == review_queue_sha256(scope)
     assert not excluded & {row["query_sha256"] for row in scope["candidates"]}
@@ -189,10 +191,10 @@ def test_explicit_route_scope_is_balanced_exclusive_and_hash_bound(tmp_path):
     assert counts == {
         "five_w": 3,
         "publication": 20,
-        "tongue_braid": 20,
+        "tongue_braid": 17,
         "source_research": 20,
     }
-    assert len(scope["session_ids"]) == 63
+    assert len(scope["session_ids"]) == 60
 
 
 def test_explicit_route_scope_requires_complete_review_and_preserves_stratum(tmp_path):

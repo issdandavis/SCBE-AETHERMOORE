@@ -24,7 +24,7 @@ EXPLICIT_ROUTE_SCOPE_REVISION = "prime-token-explicit-route-scope-v1"
 EXPLICIT_ROUTE_SCOPE_COUNTS = {
     "five_w": 3,
     "publication": 20,
-    "tongue_braid": 20,
+    "tongue_braid": 17,
     "source_research": 20,
 }
 

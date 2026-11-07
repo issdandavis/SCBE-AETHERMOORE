@@ -78,7 +78,7 @@ Before reading candidate text, create one deterministic review scope:
 - one exclusive `five_w` candidate per hashed source session, ordered by query
   SHA-256;
 - the first 20 exclusive `publication` candidates by query SHA-256;
-- the first 20 exclusive `tongue_braid` candidates by query SHA-256;
+- the first 17 exclusive `tongue_braid` candidates by query SHA-256;
 - the first 20 exclusive `source_research` candidates by query SHA-256.
 
 Keep at most one candidate per hashed source session within each stratum. If a
@@ -86,12 +86,13 @@ collision occurs, take the next query by SHA-256. Review every selected candidat
 and record accept/reject plus exactly one catalog source suffix for each accepted
 query. Do not run retrieval during selection or review.
 
-Hash-only structural audit amendment: the four exclusive `five_w` hashes occupy
-only three source sessions; two belong to the same session. No query text or
-retrieval result was opened during that audit. Preserve the session cap and take
-the lower query hash from the duplicated session, yielding three `five_w`
-candidates and 63 total scoped candidates. Do not weaken source-session
-independence merely to retain the original count of four.
+Hash-only structural audit amendment: no consumed-query overlap was found in any
+stratum, but the exclusive candidates have capacities of 3 unique sessions for
+`five_w`, 20 for `publication`, 17 for `tongue_braid`, and 74 for
+`source_research`. No query text or retrieval result was opened during that
+audit. Preserve the session cap, take the lower query hash on collisions, and
+use counts 3, 20, 17, and 20 respectively, yielding 60 total scoped candidates.
+Do not weaken source-session independence merely to retain the original counts.
 
 The benchmark is admissible only with at least 30 accepted queries, at least
 three topic strata, at least six distinct relevant catalog sources, and no one
