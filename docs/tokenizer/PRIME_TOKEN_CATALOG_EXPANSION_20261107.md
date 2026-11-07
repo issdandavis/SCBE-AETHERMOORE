@@ -143,3 +143,43 @@ queue, as required. It remains development/training material only. A future
 source-disjoint evaluation must use a newly exported, scrubbed, timestamped set
 of user-authored requests created after the v5 catalog freeze; synthetic spin
 conversations are not eligible.
+
+## Scrubbed Codex development layer
+
+The inactive 7.23 GB Codex session log identified by the storage diagnostic was
+already NTFS-compressed and unlocked after restart. A bounded extractor at Loom
+commit `19d33d0` retained only timestamped, user-authored text records; rejected
+assistant, developer, tool, environment, and instruction-envelope records;
+redacted seven secret-shaped substrings; deduplicated normalized text; and
+represented the one turn over 100,000 characters by hash and metadata only.
+
+The verified corpus contains 2,119 rows and 1,871,205 characters. Its SHA-256 is
+`e45cd7c59dff4f9d082110e5b3bd53c966896af32bb405a8ff4f8147a170f4a0`.
+The independently recomputed source-log SHA-256 matched the extractor receipt:
+`725a1e3c34c3b5f9e071c83a32a6f805addb5a139e1f18bedaa537e4e1f12c5b`.
+All retained timestamps predate this catalog freeze, so these records are
+internal development/training sources and are permanently ineligible for the
+prospective holdout.
+
+The resulting v6 catalog is at:
+`C:/dev/clay-training-runs/prime-token-catalog-20261106/catalog-v6-codex-user-20261107/`
+
+- Sources: 2,154 (10 academic, 2 code, 2,119 conversation, 12 documentation,
+  and 11 publication)
+- Sections: 9,750
+- Word occurrences: 339,637
+- Relationship memberships: 315,594
+- Rights labels: 33 MIT, 2,121 owner-authorized internal research, 0 unknown
+- Catalog SHA-256:
+  `1839d609bc8e7263263e4c83d1bac2c3645285a9a664abfc6e9f292cc0b2fba0`
+- Manifest SHA-256:
+  `ccfff2e570b29a2e0c2b18bf10986d6d83a13bb4df50f9ef7c7cf5353dfc3dbc`
+- Structural-audit SHA-256:
+  `27db909748d3006c49cbd9ff6ff4d90abb62a81f5b8e2368d99d0317b877fd1f`
+
+Every generated-output hash independently matched the manifest. The structural
+gate passed: all sources expose all six views, five source kinds are present,
+and the largest source contributes 654 sections (`0.06708`), below the frozen
+`0.40` ceiling. V6 supersedes v5 only as the current internal development
+candidate. It has not been retrieval-scored, promoted, deployed, connected to a
+probability sidecar, or used to modify a neural checkpoint.

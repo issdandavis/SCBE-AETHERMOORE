@@ -1,7 +1,7 @@
 # Prime Token Catalog System Map
 
 Status: BOUNDED LOCAL IMPLEMENTATION VERIFIED; CAPABILITY GAIN UNESTABLISHED
-Date: 2026-11-06
+Date: 2026-11-07
 
 ## Capability
 
@@ -315,3 +315,18 @@ Prospective holdout harvesting now requires a timezone-aware authored timestamp
 strictly after the frozen catalog cutoff (`3d4ee3d1e`). The old voice corpus lacks
 that evidence and is rejected without writing a queue. Only newly exported,
 scrubbed user-authored requests may satisfy the next source-disjoint gate.
+
+The current internal development candidate is v6. It adds 2,119 verified,
+scrubbed, timestamped user-authored records from an inactive Codex session log
+to the 35-source v5 boundary, yielding 2,154 sources, 9,750 sections, 339,637
+occurrences, and 315,594 bounded relationship memberships. Internal conversation
+records remain owner-authorized research data and are not relabeled as MIT or
+redistributable. The catalog SHA-256 is
+`1839d609bc8e7263263e4c83d1bac2c3645285a9a664abfc6e9f292cc0b2fba0`.
+
+V6 passes the same structural source gate with five source kinds, complete
+six-view coverage, zero unknown rights labels, and a largest-source section
+share of `0.06708`. Every retained conversation predates the v6 freeze, so the
+layer is eligible only for development or a separately controlled training
+experiment. It is not prospective holdout evidence and has not been scored,
+attached to a probability table, or written into model weights.
