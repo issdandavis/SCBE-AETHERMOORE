@@ -62,6 +62,12 @@ This result blocks promotion. It does not refute every possible gated use of the
 derived views because the query set is small and authored after reading the
 targets. The correct status remains `UNDERPOWERED`, not `REFUTED`.
 
+An independently authored follow-up is now complete. It evaluates 31 private
+requests from a scrubbed September session and reports `NO_GAIN`: full MRR
+0.5092 versus lexical-only 0.5143 and no-intervention 0.5105. Details and
+hash-bound receipts are in
+`docs/tokenizer/PRIME_TOKEN_INDEPENDENT_QUERY_GATE_20261107.md`.
+
 ## Next Research Gate
 
 Do not tune view weights on these 11 seen queries. Freeze this result and collect
