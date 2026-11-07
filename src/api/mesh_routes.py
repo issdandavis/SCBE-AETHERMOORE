@@ -10,6 +10,9 @@ Endpoints:
     POST /mesh/connect     — Create semantic link between nodes
     POST /mesh/path        — Shortest path between concepts
     GET  /mesh/stats       — Mesh health statistics
+
+The router has no auth of its own. Parent apps must include it with their
+API-key dependency. Both `src.api.main` and `api.main` do that.
 """
 
 from __future__ import annotations

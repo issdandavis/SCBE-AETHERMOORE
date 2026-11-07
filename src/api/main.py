@@ -93,6 +93,15 @@ except ImportError:
 
 from src.api.compute_routes import compute_router
 from src.api.demo_routes import govern_router
+from src.api.connector_url_policy import (
+    ConnectorURLRejected,
+    build_shopify_endpoint,
+    normalize_shop_domain,
+    open_connector_request,
+    sanitize_connector_headers,
+    validate_connector_endpoint,
+    validate_header_name,
+)
 from src.api.search_routes import search_router
 from src.api.llm_routes import llm_router
 from src.api.polly_routes import polly_router
@@ -142,10 +151,6 @@ app.add_middleware(
 # Include HYDRA router
 app.include_router(hydra_router)
 
-# Include Semantic Mesh router (embryonic intake + tongue-space KG)
-if mesh_router is not None:
-    app.include_router(mesh_router)
-
 # Additive SaaS control plane for tenant + flock orchestration.
 app.include_router(saas_router)
 
@@ -154,9 +159,6 @@ app.include_router(billing_router)
 
 # Energy-aware compute authorization — SCBE Sentinel core product.
 app.include_router(compute_router)
-
-# AetherSearch — governed geometric search with tongue-aware ranking.
-app.include_router(search_router)
 
 # LLM proxy routes (Gemini, etc.) — server-side only (never expose vendor keys to clients).
 app.include_router(llm_router)
@@ -591,7 +593,10 @@ CONNECTOR_TEMPLATES: List[Dict[str, Any]] = [
     {
         "template_id": "n8n_webhook",
         "kind": "n8n",
-        "description": "Use n8n webhook trigger as an automation hub for multi-service operations.",
+        "description": (
+            "Use an n8n webhook trigger as an automation hub. The endpoint must be public https "
+            "unless SCBE_CONNECTOR_ALLOW_PRIVATE_NETWORKS=1."
+        ),
         "recommended_fields": {
             "endpoint_url": "https://<n8n-host>/webhook/<flow>",
             "auth_type": "header",
@@ -616,7 +621,10 @@ CONNECTOR_TEMPLATES: List[Dict[str, Any]] = [
     {
         "template_id": "generic_signed_webhook",
         "kind": "generic_webhook",
-        "description": "Signed SCBE payload delivery to any HTTPS webhook endpoint.",
+        "description": (
+            "Signed SCBE payload delivery to a public https webhook. Private and link-local "
+            "destinations are rejected unless explicitly enabled."
+        ),
         "recommended_fields": {
             "endpoint_url": "https://<your-service>/webhooks/scbe",
             "auth_type": "bearer",
@@ -651,6 +659,13 @@ async def verify_api_key(
         raise HTTPException(429, "Rate limit exceeded (100 req/min)")
 
     return VALID_API_KEYS[resolved_key]
+
+
+# Mesh and search expose shared indexes. Mount them only with the same API-key
+# dependency as the rest of this app (GHSA-7rh5).
+if mesh_router is not None:
+    app.include_router(mesh_router, dependencies=[Depends(verify_api_key)])
+app.include_router(search_router, dependencies=[Depends(verify_api_key)])
 
 
 @app.post("/v1/governance/scan", response_model=GovernanceScanResponse, tags=["Governance"])
@@ -791,20 +806,11 @@ def _sign_connector_payload(payload: Dict[str, Any]) -> tuple[str, str]:
 
 
 def _normalize_shop_domain(raw: str) -> str:
-    value = (raw or "").strip().lower()
-    if value.startswith("https://"):
-        value = value[8:]
-    elif value.startswith("http://"):
-        value = value[7:]
-    return value.rstrip("/")
+    return normalize_shop_domain(raw)
 
 
 def _build_shopify_endpoint(shop_domain: str, api_version: str) -> str:
-    domain = _normalize_shop_domain(shop_domain)
-    if not domain:
-        return ""
-    version = (api_version or "2025-10").strip()
-    return f"https://{domain}/admin/api/{version}/graphql.json"
+    return build_shopify_endpoint(shop_domain, api_version)
 
 
 def _build_scbe_step_payload(record: Dict[str, Any], step: Dict[str, Any]) -> Dict[str, Any]:
@@ -928,14 +934,17 @@ def _dispatch_connector_step(record: Dict[str, Any], step: Dict[str, Any]) -> Di
 
     method = record.get("http_method", ConnectorHttpMethod.post.value).upper()
     body_bytes = json.dumps(payload).encode("utf-8")
-    req = urlrequest.Request(
-        connector["endpoint_url"],
-        data=body_bytes if method != "GET" else None,
-        headers=headers,
-        method=method,
-    )
     try:
-        with urlrequest.urlopen(req, timeout=int(record.get("timeout_seconds", 8))) as resp:
+        sanitize_connector_headers(record.get("default_headers") or {})
+        if connector.get("auth_header_name"):
+            validate_header_name(str(connector.get("auth_header_name")))
+        req = urlrequest.Request(
+            connector["endpoint_url"],
+            data=body_bytes if method != "GET" else None,
+            headers=headers,
+            method=method,
+        )
+        with open_connector_request(req, timeout=int(record.get("timeout_seconds", 8))) as resp:
             status = int(getattr(resp, "status", 200))
             resp.read().decode("utf-8", errors="replace")
             if 200 <= status < 300:
@@ -950,6 +959,13 @@ def _dispatch_connector_step(record: Dict[str, Any], step: Dict[str, Any]) -> Di
                 "status": status,
                 "detail": "connector returned non-success status",
             }
+    except ConnectorURLRejected as exc:
+        logger.warning("connector dispatch rejected code=%s", exc.code)
+        return {
+            "ok": False,
+            "code": exc.code,
+            "detail": exc.public_detail,
+        }
     except HTTPError as exc:
         return {
             "ok": False,
@@ -1418,31 +1434,34 @@ async def register_mobile_connector(request: ConnectorRegisterRequest, user: str
     Register external automation connector (n8n / Zapier / Shopify / generic webhook).
     """
     endpoint_url = (request.endpoint_url or "").strip()
-    shop_domain = _normalize_shop_domain(request.shop_domain)
     payload_mode = request.payload_mode.value
     auth_type = request.auth_type.value
     auth_header_name = request.auth_header_name
 
-    if request.kind == ConnectorKind.shopify:
-        if not endpoint_url:
-            endpoint_url = _build_shopify_endpoint(shop_domain, request.shopify_api_version)
-            if not endpoint_url:
+    try:
+        shop_domain = _normalize_shop_domain(request.shop_domain)
+        if request.kind == ConnectorKind.shopify and not endpoint_url:
+            if not shop_domain:
                 raise HTTPException(
                     400,
                     "shop_domain required for shopify connector without endpoint_url",
                 )
+            endpoint_url = _build_shopify_endpoint(shop_domain, request.shopify_api_version)
             if payload_mode == ConnectorPayloadMode.scbe_step.value:
                 payload_mode = ConnectorPayloadMode.shopify_graphql_read.value
-        if request.auth_token and request.auth_type == ConnectorAuthType.none:
+        if request.kind == ConnectorKind.shopify and request.auth_token and request.auth_type == ConnectorAuthType.none:
             auth_type = ConnectorAuthType.header.value
             auth_header_name = "X-Shopify-Access-Token"
-
-    if not endpoint_url:
-        raise HTTPException(400, "endpoint_url required")
+        if not endpoint_url:
+            raise HTTPException(400, "endpoint_url required")
+        endpoint_url = validate_connector_endpoint(endpoint_url, resolve_dns=False)
+        safe_headers = sanitize_connector_headers(request.default_headers)
+        auth_header_name = validate_header_name(auth_header_name)
+    except ConnectorURLRejected as exc:
+        raise HTTPException(400, exc.public_detail) from exc
 
     connector_id = _connector_id(user, request.name, request.kind.value)
     ts = int(time.time())
-    safe_headers = {str(k): str(v) for k, v in request.default_headers.items() if str(k)}
     CONNECTOR_STORE[connector_id] = {
         "connector_id": connector_id,
         "owner": user,
