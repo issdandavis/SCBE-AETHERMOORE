@@ -1,0 +1,11 @@
+claim,source,published_at,verified_with,confidence
+"Highway gates preserve an explicit carry path while learning a transformed path.","https://arxiv.org/abs/1505.00387","2015-05-03","https://arxiv.org/abs/1507.06228","high"
+"Frozen near-identity adapters add task capacity without changing backbone parameters.","https://proceedings.mlr.press/v97/houlsby19a.html","2019-06","https://aclanthology.org/2021.eacl-main.39/","high"
+"Sparse MoE routing increases conditional capacity but introduces balancing and stability concerns.","https://arxiv.org/abs/1701.06538","2017-01-23","https://www.jmlr.org/papers/v23/21-0998.html; https://arxiv.org/abs/2202.08906","high"
+"Expert Choice gives each expert a fixed token bucket while tokens may receive a variable number of experts.","https://arxiv.org/abs/2202.09368","2022-02-18","https://www.jmlr.org/papers/v23/21-0998.html","high"
+"Gumbel-Softmax and Concrete provide differentiable relaxations for categorical route choices.","https://openreview.net/forum?id=rkE3y85ee","2017","https://arxiv.org/abs/1611.00712","high"
+"Adaptive computation can vary depth or token processing while preserving an explicit compute policy.","https://arxiv.org/abs/1603.08983","2016-03-29","https://arxiv.org/abs/2404.02258; https://arxiv.org/abs/2404.16710","medium-high"
+"GLU-family activations gate features inside a block but do not define governed specialist dispatch.","https://arxiv.org/abs/2002.05202","2020-02-12","https://arxiv.org/abs/1701.06538","high"
+"Recursive routing networks can compose function blocks and use a pass action, but require a learned routing policy.","https://openreview.net/forum?id=ry8dvM-R","2018","https://arxiv.org/abs/1603.08983","medium-high"
+"Clay's direct-input sidecar beat both declared controls and preserved counting exactly in the verified discovery run.","C:/dev/_wt_clay_sidecar_multiseed_20261107/experiments/clay_controlled_growth_20261107/RESULT.md","2026-11-07","C:/dev/clay-training-runs/controlled-growth-multiseed-20261107/VERIFICATION.json","high"
+"A default-closed deterministic gate plus late fusion is the best first commercial design for current Clay.","inference from cited literature and local receipts","2026-11-07","requires the controlled experiment in research_brief.md","medium"
