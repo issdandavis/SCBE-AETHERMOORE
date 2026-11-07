@@ -90,6 +90,24 @@ full-fine-tune arm scored coding `0.622727` while counting fell from `0.111111`
 to `0.037037`. The aggregate replication and independent verifier are not yet
 complete, so that single-seed observation is not a conclusion.
 
+### Frozen false-route development contract
+
+Before implementing any learned gate, the research lane now freezes 54 authored
+contract cases in `false_route_benchmark_v1.json`: 30 ordinary prompts with
+lexical traps, 12 malformed explicit specialist requests, and 12 valid typed
+requests. The zero-parameter evaluator uses trusted envelope fields only; it
+does not inspect prompt text. It produced:
+
+- false specialist activation `0/42` on non-specialist cases;
+- valid specialist route recall `12/12`;
+- exact route decision `54/54`.
+
+This result verifies only that the declared deterministic contract is
+implemented consistently. The cases are development-consumed, author-written,
+and not a source-disjoint estimate of natural request classification. They may
+not be used as training intake or promotion evidence. Exact benchmark and
+evaluator hashes are frozen in `FALSE_ROUTE_BENCHMARK_PIN.json`.
+
 ## Recommended junction architecture
 
 Use a **frozen highway plus a direct-input underpass**, with default-closed

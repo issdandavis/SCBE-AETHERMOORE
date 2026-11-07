@@ -7,8 +7,9 @@ Date: 2026-11-07
 1. Which exact output schema lets a specialist rejoin without changing frozen
    hidden state: logits, typed action candidates, retrieval evidence, or all
    three as separate lanes?
-2. What ordinary-prompt set measures false specialist activation, and what
-   commercial ceiling is acceptable before launch?
+2. The first 30-case ordinary-prompt development contract is now frozen in
+   `false_route_benchmark_v1.json`. What authentic, source-disjoint prompt set
+   and commercial ceiling are acceptable before launch remains open.
 3. Which zero-parameter fields are allowed in eligibility: source kind, prompt
    grammar, tool declaration, catalog provenance, and capability ID?
 4. Can the gate abstain independently of both the core and specialist, or must
@@ -49,6 +50,7 @@ Date: 2026-11-07
 1. Wait for the current confirmatory three-seed run and independent verifier.
 2. Inventory the existing weight catalog schema before adding a specialist
    registry field.
-3. Freeze a false-route benchmark before coding a learned gate.
+3. Keep the frozen false-route contract as a development regression suite; do
+   not mistake its authored `0/42` false-route result for deployment evidence.
 4. Do not attach v6 until at least 30 authentic post-freeze requests satisfy the
    existing source-disjoint gate.

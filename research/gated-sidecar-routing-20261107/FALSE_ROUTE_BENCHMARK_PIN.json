@@ -1,0 +1,13 @@
+{
+  "schema": "scbe.fixed-specialist-gate-pin.v1",
+  "status": "FROZEN_DEVELOPMENT_CONTRACT",
+  "authority": "RESEARCH_ONLY_NO_TRAINING_NO_PROMOTION",
+  "benchmark": "false_route_benchmark_v1.json",
+  "benchmark_sha256": "6cabe84430b24e6bfef7a62493c9fb55a897729f362ef97f1b1431de9f49f3e1",
+  "evaluator": "fixed_gate_benchmark.py",
+  "evaluator_sha256": "4bec78d8e2ae8b2c259083fdb71a18469daf2aa7f365cb3ff87f6c142db9a8d9",
+  "case_count": 54,
+  "ordinary_prompt_count": 30,
+  "promotion": "NOT_AUTHORIZED",
+  "training_intake": "NOT_AUTHORIZED"
+}
