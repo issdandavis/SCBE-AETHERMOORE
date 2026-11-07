@@ -22,7 +22,10 @@ def _dataset(path: Path) -> Path:
                 "Issac: Can the prime sieve route this request?\n\n"
                 "Assistant: answer\n\n"
                 "Issac: Can the prime sieve route this request?\n\n"
-                "Issac: My 5W system uses who what when where why."
+                "Issac: My 5W system uses who what when where why.\n\n"
+                "Issac: Retained source order: 4 assistant: research a book\n\n"
+                "Issac: [42] tool exec call: publish the manuscript\n\n"
+                'Issac: {"command": ["research", "book"], "environment_id": "local"}'
             ),
         },
         {

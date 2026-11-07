@@ -43,6 +43,16 @@ REJECT_MARKERS = (
     "<instructions>",
     "<environment_context",
     "<skills_instructions>",
+    "retained user instructions start",
+    "retained source order:",
+    "tool exec call:",
+    "tool exec result:",
+    '"sandbox_permissions":',
+    '"environment_id":',
+)
+SYNTHETIC_TURN_PREFIX = re.compile(
+    r'^\s*(?:(?:>>>\s+)?retained\b|\[\d+\]\s+(?:assistant|tool)\b|\{\s*"command"\s*:)',
+    re.IGNORECASE,
 )
 TURN_BOUNDARY = re.compile(r"(?m)(?=^(?:Issac|Assistant): |^\[action:|^\[result\])")
 
@@ -100,7 +110,9 @@ def harvest_review_queue(
                 folded = request.casefold()
                 if not min_chars <= len(request) <= max_chars:
                     continue
-                if any(marker in folded for marker in REJECT_MARKERS):
+                if any(
+                    marker in folded for marker in REJECT_MARKERS
+                ) or SYNTHETIC_TURN_PREFIX.search(request):
                     continue
                 groups = _topic_groups(request)
                 if not groups:
