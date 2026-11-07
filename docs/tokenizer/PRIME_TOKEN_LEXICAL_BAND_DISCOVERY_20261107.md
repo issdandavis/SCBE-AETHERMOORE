@@ -102,3 +102,31 @@ Runtime receipts:
   `a47774e6717878e9ffbd270b6e0a1688534778504b48388933cda7064cb2d7f7`;
 - directory:
   `C:/dev/clay-training-runs/prime-token-catalog-20261106/lexical-band-discovery-20261107/`.
+
+## Third-holdout collection audit
+
+Status: `INSUFFICIENT_AUTHENTIC_QUERIES`; no candidate scoring performed.
+
+Seven pre-November Codex sessions were independently scrubbed after the width
+was frozen. The first queue incorrectly admitted retained-source blocks and tool
+transcripts as user requests. Commit `c4ed93cda` fixes that parser defect and
+adds regression coverage. The invalid 86-candidate queue was not labeled or
+scored.
+
+The corrected queue contains seven authentic topic-matched requests. A separate
+scan of the available pre-design local Claude sessions produced only one more.
+This is below the preregistered 30-query floor, so fabricating relevance labels,
+reusing either consumed 31-request set, or treating assistant/tool text as user
+queries is forbidden. Width `0.005` remains a development candidate with no
+holdout evidence.
+
+Collection receipts:
+
+- scrubbed seven-session source SHA-256:
+  `32cc0290e21c8eac25c921c6088bf177d051fc42051991f2dd00f526d004e23f`;
+- corrected seven-request queue SHA-256:
+  `1cb7d59049d94cedadafa50671dacb41336526ae3033036d3cfaba57f379de74`;
+- source runtime:
+  `C:/dev/clay-training-runs/prime-token-catalog-20261106/third-holdout-source-20261107/`;
+- queue runtime:
+  `C:/dev/clay-training-runs/prime-token-catalog-20261106/lexical-band-holdout-20261107/REVIEW_QUEUE_V2.json`.

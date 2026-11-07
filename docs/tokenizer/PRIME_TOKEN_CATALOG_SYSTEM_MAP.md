@@ -249,3 +249,10 @@ The committed implementation revision is `six-view-lexical-band-v1` at commit
 `d1c935b2c`. The development grid selected width `0.005` by its predeclared
 smallest-width tie rule. Its MRR advantage over lexical-only was only `0.001707`,
 so the candidate remains unproven and requires a third hash-disjoint holdout.
+
+Third-holdout collection stopped before scoring: the corrected pre-November
+Codex queue has seven authentic requests and the available Claude sessions add
+one, below the 30-query floor. Parser commit `c4ed93cda` rejects retained-source
+and tool-transcript artifacts that an initial invalid queue admitted. The
+selected width remains development-only until enough authentic, independently
+authored, query-hash-disjoint requests exist.
