@@ -170,6 +170,18 @@ def test_disjoint_audit_passes_without_scoring_and_binds_query_hashes(tmp_path):
         )
 
 
+def test_prospective_benchmark_must_target_the_evaluated_catalog(tmp_path):
+    benchmark = _benchmark()
+    benchmark["prospective_boundary"] = {"catalog_sha256": "0" * 64}
+
+    with pytest.raises(ValueError, match="targets a different catalog hash"):
+        audit_benchmark_disjointness(
+            _fixture(tmp_path),
+            benchmark,
+            benchmark_sha256="d" * 64,
+        )
+
+
 def test_lexical_first_is_lexical_primary_and_runs_controls(tmp_path):
     database = _fixture(tmp_path)
     lexical = search_goal(

@@ -38,6 +38,10 @@ def main() -> int:
         help="prospective-only cutoff; every dataset row must include timezone-aware authored_at_utc",
     )
     parser.add_argument(
+        "--after-catalog-manifest",
+        help="derive and hash-bind the exclusive prospective cutoff from a catalog MANIFEST.json",
+    )
+    parser.add_argument(
         "--explicit-route-scope",
         action="store_true",
         help="seal the preregistered balanced explicit-route review scope",
@@ -53,11 +57,14 @@ def main() -> int:
     if args.input_queue:
         if args.authored_after_utc:
             parser.error("--authored-after-utc requires --dataset")
+        if args.after_catalog_manifest:
+            parser.error("--after-catalog-manifest requires --dataset")
         queue = json.loads(Path(args.input_queue).read_text(encoding="utf-8"))
     else:
         queue = harvest_review_queue(
             args.dataset,
             authored_after_utc=args.authored_after_utc,
+            catalog_manifest=args.after_catalog_manifest,
         )
     if args.explicit_route_scope:
         if not args.input_queue:

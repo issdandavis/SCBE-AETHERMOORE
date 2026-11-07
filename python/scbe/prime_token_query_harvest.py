@@ -118,19 +118,59 @@ def _parse_authored_at(value: Any, *, label: str) -> datetime:
     return parsed
 
 
+def _catalog_boundary(manifest: str | Path) -> dict[str, str]:
+    manifest_path = Path(manifest).resolve()
+    raw = manifest_path.read_bytes()
+    payload = json.loads(raw)
+    if payload.get("schema") != "scbe.prime-token-catalog.v1":
+        raise ValueError("unknown prime-token catalog manifest schema")
+    generated_at = _parse_authored_at(
+        payload.get("generated_at_utc"), label="catalog manifest"
+    )
+    outputs = payload.get("outputs")
+    if not isinstance(outputs, list):
+        raise ValueError("catalog manifest has no outputs")
+    catalog_hashes = [
+        str(row.get("sha256") or "").strip()
+        for row in outputs
+        if isinstance(row, Mapping)
+        and Path(str(row.get("path") or "")).name == "catalog.sqlite3"
+    ]
+    if len(catalog_hashes) != 1 or not re.fullmatch(
+        r"[0-9a-fA-F]{64}", catalog_hashes[0]
+    ):
+        raise ValueError("catalog manifest must bind exactly one catalog.sqlite3")
+    return {
+        "catalog_generated_at_utc": generated_at.isoformat(),
+        "catalog_sha256": catalog_hashes[0],
+        "manifest_sha256": sha256(raw).hexdigest(),
+    }
+
+
 def harvest_review_queue(
     dataset: str | Path,
     *,
     min_chars: int = 20,
     max_chars: int = 1600,
     authored_after_utc: str | None = None,
+    catalog_manifest: str | Path | None = None,
 ) -> dict[str, Any]:
     """Return a deterministic queue without assigning relevance labels."""
     if min_chars < 1 or max_chars < min_chars:
         raise ValueError("invalid request length bounds")
+    if authored_after_utc is not None and catalog_manifest is not None:
+        raise ValueError("choose authored_after_utc or catalog_manifest, not both")
+    prospective_boundary = (
+        _catalog_boundary(catalog_manifest) if catalog_manifest is not None else None
+    )
+    cutoff = (
+        prospective_boundary["catalog_generated_at_utc"]
+        if prospective_boundary is not None
+        else authored_after_utc
+    )
     authored_after = (
-        _parse_authored_at(authored_after_utc, label="prospective cutoff")
-        if authored_after_utc is not None
+        _parse_authored_at(cutoff, label="prospective cutoff")
+        if cutoff is not None
         else None
     )
     dataset_path = Path(dataset).resolve()
@@ -226,6 +266,8 @@ def harvest_review_queue(
         "candidate_count": len(candidates),
         "candidates": candidates,
     }
+    if prospective_boundary is not None:
+        queue["prospective_boundary"] = prospective_boundary
     queue["queue_sha256"] = review_queue_sha256(queue)
     return queue
 
@@ -395,7 +437,7 @@ def build_reviewed_benchmark(
         raise ValueError(
             f"review accepted {len(queries)} queries; at least {minimum_queries} are required"
         )
-    return {
+    benchmark = {
         "schema": BENCHMARK_SCHEMA,
         "title": "Prime token catalog independently authored private-session benchmark",
         "query_provenance": "independent_external",
@@ -410,6 +452,10 @@ def build_reviewed_benchmark(
         "review_scope_revision": scope_revision or None,
         "queries": queries,
     }
+    prospective_boundary = queue.get("prospective_boundary")
+    if isinstance(prospective_boundary, Mapping):
+        benchmark["prospective_boundary"] = dict(prospective_boundary)
+    return benchmark
 
 
 def write_json_exclusive(path: str | Path, payload: Mapping[str, Any]) -> None:

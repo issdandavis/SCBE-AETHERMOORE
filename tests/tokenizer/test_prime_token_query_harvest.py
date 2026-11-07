@@ -13,6 +13,7 @@ from python.scbe.prime_token_query_harvest import (
     harvest_review_queue,
     query_hashes_from_benchmark,
     review_queue_sha256,
+    sha256_file,
 )
 
 
@@ -136,6 +137,67 @@ def test_prospective_harvest_refuses_naive_cutoff(tmp_path: Path) -> None:
         harvest_review_queue(
             _dataset(tmp_path / "chunks.jsonl"),
             authored_after_utc="2026-11-07T09:00:00",
+        )
+
+
+def test_prospective_harvest_derives_and_binds_catalog_boundary(tmp_path: Path) -> None:
+    manifest = tmp_path / "MANIFEST.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "schema": "scbe.prime-token-catalog.v1",
+                "generated_at_utc": "2026-11-07T01:36:44.690035-08:00",
+                "outputs": [
+                    {
+                        "path": str(tmp_path / "catalog.sqlite3"),
+                        "sha256": "a" * 64,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    dataset = tmp_path / "prospective.jsonl"
+    dataset.write_text(
+        json.dumps(
+            {
+                "schema": "clay.direct-speech-turn.v1",
+                "source_session": "post-v6",
+                "turn": 1,
+                "authored_at_utc": "2026-11-07T09:36:45Z",
+                "text": "Research the prime sieve after the v6 catalog freeze.",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    queue = harvest_review_queue(dataset, catalog_manifest=manifest)
+
+    assert queue["candidate_count"] == 1
+    assert queue["selection_policy"]["authored_after_utc"] == "2026-11-07T01:36:44.690035-08:00"
+    assert queue["prospective_boundary"]["catalog_sha256"] == "a" * 64
+    assert queue["prospective_boundary"]["manifest_sha256"] == sha256_file(manifest)
+    labels = {
+        "schema": REVIEW_LABEL_SCHEMA,
+        "queue_sha256": queue["queue_sha256"],
+        "reviewer": "test-reviewer",
+        "reviewed_at_utc": "2026-11-07T09:40:00Z",
+        "labels": [
+            {
+                "query_sha256": queue["candidates"][0]["query_sha256"],
+                "decision": "accept",
+                "relevant_source_suffix": "dev/loom/clay_sieve.py",
+            }
+        ],
+    }
+    benchmark = build_reviewed_benchmark(queue, labels, minimum_queries=1)
+    assert benchmark["prospective_boundary"] == queue["prospective_boundary"]
+    with pytest.raises(ValueError, match="choose authored_after_utc or catalog_manifest"):
+        harvest_review_queue(
+            dataset,
+            authored_after_utc="2026-11-07T09:36:44Z",
+            catalog_manifest=manifest,
         )
 
 

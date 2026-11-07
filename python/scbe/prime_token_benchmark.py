@@ -140,6 +140,15 @@ def _catalog_identity(database: Path) -> dict[str, Any]:
 def _inspect_queries(
     database: Path, benchmark: Mapping[str, Any]
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, int]]:
+    prospective_boundary = benchmark.get("prospective_boundary")
+    if prospective_boundary is not None:
+        if not isinstance(prospective_boundary, Mapping):
+            raise ValueError("prospective boundary must be an object")
+        boundary_catalog_hash = str(
+            prospective_boundary.get("catalog_sha256") or ""
+        ).strip()
+        if boundary_catalog_hash != sha256_file(database):
+            raise ValueError("prospective benchmark targets a different catalog hash")
     identity = _catalog_identity(database)
     sources = identity["source_uris"]
     source_keys = {_normal_path(source) for source in sources}
