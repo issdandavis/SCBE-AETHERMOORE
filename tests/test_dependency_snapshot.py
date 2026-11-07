@@ -25,7 +25,7 @@ def test_current_lock_submits_all_patched_security_floors() -> None:
         "certifi": "2026.10.23",
         "cryptography": "50.0.0",
         "filelock": "4.2.1",
-        "pyasn1": "0.6.4",
+        "pyasn1": "0.6.5",
         "soupsieve": "2.9.1",
         "mcp": "1.30.0",
         "bedrock-agentcore": "1.19.0",
