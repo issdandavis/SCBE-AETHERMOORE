@@ -183,3 +183,18 @@ and the largest source contributes 654 sections (`0.06708`), below the frozen
 `0.40` ceiling. V6 supersedes v5 only as the current internal development
 candidate. It has not been retrieval-scored, promoted, deployed, connected to a
 probability sidecar, or used to modify a neural checkpoint.
+
+## V6 disjointness audit
+
+Commit `c0b4ee810` extends the pre-score validator from source-URI separation to
+exact source/section byte hashes and normalized source/section token-stream
+hashes. Audit-only receipts proved that both earlier 31-query private-session
+benchmarks are fully contained in v6 (`31/31` collisions in each). A normal
+evaluation attempt failed during validation and wrote no score.
+
+The 11-query curated set and 34-query voice-v2 set have zero exact or normalized
+identity collisions, but they remain ineligible: the former is underpowered and
+curated, while the latter is pre-freeze, development-consumed, and concentrated
+on one relevant source. V6 therefore remains unscored. The exact receipts and
+prospective boundary are recorded in
+`docs/tokenizer/PRIME_TOKEN_CATALOG_V6_DISJOINT_AUDIT_20261107.md`.

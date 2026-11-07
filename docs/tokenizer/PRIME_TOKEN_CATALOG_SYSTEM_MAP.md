@@ -330,3 +330,11 @@ share of `0.06708`. Every retained conversation predates the v6 freeze, so the
 layer is eligible only for development or a separately controlled training
 experiment. It is not prospective holdout evidence and has not been scored,
 attached to a probability table, or written into model weights.
+
+The v6 pre-score gate at commit `c0b4ee810` also compares query identity against
+source and section byte hashes plus normalized token-stream hashes. It found
+both prior 31-query private-session benchmarks entirely inside v6 and blocks
+them before retrieval. The remaining historical sets are either underpowered or
+development-consumed. Consequently, the only valid next capability path is a
+new post-freeze prospective pool; no historical result may be relabeled as a v6
+holdout.
