@@ -85,10 +85,25 @@ than paper analogy:
 - full fine-tuning learned more coding (`0.562121` mean) but did not preserve
   counting.
 
-The current confirmatory run is separate and unpromoted. Its first provisional
-full-fine-tune arm scored coding `0.622727` while counting fell from `0.111111`
-to `0.037037`. The aggregate replication and independent verifier are not yet
-complete, so that single-seed observation is not a conclusion.
+The separate confirmatory seeds `20261113..20261115` are now independently
+verified. The direct-input sidecar mean was again `0.231818`, versus `0.028788`
+for the size-matched null and `0.000000` for no intervention. Its mean deltas
+of `+0.203030` and `+0.231818` exceeded the corresponding strict `2x pooled SD`
+thresholds of `0.117363` and `0.116952`. It preserved each parent counting
+coordinate exactly (`0.111111`, `0.240741`, `0.537037`).
+
+The frozen adapter also replicated a smaller but controlled coding shift:
+`0.040909`, `0.031818`, and `0.022727` versus three zero baselines, for mean
+delta `+0.031818` against threshold `0.012856`, again with exact counting
+retention. Full fine-tuning moved farther toward coding (`0.462121` mean) while
+the shared counting coordinate shifted from the three parent values to
+`0.037037`, `0.074074`, and `0.018519`. This is capability redistribution in a
+mutable shared weight state, not deletion: every parent and descendant remains
+separately preserved and hash-addressed.
+
+The independent assessor reports `POSITIVE_REPLICATION` without pooling the
+discovery and confirmatory seeds. No checkpoint was promoted, merged, averaged,
+installed, or served. The source-disjoint six-view question remains open.
 
 ### Frozen false-route development contract
 
@@ -220,8 +235,8 @@ until its prospective pool reaches the frozen 30-query minimum.
 ## Confidence
 
 - High: descriptions of the cited mechanisms and the independently verified
-  local discovery result.
+  local discovery plus exact confirmatory replication.
 - Medium: the recommendation to prefer deterministic dispatch plus late fusion;
   it is an inference from the literature, local hardware, and Clay's controls.
 - Unproven: broad language usefulness, v6 retrieval gain, commercial demand,
-  and any promotion candidate from the running confirmatory experiment.
+  and any production promotion candidate.

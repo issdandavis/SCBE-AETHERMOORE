@@ -49,9 +49,10 @@ Date: 2026-11-07
 
 ## Next checks
 
-1. Wait for the current confirmatory three-seed run and independent verifier.
-2. Inventory the existing weight catalog schema before adding a specialist
-   registry field.
+1. Treat the verified positive replication as local mechanism evidence only;
+   retain all parent and descendant weight states without promotion.
+2. Use the completed weight-catalog inventory before adding any specialist
+   product-contract field.
 3. Keep the frozen false-route contract as a development regression suite; do
    not mistake its authored `0/42` false-route result for deployment evidence.
 4. Do not attach v6 until at least 30 authentic post-freeze requests satisfy the
