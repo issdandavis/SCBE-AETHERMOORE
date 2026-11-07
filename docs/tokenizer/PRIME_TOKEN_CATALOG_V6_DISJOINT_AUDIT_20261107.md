@@ -99,3 +99,29 @@ and manifest SHA-256
 This improves collection readiness but does not change the evidence state:
 there are still zero admissible post-freeze queries, the 30-query floor remains
 in force, and no v6 retrieval score is authorized.
+
+## Headless closed-session watcher
+
+The prospective path now has a pinned, headless close-and-collect watcher at
+Loom commit `f830b6f`. This does not relax the v6 boundary or turn the currently
+open Codex rollout into evidence. On Windows, the collector now requires an
+exclusive-open probe before and after scanning in addition to its size/mtime
+stability check. The actual growing rollout failed that probe, as an active
+writer should.
+
+The watcher polls metadata every 60 seconds. It invokes the existing pinned
+Loom collector and SCBE manifest-bound queue harvester only after a new
+post-freeze rollout closes, emits one immutable `scan-NNN`, and stops for human
+hash-bound review once the queue reaches 30 candidates. It cannot create review
+labels, run retrieval scoring, enter data into training, update probabilities,
+or authorize promotion.
+
+Runtime state is under
+`C:/dev/clay-training-runs/prime-token-catalog-20261106/prospective-watcher-20261107/`.
+The bounded inventory SHA-256 is
+`6a3af9e6621e22b7aab1a28a353267124722be597c3db6cd10a2b036a018be3b`;
+the immutable watcher pin SHA-256 is
+`ad74d3b12fce33456b372426949948a2b23954628f8463f3af0f70debd676848`.
+Launcher PID `376` and child PID `22012` were observed live and headless. The
+first pinned cycle reported `WAITING_FOR_POST_FREEZE_CLOSED_SESSION`, with zero
+closed post-freeze sources and no new scan or score.

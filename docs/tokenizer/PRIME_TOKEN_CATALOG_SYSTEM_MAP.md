@@ -411,3 +411,32 @@ the collection report file hash is
 `b7df9b1081e39a19afbdbf5e083b17196de6023e978d84a466023f03c9c451f6`.
 Status remains `INSUFFICIENT_PROSPECTIVE_QUERIES`. No labels, retrieval scores,
 probability updates, catalog changes, or weight writes occurred.
+
+## Prospective watcher implementation update — 2026-11-07
+
+Loom commit `f830b6f` adds the bounded headless watcher and strengthens the
+collector with a Windows exclusive-open close gate. The watcher is a control
+edge around the existing collector, not a new evidence source:
+
+```text
+rollout metadata
+  -> post-v6 mtime prefilter
+  -> exclusive-open closed-session gate
+  -> pinned Loom collector
+  -> immutable dataset/receipt
+  -> pinned SCBE manifest-bound queue harvester
+  -> stop at 30 candidates for human hash-bound review
+
+open rollout ---------------------------- wait; body unopened
+labels / retrieval scoring -------------- not authorized
+catalog / probability table / weights --- no write edge
+```
+
+The watcher inventory is
+`C:/dev/clay-training-runs/prime-token-catalog-20261106/prospective-watcher-20261107/SYSTEM_INVENTORY.json`
+with SHA-256
+`6a3af9e6621e22b7aab1a28a353267124722be597c3db6cd10a2b036a018be3b`.
+Its pin receipt has SHA-256
+`ad74d3b12fce33456b372426949948a2b23954628f8463f3af0f70debd676848`.
+The observed runtime is waiting for a closed post-freeze source; it has not
+emitted a third scan, labels, scores, probability events, or weight changes.
