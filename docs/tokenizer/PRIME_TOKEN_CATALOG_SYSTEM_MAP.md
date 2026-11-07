@@ -275,3 +275,12 @@ to rank 2. Because the complete accepted stratum maps to one sieve source, this
 is an authentic source-record-disjoint ceiling test, not cross-source evidence.
 The result is retained without changing any probability table, tokenizer,
 serving pointer, or model weight.
+
+The next candidate is preregistered in
+`docs/tokenizer/PRIME_TOKEN_EXPLICIT_ROUTE_PREREGISTRATION_20261107.md`.
+It keeps lexical retrieval authoritative and permits at most two explicit
+intent-matched auxiliary views inside the frozen `0.005` lexical band. Its
+balanced private holdout requires at least three strata, six relevant catalog
+sources, and a 40-percent per-source cap before scoring. Route-null and shuffled
+controls must both fail before view identity can receive credit. No holdout text
+was reviewed and no candidate result was observed when this design was frozen.
