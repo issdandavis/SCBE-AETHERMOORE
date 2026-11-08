@@ -138,6 +138,15 @@ Authoritative Clay receipts:
 - E90 matrix `59092f91be91e733d203816790b2b629e0623ab42435eb024f119b9b3bb41a8b`;
 - E91 matrix `8274651596b3f5c9bfcc23cfc96ace2607a451659d912db71dbd43b9f8339d45`.
 
+All ten verified, failed, invalid-receipt, and smoke roots are now preserved in
+the guided-reading thin-atmosphere registry. Registry canonical SHA-256 is
+`deb4d6712f9a654919ee9abcc8af1a6631257bfa42b018a240d2450ad82dd3d6`;
+independent registry verification is
+`72b975bcef26c4f1469aafbc80f3ea3ec6a951ef88e62aacc6b4fb813635b3f0`
+with zero errors. Its policy explicitly disables discard, copy, merge, serving,
+and automatic promotion. The entries contribute only controls, design evidence,
+and cross-session route metadata.
+
 ### Frozen false-route development contract
 
 Before implementing any learned gate, the research lane now freezes 54 authored
