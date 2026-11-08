@@ -477,8 +477,9 @@ writes, and absence of `BENCHMARK.json`, `RESULT.json`, or `RUN_RECEIPT.json`
 from the collection/preparation directory. It never opens session bodies,
 selects labels, or executes retrieval.
 
-The live audit reports `VERIFIED_WAITING_NO_SCORING` with zero errors and audit
-SHA-256 `84424e6da035f8adf417e297d29741bca9adc1ac6c57af26194d169b6b609ef7`.
+The post-commit live audit reports `VERIFIED_WAITING_NO_SCORING` with zero errors
+and audit SHA-256
+`069fca05d619d95416d84d3da9f0d95b7b993701e615c42b3fbeed2019014bb6`.
 The frozen v6 catalog remains unchanged, the 30-candidate floor remains intact,
 one post-freeze session is still open, and no scoring or training artifact is
 present. The runtime receipt is
