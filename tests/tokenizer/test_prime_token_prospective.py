@@ -176,6 +176,12 @@ def test_e92_prospective_run_is_strict_controlled_and_nonpromoting(tmp_path: Pat
     assert len(bundle["benchmark"]["queries"]) == 30
     assert bundle["result"]["candidate_arm"] == "late_output_fused"
     assert bundle["result"]["query_count"] == 30
+    assert len(bundle["result"]["arms"]["random_rank_fusion"]) == 3
+    assert {
+        "random_rank_fusion_seed_3",
+        "random_rank_fusion_seed_5",
+        "random_rank_fusion_seed_7",
+    }.issubset(bundle["result"]["gates"])
     assert bundle["result"]["diversity"]["relevant_source_count"] == 6
     assert bundle["result"]["diversity"]["topic_strata_count"] == 3
     assert bundle["receipt"]["promotion"] == "NOT_AUTHORIZED"

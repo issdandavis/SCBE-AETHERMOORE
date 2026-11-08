@@ -23,6 +23,7 @@ EXPECTED_ARMS = {
     "lexical_only",
     "no_intervention",
     "shuffled_binding",
+    "random_rank_fusion",
 }
 
 
@@ -247,6 +248,12 @@ def verify_e92_prospective_bundle(output_dir: str | Path) -> dict[str, Any]:
         for run in arms["shuffled_binding"]:
             seed = int(run["control_seed"])
             expected_gates[f"shuffled_binding_seed_{seed}"] = _paired_gate(
+                candidate_rr,
+                [float(row["reciprocal_rank"]) for row in run["outcomes"]],
+            )
+        for run in arms["random_rank_fusion"]:
+            seed = int(run["control_seed"])
+            expected_gates[f"random_rank_fusion_seed_{seed}"] = _paired_gate(
                 candidate_rr,
                 [float(row["reciprocal_rank"]) for row in run["outcomes"]],
             )
