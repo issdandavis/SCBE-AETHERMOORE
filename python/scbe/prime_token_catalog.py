@@ -1361,6 +1361,7 @@ def search_goal(
     control: str = "aligned",
     control_seed: int = 0,
     source_kinds: Sequence[str] = (),
+    expected_catalog_sha256: str | None = None,
 ) -> dict[str, Any]:
     """Search ideas/evidence, then use grammar only as returned constraints.
 
@@ -1375,7 +1376,12 @@ def search_goal(
     if ablated - set(VIEW_NAMES):
         raise ValueError("unknown ablation view")
     catalog_path = Path(database).resolve()
-    catalog_hash = sha256_file(catalog_path)
+    if expected_catalog_sha256 is None:
+        catalog_hash = sha256_file(catalog_path)
+    else:
+        catalog_hash = expected_catalog_sha256.strip().casefold()
+        if not SHA256_RE.fullmatch(catalog_hash):
+            raise ValueError("expected_catalog_sha256 must be a lowercase SHA-256")
     search_id = stable_id(
         "search",
         catalog_hash,
@@ -1708,6 +1714,7 @@ def search_lexical_banded(
     control_seed: int = 0,
     source_kinds: Sequence[str] = (),
     auxiliary_views: Sequence[str] | None = None,
+    expected_catalog_sha256: str | None = None,
 ) -> dict[str, Any]:
     """Use auxiliary evidence only within anchored lexical-score bands.
 
@@ -1748,6 +1755,7 @@ def search_lexical_banded(
         ablate_views=[view for view in VIEW_NAMES if view != "lexical"],
         control="aligned",
         source_kinds=source_kinds,
+        expected_catalog_sha256=expected_catalog_sha256,
     )
     auxiliary = search_goal(
         catalog_path,
@@ -1759,6 +1767,7 @@ def search_lexical_banded(
         control_seed=control_seed,
         source_kinds=source_kinds,
         ablate_views=auxiliary_ablations,
+        expected_catalog_sha256=expected_catalog_sha256,
     )
     lexical_by_section = {row["section_id"]: row for row in lexical["results"]}
     auxiliary_by_section = {row["section_id"]: row for row in auxiliary["results"]}
@@ -1912,6 +1921,7 @@ def search_explicit_routed(
     control: str = "aligned",
     control_seed: int = 0,
     null_control: bool = False,
+    expected_catalog_sha256: str | None = None,
 ) -> dict[str, Any]:
     """Route explicit query intents through a thin lexical-band sidecar."""
     route = explicit_route(goal, null_control=null_control)
@@ -1926,6 +1936,7 @@ def search_explicit_routed(
         control_seed=control_seed,
         source_kinds=route["source_kinds"],
         auxiliary_views=route["selected_views"],
+        expected_catalog_sha256=expected_catalog_sha256,
     )
     child_search_id = child["search_id"]
     child["algorithm_revision"] = EXPLICIT_ROUTE_REVISION
@@ -1958,6 +1969,7 @@ def search_late_output_fused(
     control: str = "aligned",
     control_seed: int = 0,
     null_control: bool = False,
+    expected_catalog_sha256: str | None = None,
 ) -> dict[str, Any]:
     """Fuse independent lexical and eligible auxiliary ranks at output only.
 
@@ -1989,6 +2001,7 @@ def search_late_output_fused(
         ablate_views=[view for view in VIEW_NAMES if view != "lexical"],
         control="aligned",
         source_kinds=route["source_kinds"],
+        expected_catalog_sha256=expected_catalog_sha256,
     )
     selected_views = tuple(route["selected_views"])
     auxiliary = None
@@ -2003,6 +2016,7 @@ def search_late_output_fused(
             control=control,
             control_seed=control_seed,
             source_kinds=route["source_kinds"],
+            expected_catalog_sha256=expected_catalog_sha256,
         )
 
     lexical_rows = list(lexical["results"])

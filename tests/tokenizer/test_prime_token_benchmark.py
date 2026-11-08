@@ -5,6 +5,8 @@ from hashlib import sha256
 
 import pytest
 
+import python.scbe.prime_token_benchmark as benchmark_module
+import python.scbe.prime_token_catalog as catalog_module
 from python.scbe.prime_token_benchmark import (
     audit_benchmark_disjointness,
     evaluate_catalog,
@@ -466,3 +468,30 @@ def test_late_output_fusion_evaluator_runs_declared_controls(tmp_path):
             control_seeds=(3, 5),
             limit=5,
         )
+
+
+def test_late_output_fusion_evaluator_hashes_catalog_only_at_boundaries(
+    tmp_path,
+    monkeypatch,
+):
+    database = _fixture(tmp_path)
+    original_sha256_file = catalog_module.sha256_file
+    hashed_paths = []
+
+    def counted_sha256_file(path):
+        hashed_paths.append(Path(path).resolve())
+        return original_sha256_file(path)
+
+    monkeypatch.setattr(catalog_module, "sha256_file", counted_sha256_file)
+    monkeypatch.setattr(benchmark_module, "sha256_file", counted_sha256_file)
+
+    result = evaluate_late_output_fused_catalog(
+        database,
+        _benchmark(),
+        benchmark_sha256="f" * 64,
+        control_seeds=(3, 5, 7),
+        limit=5,
+    )
+
+    assert result["catalog_sha256"] == original_sha256_file(database)
+    assert hashed_paths == [database.resolve(), database.resolve()]

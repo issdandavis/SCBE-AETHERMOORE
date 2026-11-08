@@ -986,6 +986,7 @@ def evaluate_late_output_fused_catalog(
         raise ValueError("at least three distinct control seeds are required")
     if limit < 5:
         raise ValueError("limit must be at least 5")
+    catalog_hash = sha256_file(database_path)
     queries = _validate_queries(database_path, benchmark)
     configs = {
         "late_output_fused": ("late", "aligned", (0,), False),
@@ -1015,12 +1016,14 @@ def evaluate_late_output_fused_catalog(
                         control=control,
                         control_seed=seed,
                         null_control=null_control,
+                        expected_catalog_sha256=catalog_hash,
                     )
                 elif mode == "explicit":
                     receipt = search_explicit_routed(
                         database_path,
                         query["query"],
                         limit=limit,
+                        expected_catalog_sha256=catalog_hash,
                     )
                 else:
                     ablations: Sequence[str] = ()
@@ -1033,6 +1036,7 @@ def evaluate_late_output_fused_catalog(
                         query["query"],
                         limit=limit,
                         ablate_views=ablations,
+                        expected_catalog_sha256=catalog_hash,
                     )
                 control_offset = int(receipt["control_offset"])
                 rank = _rank(receipt["results"], query["relevant_source_uri"])
@@ -1159,12 +1163,15 @@ def evaluate_late_output_fused_catalog(
     for row in candidate_outcomes:
         route_key = "+".join(row["selected_views"]) or "lexical_only"
         route_usage[route_key] = route_usage.get(route_key, 0) + 1
+    final_catalog_hash = sha256_file(database_path)
+    if final_catalog_hash != catalog_hash:
+        raise RuntimeError("catalog changed during E92 prospective evaluation")
     return {
         "schema": CASCADE_RESULT_SCHEMA,
         "status": status,
         "candidate_arm": "late_output_fused",
         "catalog": str(database_path),
-        "catalog_sha256": sha256_file(database_path),
+        "catalog_sha256": catalog_hash,
         "benchmark_sha256": benchmark_sha256,
         "algorithm_revision": LATE_OUTPUT_FUSION_REVISION,
         "query_count": len(queries),
