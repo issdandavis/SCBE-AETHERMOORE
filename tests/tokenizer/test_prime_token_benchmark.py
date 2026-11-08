@@ -9,6 +9,7 @@ import python.scbe.prime_token_benchmark as benchmark_module
 import python.scbe.prime_token_catalog as catalog_module
 from python.scbe.prime_token_benchmark import (
     audit_benchmark_disjointness,
+    build_late_output_route_evidence,
     evaluate_catalog,
     evaluate_explicit_routed_catalog,
     evaluate_late_output_fused_catalog,
@@ -495,3 +496,53 @@ def test_late_output_fusion_evaluator_hashes_catalog_only_at_boundaries(
 
     assert result["catalog_sha256"] == original_sha256_file(database)
     assert hashed_paths == [database.resolve(), database.resolve()]
+
+
+def test_route_evidence_keeps_raw_values_beside_trits(tmp_path):
+    database = _fixture(tmp_path)
+    benchmark = _benchmark()
+    benchmark["queries"][2]["query"] = "offline wheels install cleanly after hash checks"
+    evidence = build_late_output_route_evidence(
+        database,
+        benchmark,
+        benchmark_sha256="e" * 64,
+        control_seeds=(3, 5, 7),
+        limit=5,
+    )
+
+    assert evidence["schema"] == "scbe.prime-token-route-evidence.v1"
+    assert evidence["status"] == "EVIDENCE_ONLY_NO_PROMOTION"
+    assert evidence["promotion"] == "NONE"
+    assert evidence["disjointness_audit"]["status"] == "NO_EXACT_LEAKAGE_DETECTED"
+    assert evidence["query_count"] == 3
+    assert sum(evidence["route_usage"].values()) == 3
+    assert sum(evidence["winner_counts"].values()) == sum(len(query["rows"]) for query in evidence["queries"])
+    assert evidence["no_marker_identity"]["queries"] >= 1
+    assert evidence["no_marker_identity"]["passes"] is True
+    for query in evidence["queries"]:
+        assert "query" not in query
+        for row in query["rows"]:
+            assert row["primary_trit"] in {-1, 0, 1}
+            assert row["mirror_trit"] in {-1, 0, 1}
+            assert row["fusion_score"] == pytest.approx(row["lexical_contribution"] + row["auxiliary_contribution"])
+            assert len(row["aligned_vs_shuffled"]) == 3
+            assert row["primary_signed_value"] == pytest.approx(
+                row["auxiliary_contribution"] - row["lexical_contribution"]
+            )
+
+
+def test_route_evidence_rejects_exact_catalog_leakage(tmp_path):
+    database = _fixture(tmp_path)
+    benchmark = _benchmark()
+    benchmark["queries"][0][
+        "query"
+    ] = "The prime sieve marks multiples, preserves survivors, and records exact strike factors."
+
+    with pytest.raises(ValueError, match="exact-source-disjoint benchmark"):
+        build_late_output_route_evidence(
+            database,
+            benchmark,
+            benchmark_sha256="e" * 64,
+            control_seeds=(3, 5, 7),
+            limit=5,
+        )

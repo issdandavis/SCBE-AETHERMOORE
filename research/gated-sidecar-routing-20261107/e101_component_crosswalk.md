@@ -113,6 +113,12 @@ prospective retrieval evidence.
 6. Only after those gates pass may a fixed late-output route consume the receipt.
    Neural weights, token probabilities, and hidden states remain unchanged.
 
+Implementation and current fail-closed benchmark status are recorded in
+`route_evidence_receipt_20261108.md`. The receipt machinery is complete and
+tested; the current 31-query historical set is rejected because all 31 queries
+collide with the v6 catalog, while the prospective watcher is still waiting for
+a closed post-freeze source.
+
 ## Explicit non-claims
 
 - E101 does not prove that SCBE's six catalog views add retrieval capability.

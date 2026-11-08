@@ -33,6 +33,7 @@ BENCHMARK_SCHEMA = "scbe.prime-token-benchmark.v1"
 RESULT_SCHEMA = "scbe.prime-token-benchmark-result.v1"
 CASCADE_RESULT_SCHEMA = "scbe.prime-token-cascade-benchmark-result.v1"
 DISJOINT_AUDIT_SCHEMA = "scbe.prime-token-disjoint-audit.v1"
+ROUTE_EVIDENCE_SCHEMA = "scbe.prime-token-route-evidence.v1"
 MIN_CAPABILITY_QUERIES = 30
 ARMS: dict[str, dict[str, Any]] = {
     "full": {"control": "aligned", "ablate_views": []},
@@ -306,6 +307,227 @@ def audit_benchmark_disjointness(
             "This receipt checks exact URI, byte-hash, and normalized token-stream identity only. "
             "It does not establish prospective authorship, semantic independence, retrieval capability, "
             "or permission to promote a probability table, deployment, tokenizer, or neural weight."
+        ),
+    }
+
+
+def _sign_trit(value: float, *, epsilon: float = 1e-15) -> int:
+    """Project a signed scalar to {-1, 0, +1} without hiding the scalar."""
+    if value > epsilon:
+        return 1
+    if value < -epsilon:
+        return -1
+    return 0
+
+
+def build_late_output_route_evidence(
+    database: str | Path,
+    benchmark: Mapping[str, Any],
+    *,
+    benchmark_sha256: str,
+    control_seeds: Sequence[int] = (11, 29, 47),
+    limit: int = 20,
+) -> dict[str, Any]:
+    """Build an offline, rank-only route receipt with aligned/shuffled evidence.
+
+    Trits are derived telemetry only. Every trit is emitted beside the raw
+    ranks, reciprocal-rank contributions, and signed deltas that produced it.
+    This function does not change routing, model state, or serving defaults.
+    """
+    database_path = Path(database).resolve()
+    seeds = tuple(int(seed) for seed in control_seeds)
+    if len(set(seeds)) < 3:
+        raise ValueError("at least three distinct control seeds are required")
+    if limit < 5:
+        raise ValueError("limit must be at least 5")
+    catalog_hash = sha256_file(database_path)
+    audit = audit_benchmark_disjointness(
+        database_path,
+        benchmark,
+        benchmark_sha256=benchmark_sha256,
+    )
+    if audit["collision_count"]:
+        raise ValueError("route evidence requires an exact-source-disjoint benchmark")
+    queries = _validate_queries(database_path, benchmark)
+    winner_counts = {
+        "lexical": 0,
+        "auxiliary": 0,
+        "tie": 0,
+        "lexical_only": 0,
+    }
+    trit_counts = {
+        "primary": {"-1": 0, "0": 0, "1": 0},
+        "mirror": {"-1": 0, "0": 0, "1": 0},
+    }
+    route_usage: dict[str, int] = {}
+    no_marker_queries = 0
+    no_marker_exact_identity = 0
+    query_receipts = []
+    missing_rank = limit + 1
+
+    for query in queries:
+        aligned = search_late_output_fused(
+            database_path,
+            query["query"],
+            limit=limit,
+            expected_catalog_sha256=catalog_hash,
+        )
+        lexical = search_goal(
+            database_path,
+            query["query"],
+            limit=limit,
+            ablate_views=[view for view in VIEW_NAMES if view != "lexical"],
+            expected_catalog_sha256=catalog_hash,
+        )
+        shuffled = [
+            search_late_output_fused(
+                database_path,
+                query["query"],
+                limit=limit,
+                control="shuffled",
+                control_seed=seed,
+                expected_catalog_sha256=catalog_hash,
+            )
+            for seed in seeds
+        ]
+        selected_views = list(aligned["auxiliary_views"])
+        route_key = "+".join(selected_views) or "lexical_only"
+        route_usage[route_key] = route_usage.get(route_key, 0) + 1
+        lexical_identity = [row["section_id"] for row in aligned["results"]] == [
+            row["section_id"] for row in lexical["results"]
+        ] and [row["score"] for row in aligned["results"]] == [
+            row["score"] for row in lexical["results"]
+        ]
+        if not selected_views:
+            no_marker_queries += 1
+            no_marker_exact_identity += int(lexical_identity)
+
+        shuffled_rank_maps = [
+            {
+                row["section_id"]: rank
+                for rank, row in enumerate(receipt["results"], start=1)
+            }
+            for receipt in shuffled
+        ]
+        rows = []
+        for aligned_rank, row in enumerate(aligned["results"], start=1):
+            fusion = row["late_output_fusion"]
+            lexical_contribution = float(fusion["lexical_contribution"])
+            auxiliary_contribution = float(fusion["auxiliary_contribution"])
+            if not selected_views:
+                winner = "lexical_only"
+            elif lexical_contribution > auxiliary_contribution:
+                winner = "lexical"
+            elif auxiliary_contribution > lexical_contribution:
+                winner = "auxiliary"
+            else:
+                winner = "tie"
+            winner_counts[winner] += 1
+            primary_value = auxiliary_contribution - lexical_contribution
+            primary_trit = _sign_trit(primary_value)
+            rank_deltas = []
+            shuffled_rows = []
+            for seed, rank_map in zip(seeds, shuffled_rank_maps, strict=True):
+                shuffled_rank = rank_map.get(row["section_id"])
+                delta = (
+                    shuffled_rank if shuffled_rank is not None else missing_rank
+                ) - aligned_rank
+                rank_deltas.append(float(delta))
+                shuffled_rows.append(
+                    {
+                        "control_seed": seed,
+                        "aligned_output_rank": aligned_rank,
+                        "shuffled_output_rank": shuffled_rank,
+                        "missing_rank_sentinel": missing_rank,
+                        "aligned_advantage_rank_delta": delta,
+                    }
+                )
+            mirror_value = mean(rank_deltas)
+            mirror_trit = _sign_trit(mirror_value)
+            trit_counts["primary"][str(primary_trit)] += 1
+            trit_counts["mirror"][str(mirror_trit)] += 1
+            rows.append(
+                {
+                    "section_id": row["section_id"],
+                    "source_uri": row["source_uri"],
+                    "aligned_output_rank": aligned_rank,
+                    "lexical_rank": fusion["lexical_rank"],
+                    "auxiliary_rank": fusion["auxiliary_rank"],
+                    "lexical_contribution": lexical_contribution,
+                    "auxiliary_contribution": auxiliary_contribution,
+                    "fusion_score": float(fusion["fusion_score"]),
+                    "winner": winner,
+                    "primary_signed_value": primary_value,
+                    "primary_trit": primary_trit,
+                    "aligned_vs_shuffled": shuffled_rows,
+                    "mirror_signed_value": mirror_value,
+                    "mirror_trit": mirror_trit,
+                }
+            )
+
+        aligned_relevant_rank = _rank(aligned["results"], query["relevant_source_uri"])
+        lexical_relevant_rank = _rank(lexical["results"], query["relevant_source_uri"])
+        shuffled_relevant_ranks = [
+            _rank(receipt["results"], query["relevant_source_uri"])
+            for receipt in shuffled
+        ]
+        query_receipts.append(
+            {
+                "query_id": query["id"],
+                "query_sha256": query["query_sha256"],
+                "query_source_uri": query["query_source_uri"],
+                "review_stratum": query["review_stratum"],
+                "relevant_source_uri": query["relevant_source_uri"],
+                "route_action": aligned["route_action"],
+                "selected_views": selected_views,
+                "aligned_search_id": aligned["search_id"],
+                "lexical_search_id": lexical["search_id"],
+                "shuffled_search_ids": [receipt["search_id"] for receipt in shuffled],
+                "no_marker_exact_lexical_identity": (
+                    lexical_identity if not selected_views else None
+                ),
+                "relevant_source_ranks": {
+                    "aligned": aligned_relevant_rank,
+                    "lexical_only": lexical_relevant_rank,
+                    "shuffled": [
+                        {"control_seed": seed, "rank": rank}
+                        for seed, rank in zip(
+                            seeds, shuffled_relevant_ranks, strict=True
+                        )
+                    ],
+                },
+                "rows": rows,
+            }
+        )
+
+    final_catalog_hash = sha256_file(database_path)
+    if final_catalog_hash != catalog_hash:
+        raise RuntimeError("catalog changed during route evidence collection")
+    return {
+        "schema": ROUTE_EVIDENCE_SCHEMA,
+        "status": "EVIDENCE_ONLY_NO_PROMOTION",
+        "catalog": str(database_path),
+        "catalog_sha256": catalog_hash,
+        "benchmark_sha256": benchmark_sha256,
+        "query_count": len(queries),
+        "control_seeds": list(seeds),
+        "result_limit": limit,
+        "disjointness_audit": audit,
+        "route_usage": dict(sorted(route_usage.items())),
+        "winner_counts": winner_counts,
+        "tie_count": winner_counts["tie"],
+        "trit_counts": trit_counts,
+        "no_marker_identity": {
+            "queries": no_marker_queries,
+            "exact": no_marker_exact_identity,
+            "passes": no_marker_queries == no_marker_exact_identity,
+        },
+        "queries": query_receipts,
+        "promotion": "NONE",
+        "claim_boundary": (
+            "This is offline rank telemetry. Trits are lossy projections with raw evidence retained; "
+            "they do not authorize governance actions or change probabilities, hidden states, tokenizers, "
+            "model weights, serving pointers, package defaults, or deployments."
         ),
     }
 
