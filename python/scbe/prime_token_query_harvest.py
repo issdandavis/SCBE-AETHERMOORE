@@ -423,7 +423,10 @@ def build_reviewed_benchmark(
                     "reviewer": reviewer,
                     "reviewed_at_utc": reviewed_at,
                     "topic_groups": candidate["topic_groups"],
-                    "review_stratum": candidate.get("review_stratum"),
+                    "review_stratum": (
+                        str(label.get("review_stratum") or "").strip()
+                        or candidate.get("review_stratum")
+                    ),
                     "rationale": str(label.get("rationale") or "").strip(),
                 },
             }
