@@ -17,6 +17,7 @@ from python.scbe.prime_token_catalog import (
     SOURCE_MANIFEST_SCHEMA,
     VIEW_NAMES,
     audit_catalog_sources,
+    audit_catalog_view_structure,
     search_goal,
     update_probability_lookup,
 )
@@ -72,6 +73,44 @@ def test_build_preserves_canonical_identity_and_six_typed_views(tmp_path):
     assert json.loads(first[1][2]) == [2]
     assert first[3][0:2] == (4, "composite")
     assert json.loads(first[3][2]) == [2, 2]
+
+
+def test_view_structure_audit_is_read_only_and_does_not_claim_independence(tmp_path):
+    database, _manifest = _catalog(tmp_path)
+    before = hashlib.sha256(database.read_bytes()).hexdigest()
+
+    audit = audit_catalog_view_structure(database)
+
+    assert audit["status"] == "STRUCTURAL_VIEW_AUDIT_PASS"
+    assert audit["catalog_sha256_before"] == before
+    assert audit["catalog_sha256_after"] == before
+    assert audit["independent_semantic_observation_count"] == 0
+    assert audit["external_metadata_views"] == ["source"]
+    assert audit["provenance_classes"]["speech"]["derived_from"] == ["lexical"]
+    assert audit["provenance_classes"]["prime"]["derived_from"] == [
+        "occurrence_ordinal",
+        "five_w.primary_role",
+    ]
+    assert all(audit["views"][view]["sections_with_view"] == audit["section_count"] for view in VIEW_NAMES)
+    assert "not six independent votes" in audit["interpretation"]
+
+
+def test_view_structure_audit_detects_missing_section_view(tmp_path):
+    database, _manifest = _catalog(tmp_path)
+    connection = sqlite3.connect(database)
+    section_id = connection.execute("SELECT section_id FROM sections ORDER BY section_id LIMIT 1").fetchone()[0]
+    connection.execute(
+        "DELETE FROM section_features WHERE section_id=? AND view_name='speech'",
+        (section_id,),
+    )
+    connection.commit()
+    connection.close()
+
+    audit = audit_catalog_view_structure(database)
+
+    assert audit["status"] == "STRUCTURAL_VIEW_AUDIT_FAIL"
+    assert not audit["checks"]["all_sections_cover_all_views"]
+    assert audit["views"]["speech"]["missing_section_count"] == 1
 
 
 def test_goal_surfing_separates_ideas_from_grammar_constraints(tmp_path):

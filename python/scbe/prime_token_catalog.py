@@ -27,6 +27,7 @@ from python.scbe.function_lexicon import FunctionLexicon
 SCHEMA = "scbe.prime-token-catalog.v1"
 SOURCE_MANIFEST_SCHEMA = "scbe.prime-token-source-manifest.v1"
 CATALOG_AUDIT_SCHEMA = "scbe.prime-token-catalog-audit.v1"
+VIEW_STRUCTURE_AUDIT_SCHEMA = "scbe.prime-token-view-structure-audit.v1"
 SEARCH_SCHEMA = "scbe.prime-token-goal-search.v1"
 PROBABILITY_SCHEMA = "scbe.prime-token-probability.v1"
 ALGORITHM_REVISION = "six-view-topology-v3"
@@ -1300,6 +1301,178 @@ def audit_catalog_sources(database: str | Path) -> dict[str, Any]:
         "boundary": (
             "Structural source audit only. This is not a retrieval score, capability result, "
             "probability update, tokenizer change, serving change, or weight promotion."
+        ),
+    }
+
+
+def audit_catalog_view_structure(database: str | Path) -> dict[str, Any]:
+    """Measure six-view coverage and collisions without claiming independence.
+
+    A signature is the exact sorted feature-key/value set for one section and
+    view. Signature collisions describe how coarsely a view partitions this
+    catalog; they are not semantic accuracy or statistical independence tests.
+    """
+    catalog_path = Path(database).resolve()
+    if not catalog_path.is_file():
+        raise FileNotFoundError(catalog_path)
+    catalog_hash_before = sha256_file(catalog_path)
+    connection = sqlite3.connect(f"{catalog_path.as_uri()}?mode=ro", uri=True)
+    section_count = int(connection.execute("SELECT COUNT(*) FROM sections").fetchone()[0])
+    observed_views = tuple(
+        str(row[0])
+        for row in connection.execute(
+            "SELECT DISTINCT view_name FROM section_features ORDER BY view_name"
+        )
+    )
+    signature_counts: dict[str, Counter[str]] = {
+        view: Counter() for view in VIEW_NAMES
+    }
+    section_feature_counts: dict[str, list[int]] = {
+        view: [] for view in VIEW_NAMES
+    }
+    unknown_view_rows = 0
+    current_pair: tuple[str, str] | None = None
+    current_digest = sha256()
+    current_count = 0
+
+    def finish_pair() -> None:
+        nonlocal current_pair, current_digest, current_count
+        if current_pair is None:
+            return
+        _section_id, view_name = current_pair
+        if view_name in signature_counts:
+            signature_counts[view_name][current_digest.hexdigest()] += 1
+            section_feature_counts[view_name].append(current_count)
+
+    rows = connection.execute(
+        """
+        SELECT section_id, view_name, feature_key, feature_value
+        FROM section_features
+        ORDER BY section_id, view_name, feature_key
+        """
+    )
+    for section_id, view_name, feature_key, feature_value in rows:
+        pair = (str(section_id), str(view_name))
+        if pair != current_pair:
+            finish_pair()
+            current_pair = pair
+            current_digest = sha256()
+            current_count = 0
+        if pair[1] not in signature_counts:
+            unknown_view_rows += 1
+        current_digest.update(str(feature_key).encode("utf-8"))
+        current_digest.update(b"\x1f")
+        current_digest.update(format(float(feature_value), ".17g").encode("ascii"))
+        current_digest.update(b"\x1e")
+        current_count += 1
+    finish_pair()
+    feature_rows = {
+        str(view): int(count)
+        for view, count in connection.execute(
+            "SELECT view_name, COUNT(*) FROM section_features GROUP BY view_name"
+        )
+    }
+    distinct_feature_keys = {
+        str(view): int(count)
+        for view, count in connection.execute(
+            "SELECT view_name, COUNT(DISTINCT feature_key) FROM section_features GROUP BY view_name"
+        )
+    }
+    orphan_feature_rows = int(
+        connection.execute(
+            """
+            SELECT COUNT(*) FROM section_features sf
+            LEFT JOIN sections sec ON sec.section_id=sf.section_id
+            WHERE sec.section_id IS NULL
+            """
+        ).fetchone()[0]
+    )
+    connection.close()
+    catalog_hash_after = sha256_file(catalog_path)
+
+    views: dict[str, dict[str, Any]] = {}
+    for view in VIEW_NAMES:
+        collisions = signature_counts[view]
+        counts = section_feature_counts[view]
+        covered = len(counts)
+        entropy_bits = -sum(
+            (frequency / covered) * math.log2(frequency / covered)
+            for frequency in collisions.values()
+        ) if covered else 0.0
+        views[view] = {
+            "sections_with_view": covered,
+            "missing_section_count": max(0, section_count - covered),
+            "coverage_ratio": covered / section_count if section_count else 0.0,
+            "feature_row_count": feature_rows.get(view, 0),
+            "distinct_feature_key_count": distinct_feature_keys.get(view, 0),
+            "distinct_section_signature_count": len(collisions),
+            "singleton_signature_count": sum(
+                1 for frequency in collisions.values() if frequency == 1
+            ),
+            "largest_signature_group": max(collisions.values(), default=0),
+            "signature_entropy_bits": entropy_bits,
+            "min_features_per_covered_section": min(counts, default=0),
+            "max_features_per_covered_section": max(counts, default=0),
+            "mean_features_per_covered_section": (
+                sum(counts) / covered if covered else 0.0
+            ),
+        }
+
+    provenance = {
+        "lexical": {
+            "class": "canonical_anchor",
+            "derived_from": ["source_bytes", "word_spans", "frozen_bpe_view"],
+        },
+        "speech": {"class": "deterministic_derived", "derived_from": ["lexical"]},
+        "atomic": {"class": "deterministic_derived", "derived_from": ["lexical"]},
+        "five_w": {
+            "class": "deterministic_derived",
+            "derived_from": ["lexical", "speech", "atomic"],
+        },
+        "prime": {
+            "class": "deterministic_derived",
+            "derived_from": ["occurrence_ordinal", "five_w.primary_role"],
+        },
+        "source": {
+            "class": "external_metadata",
+            "derived_from": ["source_manifest", "source_identity"],
+        },
+    }
+    checks = {
+        "exact_declared_view_set": set(observed_views) == set(VIEW_NAMES),
+        "all_sections_cover_all_views": all(
+            views[view]["missing_section_count"] == 0 for view in VIEW_NAMES
+        ),
+        "no_unknown_view_rows": unknown_view_rows == 0,
+        "no_orphan_feature_rows": orphan_feature_rows == 0,
+        "catalog_hash_unchanged": catalog_hash_before == catalog_hash_after,
+    }
+    passed = all(checks.values())
+    return {
+        "schema": VIEW_STRUCTURE_AUDIT_SCHEMA,
+        "status": "STRUCTURAL_VIEW_AUDIT_PASS" if passed else "STRUCTURAL_VIEW_AUDIT_FAIL",
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "database": str(catalog_path),
+        "catalog_sha256_before": catalog_hash_before,
+        "catalog_sha256_after": catalog_hash_after,
+        "section_count": section_count,
+        "declared_views": list(VIEW_NAMES),
+        "observed_views": list(observed_views),
+        "views": views,
+        "provenance_classes": provenance,
+        "independent_semantic_observation_count": 0,
+        "external_metadata_views": ["source"],
+        "unknown_view_rows": unknown_view_rows,
+        "orphan_feature_rows": orphan_feature_rows,
+        "checks": checks,
+        "interpretation": (
+            "The six columns are typed correlated views, not six independent votes. "
+            "Coverage and signature diversity describe structure only; retrieval gain "
+            "still requires source-disjoint controls."
+        ),
+        "boundary": (
+            "Read-only structural audit. No query scoring, probability update, tokenizer "
+            "change, model training, serving change, or weight promotion occurred."
         ),
     }
 

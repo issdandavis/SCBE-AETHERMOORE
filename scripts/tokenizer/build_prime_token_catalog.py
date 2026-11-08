@@ -17,6 +17,7 @@ from python.scbe.prime_token_catalog import (  # noqa: E402
     DEFAULT_TOKENIZER_SHA256,
     PrimeTokenCatalogBuilder,
     audit_catalog_sources,
+    audit_catalog_view_structure,
     search_goal,
     update_probability_lookup,
 )
@@ -97,6 +98,12 @@ def audit(args: argparse.Namespace) -> int:
     return 0 if result["status"] == "STRUCTURAL_GATE_PASS" else 1
 
 
+def audit_views(args: argparse.Namespace) -> int:
+    result = audit_catalog_view_structure(args.database)
+    _write_or_print(result, args.receipt)
+    return 0 if result["status"] == "STRUCTURAL_VIEW_AUDIT_PASS" else 1
+
+
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(description=__doc__)
     commands = root.add_subparsers(dest="command", required=True)
@@ -147,6 +154,14 @@ def parser() -> argparse.ArgumentParser:
     audit_parser.add_argument("--database", required=True)
     audit_parser.add_argument("--receipt")
     audit_parser.set_defaults(run=audit)
+
+    view_audit_parser = commands.add_parser(
+        "audit-views",
+        help="measure six-view coverage and signature collisions without scoring",
+    )
+    view_audit_parser.add_argument("--database", required=True)
+    view_audit_parser.add_argument("--receipt")
+    view_audit_parser.set_defaults(run=audit_views)
     return root
 
 

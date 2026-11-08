@@ -440,3 +440,29 @@ Its pin receipt has SHA-256
 `ad74d3b12fce33456b372426949948a2b23954628f8463f3af0f70debd676848`.
 The observed runtime is waiting for a closed post-freeze source; it has not
 emitted a third scan, labels, scores, probability events, or weight changes.
+
+## Six-view structure audit — 2026-11-08
+
+The reusable `audit-views` command now distinguishes complete view coverage
+from independent evidence. It opens the catalog read-only, hashes exact
+section/view feature signatures, reports collisions and feature cardinality,
+and verifies the catalog hash before and after. The full v6 run passed all
+integrity checks: every one of 9,750 sections has every declared view, with no
+unknown or orphan rows and no catalog mutation.
+
+The audit records lexical as the canonical anchor; speech and atomic as
+deterministic lexical annotations; five-W as a deterministic section
+aggregation; prime as a deterministic ordinal/role routing view; and source as
+external metadata. Thus complete six-view coverage is not six independent
+semantic observations. The prime signature is unique for all 9,750 sections,
+which makes it a high-cardinality positional identity channel rather than
+standalone semantic evidence.
+
+The immutable receipt is
+`S:/ClayRuns/prime-token-view-audit-20261108/VIEW_STRUCTURE_AUDIT.json`, SHA-256
+`2d93aa24a4b14164254d639b1787c968268d214dc32f5cdc07b818785b501b6d`.
+The detailed result is in
+`docs/tokenizer/PRIME_TOKEN_VIEW_STRUCTURE_AUDIT_20261108.md`. This is a
+structural result only. E92's prospective source-disjoint gate, lexical
+baseline, route-null control, shuffled bindings, and no-promotion boundary are
+unchanged.
