@@ -466,3 +466,26 @@ The detailed result is in
 structural result only. E92's prospective source-disjoint gate, lexical
 baseline, route-null control, shuffled bindings, and no-promotion boundary are
 unchanged.
+
+## Live prospective-chain audit — 2026-11-08
+
+The reusable `verify_prime_token_watch_chain.py` command now independently
+checks the complete pre-score runtime edge: source-session-disjoint watcher pin,
+collector and harvester hashes, frozen catalog identity, unreviewed-packet
+preparer pin, candidate floor, live no-authority statuses, complete packet
+writes, and absence of `BENCHMARK.json`, `RESULT.json`, or `RUN_RECEIPT.json`
+from the collection/preparation directory. It never opens session bodies,
+selects labels, or executes retrieval.
+
+The live audit reports `VERIFIED_WAITING_NO_SCORING` with zero errors and audit
+SHA-256 `84424e6da035f8adf417e297d29741bca9adc1ac6c57af26194d169b6b609ef7`.
+The frozen v6 catalog remains unchanged, the 30-candidate floor remains intact,
+one post-freeze session is still open, and no scoring or training artifact is
+present. The runtime receipt is
+`C:/dev/clay-training-runs/prime-token-catalog-20261106/source-disjoint-audit-20261108/LIVE_CHAIN_AUDIT.json`.
+
+Implementation lives in `python/scbe/prime_token_watch_audit.py` with the CLI
+wrapper under `scripts/tokenizer/`. Four mutation/boundary tests cover source
+hash drift, authority drift, forbidden scoring output, partial packet writes,
+and the valid waiting/packet-ready states. The broader focused evidence is 32
+catalog/evaluator tests plus 17 collector/preparer/watcher tests passing.
