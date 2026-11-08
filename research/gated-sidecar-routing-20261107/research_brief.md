@@ -310,3 +310,35 @@ bound to the formatter-stable committed verifier bytes.
 The prospective catalog was not scored. Its watcher remains source-disjoint and
 waiting for a genuinely closed post-freeze source; promotion remains
 unauthorized.
+
+## E92 sealed prospective runner and catalog-hash boundary — 2026-11-08
+
+SCBE commit `66637f90d` adds the strict prospective runner and independent
+verifier. Execution fails closed unless the preparation receipt, queue, labels,
+source inventory, catalog digest, reviewer timestamps/rationales, 30-query
+minimum, six-source minimum, three-stratum minimum, and 40-percent source cap all
+agree. No successful run automatically authorizes serving, merge, training
+intake, package defaults, probability writes, or neural-weight changes.
+
+Commit `0f6e11a57` removes redundant whole-catalog hashing from each retrieval
+call. The evaluator computes one opening digest, passes that identity through
+all controlled arms, then computes one closing digest and aborts on drift. A
+regression test proves exactly two catalog hashes. Ruff and all tokenizer tests
+pass (`250/250`).
+
+The production CLIs completed and independently verified a 30-query synthetic
+V2 workflow smoke in `315.411` seconds. The fixture result was `NO_GAIN`; this is
+runner evidence, not v6 prospective evidence. Bundle:
+`S:/ClayRuns/e92-late-output-fusion-20261108/prospective-runner-smoke-bundle-v2`.
+Result SHA-256:
+`5a5a95c66d67406f5c327bea81df8fafdce2c493bb044d2d68f5d90e5317be82`.
+Run-receipt SHA-256:
+`7bfff644ab94a987e290ede97161b217ac7b7dae13e8371a15bc3cf79c0a0ae3`.
+Independent verification has zero errors at
+`S:/ClayRuns/e92-late-output-fusion-20261108/PROSPECTIVE_RUNNER_SMOKE_VERIFICATION_V2.json`,
+file SHA-256
+`afeca5568cb50a96cdcb12ffb3fe8b563ed6e93b32d00b07066b53f95111de41`,
+canonical SHA-256
+`2a443c82e792f7d6b8eadf8c903f7c28a873a69e581ecf9d2e93f4dab9d424c4`.
+V1 remains preserved as pre-optimization historical evidence. Real v6 scoring
+remains gated on genuinely closed, independently reviewed post-freeze sources.
