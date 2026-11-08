@@ -15,6 +15,13 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Close three API code paths reported against GHSA-7rh5-2f26-qfj7: tenant-match
+  `GET /v1/audit/{decision_id}`, API-key dependencies on `/mesh` and `/search`, and
+  connector egress checks for private, link-local, metadata, and redirected destinations.
+  Deployment exposure was not verified; see `docs/security/GHSA-7rh5-2f26-qfj7.md`.
+
 ### Added
 
 - **Governed task-run contract** (`scbe-aethermoore/agentic`): canonical

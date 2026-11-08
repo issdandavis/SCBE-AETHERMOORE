@@ -10,6 +10,9 @@ Endpoints:
   GET  /search/stats    — Index statistics
   GET  /search/health   — Meilisearch health check
 
+Mounted with the parent app API-key dependency (`src.api.main`). The router
+itself does not authenticate, so do not include it without that dependency.
+
 Requires Meilisearch running locally (default: http://127.0.0.1:7700).
 Set MEILI_URL and MEILI_MASTER_KEY env vars to override.
 """

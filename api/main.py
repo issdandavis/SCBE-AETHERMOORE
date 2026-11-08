@@ -126,10 +126,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include Semantic Mesh router (embryonic intake + tongue-space KG)
-if mesh_router is not None:
-    app.include_router(mesh_router)
-
 # Include billing router for checkout + subscription lifecycle
 if billing_router is not None:
     app.include_router(billing_router)
@@ -322,6 +318,10 @@ async def verify_api_key(
         raise HTTPException(status_code=403, detail="Invalid API key")
     return VALID_API_KEYS[key]
 
+
+# Semantic mesh is a shared index. Require the same API key as the governance API.
+if mesh_router is not None:
+    app.include_router(mesh_router, dependencies=[Depends(verify_api_key)])
 
 # The search route spends the server's SAM.gov quota, so every DARPA Prep
 # endpoint inherits the same tenant authentication as the core API.
@@ -768,11 +768,16 @@ async def request_consensus(request: ConsensusRequest, tenant: str = Depends(ver
 
 @app.get("/v1/audit/{decision_id}", tags=["Audit"])
 async def get_audit(decision_id: str, tenant: str = Depends(verify_api_key)):
-    """Retrieve full audit trail for a governance decision."""
-    if decision_id not in DECISIONS_STORE:
+    """Retrieve one tenant-owned governance decision.
+
+    A valid key for a different tenant gets the same 404 as a missing id so
+    existence of another tenant's audit record is not disclosed.
+    """
+    record = DECISIONS_STORE.get(decision_id)
+    if record is None or record.get("tenant") != tenant:
         raise HTTPException(status_code=404, detail="Decision not found")
 
-    return DECISIONS_STORE[decision_id]
+    return record
 
 
 @app.get("/v1/health", response_model=HealthResponse, tags=["System"])
