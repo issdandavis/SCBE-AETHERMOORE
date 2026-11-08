@@ -103,7 +103,40 @@ separately preserved and hash-addressed.
 
 The independent assessor reports `POSITIVE_REPLICATION` without pooling the
 discovery and confirmatory seeds. No checkpoint was promoted, merged, averaged,
-installed, or served. The source-disjoint six-view question remains open.
+installed, or served.
+
+### Source-disjoint six-view attachment sequence
+
+Three later Clay diagnostics now bound the hidden-state six-view question on a
+36/36 balanced train/development proxy with disjoint works, source IDs, and
+sentence hashes. Every arm used three seeds; the frozen parent was preserved;
+the sealed test was unavailable; and nothing was promoted.
+
+- **E89 flat attachment:** aligned mean `0.3056` versus activation-only
+  `0.5833`. Flat concatenation of 1,536 catalog coordinates overwhelmed the
+  useful 512-wide layer-0 signal.
+- **E90 default-closed learned gate:** aligned `0.2778` versus activation-only
+  `0.6019`. A negative initial gate bias was not a durable safety boundary: the
+  source gate reopened to mean `0.5774`, and the routed residual again displaced
+  useful carry behavior.
+- **E91 staged pressure limit:** aligned, its frozen carry snapshot,
+  activation-only, and binding-shuffled all scored `0.5926`. Every capped route
+  had zero pressure violations and all activation-only logits were bit-identical
+  to their carry snapshots. The equal-budget uncapped arm fell to `0.2685`.
+
+E91 therefore proves a narrower engineering point: a hard residual-norm ceiling
+plus frozen-readout fidelity can prevent dislodgement. It does **not** prove that
+the six views add capability; aligned and binding-shuffled equality shows no
+measured binding benefit on this proxy. The source-type task is not the frozen
+prospective v6 retrieval benchmark. That benchmark remains unopened until 30
+post-freeze candidates exist, so retrieval and commercial-use claims remain
+unproven.
+
+Authoritative Clay receipts:
+
+- E89 matrix `a4754ea1152b81393ab5fdd8ca527d464f12f6dc2be9cf01764747d180e5b76a`;
+- E90 matrix `59092f91be91e733d203816790b2b629e0623ab42435eb024f119b9b3bb41a8b`;
+- E91 matrix `8274651596b3f5c9bfcc23cfc96ace2607a451659d912db71dbd43b9f8339d45`.
 
 ### Frozen false-route development contract
 
