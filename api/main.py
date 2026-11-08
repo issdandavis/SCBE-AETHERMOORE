@@ -603,6 +603,7 @@ async def authorize(request: AuthorizeRequest, tenant: str = Depends(verify_api_
             risk_level=risk_level,
             context=request.context or {},
             consensus_result={"single_decision": True},
+            tenant=tenant,
         )
         persistence.record_trust(
             agent_id=request.agent_id,
@@ -966,7 +967,7 @@ class MetricsResponse(BaseModel):
 async def get_metrics(tenant: str = Depends(verify_api_key)):
     """Get decision metrics for monitoring dashboards."""
     persistence = get_persistence()
-    metrics = persistence.get_metrics()
+    metrics = persistence.get_metrics(tenant=tenant)
     metrics["firebase_connected"] = persistence.is_connected
     return MetricsResponse(**metrics)
 
@@ -1049,11 +1050,11 @@ async def get_alerts(tenant: str = Depends(verify_api_key), limit: int = 50, pen
     persistence = get_persistence()
 
     if pending_only:
-        alerts = persistence.get_pending_alerts(limit=limit)
+        alerts = persistence.get_pending_alerts(limit=limit, tenant=tenant)
     else:
         # Get recent alerts from audit logs
         alerts = []
-        logs = persistence.get_audit_logs(limit=limit)
+        logs = persistence.get_audit_logs(limit=limit, tenant=tenant)
         for log in logs:
             if log["decision"] in ["DENY", "QUARANTINE"]:
                 alerts.append(
@@ -1080,7 +1081,7 @@ async def acknowledge_alert(alert_id: str, tenant: str = Depends(verify_api_key)
     Call this after successfully processing an alert via webhook.
     """
     persistence = get_persistence()
-    success = persistence.mark_alert_sent(alert_id)
+    success = persistence.mark_alert_sent(alert_id, tenant=tenant)
 
     if not success:
         raise HTTPException(status_code=404, detail="Alert not found")
@@ -1198,7 +1199,7 @@ async def list_audit_logs(
 ):
     """Query audit logs with optional filters."""
     persistence = get_persistence()
-    logs = persistence.get_audit_logs(agent_id=agent_id, decision=decision, limit=limit)
+    logs = persistence.get_audit_logs(agent_id=agent_id, decision=decision, limit=limit, tenant=tenant)
     return {"count": len(logs), "logs": logs}
 
 

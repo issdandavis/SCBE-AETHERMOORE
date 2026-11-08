@@ -47,3 +47,30 @@ Clients that called `/mesh` or `/search` without an API key now receive 401. `sr
 - Other outbound callers (Polly, free-LLM, Stripe, n8n bridge) were not part of the confirmed paths and were not changed.
 - The connector store is in-memory. A process that registered a connector before this code is loaded does not keep that registration across a restart; dispatch also rechecks the URL.
 - Repository advisory text, CVSS, and affected packages could not be confirmed from the advisory API. Whether any internet-facing deployment runs these routes was not tested.
+
+## Audit-list follow-up
+
+The listing path (`GET /v1/audit`) also needs tenant isolation, independently of
+single-decision lookup. New persisted audit records carry the authenticated
+owner as a top-level `tenant` field, never taken from request context. Persistence
+reads require a tenant and filter before limits in both Firestore and the local
+fallback. The same owner follows audit-derived alerts, alert acknowledgment and
+decision metrics, so those views cannot bypass the audit boundary.
+
+Historical audit/alert rows without a trusted top-level owner are excluded. Do
+not infer ownership from user-supplied context or shared agent IDs. Restoring
+historical visibility requires a separately verified migration. Firestore
+operators must provision query indexes for tenant plus timestamp and the enabled
+agent/decision filters, and for tenant plus sent plus timestamp on alerts. No
+indexes, production configuration or historical data were changed by this patch.
+
+The Shopify default GraphQL payload now applies to explicitly supplied endpoints
+as well as generated endpoints. The GHSA regression suite and mobile-goal suite
+are included in the curated core Python CI lane. This patch does not establish
+isolation of separate trust-history APIs or deployment exposure.
+
+Malformed connector URL authorities, ports and numeric IPv4 forms now raise the
+same policy exception as other rejected destinations. Registration responds with
+HTTP 400 instead of leaking a parser exception as HTTP 500. This applies to
+explicit endpoints and Shopify domain normalization; valid explicit ports remain
+supported. No additional destinations are permitted by this error-handling change.
