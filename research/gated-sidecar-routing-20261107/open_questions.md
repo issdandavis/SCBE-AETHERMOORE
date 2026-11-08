@@ -57,3 +57,7 @@ Date: 2026-11-07
    not mistake its authored `0/42` false-route result for deployment evidence.
 4. Do not attach v6 until at least 30 authentic post-freeze requests satisfy the
    existing source-disjoint gate.
+5. Prioritize route-cost and winner-frequency receipts in the next controlled
+   catalog evaluation. E103 and E104 replicated those component effects, while
+   tie/signed marginal contribution failed both robustness checks and remains
+   telemetry-only.

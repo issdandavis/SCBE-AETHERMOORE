@@ -147,6 +147,24 @@ with zero errors. Its policy explicitly disables discard, copy, merge, serving,
 and automatic promotion. The entries contribute only controls, design evidence,
 and cross-session route metadata.
 
+### Hyperpath component robustness through E104
+
+The later source-disjoint E103 and E104 campaigns sharpen the E101 component
+finding without changing SCBE runtime behavior. E103 repeated all six arms with
+three fresh seeds on the step-13,400 frozen parent; E104 repeated the same
+matrix on the adjacent preserved step-13,350 parent. Both independent verifiers
+reported zero errors, disjoint source/content identities, bit-identical frozen
+parents, and no promotion.
+
+Across both checks, the full sieve beat the frozen parent, random features, and
+shuffled binding by more than `2 x pooled SD`. Route-cost and winner-frequency
+marginal contributions replicated. Tie/signed marginal contribution did not:
+its full-versus-ablation advantages were below threshold in both campaigns.
+SCBE should therefore keep primary/mirror trits as raw-value-backed telemetry,
+not route authority. This remains Clay byte-loss evidence, not evidence that
+the v6 six-view catalog improves prospective section retrieval. Exact hashes
+and comparisons are recorded in `e101_component_crosswalk.md`.
+
 ### Frozen false-route development contract
 
 Before implementing any learned gate, the research lane now freezes 54 authored

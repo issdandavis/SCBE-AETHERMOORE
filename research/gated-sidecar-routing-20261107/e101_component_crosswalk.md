@@ -1,7 +1,8 @@
 # E101 hyperpath component crosswalk to SCBE routing
 
 Date: 2026-11-08  
-Status: measured research crosswalk; no runtime integration; no promotion.
+Status: measured research crosswalk updated through E104; no runtime integration;
+no promotion.
 
 ## Why this note exists
 
@@ -45,7 +46,49 @@ Authority identities:
 
 The reference supervisor failed closed after training because the remote S:
 share denied replacement of an existing mutable status file. Immutable results
-passed recovery verification. An exact fresh-root replication is required.
+passed recovery verification. At that point, an exact fresh-root replication
+was still required.
+
+## E103 and E104 robustness update
+
+That replication requirement is now satisfied along two independent axes. E103
+used three fresh seeds against the same frozen step-13,400 slot-A parent. E104
+kept those fresh seeds and changed only the preserved frozen parent to adjacent
+step-13,350 slot B. Both campaigns ran all six arms by three seeds, preserved
+the parent bit-for-bit, used source-ID/content-hash-disjoint E100 data, and
+passed independent verification with zero errors and no promotion.
+
+| Campaign | Full mean loss | Frozen parent | Full vs random | Full vs shuffled | Route cost marginal | Winner frequency marginal | Tie/signed marginal |
+|---|---:|---:|:---:|:---:|:---:|:---:|:---:|
+| E103, slot A, fresh seeds | 3.524989 | 3.589145 | pass | pass | pass | pass | **fail** |
+| E104, slot B, adjacent parent | 3.476873 | 3.537573 | pass | pass | pass | pass | **fail** |
+
+For E103, full-sieve loss advantage was `0.064157` versus the frozen parent,
+`0.055908` versus random features, and `0.008841` versus shuffled binding. For
+E104 the corresponding advantages were `0.060699`, `0.052937`, and `0.007483`.
+Every passing comparison exceeded its campaign's `2 x pooled SD` threshold.
+
+The component result is narrower than E101 suggested:
+
+- route cost has replicated marginal contribution across fresh seeds and an
+  adjacent parent;
+- winner frequency has replicated marginal contribution across both checks;
+- tie/signed state did **not** replicate marginal contribution. Its full-versus-
+  ablation advantages were only `0.000860` in E103 and `0.000245` in E104,
+  below thresholds `0.002889` and `0.002290` respectively.
+
+Therefore SCBE may retain the primary/mirror trits as lossless-to-audit derived
+telemetry beside their raw values, but may not describe tie/signed state as a
+causal routing feature or use it to authorize a route. This does not test the
+v6 prospective retrieval benchmark: Clay byte identity and SCBE canonical
+section identity remain different types.
+
+Authority identities:
+
+- E103 matrix `dc9aff8d79da4728be396f37289a988cc01a0920f6afd4bd66e69c1326a33b47`;
+- E103 verification `8a61c5543957221294a36129b3bd80bf2ab13deffc218bba8cb00f0892132f8b`;
+- E104 matrix `1f2a9eaa58f9cafb769958fd2c8fe76eac0dd20c8e2679aa03b3339601ad7021`;
+- E104 verification `53c4368fc73ec993c128f1934700df537f9ad627791d02c6fffd76ac38c1ac2f`.
 
 ## Concrete SCBE surfaces
 
@@ -80,7 +123,7 @@ encoding, and `src/ai_brain/hamiltonian-braid.ts` maps those states to governed
 actions. Those modules passed their existing tests, but they are not the same
 object as E101's signed path derivative and tie rate.
 
-The only justified bridge is optional telemetry:
+The only justified bridge remains optional telemetry:
 
 - primary trit: bounded difference between lexical and auxiliary rank evidence;
 - mirror trit: bounded change under aligned versus shuffled binding;
@@ -88,7 +131,8 @@ The only justified bridge is optional telemetry:
 - raw rank values and thresholds retained beside every trit projection.
 
 No security action may be inferred from a Clay trit without a separate SCBE
-governance calibration and false-route test.
+governance calibration and false-route test. E103 and E104 further show that
+the tie/signed channel must not be assigned causal route authority.
 
 ## Verified local baseline
 
@@ -102,8 +146,9 @@ prospective retrieval evidence.
 ## Post-replication implementation sequence
 
 1. Keep `search_late_output_fused()` behavior unchanged.
-2. Add a deterministic, offline route-evidence receipt that records raw ranks,
-   fixed RRF contributions, winner counts, ties, and aligned/shuffled deltas.
+2. Keep the implemented deterministic route-evidence receipt recording raw
+   ranks, fixed RRF contributions, winner counts, ties, aligned/shuffled deltas,
+   and dual trits; keep trits non-authoritative.
 3. Prove exact no-intervention identity when no auxiliary route is eligible.
 4. Evaluate lexical-only, route-null, aligned, three shuffled-binding seeds,
    and a size-matched random receipt on at least 30 closed, reviewed,
