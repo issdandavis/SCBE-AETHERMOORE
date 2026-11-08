@@ -12,6 +12,8 @@ The receipt is offline evaluation telemetry. It records, per emitted section:
 - auxiliary rank and fixed reciprocal-rank contribution;
 - total fusion score and lexical/auxiliary/tie winner;
 - aligned output rank and the raw output rank under three shuffled bindings;
+- aligned output rank and the raw output rank under three deterministic,
+  size-matched random-rank fusion controls;
 - the signed aligned advantage for each shuffle;
 - a primary trit derived from auxiliary-minus-lexical contribution; and
 - a mirror trit derived from mean aligned-versus-shuffled rank advantage.
@@ -20,6 +22,12 @@ The raw values remain beside every trit. No trit is treated as a probability,
 governance decision, token weight, hidden activation, or promotion signal.
 The builder also reruns lexical-only retrieval and proves exact output identity
 for queries with no explicit auxiliary marker.
+
+The random control preserves the same lexical candidate set, result limit,
+fixed `k=60` fusion arithmetic, and explicit-route eligibility as the candidate.
+It replaces only the eligible auxiliary ordering with a SHA-256-seeded random
+permutation. If no auxiliary route is eligible, it reproduces lexical output
+exactly instead of injecting an unfair random lane.
 
 ## Fail-closed evidence gate
 
@@ -62,5 +70,6 @@ probability table, serving pointer, or weight was promoted.
   - passed
 
 The tests prove deterministic receipt structure, raw-value retention beside
-trits, exact lexical identity for no-marker queries, and fail-closed rejection
-of exact catalog leakage.
+trits, three-seed shuffled and size-matched random controls, exact lexical
+identity for no-marker queries, and fail-closed rejection of exact catalog
+leakage.

@@ -15,11 +15,13 @@ from typing import Any
 from python.scbe.prime_token_catalog import (
     ALGORITHM_REVISION,
     EXPLICIT_ROUTE_REVISION,
+    LATE_OUTPUT_FUSION_K,
     LATE_OUTPUT_FUSION_REVISION,
     LEXICAL_BAND_REVISION,
     LEXICAL_FIRST_REVISION,
     VIEW_NAMES,
     WORD_RE,
+    explicit_route,
     normalize_word,
     search_goal,
     search_explicit_routed,
@@ -320,6 +322,125 @@ def _sign_trit(value: float, *, epsilon: float = 1e-15) -> int:
     return 0
 
 
+def _search_random_rank_fused(
+    database: Path,
+    goal: str,
+    *,
+    query_id: str,
+    control_seed: int,
+    limit: int,
+    expected_catalog_sha256: str,
+) -> dict[str, Any]:
+    """Fuse lexical ranks with a deterministic size-matched random rank lane."""
+    connection = sqlite3.connect(database)
+    try:
+        section_count = int(
+            connection.execute("SELECT COUNT(*) FROM sections").fetchone()[0]
+        )
+    finally:
+        connection.close()
+    route = explicit_route(goal)
+    lexical = search_goal(
+        database,
+        goal,
+        limit=max(limit, section_count),
+        ablate_views=[view for view in VIEW_NAMES if view != "lexical"],
+        control="aligned",
+        source_kinds=route["source_kinds"],
+        expected_catalog_sha256=expected_catalog_sha256,
+    )
+    lexical_rows = list(lexical["results"])
+    lexical_rank = {
+        row["section_id"]: rank for rank, row in enumerate(lexical_rows, start=1)
+    }
+    random_order = sorted(
+        lexical_rank,
+        key=lambda section_id: (
+            sha256(
+                f"{control_seed}\0{query_id}\0{section_id}".encode("utf-8")
+            ).digest(),
+            section_id,
+        ),
+    )
+    random_rank = {
+        section_id: rank for rank, section_id in enumerate(random_order, start=1)
+    }
+
+    def contribution(rank: int) -> float:
+        return 1.0 / (LATE_OUTPUT_FUSION_K + rank)
+
+    lexical_by_section = {row["section_id"]: row for row in lexical_rows}
+    results = []
+    if route["selected_views"]:
+        ranked = sorted(
+            lexical_rank,
+            key=lambda section_id: (
+                -(
+                    contribution(lexical_rank[section_id])
+                    + contribution(random_rank[section_id])
+                ),
+                lexical_rank[section_id],
+                random_rank[section_id],
+                section_id,
+            ),
+        )
+        for section_id in ranked[:limit]:
+            row = dict(lexical_by_section[section_id])
+            lexical_contribution = contribution(lexical_rank[section_id])
+            random_contribution = contribution(random_rank[section_id])
+            fusion_score = lexical_contribution + random_contribution
+            row["score"] = fusion_score
+            row["probability"] = None
+            row["random_rank_fusion"] = {
+                "active": True,
+                "rrf_k": LATE_OUTPUT_FUSION_K,
+                "lexical_rank": lexical_rank[section_id],
+                "random_rank": random_rank[section_id],
+                "lexical_contribution": lexical_contribution,
+                "random_contribution": random_contribution,
+                "fusion_score": fusion_score,
+            }
+            results.append(row)
+    else:
+        for row in lexical_rows[:limit]:
+            copied = dict(row)
+            copied["random_rank_fusion"] = {
+                "active": False,
+                "rrf_k": LATE_OUTPUT_FUSION_K,
+                "lexical_rank": lexical_rank[row["section_id"]],
+                "random_rank": None,
+                "lexical_contribution": None,
+                "random_contribution": 0.0,
+                "fusion_score": None,
+            }
+            results.append(copied)
+    search_material = json.dumps(
+        {
+            "catalog_sha256": expected_catalog_sha256,
+            "lexical_search_id": lexical["search_id"],
+            "query_id": query_id,
+            "control_seed": control_seed,
+            "rrf_k": LATE_OUTPUT_FUSION_K,
+            "limit": limit,
+        },
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return {
+        "search_id": sha256(search_material).hexdigest(),
+        "control": "random_rank_fusion",
+        "control_seed": control_seed,
+        "control_offset": 0,
+        "explicit_route": route,
+        "fusion_active": bool(route["selected_views"]),
+        "results": results,
+        "boundary": (
+            "Offline size-matched random-rank control; no catalog, probability, "
+            "tokenizer, hidden state, model weight, or serving route is changed."
+        ),
+    }
+
+
 def build_late_output_route_evidence(
     database: str | Path,
     benchmark: Mapping[str, Any],
@@ -390,6 +511,17 @@ def build_late_output_route_evidence(
             )
             for seed in seeds
         ]
+        random_rank_controls = [
+            _search_random_rank_fused(
+                database_path,
+                query["query"],
+                query_id=query["id"],
+                control_seed=seed,
+                limit=limit,
+                expected_catalog_sha256=catalog_hash,
+            )
+            for seed in seeds
+        ]
         selected_views = list(aligned["auxiliary_views"])
         route_key = "+".join(selected_views) or "lexical_only"
         route_usage[route_key] = route_usage.get(route_key, 0) + 1
@@ -408,6 +540,13 @@ def build_late_output_route_evidence(
                 for rank, row in enumerate(receipt["results"], start=1)
             }
             for receipt in shuffled
+        ]
+        random_rank_maps = [
+            {
+                row["section_id"]: rank
+                for rank, row in enumerate(receipt["results"], start=1)
+            }
+            for receipt in random_rank_controls
         ]
         rows = []
         for aligned_rank, row in enumerate(aligned["results"], start=1):
@@ -444,6 +583,23 @@ def build_late_output_route_evidence(
                 )
             mirror_value = mean(rank_deltas)
             mirror_trit = _sign_trit(mirror_value)
+            random_rows = []
+            for seed, rank_map in zip(seeds, random_rank_maps, strict=True):
+                random_output_rank = rank_map.get(row["section_id"])
+                delta = (
+                    random_output_rank
+                    if random_output_rank is not None
+                    else missing_rank
+                ) - aligned_rank
+                random_rows.append(
+                    {
+                        "control_seed": seed,
+                        "aligned_output_rank": aligned_rank,
+                        "random_output_rank": random_output_rank,
+                        "missing_rank_sentinel": missing_rank,
+                        "aligned_advantage_rank_delta": delta,
+                    }
+                )
             trit_counts["primary"][str(primary_trit)] += 1
             trit_counts["mirror"][str(mirror_trit)] += 1
             rows.append(
@@ -460,6 +616,7 @@ def build_late_output_route_evidence(
                     "primary_signed_value": primary_value,
                     "primary_trit": primary_trit,
                     "aligned_vs_shuffled": shuffled_rows,
+                    "aligned_vs_random_rank_fusion": random_rows,
                     "mirror_signed_value": mirror_value,
                     "mirror_trit": mirror_trit,
                 }
@@ -470,6 +627,10 @@ def build_late_output_route_evidence(
         shuffled_relevant_ranks = [
             _rank(receipt["results"], query["relevant_source_uri"])
             for receipt in shuffled
+        ]
+        random_relevant_ranks = [
+            _rank(receipt["results"], query["relevant_source_uri"])
+            for receipt in random_rank_controls
         ]
         query_receipts.append(
             {
@@ -483,6 +644,9 @@ def build_late_output_route_evidence(
                 "aligned_search_id": aligned["search_id"],
                 "lexical_search_id": lexical["search_id"],
                 "shuffled_search_ids": [receipt["search_id"] for receipt in shuffled],
+                "random_rank_fusion_search_ids": [
+                    receipt["search_id"] for receipt in random_rank_controls
+                ],
                 "no_marker_exact_lexical_identity": (
                     lexical_identity if not selected_views else None
                 ),
@@ -494,6 +658,10 @@ def build_late_output_route_evidence(
                         for seed, rank in zip(
                             seeds, shuffled_relevant_ranks, strict=True
                         )
+                    ],
+                    "random_rank_fusion": [
+                        {"control_seed": seed, "rank": rank}
+                        for seed, rank in zip(seeds, random_relevant_ranks, strict=True)
                     ],
                 },
                 "rows": rows,
@@ -1222,6 +1390,12 @@ def evaluate_late_output_fused_catalog(
             tuple(control_seeds),
             False,
         ),
+        "random_rank_fusion": (
+            "random",
+            "random_rank_fusion",
+            tuple(control_seeds),
+            False,
+        ),
     }
     arm_runs: dict[str, list[dict[str, Any]]] = {}
     for arm_name, (mode, control, seeds, null_control) in configs.items():
@@ -1244,6 +1418,15 @@ def evaluate_late_output_fused_catalog(
                     receipt = search_explicit_routed(
                         database_path,
                         query["query"],
+                        limit=limit,
+                        expected_catalog_sha256=catalog_hash,
+                    )
+                elif mode == "random":
+                    receipt = _search_random_rank_fused(
+                        database_path,
+                        query["query"],
+                        query_id=query["id"],
+                        control_seed=seed,
                         limit=limit,
                         expected_catalog_sha256=catalog_hash,
                     )
@@ -1302,6 +1485,13 @@ def evaluate_late_output_fused_catalog(
         gates[f"shuffled_binding_seed_{seed}"] = _paired_gate(
             candidate_rr,
             shuffled_rr,
+        )
+    for run in arm_runs["random_rank_fusion"]:
+        seed = int(run["control_seed"])
+        random_rr = [float(row["reciprocal_rank"]) for row in run["outcomes"]]
+        gates[f"random_rank_fusion_seed_{seed}"] = _paired_gate(
+            candidate_rr,
+            random_rr,
         )
 
     lexical_outcomes = arm_runs["lexical_only"][0]["outcomes"]

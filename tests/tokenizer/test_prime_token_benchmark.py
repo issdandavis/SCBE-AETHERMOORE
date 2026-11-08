@@ -449,8 +449,10 @@ def test_late_output_fusion_evaluator_runs_declared_controls(tmp_path):
         "lexical_only",
         "no_intervention",
         "shuffled_binding",
+        "random_rank_fusion",
     }
     assert len(result["arms"]["shuffled_binding"]) == 3
+    assert len(result["arms"]["random_rank_fusion"]) == 3
     assert set(result["gates"]) == {
         "lexical_only",
         "no_intervention",
@@ -458,7 +460,14 @@ def test_late_output_fusion_evaluator_runs_declared_controls(tmp_path):
         "shuffled_binding_seed_3",
         "shuffled_binding_seed_5",
         "shuffled_binding_seed_7",
+        "random_rank_fusion_seed_3",
+        "random_rank_fusion_seed_5",
+        "random_rank_fusion_seed_7",
     }
+    random_search_ids = {
+        outcome["search_id"] for run in result["arms"]["random_rank_fusion"] for outcome in run["outcomes"]
+    }
+    assert len(random_search_ids) == 9
     assert sum(result["route_usage"].values()) == 3
 
     with pytest.raises(ValueError, match="at least three distinct control seeds"):
@@ -521,14 +530,23 @@ def test_route_evidence_keeps_raw_values_beside_trits(tmp_path):
     assert evidence["no_marker_identity"]["passes"] is True
     for query in evidence["queries"]:
         assert "query" not in query
+        if not query["selected_views"]:
+            assert all(
+                control["aligned_advantage_rank_delta"] == 0
+                for row in query["rows"]
+                for control in row["aligned_vs_random_rank_fusion"]
+            )
         for row in query["rows"]:
             assert row["primary_trit"] in {-1, 0, 1}
             assert row["mirror_trit"] in {-1, 0, 1}
             assert row["fusion_score"] == pytest.approx(row["lexical_contribution"] + row["auxiliary_contribution"])
             assert len(row["aligned_vs_shuffled"]) == 3
+            assert len(row["aligned_vs_random_rank_fusion"]) == 3
             assert row["primary_signed_value"] == pytest.approx(
                 row["auxiliary_contribution"] - row["lexical_contribution"]
             )
+        assert len(query["random_rank_fusion_search_ids"]) == 3
+        assert len(query["relevant_source_ranks"]["random_rank_fusion"]) == 3
 
 
 def test_route_evidence_rejects_exact_catalog_leakage(tmp_path):
