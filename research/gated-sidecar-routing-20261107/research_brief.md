@@ -301,10 +301,12 @@ a default.
 
 Synthetic-only mechanics passed `12/12`; focused tests pass `20/20`, the full
 tokenizer suite passes `245/245`, and Ruff passes. Receipt:
-`S:/ClayRuns/e92-late-output-fusion-20261108/MECHANICS.json`, file SHA-256
-`aba33a487272a1164f45d8db8deb41a42a5338ffc3c72c83c3f0df89b1952f13`,
+`S:/ClayRuns/e92-late-output-fusion-20261108/MECHANICS_V2.json`, file SHA-256
+`181c4c586276da9926c8e7b1638f47b335104eb5acc1e43d2661ffb2bfa631b2`,
 canonical SHA-256
-`8bbeb67f1a1113fb830b18d17015403e6d39b391d5a91bf8f91b4ef370cd5fe2`.
+`d67a6db42a3ff214b56be5d8c300e968fcab77ce5d8c7bf8d899267f6e3db60c`.
+The original `MECHANICS.json` remains preserved as a pre-commit receipt; V2 is
+bound to the formatter-stable committed verifier bytes.
 The prospective catalog was not scored. Its watcher remains source-disjoint and
 waiting for a genuinely closed post-freeze source; promotion remains
 unauthorized.
