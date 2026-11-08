@@ -21,11 +21,15 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bundle", required=True)
     parser.add_argument("--output", required=True)
+    parser.add_argument("--control-seed", type=int, action="append", default=[])
     args = parser.parse_args()
     output = Path(args.output).resolve()
     if output.exists():
         raise FileExistsError(f"refusing to overwrite verification: {output}")
-    verification = verify_e92_prospective_bundle(args.bundle)
+    verification = verify_e92_prospective_bundle(
+        args.bundle,
+        **({"expected_control_seeds": args.control_seed} if args.control_seed else {}),
+    )
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("x", encoding="utf-8", newline="\n") as handle:
         json.dump(verification, handle, indent=2, sort_keys=True)

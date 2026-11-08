@@ -73,3 +73,22 @@ The tests prove deterministic receipt structure, raw-value retention beside
 trits, three-seed shuffled and size-matched random controls, exact lexical
 identity for no-marker queries, and fail-closed rejection of exact catalog
 leakage.
+
+## Independent prospective-verifier hardening
+
+The sealed E92 verifier now independently requires the declared control seeds
+(`11, 29, 47` by default), exact run counts, result/receipt seed agreement,
+result-limit agreement, benchmark query provenance, and per-outcome bindings to
+the benchmark query source, review stratum, and relevant source suffix. The CLI
+accepts explicit expected seeds only for deliberately declared alternate test
+runs.
+
+Two adversarial tests rewrite either the declared seeds or a per-query source
+and then recompute both the result hash and run-receipt content hash. Both
+forgeries are still rejected. This closes an internal-consistency loophole
+without changing retrieval, catalog, package defaults, model state, or serving.
+
+- combined tokenizer and prospective suite: `23 passed`;
+- Python compile: passed;
+- Ruff: passed;
+- `git diff --check`: passed.

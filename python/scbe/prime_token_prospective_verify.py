@@ -16,6 +16,7 @@ BENCHMARK_SCHEMA = "scbe.prime-token-benchmark.v1"
 RESULT_SCHEMA = "scbe.prime-token-cascade-benchmark-result.v1"
 ALGORITHM_REVISION = "six-view-late-output-fusion-v1"
 MIN_CAPABILITY_QUERIES = 30
+DEFAULT_CONTROL_SEEDS = (11, 29, 47)
 EXPECTED_ARMS = {
     "late_output_fused",
     "route_null",
@@ -63,13 +64,16 @@ def _same_number(left: Any, right: Any) -> bool:
 
 def _metrics(rows: Sequence[Mapping[str, Any]]) -> dict[str, float | int]:
     count = len(rows)
-    reciprocal = [0.0 if row["rank"] is None else 1.0 / int(row["rank"]) for row in rows]
+    reciprocal = [
+        0.0 if row["rank"] is None else 1.0 / int(row["rank"]) for row in rows
+    ]
     return {
         "queries": count,
         "mrr": mean(reciprocal) if reciprocal else 0.0,
         "recall_at_1": sum(row["rank"] == 1 for row in rows) / count if count else 0.0,
         "recall_at_5": (
-            sum(row["rank"] is not None and int(row["rank"]) <= 5 for row in rows) / count
+            sum(row["rank"] is not None and int(row["rank"]) <= 5 for row in rows)
+            / count
             if count
             else 0.0
         ),
@@ -89,12 +93,16 @@ def _macro(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     }
     return {
         "sources": len(by_source),
-        "macro_mrr": mean(value["mrr"] for value in by_source.values()) if by_source else 0.0,
+        "macro_mrr": (
+            mean(value["mrr"] for value in by_source.values()) if by_source else 0.0
+        ),
         "by_source": by_source,
     }
 
 
-def _paired_gate(candidate: Sequence[float], control: Sequence[float]) -> dict[str, Any]:
+def _paired_gate(
+    candidate: Sequence[float], control: Sequence[float]
+) -> dict[str, Any]:
     if len(candidate) != len(control) or not candidate:
         raise ValueError("paired gate requires nonempty equal-length samples")
     differences = [left - right for left, right in zip(candidate, control, strict=True)]
@@ -126,14 +134,20 @@ def _check_mapping(
         return
     for key, expected_value in expected.items():
         actual_value = actual[key]
-        if isinstance(expected_value, (float, int)) and not isinstance(expected_value, bool):
+        if isinstance(expected_value, (float, int)) and not isinstance(
+            expected_value, bool
+        ):
             if not _same_number(actual_value, expected_value):
                 errors.append(f"{label}.{key}: numeric mismatch")
         elif actual_value != expected_value:
             errors.append(f"{label}.{key}: value mismatch")
 
 
-def verify_e92_prospective_bundle(output_dir: str | Path) -> dict[str, Any]:
+def verify_e92_prospective_bundle(
+    output_dir: str | Path,
+    *,
+    expected_control_seeds: Sequence[int] = DEFAULT_CONTROL_SEEDS,
+) -> dict[str, Any]:
     root = Path(output_dir).resolve(strict=True)
     benchmark_path = root / "BENCHMARK.json"
     result_path = root / "RESULT.json"
@@ -142,6 +156,18 @@ def verify_e92_prospective_bundle(output_dir: str | Path) -> dict[str, Any]:
     result = _load(result_path)
     receipt = _load(receipt_path)
     errors: list[str] = []
+    expected_seeds = list(expected_control_seeds)
+    if (
+        len(expected_seeds) < 3
+        or len(set(expected_seeds)) != len(expected_seeds)
+        or any(
+            isinstance(seed, bool) or not isinstance(seed, int)
+            for seed in expected_seeds
+        )
+    ):
+        raise ValueError(
+            "expected_control_seeds must contain at least three distinct integers"
+        )
 
     if benchmark.get("schema") != BENCHMARK_SCHEMA:
         errors.append("benchmark schema mismatch")
@@ -175,6 +201,22 @@ def verify_e92_prospective_bundle(output_dir: str | Path) -> dict[str, Any]:
         for field in ("training_intake", "serving", "merge", "promotion")
     ):
         errors.append("run receipt weakens a no-promotion boundary")
+    receipt_seeds = receipt.get("control_seeds")
+    result_seeds = result.get("control_seeds")
+    if receipt_seeds != expected_seeds:
+        errors.append(
+            "run receipt control seeds do not match the independently expected seeds"
+        )
+    if result_seeds != expected_seeds:
+        errors.append(
+            "result control seeds do not match the independently expected seeds"
+        )
+    if result_seeds != receipt_seeds:
+        errors.append("result and run receipt control seed declarations differ")
+    if result.get("result_limit") != receipt.get("result_limit"):
+        errors.append("result limit differs from the run receipt")
+    if result.get("query_provenance") != benchmark.get("query_provenance"):
+        errors.append("result query provenance differs from the benchmark")
 
     module_root = Path(__file__).resolve().parent
     expected_implementation_hashes = {
@@ -193,8 +235,14 @@ def verify_e92_prospective_bundle(output_dir: str | Path) -> dict[str, Any]:
     if not isinstance(queries, list):
         errors.append("benchmark query list missing")
         queries = []
-    query_ids = [str(row.get("id") or "") for row in queries if isinstance(row, Mapping)]
-    if len(query_ids) != len(queries) or not all(query_ids) or len(set(query_ids)) != len(query_ids):
+    query_ids = [
+        str(row.get("id") or "") for row in queries if isinstance(row, Mapping)
+    ]
+    if (
+        len(query_ids) != len(queries)
+        or not all(query_ids)
+        or len(set(query_ids)) != len(query_ids)
+    ):
         errors.append("benchmark query identities are incomplete or duplicated")
     if result.get("query_count") != len(queries):
         errors.append("result query count mismatch")
@@ -206,12 +254,52 @@ def verify_e92_prospective_bundle(output_dir: str | Path) -> dict[str, Any]:
         if not isinstance(runs, list) or not runs:
             errors.append(f"{arm_name}: run list missing")
             continue
+        expected_run_seeds = (
+            expected_seeds
+            if arm_name in {"shuffled_binding", "random_rank_fusion"}
+            else [0]
+        )
+        if len(runs) != len(expected_run_seeds):
+            errors.append(
+                f"{arm_name}: expected {len(expected_run_seeds)} runs, found {len(runs)}"
+            )
         for run_index, run in enumerate(runs):
+            if run_index >= len(expected_run_seeds):
+                errors.append(f"{arm_name}[{run_index}]: unexpected extra run")
+            elif (
+                not isinstance(run, Mapping)
+                or run.get("control_seed") != expected_run_seeds[run_index]
+            ):
+                errors.append(f"{arm_name}[{run_index}]: control seed mismatch")
             outcomes = run.get("outcomes") if isinstance(run, Mapping) else None
-            if not isinstance(outcomes, list) or [row.get("query_id") for row in outcomes] != query_ids:
+            if (
+                not isinstance(outcomes, list)
+                or [row.get("query_id") for row in outcomes] != query_ids
+            ):
                 errors.append(f"{arm_name}[{run_index}]: outcome query order mismatch")
                 continue
             for outcome_index, outcome in enumerate(outcomes):
+                benchmark_query = queries[outcome_index]
+                review = benchmark_query.get("review", {})
+                if outcome.get("query_source_uri") != benchmark_query.get(
+                    "query_source_uri"
+                ):
+                    errors.append(
+                        f"{arm_name}[{run_index}].outcomes[{outcome_index}]: query source mismatch"
+                    )
+                if not isinstance(review, Mapping) or outcome.get(
+                    "review_stratum"
+                ) != review.get("review_stratum"):
+                    errors.append(
+                        f"{arm_name}[{run_index}].outcomes[{outcome_index}]: review stratum mismatch"
+                    )
+                source_suffix = str(benchmark_query.get("relevant_source_suffix") or "")
+                if not source_suffix or not str(
+                    outcome.get("relevant_source_uri") or ""
+                ).endswith(source_suffix):
+                    errors.append(
+                        f"{arm_name}[{run_index}].outcomes[{outcome_index}]: relevant source mismatch"
+                    )
                 rank = outcome.get("rank")
                 expected_rr = 0.0 if rank is None else 1.0 / int(rank)
                 if not _same_number(outcome.get("reciprocal_rank"), expected_rr):
@@ -226,7 +314,9 @@ def verify_e92_prospective_bundle(output_dir: str | Path) -> dict[str, Any]:
             )
             actual_macro = run.get("macro_source_metrics", {})
             expected_macro = _macro(outcomes)
-            if actual_macro.get("sources") != expected_macro["sources"] or not _same_number(
+            if actual_macro.get("sources") != expected_macro[
+                "sources"
+            ] or not _same_number(
                 actual_macro.get("macro_mrr"), expected_macro["macro_mrr"]
             ):
                 errors.append(f"{arm_name}[{run_index}]: macro source summary mismatch")
@@ -272,7 +362,9 @@ def verify_e92_prospective_bundle(output_dir: str | Path) -> dict[str, Any]:
             "lexical_macro_mrr": lexical_macro["macro_mrr"],
             "passes": candidate_macro["macro_mrr"] > lexical_macro["macro_mrr"],
         }
-        _check_mapping(errors, "macro_source_gate", result.get("macro_source_gate", {}), macro_gate)
+        _check_mapping(
+            errors, "macro_source_gate", result.get("macro_source_gate", {}), macro_gate
+        )
         source_deltas = {
             source: candidate_macro["by_source"][source]["mrr"]
             - lexical_macro["by_source"][source]["mrr"]
@@ -302,7 +394,9 @@ def verify_e92_prospective_bundle(output_dir: str | Path) -> dict[str, Any]:
                 elif actual_source_gate[key] != value:
                     errors.append(f"source change gate {key} mismatch")
 
-        source_counts = Counter(str(row["relevant_source_uri"]) for row in candidate_outcomes)
+        source_counts = Counter(
+            str(row["relevant_source_uri"]) for row in candidate_outcomes
+        )
         strata = sorted(
             {
                 str(row.get("review_stratum") or "")
@@ -310,7 +404,9 @@ def verify_e92_prospective_bundle(output_dir: str | Path) -> dict[str, Any]:
                 if row.get("review_stratum")
             }
         )
-        max_source_share = max(source_counts.values(), default=0) / len(candidate_outcomes)
+        max_source_share = max(source_counts.values(), default=0) / len(
+            candidate_outcomes
+        )
         diversity = {
             "topic_strata": strata,
             "topic_strata_count": len(strata),
@@ -326,7 +422,9 @@ def verify_e92_prospective_bundle(output_dir: str | Path) -> dict[str, Any]:
                 f"{len(queries)} queries is below the preregistered {MIN_CAPABILITY_QUERIES}-query capability floor"
             )
         if benchmark.get("query_provenance") != "independent_external":
-            underpowered.append("queries are not independently authored external requests")
+            underpowered.append(
+                "queries are not independently authored external requests"
+            )
         if len(strata) < 3:
             underpowered.append("fewer than three reviewed topic strata")
         if len(source_counts) < 6:
@@ -335,7 +433,9 @@ def verify_e92_prospective_bundle(output_dir: str | Path) -> dict[str, Any]:
             underpowered.append("one relevant source exceeds the 40-percent cap")
         if result.get("underpowered_reasons") != underpowered:
             errors.append("underpowered reason mismatch")
-        all_gates = all(bool(value["passes_two_pooled_sd"]) for value in expected_gates.values())
+        all_gates = all(
+            bool(value["passes_two_pooled_sd"]) for value in expected_gates.values()
+        )
         expected_status = (
             "UNDERPOWERED"
             if underpowered
@@ -345,7 +445,10 @@ def verify_e92_prospective_bundle(output_dir: str | Path) -> dict[str, Any]:
                 else "NO_GAIN"
             )
         )
-        if result.get("status") != expected_status or receipt.get("result_status") != expected_status:
+        if (
+            result.get("status") != expected_status
+            or receipt.get("result_status") != expected_status
+        ):
             errors.append("terminal status mismatch")
 
     verification_core = {

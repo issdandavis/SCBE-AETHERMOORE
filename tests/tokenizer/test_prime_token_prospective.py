@@ -7,7 +7,11 @@ from pathlib import Path
 
 import pytest
 
-from python.scbe.prime_token_catalog import InputRecord, PrimeTokenCatalogBuilder, sha256_file
+from python.scbe.prime_token_catalog import (
+    InputRecord,
+    PrimeTokenCatalogBuilder,
+    sha256_file,
+)
 from python.scbe.prime_token_prospective import (
     PREPARATION_SCHEMA,
     SOURCE_INVENTORY_SCHEMA,
@@ -169,7 +173,9 @@ def _write_bundle(path: Path, bundle: dict[str, dict]) -> Path:
     return path
 
 
-def test_e92_prospective_run_is_strict_controlled_and_nonpromoting(tmp_path: Path) -> None:
+def test_e92_prospective_run_is_strict_controlled_and_nonpromoting(
+    tmp_path: Path,
+) -> None:
     bundle = _run(_fixture(tmp_path))
 
     assert bundle["benchmark"]["query_provenance"] == "independent_external"
@@ -189,13 +195,18 @@ def test_e92_prospective_run_is_strict_controlled_and_nonpromoting(tmp_path: Pat
     assert bundle["receipt"]["review_summary"]["decision_count"] == 30
     assert bundle["receipt"]["review_summary"]["accepted_count"] == 30
 
-    verification = verify_e92_prospective_bundle(_write_bundle(tmp_path / "bundle", bundle))
+    verification = verify_e92_prospective_bundle(
+        _write_bundle(tmp_path / "bundle", bundle),
+        expected_control_seeds=(3, 5, 7),
+    )
     assert verification["status"] == "VERIFIED_E92_PROSPECTIVE_NO_AUTOMATIC_PROMOTION"
     assert verification["error_count"] == 0
     assert verification["promotion"] == "NOT_AUTHORIZED"
 
 
-def test_e92_prospective_run_refuses_incomplete_or_unbalanced_review(tmp_path: Path) -> None:
+def test_e92_prospective_run_refuses_incomplete_or_unbalanced_review(
+    tmp_path: Path,
+) -> None:
     paths = _fixture(tmp_path)
     labels = json.loads(paths["labels"].read_text(encoding="utf-8"))
     incomplete = deepcopy(labels)
@@ -213,7 +224,9 @@ def test_e92_prospective_run_refuses_incomplete_or_unbalanced_review(tmp_path: P
         _run(paths)
 
 
-def test_e92_prospective_run_refuses_mutated_preparation_receipt(tmp_path: Path) -> None:
+def test_e92_prospective_run_refuses_mutated_preparation_receipt(
+    tmp_path: Path,
+) -> None:
     paths = _fixture(tmp_path)
     receipt = json.loads(paths["preparation"].read_text(encoding="utf-8"))
     receipt["candidate_count"] = 29
@@ -230,6 +243,62 @@ def test_e92_independent_verifier_rejects_mutated_result(tmp_path: Path) -> None
     result["arms"]["late_output_fused"][0]["metrics"]["mrr"] += 0.25
     _write(output / "RESULT.json", result)
 
-    verification = verify_e92_prospective_bundle(output)
+    verification = verify_e92_prospective_bundle(
+        output,
+        expected_control_seeds=(3, 5, 7),
+    )
     assert verification["status"] == "INVALID_E92_PROSPECTIVE_BUNDLE"
     assert verification["error_count"] >= 1
+
+
+def test_e92_independent_verifier_rejects_control_seed_substitution(
+    tmp_path: Path,
+) -> None:
+    bundle = _run(_fixture(tmp_path))
+    output = _write_bundle(tmp_path / "bundle", bundle)
+    result_path = output / "RESULT.json"
+    receipt_path = output / "RUN_RECEIPT.json"
+    result = json.loads(result_path.read_text(encoding="utf-8"))
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+
+    result["control_seeds"] = [3, 5, 11]
+    result_path.write_bytes(json_bytes(result))
+    receipt["control_seeds"] = [3, 5, 11]
+    receipt["result_sha256"] = sha256_file(result_path)
+    receipt_core = dict(receipt)
+    receipt_core.pop("receipt_sha256")
+    receipt["receipt_sha256"] = canonical_sha256(receipt_core)
+    receipt_path.write_bytes(json_bytes(receipt))
+
+    verification = verify_e92_prospective_bundle(
+        output,
+        expected_control_seeds=(3, 5, 7),
+    )
+    assert verification["status"] == "INVALID_E92_PROSPECTIVE_BUNDLE"
+    assert any("expected seeds" in error for error in verification["errors"])
+
+
+def test_e92_independent_verifier_rejects_query_source_substitution(
+    tmp_path: Path,
+) -> None:
+    bundle = _run(_fixture(tmp_path))
+    output = _write_bundle(tmp_path / "bundle", bundle)
+    result_path = output / "RESULT.json"
+    receipt_path = output / "RUN_RECEIPT.json"
+    result = json.loads(result_path.read_text(encoding="utf-8"))
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+
+    result["arms"]["random_rank_fusion"][0]["outcomes"][0]["query_source_uri"] = "private-session://forged-source/0"
+    result_path.write_bytes(json_bytes(result))
+    receipt["result_sha256"] = sha256_file(result_path)
+    receipt_core = dict(receipt)
+    receipt_core.pop("receipt_sha256")
+    receipt["receipt_sha256"] = canonical_sha256(receipt_core)
+    receipt_path.write_bytes(json_bytes(receipt))
+
+    verification = verify_e92_prospective_bundle(
+        output,
+        expected_control_seeds=(3, 5, 7),
+    )
+    assert verification["status"] == "INVALID_E92_PROSPECTIVE_BUNDLE"
+    assert any("query source mismatch" in error for error in verification["errors"])
