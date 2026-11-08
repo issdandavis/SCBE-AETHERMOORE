@@ -11,9 +11,13 @@ from pathlib import Path
 from statistics import mean, stdev
 from typing import Any
 
-E92_RUN_SCHEMA = "scbe.e92-prospective-run.v1"
+E92_RUN_SCHEMA = "scbe.e92-prospective-run.v2"
 BENCHMARK_SCHEMA = "scbe.prime-token-benchmark.v1"
 RESULT_SCHEMA = "scbe.prime-token-cascade-benchmark-result.v1"
+REVIEW_QUEUE_SCHEMA = "scbe.prime-token-independent-review-queue.v1"
+REVIEW_LABEL_SCHEMA = "scbe.prime-token-independent-review-labels.v1"
+PREPARATION_SCHEMA = "clay.prime-token-prospective-review-preparation.v1"
+SOURCE_INVENTORY_SCHEMA = "clay.prime-token-catalog-source-suffixes.v1"
 ALGORITHM_REVISION = "six-view-late-output-fusion-v1"
 MIN_CAPABILITY_QUERIES = 30
 DEFAULT_CONTROL_SEEDS = (11, 29, 47)
@@ -25,6 +29,18 @@ EXPECTED_ARMS = {
     "no_intervention",
     "shuffled_binding",
     "random_rank_fusion",
+}
+SOURCE_CHAIN_BUNDLE_FILES = {
+    "queue": "SOURCE_QUEUE.json",
+    "labels": "SOURCE_LABELS.json",
+    "preparation_receipt": "SOURCE_PREPARATION_RECEIPT.json",
+    "source_inventory": "SOURCE_INVENTORY.json",
+}
+SOURCE_HASH_FIELDS = {
+    "queue": "queue_file_sha256",
+    "labels": "labels_file_sha256",
+    "preparation_receipt": "preparation_receipt_file_sha256",
+    "source_inventory": "source_inventory_file_sha256",
 }
 
 
@@ -53,6 +69,221 @@ def _load(path: Path) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ValueError(f"{path.name} must contain a JSON object")
     return value
+
+
+def _review_queue_sha256(queue: Mapping[str, Any]) -> str:
+    payload = dict(queue)
+    payload.pop("queue_sha256", None)
+    return _canonical_sha256(payload)
+
+
+def _load_source_chain(
+    root: Path,
+    receipt: Mapping[str, Any],
+    errors: list[str],
+) -> dict[str, dict[str, Any]]:
+    declaration = receipt.get("source_chain_bundle")
+    if not isinstance(declaration, Mapping) or set(declaration) != set(
+        SOURCE_CHAIN_BUNDLE_FILES
+    ):
+        errors.append("source-chain bundle declaration mismatch")
+        return {}
+    loaded: dict[str, dict[str, Any]] = {}
+    for role, expected_name in SOURCE_CHAIN_BUNDLE_FILES.items():
+        item = declaration.get(role)
+        if not isinstance(item, Mapping) or set(item) != {
+            "file",
+            "sha256",
+            "source_file_sha256",
+        }:
+            errors.append(f"source-chain {role} declaration mismatch")
+            continue
+        if item.get("file") != expected_name:
+            errors.append(f"source-chain {role} filename mismatch")
+            continue
+        path = root / expected_name
+        if not path.is_file():
+            errors.append(f"source-chain {role} file missing")
+            continue
+        if _sha256_file(path) != item.get("sha256"):
+            errors.append(f"source-chain {role} bundled file hash mismatch")
+            continue
+        if item.get("source_file_sha256") != receipt.get(SOURCE_HASH_FIELDS[role]):
+            errors.append(f"source-chain {role} source file hash mismatch")
+        try:
+            loaded[role] = _load(path)
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
+            errors.append(f"source-chain {role} JSON invalid: {exc}")
+    return loaded
+
+
+def _verify_source_chain(
+    source_chain: Mapping[str, Mapping[str, Any]],
+    *,
+    benchmark: Mapping[str, Any],
+    receipt: Mapping[str, Any],
+    errors: list[str],
+) -> None:
+    if set(source_chain) != set(SOURCE_CHAIN_BUNDLE_FILES):
+        return
+    queue = source_chain["queue"]
+    labels = source_chain["labels"]
+    preparation = source_chain["preparation_receipt"]
+    source_inventory = source_chain["source_inventory"]
+
+    if queue.get("schema") != REVIEW_QUEUE_SCHEMA:
+        errors.append("source queue schema mismatch")
+    queue_hash = _review_queue_sha256(queue)
+    if queue.get("queue_sha256") != queue_hash:
+        errors.append("source queue content hash mismatch")
+    if receipt.get("queue_content_sha256") != queue_hash:
+        errors.append("run receipt source queue binding mismatch")
+    candidates = queue.get("candidates")
+    if not isinstance(candidates, list):
+        errors.append("source queue candidates missing")
+        candidates = []
+    if queue.get("candidate_count") != len(candidates):
+        errors.append("source queue candidate count mismatch")
+    candidate_by_hash: dict[str, Mapping[str, Any]] = {}
+    candidate_ids: set[str] = set()
+    for index, candidate in enumerate(candidates):
+        if not isinstance(candidate, Mapping):
+            errors.append(f"source queue candidate {index} is not an object")
+            continue
+        query = str(candidate.get("query") or "")
+        query_hash = str(candidate.get("query_sha256") or "")
+        candidate_id = str(candidate.get("candidate_id") or "")
+        if sha256(query.encode("utf-8")).hexdigest() != query_hash:
+            errors.append(f"source queue candidate {index} query hash mismatch")
+        if not candidate_id or candidate_id in candidate_ids:
+            errors.append(f"source queue candidate {index} identity mismatch")
+        if not query_hash or query_hash in candidate_by_hash:
+            errors.append(f"source queue candidate {index} query identity mismatch")
+        else:
+            candidate_by_hash[query_hash] = candidate
+        candidate_ids.add(candidate_id)
+
+    boundary = queue.get("prospective_boundary")
+    if not isinstance(boundary, Mapping) or boundary.get(
+        "catalog_sha256"
+    ) != receipt.get("catalog_sha256"):
+        errors.append("source queue catalog boundary mismatch")
+    if benchmark.get("prospective_boundary") != boundary:
+        errors.append("benchmark prospective boundary differs from source queue")
+    if benchmark.get("review_scope_sha256") != queue_hash:
+        errors.append("benchmark review scope differs from source queue")
+    if benchmark.get("source_dataset_sha256") != queue.get("dataset_sha256"):
+        errors.append("benchmark dataset hash differs from source queue")
+
+    if source_inventory.get("schema") != SOURCE_INVENTORY_SCHEMA:
+        errors.append("source inventory schema mismatch")
+    if source_inventory.get("catalog_sha256") != receipt.get("catalog_sha256"):
+        errors.append("source inventory catalog binding mismatch")
+    source_rows = source_inventory.get("sources")
+    if not isinstance(source_rows, list):
+        errors.append("source inventory rows missing")
+        source_rows = []
+    if source_inventory.get("source_count") != len(source_rows):
+        errors.append("source inventory count mismatch")
+    suffixes = {
+        str(row.get("unique_suffix") or "")
+        for row in source_rows
+        if isinstance(row, Mapping) and row.get("unique_suffix")
+    }
+    if len(suffixes) != len(source_rows):
+        errors.append("source inventory suffixes are incomplete or duplicated")
+
+    if labels.get("schema") != REVIEW_LABEL_SCHEMA:
+        errors.append("source labels schema mismatch")
+    if labels.get("queue_sha256") != queue_hash:
+        errors.append("source labels queue binding mismatch")
+    raw_labels = labels.get("labels")
+    if not isinstance(raw_labels, list):
+        errors.append("source labels missing")
+        raw_labels = []
+    reviewer = str(labels.get("reviewer") or "")
+    reviewed_at = str(labels.get("reviewed_at_utc") or "")
+    if not reviewer or not reviewed_at:
+        errors.append("source label reviewer identity or time missing")
+    expected_queries: list[dict[str, Any]] = []
+    used_hashes: set[str] = set()
+    for index, label in enumerate(raw_labels):
+        if not isinstance(label, Mapping):
+            errors.append(f"source label {index} is not an object")
+            continue
+        query_hash = str(label.get("query_sha256") or "")
+        if query_hash not in candidate_by_hash or query_hash in used_hashes:
+            errors.append(f"source label {index} query identity mismatch")
+            continue
+        used_hashes.add(query_hash)
+        decision = str(label.get("decision") or "")
+        if decision == "reject":
+            continue
+        suffix = str(label.get("relevant_source_suffix") or "")
+        if decision != "accept" or suffix not in suffixes:
+            errors.append(f"source label {index} decision or suffix mismatch")
+            continue
+        candidate = candidate_by_hash[query_hash]
+        query_source = (
+            f"private-session://{candidate.get('session_id')}/"
+            f"{candidate.get('chunk_index')}/{candidate.get('turn_ordinal')}/"
+            f"{query_hash[:16]}"
+        )
+        expected_queries.append(
+            {
+                "id": candidate.get("candidate_id"),
+                "query_source_uri": query_source,
+                "query_sha256": query_hash,
+                "authored_at_utc": candidate.get("authored_at_utc"),
+                "query": candidate.get("query"),
+                "relevant_source_suffix": suffix,
+                "review": {
+                    "reviewer": reviewer,
+                    "reviewed_at_utc": reviewed_at,
+                    "topic_groups": candidate.get("topic_groups"),
+                    "review_stratum": (
+                        str(label.get("review_stratum") or "").strip()
+                        or candidate.get("review_stratum")
+                    ),
+                    "rationale": str(label.get("rationale") or "").strip(),
+                },
+            }
+        )
+    if used_hashes != set(candidate_by_hash):
+        errors.append("source labels do not cover every queued candidate")
+    if benchmark.get("queries") != expected_queries:
+        errors.append("benchmark queries do not reconstruct from the source chain")
+
+    if preparation.get("schema") != PREPARATION_SCHEMA:
+        errors.append("source preparation receipt schema mismatch")
+    preparation_core = dict(preparation)
+    preparation_hash = str(preparation_core.pop("receipt_sha256", ""))
+    if preparation_hash != _canonical_sha256(preparation_core):
+        errors.append("source preparation receipt content hash mismatch")
+    if (
+        preparation.get("status")
+        != "READY_FOR_INDEPENDENT_HASH_BOUND_REVIEW_NO_SCORING"
+    ):
+        errors.append("source preparation receipt status mismatch")
+    if preparation.get("queue_file_sha256") != receipt.get("queue_file_sha256"):
+        errors.append("source preparation queue file binding mismatch")
+    if preparation.get("queue_content_sha256") != queue_hash:
+        errors.append("source preparation queue content binding mismatch")
+    if preparation.get("catalog_sha256") != receipt.get("catalog_sha256"):
+        errors.append("source preparation catalog binding mismatch")
+    if preparation.get("candidate_count") != len(candidates):
+        errors.append("source preparation candidate count mismatch")
+    if preparation.get("source_count") != len(source_rows):
+        errors.append("source preparation source count mismatch")
+    if preparation.get("source_inventory_sha256") != _canonical_sha256(
+        source_inventory
+    ):
+        errors.append("source preparation inventory binding mismatch")
+    if preparation.get("scoring") != "NOT_AUTHORIZED_BY_PREPARATION" or any(
+        preparation.get(field) != "NOT_AUTHORIZED"
+        for field in ("training_intake", "serving", "merge", "promotion")
+    ):
+        errors.append("source preparation receipt weakens a no-promotion boundary")
 
 
 def _same_number(left: Any, right: Any) -> bool:
@@ -192,6 +423,13 @@ def verify_e92_prospective_bundle(
     catalog = Path(str(receipt.get("catalog") or ""))
     if not catalog.is_file() or _sha256_file(catalog) != receipt.get("catalog_sha256"):
         errors.append("catalog file hash mismatch")
+    source_chain = _load_source_chain(root, receipt, errors)
+    _verify_source_chain(
+        source_chain,
+        benchmark=benchmark,
+        receipt=receipt,
+        errors=errors,
+    )
     if result.get("algorithm_revision") != ALGORITHM_REVISION:
         errors.append("algorithm revision mismatch")
     if result.get("candidate_arm") != "late_output_fused":

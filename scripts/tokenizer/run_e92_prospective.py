@@ -15,6 +15,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from python.scbe.prime_token_prospective import (  # noqa: E402
+    SOURCE_CHAIN_BUNDLE_FILES,
     build_e92_prospective_run,
     json_bytes,
 )
@@ -56,6 +57,8 @@ def main() -> int:
         pending.mkdir()
         _write_exclusive(pending / "BENCHMARK.json", bundle["benchmark"])
         _write_exclusive(pending / "RESULT.json", bundle["result"])
+        for role, filename in SOURCE_CHAIN_BUNDLE_FILES.items():
+            _write_exclusive(pending / filename, bundle["source_chain"][role])
         _write_exclusive(pending / "RUN_RECEIPT.json", bundle["receipt"])
         os.replace(pending, output)
     except BaseException:

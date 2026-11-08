@@ -29,7 +29,13 @@ from python.scbe.prime_token_query_harvest import (
 
 PREPARATION_SCHEMA = "clay.prime-token-prospective-review-preparation.v1"
 SOURCE_INVENTORY_SCHEMA = "clay.prime-token-catalog-source-suffixes.v1"
-E92_RUN_SCHEMA = "scbe.e92-prospective-run.v1"
+E92_RUN_SCHEMA = "scbe.e92-prospective-run.v2"
+SOURCE_CHAIN_BUNDLE_FILES = {
+    "queue": "SOURCE_QUEUE.json",
+    "labels": "SOURCE_LABELS.json",
+    "preparation_receipt": "SOURCE_PREPARATION_RECEIPT.json",
+    "source_inventory": "SOURCE_INVENTORY.json",
+}
 SHA256_RE = re.compile(r"[0-9a-f]{64}")
 
 
@@ -91,25 +97,32 @@ def _verify_preparation_receipt(
         raise ValueError("preparation receipt is not review-ready")
     receipt_core = dict(receipt)
     claimed_receipt_hash = str(receipt_core.pop("receipt_sha256", "")).casefold()
-    if not SHA256_RE.fullmatch(claimed_receipt_hash) or claimed_receipt_hash != canonical_sha256(
-        receipt_core
-    ):
+    if not SHA256_RE.fullmatch(
+        claimed_receipt_hash
+    ) or claimed_receipt_hash != canonical_sha256(receipt_core):
         raise ValueError("preparation receipt content hash mismatch")
     if Path(str(receipt.get("queue") or "")).resolve() != queue_path:
         raise ValueError("preparation receipt points to another queue")
     if Path(str(receipt.get("catalog") or "")).resolve() != catalog_database:
         raise ValueError("preparation receipt points to another catalog")
-    if str(receipt.get("queue_file_sha256") or "").casefold() != sha256_file(queue_path):
+    if str(receipt.get("queue_file_sha256") or "").casefold() != sha256_file(
+        queue_path
+    ):
         raise ValueError("prepared queue file hash mismatch")
-    if str(receipt.get("queue_content_sha256") or "").casefold() != str(
-        queue.get("queue_sha256") or ""
-    ).casefold():
+    if (
+        str(receipt.get("queue_content_sha256") or "").casefold()
+        != str(queue.get("queue_sha256") or "").casefold()
+    ):
         raise ValueError("prepared queue content hash mismatch")
-    if str(receipt.get("catalog_sha256") or "").casefold() != sha256_file(catalog_database):
+    if str(receipt.get("catalog_sha256") or "").casefold() != sha256_file(
+        catalog_database
+    ):
         raise ValueError("prepared catalog hash mismatch")
     if int(receipt.get("candidate_count", -1)) != int(queue.get("candidate_count", -2)):
         raise ValueError("preparation candidate count mismatch")
-    if int(receipt.get("source_count", -1)) != int(source_inventory.get("source_count", -2)):
+    if int(receipt.get("source_count", -1)) != int(
+        source_inventory.get("source_count", -2)
+    ):
         raise ValueError("preparation source count mismatch")
     if str(receipt.get("source_inventory_sha256") or "").casefold() != canonical_sha256(
         source_inventory
@@ -126,7 +139,9 @@ def _verify_preparation_receipt(
         raise ValueError("preparation receipt is empty")
 
 
-def _validate_queue(queue: Mapping[str, Any], *, catalog_sha256: str) -> list[dict[str, Any]]:
+def _validate_queue(
+    queue: Mapping[str, Any], *, catalog_sha256: str
+) -> list[dict[str, Any]]:
     if queue.get("schema") != REVIEW_QUEUE_SCHEMA:
         raise ValueError("unknown review queue schema")
     actual_hash = review_queue_sha256(queue)
@@ -180,16 +195,28 @@ def _validate_queue(queue: Mapping[str, Any], *, catalog_sha256: str) -> list[di
     return validated
 
 
-def _source_suffixes(source_inventory: Mapping[str, Any], *, catalog_sha256: str) -> set[str]:
+def _source_suffixes(
+    source_inventory: Mapping[str, Any], *, catalog_sha256: str
+) -> set[str]:
     if source_inventory.get("schema") != SOURCE_INVENTORY_SCHEMA:
         raise ValueError("unknown catalog source inventory schema")
     if str(source_inventory.get("catalog_sha256") or "").casefold() != catalog_sha256:
         raise ValueError("source inventory targets another catalog")
     rows = source_inventory.get("sources")
-    if not isinstance(rows, list) or int(source_inventory.get("source_count", -1)) != len(rows):
+    if not isinstance(rows, list) or int(
+        source_inventory.get("source_count", -1)
+    ) != len(rows):
         raise ValueError("source inventory count mismatch")
-    suffixes = [str(row.get("unique_suffix") or "").strip() for row in rows if isinstance(row, Mapping)]
-    if len(suffixes) != len(rows) or not all(suffixes) or len(set(suffixes)) != len(suffixes):
+    suffixes = [
+        str(row.get("unique_suffix") or "").strip()
+        for row in rows
+        if isinstance(row, Mapping)
+    ]
+    if (
+        len(suffixes) != len(rows)
+        or not all(suffixes)
+        or len(set(suffixes)) != len(suffixes)
+    ):
         raise ValueError("source inventory suffixes must be complete and unique")
     return set(suffixes)
 
@@ -240,7 +267,9 @@ def _strict_labels(
     if set(decisions) != expected_hashes:
         raise ValueError("every prospective candidate requires exactly one decision")
     latest_authored = max(
-        _aware_datetime(row.get("authored_at_utc"), label="candidate authored timestamp")
+        _aware_datetime(
+            row.get("authored_at_utc"), label="candidate authored timestamp"
+        )
         for row in candidates
     )
     if reviewed_at <= latest_authored:
@@ -253,7 +282,9 @@ def _strict_labels(
     source_counts = Counter(accepted_suffixes)
     max_source_share = max(source_counts.values()) / accepted_count
     if len(source_counts) < 6:
-        raise ValueError("review needs at least six relevant catalog sources before scoring")
+        raise ValueError(
+            "review needs at least six relevant catalog sources before scoring"
+        )
     if max_source_share > 0.4:
         raise ValueError("one relevant source exceeds the 40-percent pre-score cap")
     if len(set(accepted_strata)) < 3:
@@ -280,7 +311,7 @@ def build_e92_prospective_run(
     catalog_database: str | Path,
     control_seeds: Sequence[int] = (11, 29, 47),
     limit: int = 20,
-) -> dict[str, dict[str, Any]]:
+) -> dict[str, Any]:
     """Validate the sealed review chain, then execute the E92 evaluator once."""
     queue_file = Path(queue_path).resolve(strict=True)
     labels_file = Path(labels_path).resolve(strict=True)
@@ -325,6 +356,26 @@ def build_e92_prospective_run(
         limit=limit,
     )
     result_payload = json_bytes(result)
+    source_chain = {
+        "queue": queue,
+        "labels": labels,
+        "preparation_receipt": preparation,
+        "source_inventory": source_inventory,
+    }
+    source_file_hashes = {
+        "queue": sha256_file(queue_file),
+        "labels": sha256_file(labels_file),
+        "preparation_receipt": sha256_file(preparation_file),
+        "source_inventory": sha256_file(source_file),
+    }
+    source_chain_bundle = {
+        role: {
+            "file": SOURCE_CHAIN_BUNDLE_FILES[role],
+            "sha256": sha256(json_bytes(payload)).hexdigest(),
+            "source_file_sha256": source_file_hashes[role],
+        }
+        for role, payload in source_chain.items()
+    }
     receipt_core = {
         "schema": E92_RUN_SCHEMA,
         "status": "E92_PROSPECTIVE_COMPLETE_NO_AUTOMATIC_PROMOTION",
@@ -333,11 +384,12 @@ def build_e92_prospective_run(
         "catalog": str(catalog_file),
         "catalog_sha256": catalog_hash,
         "queue": str(queue_file),
-        "queue_file_sha256": sha256_file(queue_file),
+        "queue_file_sha256": source_file_hashes["queue"],
         "queue_content_sha256": queue["queue_sha256"],
-        "labels_file_sha256": sha256_file(labels_file),
-        "preparation_receipt_file_sha256": sha256_file(preparation_file),
-        "source_inventory_file_sha256": sha256_file(source_file),
+        "labels_file_sha256": source_file_hashes["labels"],
+        "preparation_receipt_file_sha256": source_file_hashes["preparation_receipt"],
+        "source_inventory_file_sha256": source_file_hashes["source_inventory"],
+        "source_chain_bundle": source_chain_bundle,
         "benchmark_sha256": benchmark_hash,
         "result_sha256": sha256(result_payload).hexdigest(),
         "implementation_hashes": {
@@ -365,4 +417,9 @@ def build_e92_prospective_run(
         ),
     }
     receipt = {**receipt_core, "receipt_sha256": canonical_sha256(receipt_core)}
-    return {"benchmark": benchmark, "result": result, "receipt": receipt}
+    return {
+        "benchmark": benchmark,
+        "result": result,
+        "receipt": receipt,
+        "source_chain": source_chain,
+    }

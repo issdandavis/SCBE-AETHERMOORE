@@ -1,0 +1,920 @@
+{
+  "schema": "codex.system-inventory.v1",
+  "generated_at": "2026-11-08T16:26:57.298429+00:00",
+  "read_only": true,
+  "roots": [
+    {
+      "root": "C:\\Users\\issda\\SCBE-AETHERMOORE",
+      "exists": true,
+      "immediate_directories": [
+        ".agents",
+        ".benchmarks",
+        ".claude",
+        ".codex",
+        ".cursor",
+        ".devcontainer",
+        ".geoseal",
+        ".github",
+        ".hypothesis",
+        ".npm-cache",
+        ".scbe",
+        ".scbe-sandbox",
+        ".vercel",
+        "_kaggle_out",
+        "_kaggle_out2",
+        "_kaggle_out3",
+        "_kaggle_out4",
+        "_kaggle_out5",
+        "_kaggle_out6",
+        "_kaggle_out7",
+        "_kaggle_out8",
+        "_kaggle_out9",
+        "_kaggle_probe",
+        "_kaggle_probe2",
+        "_kaggle_pull",
+        "_quarantine",
+        "aether-browser",
+        "aetherdesk",
+        "agents",
+        "ai-ide",
+        "api",
+        "app",
+        "apps",
+        "archive",
+        "articles",
+        "artifacts",
+        "assets",
+        "audit_attestation",
+        "automation",
+        "aws",
+        "benchmarks",
+        "bin",
+        "book",
+        "cloud-archive",
+        "conference-app",
+        "config",
+        "configs",
+        "content",
+        "dashboard",
+        "data",
+        "deliverables",
+        "demo",
+        "demos",
+        "deploy",
+        "desktop",
+        "docs",
+        "examples",
+        "experiments",
+        "external",
+        "external_repos",
+        "game",
+        "hydra",
+        "k8s",
+        "lexicons",
+        "mcp",
+        "mcp_context_server",
+        "netlify",
+        "notebooks",
+        "notes",
+        "packages",
+        "paper",
+        "phdm-21d-embedding",
+        "physics_sim",
+        "plugins",
+        "policies",
+        "products",
+        "proto",
+        "prototype",
+        "public",
+        "python",
+        "references",
+        "reports",
+        "research",
+        "runnables",
+        "rust",
+        "scbe-visual-system",
+        "scbe_aethermoore.egg-info",
+        "schemas",
+        "scripts",
+        "sealed_blobs",
+        "services",
+        "shopify",
+        "skills",
+        "spaces",
+        "spiral-word-app",
+        "spiralverse-protocol",
+        "src",
+        "symphonic_cipher",
+        "tests",
+        "tools",
+        "training",
+        "training-data",
+        "workflows"
+      ],
+      "file_count": 5000,
+      "total_bytes": 201908347,
+      "truncated": true,
+      "categories": {
+        "checkpoints_and_receipts": {
+          "count": 247,
+          "paths": [
+            "artifacts\\aetherbrowser_headless_runs\\20260703T221657Z_text-html-html-head-title-Aether-Headless-Proof-title-head-body-h1-Headless-proo_1\\receipt.json",
+            "artifacts\\aetherbrowser_headless_runs\\20260703T222047Z_text-html-html-head-title-AetherDesk-Headless-Bridge-title-head-body-h1-Bridge-p_2\\receipt.json",
+            "artifacts\\aetherbrowser_headless_runs\\20260703T222406Z_github.com_3\\receipt.json",
+            "artifacts\\aethermon_training_arena\\episode_receipts.jsonl",
+            "artifacts\\agent-bus\\identity\\test-checkpoint.ML-DSA-65.pk",
+            "artifacts\\agent-bus\\identity\\test-checkpoint.ML-DSA-65.sk",
+            "artifacts\\ai_brain\\compiler_lane_receipt.json",
+            "artifacts\\bookforge-publishing-company\\latest\\BUILD_RECEIPT.md",
+            "artifacts\\cat_cradle_cube\\receipt.json",
+            "artifacts\\coder_corpus_labyrinth\\receipt.json",
+            "artifacts\\coder_corpus_labyrinth\\go_40\\receipt.json",
+            "artifacts\\coder_corpus_labyrinth\\java_40\\receipt.json",
+            "artifacts\\coder_corpus_labyrinth\\javascript_40\\receipt.json",
+            "artifacts\\coder_corpus_labyrinth\\php_40\\receipt.json",
+            "artifacts\\coder_corpus_labyrinth\\python_40\\receipt.json",
+            "artifacts\\coder_corpus_labyrinth\\python_80\\receipt.json",
+            "artifacts\\coder_corpus_labyrinth\\ruby_40\\receipt.json",
+            "artifacts\\colab\\ace-step-guard-receipt.json",
+            "artifacts\\colab\\ace-step-guard-t4-receipt.json",
+            "artifacts\\colab\\ace-step-song-receipt.json",
+            "artifacts\\colab\\fast-full-speed-receipt.json",
+            "artifacts\\colab\\fast-full-start-receipt.json",
+            "artifacts\\colab\\guard-run-cdp-receipt.json",
+            "artifacts\\colab\\guard-run-direct-cell-receipt.json",
+            "artifacts\\colab\\guard-run-direct-receipt.json",
+            "artifacts\\colab\\guard-run-final-receipt.json",
+            "artifacts\\colab\\guard-single-line-receipt.json",
+            "artifacts\\full_coding_systems_bundle\\receipt.json",
+            "artifacts\\full_coding_systems_bundle\\probe_model\\receipt.json",
+            "artifacts\\full_coding_systems_bundle\\tiny_lm\\eval_receipt.json",
+            "artifacts\\full_coding_systems_bundle\\tiny_lm\\receipt.json",
+            "artifacts\\geoseal_agent_shell_20260905\\HANDOFF.md",
+            "artifacts\\geoseal_diagnostics_20261001\\PLUGIN_JOURNAL_RECEIPT.json",
+            "artifacts\\harness_authority_repair_20260909\\RECEIPT.json",
+            "artifacts\\language_systems_atlas\\code_coordination_graph_receipt.json",
+            "artifacts\\language_systems_atlas\\receipt.json",
+            "artifacts\\machine_crystal\\dual_fano_receipt.json",
+            "artifacts\\obsidian_workspace_20260914\\HANDOFF.md",
+            "artifacts\\patent_repairs_20260909\\RECEIPT.json",
+            "artifacts\\patent_repairs_20260909\\build_receipt.py",
+            "artifacts\\patent_review_20260909\\RECEIPT.json",
+            "artifacts\\patent_review_20260909\\build_receipt.py",
+            "artifacts\\pytest_temp_root\\session-02c2153e\\helm-public-bench-0ba1feca\\2\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-02c2153e\\helm-public-bench-0ba1feca\\6\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-02c2153e\\helm-public-bench-0ba1feca\\8\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-09959884\\case-997284c0\\pytest-agent-pass\\work\\schematic\\config_loader_defaults_and_bounds\\.scbe_schematic_receipt.json",
+            "artifacts\\pytest_temp_root\\session-09959884\\case-997284c0\\pytest-agent-pass\\work\\schematic\\manifest_hash_validation\\.scbe_schematic_receipt.json",
+            "artifacts\\pytest_temp_root\\session-09959884\\case-997284c0\\pytest-agent-pass\\work\\schematic\\retry_boundary_regression\\.scbe_schematic_receipt.json",
+            "artifacts\\pytest_temp_root\\session-09959884\\case-997284c0\\pytest-agent-pass\\work\\schematic\\router_priority_scope_regression\\.scbe_schematic_receipt.json",
+            "artifacts\\pytest_temp_root\\session-09959884\\case-997284c0\\pytest-agent-pass\\work\\schematic\\slugify_punctuation_regression\\.scbe_schematic_receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\base-failures-2d7a2474\\add\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\base-failures-2d7a2474\\broken\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\base-failures-2d7a2474\\mul\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\base-failures-2e37d348\\add\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\base-failures-2e37d348\\broken\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\base-failures-2e37d348\\mul\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\base-failures-5cdf3e02\\add\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-06299654\\t2_reverse\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-0acb188b\\t1_add\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-0cce6070\\t1_maximum\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-11fd5681\\t4_balanced\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-11fd5681\\t4_lis\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-11fd5681\\t4_quicksort\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-18cfeec3\\t4_balanced\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-18cfeec3\\t4_lis\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-18cfeec3\\t4_quicksort\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-1b698d13\\t2_fizzbuzz\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-1b95b8f4\\t2_fizzbuzz\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-1b95b8f4\\t2_reverse\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-1b95b8f4\\t2_vowels\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-1bab3281\\t3_bsearch\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-1bab3281\\t3_fib\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-1bab3281\\t3_is_prime\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-1e6eb196\\t3_bsearch\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-1ec6d016\\t5_min_coins\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-1ec74644\\t4_lis\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-211eab72\\9001\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-214a8363\\t1_add\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-24481fbc\\t2_fizzbuzz\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-299fcda3\\t3_bsearch\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-299fcda3\\t3_fib\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-299fcda3\\t3_is_prime\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-30187a9c\\t4_balanced\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-30ae6b97\\t2_fizzbuzz\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-30ae6b97\\t2_reverse\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-30ae6b97\\t2_vowels\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-32fc799c\\t5_edit_distance\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-32fc799c\\t5_min_coins\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-32fc799c\\t5_regex\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-33d01a1c\\t5_edit_distance\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-33d01a1c\\t5_min_coins\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-33d01a1c\\t5_regex\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-3ad993ff\\t1_maximum\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-41d49e9f\\t5_edit_distance\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-41d49e9f\\t5_min_coins\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-41d49e9f\\t5_regex\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-47789962\\t1_add\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-47789962\\t1_count_evens\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-47789962\\t1_maximum\\receipt.json",
+            "artifacts\\pytest_temp_root\\session-3bf6f828\\helm-public-bench-47a91bff\\t5_regex\\receipt.json"
+          ],
+          "paths_truncated": true
+        },
+        "dataset_artifacts": {
+          "count": 64,
+          "paths": [
+            ".scbe\\geoseal_calls.jsonl",
+            ".scbe\\route_ledger.jsonl",
+            ".scbe\\lanes\\research.jsonl",
+            ".scbe\\packets\\free_llm_dispatch.jsonl",
+            "_kaggle_pull\\vtc_data\\vtc_mbpp_refined.jsonl",
+            "artifacts\\aetherdesk_runs\\queue.jsonl",
+            "artifacts\\aetherdesk_runs\\run_log.jsonl",
+            "artifacts\\agent-router\\poly-coding-seed\\external_poly_coding_v1_holdout.sft.jsonl",
+            "artifacts\\agent-router\\poly-coding-seed\\external_poly_coding_v1_train.sft.jsonl",
+            "artifacts\\agent_bus\\mirror_room\\bench-pytest-wedge-coding_patch_plan\\mirror_room.jsonl",
+            "artifacts\\agent_bus\\mirror_room\\bench-pytest-wedge-general_recovery\\mirror_room.jsonl",
+            "artifacts\\agent_bus\\mirror_room\\bench-pytest-wedge-governance_boundary\\mirror_room.jsonl",
+            "artifacts\\agent_bus\\mirror_room\\bench-pytest-wedge-review_gate\\mirror_room.jsonl",
+            "artifacts\\agent_bus\\mirror_room\\bench-pytest-wedge-training_bucket\\mirror_room.jsonl",
+            "artifacts\\agent_bus\\mirror_room\\longform-build-the-browser-benchmark-adapter-and-prove-it-1\\mirror_room.jsonl",
+            "artifacts\\agent_bus\\mirror_room\\longform-build-the-browser-benchmark-adapter-and-prove-it-2\\mirror_room.jsonl",
+            "artifacts\\agent_bus\\mirror_room\\longform-build-the-browser-benchmark-adapter-and-prove-it-3\\mirror_room.jsonl",
+            "artifacts\\agent_bus\\mirror_room\\longform-build-the-browser-benchmark-adapter-and-prove-it-4\\mirror_room.jsonl",
+            "artifacts\\agent_bus\\mirror_room\\longform-build-the-browser-benchmark-adapter-and-prove-it-5\\mirror_room.jsonl",
+            "artifacts\\agent_bus\\mirror_room\\longform-build-the-browser-benchmark-adapter-and-prove-it-6\\mirror_room.jsonl",
+            "artifacts\\agent_bus\\mirror_room\\longform-prove-the-longform-squad-dispatch-lane-1\\mirror_room.jsonl",
+            "artifacts\\agent_bus\\mirror_room\\node-event-1\\mirror_room.jsonl",
+            "artifacts\\agent_bus\\mirror_room\\pytest-agentbus-pipe-e2e\\mirror_room.jsonl",
+            "artifacts\\agent_bus\\mirror_room\\pytest-agentbus-user-e2e\\mirror_room.jsonl",
+            "artifacts\\agent_comm\\session_signons.jsonl",
+            "artifacts\\agent_comm\\github_lanes\\cross_talk.jsonl",
+            "artifacts\\agent_comm\\github_lanes\\cross_talk_acks.jsonl",
+            "artifacts\\benchmarks\\poly_channel_n150\\rows.jsonl",
+            "artifacts\\benchmarks\\poly_channel_smoke\\rows.jsonl",
+            "artifacts\\coder_corpus_labyrinth\\corpus_multiview.jsonl",
+            "artifacts\\coder_corpus_labyrinth\\go_40\\corpus_multiview.jsonl",
+            "artifacts\\coder_corpus_labyrinth\\java_40\\corpus_multiview.jsonl",
+            "artifacts\\coder_corpus_labyrinth\\javascript_40\\corpus_multiview.jsonl",
+            "artifacts\\coder_corpus_labyrinth\\php_40\\corpus_multiview.jsonl",
+            "artifacts\\coder_corpus_labyrinth\\python_40\\corpus_multiview.jsonl",
+            "artifacts\\coder_corpus_labyrinth\\python_80\\corpus_multiview.jsonl",
+            "artifacts\\coder_corpus_labyrinth\\ruby_40\\corpus_multiview.jsonl",
+            "artifacts\\colab\\chrome_tab_inventory.csv",
+            "artifacts\\colab\\chrome_tab_inventory_2.csv",
+            "artifacts\\file_tracking\\latest\\file_tracking_history.jsonl",
+            "artifacts\\full_coding_systems_bundle\\training_bundle.jsonl",
+            "artifacts\\full_coding_systems_bundle\\dataset_release\\test.jsonl",
+            "artifacts\\full_coding_systems_bundle\\dataset_release\\test_chat.jsonl",
+            "artifacts\\full_coding_systems_bundle\\dataset_release\\train.jsonl",
+            "artifacts\\full_coding_systems_bundle\\dataset_release\\train_chat.jsonl",
+            "artifacts\\full_coding_systems_bundle\\dataset_release\\validation.jsonl",
+            "artifacts\\full_coding_systems_bundle\\dataset_release\\validation_chat.jsonl",
+            "artifacts\\geoseal_agent_shell_20260905\\GLOBAL_SMOKE.jsonl",
+            "artifacts\\geoseal_agent_shell_20260905\\consumer-1XCqha\\stdout.jsonl",
+            "artifacts\\geoseal_agent_shell_20260905\\consumer-1XCqha\\home\\command-history\\80b65c4c2e504b43.jsonl",
+            "artifacts\\geoseal_agent_shell_20260905\\launcher-home\\command-history\\719207524a89289a.jsonl",
+            "artifacts\\geoseal_diagnostics_20261001\\builder-events.jsonl",
+            "artifacts\\geoseal_diagnostics_20261001\\long-division-builder\\builder-events.jsonl",
+            "artifacts\\geoseal_diagnostics_20261001\\long-division-retry\\builder-events.jsonl",
+            "artifacts\\geoseal_shell_review_20261001\\LIVE_SESSION.jsonl",
+            "artifacts\\hf\\lattice25d_notes.jsonl",
+            "artifacts\\language_systems_atlas\\code_coordination_graph_training_rows.jsonl",
+            "artifacts\\language_systems_atlas\\language_systems_training_rows.jsonl",
+            "artifacts\\mail\\proton_mail_ops.jsonl",
+            "artifacts\\model_inventory\\parameters_list.csv",
+            "artifacts\\obsidian_workspace_20260914\\changes.jsonl",
+            "artifacts\\pytest_temp_root\\session-21e21f23\\pytest-of-issda\\pytest-0\\test_lineage_applies_append_on0\\VOICE_BOX_CORRECTIONS.jsonl",
+            "artifacts\\pytest_temp_root\\session-21e21f23\\pytest-of-issda\\pytest-0\\test_lineage_applies_append_on0\\VOICE_BOX_LINEAGE.jsonl",
+            "artifacts\\pytest_temp_root\\session-21e21f23\\pytest-of-issda\\pytest-0\\test_sidecars_are_derivatives_0\\VOICE_BOX_LINEAGE.jsonl"
+          ],
+          "paths_truncated": false
+        },
+        "entrypoints": {
+          "count": 28,
+          "paths": [
+            "enhanced_scbe_cli.py",
+            "scbe-cli.py",
+            "six-tongues-cli.py",
+            "_kaggle_pull\\qlora\\polly-qlora-training.py",
+            "aetherdesk\\server.js",
+            "agents\\aetherbrowse_cli.py",
+            "agents\\agent_bus_cli.py",
+            "agents\\agent_bus_training.py",
+            "agents\\browser\\main.py",
+            "api\\_polly_train_capture.js",
+            "api\\main.py",
+            "api\\billing\\stripe_client.py",
+            "api\\darpa_prep\\client.py",
+            "api\\github_app\\client.py",
+            "apps\\aether-desktop\\backend\\main.py",
+            "apps\\aether-desktop\\shell\\src\\BackendClient.ts",
+            "apps\\outreach\\backend\\main.py",
+            "archive\\demos\\demo-cli.py",
+            "archive\\ui-graveyard\\app\\server.js",
+            "archive\\ui-graveyard\\app\\server.ts",
+            "artifacts\\colab\\inspect_train_live.js",
+            "artifacts\\colab\\inspect_train_wait.js",
+            "artifacts\\colab\\train_qlora_fast_restart_cell.py",
+            "artifacts\\geoseal_diagnostics_20261001\\serve_practice.py",
+            "artifacts\\geoseal_diagnostics_20261001\\before\\packages__cli__bin__scbe.js",
+            "artifacts\\geoseal_diagnostics_20261001\\before\\packages__cli__lib__cli-host.js",
+            "artifacts\\geoseal_diagnostics_20261001\\before\\packages__cli__lib__command-shell.js",
+            "artifacts\\obsidian_workspace_20260914\\preview_server.py"
+          ],
+          "paths_truncated": false
+        },
+        "instructions": {
+          "count": 1,
+          "paths": [
+            "AGENTS.md"
+          ],
+          "paths_truncated": false
+        },
+        "maps": {
+          "count": 7,
+          "paths": [
+            ".github\\DISCUSSION_TEMPLATE\\architecture.yml",
+            "artifacts\\compiler_system_map_20260905\\COMPILER_SYSTEM_MAP.md",
+            "artifacts\\connection_hardening_20260912\\SYSTEM_MAP.md",
+            "artifacts\\harness_authority_repair_20260909\\SYSTEM_MAP.md",
+            "artifacts\\language_systems_atlas\\language_systems_map.json",
+            "artifacts\\obsidian_workspace_20260914\\SYSTEM_MAP.md",
+            "artifacts\\patent_repairs_20260909\\SYSTEM_MAP.md"
+          ],
+          "paths_truncated": false
+        },
+        "model_and_tokenizer_artifacts": {
+          "count": 1,
+          "paths": [
+            "artifacts\\full_coding_systems_bundle\\tiny_lm\\tiny_lm.pt"
+          ],
+          "paths_truncated": false
+        },
+        "tests": {
+          "count": 24,
+          "paths": [
+            "aether-browser\\tests\\test_scbe_security_layer.py",
+            "apps\\aether-desktop\\backend\\tests\\test_audit.py",
+            "apps\\aether-desktop\\backend\\tests\\test_auth.py",
+            "apps\\aether-desktop\\backend\\tests\\test_gate.py",
+            "apps\\aether-desktop\\backend\\tests\\test_op_endpoint.py",
+            "apps\\aether-desktop\\shell\\tests\\BackendClient.test.ts",
+            "apps\\aether-desktop\\shell\\tests\\toolBus.test.ts",
+            "archive\\root_capture_cleanup\\2026-04-22\\test_output.txt",
+            "artifacts\\connection_hardening_20260912\\before\\packages\\agent-bus\\tests\\pipeline.test.ts",
+            "artifacts\\connection_hardening_20260912\\before\\packages\\agent-bus\\tests\\queue.test.ts",
+            "artifacts\\connection_hardening_20260912\\before\\packages\\agent-bus\\tests\\secure-execution.test.ts",
+            "artifacts\\connection_hardening_20260912\\before\\packages\\agent-bus\\tests\\tools.test.ts",
+            "artifacts\\harness_authority_repair_20260909\\before\\tests\\hydra-terminal-browse.test.ts",
+            "artifacts\\harness_authority_repair_20260909\\before\\tests\\test_decision_envelope_v1.py",
+            "artifacts\\patent_repairs_20260909\\before\\src\\symphonic_cipher\\tests\\test_fourteen_layer.py",
+            "artifacts\\patent_repairs_20260909\\before\\symphonic_cipher\\tests\\test_fourteen_layer.py",
+            "artifacts\\patent_repairs_20260909\\before\\tests\\test_runtime_gate.py",
+            "artifacts\\patent_repairs_20260909\\before\\tests\\test_same_pole_repulsor.py",
+            "artifacts\\patent_repairs_20260909\\before\\tests\\governance\\test_patent_math_support.py",
+            "artifacts\\pytest_temp_root\\session-09959884\\case-997284c0\\pytest-agent-pass\\work\\baseline\\config_loader_defaults_and_bounds\\tests\\test_config_loader.py",
+            "artifacts\\pytest_temp_root\\session-09959884\\case-997284c0\\pytest-agent-pass\\work\\baseline\\manifest_hash_validation\\tests\\test_manifest.py",
+            "artifacts\\pytest_temp_root\\session-09959884\\case-997284c0\\pytest-agent-pass\\work\\baseline\\retry_boundary_regression\\tests\\test_retry_policy.py",
+            "artifacts\\pytest_temp_root\\session-09959884\\case-997284c0\\pytest-agent-pass\\work\\baseline\\router_priority_scope_regression\\tests\\test_router.py",
+            "artifacts\\pytest_temp_root\\session-09959884\\case-997284c0\\pytest-agent-pass\\work\\baseline\\slugify_punctuation_regression\\tests\\test_text_tools.py"
+          ],
+          "paths_truncated": false
+        }
+      },
+      "largest_files": [
+        {
+          "path": "artifacts\\full_coding_systems_bundle\\tiny_lm\\tiny_lm.pt",
+          "bytes": 56870920
+        },
+        {
+          "path": "artifacts\\full_coding_systems_bundle\\training_bundle.jsonl",
+          "bytes": 11597712
+        },
+        {
+          "path": "artifacts\\apollo\\obsidian_graph.json",
+          "bytes": 10122205
+        },
+        {
+          "path": "artifacts\\full_coding_systems_bundle\\dataset_release\\train.jsonl",
+          "bytes": 9794902
+        },
+        {
+          "path": "artifacts\\aetherbrowser-backend-restart.out.log",
+          "bytes": 4988911
+        },
+        {
+          "path": "artifacts\\full_coding_systems_bundle\\dataset_release\\train_chat.jsonl",
+          "bytes": 4405371
+        },
+        {
+          "path": ".vercel\\output\\functions\\api\\agent\\router.js.func\\docs\\static\\books\\six-tongues-cover.jpg",
+          "bytes": 2987049
+        },
+        {
+          "path": "artifacts\\pypi-dist\\scbe_aethermoore-4.2.1-py3-none-any.whl",
+          "bytes": 1989326
+        },
+        {
+          "path": ".npm-cache\\_cacache\\content-v2\\sha512\\94\\89\\4ee3a8d3f8d0f7209ae64ab1bfe594c203f731a24317545e74513c52bafe595ae6265d4c3e12c572c3d693b5dfc5abbb4cac37b9f860893fd271cc86f325",
+          "bytes": 1896811
+        },
+        {
+          "path": ".npm-cache\\_cacache\\content-v2\\sha512\\52\\7a\\c74d71fd9fbb10393e894886dc8ccfc899930c6038342ffff04e5784f18fe8d05ecff3a1d18fb357691eb204a7a980523b513ff826f86a9f4285345c35d8",
+          "bytes": 1896805
+        },
+        {
+          "path": ".npm-cache\\_cacache\\content-v2\\sha512\\0b\\b3\\fc98a45a5d3b52fa7bd74426e1776d29fc97dbe3e4cccfe269497592b99453d39c815a95f1be6f362a77122b540cd52bf866898450475ce575328c1f71f0",
+          "bytes": 1894530
+        },
+        {
+          "path": ".npm-cache\\_cacache\\content-v2\\sha512\\4d\\9e\\293f5e8f978d743c0dcccc06e6a51014582d2f9404bafb963c22d3e493c03aa2140b0c9e8a881da04913b789c58535f948c12f3a3f90300f05aae8fd3482",
+          "bytes": 1894405
+        },
+        {
+          "path": ".npm-cache\\_cacache\\content-v2\\sha512\\2e\\9f\\3fd4b376d873f833d1fdad3a846d61325b0a10033d3cb58ff0f519d0a6f05589540c4cc0c4b3f700f5c6cabaeb62e43c3ef7f0fe60f33cd962b8421bcaa6",
+          "bytes": 1894399
+        },
+        {
+          "path": ".npm-cache\\_cacache\\content-v2\\sha512\\6f\\89\\d2d76269c8a5a53ad451bfb8a42dc47577ebfb3b178b0ad887c73cd59362e9af18c56c15a4c436cf138158e917ca6267bd57d56a3237f3640354eef02ad8",
+          "bytes": 1893000
+        },
+        {
+          "path": ".npm-cache\\_cacache\\content-v2\\sha512\\7e\\9d\\f6c43533c9ccf1df874a6a1ceb8e5ace98f5b125c0cdafbcb63a9e39ed2995fad66ebfad8e98823b761e36d52a73f8ca9b66e15fb6e88cbe319b7bf40db1",
+          "bytes": 1892821
+        },
+        {
+          "path": ".npm-cache\\_cacache\\content-v2\\sha512\\7d\\81\\83e48c2461e2d19cc842822f2452d9ccb9f31079fb75da4efd3b55a1ad14a93278f34fedca857ed9610aeafe2009d505a7b9a5f2ba034e2f83b9710628e6",
+          "bytes": 1867922
+        },
+        {
+          "path": "scbe-aethermoore-4.2.1.tgz",
+          "bytes": 1865370
+        },
+        {
+          "path": ".npm-cache\\_cacache\\content-v2\\sha512\\23\\77\\2765ae8bcddddf3622022ef23e2b69ed8603a157ee92a72df49d6d552da4193d380bb9f13d81633d91dcca3d9545610ace7471ee032d1df06a10727cc2d6",
+          "bytes": 1835279
+        },
+        {
+          "path": "artifacts\\pytest_temp_root\\session-21e21f23\\pytest-of-issda\\pytest-0\\test_sidecars_are_derivatives_0\\family_note.27a318708215.5b01506139dc.emotion-droid.wav",
+          "bytes": 1693484
+        },
+        {
+          "path": "Krok.txt",
+          "bytes": 1465536
+        },
+        {
+          "path": "artifacts\\polyglot\\p_rs.pdb",
+          "bytes": 1413120
+        },
+        {
+          "path": "artifacts\\pytest_temp_root\\session-3bf6f828\\node-compile-cache\\v24.16.0-x64-cf738c9d\\397ee6da",
+          "bytes": 1362660
+        },
+        {
+          "path": "artifacts\\polyglot\\prog_rs.pdb",
+          "bytes": 1314816
+        },
+        {
+          "path": "artifacts\\language_systems_atlas\\code_coordination_graph.json",
+          "bytes": 1297440
+        },
+        {
+          "path": "artifacts\\pazaak_benchmark_try\\top30_hard\\qwen15_contract_rails\\latest\\report.json",
+          "bytes": 1049420
+        },
+        {
+          "path": "artifacts\\pazaak_benchmark_try\\top30_hard\\hidden_probe\\qwen15_public_k1_shadow_contract_rails\\latest\\report.json",
+          "bytes": 1027080
+        },
+        {
+          "path": "artifacts\\obsidian_workspace_20260914\\PLAN.json",
+          "bytes": 1013707
+        },
+        {
+          "path": "artifacts\\pazaak_benchmark_try\\top30_hard\\hidden_probe\\qwen15_public_k1_contract_rails\\latest\\report.json",
+          "bytes": 1008707
+        },
+        {
+          "path": "artifacts\\pazaak_benchmark_try\\top30_hard\\qwen15_repair_by_3b\\latest\\report.json",
+          "bytes": 915995
+        },
+        {
+          "path": "artifacts\\full_coding_systems_bundle\\dataset_release\\test.jsonl",
+          "bytes": 913419
+        }
+      ],
+      "git": {
+        "root": "C:/Users/issda/SCBE-AETHERMOORE",
+        "status_available": true,
+        "status_lines": [],
+        "status_truncated": false
+      }
+    },
+    {
+      "root": "C:\\dev\\clay-training-runs\\prime-token-catalog-20261106",
+      "exists": true,
+      "immediate_directories": [
+        "benchmark-v1-20261107",
+        "benchmark-v2-20261107",
+        "benchmark-v3-20261107",
+        "catalog-v4-rights-20261107",
+        "catalog-v5-rights-20261107",
+        "catalog-v6-codex-user-20261107",
+        "catalog-v6-disjoint-audit-20261107",
+        "catalog-v6-prospective-queue-20261107",
+        "explicit-route-holdout-20261107",
+        "independent-requests-20261107",
+        "lexical-band-discovery-20261107",
+        "lexical-band-holdout-20261107",
+        "lexical-band-holdout-voice-20261107",
+        "lexical-band-holdout-voice-v2-20261107",
+        "lexical-first-holdout-20261107",
+        "local-pilot-v2",
+        "local-pilot-v3",
+        "local-smoke-v2",
+        "prospective-collector-20261107",
+        "prospective-preparer-watcher-20261108",
+        "prospective-watcher-20261107",
+        "retrospective-multisource-16-20261107",
+        "sidekick-prospective-preparer-20261108",
+        "sidekick-prospective-watcher-20261108",
+        "source-disjoint-audit-20261108",
+        "third-holdout-source-20261107",
+        "v6-retrospective-leakage-audit-20261107",
+        "v6-voice-source-disjoint-explicit-route-20261107"
+      ],
+      "file_count": 131,
+      "total_bytes": 1236461398,
+      "truncated": false,
+      "categories": {
+        "checkpoints_and_receipts": {
+          "count": 2,
+          "paths": [
+            "local-smoke-v2\\GOAL_SURF_RECEIPT.json",
+            "prospective-watcher-20261107\\ACTIVATION_RECEIPT_SOURCE_DISJOINT_V2.json"
+          ],
+          "paths_truncated": false
+        },
+        "dataset_artifacts": {
+          "count": 22,
+          "paths": [
+            "catalog-v4-rights-20261107\\occurrences.jsonl",
+            "catalog-v4-rights-20261107\\sections.jsonl",
+            "catalog-v4-rights-20261107\\tokens.jsonl",
+            "catalog-v5-rights-20261107\\occurrences.jsonl",
+            "catalog-v5-rights-20261107\\sections.jsonl",
+            "catalog-v5-rights-20261107\\tokens.jsonl",
+            "catalog-v6-codex-user-20261107\\occurrences.jsonl",
+            "catalog-v6-codex-user-20261107\\sections.jsonl",
+            "catalog-v6-codex-user-20261107\\tokens.jsonl",
+            "local-pilot-v2\\occurrences.jsonl",
+            "local-pilot-v2\\sections.jsonl",
+            "local-pilot-v2\\tokens.jsonl",
+            "local-pilot-v3\\occurrences.jsonl",
+            "local-pilot-v3\\sections.jsonl",
+            "local-pilot-v3\\tokens.jsonl",
+            "local-smoke-v2\\occurrences.jsonl",
+            "local-smoke-v2\\sections.jsonl",
+            "local-smoke-v2\\tokens.jsonl",
+            "prospective-collector-20261107\\scan-001\\codex_prospective_user_turns.jsonl",
+            "prospective-collector-20261107\\scan-002\\codex_prospective_user_turns.jsonl",
+            "third-holdout-source-20261107\\claude_candidate_sessions.safe.jsonl",
+            "third-holdout-source-20261107\\codex_pre_november_sessions.safe.jsonl"
+          ],
+          "paths_truncated": false
+        }
+      },
+      "largest_files": [
+        {
+          "path": "catalog-v6-codex-user-20261107\\catalog.sqlite3",
+          "bytes": 687775744
+        },
+        {
+          "path": "catalog-v6-codex-user-20261107\\occurrences.jsonl",
+          "bytes": 239099324
+        },
+        {
+          "path": "catalog-v5-rights-20261107\\catalog.sqlite3",
+          "bytes": 79286272
+        },
+        {
+          "path": "catalog-v4-rights-20261107\\catalog.sqlite3",
+          "bytes": 72409088
+        },
+        {
+          "path": "local-pilot-v3\\catalog.sqlite3",
+          "bytes": 23732224
+        },
+        {
+          "path": "local-pilot-v2\\catalog.sqlite3",
+          "bytes": 23449600
+        },
+        {
+          "path": "catalog-v5-rights-20261107\\occurrences.jsonl",
+          "bytes": 23084928
+        },
+        {
+          "path": "catalog-v4-rights-20261107\\occurrences.jsonl",
+          "bytes": 20122468
+        },
+        {
+          "path": "catalog-v6-codex-user-20261107\\sections.jsonl",
+          "bytes": 11189290
+        },
+        {
+          "path": "catalog-v6-codex-user-20261107\\tokens.jsonl",
+          "bytes": 10297416
+        },
+        {
+          "path": "local-smoke-v2\\catalog.sqlite3",
+          "bytes": 7745536
+        },
+        {
+          "path": "local-pilot-v2\\occurrences.jsonl",
+          "bytes": 7152759
+        },
+        {
+          "path": "local-pilot-v3\\occurrences.jsonl",
+          "bytes": 7151943
+        },
+        {
+          "path": "local-smoke-v2\\occurrences.jsonl",
+          "bytes": 2948598
+        },
+        {
+          "path": "catalog-v5-rights-20261107\\tokens.jsonl",
+          "bytes": 2167956
+        },
+        {
+          "path": "catalog-v4-rights-20261107\\tokens.jsonl",
+          "bytes": 2068228
+        },
+        {
+          "path": "catalog-v5-rights-20261107\\sections.jsonl",
+          "bytes": 1457243
+        },
+        {
+          "path": "catalog-v4-rights-20261107\\sections.jsonl",
+          "bytes": 1369934
+        },
+        {
+          "path": "catalog-v6-codex-user-20261107\\SOURCE_AUDIT.json",
+          "bytes": 984751
+        },
+        {
+          "path": "third-holdout-source-20261107\\codex_pre_november_sessions.safe.jsonl",
+          "bytes": 934986
+        },
+        {
+          "path": "prospective-watcher-20261107\\watcher-launcher.log",
+          "bytes": 906302
+        },
+        {
+          "path": "prospective-watcher-20261107\\watcher-launcher-source-disjoint-v2.log",
+          "bytes": 880922
+        },
+        {
+          "path": "local-pilot-v3\\tokens.jsonl",
+          "bytes": 803332
+        },
+        {
+          "path": "local-pilot-v2\\tokens.jsonl",
+          "bytes": 803332
+        },
+        {
+          "path": "local-pilot-v3\\probability_lookup.sqlite3",
+          "bytes": 458752
+        },
+        {
+          "path": "local-pilot-v2\\probability_lookup.sqlite3",
+          "bytes": 409600
+        },
+        {
+          "path": "local-pilot-v2\\sections.jsonl",
+          "bytes": 403283
+        },
+        {
+          "path": "local-pilot-v3\\sections.jsonl",
+          "bytes": 403173
+        },
+        {
+          "path": "lexical-band-holdout-voice-v2-20261107\\REVIEW_QUEUE.json",
+          "bytes": 375844
+        },
+        {
+          "path": "lexical-band-holdout-voice-20261107\\REVIEW_QUEUE.json",
+          "bytes": 375757
+        }
+      ],
+      "git": {
+        "root": "C:/dev",
+        "status_available": true,
+        "status_lines": [
+          "M ../../AGENTS.md",
+          " D ../../bin/csound/app/bin/envext.exe",
+          " D ../../bin/csound/app/bin/het_export.exe",
+          " D ../../bin/csound/app/bin/hetro.exe",
+          " D ../../bin/csound/app/bin/lpanal.exe",
+          " D ../../bin/csound/app/bin/mixer.exe",
+          " D ../../bin/csound/app/bin/pv_import.exe",
+          " D ../../bin/csound/app/bin/pvlook.exe",
+          " M ../../clay-lessons/polyglot_books_v1/lightning_control_v1/generated/PACKET_MANIFEST.json",
+          " M ../../clay-lessons/polyglot_books_v1/speech_open_foundation_v1/TRAINING_MAP_20260829.md",
+          " M ../../clay-lessons/polyglot_books_v1/speech_open_foundation_v1/TRAINING_RESUME_20260830.md",
+          " M ../../clay-lessons/polyglot_books_v1/speech_open_foundation_v1/clay_speech_context_growth.py",
+          " M ../../clay-lessons/polyglot_books_v1/speech_open_foundation_v1/evaluate_preschool_checkpoint.py",
+          " M ../../clay-lessons/polyglot_books_v1/speech_open_foundation_v1/reweight_speech_pack.py",
+          " M ../../clay-lessons/polyglot_books_v1/speech_open_foundation_v1/test_clay_speech_context_cache.py",
+          " M ../../clay-lessons/polyglot_books_v1/speech_open_foundation_v1/test_train_byte_speech_continuation.py",
+          " M ../../clay-lessons/polyglot_books_v1/speech_open_foundation_v1/train_byte_speech_continuation.py",
+          " M ../../clay-lessons/polyglot_books_v1/speech_open_foundation_v1/validate_context_cache_growth.py",
+          " M ../../clay-lessons/polyglot_books_v1/stista_root_field.py",
+          " M ../../clay-wafer-net/FORMULA_SHEET.md",
+          " M ../../clay-wafer-net/clay_wafer_net/train_lightning.py",
+          " M ../../clay-wafer-net/clay_wafer_net/wafer_core.py",
+          " M ../../clay-wafer-net/clay_wafer_net/wafer_octree.py",
+          " M ../../clay-wafer-net/clay_wafer_net/wafer_progression.py",
+          " M ../../clay-wafer-net/test_scbe_layer_embedding.py",
+          " M ../../clay/clay_continue.py",
+          " D ../../clay/clay_scratch/HF_NORMALIZED_SECRET_AUDIT.json",
+          " D ../../clay/clay_scratch/audit_hf_normalized_secrets.py",
+          " D ../../clay/clay_scratch/build_cold_eval.py",
+          " D ../../clay/clay_scratch/check_cold_leak.py",
+          " D ../../clay/clay_scratch/eval_cold/COLD_EVAL_FULLPACK_RECEIPT.json",
+          " D ../../clay/clay_scratch/eval_cold/COLD_EVAL_REBUILT_RECEIPT.json",
+          " D ../../clay/clay_scratch/eval_cold/COLD_EVAL_RECEIPT.json",
+          " D ../../clay/clay_scratch/eval_cold/COLD_LEAK_REPORT.json",
+          " D ../../clay/clay_scratch/eval_cold/COLD_LEAK_REPORT.rebuilt.json",
+          " D ../../clay/clay_scratch/eval_cold/cold_windows.fullpack.jsonl",
+          " D ../../clay/clay_scratch/eval_cold/cold_windows.fullpack.rebuilt.jsonl",
+          " D ../../clay/clay_scratch/eval_cold/cold_windows.jsonl",
+          " D ../../clay/clay_scratch/negatives_eval.jsonl",
+          " D ../../clay/clay_scratch/negatives_train.jsonl",
+          " D ../../clay/clay_scratch/normalize_corpora.py",
+          " D ../../clay/clay_scratch/pack_full_corpus.py",
+          " D ../../clay/clay_scratch/prune_cold_eval.py",
+          " D ../../clay/clay_scratch/rebuild_cold_eval_fullpack.py",
+          " D ../../clay/clay_scratch/teach_negatives.py",
+          " D ../../clay_home/weights/lineage_20260815/.journal/JOURNAL.md",
+          " D ../../clay_home/weights/lineage_20260815/.journal/journal.jsonl",
+          " D ../../clay_home/weights/lineage_20260815/README.md",
+          " D ../../clay_home/weights/lineage_20260815/SHA256SUMS",
+          " D ../../clay_runs/cpu_drills_20260815/drills.npy",
+          " D ../../clay_runs/curriculum_20260815/pack/holdout_bundle.jsonl",
+          " D ../../clay_runs/curriculum_20260815/pack/holdout_bundle.npy",
+          " D ../../clay_runs/curriculum_20260815/pack/stage0.npy",
+          " D ../../clay_runs/curriculum_20260815/pack/stage1.npy",
+          " D ../../clay_runs/curriculum_20260815/pack/stage2.npy",
+          " D ../../clay_runs/curriculum_20260815/pack/stage3.npy",
+          " D ../../clay_runs/curriculum_v2_20260815/pack/stage0.npy",
+          " D ../../clay_runs/curriculum_v2_20260815/pack/stage1.npy",
+          " D ../../clay_runs/curriculum_v2_20260815/pack/stage2.npy",
+          " D ../../clay_runs/curriculum_v2_20260815/pack/stage3.npy",
+          " D ../../clay_runs/curriculum_v3a_20260815/pack/stage0.npy",
+          " D ../../clay_runs/curriculum_v3a_20260815/pack/stage1.npy",
+          " D ../../clay_runs/curriculum_v3b_20260817/pack/stage0.npy",
+          " D ../../clay_runs/curriculum_v3b_20260817/pack/stage1.npy",
+          " ? ../../clay_sources/novels/watershed-cultivation",
+          " M ../../cube_router.py",
+          " m ../../dataset-index",
+          " M ../../dd_multiview/op_periodic_full.json",
+          " M ../../dd_multiview/op_periodic_full.py",
+          " M ../../edge_build/abridge.exe",
+          " M ../../edge_build/abridge.obj",
+          " M ../../edge_build/driver.obj",
+          " M ../../fano_opcode_check.py",
+          " M ../../harp_toolchains.py",
+          " ? ../../lost-in-transcription",
+          " M ../../music_video/ferro_field.png",
+          " M ../../national_faces.py",
+          " M ../../native_build/driver.obj",
+          " M ../../native_build/prog.asm",
+          " M ../../native_build/prog.obj",
+          " M ../../native_build/tongue.exe",
+          " M ../../null",
+          " M ../../pc-health/INVENTORY.md",
+          " M ../../pc-health/RECLAIM.ps1",
+          " M ../../pc-health/health.ps1",
+          " M ../../pc-health/inventory.json",
+          " M ../../pc-health/offload.py",
+          " M ../../pc-health/offload_receipts.jsonl",
+          " M ../../pc-health/sidekick_offload_receipts.jsonl",
+          " M ../../pc-health/storage-management/hourly-clay-care-20261025/.gitignore",
+          " M ../../pc-health/storage-management/hourly-clay-care-20261025/CARE_POLICY.json",
+          " M ../../pc-health/storage-management/hourly-clay-care-20261025/README.md",
+          " M ../../pc-health/storage-management/hourly-clay-care-20261025/hourly_care.py",
+          " M ../../pc-health/storage-management/hourly-clay-care-20261025/test_hourly_care.py",
+          " M ../../pc-health/storage-management/storage-matrix-offload-20261025/archive_artifact_queue.py",
+          " M ../../pc-health/storage-management/storage-matrix-offload-20261025/test_archive_modes.py",
+          " M ../../phonetic_router_sixtongues.py",
+          " M ../../polyglot_harp.py",
+          " M ../../preflight.py",
+          " M ../../preflight_ledger.jsonl",
+          " m ../../ptcg-meta-eval/wmh-ptcg-abc",
+          " M ../../scbe-basin/basin.py",
+          " M ../../scbe_delta_eval_specific.py",
+          " M ../../tongue-compiler/AGENTS.md",
+          " M ../../tongue-compiler/tonguec.py",
+          " M ../../tongue-compiler/tonguec_prog.py",
+          " M ../../trace-the-ace",
+          " M ../../trackio-env/Lib/site-packages/trackio/frontend/package-lock.json",
+          " M ../../trackio-env/Lib/site-packages/trackio/frontend/package.json",
+          " M ../../trackio-env/Lib/site-packages/trackio/frontend/src/lib/dataProcessing.test.js",
+          " M ../../trackio-env/Lib/site-packages/trackio/frontend/src/lib/grouping.test.js",
+          " M ../../trackio-env/Lib/site-packages/trackio/frontend/src/lib/legend.test.js",
+          " M ../../trackio-env/Lib/site-packages/trackio/frontend/src/lib/router.test.js",
+          " M ../../trackio-env/Lib/site-packages/trackio/frontend/src/lib/selection.test.js",
+          " M ../../training-dashboard/app/src/data/runs.real.json",
+          " M ../../tts/README.md",
+          " M ../../tts/say.py",
+          " ? ../../whestbench/whest-starterkit",
+          "?? ../../.venvs/",
+          "?? ../../AcaDraw/",
+          "?? ../../LLMs-from-scratch/",
+          "?? \"../../ObsidianVault-LOCAL/Ideas/Hybrid Bonding Routing Matrices \\342\\200\\224 research docket.md\"",
+          "?? ../../PageIndex/",
+          "?? ../../PowerShellSCBE/",
+          "?? ../../SCBE_CLAY_SYSTEM_ATLAS.md",
+          "?? ../../_abacus_ab.log",
+          "?? ../../_cache_vqcc/",
+          "?? ../../_capsweep.log",
+          "?? ../../_capsweep2.log",
+          "?? ../../_capsweep3.log",
+          "?? ../../_carry_ab.log",
+          "?? ../../_carry_ab2.log",
+          "?? ../../_ceiling_test.log",
+          "?? ../../_chains_24k.log",
+          "?? ../../_chains_weighted.log",
+          "?? ../../_digits_ab.log",
+          "?? ../../_envs/",
+          "?? ../../_graded.log",
+          "?? ../../_kaggle_stage/",
+          "?? ../../_phrase_ab.log",
+          "?? ../../_pos_ab.log",
+          "?? ../../_probe_unregistered.json",
+          "?? ../../_references/",
+          "?? ../../_release_clay_20260918_dev/",
+          "?? ../../_release_clay_20260918_loom/",
+          "?? ../../_release_trackio_20260919/",
+          "?? ../../_tier3_run.log",
+          "?? ../../_wt_aetherbrowser_clay_apps_20261014/",
+          "?? ../../_wt_aethermoore_income_20261024/",
+          "?? ../../_wt_aethermoore_products_20261024/",
+          "?? ../../_wt_aethermoore_sales_20261102/",
+          "?? ../../_wt_aethermoore_training_tracker_20261102/",
+          "?? ../../_wt_aethermore_live_20260906/",
+          "?? ../../_wt_aethermore_redesign_20260906/",
+          "?? ../../_wt_bijective_reasoning_graph_20260906/",
+          "?? ../../_wt_clay_activation_audit_20261020/",
+          "?? ../../_wt_clay_activation_index_20261105/",
+          "?? ../../_wt_clay_agent_body_20261104/",
+          "?? ../../_wt_clay_agent_lang_20261104/",
+          "?? ../../_wt_clay_agent_pointer_20261104/",
+          "?? ../../_wt_clay_alien_curriculum_20261030/",
+          "?? ../../_wt_clay_book_e56_20261031/",
+          "?? ../../_wt_clay_book_e68_20261102/",
+          "?? ../../_wt_clay_campaign_recovery_20261105/",
+          "?? ../../_wt_clay_cardinal_xag_20261104/",
+          "?? ../../_wt_clay_cluster_header_curriculum_20261104/",
+          "?? ../../_wt_clay_cluster_regression_20261104/",
+          "?? ../../_wt_clay_consolidation_20261014/",
+          "?? ../../_wt_clay_context_scale_20261106/",
+          "?? ../../_wt_clay_corpus_growth_20261105/",
+          "?? ../../_wt_clay_depth_citation_20261029/",
+          "?? ../../_wt_clay_e73_regional_groove_20261102/",
+          "?? ../../_wt_clay_e79_audit_pathfix_20261104/",
+          "?? ../../_wt_clay_e80_audit_20261104/",
+          "?? ../../_wt_clay_e80_strict_audit_20261104/",
+          "?? ../../_wt_clay_error_hoop_20261105/",
+          "?? ../../_wt_clay_fact_anchors_20261019/",
+          "?? ../../_wt_clay_full_pretrain_20261019/",
+          "?? ../../_wt_clay_hardware_curriculum_20261105/",
+          "?? ../../_wt_clay_integration_guard_20260918/",
+          "?? ../../_wt_clay_math_terrace_20261103/",
+          "?? ../../_wt_clay_memory_funnel_20261024/",
+          "?? ../../_wt_clay_merge_all_20260918/",
+          "?? ../../_wt_clay_multisign_20260821/",
+          "?? ../../_wt_clay_nested_negative_trit_20261104/",
+          "?? ../../_wt_clay_newton_causal_20261019/",
+          "?? ../../_wt_clay_personality_integration_20261029/",
+          "?? ../../_wt_clay_phi_controller_20261021/",
+          "?? ../../_wt_clay_pilot_kernel_20261105/",
+          "?? ../../_wt_clay_pr2_repair_20260918/",
+          "?? ../../_wt_clay_pr3_repair_20260918/",
+          "?? ../../_wt_clay_product_20260910/",
+          "?? ../../_wt_clay_semantic_binding_20261105/",
+          "?? ../../_wt_clay_sidecar_multiseed_20261107/",
+          "?? ../../_wt_integer_phase_shards_20260906/",
+          "?? ../../_wt_kaggle_vqcc_20261104/",
+          "?? ../../_wt_miracle_depth_render_20260906/",
+          "?? ../../_wt_newton_operation_tube/",
+          "?? ../../_wt_scbe_dependencies_20260910/",
+          "?? ../../_wt_scbe_format_20260910/"
+        ],
+        "status_truncated": true
+      }
+    }
+  ]
+}

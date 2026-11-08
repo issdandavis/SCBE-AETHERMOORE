@@ -92,3 +92,30 @@ without changing retrieval, catalog, package defaults, model state, or serving.
 - Python compile: passed;
 - Ruff: passed;
 - `git diff --check`: passed.
+
+## Portable prospective source-chain bundle
+
+The E92 run contract is now `scbe.e92-prospective-run.v2`. A completed bundle
+includes immutable JSON copies of the post-freeze queue, independent labels,
+preparation receipt, and catalog source inventory. The run receipt binds each
+copy by fixed role, filename, canonical bundle hash, and original source-file
+hash.
+
+The independent verifier reconstructs every accepted benchmark query from that
+raw chain and rejects any mismatch. An adversarial test changes a source label,
+recomputes the bundled-label hash, and recomputes the run-receipt content hash;
+the verifier still rejects it because the derived benchmark no longer follows
+from the source evidence.
+
+This closes the storage-portability gap without changing retrieval scores,
+catalog content, model weights, package defaults, serving, or promotion.
+Detailed map:
+`prospective_bundle_source_chain_system_map_20261108.md`.
+
+- prospective plus benchmark suite: `24 passed`;
+- broader benchmark/prospective/harvest/watch-audit suite: `40 passed`;
+- Python compile: passed;
+- Ruff: passed;
+- Black check: passed;
+- `git diff --check`: passed;
+- promotion: `NOT_AUTHORIZED`.

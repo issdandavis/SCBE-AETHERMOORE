@@ -4,6 +4,7 @@ from copy import deepcopy
 from hashlib import sha256
 import json
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -14,6 +15,7 @@ from python.scbe.prime_token_catalog import (
 )
 from python.scbe.prime_token_prospective import (
     PREPARATION_SCHEMA,
+    SOURCE_CHAIN_BUNDLE_FILES,
     SOURCE_INVENTORY_SCHEMA,
     build_e92_prospective_run,
     canonical_sha256,
@@ -153,7 +155,7 @@ def _fixture(tmp_path: Path) -> dict[str, Path]:
     }
 
 
-def _run(paths: dict[str, Path]) -> dict[str, dict]:
+def _run(paths: dict[str, Path]) -> dict[str, Any]:
     return build_e92_prospective_run(
         queue_path=paths["queue"],
         labels_path=paths["labels"],
@@ -165,10 +167,13 @@ def _run(paths: dict[str, Path]) -> dict[str, dict]:
     )
 
 
-def _write_bundle(path: Path, bundle: dict[str, dict]) -> Path:
+def _write_bundle(path: Path, bundle: dict[str, Any]) -> Path:
     path.mkdir()
     (path / "BENCHMARK.json").write_bytes(json_bytes(bundle["benchmark"]))
     (path / "RESULT.json").write_bytes(json_bytes(bundle["result"]))
+    source_chain = bundle["source_chain"]
+    for role, filename in SOURCE_CHAIN_BUNDLE_FILES.items():
+        (path / filename).write_bytes(json_bytes(source_chain[role]))
     (path / "RUN_RECEIPT.json").write_bytes(json_bytes(bundle["receipt"]))
     return path
 
@@ -302,3 +307,29 @@ def test_e92_independent_verifier_rejects_query_source_substitution(
     )
     assert verification["status"] == "INVALID_E92_PROSPECTIVE_BUNDLE"
     assert any("query source mismatch" in error for error in verification["errors"])
+
+
+def test_e92_independent_verifier_reconstructs_benchmark_from_source_chain(
+    tmp_path: Path,
+) -> None:
+    bundle = _run(_fixture(tmp_path))
+    output = _write_bundle(tmp_path / "bundle", bundle)
+    labels_path = output / SOURCE_CHAIN_BUNDLE_FILES["labels"]
+    receipt_path = output / "RUN_RECEIPT.json"
+    labels = json.loads(labels_path.read_text(encoding="utf-8"))
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+
+    labels["labels"][0]["relevant_source_suffix"] = "source1.md"
+    labels_path.write_bytes(json_bytes(labels))
+    receipt["source_chain_bundle"]["labels"]["sha256"] = sha256_file(labels_path)
+    receipt_core = dict(receipt)
+    receipt_core.pop("receipt_sha256")
+    receipt["receipt_sha256"] = canonical_sha256(receipt_core)
+    receipt_path.write_bytes(json_bytes(receipt))
+
+    verification = verify_e92_prospective_bundle(
+        output,
+        expected_control_seeds=(3, 5, 7),
+    )
+    assert verification["status"] == "INVALID_E92_PROSPECTIVE_BUNDLE"
+    assert any("do not reconstruct from the source chain" in error for error in verification["errors"])
