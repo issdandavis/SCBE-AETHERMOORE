@@ -49,33 +49,30 @@ share denied replacement of an existing mutable status file. Immutable results
 passed recovery verification. At that point, an exact fresh-root replication
 was still required.
 
-## E103 and E104 robustness update
+## Fresh-seed robustness and parent-provenance correction
 
-That replication requirement is now satisfied along two independent axes. E103
-used three fresh seeds against the same frozen step-13,400 slot-A parent. E104
-kept those fresh seeds and changed only the preserved frozen parent to adjacent
-step-13,350 slot B. Both campaigns ran all six arms by three seeds, preserved
-the parent bit-for-bit, used source-ID/content-hash-disjoint E100 data, and
-passed independent verification with zero errors and no promotion.
+E103 validly repeated all six arms with three fresh seeds against the same
+frozen step-13,400 slot-A parent. It preserved the parent bit-for-bit, used
+source-ID/content-hash-disjoint E100 data, and passed independent verification
+with zero errors and no promotion.
 
 | Campaign | Full mean loss | Frozen parent | Full vs random | Full vs shuffled | Route cost marginal | Winner frequency marginal | Tie/signed marginal |
 |---|---:|---:|:---:|:---:|:---:|:---:|:---:|
-| E103, slot A, fresh seeds | 3.524989 | 3.589145 | pass | pass | pass | pass | **fail** |
-| E104, slot B, adjacent parent | 3.476873 | 3.537573 | pass | pass | pass | pass | **fail** |
+| E102, slot A, original seeds | 3.524484 | 3.589145 | pass | pass | pass | pass | **underpowered** |
+| E103, slot A, fresh seeds | 3.524989 | 3.589145 | pass | pass | pass | pass | **fail threshold** |
 
 For E103, full-sieve loss advantage was `0.064157` versus the frozen parent,
-`0.055908` versus random features, and `0.008841` versus shuffled binding. For
-E104 the corresponding advantages were `0.060699`, `0.052937`, and `0.007483`.
-Every passing comparison exceeded its campaign's `2 x pooled SD` threshold.
+`0.055908` versus random features, and `0.008841` versus shuffled binding. Route
+cost and winner frequency therefore survive a fresh-seed check. Tie/signed
+state did not: its full-versus-ablation advantage was `0.000860`, below the
+`0.002889` threshold, consistent with E102's underpowered result.
 
-The component result is narrower than E101 suggested:
-
-- route cost has replicated marginal contribution across fresh seeds and an
-  adjacent parent;
-- winner frequency has replicated marginal contribution across both checks;
-- tie/signed state did **not** replicate marginal contribution. Its full-versus-
-  ablation advantages were only `0.000860` in E103 and `0.000245` in E104,
-  below thresholds `0.002889` and `0.002290` respectively.
+An attempted adjacent-parent E104 run is **not valid parent-robustness
+evidence**. Although its run pin and model loader named checkpoint B, all 18
+horse results and all 18 terminal adapter checkpoints inherited a hard-coded
+checkpoint-A metadata hash. The strengthened verifier reports
+`FAIL_PRESERVED_NO_PROMOTION`. E104 artifacts remain preserved but may not be
+pooled or cited for checkpoint-B effects. A corrected E105 run is pending.
 
 Therefore SCBE may retain the primary/mirror trits as lossless-to-audit derived
 telemetry beside their raw values, but may not describe tie/signed state as a
@@ -83,12 +80,12 @@ causal routing feature or use it to authorize a route. This does not test the
 v6 prospective retrieval benchmark: Clay byte identity and SCBE canonical
 section identity remain different types.
 
-Authority identities:
+Valid authority identities:
 
+- E102 matrix `fdf75b1b02a5d780546de217d73641fbe9f3ad293ef0a7f211894742f46f1f54`;
+- E102 verification `a0b321bc478eb334dd9eabc49389d96e23622bd17f1bf1a9478217a32348190c`;
 - E103 matrix `dc9aff8d79da4728be396f37289a988cc01a0920f6afd4bd66e69c1326a33b47`;
-- E103 verification `8a61c5543957221294a36129b3bd80bf2ab13deffc218bba8cb00f0892132f8b`;
-- E104 matrix `1f2a9eaa58f9cafb769958fd2c8fe76eac0dd20c8e2679aa03b3339601ad7021`;
-- E104 verification `53c4368fc73ec993c128f1934700df537f9ad627791d02c6fffd76ac38c1ac2f`.
+- E103 verification `8a61c5543957221294a36129b3bd80bf2ab13deffc218bba8cb00f0892132f8b`.
 
 ## Concrete SCBE surfaces
 
@@ -131,8 +128,8 @@ The only justified bridge remains optional telemetry:
 - raw rank values and thresholds retained beside every trit projection.
 
 No security action may be inferred from a Clay trit without a separate SCBE
-governance calibration and false-route test. E103 and E104 further show that
-the tie/signed channel must not be assigned causal route authority.
+governance calibration and false-route test. E102 and E103 show that the
+tie/signed channel must not be assigned causal route authority.
 
 ## Verified local baseline
 

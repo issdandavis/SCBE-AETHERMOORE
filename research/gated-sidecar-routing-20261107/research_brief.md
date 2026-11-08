@@ -147,23 +147,27 @@ with zero errors. Its policy explicitly disables discard, copy, merge, serving,
 and automatic promotion. The entries contribute only controls, design evidence,
 and cross-session route metadata.
 
-### Hyperpath component robustness through E104
+### Hyperpath component robustness and provenance correction
 
-The later source-disjoint E103 and E104 campaigns sharpen the E101 component
+The later source-disjoint E102 and E103 campaigns sharpen the E101 component
 finding without changing SCBE runtime behavior. E103 repeated all six arms with
-three fresh seeds on the step-13,400 frozen parent; E104 repeated the same
-matrix on the adjacent preserved step-13,350 parent. Both independent verifiers
-reported zero errors, disjoint source/content identities, bit-identical frozen
-parents, and no promotion.
+three fresh seeds on the same step-13,400 frozen parent. Both campaigns passed
+independent verification with disjoint source/content identities, bit-identical
+frozen parents, and no promotion.
 
-Across both checks, the full sieve beat the frozen parent, random features, and
-shuffled binding by more than `2 x pooled SD`. Route-cost and winner-frequency
-marginal contributions replicated. Tie/signed marginal contribution did not:
-its full-versus-ablation advantages were below threshold in both campaigns.
-SCBE should therefore keep primary/mirror trits as raw-value-backed telemetry,
-not route authority. This remains Clay byte-loss evidence, not evidence that
-the v6 six-view catalog improves prospective section retrieval. Exact hashes
-and comparisons are recorded in `e101_component_crosswalk.md`.
+Across both seed families, the full sieve beat the frozen parent, random
+features, and shuffled binding by more than `2 x pooled SD`. Route-cost and
+winner-frequency marginal contributions held. Tie/signed marginal contribution
+remained below threshold. SCBE should therefore keep primary/mirror trits as
+raw-value-backed telemetry, not route authority.
+
+An attempted checkpoint-B E104 run was later invalidated for parent-robustness
+claims: all horse results and terminal adapter checkpoints carried checkpoint
+A's metadata hash while the run pin named B. Its artifacts remain preserved,
+but the strengthened verifier fails closed and the result is not pooled. A
+corrected E105 run is pending. None of these Clay byte-loss experiments proves
+that the v6 six-view catalog improves prospective section retrieval. Exact
+hashes and corrections are recorded in `e101_component_crosswalk.md`.
 
 ### Frozen false-route development contract
 

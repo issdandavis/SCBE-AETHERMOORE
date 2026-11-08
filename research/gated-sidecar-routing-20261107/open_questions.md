@@ -58,6 +58,7 @@ Date: 2026-11-07
 4. Do not attach v6 until at least 30 authentic post-freeze requests satisfy the
    existing source-disjoint gate.
 5. Prioritize route-cost and winner-frequency receipts in the next controlled
-   catalog evaluation. E103 and E104 replicated those component effects, while
-   tie/signed marginal contribution failed both robustness checks and remains
-   telemetry-only.
+   catalog evaluation. E102 and E103 preserved those component effects across
+   seed families, while tie/signed marginal contribution stayed below threshold
+   and remains telemetry-only. Do not cite E104 for parent robustness; its horse
+   provenance conflicted with its run pin.
