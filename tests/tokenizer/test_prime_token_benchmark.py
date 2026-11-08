@@ -9,15 +9,18 @@ from python.scbe.prime_token_benchmark import (
     audit_benchmark_disjointness,
     evaluate_catalog,
     evaluate_explicit_routed_catalog,
+    evaluate_late_output_fused_catalog,
     evaluate_lexical_banded_catalog,
     evaluate_lexical_first_catalog,
 )
 from python.scbe.prime_token_catalog import (
     InputRecord,
     PrimeTokenCatalogBuilder,
+    VIEW_NAMES,
     explicit_route,
     search_goal,
     search_explicit_routed,
+    search_late_output_fused,
     search_lexical_banded,
     search_lexical_first,
 )
@@ -368,3 +371,98 @@ def test_explicit_route_evaluator_runs_null_shuffled_and_macro_controls(tmp_path
     assert result["diversity"]["relevant_source_count"] == 3
     assert "fewer than six distinct relevant catalog sources" in result["underpowered_reasons"]
     assert sum(result["route_usage"].values()) == 3
+
+
+def test_late_output_fusion_keeps_no_marker_queries_exactly_lexical(tmp_path):
+    database = _fixture(tmp_path)
+    query = "survivors remain exact"
+    lexical = search_goal(
+        database,
+        query,
+        limit=5,
+        ablate_views=[view for view in VIEW_NAMES if view != "lexical"],
+    )
+    fused = search_late_output_fused(database, query, limit=5)
+
+    assert fused["algorithm_revision"] == "six-view-late-output-fusion-v1"
+    assert fused["route_action"] == "CORE_PASS"
+    assert fused["fusion_active"] is False
+    assert fused["auxiliary_views"] == []
+    assert fused["child_search_ids"]["auxiliary"] is None
+    assert [row["section_id"] for row in fused["results"]] == [row["section_id"] for row in lexical["results"]]
+    assert [row["score"] for row in fused["results"]] == [row["score"] for row in lexical["results"]]
+
+
+def test_late_output_fusion_is_deterministic_rank_only_and_controlled(tmp_path):
+    database = _fixture(tmp_path)
+    query = "Why does this prime sieve code preserve a composite factor?"
+    first = search_late_output_fused(database, query, limit=5)
+    second = search_late_output_fused(database, query, limit=5)
+    null = search_late_output_fused(database, query, limit=5, null_control=True)
+    shuffled = search_late_output_fused(
+        database,
+        query,
+        limit=5,
+        control="shuffled",
+        control_seed=17,
+    )
+
+    assert first == second
+    assert first["route_action"] == "SPECIALIST"
+    assert first["fusion_active"] is True
+    assert first["rrf_k"] == 60.0
+    assert first["auxiliary_views"] == ["prime", "five_w"]
+    assert null["auxiliary_views"] == ["source", "speech"]
+    assert shuffled["control"] == "shuffled"
+    assert shuffled["search_id"] != first["search_id"]
+    assert len(shuffled["results"]) == len(first["results"])
+    for row in first["results"]:
+        fusion = row["late_output_fusion"]
+        assert row["probability"] is None
+        assert fusion["rrf_k"] == 60.0
+        assert fusion["active"] is True
+        assert fusion["fusion_score"] == pytest.approx(
+            fusion["lexical_contribution"] + fusion["auxiliary_contribution"]
+        )
+        assert row["score"] == pytest.approx(fusion["fusion_score"])
+
+
+def test_late_output_fusion_evaluator_runs_declared_controls(tmp_path):
+    result = evaluate_late_output_fused_catalog(
+        _fixture(tmp_path),
+        _benchmark(),
+        benchmark_sha256="f" * 64,
+        control_seeds=(3, 5, 7),
+        limit=5,
+    )
+
+    assert result["status"] == "UNDERPOWERED"
+    assert result["candidate_arm"] == "late_output_fused"
+    assert result["algorithm_revision"] == "six-view-late-output-fusion-v1"
+    assert set(result["arms"]) == {
+        "late_output_fused",
+        "route_null",
+        "explicit_routed",
+        "lexical_only",
+        "no_intervention",
+        "shuffled_binding",
+    }
+    assert len(result["arms"]["shuffled_binding"]) == 3
+    assert set(result["gates"]) == {
+        "lexical_only",
+        "no_intervention",
+        "route_null",
+        "shuffled_binding_seed_3",
+        "shuffled_binding_seed_5",
+        "shuffled_binding_seed_7",
+    }
+    assert sum(result["route_usage"].values()) == 3
+
+    with pytest.raises(ValueError, match="at least three distinct control seeds"):
+        evaluate_late_output_fused_catalog(
+            _fixture(tmp_path / "too-few"),
+            _benchmark(),
+            benchmark_sha256="f" * 64,
+            control_seeds=(3, 5),
+            limit=5,
+        )

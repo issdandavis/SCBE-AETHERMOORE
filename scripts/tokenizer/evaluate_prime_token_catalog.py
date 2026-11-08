@@ -16,6 +16,7 @@ from python.scbe.prime_token_benchmark import (  # noqa: E402
     audit_benchmark_disjointness,
     evaluate_catalog,
     evaluate_explicit_routed_catalog,
+    evaluate_late_output_fused_catalog,
     evaluate_lexical_banded_catalog,
     evaluate_lexical_first_catalog,
     load_benchmark,
@@ -31,7 +32,13 @@ def main() -> int:
     parser.add_argument("--limit", type=int, default=20)
     parser.add_argument(
         "--candidate",
-        choices=("full", "lexical-first", "lexical-banded", "explicit-routed"),
+        choices=(
+            "full",
+            "lexical-first",
+            "lexical-banded",
+            "explicit-routed",
+            "late-output-fused",
+        ),
         default="full",
     )
     parser.add_argument("--lexical-band-width", type=float)
@@ -67,6 +74,14 @@ def main() -> int:
     }
     if args.candidate == "lexical-first":
         result = evaluate_lexical_first_catalog(args.database, benchmark, **common)
+    elif args.candidate == "late-output-fused":
+        if args.lexical_band_width is not None:
+            parser.error("late-output-fused does not accept --lexical-band-width")
+        result = evaluate_late_output_fused_catalog(
+            args.database,
+            benchmark,
+            **common,
+        )
     elif args.candidate == "explicit-routed":
         if args.lexical_band_width not in (None, 0.005):
             parser.error("explicit-routed freezes --lexical-band-width at 0.005")

@@ -33,6 +33,8 @@ ALGORITHM_REVISION = "six-view-topology-v3"
 LEXICAL_FIRST_REVISION = "six-view-lexical-first-v1"
 LEXICAL_BAND_REVISION = "six-view-lexical-band-v1"
 EXPLICIT_ROUTE_REVISION = "six-view-explicit-route-v1"
+LATE_OUTPUT_FUSION_REVISION = "six-view-late-output-fusion-v1"
+LATE_OUTPUT_FUSION_K = 60.0
 DEFAULT_TOKENIZER = Path(
     r"C:\dev\clay_home\tokenizers\clay_open_core_bpe_v1\tokenizer.json"
 )
@@ -1944,6 +1946,167 @@ def search_explicit_routed(
         "explicitly routed auxiliary views may reorder only within a band."
     )
     return child
+
+
+def search_late_output_fused(
+    database: str | Path,
+    goal: str,
+    *,
+    limit: int = 20,
+    topology_steps: int = 2,
+    damping: float = 0.35,
+    control: str = "aligned",
+    control_seed: int = 0,
+    null_control: bool = False,
+) -> dict[str, Any]:
+    """Fuse independent lexical and eligible auxiliary ranks at output only.
+
+    The fixed reciprocal-rank constant is intentionally not configurable.  A
+    query with no explicit auxiliary eligibility reproduces lexical ordering
+    exactly; unlike lane scores are never averaged or treated as calibrated
+    probabilities.
+    """
+    if limit < 1:
+        raise ValueError("limit must be positive")
+    if control not in {"aligned", "shuffled"}:
+        raise ValueError("control must be aligned or shuffled")
+    catalog_path = Path(database).resolve()
+    connection = sqlite3.connect(catalog_path)
+    try:
+        section_count = int(
+            connection.execute("SELECT COUNT(*) FROM sections").fetchone()[0]
+        )
+    finally:
+        connection.close()
+    candidate_limit = max(limit, section_count)
+    route = explicit_route(goal, null_control=null_control)
+    lexical = search_goal(
+        catalog_path,
+        goal,
+        limit=candidate_limit,
+        topology_steps=topology_steps,
+        damping=damping,
+        ablate_views=[view for view in VIEW_NAMES if view != "lexical"],
+        control="aligned",
+        source_kinds=route["source_kinds"],
+    )
+    selected_views = tuple(route["selected_views"])
+    auxiliary = None
+    if selected_views:
+        auxiliary = search_goal(
+            catalog_path,
+            goal,
+            limit=candidate_limit,
+            topology_steps=topology_steps,
+            damping=damping,
+            ablate_views=[view for view in VIEW_NAMES if view not in selected_views],
+            control=control,
+            control_seed=control_seed,
+            source_kinds=route["source_kinds"],
+        )
+
+    lexical_rows = list(lexical["results"])
+    auxiliary_rows = list(auxiliary["results"]) if auxiliary is not None else []
+    lexical_by_section = {row["section_id"]: row for row in lexical_rows}
+    auxiliary_by_section = {row["section_id"]: row for row in auxiliary_rows}
+    lexical_rank = {
+        row["section_id"]: rank for rank, row in enumerate(lexical_rows, start=1)
+    }
+    auxiliary_rank = {
+        row["section_id"]: rank for rank, row in enumerate(auxiliary_rows, start=1)
+    }
+    section_ids = set(lexical_by_section) | set(auxiliary_by_section)
+
+    def contribution(rank: int | None) -> float:
+        return 0.0 if rank is None else 1.0 / (LATE_OUTPUT_FUSION_K + rank)
+
+    if selected_views:
+        ranked = sorted(
+            section_ids,
+            key=lambda section_id: (
+                -(
+                    contribution(lexical_rank.get(section_id))
+                    + contribution(auxiliary_rank.get(section_id))
+                ),
+                lexical_rank.get(section_id, math.inf),
+                auxiliary_rank.get(section_id, math.inf),
+                section_id,
+            ),
+        )
+    else:
+        ranked = [row["section_id"] for row in lexical_rows]
+
+    results = []
+    for section_id in ranked[:limit]:
+        lexical_row = lexical_by_section.get(section_id)
+        auxiliary_row = auxiliary_by_section.get(section_id)
+        row = dict(lexical_row or auxiliary_row or {})
+        lexical_position = lexical_rank.get(section_id)
+        auxiliary_position = auxiliary_rank.get(section_id)
+        lexical_contribution = contribution(lexical_position)
+        auxiliary_contribution = contribution(auxiliary_position)
+        fusion_score = lexical_contribution + auxiliary_contribution
+        if selected_views:
+            row["score"] = fusion_score
+        row["probability"] = None
+        row["late_output_fusion"] = {
+            "active": bool(selected_views),
+            "rrf_k": LATE_OUTPUT_FUSION_K,
+            "lexical_rank": lexical_position,
+            "auxiliary_rank": auxiliary_position,
+            "lexical_contribution": lexical_contribution,
+            "auxiliary_contribution": auxiliary_contribution,
+            "fusion_score": fusion_score,
+        }
+        results.append(row)
+
+    auxiliary_search_id = None if auxiliary is None else auxiliary["search_id"]
+    search_id = stable_id(
+        "late-output-fusion-search",
+        lexical["search_id"],
+        auxiliary_search_id,
+        route,
+        control,
+        control_seed,
+        LATE_OUTPUT_FUSION_K,
+        LATE_OUTPUT_FUSION_REVISION,
+    )
+    analysis_authority = lexical if auxiliary is None else auxiliary
+    return {
+        "schema": SEARCH_SCHEMA,
+        "algorithm_revision": LATE_OUTPUT_FUSION_REVISION,
+        "search_id": search_id,
+        "catalog_sha256": lexical["catalog_sha256"],
+        "goal": goal,
+        "control": control,
+        "control_seed": control_seed,
+        "control_offset": 0 if auxiliary is None else auxiliary["control_offset"],
+        "query_analysis": analysis_authority["query_analysis"],
+        "query_view_status": analysis_authority["query_view_status"],
+        "views": list(VIEW_NAMES),
+        "auxiliary_views": list(selected_views),
+        "explicit_route": route,
+        "route_action": "SPECIALIST" if selected_views else "CORE_PASS",
+        "fusion_active": bool(selected_views),
+        "rrf_k": LATE_OUTPUT_FUSION_K,
+        "ranking_rule": [
+            "fixed_reciprocal_rank_fusion_descending"
+            if selected_views
+            else "lexical_only_score_descending",
+            "lexical_rank_ascending",
+            "auxiliary_rank_ascending",
+            "section_id_ascending",
+        ],
+        "child_search_ids": {
+            "lexical": lexical["search_id"],
+            "auxiliary": auxiliary_search_id,
+        },
+        "results": results,
+        "boundary": (
+            "Eligible auxiliary evidence is fused only after independent ranked outputs exist; "
+            "no hidden state, raw unlike score, probability table, tokenizer, or neural weight is changed."
+        ),
+    }
 
 
 def _probability_schema(connection: sqlite3.Connection) -> None:

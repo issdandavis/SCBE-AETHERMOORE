@@ -282,3 +282,29 @@ until its prospective pool reaches the frozen 30-query minimum.
   it is an inference from the literature, local hardware, and Clay's controls.
 - Unproven: broad language usefulness, v6 retrieval gain, commercial demand,
   and any production promotion candidate.
+
+## E92 deterministic late-output fusion mechanics — 2026-11-08
+
+The recommended commercial boundary now has an executable SCBE candidate.
+`search_late_output_fused()` keeps lexical and explicitly eligible auxiliary
+views in separate searches, joins only by canonical section ID, and performs a
+fixed `k=60` reciprocal-rank fusion after both output lists exist. A query with
+no eligible auxiliary view reproduces lexical section order and scores exactly.
+No hidden state, probability table, tokenizer, model weight, or serving pointer
+is changed.
+
+The companion evaluator includes lexical-only, no-intervention, route-null,
+the prior explicit lexical-band route, and three shuffled-binding seeds while
+retaining the existing 30-query, source-diversity, macro-source, and `2x` pooled
+SD gates. The CLI exposes the candidate as `late-output-fused` without making it
+a default.
+
+Synthetic-only mechanics passed `12/12`; focused tests pass `20/20`, the full
+tokenizer suite passes `245/245`, and Ruff passes. Receipt:
+`S:/ClayRuns/e92-late-output-fusion-20261108/MECHANICS.json`, file SHA-256
+`aba33a487272a1164f45d8db8deb41a42a5338ffc3c72c83c3f0df89b1952f13`,
+canonical SHA-256
+`8bbeb67f1a1113fb830b18d17015403e6d39b391d5a91bf8f91b4ef370cd5fe2`.
+The prospective catalog was not scored. Its watcher remains source-disjoint and
+waiting for a genuinely closed post-freeze source; promotion remains
+unauthorized.

@@ -15,6 +15,7 @@ from typing import Any
 from python.scbe.prime_token_catalog import (
     ALGORITHM_REVISION,
     EXPLICIT_ROUTE_REVISION,
+    LATE_OUTPUT_FUSION_REVISION,
     LEXICAL_BAND_REVISION,
     LEXICAL_FIRST_REVISION,
     VIEW_NAMES,
@@ -22,6 +23,7 @@ from python.scbe.prime_token_catalog import (
     normalize_word,
     search_goal,
     search_explicit_routed,
+    search_late_output_fused,
     search_lexical_banded,
     search_lexical_first,
     sha256_file,
@@ -966,5 +968,223 @@ def evaluate_explicit_routed_catalog(
         "claim_boundary": (
             "The explicit route is a deterministic retrieval sidecar. This result cannot promote a "
             "probability table, serving pointer, tokenizer, package default, deployment, or neural weight."
+        ),
+    }
+
+
+def evaluate_late_output_fused_catalog(
+    database: str | Path,
+    benchmark: Mapping[str, Any],
+    *,
+    benchmark_sha256: str,
+    control_seeds: Sequence[int] = (11, 29, 47),
+    limit: int = 20,
+) -> dict[str, Any]:
+    """Evaluate fixed rank-only late fusion against declared controls."""
+    database_path = Path(database).resolve()
+    if len(set(control_seeds)) < 3:
+        raise ValueError("at least three distinct control seeds are required")
+    if limit < 5:
+        raise ValueError("limit must be at least 5")
+    queries = _validate_queries(database_path, benchmark)
+    configs = {
+        "late_output_fused": ("late", "aligned", (0,), False),
+        "route_null": ("late", "aligned", (0,), True),
+        "explicit_routed": ("explicit", "aligned", (0,), False),
+        "lexical_only": ("lexical", "aligned", (0,), False),
+        "no_intervention": ("no_intervention", "aligned", (0,), False),
+        "shuffled_binding": (
+            "late",
+            "shuffled",
+            tuple(control_seeds),
+            False,
+        ),
+    }
+    arm_runs: dict[str, list[dict[str, Any]]] = {}
+    for arm_name, (mode, control, seeds, null_control) in configs.items():
+        runs = []
+        for seed in seeds:
+            outcomes = []
+            control_offset = 0
+            for query in queries:
+                if mode == "late":
+                    receipt = search_late_output_fused(
+                        database_path,
+                        query["query"],
+                        limit=limit,
+                        control=control,
+                        control_seed=seed,
+                        null_control=null_control,
+                    )
+                elif mode == "explicit":
+                    receipt = search_explicit_routed(
+                        database_path,
+                        query["query"],
+                        limit=limit,
+                    )
+                else:
+                    ablations: Sequence[str] = ()
+                    if mode == "lexical":
+                        ablations = [view for view in VIEW_NAMES if view != "lexical"]
+                    elif mode == "no_intervention":
+                        ablations = ("five_w", "prime", "source")
+                    receipt = search_goal(
+                        database_path,
+                        query["query"],
+                        limit=limit,
+                        ablate_views=ablations,
+                    )
+                control_offset = int(receipt["control_offset"])
+                rank = _rank(receipt["results"], query["relevant_source_uri"])
+                route = receipt.get("explicit_route", {})
+                outcomes.append(
+                    {
+                        "query_id": query["id"],
+                        "query_source_uri": query["query_source_uri"],
+                        "review_stratum": query["review_stratum"],
+                        "relevant_source_uri": query["relevant_source_uri"],
+                        "rank": rank,
+                        "reciprocal_rank": 0.0 if rank is None else 1.0 / rank,
+                        "selected_views": list(route.get("selected_views", [])),
+                        "fusion_active": bool(receipt.get("fusion_active", False)),
+                        "search_id": receipt["search_id"],
+                    }
+                )
+            runs.append(
+                {
+                    "control_seed": seed,
+                    "control_offset": control_offset,
+                    "metrics": _metrics(outcomes),
+                    "macro_source_metrics": _macro_source_metrics(outcomes),
+                    "outcomes": outcomes,
+                }
+            )
+        arm_runs[arm_name] = runs
+
+    candidate_outcomes = arm_runs["late_output_fused"][0]["outcomes"]
+    candidate_rr = [float(row["reciprocal_rank"]) for row in candidate_outcomes]
+    gates: dict[str, Any] = {}
+    for control_name in ("lexical_only", "no_intervention", "route_null"):
+        control_rr = [
+            float(row["reciprocal_rank"])
+            for row in arm_runs[control_name][0]["outcomes"]
+        ]
+        gates[control_name] = _paired_gate(candidate_rr, control_rr)
+    for run in arm_runs["shuffled_binding"]:
+        seed = int(run["control_seed"])
+        shuffled_rr = [float(row["reciprocal_rank"]) for row in run["outcomes"]]
+        gates[f"shuffled_binding_seed_{seed}"] = _paired_gate(
+            candidate_rr,
+            shuffled_rr,
+        )
+
+    lexical_outcomes = arm_runs["lexical_only"][0]["outcomes"]
+    candidate_sources = arm_runs["late_output_fused"][0]["macro_source_metrics"]
+    lexical_sources = arm_runs["lexical_only"][0]["macro_source_metrics"]
+    source_deltas = {
+        source: (
+            float(candidate_sources["by_source"][source]["mrr"])
+            - float(lexical_sources["by_source"][source]["mrr"])
+        )
+        for source in candidate_sources["by_source"]
+    }
+    macro_source_gate = {
+        "candidate_macro_mrr": float(candidate_sources["macro_mrr"]),
+        "lexical_macro_mrr": float(lexical_sources["macro_mrr"]),
+        "passes": float(candidate_sources["macro_mrr"])
+        > float(lexical_sources["macro_mrr"]),
+    }
+    source_change_gate = {
+        "improved_sources": sum(delta > 0 for delta in source_deltas.values()),
+        "harmed_sources": sum(delta < 0 for delta in source_deltas.values()),
+        "worst_source_delta": min(source_deltas.values(), default=0.0),
+        "per_source_delta": source_deltas,
+    }
+    source_change_gate["passes"] = (
+        source_change_gate["improved_sources"] >= 3
+        and source_change_gate["worst_source_delta"] >= -0.05
+    )
+    query_differences = [
+        float(candidate["reciprocal_rank"]) - float(lexical["reciprocal_rank"])
+        for candidate, lexical in zip(
+            candidate_outcomes,
+            lexical_outcomes,
+            strict=True,
+        )
+    ]
+    source_counts: dict[str, int] = {}
+    for query in queries:
+        source = str(query["relevant_source_uri"])
+        source_counts[source] = source_counts.get(source, 0) + 1
+    strata = sorted(
+        {str(query["review_stratum"]) for query in queries if query["review_stratum"]}
+    )
+    max_source_share = max(source_counts.values(), default=0) / len(queries)
+    diversity = {
+        "topic_strata": strata,
+        "topic_strata_count": len(strata),
+        "relevant_source_count": len(source_counts),
+        "max_relevant_source_share": max_source_share,
+        "relevant_source_query_counts": dict(sorted(source_counts.items())),
+    }
+    underpowered_reasons = []
+    if len(queries) < MIN_CAPABILITY_QUERIES:
+        underpowered_reasons.append(
+            f"{len(queries)} queries is below the preregistered {MIN_CAPABILITY_QUERIES}-query capability floor"
+        )
+    if benchmark.get("query_provenance") != "independent_external":
+        underpowered_reasons.append(
+            "queries are not independently authored external requests"
+        )
+    if len(strata) < 3:
+        underpowered_reasons.append("fewer than three reviewed topic strata")
+    if len(source_counts) < 6:
+        underpowered_reasons.append("fewer than six distinct relevant catalog sources")
+    if max_source_share > 0.4:
+        underpowered_reasons.append("one relevant source exceeds the 40-percent cap")
+    micro_gates_pass = all(
+        bool(gate["passes_two_pooled_sd"]) for gate in gates.values()
+    )
+    all_gates_pass = (
+        micro_gates_pass
+        and bool(macro_source_gate["passes"])
+        and bool(source_change_gate["passes"])
+    )
+    status = (
+        "UNDERPOWERED"
+        if underpowered_reasons
+        else ("CANDIDATE_PASS" if all_gates_pass else "NO_GAIN")
+    )
+    route_usage: dict[str, int] = {}
+    for row in candidate_outcomes:
+        route_key = "+".join(row["selected_views"]) or "lexical_only"
+        route_usage[route_key] = route_usage.get(route_key, 0) + 1
+    return {
+        "schema": CASCADE_RESULT_SCHEMA,
+        "status": status,
+        "candidate_arm": "late_output_fused",
+        "catalog": str(database_path),
+        "catalog_sha256": sha256_file(database_path),
+        "benchmark_sha256": benchmark_sha256,
+        "algorithm_revision": LATE_OUTPUT_FUSION_REVISION,
+        "query_count": len(queries),
+        "query_provenance": benchmark.get("query_provenance", "UNKNOWN"),
+        "control_seeds": list(control_seeds),
+        "result_limit": limit,
+        "arms": arm_runs,
+        "gates": gates,
+        "macro_source_gate": macro_source_gate,
+        "source_change_gate": source_change_gate,
+        "diversity": diversity,
+        "route_usage": dict(sorted(route_usage.items())),
+        "query_changes_vs_lexical": {
+            "improved": sum(value > 0 for value in query_differences),
+            "harmed": sum(value < 0 for value in query_differences),
+            "unchanged": sum(value == 0 for value in query_differences),
+        },
+        "underpowered_reasons": underpowered_reasons,
+        "claim_boundary": (
+            "Late output fusion is deterministic rank composition, not learned model capability. "
+            "No probability table, serving pointer, package default, tokenizer, or neural weight is promoted."
         ),
     }
