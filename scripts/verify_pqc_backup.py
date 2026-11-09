@@ -7,6 +7,7 @@ quantum-resistant, so a deployment can never silently ship the insecure stub.
 
     python scripts/verify_pqc_backup.py
 """
+
 import sys
 from pathlib import Path
 
