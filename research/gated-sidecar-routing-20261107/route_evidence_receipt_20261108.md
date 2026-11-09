@@ -133,3 +133,15 @@ sources, and zero admissible candidates against the unchanged 30-query floor.
 No session body was opened by the audit; no label, benchmark, result, training
 intake, probability update, serving change, merge, or promotion was authorized.
 Focused watcher and signed-radix verification passed `49/49` tests.
+
+## Live-chain revalidation — 2026-11-08 20:58 PST
+
+After E145 closed and E146 began, the independent watcher-chain verifier was
+rerun against the current watcher and preparer receipts. It again returned
+`VERIFIED_WAITING_NO_SCORING` with zero errors; audit SHA-256
+`d8df0ab573bfd0ce692b78ecdf44f016c6dad44a45c7fea5410f59a85d901984`.
+
+The boundary remains one open post-freeze source, zero closed sources, and zero
+admissible candidates against the 30-query floor. Scoring, labels, training
+intake, merge, serving, and promotion remain unauthorized. The focused watcher
+and signed-radix suites passed `49/49` tests.
