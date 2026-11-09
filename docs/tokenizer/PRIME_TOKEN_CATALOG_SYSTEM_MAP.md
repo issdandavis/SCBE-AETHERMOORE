@@ -509,3 +509,22 @@ file SHA-256
 The focused catalog, prospective evaluator, query-harvest, and watch-audit suite
 passes 36/36. This remains a verified wait and does not authorize scoring the
 open session or changing tokenizer probabilities or model weights.
+
+## Second continuation audit — 2026-11-09 07:46 UTC
+
+The exact pinned watcher/preparer chain was independently re-run while both
+headless workers remained live. The receipt again reports
+`VERIFIED_WAITING_NO_SCORING` with zero errors, zero closed post-freeze sources,
+one open source, zero candidates, and no benchmark, result, run, packet,
+serving, merge, training-intake, or promotion artifact. The frozen catalog
+SHA-256 remains
+`1839d609bc8e7263263e4c83d1bac2c3645285a9a664abfc6e9f292cc0b2fba0`.
+
+Receipt:
+`C:/dev/clay-training-runs/prime-token-catalog-20261106/source-disjoint-audit-20261108/LIVE_CHAIN_AUDIT_20261109T0746Z.json`;
+canonical audit SHA-256
+`f230e1332695916cccf93115b368ac516ce76aad77d63dcc83cd80000397bfa8`;
+file SHA-256
+`4a4b50f8379f8032f3150d80908894d090ff691b16b987d680af32d430692139`.
+This is collection-only evidence. The active session remains excluded from
+prospective scoring until it closes and the 30-candidate floor is met.
