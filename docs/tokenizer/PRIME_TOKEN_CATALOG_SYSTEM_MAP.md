@@ -490,3 +490,22 @@ wrapper under `scripts/tokenizer/`. Four mutation/boundary tests cover source
 hash drift, authority drift, forbidden scoring output, partial packet writes,
 and the valid waiting/packet-ready states. The broader focused evidence is 32
 catalog/evaluator tests plus 17 collector/preparer/watcher tests passing.
+
+## Continuation audit — 2026-11-09
+
+The live watcher and preparer were re-audited without opening the active session
+or running retrieval. The fresh receipt again reports
+`VERIFIED_WAITING_NO_SCORING` with zero errors, zero closed post-freeze sources,
+one open source, zero candidates, and no benchmark, result, run, review-packet,
+serving, merge, training-intake, or promotion artifact. The catalog SHA-256 is
+still `1839d609bc8e7263263e4c83d1bac2c3645285a9a664abfc6e9f292cc0b2fba0`.
+
+Receipt:
+`C:/dev/clay-training-runs/prime-token-catalog-20261106/source-disjoint-audit-20261108/LIVE_CHAIN_AUDIT_20261109T0724Z.json`;
+canonical audit SHA-256
+`b5fb8843a4709b8ecbd93614fb729dd827906ae2d2d463d88f0e8cf3ad89427c`;
+file SHA-256
+`76afedd2f1b58ed6eadd2eefecbd42260b2b154b7bd675cb40cc21aefb47c515`.
+The focused catalog, prospective evaluator, query-harvest, and watch-audit suite
+passes 36/36. This remains a verified wait and does not authorize scoring the
+open session or changing tokenizer probabilities or model weights.
