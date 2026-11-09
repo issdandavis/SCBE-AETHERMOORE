@@ -528,3 +528,22 @@ file SHA-256
 `4a4b50f8379f8032f3150d80908894d090ff691b16b987d680af32d430692139`.
 This is collection-only evidence. The active session remains excluded from
 prospective scoring until it closes and the 30-candidate floor is met.
+
+## Third continuation audit — 2026-11-09 08:38 UTC
+
+The same pinned watcher/preparer chain was audited again while both headless
+workers remained live and continued updating their status receipts. The result
+is `VERIFIED_WAITING_NO_SCORING` with zero errors, zero closed post-freeze
+sources, one open source, zero candidates, and no benchmark, result, run,
+review-packet, serving, merge, training-intake, or promotion artifact. The
+frozen catalog SHA-256 remains
+`1839d609bc8e7263263e4c83d1bac2c3645285a9a664abfc6e9f292cc0b2fba0`.
+
+Receipt:
+`C:/dev/clay-training-runs/prime-token-catalog-20261106/source-disjoint-audit-20261108/LIVE_CHAIN_AUDIT_20261109T0838Z.json`;
+canonical audit SHA-256
+`5c6780c41d8571dd4a8b896c33ba848607465a9e4bd37c219f8fa0916117d323`;
+file SHA-256
+`5507001e1bf117588ef4e5ffbae924878c876702ea7543ce24939a4ddb707dee`.
+The source-session gate remains authoritative: this open session cannot enter
+prospective scoring, training intake, or probability updates.
