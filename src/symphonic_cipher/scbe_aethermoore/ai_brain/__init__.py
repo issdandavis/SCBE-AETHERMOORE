@@ -144,6 +144,10 @@ from .cymatic_voxel_net import (
     dominant_tongue,
     estimate_nodal_density,
 )
+from .predictive_sensory_trits import (
+    PredictiveSensoryTritRouter,
+    PredictiveTritFrame,
+)
 
 __all__ = [
     "UnifiedBrainState",
@@ -278,6 +282,9 @@ __all__ = [
     "TONGUE_PHASES",
     # Cymatic Voxel Net
     "CymaticVoxelNet",
+    # Layer-14A predictive dual-trit sidecar
+    "PredictiveSensoryTritRouter",
+    "PredictiveTritFrame",
     "NODAL_THRESHOLD",
     "REALM_CENTERS",
     "SACRED_TONGUES",
