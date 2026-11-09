@@ -119,3 +119,17 @@ Detailed map:
 - Black check: passed;
 - `git diff --check`: passed;
 - promotion: `NOT_AUTHORIZED`.
+
+## Live-chain revalidation — 2026-11-08 20:20 PST
+
+The independent watcher-chain verifier was rerun against the current v6
+catalog, source-session-disjoint watcher pin/status, preparer pin/status, and
+empty review-packet boundary. It returned `VERIFIED_WAITING_NO_SCORING` with
+zero errors and audit SHA-256
+`a32344757b409a02e496fe0c7405e7f666adc5cae0c1e32468e318529b3109f0`.
+
+The watcher reported one open post-freeze session, zero closed post-freeze
+sources, and zero admissible candidates against the unchanged 30-query floor.
+No session body was opened by the audit; no label, benchmark, result, training
+intake, probability update, serving change, merge, or promotion was authorized.
+Focused watcher and signed-radix verification passed `49/49` tests.
