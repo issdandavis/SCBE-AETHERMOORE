@@ -108,3 +108,9 @@ cell exactly once, and a uniform-color sector does not grow. Receipts report the
 flat-fill baseline, fixed-gradient error, adaptive-gradient error, node counts,
 and packed stop counts. These colors remain a correlated byte-derived view; more
 rendered shades improve visual fidelity but are not additional semantic evidence.
+
+Node splitting and final color fidelity use separate bounded budgets. The base
+`max_gradient_stops` budget decides whether a radial node grows; after that
+topology is fixed, `leaf_gradient_stops` may pack a denser palette ramp into
+each terminal sector ply. Increasing leaf fidelity therefore cannot suppress
+node growth by making the parent fit artificially perfect.

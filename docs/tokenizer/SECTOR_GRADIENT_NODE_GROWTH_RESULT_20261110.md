@@ -56,3 +56,25 @@ Result: 20 passed. The suite covers deterministic receipts, exact bounded leaf
 coverage, observed growth, no-growth uniform control, added pixel shades,
 shuffled binding, invalid budgets, and the pre-existing table invariants.
 
+## Dense sector-ply extension
+
+The follow-up renderer separates the topology budget from the terminal palette
+budget. Three stops still decide every split; only after the node tree is fixed
+may a leaf pack as many as eight source-aligned stops. This prevents added color
+fidelity from erasing the error signal that causes node growth.
+
+Measured output:
+
+`C:\dev\clay-training-runs\sector-gradient-node-growth-20261110\run-seed-20261110-v4\sector-gradient-growth.png`
+
+Matched three-stop control:
+
+`C:\dev\clay-training-runs\sector-gradient-node-growth-20261110\run-seed-20261110-v4\sector-gradient-growth-3-stop-control.png`
+
+Both renders used the same 24-node topology: 8 roots grew into 16 leaves. The
+dense candidate packed 64 stops instead of 44, reduced adaptive RGB MSE from
+3,117.65625 to 0, increased the rendered non-background palette to 9,352
+colors, and produced a different PNG hash. All eight declared checks passed.
+
+Verification after the extension: 22 tests passed.
+

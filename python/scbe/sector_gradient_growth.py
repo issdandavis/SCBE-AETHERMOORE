@@ -39,9 +39,7 @@ def _canonical_json(value: object) -> bytes:
 
 
 def _validate_rgb(color: Sequence[int]) -> RGB:
-    if len(color) != 3 or any(
-        isinstance(channel, bool) or not isinstance(channel, int) for channel in color
-    ):
+    if len(color) != 3 or any(isinstance(channel, bool) or not isinstance(channel, int) for channel in color):
         raise ValueError("RGB colors must contain exactly three integer channels")
     if any(channel < 0 or channel > 255 for channel in color):
         raise ValueError("RGB channels must be in [0, 255]")
@@ -159,9 +157,7 @@ class SectorGradientMesh:
                     pixels.append(background)
                     continue
                 angle = math.atan2(dy, dx) % TAU
-                sector = min(
-                    self.table.spec.sector_count - 1, int(angle / sector_width)
-                )
+                sector = min(self.table.spec.sector_count - 1, int(angle / sector_width))
                 selected = leaves_by_sector[sector][-1]
                 for candidate in leaves_by_sector[sector]:
                     if candidate.radius_start <= radius <= candidate.radius_end:
@@ -173,16 +169,12 @@ class SectorGradientMesh:
         image.putdata(pixels)
         return image
 
-    def save_png(
-        self, path: str | Path, *, size: int = 256, background: RGB = (0, 0, 0)
-    ) -> str:
+    def save_png(self, path: str | Path, *, size: int = 256, background: RGB = (0, 0, 0)) -> str:
         """Write a deterministic PNG and return its SHA-256 digest."""
 
         target = Path(path)
         target.parent.mkdir(parents=True, exist_ok=True)
-        self.render(size=size, background=background).save(
-            target, format="PNG", optimize=False, compress_level=9
-        )
+        self.render(size=size, background=background).save(target, format="PNG", optimize=False, compress_level=9)
         return sha256(target.read_bytes()).hexdigest()
 
     def receipt(self) -> dict[str, object]:
@@ -206,10 +198,28 @@ class SectorGradientMesh:
             samples = sum(node.sample_count for node in rows)
             if samples == 0:
                 return 0.0
-            return (
-                math.fsum(getattr(node, field) * node.sample_count for node in rows)
-                / samples
-            )
+            return math.fsum(getattr(node, field) * node.sample_count for node in rows) / samples
+
+        base_stop_budget = int(self.config["max_gradient_stops"])
+        table_cells = {cell.cell_id: cell for cell in self.table.base_cells}
+
+        def refit_root_mse(node: SectorGradientNode) -> tuple[float, float]:
+            samples = tuple((table_cells[cell_id], self.colors[cell_id]) for cell_id in node.sample_cell_ids)
+            _, flat_mse, gradient_mse = _fit_stops(samples, base_stop_budget)
+            return flat_mse, gradient_mse
+
+        root_fits = tuple(refit_root_mse(node) for node in roots)
+        root_samples = sum(node.sample_count for node in roots)
+        flat_mse = (
+            math.fsum(value[0] * node.sample_count for node, value in zip(roots, root_fits, strict=True)) / root_samples
+            if root_samples
+            else 0.0
+        )
+        fixed_gradient_mse = (
+            math.fsum(value[1] * node.sample_count for node, value in zip(roots, root_fits, strict=True)) / root_samples
+            if root_samples
+            else 0.0
+        )
 
         return SectorGradientMetrics(
             root_count=len(roots),
@@ -217,8 +227,8 @@ class SectorGradientMesh:
             leaf_count=len(leaves),
             grown_node_count=sum(bool(node.child_ids) for node in self.nodes),
             max_observed_depth=max(node.depth for node in self.nodes),
-            flat_mse=weighted_mse(roots, "flat_mse"),
-            fixed_gradient_mse=weighted_mse(roots, "gradient_mse"),
+            flat_mse=flat_mse,
+            fixed_gradient_mse=fixed_gradient_mse,
             adaptive_gradient_mse=weighted_mse(leaves, "gradient_mse"),
             packed_stop_count=sum(len(node.gradient_stops) for node in leaves),
         )
@@ -238,9 +248,7 @@ class SectorGradientMesh:
         for node in self.nodes:
             if not 0.0 <= node.radius_start < node.radius_end <= 1.0:
                 raise ValueError("visual node radius bounds must partition [0, 1]")
-            if node.child_ids and any(
-                child_id not in self._by_id for child_id in node.child_ids
-            ):
+            if node.child_ids and any(child_id not in self._by_id for child_id in node.child_ids):
                 raise ValueError("visual node references a missing child")
             if not node.gradient_stops:
                 raise ValueError("every visual node needs at least one gradient stop")
@@ -252,22 +260,14 @@ class SectorGradientMesh:
                 raise ValueError("gradient stops must be ordered")
 
 
-def _packed_stops(
-    samples: Sequence[tuple[AlgebraicCell, RGB]], max_stops: int
-) -> tuple[GradientStop, ...]:
+def _packed_stops(samples: Sequence[tuple[AlgebraicCell, RGB]], max_stops: int) -> tuple[GradientStop, ...]:
     stop_count = min(max_stops, len(samples))
     if stop_count == 1:
         cell, color = samples[0]
         return (GradientStop(cell.radius, color),)
-    indices = [
-        round(step * (len(samples) - 1) / (stop_count - 1))
-        for step in range(stop_count)
-    ]
+    indices = [round(step * (len(samples) - 1) / (stop_count - 1)) for step in range(stop_count)]
     unique_indices = tuple(dict.fromkeys(indices))
-    return tuple(
-        GradientStop(samples[index][0].radius, samples[index][1])
-        for index in unique_indices
-    )
+    return tuple(GradientStop(samples[index][0].radius, samples[index][1]) for index in unique_indices)
 
 
 def _predict(stops: Sequence[GradientStop], radius: float) -> RGB:
@@ -286,23 +286,14 @@ def _predict(stops: Sequence[GradientStop], radius: float) -> RGB:
     return stops[-1].color
 
 
-def _errors(
-    samples: Sequence[tuple[AlgebraicCell, RGB]], stops: Sequence[GradientStop]
-) -> tuple[float, float]:
-    means = tuple(
-        round(math.fsum(color[channel] for _, color in samples) / len(samples))
-        for channel in range(3)
-    )
+def _errors(samples: Sequence[tuple[AlgebraicCell, RGB]], stops: Sequence[GradientStop]) -> tuple[float, float]:
+    means = tuple(round(math.fsum(color[channel] for _, color in samples) / len(samples)) for channel in range(3))
     flat_squared = 0.0
     gradient_squared = 0.0
     for cell, color in samples:
         predicted = _predict(stops, cell.radius)
-        flat_squared += math.fsum(
-            (color[channel] - means[channel]) ** 2 for channel in range(3)
-        )
-        gradient_squared += math.fsum(
-            (color[channel] - predicted[channel]) ** 2 for channel in range(3)
-        )
+        flat_squared += math.fsum((color[channel] - means[channel]) ** 2 for channel in range(3))
+        gradient_squared += math.fsum((color[channel] - predicted[channel]) ** 2 for channel in range(3))
     divisor = len(samples) * 3
     return flat_squared / divisor, gradient_squared / divisor
 
@@ -316,13 +307,8 @@ def _fit_stops(
     flat_mse, gradient_mse = _errors(samples, stops)
     if gradient_mse <= flat_mse:
         return stops, flat_mse, gradient_mse
-    mean_color = tuple(
-        round(math.fsum(color[channel] for _, color in samples) / len(samples))
-        for channel in range(3)
-    )
-    flat_stop = (
-        GradientStop((samples[0][0].radius + samples[-1][0].radius) / 2.0, mean_color),
-    )
+    mean_color = tuple(round(math.fsum(color[channel] for _, color in samples) / len(samples)) for channel in range(3))
+    flat_stop = (GradientStop((samples[0][0].radius + samples[-1][0].radius) / 2.0, mean_color),)
     _, packed_flat_mse = _errors(samples, flat_stop)
     return flat_stop, flat_mse, packed_flat_mse
 
@@ -333,6 +319,7 @@ def build_sector_gradient_mesh(
     *,
     max_depth: int = 3,
     max_gradient_stops: int = 3,
+    leaf_gradient_stops: int | None = None,
     split_error_threshold: float = 64.0,
     min_samples_to_split: int = 4,
 ) -> SectorGradientMesh:
@@ -340,24 +327,22 @@ def build_sector_gradient_mesh(
 
     if len(opcode_bytes) != table.spec.cell_count:
         raise ValueError("opcode byte count must match table cell_count")
-    if any(
-        isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= 255
-        for value in opcode_bytes
-    ):
+    if any(isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= 255 for value in opcode_bytes):
         raise ValueError("opcode bytes must be integers in [0, 255]")
     if max_depth < 0 or max_depth > 12:
         raise ValueError("max_depth must be in [0, 12]")
-    if max_gradient_stops < 1 or max_gradient_stops > 32:
-        raise ValueError("max_gradient_stops must be in [1, 32]")
+    if max_gradient_stops < 1 or max_gradient_stops > 64:
+        raise ValueError("max_gradient_stops must be in [1, 64]")
+    resolved_leaf_stops = max_gradient_stops if leaf_gradient_stops is None else leaf_gradient_stops
+    if resolved_leaf_stops < max_gradient_stops or resolved_leaf_stops > 64:
+        raise ValueError("leaf_gradient_stops must be in [max_gradient_stops, 64]")
     if min_samples_to_split < 2:
         raise ValueError("min_samples_to_split must be at least two")
     if not math.isfinite(split_error_threshold) or split_error_threshold < 0:
         raise ValueError("split_error_threshold must be finite and non-negative")
 
     colors = tuple(opcode_rgb(value) for value in opcode_bytes)
-    by_sector: dict[int, list[tuple[AlgebraicCell, RGB]]] = {
-        sector: [] for sector in range(table.spec.sector_count)
-    }
+    by_sector: dict[int, list[tuple[AlgebraicCell, RGB]]] = {sector: [] for sector in range(table.spec.sector_count)}
     for cell in table.base_cells:
         by_sector[cell.sector].append((cell, colors[cell.cell_id]))
     for samples in by_sector.values():
@@ -378,9 +363,7 @@ def build_sector_gradient_mesh(
     ) -> str:
         node_id = f"sector:{sector}:node:{path}"
         stops, flat_mse, gradient_mse = _fit_stops(samples, max_gradient_stops)
-        child_specs: list[
-            tuple[Sequence[tuple[AlgebraicCell, RGB]], float, float, str]
-        ] = []
+        child_specs: list[tuple[Sequence[tuple[AlgebraicCell, RGB]], float, float, str]] = []
 
         if depth < max_depth and len(samples) >= min_samples_to_split:
             midpoint = len(samples) // 2
@@ -389,17 +372,15 @@ def build_sector_gradient_mesh(
             boundary = (left[-1][0].radius + right[0][0].radius) / 2.0
             left_error = _fit_stops(left, max_gradient_stops)[2]
             right_error = _fit_stops(right, max_gradient_stops)[2]
-            child_error = (left_error * len(left) + right_error * len(right)) / len(
-                samples
-            )
-            if (
-                gradient_mse > split_error_threshold
-                and child_error + 1e-12 < gradient_mse
-            ):
+            child_error = (left_error * len(left) + right_error * len(right)) / len(samples)
+            if gradient_mse > split_error_threshold and child_error + 1e-12 < gradient_mse:
                 child_specs = [
                     (left, radius_start, boundary, f"{path}0"),
                     (right, boundary, radius_end, f"{path}1"),
                 ]
+
+        if not child_specs and resolved_leaf_stops > max_gradient_stops:
+            stops, flat_mse, gradient_mse = _fit_stops(samples, resolved_leaf_stops)
 
         node_index = len(nodes)
         nodes.append(
@@ -464,6 +445,7 @@ def build_sector_gradient_mesh(
         config={
             "max_depth": max_depth,
             "max_gradient_stops": max_gradient_stops,
+            "leaf_gradient_stops": resolved_leaf_stops,
             "split_error_threshold": split_error_threshold,
             "min_samples_to_split": min_samples_to_split,
         },

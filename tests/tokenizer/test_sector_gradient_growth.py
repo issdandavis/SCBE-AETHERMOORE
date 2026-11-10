@@ -62,6 +62,33 @@ def test_pixel_render_packs_more_shades_than_the_source_opcode_colors() -> None:
     assert len(rendered) > len(source)
 
 
+def test_leaf_fidelity_budget_preserves_growth_and_reduces_error() -> None:
+    nonlinear_ramp = (0, 63, 15, 48, 5, 58, 21, 42)
+    opcodes = tuple((value + sector * 3) % 64 for sector in range(4) for value in nonlinear_ramp)
+    coarse = build_sector_gradient_mesh(
+        _table(),
+        opcodes,
+        max_depth=2,
+        max_gradient_stops=2,
+        leaf_gradient_stops=2,
+        split_error_threshold=1.0,
+        min_samples_to_split=5,
+    )
+    packed = build_sector_gradient_mesh(
+        _table(),
+        opcodes,
+        max_depth=2,
+        max_gradient_stops=2,
+        leaf_gradient_stops=8,
+        split_error_threshold=1.0,
+        min_samples_to_split=5,
+    )
+    assert tuple(node.child_ids for node in coarse.nodes) == tuple(node.child_ids for node in packed.nodes)
+    assert packed.metrics.grown_node_count == coarse.metrics.grown_node_count > 0
+    assert packed.metrics.packed_stop_count > coarse.metrics.packed_stop_count
+    assert packed.metrics.adaptive_gradient_mse < coarse.metrics.adaptive_gradient_mse
+
+
 def test_shuffled_binding_changes_the_receipt_at_equal_budget() -> None:
     opcodes = tuple((index * 5) % 64 for index in range(32))
     shuffled = tuple(reversed(opcodes))
@@ -78,6 +105,7 @@ def test_shuffled_binding_changes_the_receipt_at_equal_budget() -> None:
         ((1,) * 31 + (256,), {}),
         ((1,) * 32, {"max_depth": 13}),
         ((1,) * 32, {"max_gradient_stops": 0}),
+        ((1,) * 32, {"max_gradient_stops": 3, "leaf_gradient_stops": 2}),
         ((1,) * 32, {"split_error_threshold": float("inf")}),
     ],
 )
