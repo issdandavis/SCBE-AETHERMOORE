@@ -94,7 +94,9 @@ def main() -> int:
         background=background,
     )
     image = mesh.render(size=args.size, background=background)
+    control_image = equal_growth_control.render(size=args.size, background=background)
     unique_rendered_colors = len(set(image.get_flattened_data()) - {background})
+    control_unique_rendered_colors = len(set(control_image.get_flattened_data()) - {background})
 
     receipt = mesh.receipt()
     (args.output / "receipt.json").write_text(
@@ -110,6 +112,8 @@ def main() -> int:
         "three_stop_control_png_sha256": control_png_sha256,
         "unique_source_colors": len(set(mesh.colors)),
         "unique_rendered_colors": unique_rendered_colors,
+        "control_unique_rendered_colors": control_unique_rendered_colors,
+        "rendered_palette_gain": unique_rendered_colors - control_unique_rendered_colors,
         "candidate": asdict(mesh.metrics),
         "equal_growth_three_stop_control": asdict(equal_growth_control.metrics),
         "shuffled_binding_control": asdict(shuffled_mesh.metrics),
@@ -121,9 +125,13 @@ def main() -> int:
             "leaf_palette_packed_more_than_roots": mesh.metrics.packed_stop_count > mesh.metrics.root_count * 3,
             "topology_matches_three_stop_control": tuple(node.child_ids for node in mesh.nodes)
             == tuple(node.child_ids for node in equal_growth_control.nodes),
+            "node_growth_preserved_with_dense_palette": mesh.metrics.grown_node_count
+            == equal_growth_control.metrics.grown_node_count
+            and mesh.metrics.grown_node_count > 0,
             "denser_leaf_palette_strictly_reduces_error": mesh.metrics.adaptive_gradient_mse
             < equal_growth_control.metrics.adaptive_gradient_mse,
             "denser_leaf_palette_changes_pixels": png_sha256 != control_png_sha256,
+            "denser_leaf_palette_adds_rendered_colors": unique_rendered_colors > control_unique_rendered_colors,
         },
     }
     (args.output / "metrics.json").write_text(

@@ -78,3 +78,22 @@ colors, and produced a different PNG hash. All eight declared checks passed.
 
 Verification after the extension: 22 tests passed.
 
+## Explicit growth-preserving fidelity gate
+
+The v5 measurement makes the relationship between tree growth and image
+fidelity an explicit regression gate instead of relying on two separate
+checks. The dense candidate and its three-stop control must have the same
+child topology and the same positive `grown_node_count`; the dense candidate
+must also render strictly more non-background colors.
+
+Measured receipt:
+
+`C:\dev\clay-training-runs\sector-gradient-node-growth-20261110\run-seed-20261110-v5\metrics.json`
+
+Both variants retained 8 grown internal nodes in the same 24-node tree. The
+dense sector ply packed 64 stops rather than 44 and rendered 9,352 distinct
+colors rather than 5,065, a gain of 4,287 shades. Its adaptive RGB MSE was 0,
+compared with 3,117.65625 for the matched control. All ten declared checks
+passed, including the new `node_growth_preserved_with_dense_palette` and
+`denser_leaf_palette_adds_rendered_colors` checks.
+

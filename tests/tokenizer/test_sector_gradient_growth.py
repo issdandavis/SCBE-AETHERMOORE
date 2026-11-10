@@ -87,6 +87,10 @@ def test_leaf_fidelity_budget_preserves_growth_and_reduces_error() -> None:
     assert packed.metrics.grown_node_count == coarse.metrics.grown_node_count > 0
     assert packed.metrics.packed_stop_count > coarse.metrics.packed_stop_count
     assert packed.metrics.adaptive_gradient_mse < coarse.metrics.adaptive_gradient_mse
+    background = (1, 2, 3)
+    coarse_colors = set(coarse.render(size=96, background=background).get_flattened_data()) - {background}
+    packed_colors = set(packed.render(size=96, background=background).get_flattened_data()) - {background}
+    assert len(packed_colors) > len(coarse_colors)
 
 
 def test_shuffled_binding_changes_the_receipt_at_equal_budget() -> None:
