@@ -18,6 +18,11 @@ jsonschema>=4.23.0
 # pass native liboqs Tier 1.
 liboqs-python==0.16.0
 # python-oqs is currently unavailable in PyPI CI environments; use liboqs-python.
+# Tier-2 pure-Python PQC backup (no C compiler). Guarantees ML-KEM-768 / ML-DSA-65
+# remain quantum-resistant when the native liboqs C library is unavailable, instead
+# of degrading to the Tier-3 SHA-256/HMAC simulation. FIPS 203 / FIPS 204, MIT-licensed.
+kyber-py==1.2.0
+dilithium-py==1.5.1
 pycryptodome>=3.20.0
 argon2-cffi>=23.1.0
 
