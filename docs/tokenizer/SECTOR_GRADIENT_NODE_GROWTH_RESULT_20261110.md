@@ -97,3 +97,22 @@ compared with 3,117.65625 for the matched control. All ten declared checks
 passed, including the new `node_growth_preserved_with_dense_palette` and
 `denser_leaf_palette_adds_rendered_colors` checks.
 
+## Pixel-grade palette capacity and 512-pixel replay
+
+The leaf-only fidelity budget now permits up to 256 source-aligned stops per
+sector ply. The topology budget remains independent, so increasing terminal
+color capacity cannot suppress a split that the coarse growth fit requires. A
+new 65-stop-per-leaf test crosses the old 64-stop ceiling and verifies exact
+packing over 260 cells.
+
+The reference experiment was replayed at 512 x 512 without overwriting prior
+evidence:
+
+`C:\dev\clay-training-runs\sector-gradient-node-growth-20261110\run-seed-20261110-v6\metrics.json`
+
+The replay retained 8 grown internal nodes in the same 24-node tree. Dense
+leaves packed 64 source stops versus 44 in the matched control and rendered
+9,603 colors versus 5,217, a gain of 4,386 shades. Dense sample MSE was 0 versus
+3,117.65625. All ten declared checks passed. The candidate PNG SHA-256 is
+`82d2b7793e1811db19c98bf05bb62eb026a65500f9650c8ae6aaf6edc414861b`.
+

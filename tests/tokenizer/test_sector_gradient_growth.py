@@ -93,6 +93,29 @@ def test_leaf_fidelity_budget_preserves_growth_and_reduces_error() -> None:
     assert len(packed_colors) > len(coarse_colors)
 
 
+def test_pixel_grade_leaf_palette_accepts_more_than_64_source_aligned_stops() -> None:
+    table = AlgebraicRadialTokenTable(
+        RadialTableSpec(
+            cell_count=260,
+            sector_count=4,
+            dimensions=8,
+            depth_count=2,
+            neighbor_count=2,
+            seed=41,
+        )
+    )
+    mesh = build_sector_gradient_mesh(
+        table,
+        tuple(index % 64 for index in range(260)),
+        max_depth=0,
+        max_gradient_stops=3,
+        leaf_gradient_stops=65,
+    )
+    assert mesh.metrics.node_count == mesh.metrics.root_count == 4
+    assert mesh.metrics.packed_stop_count == 260
+    assert all(len(leaf.gradient_stops) == 65 for leaf in mesh.leaves)
+
+
 def test_shuffled_binding_changes_the_receipt_at_equal_budget() -> None:
     opcodes = tuple((index * 5) % 64 for index in range(32))
     shuffled = tuple(reversed(opcodes))
@@ -110,6 +133,7 @@ def test_shuffled_binding_changes_the_receipt_at_equal_budget() -> None:
         ((1,) * 32, {"max_depth": 13}),
         ((1,) * 32, {"max_gradient_stops": 0}),
         ((1,) * 32, {"max_gradient_stops": 3, "leaf_gradient_stops": 2}),
+        ((1,) * 32, {"leaf_gradient_stops": 257}),
         ((1,) * 32, {"split_error_threshold": float("inf")}),
     ],
 )

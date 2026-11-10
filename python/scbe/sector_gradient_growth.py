@@ -26,6 +26,7 @@ from python.scbe.algebraic_radial_token_table import (
 from python.scbe.board import rgb as opcode_rgb
 
 RGB = tuple[int, int, int]
+MAX_GRADIENT_STOPS = 256
 
 
 def _canonical_json(value: object) -> bytes:
@@ -331,11 +332,13 @@ def build_sector_gradient_mesh(
         raise ValueError("opcode bytes must be integers in [0, 255]")
     if max_depth < 0 or max_depth > 12:
         raise ValueError("max_depth must be in [0, 12]")
-    if max_gradient_stops < 1 or max_gradient_stops > 64:
-        raise ValueError("max_gradient_stops must be in [1, 64]")
+    if max_gradient_stops < 1 or max_gradient_stops > MAX_GRADIENT_STOPS:
+        raise ValueError(f"max_gradient_stops must be in [1, {MAX_GRADIENT_STOPS}]")
     resolved_leaf_stops = max_gradient_stops if leaf_gradient_stops is None else leaf_gradient_stops
-    if resolved_leaf_stops < max_gradient_stops or resolved_leaf_stops > 64:
-        raise ValueError("leaf_gradient_stops must be in [max_gradient_stops, 64]")
+    if resolved_leaf_stops < max_gradient_stops or resolved_leaf_stops > MAX_GRADIENT_STOPS:
+        raise ValueError(
+            f"leaf_gradient_stops must be in [max_gradient_stops, {MAX_GRADIENT_STOPS}]"
+        )
     if min_samples_to_split < 2:
         raise ValueError("min_samples_to_split must be at least two")
     if not math.isfinite(split_error_threshold) or split_error_threshold < 0:
@@ -454,6 +457,7 @@ def build_sector_gradient_mesh(
 
 __all__ = [
     "GradientStop",
+    "MAX_GRADIENT_STOPS",
     "SectorGradientMesh",
     "SectorGradientMetrics",
     "SectorGradientNode",
