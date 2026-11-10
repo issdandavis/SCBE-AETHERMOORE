@@ -119,15 +119,34 @@ node growth by making the parent fit artificially perfect.
 
 `python/scbe/cross_vector_token_analysis.py` joins the table to an auditable
 input/analysis/output path while keeping source identity and derived views
-separate. It preserves canonical UTF-8 byte spans, adds the existing six
-atomic-token trits, adds deterministic math/syntax coordinates, globally aligns
-input and output token streams, and records both real-valued deltas and their
-balanced-trit signs. The aggregate differential moves the eight sectors; token
-occurrences are then assigned to cells and propagated through four sparse
-relay flashes.
+separate. It preserves canonical UTF-8 byte spans and now exposes exact binary
+and fixed-width balanced-trit projections through the existing bit spine. Its
+20-axis carrier groups four transport coordinates, ten linguistic coordinates,
+five deterministic math/syntax coordinates, and one sequence coordinate.
+Input and output token streams are globally aligned, and the ledger records
+both real-valued deltas and their balanced-trit signs. The aggregate
+differential moves the eight sectors; token occurrences are then assigned to
+cells and propagated through four sparse relay flashes.
 
-The JSON receipt exposes every axis, token span, alignment row, occupied cell,
-relay-trit histogram, flash readout, and mechanics hash. This is deterministic
+The JSON receipt exposes every byte, bit string, byte-trit projection, axis,
+token span, alignment row, per-axis signed differential, channel summary,
+occupied cell, relay-trit histogram, flash readout, and mechanics hash. A zero
+differential is explicitly typed as `EXACT_NEUTRAL`; a nonzero coordinate is
+typed as `NOT_ZERO` and oriented by `-1` or `+1`. This is deterministic
 coordinate analysis. The linguistic, mathematical, and radial views are not
 claimed to be independent evidence, and the relay is not claimed to improve a
 learned model without matched multi-seed controls.
+
+For a compact math or linguistic trace:
+
+```powershell
+python -m python.scbe.cross_vector_token_analysis `
+  --mode math `
+  --input "force = mass * velocity" `
+  --output "force = mass * acceleration"
+
+python -m python.scbe.cross_vector_token_analysis `
+  --mode linguistic `
+  --input "allow the action" `
+  --output "do not allow the action"
+```

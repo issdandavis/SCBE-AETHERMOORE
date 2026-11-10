@@ -1,6 +1,13 @@
 from __future__ import annotations
 
-from python.scbe.cross_vector_token_analysis import AXES, analyze, detect_mode, tokenize
+from python.scbe.bit_spine import trits_to_bytes
+from python.scbe.cross_vector_token_analysis import (
+    AXES,
+    CHANNEL_AXES,
+    analyze,
+    detect_mode,
+    tokenize,
+)
 
 
 def test_math_analysis_is_deterministic_and_receipted() -> None:
@@ -36,6 +43,9 @@ def test_utf8_spans_and_identity_round_trip_to_source_bytes() -> None:
         encoded = source.encode("utf-8")[token.byte_start : token.byte_end]
         assert encoded.decode("utf-8") == token.text
         assert token.canonical_id == f"utf8:{encoded.hex()}"
+        assert bytes(token.utf8_bytes) == encoded
+        assert int(token.bits, 2).to_bytes(len(encoded), "big") == encoded
+        assert trits_to_bytes(token.byte_trits) == encoded
         assert len(token.vector) == len(AXES)
 
 
@@ -47,3 +57,23 @@ def test_auto_mode_and_radial_flash_are_typed() -> None:
     assert len(radial["flashes"]) == 4
     assert set(radial["relay_trit_histogram"]) == {"-1", "0", "1"}
     assert sum(radial["relay_trit_histogram"].values()) == radial["relay_count"]
+
+
+def test_input_analysis_output_exposes_typed_axis_and_channel_differentials() -> None:
+    report = analyze("force = mass * velocity", "force = mass * acceleration", mode="math")
+    rows = report["analysis"]["axis_differential"]
+    assert [row["axis"] for row in rows] == list(AXES)
+    assert {row["channel"] for row in rows} == set(CHANNEL_AXES)
+    channels = report["analysis"]["channel_differential"]
+    assert [row["channel"] for row in channels] == list(CHANNEL_AXES)
+    assert sum(len(row["axes"]) for row in channels) == len(AXES)
+    assert all(row["zero_kind"] in {"EXACT_NEUTRAL", "NOT_ZERO"} for row in rows)
+    assert any(row["orientation_trit"] != 0 for row in rows)
+
+
+def test_identity_transition_types_every_zero_as_exact_neutral() -> None:
+    report = analyze("allow the action", "allow the action", mode="linguistic")
+    rows = report["analysis"]["axis_differential"]
+    assert all(row["delta"] == 0.0 for row in rows)
+    assert all(row["orientation_trit"] == 0 for row in rows)
+    assert all(row["zero_kind"] == "EXACT_NEUTRAL" for row in rows)

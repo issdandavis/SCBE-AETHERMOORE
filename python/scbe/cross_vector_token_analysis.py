@@ -27,11 +27,16 @@ from .algebraic_radial_token_table import (
     TokenCarrier,
 )
 from .atomic_tokenization import map_token_to_atomic_state
+from .bit_spine import BitSpine
 from .tongue_diff import differential as tongue_differential
 
 
 Mode = Literal["auto", "math", "linguistic"]
 AXES = (
+    "byte_center",
+    "bit_polarity",
+    "byte_trit_polarity",
+    "byte_length",
     "tau_KO",
     "tau_AV",
     "tau_RU",
@@ -49,6 +54,41 @@ AXES = (
     "numeric_value",
     "sequence_position",
 )
+
+CHANNEL_AXES = {
+    "transport": (
+        "byte_center",
+        "bit_polarity",
+        "byte_trit_polarity",
+        "byte_length",
+    ),
+    "linguistic": (
+        "tau_KO",
+        "tau_AV",
+        "tau_RU",
+        "tau_CA",
+        "tau_UM",
+        "tau_DR",
+        "semantic_band",
+        "negative_state",
+        "dual_state",
+        "semantic_resolved",
+    ),
+    "math": (
+        "kind_coordinate",
+        "math_polarity",
+        "math_precedence",
+        "math_arity",
+        "numeric_value",
+    ),
+    "sequence": ("sequence_position",),
+}
+
+_AXIS_CHANNEL = {
+    axis: channel
+    for channel, channel_axes in CHANNEL_AXES.items()
+    for axis in channel_axes
+}
 
 _TOKEN_RE = re.compile(
     r"(?P<number>(?:\d+\.\d*|\.\d+|\d+)(?:[eE][+-]?\d+)?)"
@@ -120,6 +160,9 @@ class VectorToken:
     byte_start: int
     byte_end: int
     canonical_id: str
+    utf8_bytes: tuple[int, ...]
+    bits: str
+    byte_trits: tuple[int, ...]
     semantic_class: str
     semantic_resolved: bool
     semantic_source: str
@@ -138,6 +181,17 @@ class AlignmentRow:
     l2_distance: float | None
     delta: tuple[float, ...] | None
     delta_trits: tuple[int, ...] | None
+
+
+@dataclass(frozen=True, slots=True)
+class AxisDifferential:
+    axis: str
+    channel: str
+    input_value: float
+    output_value: float
+    delta: float
+    orientation_trit: int
+    zero_kind: str
 
 
 def detect_mode(text: str) -> Literal["math", "linguistic"]:
@@ -172,6 +226,10 @@ def tokenize(text: str, *, mode: Mode = "auto", side: str = "input") -> tuple[Ve
     denominator = max(1, len(matches) - 1)
     for index, match in enumerate(matches):
         token = match.group(0)
+        spine = BitSpine(token.encode("utf-8"))
+        token_bytes = tuple(spine.data)
+        bits = spine.bits()
+        byte_trits = tuple(spine.trits())
         kind = str(match.lastgroup)
         context = "math" if selected_mode == "math" else "linguistic"
         atomic = map_token_to_atomic_state(token, context_class=context)
@@ -179,6 +237,10 @@ def tokenize(text: str, *, mode: Mode = "auto", side: str = "input") -> tuple[Ve
         dual = 0.0 if atomic.dual_state is None else -1.0 if atomic.dual_state == 0 else 1.0
         position = 0.0 if len(matches) == 1 else (2.0 * index / denominator) - 1.0
         vector = (
+            math.fsum((value / 127.5) - 1.0 for value in token_bytes) / len(token_bytes),
+            (bits.count("1") - bits.count("0")) / len(bits),
+            math.fsum(byte_trits) / len(byte_trits),
+            math.tanh(math.log1p(len(token_bytes)) / 4.0),
             *(float(value) for value in atomic.tau.as_tuple()),
             float(atomic.band_flag),
             1.0 if atomic.negative_state else -1.0,
@@ -207,6 +269,9 @@ def tokenize(text: str, *, mode: Mode = "auto", side: str = "input") -> tuple[Ve
                 byte_start=byte_start,
                 byte_end=byte_end,
                 canonical_id=canonical_id,
+                utf8_bytes=token_bytes,
+                bits=bits,
+                byte_trits=byte_trits,
                 semantic_class=atomic.semantic_class,
                 semantic_resolved=atomic.semantic_resolved,
                 semantic_source=atomic.semantic_source,
@@ -293,6 +358,47 @@ def _mean_vector(tokens: Sequence[VectorToken]) -> tuple[float, ...]:
     return tuple(math.fsum(token.vector[axis] for token in tokens) / len(tokens) for axis in range(len(AXES)))
 
 
+def _axis_differentials(
+    input_mean: Sequence[float], output_mean: Sequence[float]
+) -> tuple[AxisDifferential, ...]:
+    rows: list[AxisDifferential] = []
+    for axis, input_value, output_value in zip(AXES, input_mean, output_mean, strict=True):
+        delta = output_value - input_value
+        orientation = _trit(delta)
+        rows.append(
+            AxisDifferential(
+                axis=axis,
+                channel=_AXIS_CHANNEL[axis],
+                input_value=input_value,
+                output_value=output_value,
+                delta=delta,
+                orientation_trit=orientation,
+                zero_kind="EXACT_NEUTRAL" if orientation == 0 else "NOT_ZERO",
+            )
+        )
+    return tuple(rows)
+
+
+def _channel_differentials(axis_rows: Sequence[AxisDifferential]) -> list[dict[str, object]]:
+    rows_by_axis = {row.axis: row for row in axis_rows}
+    output: list[dict[str, object]] = []
+    for channel, axes in CHANNEL_AXES.items():
+        rows = [rows_by_axis[axis] for axis in axes]
+        output.append(
+            {
+                "channel": channel,
+                "axes": list(axes),
+                "input": [row.input_value for row in rows],
+                "output": [row.output_value for row in rows],
+                "delta": [row.delta for row in rows],
+                "orientation_trits": [row.orientation_trit for row in rows],
+                "delta_l2": math.sqrt(math.fsum(row.delta * row.delta for row in rows)),
+                "active_axis_count": sum(row.orientation_trit != 0 for row in rows),
+            }
+        )
+    return output
+
+
 def _radial_receipt(
     input_tokens: Sequence[VectorToken],
     output_tokens: Sequence[VectorToken],
@@ -350,8 +456,9 @@ def analyze(input_text: str, output_text: str, *, mode: Mode = "auto", seed: int
     rows = align(input_tokens, output_tokens)
     input_mean, output_mean = _mean_vector(input_tokens), _mean_vector(output_tokens)
     delta = tuple(b - a for a, b in zip(input_mean, output_mean, strict=True))
+    axis_rows = _axis_differentials(input_mean, output_mean)
     core: dict[str, object] = {
-        "schema": "scbe.cross-vector-token-analysis.v1",
+        "schema": "scbe.cross-vector-token-analysis.v2",
         "claim_boundary": "deterministic coordinate analysis; no learned comprehension or independent-view claim",
         "axes": list(AXES),
         "input": {"text": input_text, "mode": input_mode, "tokens": [asdict(token) for token in input_tokens]},
@@ -363,6 +470,8 @@ def analyze(input_text: str, output_text: str, *, mode: Mode = "auto", seed: int
             "output_mean": list(output_mean),
             "aggregate_delta": list(delta),
             "aggregate_delta_trits": [_trit(value) for value in delta],
+            "axis_differential": [asdict(row) for row in axis_rows],
+            "channel_differential": _channel_differentials(axis_rows),
             "aggregate_cosine": _cosine(input_mean, output_mean),
             "tongue_differential": tongue_differential(input_text, output_text),
             "radial": _radial_receipt(input_tokens, output_tokens, delta, seed=seed),
@@ -388,6 +497,13 @@ def main(argv: Iterable[str] | None = None) -> int:
         print(f"modes: {receipt['input']['mode']} -> {receipt['output']['mode']}")
         print(f"relations: {analysis['relation_counts']}")
         print(f"delta trits: {analysis['aggregate_delta_trits']}")
+        print("channels:")
+        for channel in analysis["channel_differential"]:
+            print(
+                f"  {channel['channel']}: active={channel['active_axis_count']}/"
+                f"{len(channel['axes'])} l2={channel['delta_l2']:.6f} "
+                f"trits={channel['orientation_trits']}"
+            )
         print(f"tongues: {analysis['tongue_differential']}")
         print(f"radial output cells: {analysis['radial']['output_cells']}")
     return 0
@@ -397,4 +513,14 @@ if __name__ == "__main__":
     raise SystemExit(main())
 
 
-__all__ = ["AXES", "AlignmentRow", "VectorToken", "align", "analyze", "detect_mode", "tokenize"]
+__all__ = [
+    "AXES",
+    "CHANNEL_AXES",
+    "AlignmentRow",
+    "AxisDifferential",
+    "VectorToken",
+    "align",
+    "analyze",
+    "detect_mode",
+    "tokenize",
+]
