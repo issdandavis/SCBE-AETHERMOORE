@@ -93,3 +93,18 @@ The mechanics are chosen to fit ordinary hardware rather than require a new opti
 - canonical receipts and tie lists remain on the control plane, not in the hot multiply path.
 
 The current Python implementation prioritizes exactness and auditability. A later kernel may pack trits and quantize magnitudes only after parity tests prove it reproduces the reference outputs. Alignment to 32/64-wide hardware is an implementation optimization, not a mathematical claim that every attention head owns a physical 64-bit lane.
+
+## Sector-gradient visual growth
+
+`python/scbe/sector_gradient_growth.py` adds a derived image surface without
+changing the table or its token assignments. It projects canonical opcode bytes
+through the existing trichromatic board, packs bounded piecewise RGB gradients
+inside radial sector polygons, and rasterizes intermediate colors at pixel
+resolution.
+
+Visual nodes grow only when a median radial split strictly reduces measured RGB
+reconstruction error. Growth has a declared maximum depth, leaves cover every
+cell exactly once, and a uniform-color sector does not grow. Receipts report the
+flat-fill baseline, fixed-gradient error, adaptive-gradient error, node counts,
+and packed stop counts. These colors remain a correlated byte-derived view; more
+rendered shades improve visual fidelity but are not additional semantic evidence.
