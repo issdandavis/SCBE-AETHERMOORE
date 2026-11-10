@@ -547,3 +547,38 @@ file SHA-256
 `5507001e1bf117588ef4e5ffbae924878c876702ea7543ce24939a4ddb707dee`.
 The source-session gate remains authoritative: this open session cannot enter
 prospective scoring, training intake, or probability updates.
+
+## Closed-snapshot v3 audit — 2026-11-10 17:55 UTC
+
+The watcher advanced from the v2 source-disjoint pin to the v3 closed-source
+snapshot pin. The first continuation audit correctly failed because the SCBE
+auditor still admitted only v2; that immutable failure receipt is
+`LIVE_CHAIN_AUDIT_20261110T1752Z.json` and reports only `watcher pin schema
+mismatch`. The verifier was then extended with explicit v3 checks rather than
+accepting arbitrary future schemas.
+
+For v3, the verifier now requires the closed-snapshot gate, open-source
+deferral, a source-session-disjoint deferred-open status, the bound snapshot
+file, the exact canonical source-list fingerprint, matching source count,
+unique source-session IDs, unchanged source size and modification time, and a
+collection report bound to the same snapshot path, file hash, and count. It
+still does not open active session bodies, label requests, run retrieval, or
+authorize scoring or training.
+
+The corrected live audit reports `VERIFIED_WAITING_NO_SCORING` with zero
+errors. It verifies 9 closed post-freeze sources, 1 deferred open source, and 1
+candidate against the unchanged minimum of 30. The frozen catalog remains
+SHA-256
+`1839d609bc8e7263263e4c83d1bac2c3645285a9a664abfc6e9f292cc0b2fba0`.
+No review packet or forbidden scoring artifact exists.
+
+Receipt:
+`C:/dev/clay-training-runs/prime-token-catalog-20261106/source-disjoint-audit-20261108/LIVE_CHAIN_AUDIT_20261110T1758Z.json`;
+canonical audit SHA-256
+`ce5cff8d5a61ca8efb40026f3d210e861d61f7d5b9d6e5ddf60b483558c3b0e1`;
+file SHA-256
+`256d132772e12b276b507753beff080eb67ffd9b82a41b64d4a62ab0a808c8e8`.
+
+The focused watch-audit, query-harvest, and prospective-evaluator suite passes
+25/25; the v3 audit unit suite passes 6/6 after formatting and lint checks.
+The gate remains closed and promotion remains unauthorized.

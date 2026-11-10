@@ -17,14 +17,15 @@ from typing import Any, Mapping
 
 
 WATCHER_PIN_SCHEMA = "clay.codex-prospective-watcher-pin.v2"
+WATCHER_PIN_SCHEMA_V3 = "clay.codex-prospective-watcher-pin.v3"
+WATCHER_PIN_SCHEMAS = (WATCHER_PIN_SCHEMA, WATCHER_PIN_SCHEMA_V3)
 WATCHER_STATUS_SCHEMA = "clay.codex-prospective-watcher.v1"
+SOURCE_SNAPSHOT_SCHEMA = "clay.closed-codex-source-snapshot.v1"
 PREPARER_PIN_SCHEMA = "clay.prime-token-preparer-watcher-pin.v1"
 PREPARER_STATUS_SCHEMA = "clay.prime-token-preparer-watcher.v1"
 AUDIT_SCHEMA = "scbe.prime-token-watch-chain-audit.v1"
 WATCHER_AUTHORITY = "COLLECTION_ONLY_NO_SCORING_NO_TRAINING_NO_PROMOTION"
-PREPARER_AUTHORITY = (
-    "PREPARE_UNREVIEWED_PACKET_ONLY_NO_LABELS_NO_SCORING_NO_TRAINING_NO_PROMOTION"
-)
+PREPARER_AUTHORITY = "PREPARE_UNREVIEWED_PACKET_ONLY_NO_LABELS_NO_SCORING_NO_TRAINING_NO_PROMOTION"
 FORBIDDEN_PACKET_FILES = ("BENCHMARK.json", "RESULT.json", "RUN_RECEIPT.json")
 PACKET_FILES = (
     "PREPARATION_RECEIPT.json",
@@ -82,6 +83,95 @@ def _check_no_authority(errors: list[str], status: Mapping[str, Any], *, label: 
     for field in ("training_intake", "promotion"):
         if status.get(field) != "NOT_AUTHORIZED":
             errors.append(f"{label} unexpectedly authorizes {field}")
+
+
+def _check_v3_closed_snapshot(
+    errors: list[str],
+    *,
+    watcher_pin: Mapping[str, Any],
+    watcher_status: Mapping[str, Any],
+    watcher_status_file: Path,
+) -> dict[str, Any]:
+    evidence: dict[str, Any] = {
+        "required": True,
+        "verified": False,
+        "source_count": 0,
+        "snapshot_file_sha256": None,
+        "snapshot_fingerprint_sha256": None,
+    }
+    if watcher_pin.get("closed_source_snapshot_gate") is not True:
+        errors.append("watcher v3 closed-source snapshot gate is disabled")
+    if watcher_pin.get("open_sources_deferred") is not True:
+        errors.append("watcher v3 does not defer open sources")
+    open_count = int(watcher_status.get("open_post_freeze_source_count", 0))
+    if open_count and watcher_status.get("deferred_open_source_session_disjoint") is not True:
+        errors.append("watcher v3 open-source deferral is not source-session disjoint")
+    closed_count = int(watcher_status.get("closed_post_freeze_source_count", 0))
+    evidence["source_count"] = closed_count
+    if closed_count == 0:
+        evidence["verified"] = True
+        return evidence
+
+    raw_scan = str(watcher_status.get("last_scan") or "")
+    if not raw_scan:
+        errors.append("watcher v3 closed sources have no last_scan authority")
+        return evidence
+    snapshot_path = watcher_status_file.parent / f"{Path(raw_scan).name}-SOURCE_SNAPSHOT.json"
+    if not snapshot_path.is_file():
+        errors.append("watcher v3 closed-source snapshot file is missing")
+        return evidence
+    snapshot = _load_object(snapshot_path, label="closed-source snapshot")
+    evidence["snapshot_file_sha256"] = sha256_file(snapshot_path)
+    if snapshot.get("schema") != SOURCE_SNAPSHOT_SCHEMA:
+        errors.append("watcher v3 closed-source snapshot schema mismatch")
+    sources = snapshot.get("sources")
+    if not isinstance(sources, list):
+        errors.append("watcher v3 closed-source snapshot lacks sources")
+        return evidence
+    fingerprint = canonical_sha256(sources)
+    evidence["snapshot_fingerprint_sha256"] = fingerprint
+    if fingerprint != watcher_status.get("closed_source_snapshot_sha256"):
+        errors.append("watcher v3 closed-source snapshot fingerprint mismatch")
+    if len(sources) != closed_count:
+        errors.append("watcher v3 closed-source snapshot count mismatch")
+    sessions: set[str] = set()
+    for index, source in enumerate(sources):
+        if not isinstance(source, Mapping):
+            errors.append(f"watcher v3 snapshot source {index} is invalid")
+            continue
+        raw_path = str(source.get("path") or "")
+        session = str(source.get("source_session") or "")
+        path = Path(raw_path)
+        if not raw_path or not path.is_absolute() or not path.is_file():
+            errors.append(f"watcher v3 snapshot source {index} is missing")
+            continue
+        stat = path.stat()
+        if int(source.get("bytes", -1)) != stat.st_size:
+            errors.append(f"watcher v3 snapshot source {index} size drifted")
+        if int(source.get("mtime_ns", -1)) != stat.st_mtime_ns:
+            errors.append(f"watcher v3 snapshot source {index} mtime drifted")
+        if not session or session in sessions:
+            errors.append(f"watcher v3 snapshot source {index} session is invalid")
+        sessions.add(session)
+
+    report_path = Path(raw_scan) / "COLLECTION_REPORT.json"
+    if not report_path.is_file():
+        errors.append("watcher v3 collection report is missing")
+    else:
+        report = _load_object(report_path, label="collection report")
+        selection = report.get("selection")
+        authority = selection.get("source_snapshot") if isinstance(selection, Mapping) else None
+        if not isinstance(authority, Mapping):
+            errors.append("watcher v3 collection report lacks snapshot authority")
+        else:
+            if Path(str(authority.get("path") or "")).resolve() != snapshot_path.resolve():
+                errors.append("watcher v3 collection report snapshot path mismatch")
+            if authority.get("sha256") != evidence["snapshot_file_sha256"]:
+                errors.append("watcher v3 collection report snapshot hash mismatch")
+            if int(authority.get("source_count", -1)) != closed_count:
+                errors.append("watcher v3 collection report snapshot count mismatch")
+    evidence["verified"] = not any("watcher v3" in error for error in errors)
+    return evidence
     for field in ("serving", "merge"):
         if field in status and status.get(field) != "NOT_AUTHORIZED":
             errors.append(f"{label} unexpectedly authorizes {field}")
@@ -108,7 +198,8 @@ def verify_watch_chain(
     preparer_status = _load_object(preparer_status_file, label="preparer status")
     errors: list[str] = []
 
-    if watcher_pin.get("schema") != WATCHER_PIN_SCHEMA:
+    watcher_pin_schema = watcher_pin.get("schema")
+    if watcher_pin_schema not in WATCHER_PIN_SCHEMAS:
         errors.append("watcher pin schema mismatch")
     if watcher_pin.get("authority") != WATCHER_AUTHORITY:
         errors.append("watcher authority mismatch")
@@ -119,6 +210,20 @@ def verify_watch_chain(
     if watcher_status.get("source_session_disjoint") is not True:
         errors.append("watcher status does not prove source-session disjointness")
     _check_no_authority(errors, watcher_status, label="watcher")
+    closed_snapshot = {
+        "required": False,
+        "verified": None,
+        "source_count": 0,
+        "snapshot_file_sha256": None,
+        "snapshot_fingerprint_sha256": None,
+    }
+    if watcher_pin_schema == WATCHER_PIN_SCHEMA_V3:
+        closed_snapshot = _check_v3_closed_snapshot(
+            errors,
+            watcher_pin=watcher_pin,
+            watcher_status=watcher_status,
+            watcher_status_file=watcher_status_file,
+        )
 
     if preparer_pin.get("schema") != PREPARER_PIN_SCHEMA:
         errors.append("preparer pin schema mismatch")
@@ -160,9 +265,7 @@ def verify_watch_chain(
     if str(preparer_pin.get("catalog_sha256") or "").casefold() != expected_catalog:
         errors.append("preparer pin targets another catalog")
     boundary = watcher_status.get("catalog_boundary")
-    if not isinstance(boundary, Mapping) or str(
-        boundary.get("catalog_sha256") or ""
-    ).casefold() != expected_catalog:
+    if not isinstance(boundary, Mapping) or str(boundary.get("catalog_sha256") or "").casefold() != expected_catalog:
         errors.append("watcher status targets another catalog")
     expected_minimum = int(watcher_pin.get("minimum_candidates", -1))
     if expected_minimum < 30:
@@ -177,9 +280,7 @@ def verify_watch_chain(
     packet_presence = {name: (packet_dir / name).is_file() for name in PACKET_FILES}
     if any(packet_presence.values()) and not all(packet_presence.values()):
         errors.append("prospective review packet is partially written")
-    forbidden_presence = {
-        name: (packet_dir / name).exists() for name in FORBIDDEN_PACKET_FILES
-    }
+    forbidden_presence = {name: (packet_dir / name).exists() for name in FORBIDDEN_PACKET_FILES}
     if any(forbidden_presence.values()):
         errors.append("collection/preparation directory contains a scoring artifact")
 
@@ -187,27 +288,21 @@ def verify_watch_chain(
     terminal = (
         "VERIFIED_PACKET_READY_NO_SCORING"
         if packet_ready and not errors
-        else (
-            "VERIFIED_WAITING_NO_SCORING"
-            if not errors
-            else "INVALID_WATCH_CHAIN"
-        )
+        else ("VERIFIED_WAITING_NO_SCORING" if not errors else "INVALID_WATCH_CHAIN")
     )
     core = {
         "schema": AUDIT_SCHEMA,
         "status": terminal,
         "verified_at_utc": datetime.now(timezone.utc).isoformat(),
         "watcher_status": watcher_status.get("status"),
+        "watcher_pin_schema": watcher_pin_schema,
+        "closed_source_snapshot": closed_snapshot,
         "preparer_status": preparer_status.get("status"),
         "catalog_sha256": catalog_hash,
         "minimum_candidates": expected_minimum,
         "candidate_count": int(watcher_status.get("candidate_count", 0)),
-        "open_post_freeze_source_count": int(
-            watcher_status.get("open_post_freeze_source_count", 0)
-        ),
-        "closed_post_freeze_source_count": int(
-            watcher_status.get("closed_post_freeze_source_count", 0)
-        ),
+        "open_post_freeze_source_count": int(watcher_status.get("open_post_freeze_source_count", 0)),
+        "closed_post_freeze_source_count": int(watcher_status.get("closed_post_freeze_source_count", 0)),
         "packet_files": packet_presence,
         "forbidden_scoring_files": forbidden_presence,
         "watcher_pin_file_sha256": sha256_file(watcher_pin_file),

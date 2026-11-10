@@ -9,7 +9,9 @@ from python.scbe.prime_token_watch_audit import (
     PREPARER_STATUS_SCHEMA,
     WATCHER_AUTHORITY,
     WATCHER_PIN_SCHEMA,
+    WATCHER_PIN_SCHEMA_V3,
     WATCHER_STATUS_SCHEMA,
+    canonical_sha256,
     sha256_file,
     verify_watch_chain,
 )
@@ -144,3 +146,80 @@ def test_watch_chain_reports_complete_unreviewed_packet(tmp_path: Path) -> None:
     result = _verify(paths)
     assert result["status"] == "VERIFIED_PACKET_READY_NO_SCORING"
     assert result["error_count"] == 0
+
+
+def _upgrade_fixture_to_v3(paths: dict[str, Path]) -> None:
+    pin = json.loads(paths["watcher_pin"].read_text(encoding="utf-8"))
+    pin.update(
+        {
+            "schema": WATCHER_PIN_SCHEMA_V3,
+            "closed_source_snapshot_gate": True,
+            "open_sources_deferred": True,
+        }
+    )
+    _write(paths["watcher_pin"], pin)
+    source = paths["watcher_status"].parent / "closed-rollout.jsonl"
+    source.write_text("sealed\n", encoding="utf-8")
+    stat = source.stat()
+    sources = [
+        {
+            "path": str(source.resolve()),
+            "bytes": stat.st_size,
+            "mtime_ns": stat.st_mtime_ns,
+            "source_session": "session-a",
+        }
+    ]
+    scan = paths["watcher_status"].parent / "scan-004"
+    scan.mkdir()
+    snapshot = paths["watcher_status"].parent / "scan-004-SOURCE_SNAPSHOT.json"
+    _write(
+        snapshot,
+        {
+            "schema": "clay.closed-codex-source-snapshot.v1",
+            "sources": sources,
+        },
+    )
+    _write(
+        scan / "COLLECTION_REPORT.json",
+        {
+            "selection": {
+                "source_snapshot": {
+                    "path": str(snapshot.resolve()),
+                    "sha256": sha256_file(snapshot),
+                    "source_count": 1,
+                }
+            }
+        },
+    )
+    status = json.loads(paths["watcher_status"].read_text(encoding="utf-8"))
+    status.update(
+        {
+            "closed_post_freeze_source_count": 1,
+            "closed_source_snapshot_sha256": canonical_sha256(sources),
+            "deferred_open_source_session_disjoint": True,
+            "last_scan": str(scan.resolve()),
+        }
+    )
+    _write(paths["watcher_status"], status)
+
+
+def test_watch_chain_verifies_v3_closed_source_snapshot(tmp_path: Path) -> None:
+    paths = _fixture(tmp_path)
+    _upgrade_fixture_to_v3(paths)
+    result = _verify(paths)
+    assert result["status"] == "VERIFIED_WAITING_NO_SCORING"
+    assert result["error_count"] == 0
+    assert result["watcher_pin_schema"] == WATCHER_PIN_SCHEMA_V3
+    assert result["closed_source_snapshot"]["verified"] is True
+    assert result["closed_source_snapshot"]["source_count"] == 1
+
+
+def test_watch_chain_rejects_v3_snapshot_fingerprint_drift(tmp_path: Path) -> None:
+    paths = _fixture(tmp_path)
+    _upgrade_fixture_to_v3(paths)
+    status = json.loads(paths["watcher_status"].read_text(encoding="utf-8"))
+    status["closed_source_snapshot_sha256"] = "0" * 64
+    _write(paths["watcher_status"], status)
+    result = _verify(paths)
+    assert result["status"] == "INVALID_WATCH_CHAIN"
+    assert "watcher v3 closed-source snapshot fingerprint mismatch" in result["errors"]
