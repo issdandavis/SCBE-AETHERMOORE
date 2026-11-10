@@ -114,3 +114,20 @@ Node splitting and final color fidelity use separate bounded budgets. The base
 topology is fixed, `leaf_gradient_stops` may pack a denser palette ramp into
 each terminal sector ply. Increasing leaf fidelity therefore cannot suppress
 node growth by making the parent fit artificially perfect.
+
+## Cross-vector token differential
+
+`python/scbe/cross_vector_token_analysis.py` joins the table to an auditable
+input/analysis/output path while keeping source identity and derived views
+separate. It preserves canonical UTF-8 byte spans, adds the existing six
+atomic-token trits, adds deterministic math/syntax coordinates, globally aligns
+input and output token streams, and records both real-valued deltas and their
+balanced-trit signs. The aggregate differential moves the eight sectors; token
+occurrences are then assigned to cells and propagated through four sparse
+relay flashes.
+
+The JSON receipt exposes every axis, token span, alignment row, occupied cell,
+relay-trit histogram, flash readout, and mechanics hash. This is deterministic
+coordinate analysis. The linguistic, mathematical, and radial views are not
+claimed to be independent evidence, and the relay is not claimed to improve a
+learned model without matched multi-seed controls.
