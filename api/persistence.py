@@ -85,9 +85,11 @@ def _get_db():
 # Data Models
 # =============================================================================
 
+
 @dataclass
 class AuditLog:
     """Immutable audit log entry for compliance."""
+
     audit_id: str
     timestamp: str
     agent_id: str
@@ -98,6 +100,7 @@ class AuditLog:
     context: dict
     consensus_result: dict
     request_hash: str  # SHA-256 of request for integrity
+    tenant: str
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -106,6 +109,7 @@ class AuditLog:
 @dataclass
 class TrustRecord:
     """Trust score record for an agent."""
+
     agent_id: str
     timestamp: str
     trust_score: float
@@ -119,6 +123,7 @@ class TrustRecord:
 @dataclass
 class AgentRecord:
     """Registered AI agent."""
+
     agent_id: str
     name: str
     description: str
@@ -135,6 +140,7 @@ class AgentRecord:
 @dataclass
 class Alert:
     """Alert for webhook/Zapier integration."""
+
     alert_id: str
     timestamp: str
     severity: Literal["low", "medium", "high", "critical"]
@@ -143,6 +149,7 @@ class Alert:
     agent_id: Optional[str]
     audit_id: Optional[str]
     data: dict
+    tenant: str
     sent: bool = False
 
     def to_dict(self) -> dict:
@@ -152,6 +159,7 @@ class Alert:
 # =============================================================================
 # Persistence Functions
 # =============================================================================
+
 
 class SCBEPersistence:
     """Main persistence class for SCBE."""
@@ -163,12 +171,12 @@ class SCBEPersistence:
 
     def __init__(self):
         self.db = _get_db()
-        self._local_cache = {
-            "audit": [],
-            "trust": [],
-            "agents": {},
-            "alerts": []
-        }
+        self._local_cache = {"audit": [], "trust": [], "agents": {}, "alerts": []}
+
+    @staticmethod
+    def _require_tenant(tenant: str) -> None:
+        if not isinstance(tenant, str) or not tenant.strip():
+            raise ValueError("authenticated tenant is required")
 
     @property
     def is_connected(self) -> bool:
@@ -186,22 +194,23 @@ class SCBEPersistence:
         trust_score: float,
         risk_level: str,
         context: dict,
-        consensus_result: dict
+        consensus_result: dict,
+        *,
+        tenant: str,
     ) -> str:
         """Log a governance decision. Returns audit_id."""
 
+        self._require_tenant(tenant)
         timestamp = datetime.now(timezone.utc).isoformat()
 
         # Generate audit ID
         audit_id = f"audit-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}-{hashlib.sha256(f'{agent_id}{timestamp}'.encode()).hexdigest()[:8]}"
 
         # Hash the request for integrity verification
-        request_content = json.dumps({
-            "agent_id": agent_id,
-            "action": action,
-            "context": context,
-            "timestamp": timestamp
-        }, sort_keys=True)
+        request_content = json.dumps(
+            {"tenant": tenant, "agent_id": agent_id, "action": action, "context": context, "timestamp": timestamp},
+            sort_keys=True,
+        )
         request_hash = hashlib.sha256(request_content.encode()).hexdigest()
 
         audit_log = AuditLog(
@@ -214,15 +223,14 @@ class SCBEPersistence:
             risk_level=risk_level,
             context=context,
             consensus_result=consensus_result,
-            request_hash=request_hash
+            tenant=tenant,
+            request_hash=request_hash,
         )
 
         # Store in Firebase
         if self.db:
             try:
-                self.db.collection(self.COLLECTION_AUDIT).document(audit_id).set(
-                    audit_log.to_dict()
-                )
+                self.db.collection(self.COLLECTION_AUDIT).document(audit_id).set(audit_log.to_dict())
                 logger.info(f"Audit log stored: {audit_id}")
             except Exception as e:
                 logger.error(f"Failed to store audit log: {e}")
@@ -239,24 +247,27 @@ class SCBEPersistence:
                 message=f"Agent {agent_id} request was {decision}: {action}",
                 agent_id=agent_id,
                 audit_id=audit_id,
-                data={"trust_score": trust_score, "risk_level": risk_level}
+                tenant=tenant,
+                data={"trust_score": trust_score, "risk_level": risk_level},
             )
 
         return audit_id
 
-    def get_audit_log(self, audit_id: str) -> Optional[dict]:
-        """Retrieve an audit log by ID."""
+    def get_audit_log(self, audit_id: str, *, tenant: str) -> Optional[dict]:
+        """Retrieve an audit log owned by the authenticated tenant."""
+        self._require_tenant(tenant)
         if self.db:
             try:
                 doc = self.db.collection(self.COLLECTION_AUDIT).document(audit_id).get()
                 if doc.exists:
-                    return doc.to_dict()
+                    record = doc.to_dict()
+                    return record if record.get("tenant") == tenant else None
             except Exception as e:
                 logger.error(f"Failed to get audit log: {e}")
 
         # Check local cache
         for log in self._local_cache["audit"]:
-            if log["audit_id"] == audit_id:
+            if log["audit_id"] == audit_id and log.get("tenant") == tenant:
                 return log
         return None
 
@@ -264,12 +275,15 @@ class SCBEPersistence:
         self,
         agent_id: Optional[str] = None,
         decision: Optional[str] = None,
-        limit: int = 100
+        limit: int = 100,
+        *,
+        tenant: str,
     ) -> list:
-        """Query audit logs with optional filters."""
+        """Query owned audit logs; legacy records without tenant remain hidden."""
+        self._require_tenant(tenant)
         if self.db:
             try:
-                query = self.db.collection(self.COLLECTION_AUDIT)
+                query = self.db.collection(self.COLLECTION_AUDIT).where("tenant", "==", tenant)
 
                 if agent_id:
                     query = query.where("agent_id", "==", agent_id)
@@ -278,12 +292,12 @@ class SCBEPersistence:
 
                 query = query.order_by("timestamp", direction="DESCENDING").limit(limit)
 
-                return [doc.to_dict() for doc in query.stream()]
+                return [record for doc in query.stream() if (record := doc.to_dict()).get("tenant") == tenant]
             except Exception as e:
                 logger.error(f"Failed to query audit logs: {e}")
 
         # Return from local cache
-        logs = self._local_cache["audit"]
+        logs = [log for log in self._local_cache["audit"] if log.get("tenant") == tenant]
         if agent_id:
             logs = [l for l in logs if l["agent_id"] == agent_id]
         if decision:
@@ -294,23 +308,13 @@ class SCBEPersistence:
     # Trust History
     # -------------------------------------------------------------------------
 
-    def record_trust(
-        self,
-        agent_id: str,
-        trust_score: float,
-        factors: dict,
-        decision: str
-    ) -> None:
+    def record_trust(self, agent_id: str, trust_score: float, factors: dict, decision: str) -> None:
         """Record trust score for historical analysis."""
 
         timestamp = datetime.now(timezone.utc).isoformat()
 
         record = TrustRecord(
-            agent_id=agent_id,
-            timestamp=timestamp,
-            trust_score=trust_score,
-            factors=factors,
-            decision=decision
+            agent_id=agent_id, timestamp=timestamp, trust_score=trust_score, factors=factors, decision=decision
         )
 
         if self.db:
@@ -350,8 +354,8 @@ class SCBEPersistence:
         avg = sum(scores) / len(scores)
 
         if len(scores) >= 2:
-            recent = scores[:len(scores)//2]
-            older = scores[len(scores)//2:]
+            recent = scores[: len(scores) // 2]
+            older = scores[len(scores) // 2 :]
             recent_avg = sum(recent) / len(recent)
             older_avg = sum(older) / len(older)
             change = recent_avg - older_avg
@@ -379,7 +383,7 @@ class SCBEPersistence:
         description: str,
         policy_id: str = "default",
         trust_baseline: float = 0.5,
-        metadata: dict = None
+        metadata: dict = None,
     ) -> AgentRecord:
         """Register a new AI agent."""
 
@@ -391,14 +395,12 @@ class SCBEPersistence:
             status="active",
             trust_baseline=trust_baseline,
             policy_id=policy_id,
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
 
         if self.db:
             try:
-                self.db.collection(self.COLLECTION_AGENTS).document(agent_id).set(
-                    record.to_dict()
-                )
+                self.db.collection(self.COLLECTION_AGENTS).document(agent_id).set(record.to_dict())
                 logger.info(f"Agent registered: {agent_id}")
             except Exception as e:
                 logger.error(f"Failed to register agent: {e}")
@@ -420,17 +422,11 @@ class SCBEPersistence:
 
         return self._local_cache["agents"].get(agent_id)
 
-    def update_agent_status(
-        self,
-        agent_id: str,
-        status: Literal["active", "suspended", "revoked"]
-    ) -> bool:
+    def update_agent_status(self, agent_id: str, status: Literal["active", "suspended", "revoked"]) -> bool:
         """Update agent status."""
         if self.db:
             try:
-                self.db.collection(self.COLLECTION_AGENTS).document(agent_id).update({
-                    "status": status
-                })
+                self.db.collection(self.COLLECTION_AGENTS).document(agent_id).update({"status": status})
                 return True
             except Exception as e:
                 logger.error(f"Failed to update agent status: {e}")
@@ -467,9 +463,12 @@ class SCBEPersistence:
         message: str,
         agent_id: Optional[str] = None,
         audit_id: Optional[str] = None,
-        data: dict = None
+        data: dict = None,
+        *,
+        tenant: str,
     ) -> str:
-        """Create an alert for webhook delivery."""
+        """Create a tenant-owned alert for webhook delivery."""
+        self._require_tenant(tenant)
 
         timestamp = datetime.now(timezone.utc).isoformat()
         alert_id = f"alert-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}-{hashlib.sha256(timestamp.encode()).hexdigest()[:6]}"
@@ -483,14 +482,13 @@ class SCBEPersistence:
             agent_id=agent_id,
             audit_id=audit_id,
             data=data or {},
-            sent=False
+            tenant=tenant,
+            sent=False,
         )
 
         if self.db:
             try:
-                self.db.collection(self.COLLECTION_ALERTS).document(alert_id).set(
-                    alert.to_dict()
-                )
+                self.db.collection(self.COLLECTION_ALERTS).document(alert_id).set(alert.to_dict())
             except Exception as e:
                 logger.error(f"Failed to create alert: {e}")
                 self._local_cache["alerts"].append(alert.to_dict())
@@ -500,35 +498,40 @@ class SCBEPersistence:
         logger.warning(f"ALERT [{severity.upper()}]: {message}")
         return alert_id
 
-    def get_pending_alerts(self, limit: int = 50) -> list:
-        """Get alerts that haven't been sent to webhooks yet."""
+    def get_pending_alerts(self, limit: int = 50, *, tenant: str) -> list:
+        """Get tenant-owned alerts that have not been sent yet."""
+        self._require_tenant(tenant)
         if self.db:
             try:
                 query = (
                     self.db.collection(self.COLLECTION_ALERTS)
+                    .where("tenant", "==", tenant)
                     .where("sent", "==", False)
                     .order_by("timestamp", direction="DESCENDING")
                     .limit(limit)
                 )
-                return [doc.to_dict() for doc in query.stream()]
+                return [record for doc in query.stream() if (record := doc.to_dict()).get("tenant") == tenant]
             except Exception as e:
                 logger.error(f"Failed to get pending alerts: {e}")
 
-        return [a for a in self._local_cache["alerts"] if not a["sent"]][:limit]
+        return [a for a in self._local_cache["alerts"] if not a["sent"] and a.get("tenant") == tenant][:limit]
 
-    def mark_alert_sent(self, alert_id: str) -> bool:
-        """Mark an alert as sent."""
+    def mark_alert_sent(self, alert_id: str, *, tenant: str) -> bool:
+        """Mark an owned alert as sent; never claim legacy unowned rows."""
+        self._require_tenant(tenant)
         if self.db:
             try:
-                self.db.collection(self.COLLECTION_ALERTS).document(alert_id).update({
-                    "sent": True
-                })
+                ref = self.db.collection(self.COLLECTION_ALERTS).document(alert_id)
+                doc = ref.get()
+                if not doc.exists or doc.to_dict().get("tenant") != tenant:
+                    return False
+                ref.update({"sent": True})
                 return True
             except Exception as e:
                 logger.error(f"Failed to mark alert sent: {e}")
 
         for alert in self._local_cache["alerts"]:
-            if alert["alert_id"] == alert_id:
+            if alert["alert_id"] == alert_id and alert.get("tenant") == tenant:
                 alert["sent"] = True
                 return True
         return False
@@ -537,9 +540,9 @@ class SCBEPersistence:
     # Metrics
     # -------------------------------------------------------------------------
 
-    def get_metrics(self, hours: int = 24) -> dict:
+    def get_metrics(self, hours: int = 24, *, tenant: str) -> dict:
         """Get decision metrics for monitoring."""
-        logs = self.get_audit_logs(limit=1000)
+        logs = self.get_audit_logs(limit=1000, tenant=tenant)
 
         if not logs:
             return {
@@ -552,7 +555,7 @@ class SCBEPersistence:
                 "quarantine_rate": 0.0,
                 "escalate_rate": 0.0,
                 "deny_rate": 0.0,
-                "avg_trust_score": 0.0
+                "avg_trust_score": 0.0,
             }
 
         total = len(logs)
@@ -572,7 +575,7 @@ class SCBEPersistence:
             "quarantine_rate": quarantine_count / total if total > 0 else 0,
             "escalate_rate": escalate_count / total if total > 0 else 0,
             "deny_rate": deny_count / total if total > 0 else 0,
-            "avg_trust_score": avg_trust
+            "avg_trust_score": avg_trust,
         }
 
 
@@ -581,6 +584,7 @@ class SCBEPersistence:
 # =============================================================================
 
 _persistence_instance = None
+
 
 def get_persistence() -> SCBEPersistence:
     """Get the singleton persistence instance."""

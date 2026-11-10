@@ -183,6 +183,7 @@ def test_redirect_to_metadata_is_rejected_and_cross_origin_drops_credentials(
 
 def test_connector_opener_ignores_environment_proxies(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("HTTPS_PROXY", "http://127.0.0.1:8080")
+    monkeypatch.setenv("https_proxy", "http://127.0.0.1:8080")
     opener = build_connector_opener()
     assert not any("127.0.0.1:8080" in str(getattr(handler, "proxies", "")) for handler in opener.handlers)
     assert not any(
@@ -413,3 +414,259 @@ def test_governance_mesh_requires_api_key(governance_api, monkeypatch: pytest.Mo
     allowed = client.get("/mesh/stats", headers={"X-API-Key": "tenant-a-key"})
     assert allowed.status_code == 200
     assert allowed.json()["ok"] is True
+
+
+class _AuditDocument:
+    def __init__(self, rows, key):
+        self.rows, self.key = rows, key
+
+    @property
+    def exists(self):
+        return self.key in self.rows
+
+    def get(self):
+        return self
+
+    def to_dict(self):
+        return dict(self.rows[self.key])
+
+    def set(self, row):
+        self.rows[self.key] = dict(row)
+
+    def update(self, values):
+        self.rows[self.key].update(values)
+
+
+class _AuditQuery:
+    def __init__(self, rows, filters=(), cap=None):
+        self.rows, self.filters, self.cap = rows, filters, cap
+
+    def document(self, key):
+        return _AuditDocument(self.rows, key)
+
+    def where(self, field, op, value):
+        assert op == "=="
+        return _AuditQuery(self.rows, (*self.filters, (field, value)), self.cap)
+
+    def order_by(self, *args, **kwargs):
+        return self
+
+    def limit(self, cap):
+        # Tenant restriction must be applied before the limit.
+        assert any(field == "tenant" for field, _ in self.filters)
+        return _AuditQuery(self.rows, self.filters, cap)
+
+    def stream(self):
+        keys = [key for key, row in self.rows.items() if all(row.get(f) == v for f, v in self.filters)]
+        return [_AuditDocument(self.rows, key) for key in keys[: self.cap]]
+
+
+class _AuditDB:
+    def __init__(self):
+        self.collections = {}
+
+    def collection(self, name):
+        return _AuditQuery(self.collections.setdefault(name, {}))
+
+
+@pytest.fixture(params=[False, True], ids=["cache", "firestore"])
+def isolated_audit_store(request, monkeypatch):
+    import api.persistence as persistence
+
+    monkeypatch.setattr(persistence, "_get_db", lambda: None)
+    store = persistence.SCBEPersistence()
+    if request.param:
+        store.db = _AuditDB()
+    return store
+
+
+def _write_audit(store, tenant, decision="DENY"):
+    return store.log_decision(
+        agent_id="shared-agent",
+        action="READ",
+        decision=decision,
+        trust_score=0.5,
+        risk_level="HIGH",
+        context={"tenant": "tenant_b"},
+        consensus_result={},
+        tenant=tenant,
+    )
+
+
+def test_persistent_audit_scope_and_derived_alerts(isolated_audit_store):
+    store = isolated_audit_store
+    victim = _write_audit(store, "tenant_a")
+    own = _write_audit(store, "tenant_b")
+    ownerless = {
+        **store.get_audit_log(victim, tenant="tenant_a"),
+        "audit_id": "legacy",
+        "context": {"tenant": "tenant_b"},
+    }
+    ownerless.pop("tenant")
+    if store.db:
+        store.db.collection(store.COLLECTION_AUDIT).document("legacy").set(ownerless)
+    else:
+        store._local_cache["audit"].insert(0, ownerless)
+
+    rows = store.get_audit_logs(tenant="tenant_b", agent_id="shared-agent", decision="DENY", limit=1)
+    assert [row["audit_id"] for row in rows] == [own]
+    assert store.get_audit_log(victim, tenant="tenant_b") is None
+    assert store.get_audit_log("legacy", tenant="tenant_b") is None
+    assert store.get_audit_log(victim, tenant="tenant_a")["tenant"] == "tenant_a"
+    assert store.get_metrics(tenant="tenant_b")["total_decisions"] == 1
+    assert store.get_audit_logs(tenant="tenant_b", decision="ALLOW") == []
+
+    alert_a = store.get_pending_alerts(tenant="tenant_a")[0]
+    assert store.mark_alert_sent(alert_a["alert_id"], tenant="tenant_b") is False
+    assert store.get_pending_alerts(tenant="tenant_a")[0]["sent"] is False
+    assert store.mark_alert_sent(alert_a["alert_id"], tenant="tenant_a") is True
+    assert store.get_pending_alerts(tenant="tenant_a") == []
+    assert len(store.get_pending_alerts(tenant="tenant_b")) == 1
+    with pytest.raises(ValueError):
+        store.get_audit_logs(tenant="")
+
+
+def test_firestore_error_fallback_keeps_tenant_filter(isolated_audit_store):
+    store = isolated_audit_store
+    store.db = None
+    _write_audit(store, "tenant_a")
+    own = _write_audit(store, "tenant_b")
+
+    class FailedDB:
+        def collection(self, _name):
+            raise RuntimeError("database unavailable")
+
+    store.db = FailedDB()
+    assert [row["audit_id"] for row in store.get_audit_logs(tenant="tenant_b")] == [own]
+    assert all(row["tenant"] == "tenant_b" for row in store.get_pending_alerts(tenant="tenant_b"))
+
+
+def test_audit_routes_stamp_and_enforce_authenticated_tenant(governance_api, isolated_audit_store, monkeypatch):
+    from fastapi.testclient import TestClient
+
+    store = isolated_audit_store
+    monkeypatch.setattr(governance_api, "get_persistence", lambda: store)
+    client = TestClient(governance_api.app)
+    headers_a = {"X-API-Key": "tenant-a-key"}
+    headers_b = {"X-API-Key": "tenant-b-key"}
+    response = client.post(
+        "/v1/authorize",
+        headers=headers_a,
+        json={"agent_id": "writer-agent", "action": "READ", "target": "private", "context": {"tenant": "tenant_b"}},
+    )
+    assert response.status_code == 200
+    written = store.get_audit_logs(tenant="tenant_a")
+    assert len(written) == 1
+    assert written[0]["context"]["tenant"] == "tenant_b"
+    assert written[0]["tenant"] == "tenant_a"
+    _write_audit(store, "tenant_a")
+    _write_audit(store, "tenant_b")
+
+    assert client.get("/v1/audit").status_code == 401
+    assert client.get("/v1/audit", headers={"X-API-Key": "invalid"}).status_code == 403
+    listing = client.get("/v1/audit?tenant=tenant_a&agent_id=shared-agent&limit=1", headers=headers_b)
+    assert listing.status_code == 200
+    assert listing.json()["count"] == 1
+    assert all(row["tenant"] == "tenant_b" for row in listing.json()["logs"])
+    for pending in ["true", "false"]:
+        alerts = client.get(f"/v1/alerts?pending_only={pending}", headers=headers_b)
+        assert alerts.status_code == 200
+        assert len(alerts.json()) == 1
+        assert alerts.json()[0]["audit_id"] == store.get_audit_logs(tenant="tenant_b")[0]["audit_id"]
+    assert client.get("/v1/metrics", headers=headers_b).json()["total_decisions"] == 1
+    alert_id = store.get_pending_alerts(tenant="tenant_a")[0]["alert_id"]
+    assert client.post(f"/v1/alerts/{alert_id}/ack", headers=headers_b).status_code == 404
+    assert client.post(f"/v1/alerts/{alert_id}/ack", headers=headers_a).status_code == 200
+
+
+def test_explicit_shopify_endpoint_keeps_graphql_default(mvp_api):
+    from fastapi.testclient import TestClient
+
+    client = TestClient(mvp_api.app)
+    for mode in [None, "raw_step"]:
+        payload = {
+            "name": f"explicit-shopify-{mode}",
+            "kind": "shopify",
+            "endpoint_url": "https://demo-store.myshopify.com/admin/api/2025-10/graphql.json",
+        }
+        if mode:
+            payload["payload_mode"] = mode
+        response = client.post("/mobile/connectors", headers={"x-api-key": "demo_key_12345"}, json=payload)
+        assert response.status_code == 200
+        assert response.json()["data"]["payload_mode"] == (mode or "shopify_graphql_read")
+        mvp_api.CONNECTOR_STORE.pop(response.json()["data"]["connector_id"])
+
+
+def test_security_regressions_are_in_core_ci():
+    from scripts.system.run_core_python_checks import build_pytest_command, CORE_SMOKE_PATHS
+
+    command = build_pytest_command(CORE_SMOKE_PATHS)
+    for path in ["tests/security/test_ghsa_7rh5_route_controls.py", "tests/test_mobile_goal_api.py"]:
+        assert path in command
+        assert f"--ignore={path}" not in command
+
+
+def test_audit_listing_does_not_disclose_other_tenants(governance_api, isolated_audit_store, monkeypatch):
+    from fastapi.testclient import TestClient
+
+    store = isolated_audit_store
+    store.db = None
+    store._local_cache["audit"] = [
+        {"audit_id": "victim", "tenant": "tenant_a", "agent_id": "same-agent", "decision": "DENY"},
+        {"audit_id": "legacy", "agent_id": "same-agent", "context": {"tenant": "tenant_b"}, "decision": "DENY"},
+        {"audit_id": "own", "tenant": "tenant_b", "agent_id": "same-agent", "decision": "DENY"},
+    ]
+    monkeypatch.setattr(governance_api, "get_persistence", lambda: store)
+    response = TestClient(governance_api.app).get("/v1/audit?limit=1", headers={"X-API-Key": "tenant-b-key"})
+    assert response.status_code == 200
+    assert [row["audit_id"] for row in response.json()["logs"]] == ["own"]
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://hooks.zapier.com:abc/hook",
+        "https://hooks.zapier.com:65536/hook",
+        "https://hooks.zapier.com:-1/hook",
+        "https://[::1/hook",
+        "https://01.2.3.4/hook",
+        "https://hooks.zapier.com\uff1a443/hook",
+    ],
+)
+def test_malformed_connector_urls_are_controlled_rejections(mvp_api, monkeypatch, url):
+    from fastapi.testclient import TestClient
+
+    _refuse_network(monkeypatch)
+    with pytest.raises(ConnectorURLRejected):
+        validate_connector_endpoint(url, resolve_dns=False)
+    with pytest.raises(ConnectorURLRejected):
+        validate_connector_endpoint(url, resolve_dns=True)
+    previous_ids = set(mvp_api.CONNECTOR_STORE)
+    response = TestClient(mvp_api.app).post(
+        "/mobile/connectors",
+        headers={"x-api-key": "demo_key_12345"},
+        json={"name": "invalid-url", "kind": "generic_webhook", "endpoint_url": url},
+    )
+    assert response.status_code == 400
+    assert response.json() == {"status": "error", "error": "connector endpoint is not allowed", "code": 400}
+    assert set(mvp_api.CONNECTOR_STORE) == previous_ids
+
+
+@pytest.mark.parametrize(
+    "domain", ["https://shop.myshopify.com:abc", "https://[broken", "https://shop.myshopify.com:65536"]
+)
+def test_malformed_shopify_domain_is_controlled_rejection(mvp_api, domain):
+    from fastapi.testclient import TestClient
+
+    response = TestClient(mvp_api.app).post(
+        "/mobile/connectors",
+        headers={"x-api-key": "demo_key_12345"},
+        json={"name": "invalid-shop", "kind": "shopify", "shop_domain": domain},
+    )
+    assert response.status_code == 400
+
+
+def test_valid_connector_port_is_preserved():
+    assert validate_connector_endpoint("https://hooks.example.com:8443/hook", resolve_dns=False) == (
+        "https://hooks.example.com:8443/hook"
+    )
