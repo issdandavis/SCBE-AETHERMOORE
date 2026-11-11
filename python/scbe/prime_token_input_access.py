@@ -555,6 +555,51 @@ class FullSystemPrimeTokenInputAccessLM(nn.Module):
         return result
 
 
+@torch.no_grad()
+def reader_connectivity_diagnostics(
+    model: FullSystemPrimeTokenInputAccessLM,
+) -> dict[str, object]:
+    """Measure the learned reader itself without assigning semantic meaning.
+
+    The two low-rank linear maps compose into one feature-to-hidden connection
+    matrix.  Reporting both its global spectrum and per-view norms lets a run
+    show whether training used the reader, collapsed it, or concentrated it in
+    one deterministic catalog view.  These are diagnostics, never promotion
+    criteria by themselves.
+    """
+
+    down = model.reader.down.weight.detach().float().cpu()
+    up = model.reader.up.weight.detach().float().cpu()
+    effective = up @ down
+    singular_values = torch.linalg.svdvals(effective)
+    squared = singular_values.square()
+    largest_squared = float(squared.max().item()) if squared.numel() else 0.0
+    stable_rank = float(squared.sum().item() / largest_squared) if largest_squared > 0.0 else 0.0
+    per_view = {}
+    for index, view_name in enumerate(VIEW_NAMES):
+        start = index * VIEW_WIDTH
+        stop = start + VIEW_WIDTH
+        per_view[view_name] = float(torch.linalg.vector_norm(effective[:, start:stop]).item())
+    nonzero = int(torch.count_nonzero(effective).item())
+    return {
+        "schema": "scbe.prime-token-reader-connectivity.v1",
+        "parameter_l2": float(
+            torch.sqrt(
+                sum(parameter.detach().float().cpu().square().sum() for parameter in model.reader.parameters())
+            ).item()
+        ),
+        "effective_connection_l2": float(torch.linalg.vector_norm(effective).item()),
+        "effective_connection_mean_abs": float(effective.abs().mean().item()),
+        "effective_connection_spectral_norm": float(singular_values.max().item()) if singular_values.numel() else 0.0,
+        "effective_connection_stable_rank": stable_rank,
+        "effective_connection_nonzero_fraction": nonzero / effective.numel(),
+        "view_connection_l2": per_view,
+        "tool_dispatch": False,
+        "promotion_authorized": False,
+        "partial_unfreeze_authorized": False,
+    }
+
+
 __all__ = [
     "CONTROL_MODES",
     "FEATURE_WIDTH",
@@ -562,6 +607,7 @@ __all__ = [
     "FullSystemPrimeTokenInputAccessLM",
     "PACKET_SCHEMA",
     "PrimeTokenInputReader",
+    "reader_connectivity_diagnostics",
     "PrimeTokenRecord",
     "SealedPrimeTokenBatch",
     "VIEW_WIDTH",

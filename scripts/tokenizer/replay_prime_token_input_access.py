@@ -73,6 +73,7 @@ def run(args: argparse.Namespace) -> dict[str, object]:
             torch.as_tensor(case["token_ids"], dtype=torch.long),
             torch.as_tensor(case["targets"], dtype=torch.long),
             packet,
+            use_prime_packet=arm != "no_intervention",
             record_ids=case["record_ids"],
             splits=case["splits"],
             source_families=case["source_families"],

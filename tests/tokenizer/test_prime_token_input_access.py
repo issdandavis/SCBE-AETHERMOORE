@@ -27,6 +27,7 @@ from python.scbe.prime_token_input_access import (
     PrimeTokenRecord,
     PrimeTokenInputReader,
     build_prime_token_batch,
+    reader_connectivity_diagnostics,
 )
 from python.scbe.prime_token_training import (
     MaterialReleaseError,
@@ -192,6 +193,20 @@ def test_controls_keep_equal_width_and_reader_parameter_count() -> None:
     shuffled = packets["shuffled_binding_reader"]
     assert torch.equal(shuffled.features[0, 1], canonical.features[0, 3])
     assert torch.equal(shuffled.features[0, 3], canonical.features[0, 1])
+
+
+def test_reader_connectivity_reports_effective_map_and_view_strengths() -> None:
+    model = FullSystemPrimeTokenInputAccessLM(_FakeCore(), reader_rank=4)
+    initial = reader_connectivity_diagnostics(model)
+    assert initial["effective_connection_l2"] == 0.0
+    assert initial["effective_connection_stable_rank"] == 0.0
+    assert set(initial["view_connection_l2"]) == set(VIEW_NAMES)
+    with torch.no_grad():
+        model.reader.up.weight.fill_(0.25)
+    changed = reader_connectivity_diagnostics(model)
+    assert changed["effective_connection_l2"] > 0.0
+    assert changed["effective_connection_spectral_norm"] > 0.0
+    assert changed["effective_connection_nonzero_fraction"] > 0.0
 
 
 def test_independent_reconstruction_matches_every_control() -> None:
@@ -657,6 +672,27 @@ def test_no_intervention_replay_seals_parent_without_checkpoint() -> None:
     assert receipt["checkpoint"] is None
     assert receipt["checkpoint_free_baseline"] is True
     assert receipt["step"] == 0
+    held = _example(
+        _packet(family="family-held"),
+        record_id="held-baseline",
+        split="final_test",
+        family="family-held",
+    )
+    replay = replay_predictions(
+        model,
+        held.token_ids,
+        held.targets,
+        held.packet,
+        use_prime_packet=False,
+        record_ids=held.record_ids,
+        splits=held.splits,
+        source_families=held.source_families,
+        output_positions=held.output_positions,
+        allowed_output_token_ids=held.allowed_output_token_ids,
+        exact_evaluator_receipt_sha256=held.exact_evaluator_receipt_sha256,
+    )
+    assert replay["prime_packet_used"] is False
+    assert torch.equal(model(held.token_ids), model.core(held.token_ids))
     with pytest.raises(RuntimeError, match="parent differs"):
         verify_no_intervention_parent(
             model=model,

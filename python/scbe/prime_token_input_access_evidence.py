@@ -110,7 +110,7 @@ def _outcome_map(run: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
     return mapped
 
 
-def _flatten_replay(replay: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
+def _flatten_replay(replay: Mapping[str, Any]) -> tuple[dict[str, dict[str, Any]], bool]:
     if replay.get("schema") != "scbe.prime-token-independent-replay-run.v1":
         raise ValueError("unexpected independent replay schema")
     if replay.get("status") != "VERIFIED_REPLAY_NO_PROMOTION":
@@ -135,11 +135,17 @@ def _flatten_replay(replay: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
             rows[identity] = dict(row)
     if int(replay.get("example_count", -1)) != len(rows):
         raise RuntimeError("independent replay count differs from outcomes")
+    raw_packet_usage = [case.get("prime_packet_used") for case in cases]
+    if not all(isinstance(value, bool) for value in raw_packet_usage):
+        raise RuntimeError("independent replay omitted its packet-use policy")
+    packet_usage = set(raw_packet_usage)
+    if len(packet_usage) != 1:
+        raise RuntimeError("independent replay mixed packet-use policies")
     replay_accuracy = _number(replay.get("accuracy"), "replay.accuracy", unit_interval=True)
     observed_accuracy = mean(float(bool(row.get("correct"))) for row in rows.values())
     if not math.isclose(replay_accuracy, observed_accuracy, abs_tol=1e-12):
         raise RuntimeError("independent replay aggregate differs from outcomes")
-    return rows
+    return rows, next(iter(packet_usage))
 
 
 def _verify_run_and_replay(
@@ -161,7 +167,7 @@ def _verify_run_and_replay(
         for key in ("parent_sha256", "source_manifest_sha256", "split_manifest_sha256")
     )
     outcomes = _outcome_map(run)
-    replay_rows = _flatten_replay(replay)
+    replay_rows, prime_packet_used = _flatten_replay(replay)
     evaluator_receipt = _sha256(
         run["evaluation"].get("evaluator_receipt_sha256"),
         "evaluation.evaluator_receipt_sha256",
@@ -196,9 +202,10 @@ def _verify_run_and_replay(
             checkpoint.get("checkpoint_free_baseline") is not True
             or checkpoint.get("checkpoint") is not None
             or final_step != 0
+            or prime_packet_used
         ):
             raise RuntimeError("no-intervention replay is not checkpoint-free")
-    elif checkpoint.get("checkpoint") is None or int(checkpoint.get("step", -1)) != final_step:
+    elif checkpoint.get("checkpoint") is None or int(checkpoint.get("step", -1)) != final_step or not prime_packet_used:
         raise RuntimeError("learned replay checkpoint differs from final run step")
     metrics = run["evaluation"]["metrics"]
     return ({name: float(metrics[name]) for name in (*PRIMARY_METRICS, *SYSTEM_METRICS)}, outcomes, boundary)

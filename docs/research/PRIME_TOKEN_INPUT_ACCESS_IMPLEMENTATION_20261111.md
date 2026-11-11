@@ -93,6 +93,13 @@ The later multi-seed evidence implementation is bound to commit
 The aggregator and checkpoint-free baseline replay are described in
 `docs/research/PRIME_TOKEN_INPUT_ACCESS_EVIDENCE_AGGREGATION_20261111.md`.
 
+The concrete recovered-parent runtime, multi-coordinate evaluator, reader
+connectivity diagnostics, and corrected packet-free no-intervention baseline
+are described in
+`docs/research/PRIME_TOKEN_MATERIAL_RUNTIME_20261111.md`. Its expanded focused
+suite passes `37/37`. Material data and weights were still not loaded during
+that implementation check.
+
 ## Remaining release blockers
 
 The current release remains `WAITING_FOR_RELEASE_REQUIREMENTS`. In particular,

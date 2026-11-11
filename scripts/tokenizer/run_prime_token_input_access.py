@@ -27,6 +27,7 @@ if str(REPO_ROOT) not in sys.path:
 from python.scbe.prime_token_input_access import (
     CONTROL_MODES,
     FullSystemPrimeTokenInputAccessLM,
+    reader_connectivity_diagnostics,
 )
 from python.scbe.prime_token_training import (
     PrimeTrainingExample,
@@ -251,6 +252,7 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         evaluator(model, args.arm),
         train_examples=train_examples,
     )
+    evaluation["reader_connectivity"] = reader_connectivity_diagnostics(model)
     checkpoint_bytes = 0 if pointer is None else (output / str(pointer["file"])).stat().st_size
     evaluation["metrics"]["checkpoint_bytes"] = checkpoint_bytes
     atomic_json(output / "EVALUATION.json", evaluation)

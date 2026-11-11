@@ -326,6 +326,7 @@ def replay_predictions(
     targets: Tensor,
     packet: SealedPrimeTokenBatch,
     *,
+    use_prime_packet: bool = True,
     record_ids: Sequence[str],
     splits: Sequence[str],
     source_families: Sequence[str],
@@ -377,7 +378,7 @@ def replay_predictions(
         normalized_positions.append(positions)
 
     model.eval()
-    logits = model(token_ids, prime_packet=packet)
+    logits = model(token_ids, prime_packet=packet if use_prime_packet else None)
     if logits.ndim != 3 or tuple(logits.shape[:2]) != tuple(token_ids.shape):
         raise RuntimeError("replay model returned invalid logits")
     if max(allowed) >= logits.shape[-1]:
@@ -410,6 +411,7 @@ def replay_predictions(
         "example_count": len(rows),
         "correct_count": correct,
         "accuracy": correct / len(rows) if rows else 0.0,
+        "prime_packet_used": use_prime_packet,
         "outcomes": rows,
         "tool_dispatch": False,
         "promotion_authorized": False,
@@ -428,6 +430,7 @@ def verify_replay_ledger(expected_path: str | Path, replay: Mapping[str, object]
         "example_count",
         "correct_count",
         "accuracy",
+        "prime_packet_used",
         "outcomes",
     )
     for field in compared_fields:

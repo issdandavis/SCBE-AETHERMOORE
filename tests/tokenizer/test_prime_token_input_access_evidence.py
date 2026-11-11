@@ -98,6 +98,7 @@ def _grid(tmp_path: Path, *, candidate_wins: int = 20) -> tuple[Path, dict[tuple
                     {
                         "case": 0,
                         "exact_evaluator_receipt_sha256": "e" * 64,
+                        "prime_packet_used": arm != "no_intervention",
                         "outcomes": replay_outcomes,
                     }
                 ],
