@@ -1,0 +1,281 @@
+{
+  "schema": "scbe-maintenance-missions-v1",
+  "baseline_date": "2026-10-07",
+  "repository": "issdandavis/SCBE-AETHERMOORE",
+  "baseline_sha": "112d5d3be200d634bb0ae3a535516742bb75b301",
+  "history_calendar_timezone": "America/Los_Angeles",
+  "recurrence_policy": {
+    "initial": "Due until matching evidence is reviewed. Existing evidence can satisfy a first cycle; do not redo completed work without a reason.",
+    "subsequent": "Add interval to verified completion date, clamping to the last valid day for month-based intervals. Dates are not reset merely by issue closure.",
+    "semiannual": "Every six months (twice yearly).",
+    "deduplication": "At most one open instance per mission ID; carry overdue work forward. Emit at most three new mission issues per controller run.",
+    "priority": "Incident and release blockers, then overdue security/recovery, then oldest due mission. List every due mission on the board even when issue creation is capped.",
+    "completion": "Require evidence, outcome, reviewer, completed_at and next_due. Scheduled failures and missing reports remain UNKNOWN."
+  },
+  "missions": [
+    {
+      "id": "OPS-01",
+      "title": "Watchtower",
+      "cadence": "weekly",
+      "interval": {
+        "every": 7,
+        "unit": "days"
+      },
+      "owner": "Maintainer; delegation recorded in the mission issue",
+      "objective": "Reconcile CI, scheduled checks, incidents, and deployed versions.",
+      "evidence": "Run URLs and timestamps; deployed SHA or explicitly unknown; owner for every failed or stale check.",
+      "acceptance": "Every active profile has a current status; unknown is never green.",
+      "areas": [
+        "ci-release",
+        "api-storage",
+        "workspace"
+      ],
+      "effort": "30 minutes",
+      "initial_status": "due",
+      "first_cycle_due": "2026-10-07"
+    },
+    {
+      "id": "SEC-01",
+      "title": "Patch Patrol",
+      "cadence": "weekly",
+      "interval": {
+        "every": 7,
+        "unit": "days"
+      },
+      "owner": "Maintainer; delegation recorded in the mission issue",
+      "objective": "Triage dependency updates and the existing rolling security scan.",
+      "evidence": "Completed scanner reports, updater failures, findings with severity/owner/due date or reviewed risk acceptance.",
+      "acceptance": "Missing reports are UNKNOWN; reuse Security Scan - rolling instead of creating duplicate scan issues.",
+      "areas": [
+        "crypto",
+        "ci-release",
+        "dependencies"
+      ],
+      "effort": "30 minutes",
+      "initial_status": "due",
+      "first_cycle_due": "2026-10-07"
+    },
+    {
+      "id": "HIS-01",
+      "title": "Change Chronicle",
+      "cadence": "monthly",
+      "interval": {
+        "every": 1,
+        "unit": "months"
+      },
+      "owner": "Maintainer; delegation recorded in the mission issue",
+      "objective": "Catalog the previous complete calendar month and explain how landed changes moved the system.",
+      "evidence": "Excluded base and included head SHAs; complete Markdown/JSON catalogs; behavior/contract changes; unresolved deployment evidence.",
+      "acceptance": "Separate landed commits, unmerged proposals, package releases, and deployed revisions; cover each activated companion separately.",
+      "areas": [
+        "all active sections"
+      ],
+      "effort": "60 minutes",
+      "initial_status": "due",
+      "first_cycle_due": "2026-10-07"
+    },
+    {
+      "id": "REP-01",
+      "title": "Companion Sync",
+      "cadence": "monthly",
+      "interval": {
+        "every": 1,
+        "unit": "months"
+      },
+      "owner": "Maintainer; delegation recorded in the mission issue",
+      "objective": "Reconcile source ownership, companion versions, extraction drift, and submodule pins.",
+      "evidence": "Active dependency graph, repository/commit or artifact digest, compatibility receipt, owner and archive status.",
+      "acceptance": "Each active dependency has one canonical implementation; archived pointers are resolved or the affected profile stays blocked.",
+      "areas": [
+        "workspace",
+        "agents",
+        "crypto",
+        "archive"
+      ],
+      "effort": "45 minutes",
+      "initial_status": "due",
+      "first_cycle_due": "2026-10-07"
+    },
+    {
+      "id": "DR-01",
+      "title": "Restore Point",
+      "cadence": "quarterly",
+      "interval": {
+        "every": 3,
+        "unit": "months"
+      },
+      "owner": "Maintainer; delegation recorded in the mission issue",
+      "objective": "Restore state and roll back a release in an isolated environment.",
+      "evidence": "Backup ID, restore log, data/hash validation, elapsed time, measured RPO/RTO, rollback result.",
+      "acceptance": "Recovered data and service behavior verified; a backup existing is insufficient.",
+      "areas": [
+        "api-storage",
+        "governance",
+        "commerce"
+      ],
+      "effort": "90 minutes",
+      "initial_status": "due",
+      "first_cycle_due": "2026-10-07"
+    },
+    {
+      "id": "KEY-01",
+      "title": "Keyring Review",
+      "cadence": "quarterly",
+      "interval": {
+        "every": 3,
+        "unit": "months"
+      },
+      "owner": "Maintainer; delegation recorded in the mission issue",
+      "objective": "Review service identities, signing keys, scopes, expiry, revocation, and rotation procedure.",
+      "evidence": "Redacted inventory of key IDs/owners/scopes; revocation and rotation drill; access review.",
+      "acceptance": "No orphan credentials or unexplained privilege; rotate on compromise immediately, not only on the calendar.",
+      "areas": [
+        "crypto",
+        "agents",
+        "ci-release",
+        "commerce"
+      ],
+      "effort": "60 minutes",
+      "initial_status": "due",
+      "first_cycle_due": "2026-10-07"
+    },
+    {
+      "id": "EVAL-01",
+      "title": "Sensor Calibration",
+      "cadence": "quarterly",
+      "interval": {
+        "every": 3,
+        "unit": "months"
+      },
+      "owner": "Maintainer; delegation recorded in the mission issue",
+      "objective": "Measure neural sensors and valence decisions against independent held-out cases.",
+      "evidence": "Runtime/model/schema/dataset hashes; false positives/negatives by class; missing/NaN/replay/drift cases; threshold rationale.",
+      "acceptance": "Benign drift and attacks evaluated separately; observations cannot silently update production models or trust.",
+      "areas": [
+        "neural-sensors",
+        "math-kernel",
+        "governance"
+      ],
+      "effort": "90 minutes",
+      "initial_status": "due",
+      "first_cycle_due": "2026-10-07"
+    },
+    {
+      "id": "SEC-02",
+      "title": "Security Season",
+      "cadence": "semiannual",
+      "interval": {
+        "every": 6,
+        "unit": "months"
+      },
+      "owner": "Maintainer; delegation recorded in the mission issue",
+      "objective": "Review attack boundaries across API, cryptography, browser, agents, storage, and billing.",
+      "evidence": "Updated threat model; negative authorization/replay/tamper tests; real-backend receipts; findings with owners.",
+      "acceptance": "Critical findings resolved or deployment blocked; review scope and residual risk recorded, not a certification claim.",
+      "areas": [
+        "all active sections"
+      ],
+      "effort": "half day",
+      "initial_status": "due",
+      "first_cycle_due": "2026-10-07"
+    },
+    {
+      "id": "HIS-02",
+      "title": "History Expedition",
+      "cadence": "semiannual",
+      "interval": {
+        "every": 6,
+        "unit": "months"
+      },
+      "owner": "Maintainer; delegation recorded in the mission issue",
+      "objective": "Review six months of changes, release provenance, old secrets, and architecture drift.",
+      "evidence": "Six monthly catalogs; release/tag/deployed-SHA crosswalk; historical scan completion; migration/deprecation decisions.",
+      "acceptance": "Every included interval has exact boundaries; no missing shallow history; no force-push or destructive history cleanup.",
+      "areas": [
+        "all active sections"
+      ],
+      "effort": "half day",
+      "initial_status": "due",
+      "first_cycle_due": "2026-10-07"
+    },
+    {
+      "id": "ARC-01",
+      "title": "World Map Review",
+      "cadence": "annual",
+      "interval": {
+        "every": 12,
+        "unit": "months"
+      },
+      "owner": "Maintainer; delegation recorded in the mission issue",
+      "objective": "Reconcile architecture, contracts, maintainers, supported runtimes, and archive decisions.",
+      "evidence": "Current source map; profile-level dependency graph; contract/schema versions; named ownership and support windows.",
+      "acceptance": "Code, documentation, released artifacts, and actual deployment profiles agree or have tracked gaps.",
+      "areas": [
+        "all active sections"
+      ],
+      "effort": "half day",
+      "initial_status": "due",
+      "first_cycle_due": "2026-10-07"
+    },
+    {
+      "id": "SUP-01",
+      "title": "Supply and Recovery Review",
+      "cadence": "annual",
+      "interval": {
+        "every": 12,
+        "unit": "months"
+      },
+      "owner": "Maintainer; delegation recorded in the mission issue",
+      "objective": "Review supply chain, licensing, provenance, recovery ownership, succession, and operating cost.",
+      "evidence": "SBOM/license review; upstream maintenance status; artifact provenance; recovery/access continuity drill; cost review.",
+      "acceptance": "Active products have supported dependencies and a tested recovery owner; claims stay within measured evidence.",
+      "areas": [
+        "ci-release",
+        "archive",
+        "commerce",
+        "api-storage"
+      ],
+      "effort": "half day",
+      "initial_status": "due",
+      "first_cycle_due": "2026-10-07"
+    },
+    {
+      "id": "REL-01",
+      "title": "Release Boss Gate",
+      "cadence": "event",
+      "interval": {
+        "every": 0,
+        "unit": "event"
+      },
+      "owner": "Maintainer; delegation recorded in the mission issue",
+      "objective": "Approve one named deployment profile at one immutable revision before every release.",
+      "evidence": "Exact commit and artifact digest; CI; installed-artifact tests; backend/auth/negative tests; target-host receipt; rollback.",
+      "acceptance": "All gates in README pass for that profile; missing evidence prevents promotion.",
+      "areas": [
+        "selected deployment profile"
+      ],
+      "effort": "per release",
+      "initial_status": "armed",
+      "first_cycle_due": null
+    },
+    {
+      "id": "INC-01",
+      "title": "Incident Response",
+      "cadence": "event",
+      "interval": {
+        "every": 0,
+        "unit": "event"
+      },
+      "owner": "Maintainer; delegation recorded in the mission issue",
+      "objective": "Respond to compromise, data loss, or a severe regression immediately.",
+      "evidence": "Containment timeline, redacted evidence, affected revisions, owner, recovery and follow-up verification.",
+      "acceptance": "Containment and recovery verified; lessons create reviewed regressions; do not wait for a recurring mission.",
+      "areas": [
+        "affected sections"
+      ],
+      "effort": "immediate",
+      "initial_status": "armed",
+      "first_cycle_due": null
+    }
+  ]
+}

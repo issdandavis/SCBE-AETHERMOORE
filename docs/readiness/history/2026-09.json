@@ -1,0 +1,1061 @@
+{
+  "schema": "scbe-change-catalog-v1",
+  "repository": "issdandavis/SCBE-AETHERMOORE",
+  "base_exclusive": "8da05e527381cc92a105ca6d20db6e44992b6d88",
+  "head_inclusive": "07d3e7b527e2bee0641394d9cc20761e0cbb927e",
+  "commit_count": 49,
+  "first_parent_landing_count": 49,
+  "unique_changed_paths": 174,
+  "area_commit_counts_overlapping": {
+    "api-storage": 1,
+    "ci-release": 11,
+    "crypto": 3,
+    "dependencies": 24,
+    "docs-site": 19,
+    "governance": 1,
+    "math-kernel": 2,
+    "neural-sensors": 5,
+    "operator-tools": 8,
+    "other-review-needed": 13,
+    "product-apps": 1,
+    "workspace": 1
+  },
+  "semantics": "All reachable commits in base..head; first-parent landings marked separately. Paths compare each commit with its first parent; area counts overlap. Commit timestamps are not deployment timestamps. Classification is heuristic, and the complete path lists require human review.",
+  "commits": [
+    {
+      "sha": "3dee43158826889c68aaf21ecb72e306aab8067b",
+      "parents": [
+        "8da05e527381cc92a105ca6d20db6e44992b6d88"
+      ],
+      "committed_at": "2026-09-01T09:41:05Z",
+      "subject": "chore(stats): update daily repo stats badges (#2813)",
+      "mainline_landing": true,
+      "areas": [
+        "docs-site"
+      ],
+      "paths": [
+        "docs/static/badges/stats-summary.json",
+        "docs/static/badges/tests.json",
+        "docs/static/badges/workflows.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/3dee43158826889c68aaf21ecb72e306aab8067b"
+    },
+    {
+      "sha": "5fd164558f4dc245438814d87b060aa9e8e17ea6",
+      "parents": [
+        "3dee43158826889c68aaf21ecb72e306aab8067b"
+      ],
+      "committed_at": "2026-09-02T07:36:38Z",
+      "subject": "fix(ci): point nightly dep-audit gate at weekly-security-scan rolling issue (#2815)",
+      "mainline_landing": true,
+      "areas": [
+        "ci-release",
+        "crypto"
+      ],
+      "paths": [
+        ".github/workflows/weekly-security-scan.yml",
+        "tests/security/test_independent_github_workflows.py"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/5fd164558f4dc245438814d87b060aa9e8e17ea6"
+    },
+    {
+      "sha": "cf3b095d6a366d19469843621371a5de821f996c",
+      "parents": [
+        "5fd164558f4dc245438814d87b060aa9e8e17ea6"
+      ],
+      "committed_at": "2026-09-02T07:44:18Z",
+      "subject": "fix(site): add product image, first-win check, and FAQ (#2817)",
+      "mainline_landing": true,
+      "areas": [
+        "docs-site"
+      ],
+      "paths": [
+        "docs/index.html"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/cf3b095d6a366d19469843621371a5de821f996c"
+    },
+    {
+      "sha": "c3c7f128a8eb0ee371cd26a71c058f3e067dbe83",
+      "parents": [
+        "cf3b095d6a366d19469843621371a5de821f996c"
+      ],
+      "committed_at": "2026-09-03T22:41:27-07:00",
+      "subject": "build(deps): bump qs via npm-security group (#2820)",
+      "mainline_landing": true,
+      "areas": [
+        "dependencies"
+      ],
+      "paths": [
+        "conference-app/package-lock.json",
+        "conference-app/package.json",
+        "package-lock.json",
+        "package.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/c3c7f128a8eb0ee371cd26a71c058f3e067dbe83"
+    },
+    {
+      "sha": "145064d8d0e941d354dab7f0a272965ea45ca0f1",
+      "parents": [
+        "c3c7f128a8eb0ee371cd26a71c058f3e067dbe83"
+      ],
+      "committed_at": "2026-09-03T22:41:29-07:00",
+      "subject": "build(deps-dev): bump browserslist in spiral-engine (#2816)",
+      "mainline_landing": true,
+      "areas": [
+        "dependencies"
+      ],
+      "paths": [
+        "game/spiral-engine/package-lock.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/145064d8d0e941d354dab7f0a272965ea45ca0f1"
+    },
+    {
+      "sha": "212043498ff8fc36c3965afabfcdf42dd9249539",
+      "parents": [
+        "145064d8d0e941d354dab7f0a272965ea45ca0f1"
+      ],
+      "committed_at": "2026-09-04T22:41:36-07:00",
+      "subject": "build(deps-dev): bump fast-uri from 3.1.5 to 3.1.7 in /apps/mobile/pwa (#2819)",
+      "mainline_landing": true,
+      "areas": [
+        "dependencies"
+      ],
+      "paths": [
+        "apps/mobile/pwa/package-lock.json",
+        "apps/mobile/pwa/package.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/212043498ff8fc36c3965afabfcdf42dd9249539"
+    },
+    {
+      "sha": "74cbebc41a812beb6bb082ea470f32826495e085",
+      "parents": [
+        "212043498ff8fc36c3965afabfcdf42dd9249539"
+      ],
+      "committed_at": "2026-09-06T01:06:01Z",
+      "subject": "fix(ci): drop sync-stats dispatcher that failed 401 on every main push (#2822)",
+      "mainline_landing": true,
+      "areas": [
+        "ci-release"
+      ],
+      "paths": [
+        ".github/workflows/sync-stats-dispatch.yml"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/74cbebc41a812beb6bb082ea470f32826495e085"
+    },
+    {
+      "sha": "b243d34f1b64f26226aa3482af6022d3ed9cc28b",
+      "parents": [
+        "74cbebc41a812beb6bb082ea470f32826495e085"
+      ],
+      "committed_at": "2026-09-06T01:16:23Z",
+      "subject": "fix(deps): patch @xmldom/xmldom and qs via overrides (#2824)",
+      "mainline_landing": true,
+      "areas": [
+        "dependencies"
+      ],
+      "paths": [
+        "packages/cli/package-lock.json",
+        "packages/cli/package.json",
+        "scbe-visual-system/package-lock.json",
+        "scbe-visual-system/package.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/b243d34f1b64f26226aa3482af6022d3ed9cc28b"
+    },
+    {
+      "sha": "f0ac6fee72740750178b86c358924905d79088e0",
+      "parents": [
+        "b243d34f1b64f26226aa3482af6022d3ed9cc28b"
+      ],
+      "committed_at": "2026-09-06T01:18:52Z",
+      "subject": "fix(deps): raise fast-uri override above the patched version (#2825)",
+      "mainline_landing": true,
+      "areas": [
+        "dependencies"
+      ],
+      "paths": [
+        "package-lock.json",
+        "package.json",
+        "packages/cli/package-lock.json",
+        "packages/cli/package.json",
+        "scbe-visual-system/package-lock.json",
+        "scbe-visual-system/package.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/f0ac6fee72740750178b86c358924905d79088e0"
+    },
+    {
+      "sha": "03413c3001eb5379df654ced42a9ca4541153928",
+      "parents": [
+        "f0ac6fee72740750178b86c358924905d79088e0"
+      ],
+      "committed_at": "2026-09-06T02:09:42Z",
+      "subject": "fix(crypto): call create_authorization_token by keyword in the demo (#2826)",
+      "mainline_landing": true,
+      "areas": [
+        "neural-sensors"
+      ],
+      "paths": [
+        "src/symphonic_cipher/dual_lattice_consensus.py",
+        "symphonic_cipher/dual_lattice_consensus.py"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/03413c3001eb5379df654ced42a9ca4541153928"
+    },
+    {
+      "sha": "b208aaefec3576b4451aa227f1722bb45fc13435",
+      "parents": [
+        "03413c3001eb5379df654ced42a9ca4541153928"
+      ],
+      "committed_at": "2026-09-06T09:04:00Z",
+      "subject": "chore(stats): update daily repo stats badges (#2828)",
+      "mainline_landing": true,
+      "areas": [
+        "docs-site"
+      ],
+      "paths": [
+        "docs/static/badges/stats-summary.json",
+        "docs/static/badges/workflows.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/b208aaefec3576b4451aa227f1722bb45fc13435"
+    },
+    {
+      "sha": "4eca43bb0bd3047bcce51117f477fa6379368f95",
+      "parents": [
+        "b208aaefec3576b4451aa227f1722bb45fc13435"
+      ],
+      "committed_at": "2026-09-06T13:00:08-07:00",
+      "subject": "Redesign AetherMoore around verifiable AI systems (#2829)",
+      "mainline_landing": true,
+      "areas": [
+        "docs-site",
+        "other-review-needed"
+      ],
+      "paths": [
+        "docs/favicon.svg",
+        "docs/github-map.html",
+        "docs/hero.svg",
+        "docs/index.html",
+        "docs/research/evidence-ledger.html",
+        "docs/static/site/aethermore.css",
+        "docs/static/site/aethermore.js",
+        "tests/site/test_github_map.py"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/4eca43bb0bd3047bcce51117f477fa6379368f95"
+    },
+    {
+      "sha": "4389ecedbadc11964f46a8930a20df61ced3aca8",
+      "parents": [
+        "4eca43bb0bd3047bcce51117f477fa6379368f95"
+      ],
+      "committed_at": "2026-09-08T22:41:13-07:00",
+      "subject": "build(deps-dev): bump joi from 18.2.3 to 18.2.8 in scbe-visual-system (#2835)",
+      "mainline_landing": true,
+      "areas": [
+        "dependencies"
+      ],
+      "paths": [
+        "scbe-visual-system/package-lock.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/4389ecedbadc11964f46a8930a20df61ced3aca8"
+    },
+    {
+      "sha": "29de85cca127352035a180736b9c29712ff3706a",
+      "parents": [
+        "4389ecedbadc11964f46a8930a20df61ced3aca8"
+      ],
+      "committed_at": "2026-09-10T05:45:04Z",
+      "subject": "test: align homepage contracts with verifiable-systems redesign (#2838)",
+      "mainline_landing": true,
+      "areas": [
+        "other-review-needed"
+      ],
+      "paths": [
+        "tests/revenue/test_public_money_path.py",
+        "tests/test_bookshelf_pages.py",
+        "tests/test_homepage_governance_demo_gate.py",
+        "tests/test_package_product_pages.py"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/29de85cca127352035a180736b9c29712ff3706a"
+    },
+    {
+      "sha": "fa054f3aa561ac3e61c60ebcac4ca91ba27359c9",
+      "parents": [
+        "29de85cca127352035a180736b9c29712ff3706a"
+      ],
+      "committed_at": "2026-09-10T08:02:56Z",
+      "subject": "style(test): format homepage governance assertions (#2839)",
+      "mainline_landing": true,
+      "areas": [
+        "other-review-needed"
+      ],
+      "paths": [
+        "tests/test_homepage_governance_demo_gate.py"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/fa054f3aa561ac3e61c60ebcac4ca91ba27359c9"
+    },
+    {
+      "sha": "3f17ae5320680d412b3d85176ed22eea921af2d1",
+      "parents": [
+        "fa054f3aa561ac3e61c60ebcac4ca91ba27359c9"
+      ],
+      "committed_at": "2026-09-10T18:56:21-07:00",
+      "subject": "build(deps): bump @vitest/mocker and vitest (#2837)",
+      "mainline_landing": true,
+      "areas": [
+        "dependencies"
+      ],
+      "paths": [
+        "apps/aether-desktop/shell/package-lock.json",
+        "apps/aether-desktop/shell/package.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/3f17ae5320680d412b3d85176ed22eea921af2d1"
+    },
+    {
+      "sha": "934f3d2b347c432512985be63018f3284d9198db",
+      "parents": [
+        "3f17ae5320680d412b3d85176ed22eea921af2d1"
+      ],
+      "committed_at": "2026-09-10T18:57:26-07:00",
+      "subject": "build(deps-dev): bump js-yaml (#2836)",
+      "mainline_landing": true,
+      "areas": [
+        "dependencies"
+      ],
+      "paths": [
+        "scbe-visual-system/package-lock.json",
+        "scbe-visual-system/package.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/934f3d2b347c432512985be63018f3284d9198db"
+    },
+    {
+      "sha": "8c30198e4be22e84a7031550b20504bcdf23c62b",
+      "parents": [
+        "934f3d2b347c432512985be63018f3284d9198db"
+      ],
+      "committed_at": "2026-09-11T02:05:32Z",
+      "subject": "fix(deps): patch Hono, Sharp and agent-bus Vitest vulnerabilities (#2842)",
+      "mainline_landing": true,
+      "areas": [
+        "dependencies",
+        "docs-site"
+      ],
+      "paths": [
+        "docs/DEPENDENCY_MAINTENANCE.md",
+        "package-lock.json",
+        "package.json",
+        "packages/agent-bus/package-lock.json",
+        "packages/agent-bus/package.json",
+        "packages/cli/package-lock.json",
+        "packages/cli/package.json",
+        "services/scbe-shim/package-lock.json",
+        "services/scbe-shim/package.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/8c30198e4be22e84a7031550b20504bcdf23c62b"
+    },
+    {
+      "sha": "0849e219a3d4d854de0d0bfe1e4107907983adb3",
+      "parents": [
+        "8c30198e4be22e84a7031550b20504bcdf23c62b"
+      ],
+      "committed_at": "2026-09-11T09:16:34Z",
+      "subject": "chore(stats): update daily repo stats badges (#2843)",
+      "mainline_landing": true,
+      "areas": [
+        "docs-site"
+      ],
+      "paths": [
+        "docs/static/badges/docs.json",
+        "docs/static/badges/stats-summary.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/0849e219a3d4d854de0d0bfe1e4107907983adb3"
+    },
+    {
+      "sha": "8cc9fd4a455694b616b6e0ad0d447db9e5cf4da2",
+      "parents": [
+        "0849e219a3d4d854de0d0bfe1e4107907983adb3"
+      ],
+      "committed_at": "2026-09-12T22:41:22-07:00",
+      "subject": "fix(audit): recognize current website action markup (#2844)",
+      "mainline_landing": true,
+      "areas": [
+        "operator-tools",
+        "other-review-needed"
+      ],
+      "paths": [
+        "scripts/system/website_sales_train.py",
+        "tests/system/test_website_sales_train.py"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/8cc9fd4a455694b616b6e0ad0d447db9e5cf4da2"
+    },
+    {
+      "sha": "ef8ecdf3a109c56652b5ad4b8fd95eeb4cc31f91",
+      "parents": [
+        "8cc9fd4a455694b616b6e0ad0d447db9e5cf4da2"
+      ],
+      "committed_at": "2026-09-12T22:41:28-07:00",
+      "subject": "fix(vercel): default agent bridge to manual deployments (#2845)",
+      "mainline_landing": true,
+      "areas": [
+        "docs-site"
+      ],
+      "paths": [
+        "docs/deployment/VERCEL_COST_GUARD.md",
+        "vercel.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/ef8ecdf3a109c56652b5ad4b8fd95eeb4cc31f91"
+    },
+    {
+      "sha": "c1db242c88f0464d5e80cf83425487f819e802ce",
+      "parents": [
+        "ef8ecdf3a109c56652b5ad4b8fd95eeb4cc31f91"
+      ],
+      "committed_at": "2026-09-16T16:39:54Z",
+      "subject": "fix: align quality checks and enforce product package boundaries (#2840)",
+      "mainline_landing": true,
+      "areas": [
+        "ci-release",
+        "dependencies",
+        "docs-site",
+        "operator-tools",
+        "other-review-needed"
+      ],
+      "paths": [
+        ".gitattributes",
+        ".github/workflows/ci.yml",
+        "MANIFEST.in",
+        "docs/REPOSITORY_READINESS.md",
+        "package.json",
+        "requirements-lint.txt",
+        "scripts/pypi_build.py",
+        "scripts/pypi_dist_guard.py",
+        "setup.py",
+        "tests/test_runtime_package_boundary.py"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/c1db242c88f0464d5e80cf83425487f819e802ce"
+    },
+    {
+      "sha": "b400055166c3299a4b167b1e5fd0e7b521583b3f",
+      "parents": [
+        "c1db242c88f0464d5e80cf83425487f819e802ce"
+      ],
+      "committed_at": "2026-09-17T09:44:39Z",
+      "subject": "chore(stats): update daily repo stats badges (#2850)",
+      "mainline_landing": true,
+      "areas": [
+        "docs-site"
+      ],
+      "paths": [
+        "docs/static/badges/docs.json",
+        "docs/static/badges/stats-summary.json",
+        "docs/static/badges/tests.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/b400055166c3299a4b167b1e5fd0e7b521583b3f"
+    },
+    {
+      "sha": "3d4196956d3bb5487e3bfe3f35e1ab73a3c8a85e",
+      "parents": [
+        "b400055166c3299a4b167b1e5fd0e7b521583b3f"
+      ],
+      "committed_at": "2026-09-17T17:41:16Z",
+      "subject": "fix(deps): validate compatible subapp updates and separate major migrations (#2851)",
+      "mainline_landing": true,
+      "areas": [
+        "ci-release",
+        "dependencies",
+        "other-review-needed"
+      ],
+      "paths": [
+        ".github/dependabot.yml",
+        ".github/workflows/subapp-validation.yml",
+        "conference-app/package-lock.json",
+        "conference-app/package.json",
+        "conference-app/src/frontend/vite-env.d.ts",
+        "conference-app/tsconfig.json",
+        "scbe-visual-system/package-lock.json",
+        "scbe-visual-system/package.json",
+        "src/package-lock.json",
+        "src/package.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/3d4196956d3bb5487e3bfe3f35e1ab73a3c8a85e"
+    },
+    {
+      "sha": "3e331202dcaac076a4fad642e4b435e64c1cfb78",
+      "parents": [
+        "3d4196956d3bb5487e3bfe3f35e1ab73a3c8a85e"
+      ],
+      "committed_at": "2026-09-17T17:58:44Z",
+      "subject": "fix(encoder): bound probe selection and bind src fingerprint context (#2853)",
+      "mainline_landing": true,
+      "areas": [
+        "neural-sensors",
+        "operator-tools",
+        "other-review-needed"
+      ],
+      "paths": [
+        "scripts/system/run_core_python_checks.py",
+        "src/symphonic_cipher/CHANGELOG.md",
+        "src/symphonic_cipher/flat_slope_encoder.py",
+        "tests/test_src_harmonic_contract.py"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/3e331202dcaac076a4fad642e4b435e64c1cfb78"
+    },
+    {
+      "sha": "78b164a001d660f52c7a6fbd6453fcffe5fb0810",
+      "parents": [
+        "3e331202dcaac076a4fad642e4b435e64c1cfb78"
+      ],
+      "committed_at": "2026-09-17T12:51:12-07:00",
+      "subject": "build(deps): bump the npm-version group across 3 directories with 7 updates (#2852)",
+      "mainline_landing": true,
+      "areas": [
+        "dependencies"
+      ],
+      "paths": [
+        "conference-app/package-lock.json",
+        "conference-app/package.json",
+        "package-lock.json",
+        "scbe-visual-system/package-lock.json",
+        "scbe-visual-system/package.json",
+        "src/package-lock.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/78b164a001d660f52c7a6fbd6453fcffe5fb0810"
+    },
+    {
+      "sha": "91987c938c566bd6ced718a07c70fa7a62da6663",
+      "parents": [
+        "78b164a001d660f52c7a6fbd6453fcffe5fb0810"
+      ],
+      "committed_at": "2026-09-18T17:40:51Z",
+      "subject": "chore(stats): update daily repo stats badges (#2854)",
+      "mainline_landing": true,
+      "areas": [
+        "docs-site"
+      ],
+      "paths": [
+        "docs/static/badges/loc.json",
+        "docs/static/badges/stats-summary.json",
+        "docs/static/badges/tests.json",
+        "docs/static/badges/workflows.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/91987c938c566bd6ced718a07c70fa7a62da6663"
+    },
+    {
+      "sha": "c650d1ab6c802d2cf47f340e46633dc657b12b8e",
+      "parents": [
+        "91987c938c566bd6ced718a07c70fa7a62da6663"
+      ],
+      "committed_at": "2026-09-18T16:48:04-07:00",
+      "subject": "build(deps): bump anyio from 4.12.1 to 4.14.2 in /examples/SCBEAgent (#2855)",
+      "mainline_landing": true,
+      "areas": [
+        "dependencies"
+      ],
+      "paths": [
+        "examples/SCBEAgent/uv.lock"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/c650d1ab6c802d2cf47f340e46633dc657b12b8e"
+    },
+    {
+      "sha": "ad4e51b17e3bdf384b678698fc62f99a1830dfd8",
+      "parents": [
+        "c650d1ab6c802d2cf47f340e46633dc657b12b8e"
+      ],
+      "committed_at": "2026-09-18T16:48:28-07:00",
+      "subject": "build(deps): bump anyio in the pip-security group across 1 directory (#2856)",
+      "mainline_landing": true,
+      "areas": [
+        "dependencies"
+      ],
+      "paths": [
+        "requirements-lock.txt"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/ad4e51b17e3bdf384b678698fc62f99a1830dfd8"
+    },
+    {
+      "sha": "7153becc01a368efd9c82009f28d98cee27988b2",
+      "parents": [
+        "ad4e51b17e3bdf384b678698fc62f99a1830dfd8"
+      ],
+      "committed_at": "2026-09-19T00:26:11Z",
+      "subject": "fix(security): enforce authorization contracts and verify SCBE mathematics (#2857)",
+      "mainline_landing": true,
+      "areas": [
+        "api-storage",
+        "ci-release",
+        "crypto",
+        "dependencies",
+        "docs-site",
+        "governance",
+        "math-kernel",
+        "neural-sensors",
+        "operator-tools",
+        "other-review-needed"
+      ],
+      "paths": [
+        ".github/workflows/lean-contracts.yml",
+        ".github/workflows/pqc-native-liboqs.yml",
+        "SECURITY.md",
+        "docs/security/NIST_READINESS.md",
+        "docs/security/evidence/runtime-contracts-20260918.json",
+        "docs/security/evidence/validation-20260918.json",
+        "examples/SCBEAgent/uv.lock",
+        "formal/lean/.gitattributes",
+        "formal/lean/.gitignore",
+        "formal/lean/README.md",
+        "formal/lean/SCBE.lean",
+        "formal/lean/SCBE/Codecs.lean",
+        "formal/lean/SCBE/Composition.lean",
+        "formal/lean/SCBE/Geometry.lean",
+        "formal/lean/SCBE/Harmonic.lean",
+        "formal/lean/SCBE/Routing.lean",
+        "formal/lean/SCBE/Vocabulary.lean",
+        "formal/lean/SYSTEM_MAP.md",
+        "formal/lean/audit_implementation.py",
+        "formal/lean/evidence/proof-20260918.json",
+        "formal/lean/evidence/proof-portable-20260918.json",
+        "formal/lean/export_vocabulary.py",
+        "formal/lean/lake-manifest.json",
+        "formal/lean/lakefile.toml",
+        "formal/lean/lean-toolchain",
+        "formal/lean/verify.py",
+        "packages/kernel/src/hamiltonianCFI.ts",
+        "packages/kernel/src/hyperbolic.ts",
+        "scripts/security/native_liboqs_smoke.py",
+        "scripts/system/run_core_python_checks.py",
+        "src/api/index.ts",
+        "src/governance/runtime_gate.py",
+        "src/harmonic/hyperbolic.ts",
+        "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/causality_axiom.py",
+        "src/symphonic_cipher/scbe_aethermoore/constants.py",
+        "src/symphonic_cipher/scbe_aethermoore/dual_lattice.py",
+        "src/symphonic_cipher/scbe_aethermoore/full_system.py",
+        "src/symphonic_cipher/scbe_aethermoore/layers/__init__.py",
+        "src/symphonic_cipher/scbe_aethermoore/layers/fourteen_layer_pipeline.py",
+        "src/symphonic_cipher/scbe_aethermoore/pqc/__init__.py",
+        "src/symphonic_cipher/scbe_aethermoore/pqc/pqc_core.py",
+        "src/symphonic_cipher/tests/test_fourteen_layer.py",
+        "src/symphonic_cipher/topological_cfi.py",
+        "symphonic_cipher/scbe_aethermoore/axiom_grouped/causality_axiom.py",
+        "symphonic_cipher/scbe_aethermoore/constants.py",
+        "symphonic_cipher/scbe_aethermoore/dual_lattice.py",
+        "symphonic_cipher/scbe_aethermoore/full_system.py",
+        "symphonic_cipher/scbe_aethermoore/layers/__init__.py",
+        "symphonic_cipher/scbe_aethermoore/layers/fourteen_layer_pipeline.py",
+        "symphonic_cipher/scbe_aethermoore/pqc/__init__.py",
+        "symphonic_cipher/scbe_aethermoore/pqc/pqc_core.py",
+        "symphonic_cipher/tests/test_fourteen_layer.py",
+        "symphonic_cipher/topological_cfi.py",
+        "tests/api/api.test.ts",
+        "tests/governance/test_full_system_decision_precedence.py",
+        "tests/governance/test_patent_decision_repairs.py",
+        "tests/harmonic/breathing.security.test.ts",
+        "tests/harmonic/hamiltonianCFI.security.test.ts",
+        "tests/security/test_breathing_and_backend_contracts.py",
+        "tests/test_patent_security_regressions.py",
+        "tests/test_pqc.py",
+        "tests/test_runtime_gate.py",
+        "tests/test_runtime_gate_hybrid_monotonic.py"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/7153becc01a368efd9c82009f28d98cee27988b2"
+    },
+    {
+      "sha": "a493f14bb7bcd25a76efcec7371d081c2dc547a7",
+      "parents": [
+        "7153becc01a368efd9c82009f28d98cee27988b2"
+      ],
+      "committed_at": "2026-09-19T00:37:57Z",
+      "subject": "docs(math): map nested boundary reuse and current proof limits (#2858)",
+      "mainline_landing": true,
+      "areas": [
+        "docs-site",
+        "math-kernel"
+      ],
+      "paths": [
+        "docs/specs/NESTED_BOUNDARY_INTEGRATION_2026-09-18.md",
+        "formal/lean/SYSTEM_MAP.md"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/a493f14bb7bcd25a76efcec7371d081c2dc547a7"
+    },
+    {
+      "sha": "7f9ffe27763bbed2562ed9c0ffa308d300ceec01",
+      "parents": [
+        "a493f14bb7bcd25a76efcec7371d081c2dc547a7"
+      ],
+      "committed_at": "2026-09-19T01:09:45Z",
+      "subject": "fix(crypto): authenticate braid vault, signature and RWP2 paths (#2859)",
+      "mainline_landing": true,
+      "areas": [
+        "ci-release",
+        "crypto",
+        "docs-site",
+        "neural-sensors",
+        "operator-tools",
+        "other-review-needed"
+      ],
+      "paths": [
+        ".github/workflows/pqc-native-liboqs.yml",
+        "docs/security/HASH_AND_SIGNATURE_REVIEW_2026-09-18.md",
+        "scripts/security/native_liboqs_smoke.py",
+        "scripts/system/run_core_python_checks.py",
+        "src/crypto/braid_vault.py",
+        "src/crypto/sacred_eggs.py",
+        "src/crypto/tri_bundle.py",
+        "src/spiralverse/aethercode.py",
+        "src/spiralverse/rwp2_envelope.py",
+        "src/symphonic_cipher/scbe_aethermoore/spiral_seal/seal.py",
+        "src/symphonic_cipher/scbe_aethermoore/spiral_seal/signatures.py",
+        "symphonic_cipher/scbe_aethermoore/spiral_seal/seal.py",
+        "symphonic_cipher/scbe_aethermoore/spiral_seal/signatures.py",
+        "tests/security/test_braid_signature_integrity.py",
+        "tests/security/test_rwp2_authentication_contract.py",
+        "tests/test_braid_vault.py",
+        "tests/test_full_system_verification.py",
+        "tests/test_industry_grade.py",
+        "tests/test_scbe_comprehensive.py",
+        "tests/test_spiral_seal_comprehensive.py"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/7f9ffe27763bbed2562ed9c0ffa308d300ceec01"
+    },
+    {
+      "sha": "1218c10dc56125007df0ce23cfbb4eaabbc4a998",
+      "parents": [
+        "7f9ffe27763bbed2562ed9c0ffa308d300ceec01"
+      ],
+      "committed_at": "2026-09-19T22:41:44-07:00",
+      "subject": "chore(stats): update daily repo stats badges",
+      "mainline_landing": true,
+      "areas": [
+        "docs-site"
+      ],
+      "paths": [
+        "docs/static/badges/docs.json",
+        "docs/static/badges/loc.json",
+        "docs/static/badges/stats-summary.json",
+        "docs/static/badges/tests.json",
+        "docs/static/badges/workflows.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/1218c10dc56125007df0ce23cfbb4eaabbc4a998"
+    },
+    {
+      "sha": "2105257af682c9a60a8be6784570504c75001dfb",
+      "parents": [
+        "1218c10dc56125007df0ce23cfbb4eaabbc4a998"
+      ],
+      "committed_at": "2026-09-20T16:16:30Z",
+      "subject": "fix(ci): cover hardened contracts in PR smoke (#2870)",
+      "mainline_landing": true,
+      "areas": [
+        "operator-tools",
+        "other-review-needed"
+      ],
+      "paths": [
+        "scripts/benchmark/pipeline14_adversarial_eval.py",
+        "scripts/system/run_core_python_checks.py",
+        "src/neurogolf/package.py",
+        "tests/benchmark/test_pipeline14_adversarial_eval.py",
+        "tests/test_aethermoore.py",
+        "tests/test_neurogolf_onnx_emit.py",
+        "tests/test_neurogolf_package.py",
+        "tests/test_same_pole_repulsor.py"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/2105257af682c9a60a8be6784570504c75001dfb"
+    },
+    {
+      "sha": "a856dd23356c2b018eec550f655bc9bcd56ed4c7",
+      "parents": [
+        "2105257af682c9a60a8be6784570504c75001dfb"
+      ],
+      "committed_at": "2026-09-21T09:42:49-07:00",
+      "subject": "build(deps-dev): bump the npm-version group across 2 directories with 4 updates (#2862)",
+      "mainline_landing": true,
+      "areas": [
+        "dependencies"
+      ],
+      "paths": [
+        "conference-app/package-lock.json",
+        "package-lock.json",
+        "scbe-visual-system/package-lock.json",
+        "scbe-visual-system/package.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/a856dd23356c2b018eec550f655bc9bcd56ed4c7"
+    },
+    {
+      "sha": "5846ec1985dce5933e6db4a18c7bb6c671acf5ce",
+      "parents": [
+        "a856dd23356c2b018eec550f655bc9bcd56ed4c7"
+      ],
+      "committed_at": "2026-09-21T16:50:05Z",
+      "subject": "fix(deps): keep Vitest and coverage updates together (#2875)",
+      "mainline_landing": true,
+      "areas": [
+        "ci-release",
+        "docs-site"
+      ],
+      "paths": [
+        ".github/dependabot.yml",
+        "docs/DEPENDENCY_MAINTENANCE.md"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/5846ec1985dce5933e6db4a18c7bb6c671acf5ce"
+    },
+    {
+      "sha": "c8f888cbe1af64e8ba1243edd55e5dbefe677c55",
+      "parents": [
+        "5846ec1985dce5933e6db4a18c7bb6c671acf5ce"
+      ],
+      "committed_at": "2026-09-21T17:00:05Z",
+      "subject": "fix(ci): skip impossible bot self-approval (#2877)",
+      "mainline_landing": true,
+      "areas": [
+        "ci-release",
+        "docs-site"
+      ],
+      "paths": [
+        ".github/workflows/auto-approve-trusted.yml",
+        "docs/DEPENDENCY_MAINTENANCE.md"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/c8f888cbe1af64e8ba1243edd55e5dbefe677c55"
+    },
+    {
+      "sha": "6ebedb59df1aaab43f3505da42d511c5a71ac660",
+      "parents": [
+        "c8f888cbe1af64e8ba1243edd55e5dbefe677c55"
+      ],
+      "committed_at": "2026-09-21T17:10:39Z",
+      "subject": "chore(stats): update daily repo stats badges (#2871)",
+      "mainline_landing": true,
+      "areas": [
+        "docs-site"
+      ],
+      "paths": [
+        "docs/static/badges/stats-summary.json",
+        "docs/static/badges/tests.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/6ebedb59df1aaab43f3505da42d511c5a71ac660"
+    },
+    {
+      "sha": "9894269bc8a9c172bdf0add9c54519578e427403",
+      "parents": [
+        "6ebedb59df1aaab43f3505da42d511c5a71ac660"
+      ],
+      "committed_at": "2026-09-23T08:15:12-07:00",
+      "subject": "build(deps-dev): bump the npm-version group across 2 directories with 2 updates (#2878)",
+      "mainline_landing": true,
+      "areas": [
+        "dependencies"
+      ],
+      "paths": [
+        "package-lock.json",
+        "scbe-visual-system/package-lock.json",
+        "scbe-visual-system/package.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/9894269bc8a9c172bdf0add9c54519578e427403"
+    },
+    {
+      "sha": "234a2a1b455911f5b076d5eafe0ebe150cffe547",
+      "parents": [
+        "9894269bc8a9c172bdf0add9c54519578e427403"
+      ],
+      "committed_at": "2026-09-23T08:25:04-07:00",
+      "subject": "build(deps-dev): bump the vitest-toolchain group across 4 directories with 2 updates (#2876)",
+      "mainline_landing": true,
+      "areas": [
+        "dependencies"
+      ],
+      "paths": [
+        "conference-app/package-lock.json",
+        "conference-app/package.json",
+        "package-lock.json",
+        "package.json",
+        "scbe-visual-system/package-lock.json",
+        "scbe-visual-system/package.json",
+        "src/package-lock.json",
+        "src/package.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/234a2a1b455911f5b076d5eafe0ebe150cffe547"
+    },
+    {
+      "sha": "672e80020e0468ad875e1cd8c47de3d4c348a7ee",
+      "parents": [
+        "234a2a1b455911f5b076d5eafe0ebe150cffe547"
+      ],
+      "committed_at": "2026-09-23T15:38:34Z",
+      "subject": "fix(desktop): upgrade Electron and repair sidepanel bridge (#2879)",
+      "mainline_landing": true,
+      "areas": [
+        "ci-release",
+        "dependencies",
+        "other-review-needed",
+        "product-apps",
+        "workspace"
+      ],
+      "paths": [
+        ".github/workflows/desktop-preloads.yml",
+        "desktop/PRELOAD_TESTING.md",
+        "desktop/electron/preload-sidepanel.js",
+        "desktop/package.json",
+        "desktop/scripts/preload-smoke.cjs",
+        "src/.gitignore",
+        "src/extension/lib/browser-api.js",
+        "src/extension/lib/dom-reader.js",
+        "src/extension/lib/storage.js"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/672e80020e0468ad875e1cd8c47de3d4c348a7ee"
+    },
+    {
+      "sha": "2314a8e08eda6ed3f5090c31adb34fce18764df9",
+      "parents": [
+        "672e80020e0468ad875e1cd8c47de3d4c348a7ee"
+      ],
+      "committed_at": "2026-09-23T09:16:42-07:00",
+      "subject": "fix(release): verify installed artifacts and prepare 4.3.2 (#2880)",
+      "mainline_landing": true,
+      "areas": [
+        "ci-release",
+        "dependencies",
+        "docs-site",
+        "operator-tools",
+        "other-review-needed"
+      ],
+      "paths": [
+        ".github/workflows/ci.yml",
+        ".github/workflows/npm-publish.yml",
+        ".github/workflows/pypi-publish.yml",
+        "CHANGELOG.md",
+        "docs/PUBLISHING.md",
+        "package-lock.json",
+        "package.json",
+        "pyproject.toml",
+        "scripts/check_wheel_entrypoints.py",
+        "scripts/npm_consumer_smoke.mjs",
+        "src/scbe_aethermoore/__init__.py"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/2314a8e08eda6ed3f5090c31adb34fce18764df9"
+    },
+    {
+      "sha": "423b09abd04e420ed50e6b28e70b0744a4baa4b2",
+      "parents": [
+        "2314a8e08eda6ed3f5090c31adb34fce18764df9"
+      ],
+      "committed_at": "2026-09-23T16:43:44Z",
+      "subject": "fix(packaging): repair frozen python package imports on macOS (#2881)",
+      "mainline_landing": true,
+      "areas": [
+        "ci-release",
+        "operator-tools",
+        "other-review-needed"
+      ],
+      "paths": [
+        ".github/workflows/build-binaries.yml",
+        "scbe.spec",
+        "scripts/check_frozen_namespace.py",
+        "scripts/pyinstaller_python_path.py"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/423b09abd04e420ed50e6b28e70b0744a4baa4b2"
+    },
+    {
+      "sha": "9a160b7dcbe5e77e9ea33ee574b8c44388ffc8ce",
+      "parents": [
+        "423b09abd04e420ed50e6b28e70b0744a4baa4b2"
+      ],
+      "committed_at": "2026-09-24T22:40:52-07:00",
+      "subject": "chore(stats): update daily repo stats badges (#2882)",
+      "mainline_landing": true,
+      "areas": [
+        "docs-site"
+      ],
+      "paths": [
+        "docs/static/badges/docs.json",
+        "docs/static/badges/stats-summary.json",
+        "docs/static/badges/workflows.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/9a160b7dcbe5e77e9ea33ee574b8c44388ffc8ce"
+    },
+    {
+      "sha": "b1d4c53b054b81e1b7b55a22f43e3ec09c876e9c",
+      "parents": [
+        "9a160b7dcbe5e77e9ea33ee574b8c44388ffc8ce"
+      ],
+      "committed_at": "2026-09-25T22:41:17-07:00",
+      "subject": "fix(deps): bump scbe-aethermoore from 4.2.0 to 4.2.1 (#2883)",
+      "mainline_landing": true,
+      "areas": [
+        "dependencies"
+      ],
+      "paths": [
+        "requirements-lock.txt"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/b1d4c53b054b81e1b7b55a22f43e3ec09c876e9c"
+    },
+    {
+      "sha": "dded55390b6a6c3df23fc2735a77da8d1dbf7638",
+      "parents": [
+        "b1d4c53b054b81e1b7b55a22f43e3ec09c876e9c"
+      ],
+      "committed_at": "2026-09-27T22:41:25-07:00",
+      "subject": "fix(deps): bump the npm-version group across 4 directories (#2884)",
+      "mainline_landing": true,
+      "areas": [
+        "dependencies"
+      ],
+      "paths": [
+        "conference-app/package-lock.json",
+        "conference-app/package.json",
+        "package-lock.json",
+        "scbe-visual-system/package-lock.json",
+        "scbe-visual-system/package.json",
+        "src/package-lock.json",
+        "src/package.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/dded55390b6a6c3df23fc2735a77da8d1dbf7638"
+    },
+    {
+      "sha": "c3da7a7d9f026f4d9e773b0c2c190750ce4171e3",
+      "parents": [
+        "dded55390b6a6c3df23fc2735a77da8d1dbf7638"
+      ],
+      "committed_at": "2026-09-28T05:51:52Z",
+      "subject": "fix(tests): align weekly full-system suite with binding Layer-13 refusals (#2885)",
+      "mainline_landing": true,
+      "areas": [
+        "neural-sensors"
+      ],
+      "paths": [
+        "symphonic_cipher/tests/test_full_system.py"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/c3da7a7d9f026f4d9e773b0c2c190750ce4171e3"
+    },
+    {
+      "sha": "8c0ea5b61c25b859efb807c99cc2f4170d02795d",
+      "parents": [
+        "c3da7a7d9f026f4d9e773b0c2c190750ce4171e3"
+      ],
+      "committed_at": "2026-09-29T22:40:49-07:00",
+      "subject": "fix(deps): bump ip-address from 10.4.0 to 10.7.2 (#2889)",
+      "mainline_landing": true,
+      "areas": [
+        "dependencies"
+      ],
+      "paths": [
+        "package-lock.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/8c0ea5b61c25b859efb807c99cc2f4170d02795d"
+    },
+    {
+      "sha": "07d3e7b527e2bee0641394d9cc20761e0cbb927e",
+      "parents": [
+        "8c0ea5b61c25b859efb807c99cc2f4170d02795d"
+      ],
+      "committed_at": "2026-09-30T22:40:56-07:00",
+      "subject": "fix(deps): bump the npm-security group across 2 directories with 3 updates (#2890)",
+      "mainline_landing": true,
+      "areas": [
+        "dependencies"
+      ],
+      "paths": [
+        "package-lock.json",
+        "package.json",
+        "scbe-visual-system/package-lock.json",
+        "scbe-visual-system/package.json"
+      ],
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/commit/07d3e7b527e2bee0641394d9cc20761e0cbb927e"
+    }
+  ]
+}
