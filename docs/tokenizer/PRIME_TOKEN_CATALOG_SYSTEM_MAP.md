@@ -607,3 +607,35 @@ route-width contract from raw per-query outcomes; it does not trust those result
 fields. A targeted tamper test proves that changing the recorded null width is
 rejected. The combined catalog, prospective, query-harvest and watch-audit suite
 passes 65/65 after Black and Ruff checks.
+
+## Staged case and grammar address adapter — 2026-11-10
+
+`python/scbe/token_surface_routes.py` now joins existing mechanics without
+creating a seventh catalog view or changing the frozen catalog. Reversible
+one-code-point upper/lower choices form a binary case address. An explicitly
+observed S, V, or O role is separately transported through the six authoritative
+tongue orders (KO/SOV, AV/SVO, RU/VSO, CA/OVS, UM/VOS, and DR/OSV). The combined
+address is
+
+`address = case_index * 6 + tongue_index`.
+
+This makes every case/order possibility directly selectable without allocating
+the full `2^cased_characters * 6` table. Exact surface bytes remain the
+occurrence identity, normalized spelling remains the canonical word identity,
+and role identity remains distinct from its tongue-specific presentation slot.
+If a role was not parsed or receipted, no grammar route may be fabricated.
+
+The adapter emits an eight-lane bounded numeric projection consumed directly by
+the existing algebraic radial token table: four case-shape coordinates, three
+S/V/O carrier lanes, and one centered slot coordinate. Those lanes are correlated
+deterministic views, not new information or eight independent observations.
+Likewise, the prior case-direction embedding probe remains inconclusive; exact
+case encoding does not establish that a trained model has learned one global
+uppercase direction.
+
+This adapter is staged mechanics only. It does not alter the waiting v7 successor,
+score prospective examples, train a model, authorize partial unfreezing, or
+authorize promotion. Before catalog integration, compare it against a lexical
+baseline, equal-width random features, shuffled case binding, shuffled
+role-to-slot binding, case/grammar ablations, and the source-session-disjoint
+holdout under the existing multi-seed gates.
