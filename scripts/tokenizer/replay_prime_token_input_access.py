@@ -19,6 +19,7 @@ from python.scbe.prime_token_independent_replay import (
     load_adapter_read_only,
     reconstruct_packet_independently,
     replay_predictions,
+    verify_no_intervention_parent,
     verify_replay_ledger,
 )
 from python.scbe.prime_token_input_access import FullSystemPrimeTokenInputAccessLM
@@ -48,7 +49,15 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         raise TypeError("replay factory returned the wrong model type")
     if not isinstance(identity, dict) or not isinstance(cases, list) or not cases:
         raise TypeError("replay factory omitted identity or replay cases")
-    checkpoint = load_adapter_read_only(args.checkpoint_dir, model=model, expected_identity=identity)
+    arm = str(identity.get("arm") or "")
+    if arm == "no_intervention":
+        if args.checkpoint_dir is not None:
+            raise ValueError("no_intervention replay must not receive an adapter checkpoint")
+        checkpoint = verify_no_intervention_parent(model=model, expected_identity=identity)
+    else:
+        if args.checkpoint_dir is None:
+            raise ValueError("learned-arm replay requires --checkpoint-dir")
+        checkpoint = load_adapter_read_only(args.checkpoint_dir, model=model, expected_identity=identity)
     outcomes = []
     for index, case in enumerate(cases):
         packet = reconstruct_packet_independently(
@@ -101,7 +110,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--runtime-factory", required=True)
     parser.add_argument("--runtime-config", required=True, type=Path)
-    parser.add_argument("--checkpoint-dir", required=True, type=Path)
+    parser.add_argument("--checkpoint-dir", type=Path)
     parser.add_argument("--output", required=True, type=Path)
     result = run(parser.parse_args())
     print(json.dumps(result, sort_keys=True))

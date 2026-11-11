@@ -16,6 +16,7 @@ from python.scbe.prime_token_independent_replay import (
     load_adapter_read_only,
     reconstruct_packet_independently,
     replay_predictions,
+    verify_no_intervention_parent,
     verify_replay_ledger,
 )
 from python.scbe.prime_token_input_access import (
@@ -641,3 +642,23 @@ def test_independent_replay_detects_checkpoint_and_ledger_tampering(
     assert sha256_file(checkpoint) != pointer["sha256"]
     with pytest.raises(RuntimeError, match="hash verification"):
         load_adapter_read_only(tmp_path, model=model, expected_identity=identity)
+
+
+def test_no_intervention_replay_seals_parent_without_checkpoint() -> None:
+    model = FullSystemPrimeTokenInputAccessLM(_FakeCore(), reader_rank=4)
+    identity = {
+        "arm": "no_intervention",
+        "seed": "5",
+        "parent_sha256": module_state_sha256(model.core),
+        "source_manifest_sha256": "a" * 64,
+        "split_manifest_sha256": "b" * 64,
+    }
+    receipt = verify_no_intervention_parent(model=model, expected_identity=identity)
+    assert receipt["checkpoint"] is None
+    assert receipt["checkpoint_free_baseline"] is True
+    assert receipt["step"] == 0
+    with pytest.raises(RuntimeError, match="parent differs"):
+        verify_no_intervention_parent(
+            model=model,
+            expected_identity={**identity, "parent_sha256": "f" * 64},
+        )

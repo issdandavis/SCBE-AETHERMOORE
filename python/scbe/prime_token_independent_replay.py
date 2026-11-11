@@ -296,6 +296,29 @@ def load_adapter_read_only(
     }
 
 
+def verify_no_intervention_parent(
+    *,
+    model: FullSystemPrimeTokenInputAccessLM,
+    expected_identity: Mapping[str, str],
+) -> dict[str, object]:
+    """Seal the checkpoint-free baseline against its declared frozen parent."""
+
+    if expected_identity.get("arm") != "no_intervention":
+        raise ValueError("checkpoint-free replay is valid only for no_intervention")
+    expected_parent = str(expected_identity.get("parent_sha256") or "")
+    actual_parent = module_state_sha256(model.core)
+    if not expected_parent or expected_parent != actual_parent:
+        raise RuntimeError("replay parent differs from no-intervention lineage")
+    return {
+        "checkpoint": None,
+        "checkpoint_sha256": None,
+        "step": 0,
+        "identity_sha256": canonical_sha256(dict(expected_identity)),
+        "producer_metrics_ignored": True,
+        "checkpoint_free_baseline": True,
+    }
+
+
 @torch.no_grad()
 def replay_predictions(
     model: FullSystemPrimeTokenInputAccessLM,
@@ -416,5 +439,6 @@ __all__ = [
     "load_adapter_read_only",
     "reconstruct_packet_independently",
     "replay_predictions",
+    "verify_no_intervention_parent",
     "verify_replay_ledger",
 ]
