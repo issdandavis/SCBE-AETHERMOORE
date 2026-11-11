@@ -812,8 +812,9 @@ The producer runtime no longer emits replay cases. The replay receipt binds the
 source, split, cases, and evaluator hashes and records that producer target
 arrays were not consumed. The evidence aggregator requires those flags and
 hashes, finite per-example target logits/NLL, and exact replay aggregates.
-Focused tests pass `41/41`; the complete prime-token/release suite passes
-`125/125`. Material data and weights were not opened.
+Focused source-replay tests pass `41/41`; after release-status binding tests,
+the complete prime-token/release suite passes `127/127`. Material data and
+weights were not opened.
 
 ## Release evidence authority — 2026-11-11
 

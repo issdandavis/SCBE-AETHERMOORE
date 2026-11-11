@@ -94,3 +94,18 @@ gate waiting.
 Disk free space was approximately 25.45 GiB at the final poll. The storage
 envelope gate remained `SPACE_ENVELOPE_OPEN`; no cleanup or deletion was
 performed in this implementation turn.
+
+## Continuation update — independent source replay and release binding
+
+Independent replay now rebuilds held inputs and targets from pinned source
+authorities rather than consuming producer cases. The implementation commit is
+`5d4c8a0f04a5f8eb33166de1dec5c44a8154ced7`; release-status binding is commit
+`9480ca1fe7600e8868a07959f08ca022a9c62b98`. The current state binds
+`INDEPENDENT_SOURCE_REPLAY_IMPLEMENTATION_TEST_RECEIPT_V2.json`
+(`269fea799989fdc06f4604f2b05b42a9a4dd1797a0283ca5ba0265b60f31b2a7`).
+
+The release auditor now derives accepted immutable JSON statuses from the
+hashed artifacts and rejects state/artifact disagreement. The contract also
+requires material-runtime and evidence-aggregator receipts. The complete suite
+passes `127/127`. The regenerated release audit remains fail-closed with 0
+errors and 9 blockers; no optimizer, checkpoint, or model weights were opened.

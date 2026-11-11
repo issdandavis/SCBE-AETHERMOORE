@@ -141,6 +141,14 @@ that exact commit. The immutable external receipt is
 No material data, checkpoint, optimizer, promotion, partial unfreeze, or tool
 dispatcher was opened.
 
+Commit `9480ca1fe7600e8868a07959f08ca022a9c62b98` closes the release-status
+binding gap and makes the material runtime plus evidence aggregator mandatory
+release evidence. `CURRENT_RELEASE_STATE.json` now binds the V2 independent
+source-replay receipt
+(`269fea799989fdc06f4604f2b05b42a9a4dd1797a0283ca5ba0265b60f31b2a7`).
+The exact-commit regression suite passes `127/127`; the regenerated release
+audit has 0 errors and 9 unmet prospective-data gates.
+
 ## Remaining release blockers
 
 The current release remains `WAITING_FOR_RELEASE_REQUIREMENTS`. In particular,

@@ -84,3 +84,13 @@ The tested implementation is commit
 `5d4c8a0f04a5f8eb33166de1dec5c44a8154ced7`. Its immutable external receipt is
 `INDEPENDENT_SOURCE_REPLAY_IMPLEMENTATION_TEST_RECEIPT_V1.json`, SHA-256
 `fbd7b4243d0b6ea83af6cde15a947dbcc55ccfed08f90c675f1d305432721e7c`.
+
+The release-binding hardening is commit
+`9480ca1fe7600e8868a07959f08ca022a9c62b98`. The admissible immutable receipt
+is `INDEPENDENT_SOURCE_REPLAY_IMPLEMENTATION_TEST_RECEIPT_V2.json`, SHA-256
+`269fea799989fdc06f4604f2b05b42a9a4dd1797a0283ca5ba0265b60f31b2a7`.
+Its gate status is `TESTED`; its authority fields independently keep promotion,
+partial unfreeze, optimization, and tool dispatch false. The release auditor
+now rejects an accepted immutable state status that differs from the status in
+the hashed JSON receipt. The expanded prime-token/release suite passes
+`127/127`.
