@@ -105,9 +105,7 @@ class PrimeTokenRecord:
         if not self.canonical_id or not self.section_id or not self.source_family:
             raise ValueError("prime-token identity fields must be non-empty")
         if set(self.views) != set(VIEW_NAMES):
-            raise ValueError(
-                "prime-token record must contain exactly the six named views"
-            )
+            raise ValueError("prime-token record must contain exactly the six named views")
         for view_name in VIEW_NAMES:
             _feature_items(self.views[view_name])
 
@@ -118,9 +116,7 @@ class PrimeTokenRecord:
                 "canonical_id": self.canonical_id,
                 "section_id": self.section_id,
                 "source_family": self.source_family,
-                "views": {
-                    name: list(_feature_items(self.views[name])) for name in VIEW_NAMES
-                },
+                "views": {name: list(_feature_items(self.views[name])) for name in VIEW_NAMES},
             }
         )
 
@@ -146,8 +142,7 @@ def _random_fixed_vector(record: PrimeTokenRecord) -> Tensor:
     return torch.cat(
         [
             _project_identity(
-                f"random-fixed:{RANDOM_CONTROL_SEED}:{record.canonical_id}:"
-                f"{record.section_id}:{view_index}"
+                f"random-fixed:{RANDOM_CONTROL_SEED}:{record.canonical_id}:" f"{record.section_id}:{view_index}"
             )
             for view_index in range(len(VIEW_NAMES))
         ]
@@ -198,13 +193,9 @@ def _binding_derangement(
     if shift * 2 > len(rows):
         raise ValueError("shuffled binding pool cannot form a vector derangement")
     sources = rows[shift:] + rows[:shift]
-    if any(
-        target[1] == source[1] for target, source in zip(rows, sources, strict=True)
-    ):
+    if any(target[1] == source[1] for target, source in zip(rows, sources, strict=True)):
         raise RuntimeError("shuffled binding derangement construction failed")
-    bindings = {
-        target[0]: source[2] for target, source in zip(rows, sources, strict=True)
-    }
+    bindings = {target[0]: source[2] for target, source in zip(rows, sources, strict=True)}
     pool_sha256 = _sha256_json({"record_receipts": sorted(receipts)})
     permutation_sha256 = _sha256_json(
         {
@@ -275,9 +266,7 @@ class SealedPrimeTokenBatch:
         )
         if self.mode == "shuffled_binding_reader":
             if any(
-                value is None
-                or len(value) != 64
-                or any(character not in "0123456789abcdef" for character in value)
+                value is None or len(value) != 64 or any(character not in "0123456789abcdef" for character in value)
                 for value in binding_receipts
             ):
                 raise ValueError("shuffled binding receipts are missing or invalid")
@@ -307,9 +296,7 @@ def build_prime_token_batch(
     if mode not in CONTROL_MODES:
         raise ValueError(f"unknown prime-token control mode: {mode}")
     if sequence_length <= 0 or not records or len(records) != len(owner_positions):
-        raise ValueError(
-            "records require matching positions and positive sequence length"
-        )
+        raise ValueError("records require matching positions and positive sequence length")
     if mode == "single_frame_reader" and frame not in VIEW_NAMES:
         raise ValueError(f"unknown single frame: {frame}")
     if mode == "shuffled_binding_reader" and binding_pool is None:
@@ -319,9 +306,7 @@ def build_prime_token_batch(
 
     features = torch.zeros((len(records), sequence_length, FEATURE_WIDTH))
     owner_mask = torch.zeros((len(records), sequence_length), dtype=torch.bool)
-    view_mask = torch.zeros(
-        (len(records), sequence_length, len(VIEW_NAMES)), dtype=torch.bool
-    )
+    view_mask = torch.zeros((len(records), sequence_length, len(VIEW_NAMES)), dtype=torch.bool)
     receipts: list[tuple[str, ...]] = []
 
     flattened = [
@@ -335,27 +320,21 @@ def build_prime_token_batch(
     binding_pool_sha256: str | None = None
     binding_permutation_sha256: str | None = None
     if mode == "shuffled_binding_reader":
-        shuffled_vectors, binding_pool_sha256, binding_permutation_sha256 = (
-            _binding_derangement(list(binding_pool or ()))
+        shuffled_vectors, binding_pool_sha256, binding_permutation_sha256 = _binding_derangement(
+            list(binding_pool or ())
         )
-        missing_bindings = {record.receipt() for _, _, record in flattened} - set(
-            shuffled_vectors
-        )
+        missing_bindings = {record.receipt() for _, _, record in flattened} - set(shuffled_vectors)
         if missing_bindings:
             raise ValueError("shuffled binding pool omits packet occurrences")
 
-    for batch_index, (row, raw_positions) in enumerate(
-        zip(records, owner_positions, strict=True)
-    ):
+    for batch_index, (row, raw_positions) in enumerate(zip(records, owner_positions, strict=True)):
         positions = tuple(int(position) for position in raw_positions)
         if len(row) != len(positions) or len(set(positions)) != len(positions):
             raise ValueError("each unique owner position requires exactly one record")
         if any(position < 0 or position >= sequence_length for position in positions):
             raise ValueError("prime-token owner position is out of bounds")
         row_receipts: list[str] = []
-        for _local_index, (record, position) in enumerate(
-            zip(row, positions, strict=True)
-        ):
+        for _local_index, (record, position) in enumerate(zip(row, positions, strict=True)):
             if mode == "canonical_six_view_reader":
                 vector = _canonical_record_vector(record)
                 active_views = range(len(VIEW_NAMES))
@@ -424,10 +403,7 @@ class PrimeTokenInputReader(nn.Module):
 
     def forward(self, language_values: Tensor, packet: SealedPrimeTokenBatch) -> Tensor:
         packet.validate()
-        if (
-            language_values.ndim != 3
-            or language_values.shape[:2] != packet.owner_mask.shape
-        ):
+        if language_values.ndim != 3 or language_values.shape[:2] != packet.owner_mask.shape:
             raise ValueError("language values and prime-token packet shapes differ")
         if language_values.shape[-1] != self.width:
             raise ValueError("language width differs from prime-token reader")
@@ -473,20 +449,13 @@ class FullSystemPrimeTokenInputAccessLM(nn.Module):
             parameter.requires_grad_(True)
 
     def adapter_state_dict(self) -> dict[str, Tensor]:
-        return {
-            name: tensor.detach().cpu().clone()
-            for name, tensor in self.reader.state_dict().items()
-        }
+        return {name: tensor.detach().cpu().clone() for name, tensor in self.reader.state_dict().items()}
 
     def load_adapter_state_dict(self, state: Mapping[str, Tensor]) -> None:
         self.reader.load_state_dict(dict(state), strict=True)
 
     def parameter_receipt(self) -> dict[str, object]:
-        trainable = {
-            name: parameter.numel()
-            for name, parameter in self.named_parameters()
-            if parameter.requires_grad
-        }
+        trainable = {name: parameter.numel() for name, parameter in self.named_parameters() if parameter.requires_grad}
         return {
             "schema": FULL_SYSTEM_SCHEMA,
             "input_access": "before_block_0",
@@ -546,14 +515,10 @@ class FullSystemPrimeTokenInputAccessLM(nn.Module):
 
         route_state = self.core.route.initial_state(route_lanes)
         traces = []
-        for index, (block, tilt) in enumerate(
-            zip(self.core.blocks, self.core.tilts, strict=True)
-        ):
+        for index, (block, tilt) in enumerate(zip(self.core.blocks, self.core.tilts, strict=True)):
             hidden = tilt(block(hidden))
             if self.core.config.route_mode != "off":
-                hidden, route_state, trace = self.core.route.step(
-                    hidden, route_state, index
-                )
+                hidden, route_state, trace = self.core.route.step(hidden, route_state, index)
                 if return_diagnostics:
                     traces.append(trace)
         logits = self.core.head(self.core.final_norm(hidden))
@@ -561,10 +526,7 @@ class FullSystemPrimeTokenInputAccessLM(nn.Module):
         aux = None
         if return_aux:
             lane_logits = torch.stack(
-                [
-                    decoder(raw_lanes[:, :, index])
-                    for index, decoder in enumerate(self.core.lane_decoders)
-                ],
+                [decoder(raw_lanes[:, :, index]) for index, decoder in enumerate(self.core.lane_decoders)],
                 dim=2,
             )
             aux = {"lane_logits": lane_logits}
