@@ -842,3 +842,8 @@ stable but open source session. The preregistered gate requires 30 candidates
 and three closed source sessions, leaving deficits of 24 turns and two
 additional distinct sessions even if the current source closes. This telemetry
 does not alter the collector, catalog, release state, or training authority.
+
+The headless monitor runs every 600 seconds through `run_headless.py`; its
+launch receipt is SHA-256
+`4386049b707bb32116dd069a6fd1b195e87e0e234a913bd0b852345b57534383`.
+The expanded controlled suite passes `130/130`.

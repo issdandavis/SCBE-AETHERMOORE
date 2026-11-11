@@ -118,3 +118,10 @@ The first measured state is 6/30 eligible unique post-freeze turns, 0/3 closed
 sessions, and one stable open session. Two additional distinct sessions are
 still required even after the current session closes. The monitor exposes no
 source text and has no training, scoring, promotion, thaw, or tool authority.
+
+The monitor is live through the standard hidden launcher: launcher PID 22168,
+worker PID 13924, 600-second polling. Source commit
+`fecd71b2be98d2fbda87d85a5dfed727283ade06` passes the expanded
+prime-token/release suite `130/130`. The immutable launch receipt is
+`prospective-open-readiness-v1-20261111/LAUNCH_RECEIPT_V1.json`
+(`4386049b707bb32116dd069a6fd1b195e87e0e234a913bd0b852345b57534383`).
