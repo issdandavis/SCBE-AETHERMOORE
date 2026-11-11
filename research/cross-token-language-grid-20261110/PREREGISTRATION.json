@@ -1,0 +1,77 @@
+{
+  "schema": "scbe.cross-token-language-grid-preregistration.v1",
+  "date": "2026-11-10",
+  "status": "STAGED_NOT_LAUNCHED",
+  "hypothesis": "A frozen-core proposal adapter using the receipted cross-token language-family grid improves exact multilingual action routing over matched controls without changing deterministic execution authority.",
+  "canonical_origin": [
+    "plan_receipt_sha256",
+    "frame_index",
+    "packet_offset",
+    "byte_value"
+  ],
+  "deterministic_views": [
+    "byte",
+    "bits",
+    "balanced_six_trits",
+    "six_tongue_surfaces",
+    "surface_case_address",
+    "explicit_grammar_route",
+    "radial_cell_and_sparse_relays"
+  ],
+  "independent_evidence_count_per_origin": 1,
+  "candidate": "frozen_core_cross_token_radial_proposal_adapter",
+  "controls": [
+    "canonical_byte_lexical_baseline",
+    "no_intervention_baseline",
+    "equal_width_random_features",
+    "shuffled_tongue_binding",
+    "shuffled_case_binding",
+    "shuffled_role_slot_binding",
+    "shuffled_radial_cell_sector_binding",
+    "matched_edge_count_route_null",
+    "case_ablation",
+    "grammar_ablation",
+    "trit_ablation",
+    "tongue_ablation",
+    "geometry_ablation"
+  ],
+  "minimum_seed_count": 3,
+  "seed_policy": "predeclare fresh seeds and scan repository references before launch",
+  "required_gates": [
+    "candidate_beats_size_matched_control",
+    "candidate_beats_no_intervention_baseline",
+    "margin_exceeds_two_times_pooled_sd",
+    "paired_finite_sample_gate_passes",
+    "per_seed_results_retain_no_hidden_zeros",
+    "source_session_disjoint_holdout",
+    "deterministic_compiler_output_matches_exactly"
+  ],
+  "primary_metrics": [
+    "exact_action_packet_accuracy",
+    "exact_action_tape_accuracy",
+    "exact_speech_opcode_accuracy",
+    "cross_language_canonical_consistency",
+    "false_route_rate",
+    "abstention_rate",
+    "input_to_compiled_action_latency",
+    "compiled_actions_per_second"
+  ],
+  "authority": {
+    "training_intake": "NOT_AUTHORIZED",
+    "execution": "DETERMINISTIC_ACTION_COMPILER_ONLY",
+    "geoseal": "EXISTING_CLI_AUTHORITY",
+    "partial_unfreeze": "NOT_AUTHORIZED",
+    "serving": "NOT_AUTHORIZED",
+    "merge": "NOT_AUTHORIZED",
+    "promotion": "NOT_AUTHORIZED"
+  },
+  "stop_conditions": [
+    "origin_receipt_mismatch",
+    "unobserved_grammar_role_presented_as_observed",
+    "deterministic_view_counted_as_independent_sample",
+    "control_width_or_update_budget_mismatch",
+    "compiler_or_geoseal_authority_bypass",
+    "source_disjointness_failure",
+    "nonfinite_metric_or missing_per_seed_result"
+  ]
+}
