@@ -658,3 +658,29 @@ candidate, E92, source-disjoint split, runner, and independent-replay gates rema
 open. The auditor can only return readiness for manual launch review. It cannot
 authorize training intake, merge, serving, promotion, tool dispatch, or partial
 unfreezing.
+
+## Frozen input-access runner and replay mechanics — 2026-11-11
+
+The code-dependent runner and replay prerequisites are now implemented and
+focused-tested. `python/scbe/prime_token_input_access.py` preserves each
+canonical occurrence as one sealed six-view packet and gives lexical-only,
+random-fixed, shuffled-binding, and single-frame controls the same feature width
+and reader parameter count. Its full-system wrapper injects only before block 0,
+zeros token-derived raw/route lanes at owned positions, and delegates ordinary
+input directly to the frozen parent.
+
+`python/scbe/prime_token_training.py` enforces reader-only gradients, checks the
+parent hash after every step, and stores exact optimizer/sampler/RNG state in
+hash-checked two-slot checkpoints. The material command at
+`scripts/tokenizer/run_prime_token_input_access.py` refuses to import a runtime
+factory until both the machine audit and a separate human, audit-hash-bound
+authorization pass. The independent path in
+`python/scbe/prime_token_independent_replay.py` does not call the producer packet
+builder and does not trust producer metric aggregates.
+
+The focused packet, release-audit, and radial-table suites pass 26/26 after
+Black and Ruff. This establishes executable mechanics, not model quality. The
+live release remains closed by prospective data, E92, source split/family,
+fresh-seed, and human-review gates; no training, weight change, promotion, tool
+dispatch, or partial unfreeze occurred. Full details are in
+`docs/research/PRIME_TOKEN_INPUT_ACCESS_IMPLEMENTATION_20261111.md`.
