@@ -28,6 +28,7 @@ SCHEMA = "scbe.prime-token-catalog.v1"
 SOURCE_MANIFEST_SCHEMA = "scbe.prime-token-source-manifest.v1"
 CATALOG_AUDIT_SCHEMA = "scbe.prime-token-catalog-audit.v1"
 VIEW_STRUCTURE_AUDIT_SCHEMA = "scbe.prime-token-view-structure-audit.v1"
+RELATIONAL_INTEGRITY_AUDIT_SCHEMA = "scbe.prime-token-relational-integrity-audit.v1"
 SEARCH_SCHEMA = "scbe.prime-token-goal-search.v1"
 PROBABILITY_SCHEMA = "scbe.prime-token-probability.v1"
 ALGORITHM_REVISION = "six-view-topology-v3"
@@ -729,7 +730,10 @@ class PrimeTokenCatalogBuilder:
         """Ingest exact, hash-bound files with per-source attribution metadata."""
         path = Path(manifest_path).resolve()
         payload = json.loads(path.read_text(encoding="utf-8"))
-        if not isinstance(payload, dict) or payload.get("schema") != SOURCE_MANIFEST_SCHEMA:
+        if (
+            not isinstance(payload, dict)
+            or payload.get("schema") != SOURCE_MANIFEST_SCHEMA
+        ):
             raise ValueError(f"source manifest schema must be {SOURCE_MANIFEST_SCHEMA}")
         sources = payload.get("sources")
         if not isinstance(sources, list) or not sources:
@@ -822,8 +826,9 @@ class PrimeTokenCatalogBuilder:
         words: list[dict[str, Any]] = []
         for match in WORD_RE.finditer(text):
             surface = match.group(0)
-            atomic, atomic_features = _atomic_payload(surface)
-            speech, speech_features = _speech_payload(self.lexicon, surface)
+            normalized = normalize_word(surface)
+            atomic, atomic_features = _atomic_payload(normalized)
+            speech, speech_features = _speech_payload(self.lexicon, normalized)
             overlapping = [
                 token_id
                 for token_id, (left, right) in zip(bpe_ids, bpe_offsets, strict=True)
@@ -832,7 +837,7 @@ class PrimeTokenCatalogBuilder:
             words.append(
                 {
                     "surface": surface,
-                    "normalized": normalize_word(surface),
+                    "normalized": normalized,
                     "start": match.start(),
                     "end": match.end(),
                     "bpe_ids": overlapping,
@@ -1220,10 +1225,7 @@ def audit_catalog_sources(database: str | Path) -> dict[str, Any]:
 
     connection = sqlite3.connect(catalog_path)
     connection.row_factory = sqlite3.Row
-    source_rows = [
-        dict(row)
-        for row in connection.execute(
-            """
+    source_rows = [dict(row) for row in connection.execute("""
             SELECT src.source_id, src.source_uri, src.source_kind, src.license_name,
                    COUNT(DISTINCT sec.section_id) AS sections,
                    COUNT(DISTINCT CASE WHEN sf.view_name='lexical' THEN sec.section_id END) AS lexical,
@@ -1237,9 +1239,7 @@ def audit_catalog_sources(database: str | Path) -> dict[str, Any]:
             LEFT JOIN section_features sf ON sf.section_id=sec.section_id
             GROUP BY src.source_id
             ORDER BY sections DESC, src.source_id
-            """
-        )
-    ]
+            """)]
     connection.close()
 
     source_kind_counts = Counter(str(row["source_kind"]) for row in source_rows)
@@ -1317,19 +1317,17 @@ def audit_catalog_view_structure(database: str | Path) -> dict[str, Any]:
         raise FileNotFoundError(catalog_path)
     catalog_hash_before = sha256_file(catalog_path)
     connection = sqlite3.connect(f"{catalog_path.as_uri()}?mode=ro", uri=True)
-    section_count = int(connection.execute("SELECT COUNT(*) FROM sections").fetchone()[0])
+    section_count = int(
+        connection.execute("SELECT COUNT(*) FROM sections").fetchone()[0]
+    )
     observed_views = tuple(
         str(row[0])
         for row in connection.execute(
             "SELECT DISTINCT view_name FROM section_features ORDER BY view_name"
         )
     )
-    signature_counts: dict[str, Counter[str]] = {
-        view: Counter() for view in VIEW_NAMES
-    }
-    section_feature_counts: dict[str, list[int]] = {
-        view: [] for view in VIEW_NAMES
-    }
+    signature_counts: dict[str, Counter[str]] = {view: Counter() for view in VIEW_NAMES}
+    section_feature_counts: dict[str, list[int]] = {view: [] for view in VIEW_NAMES}
     unknown_view_rows = 0
     current_pair: tuple[str, str] | None = None
     current_digest = sha256()
@@ -1344,13 +1342,11 @@ def audit_catalog_view_structure(database: str | Path) -> dict[str, Any]:
             signature_counts[view_name][current_digest.hexdigest()] += 1
             section_feature_counts[view_name].append(current_count)
 
-    rows = connection.execute(
-        """
+    rows = connection.execute("""
         SELECT section_id, view_name, feature_key, feature_value
         FROM section_features
         ORDER BY section_id, view_name, feature_key
-        """
-    )
+        """)
     for section_id, view_name, feature_key, feature_value in rows:
         pair = (str(section_id), str(view_name))
         if pair != current_pair:
@@ -1378,15 +1374,11 @@ def audit_catalog_view_structure(database: str | Path) -> dict[str, Any]:
             "SELECT view_name, COUNT(DISTINCT feature_key) FROM section_features GROUP BY view_name"
         )
     }
-    orphan_feature_rows = int(
-        connection.execute(
-            """
+    orphan_feature_rows = int(connection.execute("""
             SELECT COUNT(*) FROM section_features sf
             LEFT JOIN sections sec ON sec.section_id=sf.section_id
             WHERE sec.section_id IS NULL
-            """
-        ).fetchone()[0]
-    )
+            """).fetchone()[0])
     connection.close()
     catalog_hash_after = sha256_file(catalog_path)
 
@@ -1395,10 +1387,14 @@ def audit_catalog_view_structure(database: str | Path) -> dict[str, Any]:
         collisions = signature_counts[view]
         counts = section_feature_counts[view]
         covered = len(counts)
-        entropy_bits = -sum(
-            (frequency / covered) * math.log2(frequency / covered)
-            for frequency in collisions.values()
-        ) if covered else 0.0
+        entropy_bits = (
+            -sum(
+                (frequency / covered) * math.log2(frequency / covered)
+                for frequency in collisions.values()
+            )
+            if covered
+            else 0.0
+        )
         views[view] = {
             "sections_with_view": covered,
             "missing_section_count": max(0, section_count - covered),
@@ -1450,7 +1446,9 @@ def audit_catalog_view_structure(database: str | Path) -> dict[str, Any]:
     passed = all(checks.values())
     return {
         "schema": VIEW_STRUCTURE_AUDIT_SCHEMA,
-        "status": "STRUCTURAL_VIEW_AUDIT_PASS" if passed else "STRUCTURAL_VIEW_AUDIT_FAIL",
+        "status": (
+            "STRUCTURAL_VIEW_AUDIT_PASS" if passed else "STRUCTURAL_VIEW_AUDIT_FAIL"
+        ),
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "database": str(catalog_path),
         "catalog_sha256_before": catalog_hash_before,
@@ -1473,6 +1471,339 @@ def audit_catalog_view_structure(database: str | Path) -> dict[str, Any]:
         "boundary": (
             "Read-only structural audit. No query scoring, probability update, tokenizer "
             "change, model training, serving change, or weight promotion occurred."
+        ),
+    }
+
+
+def audit_catalog_relational_integrity(database: str | Path) -> dict[str, Any]:
+    """Verify immutable catalog identities, relations, counts, and SQLite links.
+
+    This audit reconstructs only deterministic catalog mechanics. It does not
+    retrieve, label, score, train, update probabilities, or claim that correlated
+    views are independent evidence.
+    """
+    catalog_path = Path(database).resolve()
+    if not catalog_path.is_file():
+        raise FileNotFoundError(catalog_path)
+    manifest_path = catalog_path.with_name("MANIFEST.json")
+    manifest: dict[str, Any] | None = None
+    if manifest_path.is_file():
+        loaded = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if not isinstance(loaded, dict):
+            raise ValueError("catalog manifest must be an object")
+        manifest = loaded
+
+    expected_catalog_hash = ""
+    if manifest is not None:
+        for output in manifest.get("outputs", []):
+            if (
+                isinstance(output, dict)
+                and Path(str(output.get("path", ""))).name == catalog_path.name
+            ):
+                expected_catalog_hash = str(output.get("sha256") or "").casefold()
+                break
+
+    catalog_hash_before = sha256_file(catalog_path)
+    connection = sqlite3.connect(f"{catalog_path.as_uri()}?mode=ro", uri=True)
+    quick_check_rows = [str(row[0]) for row in connection.execute("PRAGMA quick_check")]
+    foreign_key_violations = sum(
+        1 for _row in connection.execute("PRAGMA foreign_key_check")
+    )
+
+    table_names = (
+        "sources",
+        "sections",
+        "tokens",
+        "occurrences",
+        "section_features",
+        "relation_members",
+        "feature_catalog",
+        "token_rank",
+    )
+    counts = {
+        table: int(connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0])
+        for table in table_names
+    }
+
+    invalid_section_spans = int(
+        connection.execute(
+            "SELECT COUNT(*) FROM sections WHERE start_char < 0 OR end_char <= start_char"
+        ).fetchone()[0]
+    )
+    invalid_occurrence_spans = int(connection.execute("""
+            SELECT COUNT(*) FROM occurrences o
+            JOIN sections sec ON sec.section_id=o.section_id
+            WHERE o.start_char < 0 OR o.end_char <= o.start_char
+               OR o.end_char > (sec.end_char - sec.start_char)
+            """).fetchone()[0])
+    occurrence_source_mismatches = int(connection.execute("""
+            SELECT COUNT(*) FROM occurrences o
+            JOIN sections sec ON sec.section_id=o.section_id
+            WHERE o.source_id != sec.source_id
+            """).fetchone()[0])
+    source_section_ordinal_violations = int(connection.execute("""
+            SELECT COUNT(*) FROM (
+              SELECT source_id, COUNT(*) AS n, COUNT(DISTINCT ordinal) AS distinct_n,
+                     MIN(ordinal) AS minimum, MAX(ordinal) AS maximum
+              FROM sections GROUP BY source_id
+              HAVING minimum < 1 OR distinct_n != n
+            )
+            """).fetchone()[0])
+    source_section_ordinal_gap_sources = int(connection.execute("""
+            SELECT COUNT(*) FROM (
+              SELECT source_id, COUNT(*) AS n, MAX(ordinal) AS maximum
+              FROM sections GROUP BY source_id HAVING maximum != n
+            )
+            """).fetchone()[0])
+    section_occurrence_ordinal_violations = int(connection.execute("""
+            SELECT COUNT(*) FROM (
+              SELECT section_id, COUNT(*) AS n,
+                     COUNT(DISTINCT section_ordinal) AS distinct_n,
+                     MIN(section_ordinal) AS minimum, MAX(section_ordinal) AS maximum
+              FROM occurrences GROUP BY section_id
+              HAVING minimum != 1 OR maximum != n OR distinct_n != n
+            )
+            """).fetchone()[0])
+    global_ordinal = connection.execute("""
+        SELECT COUNT(*), COUNT(DISTINCT global_ordinal),
+               COALESCE(MIN(global_ordinal), 0), COALESCE(MAX(global_ordinal), 0)
+        FROM occurrences
+        """).fetchone()
+
+    invalid_json_rows = {
+        "sections": int(
+            connection.execute(
+                "SELECT COUNT(*) FROM sections WHERE NOT json_valid(five_w_json) OR NOT json_valid(bpe_ids_json)"
+            ).fetchone()[0]
+        ),
+        "tokens": int(
+            connection.execute(
+                "SELECT COUNT(*) FROM tokens WHERE NOT json_valid(atomic_json) OR NOT json_valid(speech_json)"
+            ).fetchone()[0]
+        ),
+        "occurrences": int(connection.execute("""
+                SELECT COUNT(*) FROM occurrences
+                WHERE NOT json_valid(bpe_ids_json) OR NOT json_valid(prime_factors_json)
+                """).fetchone()[0]),
+    }
+
+    token_id_mismatches = 0
+    token_utf8_mismatches = 0
+    for token_id, normalized, utf8_hex in connection.execute(
+        "SELECT token_id, normalized, utf8_hex FROM tokens"
+    ):
+        normalized_text = str(normalized)
+        token_id_mismatches += int(str(token_id) != stable_id("word", normalized_text))
+        token_utf8_mismatches += int(
+            str(utf8_hex) != normalized_text.encode("utf-8").hex()
+        )
+
+    occurrence_id_mismatches = 0
+    for row in connection.execute("""
+        SELECT occurrence_id, section_id, section_ordinal, start_char, end_char, surface
+        FROM occurrences
+        """):
+        occurrence_id, section_id, ordinal, start_char, end_char, surface = row
+        expected_id = stable_id(
+            "occurrence",
+            str(section_id),
+            int(ordinal),
+            int(start_char),
+            int(end_char),
+            str(surface),
+        )
+        occurrence_id_mismatches += int(str(occurrence_id) != expected_id)
+
+    expected_relation_sql = """
+        SELECT o.token_id AS token_id, 'lexical' AS relation_type,
+               'word:' || t.normalized AS relation_key
+        FROM occurrences o JOIN tokens t ON t.token_id=o.token_id
+        UNION
+        SELECT o.token_id, 'five_w', 'role:' || sec.primary_role
+        FROM occurrences o JOIN sections sec ON sec.section_id=o.section_id
+        UNION
+        SELECT o.token_id, 'atomic', 'semantic:' || json_extract(t.atomic_json, '$.semantic_class')
+        FROM occurrences o JOIN tokens t ON t.token_id=o.token_id
+        UNION
+        SELECT o.token_id, 'prime', 'kind:' || o.prime_kind FROM occurrences o
+        UNION
+        SELECT o.token_id, 'prime',
+               'route:' || o.route_prime || ':residue:' || o.route_residue
+        FROM occurrences o
+        UNION
+        SELECT o.token_id, 'source', 'kind:' || src.source_kind
+        FROM occurrences o JOIN sources src ON src.source_id=o.source_id
+        UNION
+        SELECT o.token_id, 'speech', 'primitive:' || json_extract(t.speech_json, '$[0].id')
+        FROM occurrences o JOIN tokens t ON t.token_id=o.token_id
+        WHERE json_array_length(t.speech_json) > 0
+        UNION
+        SELECT o.token_id, 'speech', 'upos:' || json_extract(t.speech_json, '$[0].upos')
+        FROM occurrences o JOIN tokens t ON t.token_id=o.token_id
+        WHERE json_array_length(t.speech_json) > 0
+        UNION
+        SELECT o.token_id, 'prime', 'factor:' || json_extract(o.prime_factors_json, '$[0]')
+        FROM occurrences o WHERE json_array_length(o.prime_factors_json) > 0
+    """
+    relationship_row = connection.execute(f"""
+        WITH expected AS ({expected_relation_sql}),
+        missing AS (
+          SELECT token_id, relation_type, relation_key FROM expected
+          EXCEPT
+          SELECT token_id, relation_type, relation_key FROM relation_members
+        ),
+        extra AS (
+          SELECT token_id, relation_type, relation_key FROM relation_members
+          EXCEPT
+          SELECT token_id, relation_type, relation_key FROM expected
+        )
+        SELECT (SELECT COUNT(*) FROM expected),
+               (SELECT COUNT(*) FROM missing),
+               (SELECT COUNT(*) FROM extra)
+        """).fetchone()
+    expected_relationship_memberships = int(relationship_row[0])
+    missing_relationship_memberships = int(relationship_row[1])
+    extra_relationship_memberships = int(relationship_row[2])
+    max_relationships_per_occurrence = int(connection.execute("""
+            SELECT COALESCE(MAX(
+                6
+                + CASE WHEN json_array_length(t.speech_json) > 0 THEN 2 ELSE 0 END
+                + CASE WHEN json_array_length(o.prime_factors_json) > 0 THEN 1 ELSE 0 END
+            ), 0)
+            FROM occurrences o JOIN tokens t ON t.token_id=o.token_id
+            """).fetchone()[0])
+
+    missing_token_rank_rows = int(connection.execute("""
+            SELECT COUNT(*) FROM tokens t
+            LEFT JOIN token_rank tr ON tr.token_id=t.token_id
+            WHERE tr.token_id IS NULL
+            """).fetchone()[0])
+    feature_catalog_difference_rows = int(connection.execute("""
+            WITH expected AS (
+              SELECT view_name, feature_key, COUNT(*) AS section_frequency
+              FROM section_features GROUP BY view_name, feature_key
+            ),
+            missing AS (
+              SELECT view_name, feature_key, section_frequency FROM expected
+              EXCEPT
+              SELECT view_name, feature_key, section_frequency FROM feature_catalog
+            ),
+            extra AS (
+              SELECT view_name, feature_key, section_frequency FROM feature_catalog
+              EXCEPT
+              SELECT view_name, feature_key, section_frequency FROM expected
+            )
+            SELECT (SELECT COUNT(*) FROM missing) + (SELECT COUNT(*) FROM extra)
+            """).fetchone()[0])
+    connection.close()
+    catalog_hash_after = sha256_file(catalog_path)
+
+    manifest_counts = {
+        "source_count": int(manifest.get("source_count", -1)) if manifest else -1,
+        "section_count": int(manifest.get("section_count", -1)) if manifest else -1,
+        "occurrence_count": (
+            int(manifest.get("occurrence_count", -1)) if manifest else -1
+        ),
+        "relationship_memberships": (
+            int(manifest.get("relationship_memberships", -1)) if manifest else -1
+        ),
+        "relationship_cap_per_occurrence": (
+            int(manifest.get("relationship_cap_per_occurrence", -1)) if manifest else -1
+        ),
+    }
+    checks = {
+        "manifest_present": manifest is not None,
+        "catalog_hash_matches_manifest": bool(expected_catalog_hash)
+        and expected_catalog_hash == catalog_hash_before,
+        "catalog_hash_unchanged": catalog_hash_before == catalog_hash_after,
+        "sqlite_quick_check_ok": quick_check_rows == ["ok"],
+        "no_foreign_key_violations": foreign_key_violations == 0,
+        "manifest_counts_match": bool(manifest)
+        and manifest_counts["source_count"] == counts["sources"]
+        and manifest_counts["section_count"] == counts["sections"]
+        and manifest_counts["occurrence_count"] == counts["occurrences"]
+        and manifest_counts["relationship_memberships"] == counts["relation_members"],
+        "canonical_identity_contract_declared": bool(manifest)
+        and manifest.get("canonical_identity") == "utf8_bytes_and_source_word_span",
+        "exact_declared_view_set": bool(manifest)
+        and tuple(manifest.get("views", [])) == VIEW_NAMES,
+        "valid_section_spans": invalid_section_spans == 0,
+        "valid_occurrence_spans": invalid_occurrence_spans == 0,
+        "occurrence_source_matches_section": occurrence_source_mismatches == 0,
+        "source_section_ordinals_unique_positive": source_section_ordinal_violations
+        == 0,
+        "section_occurrence_ordinals_contiguous": section_occurrence_ordinal_violations
+        == 0,
+        "global_ordinals_contiguous": (
+            int(global_ordinal[0]) == int(global_ordinal[1])
+            and int(global_ordinal[2]) == (1 if int(global_ordinal[0]) else 0)
+            and int(global_ordinal[3]) == int(global_ordinal[0])
+        ),
+        "all_typed_json_valid": sum(invalid_json_rows.values()) == 0,
+        "token_ids_match_normalized_values": token_id_mismatches == 0,
+        "token_utf8_hex_matches_normalized_values": token_utf8_mismatches == 0,
+        "occurrence_ids_match_source_word_spans": occurrence_id_mismatches == 0,
+        "relationship_memberships_exactly_reconstruct": (
+            expected_relationship_memberships == counts["relation_members"]
+            and missing_relationship_memberships == 0
+            and extra_relationship_memberships == 0
+        ),
+        "relationship_cap_declared_and_respected": bool(manifest)
+        and manifest_counts["relationship_cap_per_occurrence"]
+        == MAX_RELATIONSHIPS_PER_OCCURRENCE
+        and max_relationships_per_occurrence <= MAX_RELATIONSHIPS_PER_OCCURRENCE,
+        "all_tokens_have_rank_rows": missing_token_rank_rows == 0
+        and counts["token_rank"] == counts["tokens"],
+        "feature_catalog_exactly_reconstructs": feature_catalog_difference_rows == 0,
+    }
+    passed = all(checks.values())
+    return {
+        "schema": RELATIONAL_INTEGRITY_AUDIT_SCHEMA,
+        "status": (
+            "RELATIONAL_INTEGRITY_PASS" if passed else "RELATIONAL_INTEGRITY_FAIL"
+        ),
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "database": str(catalog_path),
+        "manifest": str(manifest_path) if manifest is not None else None,
+        "catalog_sha256_before": catalog_hash_before,
+        "catalog_sha256_after": catalog_hash_after,
+        "expected_catalog_sha256": expected_catalog_hash or None,
+        "counts": counts,
+        "manifest_counts": manifest_counts,
+        "quick_check_rows": quick_check_rows,
+        "foreign_key_violations": foreign_key_violations,
+        "invalid_section_spans": invalid_section_spans,
+        "invalid_occurrence_spans": invalid_occurrence_spans,
+        "occurrence_source_mismatches": occurrence_source_mismatches,
+        "source_section_ordinal_violations": source_section_ordinal_violations,
+        "source_section_ordinal_gap_sources": source_section_ordinal_gap_sources,
+        "section_occurrence_ordinal_violations": section_occurrence_ordinal_violations,
+        "global_ordinal": {
+            "count": int(global_ordinal[0]),
+            "distinct_count": int(global_ordinal[1]),
+            "minimum": int(global_ordinal[2]),
+            "maximum": int(global_ordinal[3]),
+        },
+        "invalid_json_rows": invalid_json_rows,
+        "token_id_mismatches": token_id_mismatches,
+        "token_utf8_mismatches": token_utf8_mismatches,
+        "occurrence_id_mismatches": occurrence_id_mismatches,
+        "relationships": {
+            "expected_memberships": expected_relationship_memberships,
+            "stored_memberships": counts["relation_members"],
+            "missing_memberships": missing_relationship_memberships,
+            "extra_memberships": extra_relationship_memberships,
+            "max_reconstructed_per_occurrence": max_relationships_per_occurrence,
+            "declared_cap": manifest_counts["relationship_cap_per_occurrence"],
+        },
+        "missing_token_rank_rows": missing_token_rank_rows,
+        "feature_catalog_difference_rows": feature_catalog_difference_rows,
+        "checks": checks,
+        "independent_semantic_observation_count": 0,
+        "boundary": (
+            "Read-only deterministic integrity audit. External source bytes are governed by the separate "
+            "source audit. No retrieval scoring, label access, probability update, model training, serving "
+            "change, merge, partial unfreeze, or weight promotion occurred."
         ),
     }
 
@@ -2277,9 +2608,11 @@ def search_late_output_fused(
         "fusion_active": bool(selected_views),
         "rrf_k": LATE_OUTPUT_FUSION_K,
         "ranking_rule": [
-            "fixed_reciprocal_rank_fusion_descending"
-            if selected_views
-            else "lexical_only_score_descending",
+            (
+                "fixed_reciprocal_rank_fusion_descending"
+                if selected_views
+                else "lexical_only_score_descending"
+            ),
             "lexical_rank_ascending",
             "auxiliary_rank_ascending",
             "section_id_ascending",

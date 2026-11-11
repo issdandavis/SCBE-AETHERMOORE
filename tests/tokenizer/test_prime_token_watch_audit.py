@@ -133,6 +133,18 @@ def test_watch_chain_rejects_scoring_artifact_or_authority_drift(tmp_path: Path)
     assert "preparer unexpectedly authorizes training_intake" in result["errors"]
 
 
+def test_watch_chain_rejects_serving_or_merge_authority_drift(tmp_path: Path) -> None:
+    paths = _fixture(tmp_path)
+    status = json.loads(paths["preparer_status"].read_text(encoding="utf-8"))
+    status["serving"] = "AUTHORIZED"
+    status["merge"] = "AUTHORIZED"
+    _write(paths["preparer_status"], status)
+    result = _verify(paths)
+    assert result["status"] == "INVALID_WATCH_CHAIN"
+    assert "preparer unexpectedly authorizes serving" in result["errors"]
+    assert "preparer unexpectedly authorizes merge" in result["errors"]
+
+
 def test_watch_chain_reports_complete_unreviewed_packet(tmp_path: Path) -> None:
     paths = _fixture(tmp_path)
     paths["packet"].mkdir()

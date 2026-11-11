@@ -18,6 +18,7 @@ from python.scbe.prime_token_benchmark import (
 )
 from python.scbe.prime_token_catalog import (
     LATE_OUTPUT_FUSION_REVISION,
+    RELATIONAL_INTEGRITY_AUDIT_SCHEMA,
     sha256_file,
 )
 from python.scbe.prime_token_query_harvest import (
@@ -29,12 +30,13 @@ from python.scbe.prime_token_query_harvest import (
 
 PREPARATION_SCHEMA = "clay.prime-token-prospective-review-preparation.v1"
 SOURCE_INVENTORY_SCHEMA = "clay.prime-token-catalog-source-suffixes.v1"
-E92_RUN_SCHEMA = "scbe.e92-prospective-run.v2"
+E92_RUN_SCHEMA = "scbe.e92-prospective-run.v3"
 SOURCE_CHAIN_BUNDLE_FILES = {
     "queue": "SOURCE_QUEUE.json",
     "labels": "SOURCE_LABELS.json",
     "preparation_receipt": "SOURCE_PREPARATION_RECEIPT.json",
     "source_inventory": "SOURCE_INVENTORY.json",
+    "catalog_integrity": "SOURCE_CATALOG_INTEGRITY.json",
 }
 SHA256_RE = re.compile(r"[0-9a-f]{64}")
 
@@ -80,6 +82,44 @@ def _load_object(path: Path, *, label: str) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ValueError(f"{label} must be a JSON object")
     return value
+
+
+def _verify_catalog_integrity_receipt(
+    receipt: Mapping[str, Any],
+    *,
+    receipt_path: Path,
+    catalog_database: Path,
+    catalog_sha256: str,
+) -> None:
+    if receipt.get("schema") != RELATIONAL_INTEGRITY_AUDIT_SCHEMA:
+        raise ValueError("catalog integrity receipt schema mismatch")
+    if receipt.get("status") != "RELATIONAL_INTEGRITY_PASS":
+        raise ValueError("catalog integrity receipt status is not a pass")
+    database = Path(str(receipt.get("database") or "")).resolve()
+    if database != catalog_database:
+        raise ValueError("catalog integrity receipt targets another database")
+    for field in (
+        "catalog_sha256_before",
+        "catalog_sha256_after",
+        "expected_catalog_sha256",
+    ):
+        if str(receipt.get(field) or "").casefold() != catalog_sha256:
+            raise ValueError(f"catalog integrity receipt {field} mismatch")
+    checks = receipt.get("checks")
+    if (
+        not isinstance(checks, Mapping)
+        or not checks
+        or not all(value is True for value in checks.values())
+    ):
+        raise ValueError(
+            "catalog integrity receipt does not contain an all-pass check set"
+        )
+    if receipt.get("independent_semantic_observation_count") != 0:
+        raise ValueError(
+            "catalog integrity receipt overstates independent observations"
+        )
+    if not receipt_path.is_file():
+        raise FileNotFoundError(receipt_path)
 
 
 def _verify_preparation_receipt(
@@ -308,6 +348,7 @@ def build_e92_prospective_run(
     labels_path: str | Path,
     preparation_receipt_path: str | Path,
     source_inventory_path: str | Path,
+    catalog_integrity_receipt_path: str | Path,
     catalog_database: str | Path,
     control_seeds: Sequence[int] = (11, 29, 47),
     limit: int = 20,
@@ -317,12 +358,20 @@ def build_e92_prospective_run(
     labels_file = Path(labels_path).resolve(strict=True)
     preparation_file = Path(preparation_receipt_path).resolve(strict=True)
     source_file = Path(source_inventory_path).resolve(strict=True)
+    integrity_file = Path(catalog_integrity_receipt_path).resolve(strict=True)
     catalog_file = Path(catalog_database).resolve(strict=True)
     queue = _load_object(queue_file, label="review queue")
     labels = _load_object(labels_file, label="review labels")
     preparation = _load_object(preparation_file, label="preparation receipt")
     source_inventory = _load_object(source_file, label="source inventory")
+    catalog_integrity = _load_object(integrity_file, label="catalog integrity receipt")
     catalog_hash = sha256_file(catalog_file)
+    _verify_catalog_integrity_receipt(
+        catalog_integrity,
+        receipt_path=integrity_file,
+        catalog_database=catalog_file,
+        catalog_sha256=catalog_hash,
+    )
     candidates = _validate_queue(queue, catalog_sha256=catalog_hash)
     suffixes = _source_suffixes(source_inventory, catalog_sha256=catalog_hash)
     _verify_preparation_receipt(
@@ -361,12 +410,14 @@ def build_e92_prospective_run(
         "labels": labels,
         "preparation_receipt": preparation,
         "source_inventory": source_inventory,
+        "catalog_integrity": catalog_integrity,
     }
     source_file_hashes = {
         "queue": sha256_file(queue_file),
         "labels": sha256_file(labels_file),
         "preparation_receipt": sha256_file(preparation_file),
         "source_inventory": sha256_file(source_file),
+        "catalog_integrity": sha256_file(integrity_file),
     }
     source_chain_bundle = {
         role: {
@@ -389,6 +440,7 @@ def build_e92_prospective_run(
         "labels_file_sha256": source_file_hashes["labels"],
         "preparation_receipt_file_sha256": source_file_hashes["preparation_receipt"],
         "source_inventory_file_sha256": source_file_hashes["source_inventory"],
+        "catalog_integrity_file_sha256": source_file_hashes["catalog_integrity"],
         "source_chain_bundle": source_chain_bundle,
         "benchmark_sha256": benchmark_hash,
         "result_sha256": sha256(result_payload).hexdigest(),

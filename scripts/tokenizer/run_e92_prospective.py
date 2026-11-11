@@ -32,6 +32,7 @@ def main() -> int:
     parser.add_argument("--labels", required=True)
     parser.add_argument("--preparation-receipt", required=True)
     parser.add_argument("--source-inventory", required=True)
+    parser.add_argument("--catalog-integrity-audit", required=True)
     parser.add_argument("--catalog-database", required=True)
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--control-seed", type=int, action="append", default=[])
@@ -48,6 +49,7 @@ def main() -> int:
         labels_path=args.labels,
         preparation_receipt_path=args.preparation_receipt,
         source_inventory_path=args.source_inventory,
+        catalog_integrity_receipt_path=args.catalog_integrity_audit,
         catalog_database=args.catalog_database,
         control_seeds=args.control_seed or (11, 29, 47),
         limit=args.limit,

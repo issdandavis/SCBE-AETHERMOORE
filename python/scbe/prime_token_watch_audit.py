@@ -83,6 +83,9 @@ def _check_no_authority(errors: list[str], status: Mapping[str, Any], *, label: 
     for field in ("training_intake", "promotion"):
         if status.get(field) != "NOT_AUTHORIZED":
             errors.append(f"{label} unexpectedly authorizes {field}")
+    for field in ("serving", "merge"):
+        if field in status and status.get(field) != "NOT_AUTHORIZED":
+            errors.append(f"{label} unexpectedly authorizes {field}")
 
 
 def _check_v3_closed_snapshot(
@@ -172,9 +175,6 @@ def _check_v3_closed_snapshot(
                 errors.append("watcher v3 collection report snapshot count mismatch")
     evidence["verified"] = not any("watcher v3" in error for error in errors)
     return evidence
-    for field in ("serving", "merge"):
-        if field in status and status.get(field) != "NOT_AUTHORIZED":
-            errors.append(f"{label} unexpectedly authorizes {field}")
 
 
 def verify_watch_chain(

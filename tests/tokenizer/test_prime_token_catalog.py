@@ -16,6 +16,7 @@ from python.scbe.prime_token_catalog import (
     PrimeTokenCatalogBuilder,
     SOURCE_MANIFEST_SCHEMA,
     VIEW_NAMES,
+    audit_catalog_relational_integrity,
     audit_catalog_sources,
     audit_catalog_view_structure,
     search_goal,
@@ -111,6 +112,75 @@ def test_view_structure_audit_detects_missing_section_view(tmp_path):
     assert audit["status"] == "STRUCTURAL_VIEW_AUDIT_FAIL"
     assert not audit["checks"]["all_sections_cover_all_views"]
     assert audit["views"]["speech"]["missing_section_count"] == 1
+
+
+def test_relational_integrity_audit_reconstructs_catalog_without_mutation(tmp_path):
+    database, manifest = _catalog(tmp_path)
+    before = hashlib.sha256(database.read_bytes()).hexdigest()
+
+    audit = audit_catalog_relational_integrity(database)
+
+    assert audit["status"] == "RELATIONAL_INTEGRITY_PASS"
+    assert audit["catalog_sha256_before"] == before
+    assert audit["catalog_sha256_after"] == before
+    assert audit["counts"]["sources"] == manifest["source_count"]
+    assert audit["counts"]["sections"] == manifest["section_count"]
+    assert audit["counts"]["occurrences"] == manifest["occurrence_count"]
+    assert audit["relationships"]["expected_memberships"] == audit["relationships"]["stored_memberships"]
+    assert audit["relationships"]["missing_memberships"] == 0
+    assert audit["relationships"]["extra_memberships"] == 0
+    assert audit["relationships"]["max_reconstructed_per_occurrence"] <= 12
+    assert audit["independent_semantic_observation_count"] == 0
+
+
+def test_relational_integrity_audit_detects_identity_and_relation_drift(tmp_path):
+    database, _manifest = _catalog(tmp_path)
+    connection = sqlite3.connect(database)
+    token_id = connection.execute("SELECT token_id FROM tokens ORDER BY token_id LIMIT 1").fetchone()[0]
+    connection.execute("UPDATE tokens SET utf8_hex='00' WHERE token_id=?", (token_id,))
+    connection.execute(
+        "DELETE FROM relation_members WHERE rowid=(SELECT rowid FROM relation_members ORDER BY rowid LIMIT 1)"
+    )
+    connection.commit()
+    connection.close()
+
+    audit = audit_catalog_relational_integrity(database)
+
+    assert audit["status"] == "RELATIONAL_INTEGRITY_FAIL"
+    assert not audit["checks"]["token_utf8_hex_matches_normalized_values"]
+    assert not audit["checks"]["relationship_memberships_exactly_reconstruct"]
+    assert audit["token_utf8_mismatches"] == 1
+    assert audit["relationships"]["missing_memberships"] == 1
+
+
+def test_token_analysis_uses_normalized_identity_across_surface_variants(tmp_path):
+    output = tmp_path / "catalog"
+    builder = PrimeTokenCatalogBuilder(output, section_chars=512, range_size=128)
+    builder.ingest_record(
+        InputRecord(
+            text="Don't don’t can't can’t won't won’t.",
+            source_uri="local://apostrophe-variants",
+            source_kind="conversation",
+            license_name="fixture",
+        )
+    )
+    builder.finalize()
+
+    audit = audit_catalog_relational_integrity(output / "catalog.sqlite3")
+    connection = sqlite3.connect(output / "catalog.sqlite3")
+    atomic_relations = connection.execute("""
+        SELECT t.normalized, rm.relation_key
+        FROM tokens t JOIN relation_members rm ON rm.token_id=t.token_id
+        WHERE rm.relation_type='atomic' ORDER BY t.normalized, rm.relation_key
+        """).fetchall()
+    connection.close()
+
+    assert audit["status"] == "RELATIONAL_INTEGRITY_PASS"
+    assert atomic_relations == [
+        ("can't", "semantic:NEGATION"),
+        ("don't", "semantic:NEGATION"),
+        ("won't", "semantic:NEGATION"),
+    ]
 
 
 def test_goal_surfing_separates_ideas_from_grammar_constraints(tmp_path):

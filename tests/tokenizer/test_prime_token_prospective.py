@@ -11,6 +11,7 @@ import pytest
 from python.scbe.prime_token_catalog import (
     InputRecord,
     PrimeTokenCatalogBuilder,
+    audit_catalog_relational_integrity,
     sha256_file,
 )
 from python.scbe.prime_token_prospective import (
@@ -57,6 +58,10 @@ def _fixture(tmp_path: Path) -> dict[str, Path]:
     builder.finalize()
     catalog = catalog_root / "catalog.sqlite3"
     catalog_hash = sha256_file(catalog)
+    integrity_path = _write(
+        tmp_path / "CATALOG_INTEGRITY.json",
+        audit_catalog_relational_integrity(catalog),
+    )
     candidates = []
     query_templates = (
         "Research the prime sieve source request {index}.",
@@ -152,6 +157,7 @@ def _fixture(tmp_path: Path) -> dict[str, Path]:
         "labels": labels_path,
         "source_inventory": source_path,
         "preparation": receipt_path,
+        "catalog_integrity": integrity_path,
     }
 
 
@@ -161,6 +167,7 @@ def _run(paths: dict[str, Path]) -> dict[str, Any]:
         labels_path=paths["labels"],
         preparation_receipt_path=paths["preparation"],
         source_inventory_path=paths["source_inventory"],
+        catalog_integrity_receipt_path=paths["catalog_integrity"],
         catalog_database=paths["catalog"],
         control_seeds=(3, 5, 7),
         limit=5,
@@ -238,6 +245,18 @@ def test_e92_prospective_run_refuses_mutated_preparation_receipt(
     _write(paths["preparation"], receipt)
 
     with pytest.raises(ValueError, match="content hash mismatch"):
+        _run(paths)
+
+
+def test_e92_prospective_run_refuses_failed_catalog_integrity_receipt(
+    tmp_path: Path,
+) -> None:
+    paths = _fixture(tmp_path)
+    integrity = json.loads(paths["catalog_integrity"].read_text(encoding="utf-8"))
+    integrity["status"] = "RELATIONAL_INTEGRITY_FAIL"
+    _write(paths["catalog_integrity"], integrity)
+
+    with pytest.raises(ValueError, match="integrity receipt status is not a pass"):
         _run(paths)
 
 

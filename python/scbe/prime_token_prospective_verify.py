@@ -11,13 +11,14 @@ from pathlib import Path
 from statistics import mean, stdev
 from typing import Any
 
-E92_RUN_SCHEMA = "scbe.e92-prospective-run.v2"
+E92_RUN_SCHEMA = "scbe.e92-prospective-run.v3"
 BENCHMARK_SCHEMA = "scbe.prime-token-benchmark.v1"
 RESULT_SCHEMA = "scbe.prime-token-cascade-benchmark-result.v1"
 REVIEW_QUEUE_SCHEMA = "scbe.prime-token-independent-review-queue.v1"
 REVIEW_LABEL_SCHEMA = "scbe.prime-token-independent-review-labels.v1"
 PREPARATION_SCHEMA = "clay.prime-token-prospective-review-preparation.v1"
 SOURCE_INVENTORY_SCHEMA = "clay.prime-token-catalog-source-suffixes.v1"
+CATALOG_INTEGRITY_SCHEMA = "scbe.prime-token-relational-integrity-audit.v1"
 ALGORITHM_REVISION = "six-view-late-output-fusion-v1"
 MIN_CAPABILITY_QUERIES = 30
 DEFAULT_CONTROL_SEEDS = (11, 29, 47)
@@ -35,12 +36,14 @@ SOURCE_CHAIN_BUNDLE_FILES = {
     "labels": "SOURCE_LABELS.json",
     "preparation_receipt": "SOURCE_PREPARATION_RECEIPT.json",
     "source_inventory": "SOURCE_INVENTORY.json",
+    "catalog_integrity": "SOURCE_CATALOG_INTEGRITY.json",
 }
 SOURCE_HASH_FIELDS = {
     "queue": "queue_file_sha256",
     "labels": "labels_file_sha256",
     "preparation_receipt": "preparation_receipt_file_sha256",
     "source_inventory": "source_inventory_file_sha256",
+    "catalog_integrity": "catalog_integrity_file_sha256",
 }
 
 
@@ -130,6 +133,7 @@ def _verify_source_chain(
     labels = source_chain["labels"]
     preparation = source_chain["preparation_receipt"]
     source_inventory = source_chain["source_inventory"]
+    catalog_integrity = source_chain["catalog_integrity"]
 
     if queue.get("schema") != REVIEW_QUEUE_SCHEMA:
         errors.append("source queue schema mismatch")
@@ -192,6 +196,29 @@ def _verify_source_chain(
     }
     if len(suffixes) != len(source_rows):
         errors.append("source inventory suffixes are incomplete or duplicated")
+
+    if catalog_integrity.get("schema") != CATALOG_INTEGRITY_SCHEMA:
+        errors.append("catalog integrity receipt schema mismatch")
+    if catalog_integrity.get("status") != "RELATIONAL_INTEGRITY_PASS":
+        errors.append("catalog integrity receipt status is not a pass")
+    for field in (
+        "catalog_sha256_before",
+        "catalog_sha256_after",
+        "expected_catalog_sha256",
+    ):
+        if catalog_integrity.get(field) != receipt.get("catalog_sha256"):
+            errors.append(f"catalog integrity receipt {field} mismatch")
+    integrity_checks = catalog_integrity.get("checks")
+    if (
+        not isinstance(integrity_checks, Mapping)
+        or not integrity_checks
+        or not all(value is True for value in integrity_checks.values())
+    ):
+        errors.append(
+            "catalog integrity receipt does not contain an all-pass check set"
+        )
+    if catalog_integrity.get("independent_semantic_observation_count") != 0:
+        errors.append("catalog integrity receipt overstates independent observations")
 
     if labels.get("schema") != REVIEW_LABEL_SCHEMA:
         errors.append("source labels schema mismatch")

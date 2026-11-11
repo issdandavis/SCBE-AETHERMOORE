@@ -93,3 +93,21 @@ large. Its exact file path and SHA-256 were already required and remain checked.
 - Black check: passed
 - `git diff --check`: passed
 
+## 2026-11-10 integrity-gated v3 amendment
+
+Run-receipt schema `scbe.e92-prospective-run.v3` adds a fifth role-bound source
+file, `SOURCE_CATALOG_INTEGRITY.json`. Before any labels are consumed or retrieval
+is scored, the runner now requires a read-only relational-integrity receipt whose
+catalog hashes match the frozen database, whose deterministic check set is all
+true, and whose independent-semantic-observation count remains zero. The
+independent verifier rechecks the bundled receipt and its original-file hash.
+
+The frozen v6 catalog remains preserved and currently fails this new gate because
+three normalized negation tokens (`don't`, `can't`, `won't`) retained stale
+`semantic:ENTITY` relation memberships beside canonical `NEGATION` token state.
+The builder now derives atomic and speech analysis from normalized token identity,
+which prevents that drift in future catalogs. Valid punctuation-only section gaps
+remain informational rather than integrity failures. No v6 row was edited, and
+the current prospective watcher remains collection-only with scoring, training
+intake, serving, merge, partial unfreeze, and promotion unauthorized.
+
