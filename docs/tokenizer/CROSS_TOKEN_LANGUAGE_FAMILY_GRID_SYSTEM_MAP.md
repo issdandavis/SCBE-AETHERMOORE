@@ -4,6 +4,9 @@ Date: 2026-11-10
 
 Mapped SCBE base: `60d35a022`. Mapped Loom Layr adapter commit: `82a05b2`.
 
+Implemented producer commit: `31e942b61f5092f2992310a70c9f918b53f5a1a4`.
+Implemented consumer commit: `fa0952da493e7d9de6a62e07ac4cd1e29dce4a03`.
+
 ## Decision
 
 Do not build another tokenizer. The required mechanics already exist across
@@ -127,14 +130,47 @@ authority.
 
 ## Missing edges
 
-1. No canonical join receipt currently binds a Layr grid origin to an SCBE
-   case/grammar route and radial-table receipt.
+1. The canonical join receipt edge is now closed for deterministic planning
+   data. Loom schema `clay.layr-cross-token-grid.v2` pins the exact bit, trit,
+   tongue, action-packet, and Layr source authorities. SCBE verifies those
+   authorities before binding one origin to six correlated language branches,
+   exact case/grammar addresses, and a radial-table receipt.
 2. No source-disjoint dataset currently supplies explicit S/V/O roles for the
    action-plan surfaces. A role may not be guessed and recorded as observed.
 3. No controlled result shows that radial sectors improve exact action routing,
    multilingual transfer, throughput, or false-route rate.
 4. No fused native kernel exists. Current Python mechanics are suitable for
    verification and small experiments, not a speed claim.
+
+## Post-build evidence
+
+The portable join is implemented, but remains outside training and execution
+authority.
+
+| Evidence | Result |
+|---|---|
+| Loom producer tests | 15/15 passed |
+| SCBE join and dependency tests | 25/25 passed |
+| Real Layr grid schema | `clay.layr-cross-token-grid.v2` |
+| Real grid file SHA-256 | `17c876e1dac2b2bc6e483ed07e2f312d3c6eb77a1e8f61295a969e7310046783` |
+| Real grid content SHA-256 | `7e1e5172e524f185ab3cdae78e1e10112fa38c66d7b89ba2397beffc9209b8ea` |
+| Codec mapping ID | `2aa79a2379bdaf81e629e16c198d22580d3d278ae79a372c972d8def6a6f5dee` |
+| Canonical origins / correlated branches | 1 / 6 |
+| Radial receipt SHA-256 | `15128fc6529671e8782ed70ebdd2d78751c748adc465eb256d6e00d7d61711a6` |
+| Join receipt SHA-256 | `98c2c2dbc695c85d91458a1317c3a402a02fe378ccb1fb7753bac9f3916c70d0` |
+| Receipt reconstruction | exact equality verified |
+
+The real integration used an explicitly supplied subject role (`S`) for one
+canonical byte. It did not infer grammar from an unlabelled surface. All six
+language branches retained `independent_evidence_count = 1` and therefore did
+not inflate the observation count.
+
+The remaining path is evidence work, not another representation rewrite:
+
+1. collect source-disjoint rows with explicit role observations;
+2. run the preregistered matched-control experiment; and
+3. consider a fused kernel only after the representation shows a measured
+   routing or throughput benefit.
 
 ## First controlled experiment
 

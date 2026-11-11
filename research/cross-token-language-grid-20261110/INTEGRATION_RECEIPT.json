@@ -1,0 +1,46 @@
+{
+  "schema": "scbe.cross-token-language-grid-integration.v1",
+  "recorded_at": "2026-11-10T21:01:01.8106592-08:00",
+  "status": "VERIFIED_DETERMINISTIC_JOIN_NOT_AUTHORIZED_FOR_TRAINING",
+  "producer": {
+    "repository": "C:\\dev\\_wt_clay_cross_token_grid_v2_20261110",
+    "commit": "31e942b61f5092f2992310a70c9f918b53f5a1a4",
+    "schema": "clay.layr-cross-token-grid.v2",
+    "tests": {
+      "passed": 15,
+      "failed": 0
+    }
+  },
+  "consumer": {
+    "repository": "C:\\Users\\issda\\_worktrees\\scbe-cross-token-language-grid-20261110",
+    "commit": "fa0952da493e7d9de6a62e07ac4cd1e29dce4a03",
+    "tests": {
+      "passed": 25,
+      "failed": 0
+    }
+  },
+  "artifact": {
+    "path": "C:\\dev\\pc-health\\runtime\\cross-token-language-grid-integration-20261110\\REAL_GRID_V2.json",
+    "file_sha256": "17c876e1dac2b2bc6e483ed07e2f312d3c6eb77a1e8f61295a969e7310046783",
+    "content_sha256": "7e1e5172e524f185ab3cdae78e1e10112fa38c66d7b89ba2397beffc9209b8ea",
+    "codec_mapping_id": "2aa79a2379bdaf81e629e16c198d22580d3d278ae79a372c972d8def6a6f5dee"
+  },
+  "join": {
+    "explicit_role": "S",
+    "canonical_origins": 1,
+    "correlated_language_branches": 6,
+    "independent_evidence_count": 1,
+    "radial_receipt_sha256": "15128fc6529671e8782ed70ebdd2d78751c748adc465eb256d6e00d7d61711a6",
+    "join_receipt_sha256": "98c2c2dbc695c85d91458a1317c3a402a02fe378ccb1fb7753bac9f3916c70d0",
+    "exact_reconstruction_verified": true,
+    "role_inference_performed": false
+  },
+  "authority": {
+    "training_intake": "NOT_AUTHORIZED",
+    "execution": "NOT_AUTHORIZED",
+    "partial_unfreeze": "NOT_AUTHORIZED",
+    "serving": "NOT_AUTHORIZED",
+    "merge": "NOT_AUTHORIZED",
+    "promotion": "NOT_AUTHORIZED"
+  }
+}
