@@ -678,9 +678,11 @@ authorization pass. The independent path in
 `python/scbe/prime_token_independent_replay.py` does not call the producer packet
 builder and does not trust producer metric aggregates.
 
-The focused packet, release-audit, and radial-table suites pass 26/26 after
-Black and Ruff. This establishes executable mechanics, not model quality. The
-live release remains closed by prospective data, E92, source split/family,
+The initial focused packet, release-audit, and radial-table suites passed 26/26
+after Black and Ruff. The later material-control hardening below supersedes that
+test count with 29/29 while preserving the earlier receipt as historical
+evidence. This establishes executable mechanics, not model quality. The live
+release remains closed by prospective data, E92, source split/family,
 fresh-seed, and human-review gates; no training, weight change, promotion, tool
 dispatch, or partial unfreeze occurred. Full details are in
 `docs/research/PRIME_TOKEN_INPUT_ACCESS_IMPLEMENTATION_20261111.md`.

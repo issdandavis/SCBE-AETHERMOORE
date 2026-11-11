@@ -68,6 +68,17 @@ Result: `29 passed` on Python 3.12.10 after Black and Ruff. This is mechanics
 evidence only. No catalog row was labelled, no source session was opened, no
 parent or descendant weight was modified, and no material trainer was started.
 
+The verified source boundary is commit
+`17d312148e76140c85d9aca8ba6b4e6b8cbc42a5`. Immutable V2 receipts are stored
+outside the worktree in the release directory as
+`RUNNER_IMPLEMENTATION_TEST_RECEIPT_V2.json` and
+`INDEPENDENT_REPLAY_IMPLEMENTATION_TEST_RECEIPT_V2.json`. Their SHA-256 values
+are respectively
+`3549ecbb465ccedc6237714beee1c4494bbdc296ebea891401465ef7d4462453` and
+`b2f071be5e87e8acdf4eb19d5bc1c31e9b32d953e49cf6ed13debb2f52269eb2`.
+The earlier 26-test receipts remain preserved as historical evidence rather
+than being overwritten.
+
 ## Remaining release blockers
 
 The current release remains `WAITING_FOR_RELEASE_REQUIREMENTS`. In particular,
