@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from pathlib import Path
 import sys
 
@@ -19,6 +20,7 @@ from python.scbe.prime_token_catalog import (  # noqa: E402
     audit_catalog_relational_integrity,
     audit_catalog_sources,
     audit_catalog_view_structure,
+    plan_catalog_successor,
     search_goal,
     update_probability_lookup,
 )
@@ -111,6 +113,20 @@ def audit_integrity(args: argparse.Namespace) -> int:
     return 0 if result["status"] == "RELATIONAL_INTEGRITY_PASS" else 1
 
 
+def plan_successor(args: argparse.Namespace) -> int:
+    result = plan_catalog_successor(
+        args.database,
+        args.integrity_receipt,
+        args.output,
+        expected_failed_checks=args.expected_failed_check,
+        reserve_bytes=math.ceil(args.reserve_gib * 2**30),
+        expansion_factor=args.expansion_factor,
+        minimum_prospective_candidates=args.minimum_candidates,
+    )
+    _write_or_print(result, args.receipt)
+    return 0 if result["build_admitted"] else 3
+
+
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(description=__doc__)
     commands = root.add_subparsers(dest="command", required=True)
@@ -177,6 +193,20 @@ def parser() -> argparse.ArgumentParser:
     integrity_audit_parser.add_argument("--database", required=True)
     integrity_audit_parser.add_argument("--receipt")
     integrity_audit_parser.set_defaults(run=audit_integrity)
+
+    successor_parser = commands.add_parser(
+        "plan-successor",
+        help="verify a predecessor and admit a fresh catalog build only when disk reserve permits",
+    )
+    successor_parser.add_argument("--database", required=True)
+    successor_parser.add_argument("--integrity-receipt", required=True)
+    successor_parser.add_argument("--output", required=True)
+    successor_parser.add_argument("--expected-failed-check", action="append", default=[])
+    successor_parser.add_argument("--reserve-gib", type=float, default=25.0)
+    successor_parser.add_argument("--expansion-factor", type=float, default=1.5)
+    successor_parser.add_argument("--minimum-candidates", type=int, default=30)
+    successor_parser.add_argument("--receipt")
+    successor_parser.set_defaults(run=plan_successor)
     return root
 
 

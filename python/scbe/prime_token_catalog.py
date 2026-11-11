@@ -17,6 +17,7 @@ import json
 import math
 from pathlib import Path
 import re
+import shutil
 import sqlite3
 from typing import Any, Iterable, Iterator, Mapping, Sequence
 
@@ -29,6 +30,7 @@ SOURCE_MANIFEST_SCHEMA = "scbe.prime-token-source-manifest.v1"
 CATALOG_AUDIT_SCHEMA = "scbe.prime-token-catalog-audit.v1"
 VIEW_STRUCTURE_AUDIT_SCHEMA = "scbe.prime-token-view-structure-audit.v1"
 RELATIONAL_INTEGRITY_AUDIT_SCHEMA = "scbe.prime-token-relational-integrity-audit.v1"
+SUCCESSOR_PLAN_SCHEMA = "scbe.prime-token-catalog-successor-plan.v1"
 SEARCH_SCHEMA = "scbe.prime-token-goal-search.v1"
 PROBABILITY_SCHEMA = "scbe.prime-token-probability.v1"
 ALGORITHM_REVISION = "six-view-topology-v3"
@@ -1804,6 +1806,197 @@ def audit_catalog_relational_integrity(database: str | Path) -> dict[str, Any]:
             "Read-only deterministic integrity audit. External source bytes are governed by the separate "
             "source audit. No retrieval scoring, label access, probability update, model training, serving "
             "change, merge, partial unfreeze, or weight promotion occurred."
+        ),
+    }
+
+
+def plan_catalog_successor(
+    predecessor_database: str | Path,
+    integrity_receipt: str | Path,
+    successor_output_dir: str | Path,
+    *,
+    expected_failed_checks: Sequence[str] = (),
+    reserve_bytes: int = 25 * 2**30,
+    expansion_factor: float = 1.5,
+    minimum_prospective_candidates: int = 30,
+    available_bytes: int | None = None,
+) -> dict[str, Any]:
+    """Verify a predecessor and decide whether a fresh successor build fits.
+
+    This is a read-only admission plan. It does not build a catalog, create a
+    prospective freeze, reuse predecessor candidates, score retrieval, or alter
+    model weights. ``available_bytes`` exists for deterministic tests; normal
+    callers use the live free-space measurement for the successor volume.
+    """
+
+    database = Path(predecessor_database).resolve(strict=True)
+    receipt_path = Path(integrity_receipt).resolve(strict=True)
+    successor = Path(successor_output_dir).resolve()
+    if successor.exists():
+        if not successor.is_dir() or any(successor.iterdir()):
+            raise FileExistsError(f"successor output path is not an empty directory: {successor}")
+    if reserve_bytes < 0:
+        raise ValueError("reserve_bytes must be nonnegative")
+    if not math.isfinite(expansion_factor) or expansion_factor < 1.0:
+        raise ValueError("expansion_factor must be finite and at least 1.0")
+    if minimum_prospective_candidates < 1:
+        raise ValueError("minimum_prospective_candidates must be positive")
+
+    manifest_path = database.with_name("MANIFEST.json")
+    if not manifest_path.is_file():
+        raise FileNotFoundError(manifest_path)
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if not isinstance(manifest, dict) or manifest.get("schema") != SCHEMA:
+        raise ValueError("predecessor manifest schema mismatch")
+
+    output_rows = manifest.get("outputs")
+    if not isinstance(output_rows, list) or not output_rows:
+        raise ValueError("predecessor manifest has no outputs")
+    verified_outputs: list[dict[str, Any]] = []
+    database_rows = 0
+    database_hash = ""
+    for index, raw in enumerate(output_rows):
+        if not isinstance(raw, Mapping):
+            raise ValueError(f"predecessor output row {index} is not an object")
+        output_path = Path(str(raw.get("path") or "")).resolve(strict=True)
+        declared_hash = str(raw.get("sha256") or "").casefold()
+        declared_bytes = int(raw.get("bytes", -1))
+        if not SHA256_RE.fullmatch(declared_hash):
+            raise ValueError(f"predecessor output row {index} has an invalid SHA-256")
+        if output_path.stat().st_size != declared_bytes:
+            raise ValueError(f"predecessor output size drift: {output_path}")
+        actual_hash = sha256_file(output_path)
+        if actual_hash != declared_hash:
+            raise ValueError(f"predecessor output hash drift: {output_path}")
+        if output_path == database:
+            database_rows += 1
+            database_hash = actual_hash
+        verified_outputs.append(
+            {"path": str(output_path), "bytes": declared_bytes, "sha256": actual_hash}
+        )
+    if database_rows != 1:
+        raise ValueError(
+            "predecessor database must appear exactly once in manifest outputs"
+        )
+
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    if not isinstance(receipt, dict):
+        raise ValueError("integrity receipt must be an object")
+    fresh_audit = audit_catalog_relational_integrity(database)
+    audit_fields = (
+        "schema",
+        "status",
+        "database",
+        "catalog_sha256_before",
+        "catalog_sha256_after",
+        "expected_catalog_sha256",
+        "checks",
+        "counts",
+        "relationships",
+    )
+    for field in audit_fields:
+        if receipt.get(field) != fresh_audit.get(field):
+            raise ValueError(
+                f"integrity receipt does not match fresh audit field: {field}"
+            )
+    actual_failed_checks = sorted(
+        str(name) for name, passed in fresh_audit["checks"].items() if not passed
+    )
+    declared_failed_checks = sorted(set(expected_failed_checks))
+    if actual_failed_checks != declared_failed_checks:
+        raise ValueError(
+            "integrity failure set differs from the preregistered successor reason: "
+            f"expected {declared_failed_checks}, observed {actual_failed_checks}"
+        )
+
+    source_manifest_rows = manifest.get("source_manifests")
+    if not isinstance(source_manifest_rows, list) or not source_manifest_rows:
+        raise ValueError("successor planning requires hash-bound source manifests")
+    verified_source_manifests: list[dict[str, Any]] = []
+    for index, raw in enumerate(source_manifest_rows):
+        if not isinstance(raw, Mapping):
+            raise ValueError(f"source manifest row {index} is not an object")
+        source_manifest = Path(str(raw.get("path") or "")).resolve(strict=True)
+        declared_hash = str(raw.get("sha256") or "").casefold()
+        if not SHA256_RE.fullmatch(declared_hash):
+            raise ValueError(f"source manifest row {index} has an invalid SHA-256")
+        actual_hash = sha256_file(source_manifest)
+        if actual_hash != declared_hash:
+            raise ValueError(f"source manifest hash drift: {source_manifest}")
+        verified_source_manifests.append(
+            {
+                "path": str(source_manifest),
+                "sha256": actual_hash,
+                "declared_sources": int(raw.get("declared_sources", -1)),
+                "rights_metadata": raw.get("rights_metadata"),
+            }
+        )
+
+    predecessor_output_bytes = sum(row["bytes"] for row in verified_outputs)
+    estimated_peak_build_bytes = math.ceil(predecessor_output_bytes * expansion_factor)
+    if available_bytes is None:
+        disk_probe = successor.parent
+        while not disk_probe.exists() and disk_probe != disk_probe.parent:
+            disk_probe = disk_probe.parent
+        available = shutil.disk_usage(disk_probe).free
+    else:
+        available = int(available_bytes)
+        if available < 0:
+            raise ValueError("available_bytes must be nonnegative")
+    required_free_bytes = reserve_bytes + estimated_peak_build_bytes
+    admitted = available >= required_free_bytes
+
+    return {
+        "schema": SUCCESSOR_PLAN_SCHEMA,
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "status": "READY_TO_BUILD" if admitted else "WAITING_FOR_STORAGE_RESERVE",
+        "build_admitted": admitted,
+        "predecessor": {
+            "database": str(database),
+            "catalog_sha256": database_hash,
+            "manifest": str(manifest_path),
+            "manifest_sha256": sha256_file(manifest_path),
+            "integrity_receipt": str(receipt_path),
+            "integrity_receipt_sha256": sha256_file(receipt_path),
+            "integrity_status": fresh_audit["status"],
+            "failed_checks": actual_failed_checks,
+            "outputs": verified_outputs,
+            "source_manifests": verified_source_manifests,
+        },
+        "successor": {
+            "output_dir": str(successor),
+            "must_have_new_catalog_sha256": True,
+            "must_pass_relational_integrity": True,
+            "must_preserve_predecessor": True,
+        },
+        "capacity": {
+            "available_bytes": available,
+            "reserve_bytes": reserve_bytes,
+            "predecessor_output_bytes": predecessor_output_bytes,
+            "expansion_factor": expansion_factor,
+            "estimated_peak_build_bytes": estimated_peak_build_bytes,
+            "required_free_bytes": required_free_bytes,
+            "shortfall_bytes": max(0, required_free_bytes - available),
+        },
+        "prospective_boundary": {
+            "freeze_after_successor_build": True,
+            "source_session_disjoint": True,
+            "minimum_candidates": minimum_prospective_candidates,
+            "predecessor_candidates_reusable": False,
+            "deterministic_views_are_independent_observations": False,
+        },
+        "authorization": {
+            "catalog_build": admitted,
+            "retrieval_scoring": False,
+            "training": False,
+            "serving_change": False,
+            "merge": False,
+            "partial_unfreeze": False,
+            "promotion": False,
+        },
+        "boundary": (
+            "Read-only successor admission plan. No catalog output, prospective candidate, "
+            "score, model state, serving route, or weight was changed."
         ),
     }
 

@@ -111,3 +111,28 @@ remain informational rather than integrity failures. No v6 row was edited, and
 the current prospective watcher remains collection-only with scoring, training
 intake, serving, merge, partial unfreeze, and promotion unauthorized.
 
+## 2026-11-10 corrected-catalog successor gate
+
+`build_prime_token_catalog.py plan-successor` now provides the admission boundary
+between an integrity-failed frozen catalog and a corrected successor. The command
+is read-only and fails closed unless all of the following remain true:
+
+1. every predecessor output still matches the exact path, byte count, and SHA-256
+   recorded by `MANIFEST.json`;
+2. a fresh relational-integrity audit exactly reconstructs the supplied audit
+   receipt and its failed-check set matches the preregistered reason;
+3. every hash-bound source manifest still matches the predecessor manifest;
+4. free space covers both the declared reserve and a conservative peak-build
+   estimate; and
+5. the successor uses a new catalog hash, passes relational integrity, freezes a
+   new source-disjoint boundary after the build, and starts again at zero eligible
+   prospective candidates. Predecessor candidates are never reusable.
+
+The live v6 plan is recorded at
+`C:\dev\clay-training-runs\prime-token-catalog-20261106\catalog-v7-successor-plan-20261110\PLAN.json`.
+It verified the sole reviewed failure
+`relationship_memberships_exactly_reconstruct`, estimated 1,422,772,329 peak
+build bytes, and returned `WAITING_FOR_STORAGE_RESERVE` with a 1,098,115,177-byte
+shortfall above the 25 GiB reserve. Catalog build, scoring, training, serving,
+merge, partial unfreeze, and promotion therefore remain unauthorized.
+

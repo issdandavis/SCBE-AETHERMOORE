@@ -19,6 +19,7 @@ from python.scbe.prime_token_catalog import (
     audit_catalog_relational_integrity,
     audit_catalog_sources,
     audit_catalog_view_structure,
+    plan_catalog_successor,
     search_goal,
     update_probability_lookup,
 )
@@ -151,6 +152,123 @@ def test_relational_integrity_audit_detects_identity_and_relation_drift(tmp_path
     assert not audit["checks"]["relationship_memberships_exactly_reconstruct"]
     assert audit["token_utf8_mismatches"] == 1
     assert audit["relationships"]["missing_memberships"] == 1
+
+
+def _successor_fixture(tmp_path: Path) -> tuple[Path, Path, Path, Path]:
+    source = tmp_path / "source.md"
+    source.write_text(
+        "Cannot route this relation without normalized token identity.\n",
+        encoding="utf-8",
+    )
+    source_manifest = tmp_path / "sources.json"
+    source_manifest.write_text(
+        json.dumps(
+            {
+                "schema": SOURCE_MANIFEST_SCHEMA,
+                "sources": [
+                    {
+                        "path": str(source),
+                        "sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+                        "source_kind": "documentation",
+                        "license": "fixture-license",
+                        "rights_basis": "test fixture authored for this suite",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    output = tmp_path / "predecessor"
+    builder = PrimeTokenCatalogBuilder(output, section_chars=512, range_size=128)
+    builder.ingest_source_manifest(source_manifest)
+    manifest = builder.finalize()
+    database = output / "catalog.sqlite3"
+
+    with sqlite3.connect(database) as connection:
+        token_id = connection.execute("SELECT token_id FROM tokens ORDER BY token_id LIMIT 1").fetchone()[0]
+        connection.execute(
+            "INSERT INTO relation_members VALUES (?, ?, ?)",
+            ("fixture-extra", "not-reconstructed", token_id),
+        )
+        connection.commit()
+        connection.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+
+    manifest["relationship_memberships"] += 1
+    for row in manifest["outputs"]:
+        if Path(row["path"]).resolve() == database.resolve():
+            row["bytes"] = database.stat().st_size
+            row["sha256"] = hashlib.sha256(database.read_bytes()).hexdigest()
+    (output / "MANIFEST.json").write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
+    audit = audit_catalog_relational_integrity(database)
+    assert [name for name, passed in audit["checks"].items() if not passed] == [
+        "relationship_memberships_exactly_reconstruct"
+    ]
+    receipt = tmp_path / "INTEGRITY.json"
+    receipt.write_text(json.dumps(audit, sort_keys=True), encoding="utf-8")
+    return database, receipt, source_manifest, tmp_path / "successor"
+
+
+def test_successor_plan_waits_for_space_and_forbids_candidate_reuse(tmp_path):
+    database, receipt, _source_manifest, successor = _successor_fixture(tmp_path)
+
+    plan = plan_catalog_successor(
+        database,
+        receipt,
+        successor,
+        expected_failed_checks=["relationship_memberships_exactly_reconstruct"],
+        reserve_bytes=1_000,
+        expansion_factor=1.0,
+        available_bytes=0,
+    )
+
+    assert plan["status"] == "WAITING_FOR_STORAGE_RESERVE"
+    assert not plan["build_admitted"]
+    assert plan["capacity"]["shortfall_bytes"] > 0
+    assert not plan["prospective_boundary"]["predecessor_candidates_reusable"]
+    assert plan["prospective_boundary"]["source_session_disjoint"]
+    assert plan["prospective_boundary"]["minimum_candidates"] == 30
+    assert not any(plan["authorization"].values())
+
+
+def test_successor_plan_admits_only_build_after_exact_reverification(tmp_path):
+    database, receipt, _source_manifest, successor = _successor_fixture(tmp_path)
+
+    plan = plan_catalog_successor(
+        database,
+        receipt,
+        successor,
+        expected_failed_checks=["relationship_memberships_exactly_reconstruct"],
+        reserve_bytes=1_000,
+        expansion_factor=1.0,
+        available_bytes=10**9,
+    )
+
+    assert plan["status"] == "READY_TO_BUILD"
+    assert plan["authorization"]["catalog_build"]
+    assert not plan["authorization"]["retrieval_scoring"]
+    assert not plan["authorization"]["training"]
+    assert not plan["authorization"]["partial_unfreeze"]
+    assert not plan["authorization"]["promotion"]
+    assert plan["predecessor"]["failed_checks"] == ["relationship_memberships_exactly_reconstruct"]
+    assert plan["successor"]["must_have_new_catalog_sha256"]
+    assert plan["successor"]["must_pass_relational_integrity"]
+
+
+def test_successor_plan_rejects_source_manifest_drift(tmp_path):
+    database, receipt, source_manifest, successor = _successor_fixture(tmp_path)
+    source_manifest.write_text("{}", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="source manifest hash drift"):
+        plan_catalog_successor(
+            database,
+            receipt,
+            successor,
+            expected_failed_checks=["relationship_memberships_exactly_reconstruct"],
+            available_bytes=10**9,
+        )
 
 
 def test_token_analysis_uses_normalized_identity_across_surface_variants(tmp_path):
