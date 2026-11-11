@@ -99,6 +99,29 @@ def _fixture(tmp_path: Path) -> dict[str, Path]:
     }
     queue["queue_sha256"] = review_queue_sha256(queue)
     queue_path = _write(tmp_path / "QUEUE.json", queue)
+    selection_audit_core = {
+        "schema": "clay.prime-token-selection-audit.v1",
+        "status": "PASS_EXACT_SELECTION_REPLAY_NO_SCORING",
+        "dataset_sha256": queue["dataset_sha256"],
+        "queue_sha256": queue["queue_sha256"],
+        "input_rows": len(candidates),
+        "candidate_count": len(candidates),
+        "selection_rate": 1.0,
+        "reason_counts": {"accepted": len(candidates)},
+        "accepted_topic_counts": {"source_research": len(candidates)},
+        "accepted_query_sha256": [row["query_sha256"] for row in candidates],
+        "exact_candidate_replay": True,
+        "private_text_emitted": False,
+        "labels_opened": False,
+        "scoring_authorized": False,
+        "training_authorized": False,
+        "promotion_authorized": False,
+    }
+    selection_audit = {
+        **selection_audit_core,
+        "audit_sha256": canonical_sha256(selection_audit_core),
+    }
+    selection_audit_path = _write(tmp_path / "QUEUE_SELECTION_AUDIT.json", selection_audit)
     source_rows = [
         {
             "source_uri": f"local://fixture/{name}",
@@ -154,6 +177,7 @@ def _fixture(tmp_path: Path) -> dict[str, Path]:
     return {
         "catalog": catalog,
         "queue": queue_path,
+        "selection_audit": selection_audit_path,
         "labels": labels_path,
         "source_inventory": source_path,
         "preparation": receipt_path,
@@ -164,6 +188,7 @@ def _fixture(tmp_path: Path) -> dict[str, Path]:
 def _run(paths: dict[str, Path]) -> dict[str, Any]:
     return build_e92_prospective_run(
         queue_path=paths["queue"],
+        selection_audit_path=paths["selection_audit"],
         labels_path=paths["labels"],
         preparation_receipt_path=paths["preparation"],
         source_inventory_path=paths["source_inventory"],
@@ -259,6 +284,21 @@ def test_e92_prospective_run_refuses_failed_catalog_integrity_receipt(
     _write(paths["catalog_integrity"], integrity)
 
     with pytest.raises(ValueError, match="integrity receipt status is not a pass"):
+        _run(paths)
+
+
+def test_e92_prospective_run_refuses_selection_audit_authority_drift(
+    tmp_path: Path,
+) -> None:
+    paths = _fixture(tmp_path)
+    audit = json.loads(paths["selection_audit"].read_text(encoding="utf-8"))
+    audit["labels_opened"] = True
+    audit_core = dict(audit)
+    audit_core.pop("audit_sha256")
+    audit["audit_sha256"] = canonical_sha256(audit_core)
+    _write(paths["selection_audit"], audit)
+
+    with pytest.raises(ValueError, match="selection audit authority invariant failed: labels_opened"):
         _run(paths)
 
 
@@ -380,3 +420,35 @@ def test_e92_independent_verifier_reconstructs_benchmark_from_source_chain(
     )
     assert verification["status"] == "INVALID_E92_PROSPECTIVE_BUNDLE"
     assert any("do not reconstruct from the source chain" in error for error in verification["errors"])
+
+
+def test_e92_independent_verifier_rejects_rebound_selection_audit(
+    tmp_path: Path,
+) -> None:
+    bundle = _run(_fixture(tmp_path))
+    output = _write_bundle(tmp_path / "bundle", bundle)
+    audit_path = output / SOURCE_CHAIN_BUNDLE_FILES["selection_audit"]
+    receipt_path = output / "RUN_RECEIPT.json"
+    audit = json.loads(audit_path.read_text(encoding="utf-8"))
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+
+    audit["accepted_query_sha256"] = list(reversed(audit["accepted_query_sha256"]))
+    audit_core = dict(audit)
+    audit_core.pop("audit_sha256")
+    audit["audit_sha256"] = canonical_sha256(audit_core)
+    audit_path.write_bytes(json_bytes(audit))
+    changed_hash = sha256_file(audit_path)
+    receipt["selection_audit_file_sha256"] = changed_hash
+    receipt["source_chain_bundle"]["selection_audit"]["sha256"] = changed_hash
+    receipt["source_chain_bundle"]["selection_audit"]["source_file_sha256"] = changed_hash
+    receipt_core = dict(receipt)
+    receipt_core.pop("receipt_sha256")
+    receipt["receipt_sha256"] = canonical_sha256(receipt_core)
+    receipt_path.write_bytes(json_bytes(receipt))
+
+    verification = verify_e92_prospective_bundle(
+        output,
+        expected_control_seeds=(3, 5, 7),
+    )
+    assert verification["status"] == "INVALID_E92_PROSPECTIVE_BUNDLE"
+    assert any("selection audit candidate hash order mismatch" in error for error in verification["errors"])

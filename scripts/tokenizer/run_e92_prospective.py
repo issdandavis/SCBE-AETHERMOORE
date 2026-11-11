@@ -29,6 +29,7 @@ def _write_exclusive(path: Path, payload: dict) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--queue", required=True)
+    parser.add_argument("--selection-audit", required=True)
     parser.add_argument("--labels", required=True)
     parser.add_argument("--preparation-receipt", required=True)
     parser.add_argument("--source-inventory", required=True)
@@ -46,6 +47,7 @@ def main() -> int:
         raise FileExistsError(f"pending output requires audit before retry: {pending}")
     bundle = build_e92_prospective_run(
         queue_path=args.queue,
+        selection_audit_path=args.selection_audit,
         labels_path=args.labels,
         preparation_receipt_path=args.preparation_receipt,
         source_inventory_path=args.source_inventory,

@@ -30,9 +30,12 @@ from python.scbe.prime_token_query_harvest import (
 
 PREPARATION_SCHEMA = "clay.prime-token-prospective-review-preparation.v1"
 SOURCE_INVENTORY_SCHEMA = "clay.prime-token-catalog-source-suffixes.v1"
-E92_RUN_SCHEMA = "scbe.e92-prospective-run.v3"
+SELECTION_AUDIT_SCHEMA = "clay.prime-token-selection-audit.v1"
+SELECTION_AUDIT_STATUS = "PASS_EXACT_SELECTION_REPLAY_NO_SCORING"
+E92_RUN_SCHEMA = "scbe.e92-prospective-run.v4"
 SOURCE_CHAIN_BUNDLE_FILES = {
     "queue": "SOURCE_QUEUE.json",
+    "selection_audit": "SOURCE_SELECTION_AUDIT.json",
     "labels": "SOURCE_LABELS.json",
     "preparation_receipt": "SOURCE_PREPARATION_RECEIPT.json",
     "source_inventory": "SOURCE_INVENTORY.json",
@@ -177,6 +180,61 @@ def _verify_preparation_receipt(
         raise ValueError("preparation receipt weakens a no-promotion boundary")
     if receipt_path.stat().st_size <= 0:
         raise ValueError("preparation receipt is empty")
+
+
+def _verify_selection_audit(
+    audit: Mapping[str, Any],
+    *,
+    audit_path: Path,
+    queue: Mapping[str, Any],
+    candidates: Sequence[Mapping[str, Any]],
+) -> None:
+    if audit.get("schema") != SELECTION_AUDIT_SCHEMA:
+        raise ValueError("selection audit schema mismatch")
+    if audit.get("status") != SELECTION_AUDIT_STATUS:
+        raise ValueError("selection audit status is not an exact replay pass")
+    audit_core = dict(audit)
+    claimed_hash = str(audit_core.pop("audit_sha256", "")).casefold()
+    if not SHA256_RE.fullmatch(claimed_hash) or claimed_hash != canonical_sha256(
+        audit_core
+    ):
+        raise ValueError("selection audit content hash mismatch")
+    if (
+        str(audit.get("dataset_sha256") or "").casefold()
+        != str(queue.get("dataset_sha256") or "").casefold()
+    ):
+        raise ValueError("selection audit dataset binding mismatch")
+    if (
+        str(audit.get("queue_sha256") or "").casefold()
+        != str(queue.get("queue_sha256") or "").casefold()
+    ):
+        raise ValueError("selection audit queue binding mismatch")
+    if int(audit.get("candidate_count", -1)) != len(candidates):
+        raise ValueError("selection audit candidate count mismatch")
+    accepted_hashes = audit.get("accepted_query_sha256")
+    expected_hashes = [str(candidate["query_sha256"]) for candidate in candidates]
+    if accepted_hashes != expected_hashes:
+        raise ValueError("selection audit candidate hash order mismatch")
+    reason_counts = audit.get("reason_counts")
+    if not isinstance(reason_counts, Mapping) or int(
+        reason_counts.get("accepted", -1)
+    ) != len(candidates):
+        raise ValueError("selection audit accepted count mismatch")
+    if int(audit.get("input_rows", -1)) < len(candidates):
+        raise ValueError("selection audit input row count is impossible")
+    required = {
+        "exact_candidate_replay": True,
+        "private_text_emitted": False,
+        "labels_opened": False,
+        "scoring_authorized": False,
+        "training_authorized": False,
+        "promotion_authorized": False,
+    }
+    for field, expected in required.items():
+        if audit.get(field) is not expected:
+            raise ValueError(f"selection audit authority invariant failed: {field}")
+    if audit_path.stat().st_size <= 0:
+        raise ValueError("selection audit is empty")
 
 
 def _validate_queue(
@@ -345,6 +403,7 @@ def _strict_labels(
 def build_e92_prospective_run(
     *,
     queue_path: str | Path,
+    selection_audit_path: str | Path,
     labels_path: str | Path,
     preparation_receipt_path: str | Path,
     source_inventory_path: str | Path,
@@ -355,13 +414,13 @@ def build_e92_prospective_run(
 ) -> dict[str, Any]:
     """Validate the sealed review chain, then execute the E92 evaluator once."""
     queue_file = Path(queue_path).resolve(strict=True)
-    labels_file = Path(labels_path).resolve(strict=True)
+    selection_audit_file = Path(selection_audit_path).resolve(strict=True)
     preparation_file = Path(preparation_receipt_path).resolve(strict=True)
     source_file = Path(source_inventory_path).resolve(strict=True)
     integrity_file = Path(catalog_integrity_receipt_path).resolve(strict=True)
     catalog_file = Path(catalog_database).resolve(strict=True)
     queue = _load_object(queue_file, label="review queue")
-    labels = _load_object(labels_file, label="review labels")
+    selection_audit = _load_object(selection_audit_file, label="queue selection audit")
     preparation = _load_object(preparation_file, label="preparation receipt")
     source_inventory = _load_object(source_file, label="source inventory")
     catalog_integrity = _load_object(integrity_file, label="catalog integrity receipt")
@@ -382,6 +441,14 @@ def build_e92_prospective_run(
         catalog_database=catalog_file,
         source_inventory=source_inventory,
     )
+    _verify_selection_audit(
+        selection_audit,
+        audit_path=selection_audit_file,
+        queue=queue,
+        candidates=candidates,
+    )
+    labels_file = Path(labels_path).resolve(strict=True)
+    labels = _load_object(labels_file, label="review labels")
     review_summary = _strict_labels(
         labels,
         queue_sha256=str(queue["queue_sha256"]),
@@ -407,6 +474,7 @@ def build_e92_prospective_run(
     result_payload = json_bytes(result)
     source_chain = {
         "queue": queue,
+        "selection_audit": selection_audit,
         "labels": labels,
         "preparation_receipt": preparation,
         "source_inventory": source_inventory,
@@ -414,6 +482,7 @@ def build_e92_prospective_run(
     }
     source_file_hashes = {
         "queue": sha256_file(queue_file),
+        "selection_audit": sha256_file(selection_audit_file),
         "labels": sha256_file(labels_file),
         "preparation_receipt": sha256_file(preparation_file),
         "source_inventory": sha256_file(source_file),
@@ -437,6 +506,7 @@ def build_e92_prospective_run(
         "queue": str(queue_file),
         "queue_file_sha256": source_file_hashes["queue"],
         "queue_content_sha256": queue["queue_sha256"],
+        "selection_audit_file_sha256": source_file_hashes["selection_audit"],
         "labels_file_sha256": source_file_hashes["labels"],
         "preparation_receipt_file_sha256": source_file_hashes["preparation_receipt"],
         "source_inventory_file_sha256": source_file_hashes["source_inventory"],

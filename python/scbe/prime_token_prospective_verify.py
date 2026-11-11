@@ -11,7 +11,7 @@ from pathlib import Path
 from statistics import mean, stdev
 from typing import Any
 
-E92_RUN_SCHEMA = "scbe.e92-prospective-run.v3"
+E92_RUN_SCHEMA = "scbe.e92-prospective-run.v4"
 BENCHMARK_SCHEMA = "scbe.prime-token-benchmark.v1"
 RESULT_SCHEMA = "scbe.prime-token-cascade-benchmark-result.v1"
 REVIEW_QUEUE_SCHEMA = "scbe.prime-token-independent-review-queue.v1"
@@ -19,6 +19,8 @@ REVIEW_LABEL_SCHEMA = "scbe.prime-token-independent-review-labels.v1"
 PREPARATION_SCHEMA = "clay.prime-token-prospective-review-preparation.v1"
 SOURCE_INVENTORY_SCHEMA = "clay.prime-token-catalog-source-suffixes.v1"
 CATALOG_INTEGRITY_SCHEMA = "scbe.prime-token-relational-integrity-audit.v1"
+SELECTION_AUDIT_SCHEMA = "clay.prime-token-selection-audit.v1"
+SELECTION_AUDIT_STATUS = "PASS_EXACT_SELECTION_REPLAY_NO_SCORING"
 ALGORITHM_REVISION = "six-view-late-output-fusion-v1"
 MIN_CAPABILITY_QUERIES = 30
 DEFAULT_CONTROL_SEEDS = (11, 29, 47)
@@ -33,6 +35,7 @@ EXPECTED_ARMS = {
 }
 SOURCE_CHAIN_BUNDLE_FILES = {
     "queue": "SOURCE_QUEUE.json",
+    "selection_audit": "SOURCE_SELECTION_AUDIT.json",
     "labels": "SOURCE_LABELS.json",
     "preparation_receipt": "SOURCE_PREPARATION_RECEIPT.json",
     "source_inventory": "SOURCE_INVENTORY.json",
@@ -40,6 +43,7 @@ SOURCE_CHAIN_BUNDLE_FILES = {
 }
 SOURCE_HASH_FIELDS = {
     "queue": "queue_file_sha256",
+    "selection_audit": "selection_audit_file_sha256",
     "labels": "labels_file_sha256",
     "preparation_receipt": "preparation_receipt_file_sha256",
     "source_inventory": "source_inventory_file_sha256",
@@ -130,6 +134,7 @@ def _verify_source_chain(
     if set(source_chain) != set(SOURCE_CHAIN_BUNDLE_FILES):
         return
     queue = source_chain["queue"]
+    selection_audit = source_chain["selection_audit"]
     labels = source_chain["labels"]
     preparation = source_chain["preparation_receipt"]
     source_inventory = source_chain["source_inventory"]
@@ -166,6 +171,51 @@ def _verify_source_chain(
         else:
             candidate_by_hash[query_hash] = candidate
         candidate_ids.add(candidate_id)
+
+    if selection_audit.get("schema") != SELECTION_AUDIT_SCHEMA:
+        errors.append("selection audit schema mismatch")
+    if selection_audit.get("status") != SELECTION_AUDIT_STATUS:
+        errors.append("selection audit status is not an exact replay pass")
+    selection_core = dict(selection_audit)
+    claimed_selection_hash = str(selection_core.pop("audit_sha256", ""))
+    if claimed_selection_hash != _canonical_sha256(selection_core):
+        errors.append("selection audit content hash mismatch")
+    if selection_audit.get("dataset_sha256") != queue.get("dataset_sha256"):
+        errors.append("selection audit dataset binding mismatch")
+    if selection_audit.get("queue_sha256") != queue_hash:
+        errors.append("selection audit queue binding mismatch")
+    if selection_audit.get("candidate_count") != len(candidates):
+        errors.append("selection audit candidate count mismatch")
+    expected_candidate_hashes = [
+        str(candidate.get("query_sha256") or "")
+        for candidate in candidates
+        if isinstance(candidate, Mapping)
+    ]
+    if selection_audit.get("accepted_query_sha256") != expected_candidate_hashes:
+        errors.append("selection audit candidate hash order mismatch")
+    reason_counts = selection_audit.get("reason_counts")
+    if not isinstance(reason_counts, Mapping) or reason_counts.get("accepted") != len(
+        candidates
+    ):
+        errors.append("selection audit accepted count mismatch")
+    input_rows = selection_audit.get("input_rows")
+    if (
+        isinstance(input_rows, bool)
+        or not isinstance(input_rows, int)
+        or input_rows < len(candidates)
+    ):
+        errors.append("selection audit input row count is impossible")
+    selection_authority = {
+        "exact_candidate_replay": True,
+        "private_text_emitted": False,
+        "labels_opened": False,
+        "scoring_authorized": False,
+        "training_authorized": False,
+        "promotion_authorized": False,
+    }
+    for field, expected in selection_authority.items():
+        if selection_audit.get(field) is not expected:
+            errors.append(f"selection audit authority invariant failed: {field}")
 
     boundary = queue.get("prospective_boundary")
     if not isinstance(boundary, Mapping) or boundary.get(
