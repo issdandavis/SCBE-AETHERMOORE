@@ -25,6 +25,7 @@ propose a route; it may not invent or execute an action token.
 | Canonical byte/action packet | `C:\dev\_wt_clay_layr_action_adapter_20261110\experiments\clay_action_compiler_20261109\layr_action_plan.py` | Exact, CRC-bound, tested |
 | Byte/bit/trit/six-tongue aligned grid | `cross_token_grid` in the same module | Exact deterministic projections with validity mask |
 | Tongue-independent opcode meaning and executable action binding | `C:\dev\loom\tongues\tongue_semantics.py` | Exact mapping; compiler remains authority |
+| Fixed-weight action microcore | `C:\dev\_wt_clay_cross_token_grid_v2_20261110\experiments\clay_action_compiler_20261109\compiled_action_microcore.py` at `405ea3847f086514bfcb18a502f215f5615aacf1` | Exact processor-owned trace over a sealed ActionTape; no learned or execution authority |
 | Exact surface case possibilities | `python/scbe/token_surface_routes.py` | Algebraic address, no exponential table allocation |
 | Six S/V/O family orders | `python/scbe/token_surface_routes.py` and `src/harmonic/linguisticCrossTalk.ts` | Exact parity-tested permutations |
 | Seeded radial cells, sector movement, local relays, portals, flash | `python/scbe/algebraic_radial_token_table.py` | Deterministic mechanics, no quality claim |
@@ -119,14 +120,17 @@ flowchart LR
     RT --> SR[sparse local relays + cross-sector portals]
     SR --> LP[learned route proposal]
     LP --> AC
-    AC --> SB[speech-block opcode stream]
-    AC --> GS[GeoSeal/CLI receipt boundary]
+    AC --> MC[optional fixed-weight action microcore]
+    MC --> SB[speech-block opcode stream]
+    MC --> GS[GeoSeal/CLI receipt boundary]
     GS --> EX[authorized sandbox execution]
 ```
 
 The apparent cycle is deliberate: learned routing returns only a proposal to
 the exact compiler. The compiler, GeoSeal, and sandbox do not inherit learned
-authority.
+authority. The optional microcore owns only an explicitly delimited deterministic
+trace compiled from an already sealed ActionTape. It does not parse language,
+grant permission, or replace the compiler, GeoSeal, or sandbox.
 
 ## Missing edges
 
@@ -159,6 +163,8 @@ authority.
 | Radial receipt SHA-256 | `15128fc6529671e8782ed70ebdd2d78751c748adc465eb256d6e00d7d61711a6` |
 | Join receipt SHA-256 | `98c2c2dbc695c85d91458a1317c3a402a02fe378ccb1fb7753bac9f3916c70d0` |
 | Receipt reconstruction | exact equality verified |
+| Fixed-weight microcore verification | 13/13 focused tests passed; Ruff clean |
+| Fixed-weight microcore throughput | 4,269.72 actions/s versus 4,880.55 base tape; `0.875x`, not an acceleration |
 
 The real integration used an explicitly supplied subject role (`S`) for one
 canonical byte. It did not infer grammar from an unlabelled surface. All six
