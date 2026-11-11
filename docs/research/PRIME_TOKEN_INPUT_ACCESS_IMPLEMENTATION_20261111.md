@@ -119,6 +119,14 @@ runtime family/function target check are described in
 `16/16`; the complete prime-token/release suite passes `120/120`. No material
 data or optimizer was opened by that implementation check.
 
+That boundary is commit
+`dfc0de2239050fff5c39ab11888a39dc49d4255c`. Its immutable receipt is
+`MATERIAL_CASE_BUILDER_IMPLEMENTATION_TEST_RECEIPT_V1.json`
+(`338bd1561b2a29c90837e919800d21fe5360f9427a8a02455ce58533ef485dcf`).
+Independent replay still consumes runtime-produced target arrays; rebuilding
+targets directly from pinned source authority remains a separate obligation
+before any evidentiary promotion claim.
+
 ## Remaining release blockers
 
 The current release remains `WAITING_FOR_RELEASE_REQUIREMENTS`. In particular,
