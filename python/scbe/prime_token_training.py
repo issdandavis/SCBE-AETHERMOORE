@@ -121,10 +121,17 @@ def admit_material_launch(
 
 @dataclass(frozen=True, slots=True)
 class PrimeTrainingExample:
+    record_ids: tuple[str, ...]
+    splits: tuple[str, ...]
+    source_families: tuple[str, ...]
     token_ids: Tensor
     targets: Tensor
     weights: Tensor
     packet: SealedPrimeTokenBatch
+    output_positions: tuple[tuple[int, ...], ...]
+    allowed_output_token_ids: tuple[int, ...]
+    exact_evaluator_receipt_sha256: str
+    task_kind: str = "bounded_route_or_function_token"
 
     def validate(self) -> None:
         self.packet.validate()
@@ -132,15 +139,122 @@ class PrimeTrainingExample:
             raise ValueError("example token IDs must be torch.long [batch,time]")
         if self.targets.shape != self.token_ids.shape:
             raise ValueError("example targets differ from token IDs")
+        if self.targets.dtype != torch.long:
+            raise ValueError("example targets must use torch.long")
         if self.weights.shape != self.token_ids.shape:
             raise ValueError("example weights differ from token IDs")
+        if not torch.is_floating_point(self.weights) or not torch.all(
+            torch.isfinite(self.weights)
+        ):
+            raise ValueError("example weights must be finite floating-point values")
         if tuple(self.packet.owner_mask.shape) != tuple(self.token_ids.shape):
             raise ValueError("example packet differs from token IDs")
+        batch_size = self.token_ids.shape[0]
+        if not (
+            len(self.record_ids)
+            == len(self.splits)
+            == len(self.source_families)
+            == len(self.output_positions)
+            == batch_size
+        ):
+            raise ValueError("example provenance rows differ from batch size")
+        if not all(
+            isinstance(value, str) and value.strip() for value in self.record_ids
+        ) or not all(
+            isinstance(value, str) and value.strip() for value in self.source_families
+        ):
+            raise ValueError("example record and source-family identities are required")
+        if len(set(self.record_ids)) != len(self.record_ids):
+            raise ValueError("example repeats a record identity")
+        if any(
+            split not in {"train", "validation", "final_test"} for split in self.splits
+        ):
+            raise ValueError("example split is invalid")
+        if self.task_kind != "bounded_route_or_function_token":
+            raise ValueError("example task must be a bounded route/function token")
+        if len(self.exact_evaluator_receipt_sha256) != 64 or any(
+            character not in "0123456789abcdef"
+            for character in self.exact_evaluator_receipt_sha256
+        ):
+            raise ValueError("example requires an exact evaluator receipt SHA-256")
+        allowed = set(self.allowed_output_token_ids)
+        if (
+            not allowed
+            or len(allowed) != len(self.allowed_output_token_ids)
+            or any(
+                isinstance(token_id, bool)
+                or not isinstance(token_id, int)
+                or token_id < 0
+                for token_id in allowed
+            )
+        ):
+            raise ValueError("example allowed output token IDs are invalid")
+        if not torch.all((self.weights == 0) | (self.weights == 1)):
+            raise ValueError("example supervision weights must be binary")
         if float(self.weights.sum()) <= 0.0:
             raise ValueError("example supervision mask is empty")
+        expected_mask = torch.zeros_like(self.weights, dtype=torch.bool)
+        for batch_index, positions in enumerate(self.output_positions):
+            if not positions or positions != tuple(sorted(set(positions))):
+                raise ValueError("example output positions must be sorted and unique")
+            owner_positions = (
+                self.packet.owner_mask[batch_index].nonzero().flatten().tolist()
+            )
+            if not owner_positions or max(owner_positions) > positions[0]:
+                raise ValueError("example output precedes a required owner position")
+            for position in positions:
+                if position < 0 or position >= self.token_ids.shape[1]:
+                    raise ValueError("example output position is out of bounds")
+                expected_mask[batch_index, position] = True
+                if int(self.targets[batch_index, position]) not in allowed:
+                    raise ValueError(
+                        "example target lies outside the bounded output set"
+                    )
+        if not torch.equal(self.weights.to(dtype=torch.bool), expected_mask):
+            raise ValueError(
+                "example supervision exists outside declared output positions"
+            )
+
+
+def validate_training_examples(examples: Sequence[PrimeTrainingExample]) -> None:
+    """Validate one source-bounded training set before any optimizer is built."""
+
+    if not examples:
+        raise ValueError("training examples are empty")
+    evaluator_receipts: set[str] = set()
+    output_vocabularies: set[tuple[int, ...]] = set()
+    task_kinds: set[str] = set()
+    record_ids: set[str] = set()
+    for example in examples:
+        example.validate()
+        if any(split != "train" for split in example.splits):
+            raise ValueError("optimizer input contains a non-training split")
+        overlap = record_ids.intersection(example.record_ids)
+        if overlap:
+            raise ValueError("optimizer input repeats a training record identity")
+        record_ids.update(example.record_ids)
+        evaluator_receipts.add(example.exact_evaluator_receipt_sha256)
+        output_vocabularies.add(tuple(example.allowed_output_token_ids))
+        task_kinds.add(example.task_kind)
+    if len(evaluator_receipts) != 1:
+        raise ValueError("training examples name different evaluator receipts")
+    if len(output_vocabularies) != 1:
+        raise ValueError("training examples use different bounded output vocabularies")
+    if len(task_kinds) != 1:
+        raise ValueError("training examples use different task kinds")
 
 
 def masked_language_loss(logits: Tensor, targets: Tensor, weights: Tensor) -> Tensor:
+    if logits.ndim != 3 or targets.shape != logits.shape[:2]:
+        raise ValueError("logits and targets have incompatible shapes")
+    if targets.dtype != torch.long or weights.shape != targets.shape:
+        raise ValueError("targets or supervision weights are invalid")
+    if int(targets.min()) < 0 or int(targets.max()) >= logits.shape[-1]:
+        raise ValueError("target token lies outside model vocabulary")
+    if not torch.all(torch.isfinite(weights)) or not torch.all(
+        (weights == 0) | (weights == 1)
+    ):
+        raise ValueError("supervision weights must be finite binary values")
     per_token = F.cross_entropy(logits.transpose(1, 2), targets, reduction="none")
     mass = weights.sum()
     if float(mass.detach().cpu()) <= 0.0:
@@ -299,8 +413,7 @@ def train_steps(
         raise ValueError("training requires positive steps and non-empty examples")
     if (optimizer is None) != (sampler is None):
         raise ValueError("optimizer and sampler must be supplied together")
-    for example in examples:
-        example.validate()
+    validate_training_examples(examples)
     model.to(device)
     model.train()
     model.core.eval()
@@ -320,6 +433,8 @@ def train_steps(
             example.token_ids.to(device),
             prime_packet=example.packet,
         )
+        if max(example.allowed_output_token_ids) >= logits.shape[-1]:
+            raise ValueError("allowed output token exceeds model vocabulary")
         loss = masked_language_loss(
             logits,
             example.targets.to(device),
@@ -364,4 +479,5 @@ __all__ = [
     "save_adapter_checkpoint",
     "sha256_file",
     "train_steps",
+    "validate_training_examples",
 ]

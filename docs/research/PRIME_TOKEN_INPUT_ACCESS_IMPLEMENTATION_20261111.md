@@ -12,20 +12,27 @@ E92, seed, or human-release gate.
   packets for the canonical six-view candidate and four equal-width controls.
   The views remain correlated descriptions of one occurrence. The wrapper
   replaces owned hidden positions before block 0 and zeros the owned raw and
-  route lanes so placeholder bytes cannot leak through another path.
+  route lanes so placeholder bytes cannot leak through another path. The
+  shuffled arm requires an explicit dataset-wide occurrence pool, constructs a
+  true vector derangement, and seals both the pool and permutation receipts;
+  duplicate canonical vectors cannot silently become fixed points.
 - `python/scbe/prime_token_training.py` trains only the low-rank reader. It
   checks the parent hash after every step and persists adapter, optimizer,
   sampler, Python, NumPy, CPU RNG, and CUDA RNG state in alternating atomic
-  checkpoint slots.
+  checkpoint slots. Training rows must be in the `train` split and supervise
+  only declared causal positions in one bounded route/function-token vocabulary
+  tied to an exact evaluator receipt.
 - `scripts/tokenizer/run_prime_token_input_access.py` requires both a completely
   passing release audit and a separate, audit-hash-bound human authorization
   before importing a material runtime factory. Each `(arm, seed)` receives a
   dedicated lineage. Tool dispatch, promotion, and partial unfreezing remain
-  disabled.
+  disabled. Its evaluator owns held examples separately, must use the pinned
+  receipt, and fails if record IDs or source families overlap training.
 - `python/scbe/prime_token_independent_replay.py` reconstructs packet features
   without calling the producer builder, verifies the checkpoint pointer and
   parent lineage, ignores producer metric aggregates, and recomputes
-  per-position predictions.
+  only the declared held route/function outputs rather than scoring unrelated
+  sequence positions.
 - `scripts/tokenizer/replay_prime_token_input_access.py` exposes that path for a
   separately supplied held-out runtime and fails when a producer ledger differs
   from replay.
@@ -36,7 +43,8 @@ The focused implementation suite proves:
 
 1. deterministic packet seals and mutation detection;
 2. equal feature width and reader parameter count across learned arms;
-3. lexical-only auxiliary zeroing and one-to-one shuffled bindings;
+3. lexical-only auxiliary zeroing and a dataset-wide, receipt-bound shuffled
+   vector derangement that rejects singleton and duplicate-vector pools;
 4. independent reconstruction equality for all five learned packet modes;
 5. bit-identical delegation when no packet is present;
 6. owned placeholder insensitivity and unowned-token sensitivity;
@@ -44,7 +52,9 @@ The focused implementation suite proves:
    causal test core;
 8. reader update with a bit-identical frozen parent;
 9. split save/load/next-step equality with uninterrupted training;
-10. fail-closed material admission and checkpoint/ledger tamper detection.
+10. bounded causal supervision, train/held source-family separation, and exact
+    evaluator-receipt matching;
+11. fail-closed material admission and checkpoint/ledger tamper detection.
 
 Command:
 
@@ -54,7 +64,7 @@ python -m pytest tests/tokenizer/test_prime_token_input_access.py \
   tests/tokenizer/test_algebraic_radial_token_table.py -q
 ```
 
-Result: `26 passed` on Python 3.12.10 after Black and Ruff. This is mechanics
+Result: `29 passed` on Python 3.12.10 after Black and Ruff. This is mechanics
 evidence only. No catalog row was labelled, no source session was opened, no
 parent or descendant weight was modified, and no material trainer was started.
 

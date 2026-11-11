@@ -2,8 +2,9 @@
 """Run one explicitly released frozen prime-token reader lineage.
 
 The runtime factory is project-local code that returns the already-admitted
-model and examples.  This command owns only release enforcement, lineage
-isolation, exact resume, reader-only optimization, and checkpoint receipts.
+model, training examples, and independent held evaluator. This command owns
+only release enforcement, lineage isolation, exact resume, reader-only
+optimization, and checkpoint receipts.
 It never dispatches tools or changes promotion/unfreeze authority.
 """
 
@@ -37,6 +38,7 @@ from python.scbe.prime_token_training import (
     save_adapter_checkpoint,
     sha256_file,
     train_steps,
+    validate_training_examples,
 )
 
 REQUIRED_IDENTITY_FIELDS = (
@@ -68,13 +70,18 @@ def _factory(spec: str) -> Callable:
     return function
 
 
-def validate_evaluation_result(value: object) -> dict[str, object]:
+def validate_evaluation_result(
+    value: object,
+    *,
+    train_examples: list[PrimeTrainingExample] | None = None,
+) -> dict[str, object]:
     """Require raw outcomes and every preregistered non-storage measure."""
 
     if not isinstance(value, dict):
         raise TypeError("runtime evaluator must return a dictionary")
     metrics = value.get("metrics")
     outcomes = value.get("per_example")
+    evaluator_receipt = value.get("evaluator_receipt_sha256")
     if not isinstance(metrics, dict):
         raise TypeError("runtime evaluator omitted its metrics dictionary")
     missing = [name for name in REQUIRED_EVALUATION_METRICS if name not in metrics]
@@ -90,7 +97,58 @@ def validate_evaluation_result(value: object) -> dict[str, object]:
         raise ValueError("runtime evaluator must retain non-empty per-example outcomes")
     if not all(isinstance(row, dict) for row in outcomes):
         raise TypeError("runtime per-example outcomes must be dictionaries")
-    return {"metrics": dict(metrics), "per_example": outcomes}
+    if (
+        not isinstance(evaluator_receipt, str)
+        or len(evaluator_receipt) != 64
+        or any(character not in "0123456789abcdef" for character in evaluator_receipt)
+    ):
+        raise ValueError("runtime evaluator receipt SHA-256 is invalid")
+    required_provenance = {"id", "record_id", "split", "source_family"}
+    outcome_ids: set[str] = set()
+    held_record_ids: set[str] = set()
+    held_families: set[str] = set()
+    record_provenance: dict[str, tuple[str, str]] = {}
+    family_splits: dict[str, str] = {}
+    for row in outcomes:
+        missing_provenance = required_provenance - set(row)
+        if missing_provenance:
+            raise ValueError(f"runtime outcome omitted provenance: {sorted(missing_provenance)}")
+        outcome_id = row["id"]
+        record_id = row["record_id"]
+        source_family = row["source_family"]
+        if not all(isinstance(item, str) and item.strip() for item in (outcome_id, record_id, source_family)):
+            raise ValueError("runtime outcome provenance is empty or invalid")
+        if row["split"] not in {"validation", "final_test"}:
+            raise ValueError("runtime evaluator returned a training-split outcome")
+        if outcome_id in outcome_ids:
+            raise ValueError("runtime evaluator repeated an outcome identity")
+        outcome_ids.add(outcome_id)
+        provenance = (str(row["split"]), source_family)
+        if record_id in record_provenance and record_provenance[record_id] != provenance:
+            raise ValueError("runtime evaluator changed a record's provenance")
+        record_provenance[record_id] = provenance
+        prior_split = family_splits.get(source_family)
+        if prior_split is not None and prior_split != row["split"]:
+            raise ValueError("runtime evaluator overlaps validation/final source families")
+        family_splits[source_family] = str(row["split"])
+        held_record_ids.add(record_id)
+        held_families.add(source_family)
+    if train_examples is not None:
+        validate_training_examples(train_examples)
+        expected_receipts = {example.exact_evaluator_receipt_sha256 for example in train_examples}
+        if expected_receipts != {evaluator_receipt}:
+            raise ValueError("runtime evaluator receipt differs from training contract")
+        training_record_ids = {record_id for example in train_examples for record_id in example.record_ids}
+        training_families = {family for example in train_examples for family in example.source_families}
+        if training_record_ids.intersection(held_record_ids):
+            raise ValueError("runtime evaluator overlaps training record identities")
+        if training_families.intersection(held_families):
+            raise ValueError("runtime evaluator overlaps training source families")
+    return {
+        "metrics": dict(metrics),
+        "per_example": outcomes,
+        "evaluator_receipt_sha256": evaluator_receipt,
+    }
 
 
 def run(args: argparse.Namespace) -> dict[str, object]:
@@ -103,13 +161,16 @@ def run(args: argparse.Namespace) -> dict[str, object]:
     if not isinstance(payload, dict):
         raise TypeError("runtime factory must return a dictionary")
     model = payload.get("model")
-    examples = payload.get("examples")
+    train_examples = payload.get("train_examples")
     identity = payload.get("identity")
     evaluator = payload.get("evaluate")
     if not isinstance(model, FullSystemPrimeTokenInputAccessLM):
         raise TypeError("runtime factory returned the wrong model type")
-    if not isinstance(examples, list) or not all(isinstance(item, PrimeTrainingExample) for item in examples):
-        raise TypeError("runtime factory returned invalid examples")
+    if not isinstance(train_examples, list) or not all(
+        isinstance(item, PrimeTrainingExample) for item in train_examples
+    ):
+        raise TypeError("runtime factory returned invalid training examples")
+    validate_training_examples(train_examples)
     if not isinstance(identity, dict):
         raise TypeError("runtime factory returned invalid lineage identity")
     if not callable(evaluator):
@@ -121,7 +182,7 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         raise ValueError("runtime lineage arm/seed differs from command")
     if identity["parent_sha256"] != module_state_sha256(model.core):
         raise ValueError("runtime lineage parent hash differs from loaded core")
-    if args.arm != "no_intervention" and any(example.packet.mode != args.arm for example in examples):
+    if args.arm != "no_intervention" and any(example.packet.mode != args.arm for example in train_examples):
         raise ValueError("runtime examples contain another control arm")
 
     output = args.output.resolve()
@@ -165,7 +226,7 @@ def run(args: argparse.Namespace) -> dict[str, object]:
 
         optimizer, sampler, history = train_steps(
             model,
-            examples,
+            train_examples,
             steps=args.steps,
             learning_rate=args.learning_rate,
             seed=args.seed,
@@ -186,7 +247,10 @@ def run(args: argparse.Namespace) -> dict[str, object]:
             identity=identity,
             metrics=history[-1],
         )
-    evaluation = validate_evaluation_result(evaluator(model, examples, args.arm))
+    evaluation = validate_evaluation_result(
+        evaluator(model, args.arm),
+        train_examples=train_examples,
+    )
     checkpoint_bytes = 0 if pointer is None else (output / str(pointer["file"])).stat().st_size
     evaluation["metrics"]["checkpoint_bytes"] = checkpoint_bytes
     atomic_json(output / "EVALUATION.json", evaluation)

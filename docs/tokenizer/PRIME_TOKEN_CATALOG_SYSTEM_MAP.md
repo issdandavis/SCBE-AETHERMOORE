@@ -684,3 +684,22 @@ live release remains closed by prospective data, E92, source split/family,
 fresh-seed, and human-review gates; no training, weight change, promotion, tool
 dispatch, or partial unfreeze occurred. Full details are in
 `docs/research/PRIME_TOKEN_INPUT_ACCESS_IMPLEMENTATION_20261111.md`.
+
+## Material-control hardening — 2026-11-11
+
+The shuffled-binding arm now requires the sealed dataset-wide occurrence pool;
+it cannot fall back to the current minibatch. Producer and independent replay
+separately construct a one-to-one vector derangement, reject pools whose
+duplicate canonical vectors make a derangement impossible, and seal the pool
+and permutation hashes into the packet. This closes the singleton-batch control
+collapse without changing any catalog row or model weight.
+
+The optimizer contract now accepts only `train` rows with sorted, declared
+causal output positions and a bounded route/function-token vocabulary. The
+material runner no longer gives training examples to the held evaluator. It
+requires the evaluator's exact receipt and rejects overlap by record ID or
+source family. Independent replay scores only those declared held outputs,
+retaining their split and source-family provenance. The focused packet,
+release-audit, and radial-table suites pass 29/29 after Black and Ruff. These
+are fail-closed mechanics; the nine live release blockers and all no-promotion,
+no-thaw, and no-tool-dispatch boundaries remain unchanged.

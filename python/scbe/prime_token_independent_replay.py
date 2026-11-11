@@ -112,6 +112,7 @@ def reconstruct_packet_independently(
     sequence_length: int,
     mode: str,
     frame: str = "lexical",
+    binding_pool: Sequence[PrimeTokenRecord] | None = None,
 ) -> SealedPrimeTokenBatch:
     """Rebuild a producer packet without calling its packet builder."""
 
@@ -121,6 +122,12 @@ def reconstruct_packet_independently(
         raise ValueError("replay records and owner positions differ")
     if frame not in VIEW_NAMES:
         raise ValueError("unknown replay frame")
+    if mode == "shuffled_binding_reader" and binding_pool is None:
+        raise ValueError(
+            "replay shuffled binding requires an explicit dataset-wide pool"
+        )
+    if mode != "shuffled_binding_reader" and binding_pool is not None:
+        raise ValueError("replay binding pool is valid only for shuffled binding")
     features = torch.zeros((len(records), sequence_length, FEATURE_WIDTH))
     owners = torch.zeros((len(records), sequence_length), dtype=torch.bool)
     views = torch.zeros(
@@ -131,24 +138,59 @@ def reconstruct_packet_independently(
         for batch_index, row in enumerate(records)
         for local_index, record in enumerate(row)
     ]
-    shuffled: dict[tuple[int, int], Tensor] = {}
+    shuffled: dict[str, Tensor] = {}
+    binding_pool_sha256: str | None = None
+    binding_permutation_sha256: str | None = None
     if mode == "shuffled_binding_reader":
-        ordered = sorted(
-            flattened,
-            key=lambda item: (
-                item[2].canonical_id,
-                item[2].section_id,
-                item[0],
-                item[1],
-            ),
-        )
-        source_vectors = [_canonical_vector(item[2]) for item in ordered]
-        if len(source_vectors) > 1:
-            source_vectors = source_vectors[1:] + source_vectors[:1]
+        pool = list(binding_pool or ())
+        rows: list[tuple[str, str, Tensor]] = []
+        for record in pool:
+            record.validate()
+            receipt = _receipt(record)
+            vector = _canonical_vector(record)
+            rows.append((receipt, tensor_sha256(vector), vector))
+        receipts = [row[0] for row in rows]
+        if len(pool) < 2 or len(set(receipts)) != len(receipts):
+            raise ValueError(
+                "replay shuffled binding pool must be unique and nontrivial"
+            )
+        rows.sort(key=lambda row: (row[1], row[0]))
+        group_counts: dict[str, int] = {}
+        for _, vector_sha256, _ in rows:
+            group_counts[vector_sha256] = group_counts.get(vector_sha256, 0) + 1
+        shift = max(group_counts.values())
+        if shift * 2 > len(rows):
+            raise ValueError(
+                "replay shuffled binding pool cannot form a vector derangement"
+            )
+        sources = rows[shift:] + rows[:shift]
+        if any(
+            target[1] == source[1] for target, source in zip(rows, sources, strict=True)
+        ):
+            raise RuntimeError(
+                "replay shuffled binding derangement construction failed"
+            )
         shuffled = {
-            (item[0], item[1]): vector
-            for item, vector in zip(ordered, source_vectors, strict=True)
+            target[0]: source[2] for target, source in zip(rows, sources, strict=True)
         }
+        binding_pool_sha256 = hashlib.sha256(
+            _json_bytes({"record_receipts": sorted(receipts)})
+        ).hexdigest()
+        binding_permutation_sha256 = hashlib.sha256(
+            _json_bytes(
+                {
+                    "bindings": [
+                        {
+                            "target_receipt": target[0],
+                            "source_receipt": source[0],
+                        }
+                        for target, source in zip(rows, sources, strict=True)
+                    ]
+                }
+            )
+        ).hexdigest()
+        if {_receipt(record) for _, _, record in flattened} - set(shuffled):
+            raise ValueError("replay shuffled binding pool omits packet occurrences")
     receipt_rows = []
     for batch_index, (row, positions) in enumerate(
         zip(records, owner_positions, strict=True)
@@ -156,7 +198,7 @@ def reconstruct_packet_independently(
         if len(row) != len(positions):
             raise ValueError("replay row and positions differ")
         current_receipts = []
-        for local_index, (record, raw_position) in enumerate(
+        for _local_index, (record, raw_position) in enumerate(
             zip(row, positions, strict=True)
         ):
             record.validate()
@@ -188,7 +230,7 @@ def reconstruct_packet_independently(
                 )
                 active = range(len(VIEW_NAMES))
             elif mode == "shuffled_binding_reader":
-                vector = shuffled[(batch_index, local_index)]
+                vector = shuffled[_receipt(record)]
                 active = range(len(VIEW_NAMES))
             else:
                 segments = []
@@ -220,6 +262,8 @@ def reconstruct_packet_independently(
         "owner_shape": list(owners.shape),
         "view_shape": list(views.shape),
         "record_receipts": [list(row) for row in receipt_rows],
+        "binding_pool_sha256": binding_pool_sha256,
+        "binding_permutation_sha256": binding_permutation_sha256,
         "features_sha256": tensor_sha256(features),
         "owner_mask_sha256": tensor_sha256(owners),
         "view_mask_sha256": tensor_sha256(views),
@@ -231,6 +275,8 @@ def reconstruct_packet_independently(
         mode=mode,
         frame=metadata["frame"],
         record_receipts=tuple(receipt_rows),
+        binding_pool_sha256=binding_pool_sha256,
+        binding_permutation_sha256=binding_permutation_sha256,
         features_sha256=str(metadata["features_sha256"]),
         owner_mask_sha256=str(metadata["owner_mask_sha256"]),
         view_mask_sha256=str(metadata["view_mask_sha256"]),
@@ -280,18 +326,86 @@ def replay_predictions(
     token_ids: Tensor,
     targets: Tensor,
     packet: SealedPrimeTokenBatch,
+    *,
+    record_ids: Sequence[str],
+    splits: Sequence[str],
+    source_families: Sequence[str],
+    output_positions: Sequence[Sequence[int]],
+    allowed_output_token_ids: Sequence[int],
+    exact_evaluator_receipt_sha256: str,
 ) -> dict[str, object]:
-    """Recompute per-position outcomes instead of trusting producer aggregates."""
+    """Recompute only declared bounded outputs from held, receipted examples."""
+
+    packet.validate()
+    if token_ids.ndim != 2 or token_ids.dtype != torch.long:
+        raise ValueError("replay token IDs must be torch.long [batch,time]")
+    if targets.shape != token_ids.shape or targets.dtype != torch.long:
+        raise ValueError("replay targets must match token IDs and use torch.long")
+    if tuple(packet.owner_mask.shape) != tuple(token_ids.shape):
+        raise ValueError("replay packet differs from token IDs")
+    batch_size = token_ids.shape[0]
+    if not (
+        len(record_ids)
+        == len(splits)
+        == len(source_families)
+        == len(output_positions)
+        == batch_size
+    ):
+        raise ValueError("replay provenance rows differ from batch size")
+    if not all(
+        isinstance(value, str) and value.strip() for value in record_ids
+    ) or not all(isinstance(value, str) and value.strip() for value in source_families):
+        raise ValueError("replay record and source-family identities are required")
+    if any(split not in {"validation", "final_test"} for split in splits):
+        raise ValueError("replay accepts only validation/final-test rows")
+    if len(exact_evaluator_receipt_sha256) != 64 or any(
+        character not in "0123456789abcdef"
+        for character in exact_evaluator_receipt_sha256
+    ):
+        raise ValueError("replay evaluator receipt SHA-256 is invalid")
+    allowed = set(allowed_output_token_ids)
+    if (
+        not allowed
+        or len(allowed) != len(tuple(allowed_output_token_ids))
+        or any(
+            isinstance(token_id, bool) or not isinstance(token_id, int) or token_id < 0
+            for token_id in allowed
+        )
+    ):
+        raise ValueError("replay allowed output token IDs are invalid")
+    normalized_positions: list[tuple[int, ...]] = []
+    for batch_index, raw_positions in enumerate(output_positions):
+        positions = tuple(int(position) for position in raw_positions)
+        if not positions or positions != tuple(sorted(set(positions))):
+            raise ValueError("replay output positions must be sorted and unique")
+        if positions[0] < 0 or positions[-1] >= token_ids.shape[1]:
+            raise ValueError("replay output position is out of bounds")
+        owner_positions = packet.owner_mask[batch_index].nonzero().flatten().tolist()
+        if not owner_positions or max(owner_positions) > positions[0]:
+            raise ValueError("replay output precedes a required owner position")
+        if any(
+            int(targets[batch_index, position]) not in allowed for position in positions
+        ):
+            raise ValueError("replay target lies outside the bounded output set")
+        normalized_positions.append(positions)
 
     model.eval()
     logits = model(token_ids, prime_packet=packet)
+    if logits.ndim != 3 or tuple(logits.shape[:2]) != tuple(token_ids.shape):
+        raise RuntimeError("replay model returned invalid logits")
+    if max(allowed) >= logits.shape[-1]:
+        raise ValueError("replay allowed output token exceeds model vocabulary")
     predictions = logits.argmax(dim=-1).cpu()
     expected = targets.cpu()
     rows = []
     for batch_index in range(predictions.shape[0]):
-        for position in range(predictions.shape[1]):
+        for position in normalized_positions[batch_index]:
             rows.append(
                 {
+                    "id": f"{record_ids[batch_index]}:{position}",
+                    "record_id": record_ids[batch_index],
+                    "split": splits[batch_index],
+                    "source_family": source_families[batch_index],
                     "batch": batch_index,
                     "position": position,
                     "prediction": int(predictions[batch_index, position]),
@@ -307,6 +421,8 @@ def replay_predictions(
     return {
         "schema": "scbe.prime-token-independent-replay.v1",
         "packet_seal_sha256": packet.seal_sha256,
+        "exact_evaluator_receipt_sha256": exact_evaluator_receipt_sha256,
+        "allowed_output_token_ids": sorted(allowed),
         "example_count": len(rows),
         "correct_count": correct,
         "accuracy": correct / len(rows) if rows else 0.0,
@@ -325,6 +441,8 @@ def verify_replay_ledger(
     expected = json.loads(Path(expected_path).read_text(encoding="utf-8"))
     compared_fields = (
         "packet_seal_sha256",
+        "exact_evaluator_receipt_sha256",
+        "allowed_output_token_ids",
         "example_count",
         "correct_count",
         "accuracy",

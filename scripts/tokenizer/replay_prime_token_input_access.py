@@ -57,12 +57,19 @@ def run(args: argparse.Namespace) -> dict[str, object]:
             sequence_length=int(case["sequence_length"]),
             mode=str(case["mode"]),
             frame=str(case.get("frame", "lexical")),
+            binding_pool=case.get("binding_pool"),
         )
         replay = replay_predictions(
             model,
             torch.as_tensor(case["token_ids"], dtype=torch.long),
             torch.as_tensor(case["targets"], dtype=torch.long),
             packet,
+            record_ids=case["record_ids"],
+            splits=case["splits"],
+            source_families=case["source_families"],
+            output_positions=case["output_positions"],
+            allowed_output_token_ids=case["allowed_output_token_ids"],
+            exact_evaluator_receipt_sha256=str(case["exact_evaluator_receipt_sha256"]),
         )
         expected = case.get("producer_ledger")
         if expected:

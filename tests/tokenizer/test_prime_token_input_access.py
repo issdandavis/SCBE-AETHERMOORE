@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from argparse import Namespace
 from copy import deepcopy
+from dataclasses import replace
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -123,21 +124,44 @@ class _FakeCore(nn.Module):
         return logits
 
 
-def _packet(mode: str = "canonical_six_view_reader"):
+def _packet(
+    mode: str = "canonical_six_view_reader",
+    *,
+    family: str = "family-a",
+):
+    pool = [_record("alpha", family), _record("beta", family)]
     return build_prime_token_batch(
-        [[_record("alpha"), _record("beta")]],
+        [pool],
         [[1, 3]],
         sequence_length=5,
         mode=mode,
+        binding_pool=pool if mode == "shuffled_binding_reader" else None,
     )
 
 
-def _example(packet=None) -> PrimeTrainingExample:
-    packet = packet or _packet()
+def _example(
+    packet=None,
+    *,
+    record_id: str = "train-1",
+    split: str = "train",
+    family: str = "family-a",
+) -> PrimeTrainingExample:
+    packet = packet or _packet(family=family)
     token_ids = torch.tensor([[1, 2, 3, 4, 5]], dtype=torch.long)
     targets = torch.tensor([[2, 3, 4, 5, 6]], dtype=torch.long)
-    weights = torch.tensor([[0.0, 1.0, 0.0, 1.0, 0.0]])
-    return PrimeTrainingExample(token_ids, targets, weights, packet)
+    weights = torch.tensor([[0.0, 0.0, 0.0, 1.0, 1.0]])
+    return PrimeTrainingExample(
+        record_ids=(record_id,),
+        splits=(split,),
+        source_families=(family,),
+        token_ids=token_ids,
+        targets=targets,
+        weights=weights,
+        packet=packet,
+        output_positions=((3, 4),),
+        allowed_output_token_ids=(5, 6),
+        exact_evaluator_receipt_sha256="e" * 64,
+    )
 
 
 def test_packet_is_deterministic_sealed_and_tamper_evident() -> None:
@@ -173,11 +197,62 @@ def test_independent_reconstruction_matches_every_control() -> None:
     records = [[_record("alpha"), _record("beta")]]
     positions = [[1, 3]]
     for mode in CONTROL_MODES:
-        producer = build_prime_token_batch(records, positions, sequence_length=5, mode=mode)
-        replay = reconstruct_packet_independently(records, positions, sequence_length=5, mode=mode)
+        binding_pool = records[0] if mode == "shuffled_binding_reader" else None
+        producer = build_prime_token_batch(
+            records,
+            positions,
+            sequence_length=5,
+            mode=mode,
+            binding_pool=binding_pool,
+        )
+        replay = reconstruct_packet_independently(
+            records,
+            positions,
+            sequence_length=5,
+            mode=mode,
+            binding_pool=binding_pool,
+        )
         assert replay.seal_sha256 == producer.seal_sha256
         assert torch.equal(replay.features, producer.features)
         assert torch.equal(replay.view_mask, producer.view_mask)
+
+
+def test_shuffled_binding_requires_dataset_pool_and_true_vector_derangement() -> None:
+    alpha = _record("alpha", "family-a")
+    beta = _record("beta", "family-b")
+    with pytest.raises(ValueError, match="dataset-wide pool"):
+        build_prime_token_batch(
+            [[alpha]],
+            [[1]],
+            sequence_length=3,
+            mode="shuffled_binding_reader",
+        )
+    duplicate_vector = _record("alpha", "family-c")
+    with pytest.raises(ValueError, match="vector derangement"):
+        build_prime_token_batch(
+            [[alpha]],
+            [[1]],
+            sequence_length=3,
+            mode="shuffled_binding_reader",
+            binding_pool=[alpha, duplicate_vector],
+        )
+    packet = build_prime_token_batch(
+        [[alpha]],
+        [[1]],
+        sequence_length=3,
+        mode="shuffled_binding_reader",
+        binding_pool=[alpha, beta],
+    )
+    replay = reconstruct_packet_independently(
+        [[alpha]],
+        [[1]],
+        sequence_length=3,
+        mode="shuffled_binding_reader",
+        binding_pool=[alpha, beta],
+    )
+    assert packet.binding_pool_sha256 == replay.binding_pool_sha256
+    assert packet.binding_permutation_sha256 == replay.binding_permutation_sha256
+    assert packet.seal_sha256 == replay.seal_sha256
 
 
 def test_no_packet_path_is_bit_identical_and_reports_no_false_activation() -> None:
@@ -330,6 +405,7 @@ def test_material_launch_refuses_waiting_audit(tmp_path: Path) -> None:
 
 def test_material_evaluator_requires_raw_tri_point_and_system_metrics() -> None:
     complete = {
+        "evaluator_receipt_sha256": "e" * 64,
         "metrics": {
             "accuracy": 0.5,
             "relationship": 0.4,
@@ -339,12 +415,86 @@ def test_material_evaluator_requires_raw_tri_point_and_system_metrics() -> None:
             "throughput": 123.0,
             "peak_memory": 4096,
         },
-        "per_example": [{"id": "held-1", "accuracy": True}],
+        "per_example": [
+            {
+                "id": "held-1:3",
+                "record_id": "held-1",
+                "split": "final_test",
+                "source_family": "family-held",
+                "accuracy": True,
+            }
+        ],
     }
-    assert validate_evaluation_result(complete)["metrics"]["function"] == 0.3
+    assert (
+        validate_evaluation_result(
+            complete,
+            train_examples=[_example()],
+        )[
+            "metrics"
+        ]["function"]
+        == 0.3
+    )
     del complete["metrics"]["relationship"]
     with pytest.raises(ValueError, match="relationship"):
         validate_evaluation_result(complete)
+
+
+def test_training_contract_rejects_noncausal_or_unbounded_supervision() -> None:
+    example = _example()
+    example.validate()
+    with pytest.raises(ValueError, match="precedes"):
+        replace(
+            example,
+            output_positions=((1,),),
+            weights=torch.tensor([[0.0, 1.0, 0.0, 0.0, 0.0]]),
+        ).validate()
+    with pytest.raises(ValueError, match="outside the bounded output set"):
+        replace(example, allowed_output_token_ids=(6,)).validate()
+    with pytest.raises(ValueError, match="binary"):
+        replace(
+            example,
+            weights=torch.tensor([[0.0, 0.0, 0.0, 0.5, 1.0]]),
+        ).validate()
+    with pytest.raises(ValueError, match="non-training split"):
+        train_steps(
+            FullSystemPrimeTokenInputAccessLM(_FakeCore(), reader_rank=4),
+            [replace(example, splits=("final_test",))],
+            steps=1,
+            learning_rate=0.01,
+            seed=7,
+            device=torch.device("cpu"),
+        )
+
+
+def test_evaluator_rejects_training_source_family_overlap() -> None:
+    value = {
+        "evaluator_receipt_sha256": "e" * 64,
+        "metrics": {
+            "accuracy": 0.5,
+            "relationship": 0.4,
+            "function": 0.3,
+            "ordinary_false_activation": 0.0,
+            "frozen_parent_retention": 1.0,
+            "throughput": 10.0,
+            "peak_memory": 1000,
+        },
+        "per_example": [
+            {
+                "id": "held-1:3",
+                "record_id": "held-1",
+                "split": "final_test",
+                "source_family": "family-a",
+                "correct": True,
+            }
+        ],
+    }
+    with pytest.raises(ValueError, match="receipt differs"):
+        validate_evaluation_result(
+            {**value, "evaluator_receipt_sha256": "f" * 64},
+            train_examples=[_example()],
+        )
+    with pytest.raises(ValueError, match="source families"):
+        validate_evaluation_result(value, train_examples=[_example()])
 
 
 def test_released_runner_writes_evaluation_and_checkpoint(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -385,8 +535,9 @@ def test_released_runner_writes_evaluation_and_checkpoint(tmp_path: Path, monkey
         "split_manifest_sha256": "b" * 64,
     }
 
-    def evaluate(_model, _examples, _arm):
+    def evaluate(_model, _arm):
         return {
+            "evaluator_receipt_sha256": "e" * 64,
             "metrics": {
                 "accuracy": 0.5,
                 "relationship": 0.4,
@@ -396,12 +547,20 @@ def test_released_runner_writes_evaluation_and_checkpoint(tmp_path: Path, monkey
                 "throughput": 10.0,
                 "peak_memory": 1000,
             },
-            "per_example": [{"id": "held-1", "correct": True}],
+            "per_example": [
+                {
+                    "id": "held-1:3",
+                    "record_id": "held-1",
+                    "split": "final_test",
+                    "source_family": "family-held",
+                    "correct": True,
+                }
+            ],
         }
 
     payload = {
         "model": model,
-        "examples": [_example()],
+        "train_examples": [_example()],
         "identity": identity,
         "evaluate": evaluate,
     }
@@ -448,7 +607,25 @@ def test_independent_replay_detects_checkpoint_and_ledger_tampering(
     )
     receipt = load_adapter_read_only(tmp_path, model=model, expected_identity=identity)
     assert receipt["producer_metrics_ignored"] is True
-    replay = replay_predictions(model, _example().token_ids, _example().targets, _packet())
+    held = _example(
+        _packet(family="family-held"),
+        record_id="held-1",
+        split="final_test",
+        family="family-held",
+    )
+    replay = replay_predictions(
+        model,
+        held.token_ids,
+        held.targets,
+        held.packet,
+        record_ids=held.record_ids,
+        splits=held.splits,
+        source_families=held.source_families,
+        output_positions=held.output_positions,
+        allowed_output_token_ids=held.allowed_output_token_ids,
+        exact_evaluator_receipt_sha256=held.exact_evaluator_receipt_sha256,
+    )
+    assert replay["example_count"] == 2
     ledger = tmp_path / "ledger.json"
     ledger.write_text(json.dumps(replay), encoding="utf-8")
     verify_replay_ledger(ledger, replay)

@@ -174,6 +174,49 @@ def _single_frame_vector(record: PrimeTokenRecord, frame: str) -> Tensor:
     return torch.cat(segments)
 
 
+def _binding_derangement(
+    pool: Sequence[PrimeTokenRecord],
+) -> tuple[dict[str, Tensor], str, str]:
+    """Build a deterministic one-to-one binding with no vector fixed points."""
+
+    if len(pool) < 2:
+        raise ValueError("shuffled binding requires at least two pooled occurrences")
+    rows: list[tuple[str, str, Tensor]] = []
+    for record in pool:
+        record.validate()
+        receipt = record.receipt()
+        vector = _canonical_record_vector(record)
+        rows.append((receipt, tensor_sha256(vector), vector))
+    receipts = [row[0] for row in rows]
+    if len(set(receipts)) != len(receipts):
+        raise ValueError("shuffled binding pool must contain unique occurrences")
+    rows.sort(key=lambda row: (row[1], row[0]))
+    group_counts: dict[str, int] = {}
+    for _, vector_sha256, _ in rows:
+        group_counts[vector_sha256] = group_counts.get(vector_sha256, 0) + 1
+    shift = max(group_counts.values())
+    if shift * 2 > len(rows):
+        raise ValueError("shuffled binding pool cannot form a vector derangement")
+    sources = rows[shift:] + rows[:shift]
+    if any(
+        target[1] == source[1] for target, source in zip(rows, sources, strict=True)
+    ):
+        raise RuntimeError("shuffled binding derangement construction failed")
+    bindings = {
+        target[0]: source[2] for target, source in zip(rows, sources, strict=True)
+    }
+    pool_sha256 = _sha256_json({"record_receipts": sorted(receipts)})
+    permutation_sha256 = _sha256_json(
+        {
+            "bindings": [
+                {"target_receipt": target[0], "source_receipt": source[0]}
+                for target, source in zip(rows, sources, strict=True)
+            ]
+        }
+    )
+    return bindings, pool_sha256, permutation_sha256
+
+
 @dataclass(frozen=True, slots=True)
 class SealedPrimeTokenBatch:
     """Fixed features bound to explicit processor-owned token positions."""
@@ -184,6 +227,8 @@ class SealedPrimeTokenBatch:
     mode: str
     frame: str | None
     record_receipts: tuple[tuple[str, ...], ...]
+    binding_pool_sha256: str | None
+    binding_permutation_sha256: str | None
     features_sha256: str
     owner_mask_sha256: str
     view_mask_sha256: str
@@ -198,6 +243,8 @@ class SealedPrimeTokenBatch:
             "owner_shape": list(self.owner_mask.shape),
             "view_shape": list(self.view_mask.shape),
             "record_receipts": [list(row) for row in self.record_receipts],
+            "binding_pool_sha256": self.binding_pool_sha256,
+            "binding_permutation_sha256": self.binding_permutation_sha256,
             "features_sha256": self.features_sha256,
             "owner_mask_sha256": self.owner_mask_sha256,
             "view_mask_sha256": self.view_mask_sha256,
@@ -222,6 +269,20 @@ class SealedPrimeTokenBatch:
         for receipts, owner in zip(self.record_receipts, self.owner_mask, strict=True):
             if len(receipts) != int(owner.sum().item()):
                 raise ValueError("prime-token receipt count differs from owner count")
+        binding_receipts = (
+            self.binding_pool_sha256,
+            self.binding_permutation_sha256,
+        )
+        if self.mode == "shuffled_binding_reader":
+            if any(
+                value is None
+                or len(value) != 64
+                or any(character not in "0123456789abcdef" for character in value)
+                for value in binding_receipts
+            ):
+                raise ValueError("shuffled binding receipts are missing or invalid")
+        elif any(value is not None for value in binding_receipts):
+            raise ValueError("non-shuffled packet carries binding receipts")
         if tensor_sha256(self.features) != self.features_sha256:
             raise ValueError("sealed prime-token features were mutated")
         if tensor_sha256(self.owner_mask) != self.owner_mask_sha256:
@@ -239,6 +300,7 @@ def build_prime_token_batch(
     sequence_length: int,
     mode: str,
     frame: str = "lexical",
+    binding_pool: Sequence[PrimeTokenRecord] | None = None,
 ) -> SealedPrimeTokenBatch:
     """Build one equal-width candidate or control packet."""
 
@@ -250,6 +312,10 @@ def build_prime_token_batch(
         )
     if mode == "single_frame_reader" and frame not in VIEW_NAMES:
         raise ValueError(f"unknown single frame: {frame}")
+    if mode == "shuffled_binding_reader" and binding_pool is None:
+        raise ValueError("shuffled binding requires an explicit dataset-wide pool")
+    if mode != "shuffled_binding_reader" and binding_pool is not None:
+        raise ValueError("binding pool is valid only for shuffled binding")
 
     features = torch.zeros((len(records), sequence_length, FEATURE_WIDTH))
     owner_mask = torch.zeros((len(records), sequence_length), dtype=torch.bool)
@@ -265,24 +331,18 @@ def build_prime_token_batch(
     ]
     for _, _, record in flattened:
         record.validate()
-    shuffled_vectors: dict[tuple[int, int], Tensor] = {}
+    shuffled_vectors: dict[str, Tensor] = {}
+    binding_pool_sha256: str | None = None
+    binding_permutation_sha256: str | None = None
     if mode == "shuffled_binding_reader":
-        ordered = sorted(
-            flattened,
-            key=lambda item: (
-                item[2].canonical_id,
-                item[2].section_id,
-                item[0],
-                item[1],
-            ),
+        shuffled_vectors, binding_pool_sha256, binding_permutation_sha256 = (
+            _binding_derangement(list(binding_pool or ()))
         )
-        vectors = [_canonical_record_vector(item[2]) for item in ordered]
-        if len(vectors) > 1:
-            vectors = vectors[1:] + vectors[:1]
-        shuffled_vectors = {
-            (item[0], item[1]): vector
-            for item, vector in zip(ordered, vectors, strict=True)
-        }
+        missing_bindings = {record.receipt() for _, _, record in flattened} - set(
+            shuffled_vectors
+        )
+        if missing_bindings:
+            raise ValueError("shuffled binding pool omits packet occurrences")
 
     for batch_index, (row, raw_positions) in enumerate(
         zip(records, owner_positions, strict=True)
@@ -293,7 +353,7 @@ def build_prime_token_batch(
         if any(position < 0 or position >= sequence_length for position in positions):
             raise ValueError("prime-token owner position is out of bounds")
         row_receipts: list[str] = []
-        for local_index, (record, position) in enumerate(
+        for _local_index, (record, position) in enumerate(
             zip(row, positions, strict=True)
         ):
             if mode == "canonical_six_view_reader":
@@ -307,7 +367,7 @@ def build_prime_token_batch(
                 vector = _random_fixed_vector(record)
                 active_views = range(len(VIEW_NAMES))
             elif mode == "shuffled_binding_reader":
-                vector = shuffled_vectors[(batch_index, local_index)]
+                vector = shuffled_vectors[record.receipt()]
                 active_views = range(len(VIEW_NAMES))
             else:
                 vector = _single_frame_vector(record, frame)
@@ -326,6 +386,8 @@ def build_prime_token_batch(
         "owner_shape": list(owner_mask.shape),
         "view_shape": list(view_mask.shape),
         "record_receipts": [list(row) for row in receipts],
+        "binding_pool_sha256": binding_pool_sha256,
+        "binding_permutation_sha256": binding_permutation_sha256,
         "features_sha256": tensor_sha256(features),
         "owner_mask_sha256": tensor_sha256(owner_mask),
         "view_mask_sha256": tensor_sha256(view_mask),
@@ -337,6 +399,8 @@ def build_prime_token_batch(
         mode=mode,
         frame=metadata["frame"],
         record_receipts=tuple(receipts),
+        binding_pool_sha256=binding_pool_sha256,
+        binding_permutation_sha256=binding_permutation_sha256,
         features_sha256=str(metadata["features_sha256"]),
         owner_mask_sha256=str(metadata["owner_mask_sha256"]),
         view_mask_sha256=str(metadata["view_mask_sha256"]),
