@@ -17,6 +17,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from python.scbe.prime_token_independent_replay import (
     load_adapter_read_only,
+    reconstruct_material_replay_cases,
     reconstruct_packet_independently,
     replay_predictions,
     verify_no_intervention_parent,
@@ -39,16 +40,28 @@ def _factory(spec: str):
 def run(args: argparse.Namespace) -> dict[str, object]:
     runtime_file = args.runtime_config.resolve(strict=True)
     runtime_config = json.loads(runtime_file.read_text(encoding="utf-8"))
+    if not isinstance(runtime_config, dict):
+        raise TypeError("replay runtime config must contain one JSON object")
+    reconstruction = reconstruct_material_replay_cases(runtime_config)
+    cases = reconstruction["cases"]
     payload = _factory(args.runtime_factory)(runtime_config)
     if not isinstance(payload, dict):
         raise TypeError("replay runtime factory must return a dictionary")
     model = payload.get("model")
     identity = payload.get("identity")
-    cases = payload.get("replay_cases")
     if not isinstance(model, FullSystemPrimeTokenInputAccessLM):
         raise TypeError("replay factory returned the wrong model type")
     if not isinstance(identity, dict) or not isinstance(cases, list) or not cases:
-        raise TypeError("replay factory omitted identity or replay cases")
+        raise TypeError("replay factory omitted identity or source reconstruction omitted cases")
+    source_receipt = reconstruction["receipt"]
+    for field in (
+        "source_manifest_sha256",
+        "split_manifest_sha256",
+        "cases_manifest_sha256",
+        "evaluator_receipt_sha256",
+    ):
+        if identity.get(field) != source_receipt.get(field):
+            raise RuntimeError(f"runtime identity differs from independent source reconstruction at {field}")
     arm = str(identity.get("arm") or "")
     if arm == "no_intervention":
         if args.checkpoint_dir is not None:
@@ -88,18 +101,22 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         outcomes.append({"case": index, **replay})
     total = sum(int(item["example_count"]) for item in outcomes)
     correct = sum(int(item["correct_count"]) for item in outcomes)
+    target_nll = sum(float(item["mean_target_nll"]) * int(item["example_count"]) for item in outcomes)
     result = {
         "schema": "scbe.prime-token-independent-replay-run.v1",
         "status": "VERIFIED_REPLAY_NO_PROMOTION",
         "runtime_config": str(runtime_file),
         "runtime_config_sha256": sha256_file(runtime_file),
         "checkpoint": checkpoint,
+        "source_reconstruction": source_receipt,
         "case_count": len(outcomes),
         "example_count": total,
         "correct_count": correct,
         "accuracy": correct / total if total else 0.0,
+        "mean_target_nll": target_nll / total if total else 0.0,
         "cases": outcomes,
         "producer_metrics_ignored": True,
+        "producer_runtime_cases_ignored": True,
         "tool_dispatch": False,
         "promotion_authorized": False,
         "partial_unfreeze_authorized": False,

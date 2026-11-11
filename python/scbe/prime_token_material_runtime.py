@@ -524,7 +524,6 @@ def build_runtime(config: Mapping[str, Any]) -> dict[str, object]:
         for lane in ("train", *HELD_SPLITS)
         for case in prepared[lane]
     }
-    replay_cases: list[dict[str, object]] = []
     for lane in ("train", *HELD_SPLITS):
         binding_pool = [record for case in prepared[lane] for record in case["records"]]
         for case in prepared[lane]:
@@ -557,30 +556,6 @@ def build_runtime(config: Mapping[str, Any]) -> dict[str, object]:
             )
             example.validate()
             examples[lane].append(example)
-            if lane in HELD_SPLITS:
-                replay_cases.append(
-                    {
-                        "records": [list(case["records"])],
-                        "owner_positions": [list(case["owner_positions"])],
-                        "sequence_length": token_ids.shape[1],
-                        "mode": packet_mode,
-                        "frame": single_frame,
-                        "binding_pool": (
-                            binding_pool
-                            if packet_mode == "shuffled_binding_reader"
-                            else None
-                        ),
-                        "token_ids": token_ids.tolist(),
-                        "targets": targets.tolist(),
-                        "record_ids": [case["record_id"]],
-                        "splits": [lane],
-                        "source_families": [case["source_family"]],
-                        "query_source_families": [case["query_source_family"]],
-                        "output_positions": [list(case["output_positions"])],
-                        "allowed_output_token_ids": sorted(allowed),
-                        "exact_evaluator_receipt_sha256": evaluator_receipt,
-                    }
-                )
     validate_training_examples(examples["train"])
 
     torch.manual_seed(seed)
@@ -727,7 +702,6 @@ def build_runtime(config: Mapping[str, Any]) -> dict[str, object]:
         "train_examples": examples["train"],
         "identity": identity,
         "evaluate": evaluate,
-        "replay_cases": replay_cases,
         "runtime_receipt_sha256": canonical_sha256(identity),
         "tool_dispatch": False,
         "promotion_authorized": False,

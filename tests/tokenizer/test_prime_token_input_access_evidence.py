@@ -46,6 +46,8 @@ def _grid(tmp_path: Path, *, candidate_wins: int = 20) -> tuple[Path, dict[tuple
                 "parent_sha256": "a" * 64,
                 "source_manifest_sha256": "b" * 64,
                 "split_manifest_sha256": "c" * 64,
+                "cases_manifest_sha256": "d" * 64,
+                "evaluator_receipt_sha256": "e" * 64,
             }
             aggregate = sum(values) / len(values)
             run = {
@@ -79,6 +81,8 @@ def _grid(tmp_path: Path, *, candidate_wins: int = 20) -> tuple[Path, dict[tuple
                     "source_family": row["source_family"],
                     "query_source_family": row["query_source_family"],
                     "correct": bool(row["accuracy"]),
+                    "target_logit": 1.0 if row["accuracy"] else -1.0,
+                    "target_nll": 0.1 if row["accuracy"] else 2.0,
                 }
                 for row in outcomes
             ]
@@ -99,6 +103,21 @@ def _grid(tmp_path: Path, *, candidate_wins: int = 20) -> tuple[Path, dict[tuple
                 "example_count": len(replay_outcomes),
                 "correct_count": sum(int(row["correct"]) for row in replay_outcomes),
                 "accuracy": aggregate,
+                "mean_target_nll": sum(row["target_nll"] for row in replay_outcomes) / len(replay_outcomes),
+                "source_reconstruction": {
+                    "schema": "scbe.prime-token-independent-source-reconstruction.v1",
+                    "source_manifest_sha256": "b" * 64,
+                    "split_manifest_sha256": "c" * 64,
+                    "cases_manifest_sha256": "d" * 64,
+                    "evaluator_receipt_sha256": "e" * 64,
+                    "held_case_count": len(replay_outcomes),
+                    "held_cases_sha256": "f" * 64,
+                    "producer_runtime_cases_consumed": False,
+                    "producer_targets_consumed": False,
+                    "producer_targets_verified": True,
+                    "query_inputs_rebuilt_from_benchmark": True,
+                    "targets_rebuilt_from_source_and_evaluator": True,
+                },
                 "cases": [
                     {
                         "case": 0,
@@ -107,6 +126,7 @@ def _grid(tmp_path: Path, *, candidate_wins: int = 20) -> tuple[Path, dict[tuple
                         "outcomes": replay_outcomes,
                     }
                 ],
+                "producer_runtime_cases_ignored": True,
                 "tool_dispatch": False,
                 "promotion_authorized": False,
                 "partial_unfreeze_authorized": False,
@@ -180,4 +200,21 @@ def test_aggregate_rejects_producer_replay_disagreement(tmp_path: Path) -> None:
             entry["replay_result_sha256"] = sha256_file(replay_path)
     _write(manifest_path, manifest)
     with pytest.raises(RuntimeError, match="accuracy differ"):
+        aggregate_evidence(manifest_path)
+
+
+def test_aggregate_rejects_replay_without_independent_source_reconstruction(
+    tmp_path: Path,
+) -> None:
+    manifest_path, paths = _grid(tmp_path)
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    replay_path = paths[("canonical_six_view_reader", SEEDS[0])][1]
+    replay = json.loads(replay_path.read_text(encoding="utf-8"))
+    replay.pop("source_reconstruction")
+    _write(replay_path, replay)
+    for entry in manifest["entries"]:
+        if entry["arm"] == "canonical_six_view_reader" and entry["seed"] == SEEDS[0]:
+            entry["replay_result_sha256"] = sha256_file(replay_path)
+    _write(manifest_path, manifest)
+    with pytest.raises(ValueError, match="source reconstruction"):
         aggregate_evidence(manifest_path)

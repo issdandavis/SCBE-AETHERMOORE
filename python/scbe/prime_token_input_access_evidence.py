@@ -12,6 +12,7 @@ from .prime_token_training import canonical_sha256, sha256_file
 
 SCHEMA = "scbe.prime-token-input-access-evidence.v1"
 MANIFEST_SCHEMA = "scbe.prime-token-input-access-evidence-manifest.v1"
+SOURCE_RECONSTRUCTION_SCHEMA = "scbe.prime-token-independent-source-reconstruction.v1"
 CANDIDATE_ARM = "canonical_six_view_reader"
 NO_INTERVENTION_ARM = "no_intervention"
 MATCHED_CONTROL_ARMS = (
@@ -129,6 +130,27 @@ def _flatten_replay(
         or replay.get("tool_dispatch") is not False
     ):
         raise ValueError("independent replay changed authority")
+    if replay.get("producer_runtime_cases_ignored") is not True:
+        raise ValueError("independent replay did not reject producer runtime cases")
+    source_reconstruction = replay.get("source_reconstruction")
+    if (
+        not isinstance(source_reconstruction, dict)
+        or source_reconstruction.get("schema") != SOURCE_RECONSTRUCTION_SCHEMA
+    ):
+        raise ValueError("independent replay omitted its source reconstruction receipt")
+    for field in (
+        "producer_runtime_cases_consumed",
+        "producer_targets_consumed",
+    ):
+        if source_reconstruction.get(field) is not False:
+            raise ValueError(f"independent source reconstruction changed {field}")
+    for field in (
+        "producer_targets_verified",
+        "query_inputs_rebuilt_from_benchmark",
+        "targets_rebuilt_from_source_and_evaluator",
+    ):
+        if source_reconstruction.get(field) is not True:
+            raise ValueError(f"independent source reconstruction omitted {field}")
     cases = replay.get("cases")
     if not isinstance(cases, list) or not cases:
         raise ValueError("independent replay omitted cases")
@@ -140,7 +162,16 @@ def _flatten_replay(
             identity = row.get("id") if isinstance(row, dict) else None
             if not isinstance(identity, str) or not identity or identity in rows:
                 raise ValueError("independent replay outcome identity is invalid")
-            rows[identity] = dict(row)
+            normalized = dict(row)
+            normalized["target_logit"] = _number(
+                row.get("target_logit"), f"replay.{identity}.target_logit"
+            )
+            normalized["target_nll"] = _number(
+                row.get("target_nll"), f"replay.{identity}.target_nll"
+            )
+            if normalized["target_nll"] < 0.0:
+                raise ValueError("independent replay target NLL is negative")
+            rows[identity] = normalized
     if int(replay.get("example_count", -1)) != len(rows):
         raise RuntimeError("independent replay count differs from outcomes")
     raw_packet_usage = [case.get("prime_packet_used") for case in cases]
@@ -155,6 +186,15 @@ def _flatten_replay(
     observed_accuracy = mean(float(bool(row.get("correct"))) for row in rows.values())
     if not math.isclose(replay_accuracy, observed_accuracy, abs_tol=1e-12):
         raise RuntimeError("independent replay aggregate differs from outcomes")
+    observed_nll = mean(float(row["target_nll"]) for row in rows.values())
+    if not math.isclose(
+        _number(replay.get("mean_target_nll"), "replay.mean_target_nll"),
+        observed_nll,
+        abs_tol=1e-12,
+    ):
+        raise RuntimeError(
+            "independent replay target NLL aggregate differs from outcomes"
+        )
     return rows, next(iter(packet_usage))
 
 
@@ -183,6 +223,21 @@ def _verify_run_and_replay(
         _sha256(identity.get(key), f"identity.{key}")
         for key in ("parent_sha256", "source_manifest_sha256", "split_manifest_sha256")
     )
+    source_reconstruction = replay.get("source_reconstruction")
+    if not isinstance(source_reconstruction, dict):
+        raise ValueError("independent replay omitted source reconstruction")
+    for field in (
+        "source_manifest_sha256",
+        "split_manifest_sha256",
+        "cases_manifest_sha256",
+        "evaluator_receipt_sha256",
+    ):
+        if _sha256(
+            source_reconstruction.get(field), f"source_reconstruction.{field}"
+        ) != _sha256(identity.get(field), f"identity.{field}"):
+            raise RuntimeError(
+                f"independent source reconstruction differs from run identity at {field}"
+            )
     outcomes = _outcome_map(run)
     replay_rows, prime_packet_used = _flatten_replay(replay)
     evaluator_receipt = _sha256(

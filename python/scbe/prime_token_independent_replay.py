@@ -10,12 +10,14 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
-from typing import Mapping, Sequence
+from typing import Any, Mapping, Sequence
+from urllib.parse import urlsplit
 
 import torch
 from torch import Tensor
 
-from .prime_token_catalog import VIEW_NAMES
+from .function_lexicon import FunctionLexicon
+from .prime_token_catalog import VIEW_NAMES, _query_features
 from .prime_token_input_access import (
     CONTROL_MODES,
     FEATURE_WIDTH,
@@ -34,6 +36,20 @@ from .prime_token_training import (
     module_state_sha256,
     sha256_file,
 )
+
+RUNTIME_SCHEMA = "scbe.prime-token-material-runtime.v1"
+BENCHMARK_SCHEMA = "scbe.prime-token-benchmark.v1"
+SOURCE_MANIFEST_SCHEMA = "scbe.prime-token-material-source-manifest.v1"
+SOURCE_FAMILY_AUDIT_SCHEMA = "scbe.prime-token-source-family-audit.v1"
+SPLIT_MANIFEST_SCHEMA = "scbe.prime-token-dual-source-split.v1"
+CASE_MANIFEST_SCHEMA = "scbe.prime-token-material-cases.v1"
+EVALUATOR_RECEIPT_SCHEMA = "scbe.prime-token-evaluator-receipt.v1"
+REVIEW_QUEUE_SCHEMA = "scbe.prime-token-independent-review-queue.v1"
+CLOSED_SOURCE_SNAPSHOT_SCHEMA = "clay.closed-codex-source-snapshot.v1"
+SOURCE_RECONSTRUCTION_SCHEMA = "scbe.prime-token-independent-source-reconstruction.v1"
+MATERIAL_LANES = ("train", "validation", "final_test")
+HELD_LANES = ("validation", "final_test")
+ALL_CASE_LANES = (*MATERIAL_LANES, "ordinary", "retention")
 
 
 def _json_bytes(value: object) -> bytes:
@@ -70,6 +86,643 @@ def _receipt(record: PrimeTokenRecord) -> str:
         "views": {name: list(_items(record.views[name])) for name in VIEW_NAMES},
     }
     return hashlib.sha256(_json_bytes(body)).hexdigest()
+
+
+def _file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def _required_text(value: object, *, label: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{label} must be non-empty text")
+    return value.strip()
+
+
+def _required_sha256(value: object, *, label: str) -> str:
+    digest = _required_text(value, label=label).casefold()
+    if len(digest) != 64 or any(
+        character not in "0123456789abcdef" for character in digest
+    ):
+        raise ValueError(f"{label} must be lowercase SHA-256")
+    return digest
+
+
+def _pinned_path(
+    path_value: object,
+    expected_sha256: object,
+    *,
+    label: str,
+) -> Path:
+    path_text = _required_text(path_value, label=f"{label} path")
+    path = Path(path_text)
+    if not path.is_absolute():
+        raise ValueError(f"{label} path must be absolute")
+    path = path.resolve(strict=True)
+    expected = _required_sha256(expected_sha256, label=f"{label} SHA-256")
+    if _file_sha256(path) != expected:
+        raise RuntimeError(f"{label} hash differs")
+    return path
+
+
+def _object_file(
+    path_value: object,
+    expected_sha256: object,
+    *,
+    label: str,
+) -> tuple[Path, dict[str, Any]]:
+    path = _pinned_path(path_value, expected_sha256, label=label)
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(value, dict):
+        raise TypeError(f"{label} must contain one JSON object")
+    return path, value
+
+
+def _jsonl_rows(path: Path, *, label: str) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    with path.open("r", encoding="utf-8") as stream:
+        for line_number, line in enumerate(stream, 1):
+            if not line.strip():
+                continue
+            value = json.loads(line)
+            if not isinstance(value, dict):
+                raise TypeError(f"{label}:{line_number} must contain one JSON object")
+            rows.append(value)
+    return rows
+
+
+def _manifest_rows(
+    root: Path,
+    descriptor: object,
+    *,
+    lane: str,
+) -> list[dict[str, Any]]:
+    if not isinstance(descriptor, dict):
+        raise ValueError(f"case manifest omitted {lane}")
+    relative = _required_text(descriptor.get("path"), label=f"{lane} path")
+    path = (root / relative).resolve(strict=True)
+    if not path.is_relative_to(root):
+        raise ValueError(f"case manifest {lane} path escapes its bundle")
+    expected = _required_sha256(descriptor.get("sha256"), label=f"{lane} SHA-256")
+    if _file_sha256(path) != expected:
+        raise RuntimeError(f"case manifest {lane} hash differs")
+    rows = _jsonl_rows(path, label=lane)
+    count = descriptor.get("count")
+    if isinstance(count, bool) or not isinstance(count, int) or count != len(rows):
+        raise RuntimeError(f"case manifest {lane} count differs")
+    return rows
+
+
+def _record_json(record: PrimeTokenRecord) -> dict[str, object]:
+    return {
+        "canonical_id": record.canonical_id,
+        "section_id": record.section_id,
+        "source_family": record.source_family,
+        "views": {name: dict(record.views[name]) for name in VIEW_NAMES},
+    }
+
+
+def _source_session(query_source_uri: object) -> str:
+    uri = _required_text(query_source_uri, label="query source URI")
+    parsed = urlsplit(uri)
+    if parsed.scheme != "private-session" or not parsed.netloc:
+        raise ValueError("query source URI must use private-session://<session>/...")
+    return parsed.netloc
+
+
+def _rebuild_query_input(
+    query: object,
+    query_source_uri: object,
+    *,
+    max_query_bytes: int,
+) -> dict[str, object]:
+    """Rebuild query bytes and six-view record without producer packet code."""
+
+    text = _required_text(query, label="query")
+    if max_query_bytes < 1 or max_query_bytes > 65_533:
+        raise ValueError("max_query_bytes must be in [1, 65533]")
+    session_id = _source_session(query_source_uri)
+    query_sha256 = hashlib.sha256(text.encode("utf-8")).hexdigest()
+    session_sha256 = hashlib.sha256(session_id.encode("utf-8")).hexdigest()
+    features, analysis = _query_features(text, FunctionLexicon())
+    views: dict[str, dict[str, object]] = {
+        name: {"features": sorted(features[name])[:128]} for name in VIEW_NAMES
+    }
+    views["lexical"].update(
+        {
+            "query_sha256": query_sha256,
+            "utf8_bytes": len(text.encode("utf-8")),
+            "word_count": len(analysis["words"]),
+        }
+    )
+    views["five_w"].update(
+        {
+            "primary": analysis["five_w"]["primary"],
+            "color": analysis["five_w"]["color"],
+        }
+    )
+    views["source"] = {
+        "source_kind": "private-session",
+        "session_sha256": session_sha256,
+        "query_sha256": query_sha256,
+        "query_source_uri_sha256": hashlib.sha256(
+            str(query_source_uri).strip().encode("utf-8")
+        ).hexdigest(),
+    }
+    query_source_family = f"query-session:{session_sha256}"
+    record = PrimeTokenRecord(
+        canonical_id=f"query:{query_sha256}",
+        section_id=f"query-session:{session_sha256}:query:{query_sha256[:16]}",
+        source_family=query_source_family,
+        views=views,
+    )
+    record.validate()
+    token_ids = [0, *text.encode("utf-8")[:max_query_bytes], 0]
+    owner_positions = [0]
+    output_positions = [len(token_ids) - 1]
+    packet_identity = {
+        "query_sha256": query_sha256,
+        "query_session_sha256": session_sha256,
+        "query_source_family": query_source_family,
+        "token_ids": token_ids,
+        "owner_positions": owner_positions,
+        "output_positions": output_positions,
+        "record_receipts": [_receipt(record)],
+    }
+    return {
+        **packet_identity,
+        "packet_input_sha256": hashlib.sha256(_json_bytes(packet_identity)).hexdigest(),
+        "records": [_record_json(record)],
+        "record_objects": [record],
+    }
+
+
+def _class_map(value: object, *, allowed: set[int], label: str) -> dict[int, str]:
+    if not isinstance(value, dict):
+        raise ValueError(f"evaluator omitted {label}")
+    try:
+        result = {int(token): str(group) for token, group in value.items()}
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"evaluator {label} is invalid") from exc
+    if set(result) != allowed or any(not group for group in result.values()):
+        raise ValueError(
+            f"evaluator {label} must classify every output token exactly once"
+        )
+    return result
+
+
+def _source_authorities(audit: Mapping[str, Any]) -> list[dict[str, str]]:
+    if audit.get("schema") != SOURCE_FAMILY_AUDIT_SCHEMA:
+        raise ValueError("source-family audit schema changed")
+    if (
+        not str(audit.get("status") or "").startswith("VERIFIED_SOURCE_FAMILY_BOUNDARY")
+        or int(audit.get("error_count", -1)) != 0
+    ):
+        raise ValueError("source-family audit is not verified")
+    raw = audit.get("canonical_sources")
+    if not isinstance(raw, list) or not raw:
+        raise ValueError("source-family audit has no canonical sources")
+    rows: list[dict[str, str]] = []
+    seen_paths: set[str] = set()
+    for value in raw:
+        if not isinstance(value, dict):
+            raise TypeError("canonical source authority must be an object")
+        path = _required_text(value.get("path"), label="canonical source path")
+        family = _required_text(value.get("family_id"), label="canonical source family")
+        digest = _required_sha256(
+            value.get("content_sha256"), label="canonical source hash"
+        )
+        if path in seen_paths:
+            raise ValueError("source-family audit repeats a canonical source path")
+        seen_paths.add(path)
+        rows.append({"path": path, "family_id": family, "content_sha256": digest})
+    return rows
+
+
+def _resolve_source(
+    relevant_source_suffix: object,
+    authorities: Sequence[Mapping[str, str]],
+) -> dict[str, str]:
+    suffix = _required_text(relevant_source_suffix, label="relevant source suffix")
+    normalized = suffix.replace("\\", "/").casefold().lstrip("/")
+    matches = [
+        dict(row)
+        for row in authorities
+        if row["path"].replace("\\", "/").casefold().endswith(normalized)
+    ]
+    if len(matches) != 1:
+        raise ValueError(
+            f"replay source suffix resolves to {len(matches)} canonical sources"
+        )
+    return matches[0]
+
+
+def _review_function_class(review: object, *, allowed: set[str]) -> str:
+    if not isinstance(review, dict):
+        raise ValueError("benchmark query omitted review metadata")
+    explicit = review.get("review_stratum")
+    if isinstance(explicit, str) and explicit in allowed:
+        return explicit
+    groups = review.get("topic_groups")
+    if not isinstance(groups, list):
+        raise ValueError("benchmark review omitted topic groups")
+    matched = [str(group) for group in groups if str(group) in allowed]
+    if len(matched) != 1:
+        raise ValueError(
+            "benchmark review must resolve to exactly one evaluator function class"
+        )
+    return matched[0]
+
+
+def _benchmark_queries(benchmark: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
+    if (
+        benchmark.get("schema") != BENCHMARK_SCHEMA
+        or benchmark.get("private_runtime_only") is not True
+    ):
+        raise ValueError("benchmark is not the private material benchmark")
+    raw = benchmark.get("queries")
+    if not isinstance(raw, list) or not raw:
+        raise ValueError("benchmark contains no queries")
+    result: dict[str, dict[str, Any]] = {}
+    for value in raw:
+        if not isinstance(value, dict):
+            raise TypeError("benchmark query must be an object")
+        record_id = _required_text(value.get("id"), label="benchmark query id")
+        if record_id in result:
+            raise ValueError("benchmark repeats a query identity")
+        result[record_id] = value
+    return result
+
+
+def reconstruct_material_replay_cases(config: Mapping[str, Any]) -> dict[str, object]:
+    """Rebuild held cases and targets from pinned source authorities.
+
+    Producer runtime cases are deliberately not accepted by this function.
+    Query bytes come from the pinned benchmark; target family and function come
+    from the source-family audit and reviewed benchmark; token IDs come from the
+    separately pinned evaluator receipt.
+    """
+
+    if config.get("schema") != RUNTIME_SCHEMA:
+        raise ValueError("runtime config schema changed")
+    arm = _required_text(config.get("arm"), label="runtime arm")
+    if arm not in {"no_intervention", *CONTROL_MODES}:
+        raise ValueError("runtime config names an unknown arm")
+    source_path, source_manifest = _object_file(
+        config.get("source_manifest"),
+        config.get("source_manifest_sha256"),
+        label="source manifest",
+    )
+    split_path, split_manifest = _object_file(
+        config.get("split_manifest"),
+        config.get("split_manifest_sha256"),
+        label="split manifest",
+    )
+    cases_path, cases_manifest = _object_file(
+        config.get("cases_manifest"),
+        config.get("cases_manifest_sha256"),
+        label="case manifest",
+    )
+    evaluator_path, evaluator = _object_file(
+        config.get("evaluator_receipt"),
+        config.get("evaluator_receipt_sha256"),
+        label="evaluator receipt",
+    )
+    if (
+        source_manifest.get("schema") != SOURCE_MANIFEST_SCHEMA
+        or source_manifest.get("private_runtime_only") is not True
+    ):
+        raise ValueError("source manifest is not the private material authority")
+    pinned: dict[str, Path] = {}
+    for name in (
+        "benchmark",
+        "source_family_audit",
+        "source_queue",
+        "closed_source_snapshot",
+        "ordinary_source",
+        "retention_source",
+    ):
+        pinned[name] = _pinned_path(
+            source_manifest.get(name),
+            source_manifest.get(f"{name}_sha256"),
+            label=name.replace("_", " "),
+        )
+    benchmark = json.loads(pinned["benchmark"].read_text(encoding="utf-8"))
+    audit = json.loads(pinned["source_family_audit"].read_text(encoding="utf-8"))
+    queue = json.loads(pinned["source_queue"].read_text(encoding="utf-8"))
+    snapshot = json.loads(pinned["closed_source_snapshot"].read_text(encoding="utf-8"))
+    if not all(
+        isinstance(value, dict) for value in (benchmark, audit, queue, snapshot)
+    ):
+        raise TypeError("replay authorities must be JSON objects")
+    benchmark_by_id = _benchmark_queries(benchmark)
+    authorities = _source_authorities(audit)
+    if queue.get("schema") != REVIEW_QUEUE_SCHEMA:
+        raise ValueError("source review queue schema changed")
+    if snapshot.get("schema") != CLOSED_SOURCE_SNAPSHOT_SCHEMA:
+        raise ValueError("closed-source snapshot schema changed")
+    queue_sessions_raw = queue.get("session_ids")
+    snapshot_sources = snapshot.get("sources")
+    closed_sessions_raw = source_manifest.get("closed_query_sessions")
+    if (
+        not isinstance(queue_sessions_raw, list)
+        or not isinstance(snapshot_sources, list)
+        or not isinstance(closed_sessions_raw, list)
+    ):
+        raise ValueError("source authorities omitted closed-session identities")
+    queue_sessions = {
+        _required_text(value, label="queue session") for value in queue_sessions_raw
+    }
+    snapshot_sessions = {
+        _required_text(value.get("source_session"), label="snapshot source session")
+        for value in snapshot_sources
+        if isinstance(value, dict)
+    }
+    closed_sessions = {
+        _required_text(value, label="closed query session")
+        for value in closed_sessions_raw
+    }
+    if len(snapshot_sessions) != len(snapshot_sources):
+        raise ValueError("closed-source snapshot repeats or omits session identities")
+    if (
+        not queue_sessions.issubset(snapshot_sessions)
+        or closed_sessions != snapshot_sessions
+    ):
+        raise ValueError(
+            "source manifest, queue, and closed snapshot disagree on sessions"
+        )
+    if cases_manifest.get("schema") != CASE_MANIFEST_SCHEMA:
+        raise ValueError("case manifest schema changed")
+    if (
+        cases_manifest.get("source_disjoint") is not True
+        or cases_manifest.get("query_session_disjoint") is not True
+    ):
+        raise ValueError("case manifest does not declare the dual-source boundary")
+    if cases_manifest.get("exact_source_manifest_sha256") != _file_sha256(source_path):
+        raise RuntimeError("case manifest names another source manifest")
+    if cases_manifest.get("exact_split_manifest_sha256") != _file_sha256(split_path):
+        raise RuntimeError("case manifest names another split manifest")
+    if cases_manifest.get("exact_evaluator_receipt_sha256") != _file_sha256(
+        evaluator_path
+    ):
+        raise RuntimeError("case manifest names another evaluator receipt")
+    if evaluator.get("schema") != EVALUATOR_RECEIPT_SCHEMA:
+        raise ValueError("evaluator receipt schema changed")
+    if (
+        evaluator.get("scoring")
+        != "full-vocabulary-argmax_then_exact_and_class_equivalence"
+    ):
+        raise ValueError("evaluator scoring contract changed")
+    allowed_raw = evaluator.get("allowed_output_token_ids")
+    if not isinstance(allowed_raw, list) or any(
+        isinstance(token, bool) or not isinstance(token, int) for token in allowed_raw
+    ):
+        raise ValueError("evaluator output token set is invalid")
+    allowed = set(allowed_raw)
+    if not allowed or len(allowed) != len(allowed_raw) or min(allowed) < 0:
+        raise ValueError("evaluator output token set is empty, duplicated, or negative")
+    relationship_classes = _class_map(
+        evaluator.get("relationship_class_by_token_id"),
+        allowed=allowed,
+        label="relationship classes",
+    )
+    function_classes = _class_map(
+        evaluator.get("function_class_by_token_id"),
+        allowed=allowed,
+        label="function classes",
+    )
+    if (
+        cases_manifest.get("allowed_output_token_ids") != allowed_raw
+        or cases_manifest.get("relationship_class_by_token_id")
+        != evaluator.get("relationship_class_by_token_id")
+        or cases_manifest.get("function_class_by_token_id")
+        != evaluator.get("function_class_by_token_id")
+    ):
+        raise RuntimeError("case manifest and evaluator token maps differ")
+    token_by_classes: dict[tuple[str, str], int] = {}
+    for token_id in sorted(allowed):
+        key = (relationship_classes[token_id], function_classes[token_id])
+        if key in token_by_classes:
+            raise ValueError("evaluator repeats a family/function class pair")
+        token_by_classes[key] = token_id
+    if split_manifest.get("schema") != SPLIT_MANIFEST_SCHEMA:
+        raise ValueError("split manifest schema changed")
+    if (
+        split_manifest.get("source_disjoint") is not True
+        or split_manifest.get("query_session_disjoint") is not True
+        or split_manifest.get("component_policy")
+        != "catalog-family/query-session connected components"
+    ):
+        raise ValueError("split manifest does not declare the dual-source boundary")
+    files = cases_manifest.get("files")
+    if not isinstance(files, dict) or set(files) != set(ALL_CASE_LANES):
+        raise ValueError("case manifest does not contain the exact required lanes")
+    lane_rows = {
+        lane: _manifest_rows(cases_path.parent, files[lane], lane=lane)
+        for lane in ALL_CASE_LANES
+    }
+    max_query_bytes = cases_manifest.get("max_query_bytes")
+    if isinstance(max_query_bytes, bool) or not isinstance(max_query_bytes, int):
+        raise ValueError("case manifest max_query_bytes is invalid")
+    material_sets: dict[str, dict[str, set[str]]] = {}
+    for lane in MATERIAL_LANES:
+        rows = lane_rows[lane]
+        if not rows:
+            raise ValueError(f"material lane {lane} is empty")
+        material_sets[lane] = {
+            "records": {
+                _required_text(row.get("record_id"), label="record id") for row in rows
+            },
+            "families": {
+                _required_text(row.get("source_family"), label="source family")
+                for row in rows
+            },
+            "queries": {
+                _required_text(
+                    row.get("query_source_family"), label="query source family"
+                )
+                for row in rows
+            },
+        }
+        if any(row.get("split") != lane for row in rows):
+            raise ValueError(f"material row is stored in the wrong lane: {lane}")
+    for left_index, left in enumerate(MATERIAL_LANES):
+        for right in MATERIAL_LANES[left_index + 1 :]:
+            for key in ("records", "families", "queries"):
+                if material_sets[left][key] & material_sets[right][key]:
+                    raise ValueError(f"material split overlaps {key}: {left}/{right}")
+    expected_counts = {lane: len(lane_rows[lane]) for lane in MATERIAL_LANES}
+    expected_families = {
+        lane: sorted(material_sets[lane]["families"]) for lane in MATERIAL_LANES
+    }
+    expected_queries = {
+        lane: sorted(material_sets[lane]["queries"]) for lane in MATERIAL_LANES
+    }
+    if split_manifest.get("lane_counts") != expected_counts:
+        raise ValueError("split manifest lane counts differ from material cases")
+    if split_manifest.get("lane_source_families") != expected_families:
+        raise ValueError("split manifest catalog families differ from material cases")
+    if split_manifest.get("lane_query_source_families") != expected_queries:
+        raise ValueError("split manifest query families differ from material cases")
+
+    allowed_functions = set(function_classes.values())
+    rebuilt_by_lane: dict[str, list[dict[str, Any]]] = {lane: [] for lane in HELD_LANES}
+    receipt_rows: list[dict[str, object]] = []
+    fields = (
+        "query_sha256",
+        "query_session_sha256",
+        "query_source_family",
+        "packet_input_sha256",
+        "token_ids",
+        "owner_positions",
+        "output_positions",
+        "records",
+    )
+    for lane in HELD_LANES:
+        for producer_row in lane_rows[lane]:
+            record_id = _required_text(producer_row.get("record_id"), label="record id")
+            benchmark_row = benchmark_by_id.get(record_id)
+            if benchmark_row is None:
+                raise ValueError("held case is absent from the pinned benchmark")
+            query = _required_text(benchmark_row.get("query"), label="benchmark query")
+            query_source_uri = _required_text(
+                benchmark_row.get("query_source_uri"),
+                label="benchmark query source URI",
+            )
+            session_id = _source_session(query_source_uri)
+            if session_id not in closed_sessions:
+                raise ValueError(
+                    "held query session is absent from the closed-source snapshot"
+                )
+            rebuilt_input = _rebuild_query_input(
+                query,
+                query_source_uri,
+                max_query_bytes=max_query_bytes,
+            )
+            if (
+                producer_row.get("query") != query
+                or producer_row.get("query_source_uri") != query_source_uri
+            ):
+                raise ValueError("held case query differs from the pinned benchmark")
+            for field in fields:
+                if producer_row.get(field) != rebuilt_input[field]:
+                    raise ValueError(
+                        f"held case query-derived input differs at {field}"
+                    )
+            target_source = _resolve_source(
+                benchmark_row.get("relevant_source_suffix"),
+                authorities,
+            )
+            function_class = _review_function_class(
+                benchmark_row.get("review"),
+                allowed=allowed_functions,
+            )
+            target_token = token_by_classes.get(
+                (target_source["family_id"], function_class)
+            )
+            if target_token is None:
+                raise ValueError("pinned source/function pair has no evaluator token")
+            expected_target_metadata = {
+                "source_family": target_source["family_id"],
+                "target_source_path": target_source["path"],
+                "target_source_sha256": target_source["content_sha256"],
+                "function_class": function_class,
+                "target_token_id": target_token,
+            }
+            for field, expected in expected_target_metadata.items():
+                if producer_row.get(field) != expected:
+                    raise ValueError(
+                        f"producer target metadata differs from pinned authority at {field}"
+                    )
+            targets = list(rebuilt_input["token_ids"])
+            output_positions = list(rebuilt_input["output_positions"])
+            if len(output_positions) != 1:
+                raise ValueError("held case must have exactly one bounded output")
+            targets[output_positions[0]] = target_token
+            if producer_row.get("targets") != targets:
+                raise ValueError(
+                    "producer targets differ from independently reconstructed targets"
+                )
+            records = list(rebuilt_input["record_objects"])
+            rebuilt_by_lane[lane].append(
+                {
+                    "record_id": record_id,
+                    "source_family": target_source["family_id"],
+                    "query_source_family": rebuilt_input["query_source_family"],
+                    "token_ids": list(rebuilt_input["token_ids"]),
+                    "targets": targets,
+                    "owner_positions": list(rebuilt_input["owner_positions"]),
+                    "output_positions": output_positions,
+                    "records": records,
+                    "packet_input_sha256": rebuilt_input["packet_input_sha256"],
+                    "target_token_id": target_token,
+                }
+            )
+            receipt_rows.append(
+                {
+                    "record_id": record_id,
+                    "split": lane,
+                    "packet_input_sha256": rebuilt_input["packet_input_sha256"],
+                    "target_token_id": target_token,
+                    "target_source_sha256": target_source["content_sha256"],
+                }
+            )
+
+    packet_mode = "canonical_six_view_reader" if arm == "no_intervention" else arm
+    configured_frame = config.get("single_frame")
+    frame = str(configured_frame or "lexical")
+    if packet_mode == "single_frame_reader":
+        if not isinstance(configured_frame, str) or configured_frame not in VIEW_NAMES:
+            raise ValueError("single-frame replay requires one explicit named frame")
+        if configured_frame == "lexical":
+            raise ValueError("single-frame lexical duplicates the lexical-only control")
+    cases: list[dict[str, object]] = []
+    for lane in HELD_LANES:
+        binding_pool = [
+            record for row in rebuilt_by_lane[lane] for record in row["records"]
+        ]
+        for row in rebuilt_by_lane[lane]:
+            cases.append(
+                {
+                    "records": [list(row["records"])],
+                    "owner_positions": [list(row["owner_positions"])],
+                    "sequence_length": len(row["token_ids"]),
+                    "mode": packet_mode,
+                    "frame": frame,
+                    "binding_pool": (
+                        binding_pool
+                        if packet_mode == "shuffled_binding_reader"
+                        else None
+                    ),
+                    "token_ids": [list(row["token_ids"])],
+                    "targets": [list(row["targets"])],
+                    "record_ids": [row["record_id"]],
+                    "splits": [lane],
+                    "source_families": [row["source_family"]],
+                    "query_source_families": [row["query_source_family"]],
+                    "output_positions": [list(row["output_positions"])],
+                    "allowed_output_token_ids": sorted(allowed),
+                    "exact_evaluator_receipt_sha256": _file_sha256(evaluator_path),
+                }
+            )
+    receipt = {
+        "schema": SOURCE_RECONSTRUCTION_SCHEMA,
+        "source_manifest_sha256": _file_sha256(source_path),
+        "split_manifest_sha256": _file_sha256(split_path),
+        "cases_manifest_sha256": _file_sha256(cases_path),
+        "evaluator_receipt_sha256": _file_sha256(evaluator_path),
+        "held_case_count": len(cases),
+        "held_cases_sha256": hashlib.sha256(_json_bytes(receipt_rows)).hexdigest(),
+        "producer_runtime_cases_consumed": False,
+        "producer_targets_consumed": False,
+        "producer_targets_verified": True,
+        "query_inputs_rebuilt_from_benchmark": True,
+        "targets_rebuilt_from_source_and_evaluator": True,
+    }
+    return {"cases": cases, "receipt": receipt}
 
 
 def _coordinates(identity: str, width: int) -> Tensor:
@@ -425,6 +1078,10 @@ def replay_predictions(
     rows = []
     for batch_index in range(predictions.shape[0]):
         for position in normalized_positions[batch_index]:
+            target = int(expected[batch_index, position])
+            raw_logits = logits[batch_index, position].detach().float().cpu()
+            target_logit = float(raw_logits[target])
+            target_nll = float(torch.logsumexp(raw_logits, dim=0) - raw_logits[target])
             rows.append(
                 {
                     "id": f"{record_ids[batch_index]}:{position}",
@@ -435,7 +1092,9 @@ def replay_predictions(
                     "batch": batch_index,
                     "position": position,
                     "prediction": int(predictions[batch_index, position]),
-                    "target": int(expected[batch_index, position]),
+                    "target": target,
+                    "target_logit": target_logit,
+                    "target_nll": target_nll,
                     "correct": bool(
                         predictions[batch_index, position]
                         == expected[batch_index, position]
@@ -444,6 +1103,7 @@ def replay_predictions(
                 }
             )
     correct = sum(int(row["correct"]) for row in rows)
+    mean_target_nll = sum(float(row["target_nll"]) for row in rows) / len(rows)
     return {
         "schema": "scbe.prime-token-independent-replay.v1",
         "packet_seal_sha256": packet.seal_sha256,
@@ -452,6 +1112,7 @@ def replay_predictions(
         "example_count": len(rows),
         "correct_count": correct,
         "accuracy": correct / len(rows) if rows else 0.0,
+        "mean_target_nll": mean_target_nll,
         "prime_packet_used": use_prime_packet,
         "outcomes": rows,
         "tool_dispatch": False,
@@ -482,7 +1143,9 @@ def verify_replay_ledger(
 
 
 __all__ = [
+    "SOURCE_RECONSTRUCTION_SCHEMA",
     "load_adapter_read_only",
+    "reconstruct_material_replay_cases",
     "reconstruct_packet_independently",
     "replay_predictions",
     "verify_no_intervention_parent",

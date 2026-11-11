@@ -8,6 +8,7 @@ import pytest
 import torch
 from torch import nn
 
+from python.scbe.prime_token_independent_replay import reconstruct_material_replay_cases
 from python.scbe.prime_token_catalog import VIEW_NAMES
 from python.scbe.prime_token_material_runtime import (
     CASE_MANIFEST_SCHEMA,
@@ -17,12 +18,16 @@ from python.scbe.prime_token_material_runtime import (
 )
 from python.scbe.prime_token_material_cases import build_query_input
 from python.scbe.prime_token_material_cases import (
+    BENCHMARK_SCHEMA,
     SOURCE_FAMILY_AUDIT_SCHEMA,
     SOURCE_MANIFEST_SCHEMA,
     SPLIT_MANIFEST_SCHEMA,
 )
 from python.scbe.prime_token_training import sha256_file
 import python.scbe.prime_token_material_runtime as runtime_module
+from scripts.tokenizer.replay_prime_token_input_access import (
+    run as run_independent_replay,
+)
 
 
 class _Route:
@@ -151,15 +156,6 @@ def _fixture(tmp_path: Path, *, arm: str = "canonical_six_view_reader") -> dict:
             ],
         },
     )
-    _write_json(
-        source,
-        {
-            "schema": SOURCE_MANIFEST_SCHEMA,
-            "private_runtime_only": True,
-            "source_family_audit": str(source_audit.resolve()),
-            "source_family_audit_sha256": sha256_file(source_audit),
-        },
-    )
     rows = {
         "train": [_case("train-1", "train", "family-train", 5, "left")],
         "validation": [_case("validation-1", "validation", "family-validation", 6, "left")],
@@ -185,6 +181,66 @@ def _fixture(tmp_path: Path, *, arm: str = "canonical_six_view_reader") -> dict:
             }
         ],
     }
+    benchmark = tmp_path / "benchmark.json"
+    queue = tmp_path / "source-queue.json"
+    snapshot = tmp_path / "closed-source-snapshot.json"
+    ordinary_source = tmp_path / "ordinary-source.jsonl"
+    retention_source = tmp_path / "retention-source.jsonl"
+    material_rows = [row for lane in ("train", "validation", "final_test") for row in rows[lane]]
+    _write_json(
+        benchmark,
+        {
+            "schema": BENCHMARK_SCHEMA,
+            "private_runtime_only": True,
+            "queries": [
+                {
+                    "id": row["record_id"],
+                    "query": row["query"],
+                    "query_source_uri": row["query_source_uri"],
+                    "relevant_source_suffix": row["target_source_path"],
+                    "review": {"topic_groups": [row["function_class"]]},
+                }
+                for row in material_rows
+            ],
+        },
+    )
+    sessions = [f"session-{lane}" for lane in ("train", "validation", "final_test")]
+    _write_json(
+        queue,
+        {
+            "schema": "scbe.prime-token-independent-review-queue.v1",
+            "session_ids": sessions,
+        },
+    )
+    _write_json(
+        snapshot,
+        {
+            "schema": "clay.closed-codex-source-snapshot.v1",
+            "sources": [{"source_session": session} for session in sessions],
+        },
+    )
+    _write_jsonl(ordinary_source, rows["ordinary"])
+    _write_jsonl(retention_source, rows["retention"])
+    _write_json(
+        source,
+        {
+            "schema": SOURCE_MANIFEST_SCHEMA,
+            "private_runtime_only": True,
+            "benchmark": str(benchmark.resolve()),
+            "benchmark_sha256": sha256_file(benchmark),
+            "source_family_audit": str(source_audit.resolve()),
+            "source_family_audit_sha256": sha256_file(source_audit),
+            "source_queue": str(queue.resolve()),
+            "source_queue_sha256": sha256_file(queue),
+            "closed_source_snapshot": str(snapshot.resolve()),
+            "closed_source_snapshot_sha256": sha256_file(snapshot),
+            "ordinary_source": str(ordinary_source.resolve()),
+            "ordinary_source_sha256": sha256_file(ordinary_source),
+            "retention_source": str(retention_source.resolve()),
+            "retention_source_sha256": sha256_file(retention_source),
+            "closed_query_sessions": sessions,
+        },
+    )
     material_lanes = ("train", "validation", "final_test")
     _write_json(
         split,
@@ -295,13 +351,18 @@ def test_runtime_builds_source_disjoint_examples_and_multi_metric_evaluator(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, arm: str
 ) -> None:
     monkeypatch.setattr(runtime_module, "_load_parent", lambda _config: _Core())
-    payload = build_runtime(_fixture(tmp_path, arm=arm))
+    config = _fixture(tmp_path, arm=arm)
+    payload = build_runtime(config)
     assert payload["identity"]["arm"] == arm
     assert payload["train_examples"][0].splits == ("train",)
-    assert {case["splits"][0] for case in payload["replay_cases"]} == {
+    assert "replay_cases" not in payload
+    replay = reconstruct_material_replay_cases(config)
+    assert {case["splits"][0] for case in replay["cases"]} == {
         "validation",
         "final_test",
     }
+    assert replay["receipt"]["producer_runtime_cases_consumed"] is False
+    assert replay["receipt"]["targets_rebuilt_from_source_and_evaluator"] is True
     evaluation = payload["evaluate"](payload["model"], arm)
     assert set(evaluation["metrics"]) >= {
         "accuracy",
@@ -325,6 +386,79 @@ def test_runtime_rejects_case_manifest_hash_drift(tmp_path: Path, monkeypatch: p
     Path(config["cases_manifest"]).write_text("{}", encoding="utf-8")
     with pytest.raises(RuntimeError, match="case manifest hash differs"):
         build_runtime(config)
+
+
+def test_independent_replay_rejects_producer_target_array_tampering(
+    tmp_path: Path,
+) -> None:
+    config = _fixture(tmp_path)
+    _lane_path, manifest, rows = _lane_rows(config, "validation")
+    output_position = rows[0]["output_positions"][0]
+    rows[0]["targets"][output_position] = 7
+    _replace_lane(config, "validation", manifest, rows)
+    with pytest.raises(
+        ValueError,
+        match="producer targets differ from independently reconstructed targets",
+    ):
+        reconstruct_material_replay_cases(config)
+
+
+def test_independent_replay_rejects_producer_target_metadata_tampering(
+    tmp_path: Path,
+) -> None:
+    config = _fixture(tmp_path)
+    _lane_path, manifest, rows = _lane_rows(config, "final_test")
+    rows[0]["function_class"] = "left"
+    _replace_lane(config, "final_test", manifest, rows)
+    with pytest.raises(
+        ValueError,
+        match="producer target metadata differs from pinned authority at function_class",
+    ):
+        reconstruct_material_replay_cases(config)
+
+
+def test_independent_replay_rejects_open_query_session_even_when_case_hashes_match(
+    tmp_path: Path,
+) -> None:
+    config = _fixture(tmp_path)
+    source_path = Path(config["source_manifest"])
+    source = json.loads(source_path.read_text(encoding="utf-8"))
+    source["closed_query_sessions"].remove("session-final_test")
+    _write_json(source_path, source)
+    config["source_manifest_sha256"] = sha256_file(source_path)
+    manifest_path = Path(config["cases_manifest"])
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["exact_source_manifest_sha256"] = sha256_file(source_path)
+    _write_json(manifest_path, manifest)
+    config["cases_manifest_sha256"] = sha256_file(manifest_path)
+    with pytest.raises(
+        ValueError,
+        match="source manifest, queue, and closed snapshot disagree on sessions",
+    ):
+        reconstruct_material_replay_cases(config)
+
+
+def test_replay_entrypoint_uses_source_reconstruction_not_runtime_cases(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(runtime_module, "_load_parent", lambda _config: _Core())
+    config = _fixture(tmp_path, arm="no_intervention")
+    config_path = tmp_path / "runtime-config.json"
+    output = tmp_path / "replay-result.json"
+    _write_json(config_path, config)
+    result = run_independent_replay(
+        SimpleNamespace(
+            runtime_factory="python.scbe.prime_token_material_runtime:build_runtime",
+            runtime_config=config_path,
+            checkpoint_dir=None,
+            output=output,
+        )
+    )
+    assert output.is_file()
+    assert result["producer_runtime_cases_ignored"] is True
+    assert result["source_reconstruction"]["producer_targets_consumed"] is False
+    assert result["source_reconstruction"]["held_case_count"] == 2
 
 
 def test_single_frame_arm_requires_explicit_nonlexical_ablation(

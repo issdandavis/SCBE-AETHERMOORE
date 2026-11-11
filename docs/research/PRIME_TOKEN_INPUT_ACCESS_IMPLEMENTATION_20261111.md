@@ -123,9 +123,14 @@ That boundary is commit
 `dfc0de2239050fff5c39ab11888a39dc49d4255c`. Its immutable receipt is
 `MATERIAL_CASE_BUILDER_IMPLEMENTATION_TEST_RECEIPT_V1.json`
 (`338bd1561b2a29c90837e919800d21fe5360f9427a8a02455ce58533ef485dcf`).
-Independent replay still consumes runtime-produced target arrays; rebuilding
-targets directly from pinned source authority remains a separate obligation
-before any evidentiary promotion claim.
+That remaining replay obligation is now implemented in
+`docs/research/PRIME_TOKEN_INDEPENDENT_SOURCE_REPLAY_20261111.md`. Replay no
+longer consumes runtime-produced cases: it rebuilds held queries from the pinned
+benchmark and derives target tokens from the source-family audit, reviewed
+function class, and evaluator map. The evidence aggregator requires the new
+source-reconstruction receipt. This remains mechanics evidence until the sealed
+prospective material exists and independent replay is executed on every arm and
+seed.
 
 ## Remaining release blockers
 

@@ -662,6 +662,8 @@ def test_independent_replay_detects_checkpoint_and_ledger_tampering(
         exact_evaluator_receipt_sha256=held.exact_evaluator_receipt_sha256,
     )
     assert replay["example_count"] == 2
+    assert replay["mean_target_nll"] >= 0.0
+    assert all(row["target_nll"] >= 0.0 for row in replay["outcomes"])
     ledger = tmp_path / "ledger.json"
     ledger.write_text(json.dumps(replay), encoding="utf-8")
     verify_replay_ledger(ledger, replay)

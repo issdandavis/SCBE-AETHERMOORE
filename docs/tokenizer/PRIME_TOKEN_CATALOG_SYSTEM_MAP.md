@@ -783,3 +783,34 @@ bytes. Negative tests reject an absent closed session, remapped target, and
 mixed source manifest. The focused producer/runtime suite passes `16/16`, and
 the complete prime-token/release suite passes `120/120`. This is still mechanics
 evidence only and grants no training authority.
+
+## Independent source-derived replay boundary — 2026-11-11
+
+The replay edge no longer accepts `replay_cases` from the material runtime.
+`python/scbe/prime_token_independent_replay.py` reconstructs held inputs from
+the source manifest's pinned benchmark, source-family audit, review queue,
+closed-source snapshot, split/case manifests, and evaluator receipt. It derives
+the target family from the canonical source authority, the function from the
+reviewed benchmark row, and the token from the unique evaluator class pair.
+
+```text
+pinned benchmark query ---------------------> independent query bytes/views
+pinned source audit + reviewed source suffix -> catalog family
+reviewed benchmark stratum ------------------> function class
+exact evaluator map ------------------------> bounded target token
+                                                |
+                                                v
+                                      independent packet + target
+                                                |
+read-only parent/adapter ----------------------> raw prediction + target NLL
+                                                |
+                                                v
+                                      evidence aggregator fail-closed gate
+```
+
+The producer runtime no longer emits replay cases. The replay receipt binds the
+source, split, cases, and evaluator hashes and records that producer target
+arrays were not consumed. The evidence aggregator requires those flags and
+hashes, finite per-example target logits/NLL, and exact replay aggregates.
+Focused tests pass `41/41`; the complete prime-token/release suite passes
+`125/125`. Material data and weights were not opened.

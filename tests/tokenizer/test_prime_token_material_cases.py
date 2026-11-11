@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from python.scbe.prime_token_independent_replay import reconstruct_material_replay_cases
 from python.scbe.prime_token_material_cases import (
     BENCHMARK_SCHEMA,
     CLOSED_SOURCE_SNAPSHOT_SCHEMA,
@@ -302,6 +303,23 @@ def test_bundle_writer_is_immutable_and_binds_all_runtime_files(
         "ordinary",
         "retention",
     }
+    reconstruction = reconstruct_material_replay_cases(
+        {
+            "schema": "scbe.prime-token-material-runtime.v1",
+            "arm": "canonical_six_view_reader",
+            "seed": 17,
+            "source_manifest": str(output / "SOURCE_MANIFEST.json"),
+            "source_manifest_sha256": receipt["source_manifest_sha256"],
+            "split_manifest": str(output / "SPLIT_MANIFEST.json"),
+            "split_manifest_sha256": receipt["split_manifest_sha256"],
+            "cases_manifest": str(output / "CASES_MANIFEST.json"),
+            "cases_manifest_sha256": receipt["cases_manifest_sha256"],
+            "evaluator_receipt": str(output / "EVALUATOR_RECEIPT.json"),
+            "evaluator_receipt_sha256": receipt["evaluator_receipt_sha256"],
+        }
+    )
+    assert reconstruction["receipt"]["held_case_count"] == 6
+    assert reconstruction["receipt"]["producer_targets_consumed"] is False
     with pytest.raises(FileExistsError, match="already exists"):
         build_material_case_bundle(
             benchmark_path=benchmark_path,
