@@ -11,22 +11,25 @@ dispatch authority was granted.
 ## Exact source and evidence
 
 - Functional source boundary: commit
-  `17d312148e76140c85d9aca8ba6b4e6b8cbc42a5`.
+  `e2de35c06d0533137739843d38c2bb3d67aff0ad`.
 - Documentation boundary at handoff creation: commit
   `559d40fd3efb306dd34eb11962f1f542cb6efcaf`.
 - Runner receipt:
-  `C:\dev\clay-training-runs\prime-token-catalog-20261106\successor-training-release-20261111\RUNNER_IMPLEMENTATION_TEST_RECEIPT_V2.json`
-  (`3549ecbb465ccedc6237714beee1c4494bbdc296ebea891401465ef7d4462453`).
+  `C:\dev\clay-training-runs\prime-token-catalog-20261106\successor-training-release-20261111\RUNNER_IMPLEMENTATION_TEST_RECEIPT_V3.json`
+  (`815992ec3edc80d0e16b8caaa8101b5580349ea0a384ef678af7ea6c06b4212d`).
 - Independent replay receipt:
-  `C:\dev\clay-training-runs\prime-token-catalog-20261106\successor-training-release-20261111\INDEPENDENT_REPLAY_IMPLEMENTATION_TEST_RECEIPT_V2.json`
-  (`b2f071be5e87e8acdf4eb19d5bc1c31e9b32d953e49cf6ed13debb2f52269eb2`).
+  `C:\dev\clay-training-runs\prime-token-catalog-20261106\successor-training-release-20261111\INDEPENDENT_REPLAY_IMPLEMENTATION_TEST_RECEIPT_V3.json`
+  (`d1640e3239a84d07b8275f654b3dabe4b64015204dd9510f83fbc19b6842180e`).
+- Evidence-aggregator receipt:
+  `C:\dev\clay-training-runs\prime-token-catalog-20261106\successor-training-release-20261111\EVIDENCE_AGGREGATOR_IMPLEMENTATION_TEST_RECEIPT_V1.json`
+  (`08fec8bb1f7d34e79f3aba4b11c4afcb92208ddb17c564e05ae186591cf4497b`).
 - Current release state:
   `C:\dev\clay-training-runs\prime-token-catalog-20261106\successor-training-release-20261111\CURRENT_RELEASE_STATE.json`.
 - Current audit:
   `C:\dev\clay-training-runs\prime-token-catalog-20261106\successor-training-release-20261111\RELEASE_AUDIT.json`.
 
-The old 26-test receipts remain intact. The V2 receipts bind 29 passing tests to
-the hardened source boundary.
+The old 26-test and V2 29-test receipts remain intact. The current receipts bind
+33 passing tests to the multi-seed evidence source boundary.
 
 ## Verified commands
 
@@ -39,7 +42,13 @@ python -m pytest tests/tokenizer/test_prime_token_input_access.py \
   tests/tokenizer/test_algebraic_radial_token_table.py -q
 ```
 
-Result: `29 passed` on Python 3.12.10. The worktree was clean after the checks.
+Result: `33 passed` on Python 3.12.10. The worktree was clean after the checks.
+
+The evidence aggregator now requires an exact 6-arm by 3-or-more-seed grid,
+checks every bounded-output replay, uses seed-level pooled variance, runs a
+paired finite-sample test on across-seed held-example means, and compares the
+candidate with both no intervention and the strongest matched control. The
+no-intervention arm replays without inventing an adapter checkpoint.
 
 ## Live pipeline state
 
@@ -71,7 +80,8 @@ gate waiting.
 5. Even if every machine gate passes, require a separate human authorization
    bound to that exact audit hash before importing material runtime data.
 6. Run all declared arms and three fresh seeds; compare against both the
-   no-intervention and size-matched controls using the preregistered metrics.
+   no-intervention and strongest size-matched control using the sealed evidence
+   aggregator.
 7. Promotion and partial unfreeze remain separate decisions and default to
    `NOT_AUTHORIZED` / `NONE`.
 

@@ -79,6 +79,20 @@ are respectively
 The earlier 26-test receipts remain preserved as historical evidence rather
 than being overwritten.
 
+The later multi-seed evidence implementation is bound to commit
+`e2de35c06d0533137739843d38c2bb3d67aff0ad`. The focused suite now passes
+`33/33`. New immutable receipts preserve the earlier versions:
+
+- `RUNNER_IMPLEMENTATION_TEST_RECEIPT_V3.json`
+  (`815992ec3edc80d0e16b8caaa8101b5580349ea0a384ef678af7ea6c06b4212d`);
+- `INDEPENDENT_REPLAY_IMPLEMENTATION_TEST_RECEIPT_V3.json`
+  (`d1640e3239a84d07b8275f654b3dabe4b64015204dd9510f83fbc19b6842180e`);
+- `EVIDENCE_AGGREGATOR_IMPLEMENTATION_TEST_RECEIPT_V1.json`
+  (`08fec8bb1f7d34e79f3aba4b11c4afcb92208ddb17c564e05ae186591cf4497b`).
+
+The aggregator and checkpoint-free baseline replay are described in
+`docs/research/PRIME_TOKEN_INPUT_ACCESS_EVIDENCE_AGGREGATION_20261111.md`.
+
 ## Remaining release blockers
 
 The current release remains `WAITING_FOR_RELEASE_REQUIREMENTS`. In particular,

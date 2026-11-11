@@ -705,3 +705,23 @@ retaining their split and source-family provenance. The focused packet,
 release-audit, and radial-table suites pass 29/29 after Black and Ruff. These
 are fail-closed mechanics; the nine live release blockers and all no-promotion,
 no-thaw, and no-tool-dispatch boundaries remain unchanged.
+
+## Multi-seed evidence aggregation — 2026-11-11
+
+`python/scbe/prime_token_input_access_evidence.py` and
+`scripts/tokenizer/aggregate_prime_token_input_access.py` now close the
+post-training evidence-mechanics gap without starting training. The manifest
+must contain the exact six-arm Cartesian grid for at least three fresh seeds,
+with every producer and independent-replay artifact hash-bound. The aggregator
+rejects source/split/parent drift, held-provenance drift, evaluator-receipt
+drift, replay disagreement, checkpoint mismatch, and any promotion, thaw, or
+tool-authority change.
+
+The statistical unit for variance is the seed. Per-example rows are averaged
+across seeds before the exact one-sided paired sign test, avoiding false sample
+inflation from repeated evaluation of the same held item. Each of accuracy,
+relationship, and function must beat both no intervention and the strongest
+matched control beyond two pooled seed standard deviations and the finite
+sample gate. The no-intervention replay is explicitly checkpoint-free and
+sealed to the parent hash. The focused suite now passes 33/33; this remains
+mechanics evidence only.
