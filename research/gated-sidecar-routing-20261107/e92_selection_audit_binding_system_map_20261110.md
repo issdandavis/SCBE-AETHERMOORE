@@ -83,3 +83,24 @@ The portable E92 bundle gains fixed role `selection_audit` at
 - Compute/storage bounded: yes.
 - Immutable save and rollback path identified: yes.
 - Safe to implement in isolated worktree: yes.
+
+## Post-build live handoff map
+
+The v7 live chain had three independently running supervisors but no fourth
+edge that consumed both completed artifacts and supplied the new E92 v4
+argument. `scripts/tokenizer/watch_run_e92_prospective.py` closes that edge:
+
+```text
+collector READY + preparer PACKET_READY + selection audit VERIFIED
+    -> wait for independently authored REVIEW_LABELS.json
+    -> pinned run_e92_prospective.py --selection-audit ...
+    -> pinned verify_e92_prospective.py
+    -> E92_RESULT_INDEPENDENTLY_VERIFIED
+    -> training/serving/merge/promotion remain NOT_AUTHORIZED
+```
+
+The watcher checks exact hashes for the queue from both upstream status files,
+the preparation receipt, source inventory, selection audit, catalog database,
+catalog-integrity audit, runner, and verifier. It does not resolve or read the
+labels path until the first three authorities are ready. A pre-existing pending
+result is preserved for audit rather than deleted or retried.
