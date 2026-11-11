@@ -639,3 +639,22 @@ authorize promotion. Before catalog integration, compare it against a lexical
 baseline, equal-width random features, shuffled case binding, shuffled
 role-to-slot binding, case/grammar ablations, and the source-session-disjoint
 holdout under the existing multi-seed gates.
+
+## Frozen input-access successor release boundary — 2026-11-11
+
+The next learned experiment is now preregistered in
+`docs/research/PRIME_TOKEN_FROZEN_INPUT_ACCESS_PREREGISTRATION_20261111.md`.
+It asks whether a small before-block-0 reader can use the canonical six-view
+packet better than no intervention, lexical-only, equal-shape random-fixed,
+one-to-one shuffled-binding, and single-frame controls while every parent tensor
+stays frozen.
+
+The static contract is
+`config/training/prime_token_frozen_input_access_release_v1.json`; the fail-closed
+auditor is `scripts/tokenizer/audit_prime_token_training_release.py`. The first
+live audit is structurally valid but reports `WAITING_FOR_RELEASE_REQUIREMENTS`:
+the storage envelope and catalog family count pass, while the closed-query,
+candidate, E92, source-disjoint split, runner, and independent-replay gates remain
+open. The auditor can only return readiness for manual launch review. It cannot
+authorize training intake, merge, serving, promotion, tool dispatch, or partial
+unfreezing.

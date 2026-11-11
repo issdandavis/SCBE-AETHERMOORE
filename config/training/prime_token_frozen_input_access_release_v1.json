@@ -1,0 +1,71 @@
+{
+  "authority": {
+    "evaluator_may_launch_training": false,
+    "merge": "NOT_AUTHORIZED",
+    "partial_unfreeze": "NONE",
+    "promotion": "NOT_AUTHORIZED",
+    "serving": "NOT_AUTHORIZED",
+    "tool_dispatch": "DISABLED",
+    "training_release": "MANUAL_ONLY_AFTER_PASS"
+  },
+  "contract_id": "prime-token-frozen-input-access-20261111-v1",
+  "minimums": {
+    "accepted_final_test_queries": 30,
+    "canonical_catalog_sources": 6,
+    "closed_query_source_sessions": 3,
+    "fresh_seeds": 3,
+    "manifest_bound_catalog_families": 3
+  },
+  "required_arms": [
+    "no_intervention",
+    "lexical_only_reader",
+    "canonical_six_view_reader",
+    "random_fixed_reader",
+    "shuffled_binding_reader",
+    "single_frame_reader"
+  ],
+  "required_evidence": {
+    "e92_independent_verification": [
+      "VERIFIED"
+    ],
+    "e92_result": [
+      "COMPLETE"
+    ],
+    "independent_replay_implementation": [
+      "TESTED"
+    ],
+    "preregistration": [
+      "FROZEN"
+    ],
+    "prospective_collector": [
+      "READY_FOR_REVIEW"
+    ],
+    "runner_implementation": [
+      "TESTED"
+    ],
+    "selection_audit": [
+      "VERIFIED_SELECTION_AUDIT"
+    ],
+    "source_disjoint_split": [
+      "VERIFIED_SOURCE_DISJOINT_SPLIT"
+    ],
+    "source_family_gate": [
+      "VERIFIED_SOURCE_FAMILY_DIVERSITY"
+    ],
+    "storage_envelope": [
+      "SPACE_ENVELOPE_OPEN"
+    ]
+  },
+  "required_metrics": [
+    "accuracy",
+    "relationship",
+    "function",
+    "ordinary_false_activation",
+    "frozen_parent_retention",
+    "throughput",
+    "peak_memory",
+    "checkpoint_bytes"
+  ],
+  "schema": "scbe.prime-token-frozen-input-access-release-contract.v1"
+}
+
