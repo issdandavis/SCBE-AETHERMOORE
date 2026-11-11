@@ -828,3 +828,17 @@ release state. Dynamic watcher artifacts may still refresh through
 The release contract also requires the material-runtime implementation and the
 multi-seed evidence-aggregator implementation. A runner plus replay receipt
 alone cannot clear the manual training-review boundary.
+
+## Open-source readiness telemetry — 2026-11-11
+
+`scripts/tokenizer/watch_prime_token_open_source_readiness.py` measures the
+otherwise invisible distance between an open Codex rollout and the pinned
+closed-session collector. It hash-pins and reuses the collector's extraction
+rules, but emits only counts, path hashes, session identities, and stability /
+closure flags. It never emits, harvests, queues, scores, or trains on open text.
+
+The first real measurement found 6 eligible unique post-freeze turns in one
+stable but open source session. The preregistered gate requires 30 candidates
+and three closed source sessions, leaving deficits of 24 turns and two
+additional distinct sessions even if the current source closes. This telemetry
+does not alter the collector, catalog, release state, or training authority.

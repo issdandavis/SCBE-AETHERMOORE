@@ -109,3 +109,12 @@ hashed artifacts and rejects state/artifact disagreement. The contract also
 requires material-runtime and evidence-aggregator receipts. The complete suite
 passes `127/127`. The regenerated release audit remains fail-closed with 0
 errors and 9 blockers; no optimizer, checkpoint, or model weights were opened.
+
+The count-only open-source readiness monitor is implemented at
+`scripts/tokenizer/watch_prime_token_open_source_readiness.py`. Its current
+artifact is
+`C:\dev\clay-training-runs\prime-token-catalog-20261106\prospective-open-readiness-v1-20261111\OPEN_SOURCE_READINESS.json`.
+The first measured state is 6/30 eligible unique post-freeze turns, 0/3 closed
+sessions, and one stable open session. Two additional distinct sessions are
+still required even after the current session closes. The monitor exposes no
+source text and has no training, scoring, promotion, thaw, or tool authority.
