@@ -152,21 +152,13 @@ def _random_fixed_vector(record: PrimeTokenRecord) -> Tensor:
 def _single_frame_vector(record: PrimeTokenRecord, frame: str) -> Tensor:
     if frame not in VIEW_NAMES:
         raise ValueError(f"unknown single frame: {frame}")
-    segments = []
-    for view_name in VIEW_NAMES:
-        identity = json.dumps(
-            {
-                "canonical_id": record.canonical_id,
-                "frame": frame,
-                "source_view": view_name,
-                "features": _feature_items(record.views[view_name]),
-            },
-            ensure_ascii=False,
-            sort_keys=True,
-            separators=(",", ":"),
-        )
-        segments.append(_project_identity(identity))
-    return torch.cat(segments)
+    frame_index = VIEW_NAMES.index(frame)
+    start = frame_index * VIEW_WIDTH
+    vector = torch.zeros(FEATURE_WIDTH)
+    vector[start : start + VIEW_WIDTH] = _canonical_record_vector(record)[
+        start : start + VIEW_WIDTH
+    ]
+    return vector
 
 
 def _binding_derangement(
@@ -260,6 +252,21 @@ class SealedPrimeTokenBatch:
         for receipts, owner in zip(self.record_receipts, self.owner_mask, strict=True):
             if len(receipts) != int(owner.sum().item()):
                 raise ValueError("prime-token receipt count differs from owner count")
+        expected_views = torch.zeros_like(self.view_mask)
+        if self.mode in {
+            "canonical_six_view_reader",
+            "random_fixed_reader",
+            "shuffled_binding_reader",
+        }:
+            expected_views = self.owner_mask.unsqueeze(-1).expand_as(self.view_mask)
+        elif self.mode == "lexical_only_reader":
+            expected_views[..., VIEW_NAMES.index("lexical")] = self.owner_mask
+        else:
+            if self.frame not in VIEW_NAMES:
+                raise ValueError("single-frame packet is missing a valid frame")
+            expected_views[..., VIEW_NAMES.index(self.frame)] = self.owner_mask
+        if not torch.equal(self.view_mask, expected_views):
+            raise ValueError("prime-token view mask does not match control semantics")
         binding_receipts = (
             self.binding_pool_sha256,
             self.binding_permutation_sha256,
@@ -350,7 +357,7 @@ def build_prime_token_batch(
                 active_views = range(len(VIEW_NAMES))
             else:
                 vector = _single_frame_vector(record, frame)
-                active_views = range(len(VIEW_NAMES))
+                active_views = (VIEW_NAMES.index(frame),)
             features[batch_index, position] = vector
             owner_mask[batch_index, position] = True
             view_mask[batch_index, position, list(active_views)] = True

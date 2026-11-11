@@ -209,22 +209,13 @@ def reconstruct_packet_independently(
                 vector = shuffled[_receipt(record)]
                 active = range(len(VIEW_NAMES))
             else:
-                segments = []
-                for view_name in VIEW_NAMES:
-                    identity = json.dumps(
-                        {
-                            "canonical_id": record.canonical_id,
-                            "frame": frame,
-                            "source_view": view_name,
-                            "features": _items(record.views[view_name]),
-                        },
-                        ensure_ascii=False,
-                        sort_keys=True,
-                        separators=(",", ":"),
-                    )
-                    segments.append(_coordinates(identity, VIEW_WIDTH))
-                vector = torch.cat(segments)
-                active = range(len(VIEW_NAMES))
+                frame_index = VIEW_NAMES.index(frame)
+                start = frame_index * VIEW_WIDTH
+                vector = torch.zeros(FEATURE_WIDTH)
+                vector[start : start + VIEW_WIDTH] = canonical[
+                    start : start + VIEW_WIDTH
+                ]
+                active = (frame_index,)
             features[batch_index, position] = vector
             owners[batch_index, position] = True
             views[batch_index, position, list(active)] = True

@@ -20,6 +20,7 @@ from typing import Any, Mapping, Sequence
 import torch
 from torch import Tensor, nn
 
+from .prime_token_catalog import VIEW_NAMES
 from .prime_token_input_access import (
     CONTROL_MODES,
     FullSystemPrimeTokenInputAccessLM,
@@ -271,7 +272,13 @@ def build_runtime(config: Mapping[str, Any]) -> dict[str, object]:
                 raise ValueError(f"runtime cases overlap source families or record IDs: {left}/{right}")
 
     packet_mode = "canonical_six_view_reader" if arm == "no_intervention" else arm
-    single_frame = str(config.get("single_frame") or "lexical")
+    configured_frame = config.get("single_frame")
+    single_frame = str(configured_frame or "lexical")
+    if arm == "single_frame_reader":
+        if not isinstance(configured_frame, str) or configured_frame not in VIEW_NAMES:
+            raise ValueError("single-frame arm requires one explicit named frame")
+        if configured_frame == "lexical":
+            raise ValueError("single-frame lexical duplicates the lexical-only control")
     examples: dict[str, list[PrimeTrainingExample]] = {lane: [] for lane in ("train", *HELD_SPLITS)}
     replay_cases: list[dict[str, object]] = []
     for lane in ("train", *HELD_SPLITS):
@@ -331,6 +338,7 @@ def build_runtime(config: Mapping[str, Any]) -> dict[str, object]:
     identity = {
         "arm": arm,
         "seed": str(seed),
+        "single_frame": single_frame if arm == "single_frame_reader" else "",
         "parent_sha256": parent_sha256,
         "source_manifest_sha256": sha256_file(source_path),
         "split_manifest_sha256": sha256_file(split_path),

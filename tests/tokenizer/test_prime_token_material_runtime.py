@@ -194,3 +194,21 @@ def test_runtime_rejects_case_manifest_hash_drift(tmp_path: Path, monkeypatch: p
     Path(config["cases_manifest"]).write_text("{}", encoding="utf-8")
     with pytest.raises(RuntimeError, match="case manifest hash differs"):
         build_runtime(config)
+
+
+def test_single_frame_arm_requires_explicit_nonlexical_ablation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(runtime_module, "_load_parent", lambda _config: _Core())
+    config = _fixture(tmp_path, arm="single_frame_reader")
+    with pytest.raises(ValueError, match="explicit named frame"):
+        build_runtime(config)
+    config["single_frame"] = "lexical"
+    with pytest.raises(ValueError, match="duplicates the lexical-only control"):
+        build_runtime(config)
+    config["single_frame"] = "prime"
+    payload = build_runtime(config)
+    assert payload["identity"]["single_frame"] == "prime"
+    packet = payload["train_examples"][0].packet
+    assert packet.frame == "prime"
+    assert packet.view_mask[0, 1].tolist() == [view == "prime" for view in VIEW_NAMES]

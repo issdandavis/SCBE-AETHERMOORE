@@ -137,6 +137,7 @@ def _packet(
         [[1, 3]],
         sequence_length=5,
         mode=mode,
+        frame="prime" if mode == "single_frame_reader" else "lexical",
         binding_pool=pool if mode == "shuffled_binding_reader" else None,
     )
 
@@ -193,6 +194,17 @@ def test_controls_keep_equal_width_and_reader_parameter_count() -> None:
     shuffled = packets["shuffled_binding_reader"]
     assert torch.equal(shuffled.features[0, 1], canonical.features[0, 3])
     assert torch.equal(shuffled.features[0, 3], canonical.features[0, 1])
+    single = packets["single_frame_reader"]
+    prime_index = VIEW_NAMES.index("prime")
+    prime_start = prime_index * VIEW_WIDTH
+    prime_stop = prime_start + VIEW_WIDTH
+    assert torch.equal(
+        single.features[0, 1, prime_start:prime_stop],
+        canonical.features[0, 1, prime_start:prime_stop],
+    )
+    assert torch.count_nonzero(single.features[0, 1, :prime_start]) == 0
+    assert torch.count_nonzero(single.features[0, 1, prime_stop:]) == 0
+    assert single.view_mask[0, 1].tolist() == [view == "prime" for view in VIEW_NAMES]
 
 
 def test_reader_connectivity_reports_effective_map_and_view_strengths() -> None:
@@ -214,11 +226,13 @@ def test_independent_reconstruction_matches_every_control() -> None:
     positions = [[1, 3]]
     for mode in CONTROL_MODES:
         binding_pool = records[0] if mode == "shuffled_binding_reader" else None
+        frame = "prime" if mode == "single_frame_reader" else "lexical"
         producer = build_prime_token_batch(
             records,
             positions,
             sequence_length=5,
             mode=mode,
+            frame=frame,
             binding_pool=binding_pool,
         )
         replay = reconstruct_packet_independently(
@@ -226,6 +240,7 @@ def test_independent_reconstruction_matches_every_control() -> None:
             positions,
             sequence_length=5,
             mode=mode,
+            frame=frame,
             binding_pool=binding_pool,
         )
         assert replay.seal_sha256 == producer.seal_sha256
