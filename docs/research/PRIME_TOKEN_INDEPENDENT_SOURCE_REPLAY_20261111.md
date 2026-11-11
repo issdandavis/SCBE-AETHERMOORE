@@ -79,3 +79,8 @@ prime-token/release regression suite passes `125/125`. This is mechanics
 evidence using synthetic fixtures plus one real builder-to-replay integration
 fixture. No prospective material data, model checkpoint, optimizer, promotion,
 partial unfreeze, or tool dispatcher was opened.
+
+The tested implementation is commit
+`5d4c8a0f04a5f8eb33166de1dec5c44a8154ced7`. Its immutable external receipt is
+`INDEPENDENT_SOURCE_REPLAY_IMPLEMENTATION_TEST_RECEIPT_V1.json`, SHA-256
+`fbd7b4243d0b6ea83af6cde15a947dbcc55ccfed08f90c675f1d305432721e7c`.

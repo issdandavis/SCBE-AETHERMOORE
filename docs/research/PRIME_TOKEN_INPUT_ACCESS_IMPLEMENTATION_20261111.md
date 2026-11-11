@@ -132,6 +132,15 @@ source-reconstruction receipt. This remains mechanics evidence until the sealed
 prospective material exists and independent replay is executed on every arm and
 seed.
 
+The independent source-replay boundary is commit
+`5d4c8a0f04a5f8eb33166de1dec5c44a8154ced7`. Its focused suite passes
+`41/41`, and the complete prime-token/release suite passes `125/125` against
+that exact commit. The immutable external receipt is
+`INDEPENDENT_SOURCE_REPLAY_IMPLEMENTATION_TEST_RECEIPT_V1.json`
+(`fbd7b4243d0b6ea83af6cde15a947dbcc55ccfed08f90c675f1d305432721e7c`).
+No material data, checkpoint, optimizer, promotion, partial unfreeze, or tool
+dispatcher was opened.
+
 ## Remaining release blockers
 
 The current release remains `WAITING_FOR_RELEASE_REQUIREMENTS`. In particular,
