@@ -11,25 +11,26 @@ dispatch authority was granted.
 ## Exact source and evidence
 
 - Functional source boundary: commit
-  `e2de35c06d0533137739843d38c2bb3d67aff0ad`.
-- Documentation boundary at handoff creation: commit
-  `559d40fd3efb306dd34eb11962f1f542cb6efcaf`.
+  `0d4bf31ffc170f2769b3cc00d5de4b7e49d4e29f`.
 - Runner receipt:
-  `C:\dev\clay-training-runs\prime-token-catalog-20261106\successor-training-release-20261111\RUNNER_IMPLEMENTATION_TEST_RECEIPT_V3.json`
-  (`815992ec3edc80d0e16b8caaa8101b5580349ea0a384ef678af7ea6c06b4212d`).
+  `C:\dev\clay-training-runs\prime-token-catalog-20261106\successor-training-release-20261111\RUNNER_IMPLEMENTATION_TEST_RECEIPT_V4.json`
+  (`69f3de7023acf14a966a6203c1c37af196a83290220175f2c31bf7091cadef7b`).
 - Independent replay receipt:
-  `C:\dev\clay-training-runs\prime-token-catalog-20261106\successor-training-release-20261111\INDEPENDENT_REPLAY_IMPLEMENTATION_TEST_RECEIPT_V3.json`
-  (`d1640e3239a84d07b8275f654b3dabe4b64015204dd9510f83fbc19b6842180e`).
+  `C:\dev\clay-training-runs\prime-token-catalog-20261106\successor-training-release-20261111\INDEPENDENT_REPLAY_IMPLEMENTATION_TEST_RECEIPT_V4.json`
+  (`fec908562c2331cb4107af138cc9c108d69e706ebc85873d29f77d3e0d029d54`).
 - Evidence-aggregator receipt:
-  `C:\dev\clay-training-runs\prime-token-catalog-20261106\successor-training-release-20261111\EVIDENCE_AGGREGATOR_IMPLEMENTATION_TEST_RECEIPT_V1.json`
-  (`08fec8bb1f7d34e79f3aba4b11c4afcb92208ddb17c564e05ae186591cf4497b`).
+  `C:\dev\clay-training-runs\prime-token-catalog-20261106\successor-training-release-20261111\EVIDENCE_AGGREGATOR_IMPLEMENTATION_TEST_RECEIPT_V2.json`
+  (`94ea2789c5acdf0535f785eef16af4e7b29cfe6e7fd5f2ddeb878e52efac79d9`).
+- Material-runtime receipt:
+  `C:\dev\clay-training-runs\prime-token-catalog-20261106\successor-training-release-20261111\MATERIAL_RUNTIME_IMPLEMENTATION_TEST_RECEIPT_V1.json`
+  (`18de849adc4a0165762fc5a4da7385f6ef882a8d513ca2d5337a77c29672c75c`).
 - Current release state:
   `C:\dev\clay-training-runs\prime-token-catalog-20261106\successor-training-release-20261111\CURRENT_RELEASE_STATE.json`.
 - Current audit:
   `C:\dev\clay-training-runs\prime-token-catalog-20261106\successor-training-release-20261111\RELEASE_AUDIT.json`.
 
-The old 26-test and V2 29-test receipts remain intact. The current receipts bind
-33 passing tests to the multi-seed evidence source boundary.
+The old 26-, 29-, and 33-test receipts remain intact. The current receipts bind
+37 passing tests to the recovered-parent material-runtime source boundary.
 
 ## Verified commands
 
@@ -42,13 +43,18 @@ python -m pytest tests/tokenizer/test_prime_token_input_access.py \
   tests/tokenizer/test_algebraic_radial_token_table.py -q
 ```
 
-Result: `33 passed` on Python 3.12.10. The worktree was clean after the checks.
+Result: `37 passed` on Python 3.12.10. The worktree was clean after the source
+commit and before this documentation update.
 
 The evidence aggregator now requires an exact 6-arm by 3-or-more-seed grid,
 checks every bounded-output replay, uses seed-level pooled variance, runs a
 paired finite-sample test on across-seed held-example means, and compares the
 candidate with both no intervention and the strongest matched control. The
-no-intervention arm replays without inventing an adapter checkpoint.
+no-intervention arm replays without inventing an adapter checkpoint and now
+provably omits prime-packet injection. Learned-arm replay requires packet use.
+The concrete material runtime also binds the recovered parent and an exact
+relationship/function evaluator receipt, while recording reader connection
+strength, stable rank, per-view norms, output margin, and entropy.
 
 ## Live pipeline state
 
@@ -85,6 +91,6 @@ gate waiting.
 7. Promotion and partial unfreeze remain separate decisions and default to
    `NOT_AUTHORIZED` / `NONE`.
 
-Disk free space was approximately 25.5 GiB at the final poll. The storage
+Disk free space was approximately 25.45 GiB at the final poll. The storage
 envelope gate remained `SPACE_ENVELOPE_OPEN`; no cleanup or deletion was
 performed in this implementation turn.

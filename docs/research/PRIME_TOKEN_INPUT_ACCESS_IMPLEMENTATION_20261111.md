@@ -100,6 +100,18 @@ are described in
 suite passes `37/37`. Material data and weights were still not loaded during
 that implementation check.
 
+That boundary is commit
+`0d4bf31ffc170f2769b3cc00d5de4b7e49d4e29f`. Its immutable receipts are:
+
+- `RUNNER_IMPLEMENTATION_TEST_RECEIPT_V4.json`
+  (`69f3de7023acf14a966a6203c1c37af196a83290220175f2c31bf7091cadef7b`);
+- `INDEPENDENT_REPLAY_IMPLEMENTATION_TEST_RECEIPT_V4.json`
+  (`fec908562c2331cb4107af138cc9c108d69e706ebc85873d29f77d3e0d029d54`);
+- `EVIDENCE_AGGREGATOR_IMPLEMENTATION_TEST_RECEIPT_V2.json`
+  (`94ea2789c5acdf0535f785eef16af4e7b29cfe6e7fd5f2ddeb878e52efac79d9`);
+- `MATERIAL_RUNTIME_IMPLEMENTATION_TEST_RECEIPT_V1.json`
+  (`18de849adc4a0165762fc5a4da7385f6ef882a8d513ca2d5337a77c29672c75c`).
+
 ## Remaining release blockers
 
 The current release remains `WAITING_FOR_RELEASE_REQUIREMENTS`. In particular,
