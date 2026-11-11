@@ -373,11 +373,70 @@ def _paired_gate(
     )
     threshold = 2.0 * pooled_sd
     difference_mean = mean(differences)
+    epsilon = 1e-15
+    wins = sum(value > epsilon for value in differences)
+    losses = sum(value < -epsilon for value in differences)
+    ties = len(differences) - wins - losses
+    non_tie_pairs = wins + losses
+    one_sided_sign_p = (
+        sum(math.comb(non_tie_pairs, k) for k in range(wins, non_tie_pairs + 1))
+        / (2**non_tie_pairs)
+        if non_tie_pairs and wins > losses
+        else 1.0
+    )
+    passes_two_pooled_sd = difference_mean > threshold
+    passes_finite_sample_uncertainty = one_sided_sign_p <= 0.05
     return {
+        "pair_count": len(differences),
         "mean_difference": difference_mean,
         "pooled_sd": pooled_sd,
         "two_pooled_sd": threshold,
-        "passes_two_pooled_sd": difference_mean > threshold,
+        "passes_two_pooled_sd": passes_two_pooled_sd,
+        "finite_sample_test": "exact_one_sided_paired_sign",
+        "finite_sample_alpha": 0.05,
+        "non_tie_pairs": non_tie_pairs,
+        "wins": wins,
+        "losses": losses,
+        "ties": ties,
+        "exact_one_sided_p_value": one_sided_sign_p,
+        "passes_finite_sample_uncertainty": passes_finite_sample_uncertainty,
+        "passes_gate": passes_two_pooled_sd and passes_finite_sample_uncertainty,
+    }
+
+
+def _matched_route_control_contract(
+    candidate: Sequence[Mapping[str, Any]],
+    route_null: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    if len(candidate) != len(route_null) or not candidate:
+        raise ValueError(
+            "route control contract requires nonempty equal-length outcomes"
+        )
+    rows = []
+    for candidate_row, null_row in zip(candidate, route_null, strict=True):
+        candidate_id = str(candidate_row["query_id"])
+        null_id = str(null_row["query_id"])
+        if candidate_id != null_id:
+            raise ValueError("route control outcomes are not query aligned")
+        candidate_width = len(candidate_row.get("selected_views", []))
+        null_width = len(null_row.get("selected_views", []))
+        rows.append(
+            {
+                "query_id": candidate_id,
+                "candidate_route_width": candidate_width,
+                "route_null_width": null_width,
+                "width_matched": candidate_width == null_width,
+            }
+        )
+    all_widths_match = all(row["width_matched"] for row in rows)
+    return {
+        "control": "route_null",
+        "candidate_trainable_parameters": 0,
+        "route_null_trainable_parameters": 0,
+        "equal_parameter_count": True,
+        "all_route_widths_match": all_widths_match,
+        "passes": all_widths_match,
+        "rows": rows,
     }
 
 
@@ -619,6 +678,17 @@ def verify_e92_prospective_bundle(
             for name, expected in expected_gates.items():
                 _check_mapping(errors, f"gates.{name}", actual_gates[name], expected)
 
+        route_control_contract = _matched_route_control_contract(
+            candidate_outcomes,
+            arms["route_null"][0]["outcomes"],
+        )
+        _check_mapping(
+            errors,
+            "route_control_contract",
+            result.get("route_control_contract", {}),
+            route_control_contract,
+        )
+
         candidate_macro = _macro(candidate_outcomes)
         lexical_outcomes = arms["lexical_only"][0]["outcomes"]
         lexical_macro = _macro(lexical_outcomes)
@@ -698,15 +768,18 @@ def verify_e92_prospective_bundle(
             underpowered.append("one relevant source exceeds the 40-percent cap")
         if result.get("underpowered_reasons") != underpowered:
             errors.append("underpowered reason mismatch")
-        all_gates = all(
-            bool(value["passes_two_pooled_sd"]) for value in expected_gates.values()
-        )
+        all_gates = all(bool(value["passes_gate"]) for value in expected_gates.values())
         expected_status = (
             "UNDERPOWERED"
             if underpowered
             else (
                 "CANDIDATE_PASS"
-                if all_gates and macro_gate["passes"] and source_gate["passes"]
+                if (
+                    all_gates
+                    and route_control_contract["passes"]
+                    and macro_gate["passes"]
+                    and source_gate["passes"]
+                )
                 else "NO_GAIN"
             )
         )

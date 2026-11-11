@@ -582,3 +582,28 @@ file SHA-256
 The focused watch-audit, query-harvest, and prospective-evaluator suite passes
 25/25; the v3 audit unit suite passes 6/6 after formatting and lint checks.
 The gate remains closed and promotion remains unauthorized.
+
+## Finite-evaluation and matched-route control hardening — 2026-11-10
+
+The evaluator's candidate gates now require both the existing `2x` pooled-SD
+margin and an exact one-sided paired sign test at alpha `0.05`. The receipt keeps
+the raw win, loss, tie, non-tie and exact p-value counts. This prevents a small
+deterministic sample with zero within-arm variance from passing only because its
+pooled-SD threshold is zero.
+
+The explicit-route and late-output-fusion receipts also prove that every
+route-null query uses the same number of auxiliary views as its candidate. Both
+arms declare zero trainable parameters, so this is the deterministic retrieval
+equivalent of an equal-width/equal-parameter control. Candidate passage now
+requires that structural contract in addition to lexical, no-intervention,
+route-null, shuffled-binding, source-diversity and finite-sample gates.
+
+This changes only evaluation strictness. It does not score the waiting v7
+successor, open an active session, update a probability table, alter a tokenizer,
+train a model, merge a child, or authorize promotion.
+
+The independent E92 verifier reconstructs the exact sign statistics and matched
+route-width contract from raw per-query outcomes; it does not trust those result
+fields. A targeted tamper test proves that changing the recorded null width is
+rejected. The combined catalog, prospective, query-harvest and watch-audit suite
+passes 65/65 after Black and Ruff checks.

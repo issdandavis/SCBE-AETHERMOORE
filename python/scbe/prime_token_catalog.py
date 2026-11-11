@@ -1834,7 +1834,9 @@ def plan_catalog_successor(
     successor = Path(successor_output_dir).resolve()
     if successor.exists():
         if not successor.is_dir() or any(successor.iterdir()):
-            raise FileExistsError(f"successor output path is not an empty directory: {successor}")
+            raise FileExistsError(
+                f"successor output path is not an empty directory: {successor}"
+            )
     if reserve_bytes < 0:
         raise ValueError("reserve_bytes must be nonnegative")
     if not math.isfinite(expansion_factor) or expansion_factor < 1.0:
@@ -2601,6 +2603,9 @@ def explicit_route(goal: str, *, null_control: bool = False) -> dict[str, Any]:
     return {
         "selected_views": selected,
         "matched_views": list(ordered),
+        "route_width": len(selected),
+        "matched_route_width": len(ordered),
+        "width_matched": len(selected) == len(ordered),
         "marker_hits": marker_hits,
         "source_kinds": source_kinds,
         "null_control": null_control,

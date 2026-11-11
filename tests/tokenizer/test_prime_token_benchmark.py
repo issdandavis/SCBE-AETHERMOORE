@@ -114,6 +114,25 @@ def test_benchmark_runs_all_controls_and_stays_underpowered(tmp_path):
     assert result["underpowered_reasons"]
 
 
+def test_paired_gate_requires_finite_sample_evidence_beyond_two_pooled_sd():
+    underpowered = benchmark_module._paired_gate(
+        [1.0, 1.0, 1.0, 1.0],
+        [0.0, 0.0, 0.0, 0.0],
+    )
+    supported = benchmark_module._paired_gate(
+        [1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+    )
+
+    assert underpowered["passes_two_pooled_sd"] is True
+    assert underpowered["exact_one_sided_p_value"] == pytest.approx(0.0625)
+    assert underpowered["passes_finite_sample_uncertainty"] is False
+    assert underpowered["passes_gate"] is False
+    assert supported["exact_one_sided_p_value"] == pytest.approx(0.015625)
+    assert supported["passes_finite_sample_uncertainty"] is True
+    assert supported["passes_gate"] is True
+
+
 def test_benchmark_rejects_query_source_leakage(tmp_path):
     benchmark = _benchmark()
     benchmark["queries"][0]["query_source_uri"] = "local://catalog/prime.md"
@@ -312,6 +331,10 @@ def test_explicit_route_is_bounded_deterministic_and_has_null_control():
     )
     assert null_route["matched_views"] == route["matched_views"]
     assert null_route["selected_views"] == ["source", "speech"]
+    assert route["route_width"] == 2
+    assert null_route["route_width"] == route["route_width"]
+    assert null_route["matched_route_width"] == route["matched_route_width"]
+    assert null_route["width_matched"] is True
     assert null_route["source_kinds"] == ["code"]
 
 
@@ -370,6 +393,9 @@ def test_explicit_route_evaluator_runs_null_shuffled_and_macro_controls(tmp_path
         "shuffled_binding_seed_7",
     }
     assert result["arms"]["explicit_routed"][0]["macro_source_metrics"]["sources"] == 3
+    assert result["route_control_contract"]["equal_parameter_count"] is True
+    assert result["route_control_contract"]["all_route_widths_match"] is True
+    assert result["route_control_contract"]["passes"] is True
     assert result["diversity"]["topic_strata_count"] == 3
     assert result["diversity"]["relevant_source_count"] == 3
     assert "fewer than six distinct relevant catalog sources" in result["underpowered_reasons"]
@@ -452,6 +478,9 @@ def test_late_output_fusion_evaluator_runs_declared_controls(tmp_path):
         "random_rank_fusion",
     }
     assert len(result["arms"]["shuffled_binding"]) == 3
+    assert result["route_control_contract"]["equal_parameter_count"] is True
+    assert result["route_control_contract"]["all_route_widths_match"] is True
+    assert result["route_control_contract"]["passes"] is True
     assert len(result["arms"]["random_rank_fusion"]) == 3
     assert set(result["gates"]) == {
         "lexical_only",

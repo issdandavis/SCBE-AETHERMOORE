@@ -202,6 +202,8 @@ def test_e92_prospective_run_is_strict_controlled_and_nonpromoting(
     }.issubset(bundle["result"]["gates"])
     assert bundle["result"]["diversity"]["relevant_source_count"] == 6
     assert bundle["result"]["diversity"]["topic_strata_count"] == 3
+    assert bundle["result"]["route_control_contract"]["passes"] is True
+    assert all("passes_finite_sample_uncertainty" in gate for gate in bundle["result"]["gates"].values())
     assert bundle["receipt"]["promotion"] == "NOT_AUTHORIZED"
     assert bundle["receipt"]["training_intake"] == "NOT_AUTHORIZED"
     assert bundle["receipt"]["review_summary"]["decision_count"] == 30
@@ -273,6 +275,32 @@ def test_e92_independent_verifier_rejects_mutated_result(tmp_path: Path) -> None
     )
     assert verification["status"] == "INVALID_E92_PROSPECTIVE_BUNDLE"
     assert verification["error_count"] >= 1
+
+
+def test_e92_independent_verifier_rejects_route_width_contract_tampering(
+    tmp_path: Path,
+) -> None:
+    bundle = _run(_fixture(tmp_path))
+    output = _write_bundle(tmp_path / "bundle", bundle)
+    result_path = output / "RESULT.json"
+    receipt_path = output / "RUN_RECEIPT.json"
+    result = json.loads(result_path.read_text(encoding="utf-8"))
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+
+    result["route_control_contract"]["rows"][0]["route_null_width"] += 1
+    result_path.write_bytes(json_bytes(result))
+    receipt["result_sha256"] = sha256_file(result_path)
+    receipt_core = dict(receipt)
+    receipt_core.pop("receipt_sha256")
+    receipt["receipt_sha256"] = canonical_sha256(receipt_core)
+    receipt_path.write_bytes(json_bytes(receipt))
+
+    verification = verify_e92_prospective_bundle(
+        output,
+        expected_control_seeds=(3, 5, 7),
+    )
+    assert verification["status"] == "INVALID_E92_PROSPECTIVE_BUNDLE"
+    assert any("route_control_contract" in error for error in verification["errors"])
 
 
 def test_e92_independent_verifier_rejects_control_seed_substitution(
