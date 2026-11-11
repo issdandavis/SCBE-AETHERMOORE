@@ -145,6 +145,10 @@ def test_collapses_fragments_into_canonical_sources_and_families(tmp_path: Path)
     assert result["counts"]["manifest_bound_source_families"] == 2
     assert result["counts"]["conversation_source_rows"] == 2
     assert result["counts"]["conversation_source_sessions"] == 1
+    canonical = {Path(row["path"]).name: row for row in result["canonical_sources"]}
+    assert canonical["conversation.jsonl"]["catalog_source_rows"] == 2
+    assert canonical["code.py"]["catalog_source_rows"] == 1
+    assert canonical["conversation.jsonl"]["family_id"] != canonical["code.py"]["family_id"]
     assert result["prospective"]["evaluation_ready"] is False
     assert result["authority"]["promotion"] == "NOT_AUTHORIZED"
 

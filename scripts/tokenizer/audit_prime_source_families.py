@@ -213,6 +213,7 @@ def audit_source_families(
     source_kind_counts: Counter[str] = Counter()
     family_source_rows: Counter[str] = Counter()
     family_kind_rows: dict[str, Counter[str]] = defaultdict(Counter)
+    canonical_source_rows: Counter[str] = Counter()
     conversation_sessions: set[str] = set()
     database_rows = 0
     try:
@@ -235,6 +236,7 @@ def audit_source_families(
                     errors.append(f"catalog source is not declared by a bound manifest: {source_uri}")
                     continue
                 seen_canonical_sources.add(key)
+                canonical_source_rows[key] += 1
                 family_id = family_by_path[key]
                 source_kind_counts[str(source_kind)] += 1
                 family_source_rows[family_id] += 1
@@ -372,6 +374,17 @@ def audit_source_families(
             "source_kinds": dict(sorted(source_kind_counts.items())),
         },
         "families": sorted(family_rows, key=lambda row: row["manifest"]),
+        "canonical_sources": [
+            {
+                "path": str(declarations[key]["path"]),
+                "family_id": declarations[key]["family_id"],
+                "source_kind": declarations[key]["source_kind"],
+                "license_name": declarations[key]["license_name"],
+                "content_sha256": declarations[key]["sha256"],
+                "catalog_source_rows": canonical_source_rows.get(key, 0),
+            }
+            for key in sorted(seen_canonical_sources)
+        ],
         "prospective": prospective,
         "authority": {
             "scoring": NOT_AUTHORIZED,
