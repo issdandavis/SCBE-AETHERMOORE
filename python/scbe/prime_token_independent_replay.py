@@ -123,12 +123,16 @@ def reconstruct_packet_independently(
     if frame not in VIEW_NAMES:
         raise ValueError("unknown replay frame")
     if mode == "shuffled_binding_reader" and binding_pool is None:
-        raise ValueError("replay shuffled binding requires an explicit dataset-wide pool")
+        raise ValueError(
+            "replay shuffled binding requires an explicit dataset-wide pool"
+        )
     if mode != "shuffled_binding_reader" and binding_pool is not None:
         raise ValueError("replay binding pool is valid only for shuffled binding")
     features = torch.zeros((len(records), sequence_length, FEATURE_WIDTH))
     owners = torch.zeros((len(records), sequence_length), dtype=torch.bool)
-    views = torch.zeros((len(records), sequence_length, len(VIEW_NAMES)), dtype=torch.bool)
+    views = torch.zeros(
+        (len(records), sequence_length, len(VIEW_NAMES)), dtype=torch.bool
+    )
     flattened = [
         (batch_index, local_index, record)
         for batch_index, row in enumerate(records)
@@ -147,19 +151,31 @@ def reconstruct_packet_independently(
             rows.append((receipt, tensor_sha256(vector), vector))
         receipts = [row[0] for row in rows]
         if len(pool) < 2 or len(set(receipts)) != len(receipts):
-            raise ValueError("replay shuffled binding pool must be unique and nontrivial")
+            raise ValueError(
+                "replay shuffled binding pool must be unique and nontrivial"
+            )
         rows.sort(key=lambda row: (row[1], row[0]))
         group_counts: dict[str, int] = {}
         for _, vector_sha256, _ in rows:
             group_counts[vector_sha256] = group_counts.get(vector_sha256, 0) + 1
         shift = max(group_counts.values())
         if shift * 2 > len(rows):
-            raise ValueError("replay shuffled binding pool cannot form a vector derangement")
+            raise ValueError(
+                "replay shuffled binding pool cannot form a vector derangement"
+            )
         sources = rows[shift:] + rows[:shift]
-        if any(target[1] == source[1] for target, source in zip(rows, sources, strict=True)):
-            raise RuntimeError("replay shuffled binding derangement construction failed")
-        shuffled = {target[0]: source[2] for target, source in zip(rows, sources, strict=True)}
-        binding_pool_sha256 = hashlib.sha256(_json_bytes({"record_receipts": sorted(receipts)})).hexdigest()
+        if any(
+            target[1] == source[1] for target, source in zip(rows, sources, strict=True)
+        ):
+            raise RuntimeError(
+                "replay shuffled binding derangement construction failed"
+            )
+        shuffled = {
+            target[0]: source[2] for target, source in zip(rows, sources, strict=True)
+        }
+        binding_pool_sha256 = hashlib.sha256(
+            _json_bytes({"record_receipts": sorted(receipts)})
+        ).hexdigest()
         binding_permutation_sha256 = hashlib.sha256(
             _json_bytes(
                 {
@@ -176,14 +192,22 @@ def reconstruct_packet_independently(
         if {_receipt(record) for _, _, record in flattened} - set(shuffled):
             raise ValueError("replay shuffled binding pool omits packet occurrences")
     receipt_rows = []
-    for batch_index, (row, positions) in enumerate(zip(records, owner_positions, strict=True)):
+    for batch_index, (row, positions) in enumerate(
+        zip(records, owner_positions, strict=True)
+    ):
         if len(row) != len(positions):
             raise ValueError("replay row and positions differ")
         current_receipts = []
-        for _local_index, (record, raw_position) in enumerate(zip(row, positions, strict=True)):
+        for _local_index, (record, raw_position) in enumerate(
+            zip(row, positions, strict=True)
+        ):
             record.validate()
             position = int(raw_position)
-            if position < 0 or position >= sequence_length or owners[batch_index, position]:
+            if (
+                position < 0
+                or position >= sequence_length
+                or owners[batch_index, position]
+            ):
                 raise ValueError("replay owner position is invalid")
             canonical = _canonical_vector(record)
             if mode == "canonical_six_view_reader":
@@ -321,6 +345,7 @@ def replay_predictions(
     record_ids: Sequence[str],
     splits: Sequence[str],
     source_families: Sequence[str],
+    query_source_families: Sequence[str],
     output_positions: Sequence[Sequence[int]],
     allowed_output_token_ids: Sequence[int],
     exact_evaluator_receipt_sha256: str,
@@ -335,23 +360,42 @@ def replay_predictions(
     if tuple(packet.owner_mask.shape) != tuple(token_ids.shape):
         raise ValueError("replay packet differs from token IDs")
     batch_size = token_ids.shape[0]
-    if not (len(record_ids) == len(splits) == len(source_families) == len(output_positions) == batch_size):
-        raise ValueError("replay provenance rows differ from batch size")
-    if not all(isinstance(value, str) and value.strip() for value in record_ids) or not all(
-        isinstance(value, str) and value.strip() for value in source_families
+    if not (
+        len(record_ids)
+        == len(splits)
+        == len(source_families)
+        == len(query_source_families)
+        == len(output_positions)
+        == batch_size
     ):
-        raise ValueError("replay record and source-family identities are required")
+        raise ValueError("replay provenance rows differ from batch size")
+    if (
+        not all(isinstance(value, str) and value.strip() for value in record_ids)
+        or not all(
+            isinstance(value, str) and value.strip() for value in source_families
+        )
+        or not all(
+            isinstance(value, str) and value.strip() for value in query_source_families
+        )
+    ):
+        raise ValueError(
+            "replay record, catalog-family, and query-source identities are required"
+        )
     if any(split not in {"validation", "final_test"} for split in splits):
         raise ValueError("replay accepts only validation/final-test rows")
     if len(exact_evaluator_receipt_sha256) != 64 or any(
-        character not in "0123456789abcdef" for character in exact_evaluator_receipt_sha256
+        character not in "0123456789abcdef"
+        for character in exact_evaluator_receipt_sha256
     ):
         raise ValueError("replay evaluator receipt SHA-256 is invalid")
     allowed = set(allowed_output_token_ids)
     if (
         not allowed
         or len(allowed) != len(tuple(allowed_output_token_ids))
-        or any(isinstance(token_id, bool) or not isinstance(token_id, int) or token_id < 0 for token_id in allowed)
+        or any(
+            isinstance(token_id, bool) or not isinstance(token_id, int) or token_id < 0
+            for token_id in allowed
+        )
     ):
         raise ValueError("replay allowed output token IDs are invalid")
     normalized_positions: list[tuple[int, ...]] = []
@@ -364,7 +408,9 @@ def replay_predictions(
         owner_positions = packet.owner_mask[batch_index].nonzero().flatten().tolist()
         if not owner_positions or max(owner_positions) > positions[0]:
             raise ValueError("replay output precedes a required owner position")
-        if any(int(targets[batch_index, position]) not in allowed for position in positions):
+        if any(
+            int(targets[batch_index, position]) not in allowed for position in positions
+        ):
             raise ValueError("replay target lies outside the bounded output set")
         normalized_positions.append(positions)
 
@@ -385,11 +431,15 @@ def replay_predictions(
                     "record_id": record_ids[batch_index],
                     "split": splits[batch_index],
                     "source_family": source_families[batch_index],
+                    "query_source_family": query_source_families[batch_index],
                     "batch": batch_index,
                     "position": position,
                     "prediction": int(predictions[batch_index, position]),
                     "target": int(expected[batch_index, position]),
-                    "correct": bool(predictions[batch_index, position] == expected[batch_index, position]),
+                    "correct": bool(
+                        predictions[batch_index, position]
+                        == expected[batch_index, position]
+                    ),
                     "owned": bool(packet.owner_mask[batch_index, position]),
                 }
             )
@@ -410,7 +460,9 @@ def replay_predictions(
     }
 
 
-def verify_replay_ledger(expected_path: str | Path, replay: Mapping[str, object]) -> None:
+def verify_replay_ledger(
+    expected_path: str | Path, replay: Mapping[str, object]
+) -> None:
     """Fail when a producer ledger differs from independently replayed outcomes."""
 
     expected = json.loads(Path(expected_path).read_text(encoding="utf-8"))

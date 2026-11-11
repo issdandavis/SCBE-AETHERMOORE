@@ -725,3 +725,61 @@ matched control beyond two pooled seed standard deviations and the finite
 sample gate. The no-intervention replay is explicitly checkpoint-free and
 sealed to the parent hash. The focused suite now passes 33/33; this remains
 mechanics evidence only.
+
+## Material case boundary and dual-source split gate — 2026-11-11
+
+The material case producer must keep two independent provenance axes instead of
+overloading one `source_family` field:
+
+```text
+closed query session + query text
+  -> query-only six-view packet + canonical UTF-8 byte input
+                                           |
+reviewed relevant catalog source ----------+-> bounded relation/function target
+                                           |
+catalog-family <-> query-session incidence graph
+  -> connected components -> train / validation / final-test assignment
+  -> runtime + independent replay + multi-seed evidence aggregation
+```
+
+The packet is derived only from query text and pre-outcome query provenance.
+The reviewed source suffix, catalog family, class token, relevance decision,
+score, and split assignment are supervision metadata and may not enter any of
+the six packet views. Changing only those target fields must leave packet
+features and their seal bit-identical.
+
+Catalog source families and closed query-session identities form a bipartite
+graph. A connected component is the smallest legal split unit: putting any two
+vertices from one component in different lanes would leak either a catalog
+family or an authored session. The producer must fail closed when it cannot
+make non-empty train, validation, and final-test lanes while preserving the
+preregistered final-test floor and source/family concentration bounds.
+
+The bounded class vocabulary is frozen before labels by taking the Cartesian
+product of the three manifest-bound catalog families and the four fixed review
+strata. One output token identifies one `(relationship family, function
+stratum)` pair. Exact accuracy, relationship equivalence, and function
+equivalence are then distinct measurements over the same declared output
+position. Ordinary and retention lanes remain packet-free and are not optimizer
+inputs.
+
+This boundary reuses the frozen byte parent, `PrimeTokenRecord`, the existing
+six catalog views, the before-block-0 reader, two-slot checkpoints, and the
+independent replay/evidence aggregator. It adds no tokenizer, seventh view,
+tool authority, serving route, promotion authority, or partial-unfreeze path.
+Stop before optimizer construction on target-dependent packet drift, an open or
+reused query session, unresolved source-family mapping, overlapping graph
+components, an empty lane, insufficient final-test examples, or any authority
+field other than the existing no-promotion/no-thaw/no-tool state.
+
+The implemented producer now requires the watcher-generated closed-source
+snapshot in addition to the review queue. Queue sessions must be present in that
+snapshot with unchanged path, size, mtime, session identity, and catalog
+boundary. The atomic cases manifest cross-binds its exact source and split
+manifests. At runtime, each bounded target must match the evaluator's unique
+`(catalog family, function stratum)` token and the target source must occur in
+the verified source-family audit; all other targets remain the original query
+bytes. Negative tests reject an absent closed session, remapped target, and
+mixed source manifest. The focused producer/runtime suite passes `16/16`, and
+the complete prime-token/release suite passes `120/120`. This is still mechanics
+evidence only and grants no training authority.

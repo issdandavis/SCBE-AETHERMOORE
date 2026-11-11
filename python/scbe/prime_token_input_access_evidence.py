@@ -38,7 +38,9 @@ def _load_json(path: Path) -> dict[str, Any]:
     return value
 
 
-def _bound_artifact(row: Mapping[str, Any], key: str, root: Path) -> tuple[Path, dict[str, Any]]:
+def _bound_artifact(
+    row: Mapping[str, Any], key: str, root: Path
+) -> tuple[Path, dict[str, Any]]:
     raw_path = row.get(f"{key}_path")
     expected_hash = row.get(f"{key}_sha256")
     if not isinstance(raw_path, str) or not raw_path.strip():
@@ -92,25 +94,31 @@ def _outcome_map(run: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
         identity = row.get("id")
         if not isinstance(identity, str) or not identity.strip() or identity in mapped:
             raise ValueError("per-example outcome identity is empty or duplicated")
-        for field in ("record_id", "source_family"):
+        for field in ("record_id", "source_family", "query_source_family"):
             if not isinstance(row.get(field), str) or not str(row[field]).strip():
                 raise ValueError(f"per-example outcome {index} omitted {field}")
         if row.get("split") not in {"validation", "final_test"}:
             raise ValueError("per-example outcome uses an invalid held split")
         normalized = dict(row)
         for metric in PRIMARY_METRICS:
-            normalized[metric] = _number(row.get(metric), f"outcome.{identity}.{metric}", unit_interval=True)
+            normalized[metric] = _number(
+                row.get(metric), f"outcome.{identity}.{metric}", unit_interval=True
+            )
         if normalized["accuracy"] not in {0.0, 1.0}:
             raise ValueError("per-example accuracy must be binary for exact replay")
         mapped[identity] = normalized
     for metric in PRIMARY_METRICS:
         observed = mean(float(row[metric]) for row in mapped.values())
-        if not math.isclose(observed, _number(metrics[metric], f"metrics.{metric}"), abs_tol=1e-12):
+        if not math.isclose(
+            observed, _number(metrics[metric], f"metrics.{metric}"), abs_tol=1e-12
+        ):
             raise RuntimeError(f"producer aggregate differs from per-example {metric}")
     return mapped
 
 
-def _flatten_replay(replay: Mapping[str, Any]) -> tuple[dict[str, dict[str, Any]], bool]:
+def _flatten_replay(
+    replay: Mapping[str, Any],
+) -> tuple[dict[str, dict[str, Any]], bool]:
     if replay.get("schema") != "scbe.prime-token-independent-replay-run.v1":
         raise ValueError("unexpected independent replay schema")
     if replay.get("status") != "VERIFIED_REPLAY_NO_PROMOTION":
@@ -141,7 +149,9 @@ def _flatten_replay(replay: Mapping[str, Any]) -> tuple[dict[str, dict[str, Any]
     packet_usage = set(raw_packet_usage)
     if len(packet_usage) != 1:
         raise RuntimeError("independent replay mixed packet-use policies")
-    replay_accuracy = _number(replay.get("accuracy"), "replay.accuracy", unit_interval=True)
+    replay_accuracy = _number(
+        replay.get("accuracy"), "replay.accuracy", unit_interval=True
+    )
     observed_accuracy = mean(float(bool(row.get("correct"))) for row in rows.values())
     if not math.isclose(replay_accuracy, observed_accuracy, abs_tol=1e-12):
         raise RuntimeError("independent replay aggregate differs from outcomes")
@@ -151,7 +161,10 @@ def _flatten_replay(replay: Mapping[str, Any]) -> tuple[dict[str, dict[str, Any]
 def _verify_run_and_replay(
     *, arm: str, seed: int, run: Mapping[str, Any], replay: Mapping[str, Any]
 ) -> tuple[dict[str, float], dict[str, dict[str, Any]], tuple[str, str, str]]:
-    if run.get("schema") != "scbe.prime-token-reader-run.v1" or run.get("status") != "COMPLETE_NO_PROMOTION":
+    if (
+        run.get("schema") != "scbe.prime-token-reader-run.v1"
+        or run.get("status") != "COMPLETE_NO_PROMOTION"
+    ):
         raise ValueError("run result is not a completed no-promotion lineage")
     if (
         run.get("promotion_authorized") is not False
@@ -160,7 +173,11 @@ def _verify_run_and_replay(
     ):
         raise ValueError("run result changed authority")
     identity = run.get("identity")
-    if not isinstance(identity, dict) or identity.get("arm") != arm or int(identity.get("seed", -1)) != seed:
+    if (
+        not isinstance(identity, dict)
+        or identity.get("arm") != arm
+        or int(identity.get("seed", -1)) != seed
+    ):
         raise ValueError("run identity differs from evidence manifest")
     boundary = tuple(
         _sha256(identity.get(key), f"identity.{key}")
@@ -173,7 +190,10 @@ def _verify_run_and_replay(
         "evaluation.evaluator_receipt_sha256",
     )
     replay_receipts = {
-        _sha256(case.get("exact_evaluator_receipt_sha256"), "replay.exact_evaluator_receipt_sha256")
+        _sha256(
+            case.get("exact_evaluator_receipt_sha256"),
+            "replay.exact_evaluator_receipt_sha256",
+        )
         for case in replay["cases"]
     }
     if replay_receipts != {evaluator_receipt}:
@@ -182,11 +202,20 @@ def _verify_run_and_replay(
         raise RuntimeError("producer and replay outcome identities differ")
     for identity_key, producer in outcomes.items():
         independent = replay_rows[identity_key]
-        for field in ("record_id", "split", "source_family"):
+        for field in (
+            "record_id",
+            "split",
+            "source_family",
+            "query_source_family",
+        ):
             if producer[field] != independent.get(field):
-                raise RuntimeError(f"producer and replay provenance differ for {identity_key}")
+                raise RuntimeError(
+                    f"producer and replay provenance differ for {identity_key}"
+                )
         if bool(independent.get("correct")) != bool(producer["accuracy"]):
-            raise RuntimeError(f"producer and replay accuracy differ for {identity_key}")
+            raise RuntimeError(
+                f"producer and replay accuracy differ for {identity_key}"
+            )
     if not math.isclose(
         _number(replay.get("accuracy"), "replay.accuracy"),
         mean(row["accuracy"] for row in outcomes.values()),
@@ -194,7 +223,9 @@ def _verify_run_and_replay(
     ):
         raise RuntimeError("producer and replay accuracy aggregates differ")
     checkpoint = replay.get("checkpoint")
-    if not isinstance(checkpoint, dict) or checkpoint.get("identity_sha256") != canonical_sha256(identity):
+    if not isinstance(checkpoint, dict) or checkpoint.get(
+        "identity_sha256"
+    ) != canonical_sha256(identity):
         raise RuntimeError("replay checkpoint identity differs from run")
     final_step = int(run.get("final_step", -1))
     if arm == NO_INTERVENTION_ARM:
@@ -205,10 +236,18 @@ def _verify_run_and_replay(
             or prime_packet_used
         ):
             raise RuntimeError("no-intervention replay is not checkpoint-free")
-    elif checkpoint.get("checkpoint") is None or int(checkpoint.get("step", -1)) != final_step or not prime_packet_used:
+    elif (
+        checkpoint.get("checkpoint") is None
+        or int(checkpoint.get("step", -1)) != final_step
+        or not prime_packet_used
+    ):
         raise RuntimeError("learned replay checkpoint differs from final run step")
     metrics = run["evaluation"]["metrics"]
-    return ({name: float(metrics[name]) for name in (*PRIMARY_METRICS, *SYSTEM_METRICS)}, outcomes, boundary)
+    return (
+        {name: float(metrics[name]) for name in (*PRIMARY_METRICS, *SYSTEM_METRICS)},
+        outcomes,
+        boundary,
+    )
 
 
 def _exact_sign_p(wins: int, losses: int) -> float:
@@ -224,13 +263,21 @@ def _comparison_gate(
     candidate_rows: Mapping[str, Sequence[float]],
     control_rows: Mapping[str, Sequence[float]],
 ) -> dict[str, Any]:
-    if len(candidate_seed_values) != len(control_seed_values) or len(candidate_seed_values) < 3:
+    if (
+        len(candidate_seed_values) != len(control_seed_values)
+        or len(candidate_seed_values) < 3
+    ):
         raise ValueError("comparison requires the same three or more seeds")
     if set(candidate_rows) != set(control_rows) or not candidate_rows:
         raise ValueError("comparison requires aligned held examples")
-    pooled_sd = math.sqrt((stdev(candidate_seed_values) ** 2 + stdev(control_seed_values) ** 2) / 2.0)
+    pooled_sd = math.sqrt(
+        (stdev(candidate_seed_values) ** 2 + stdev(control_seed_values) ** 2) / 2.0
+    )
     gain = mean(candidate_seed_values) - mean(control_seed_values)
-    differences = [mean(candidate_rows[key]) - mean(control_rows[key]) for key in sorted(candidate_rows)]
+    differences = [
+        mean(candidate_rows[key]) - mean(control_rows[key])
+        for key in sorted(candidate_rows)
+    ]
     wins = sum(value > 1e-15 for value in differences)
     losses = sum(value < -1e-15 for value in differences)
     ties = len(differences) - wins - losses
@@ -277,25 +324,38 @@ def aggregate_evidence(manifest_path: str | Path) -> dict[str, Any]:
     if set(indexed) != expected:
         raise ValueError("evidence manifest does not contain the exact arm/seed grid")
 
-    seed_metrics: dict[str, dict[int, dict[str, float]]] = {arm: {} for arm in REQUIRED_ARMS}
+    seed_metrics: dict[str, dict[int, dict[str, float]]] = {
+        arm: {} for arm in REQUIRED_ARMS
+    }
     example_metrics: dict[str, dict[str, dict[int, float]]] = {
         metric: {arm: {} for arm in REQUIRED_ARMS} for metric in PRIMARY_METRICS
     }
     reference_boundary: tuple[str, str, str] | None = None
-    reference_provenance: dict[str, tuple[str, str, str]] | None = None
+    reference_provenance: dict[str, tuple[str, str, str, str]] | None = None
     artifacts = []
     for arm in REQUIRED_ARMS:
         for seed in seeds:
             row = indexed[(arm, seed)]
             run_path, run = _bound_artifact(row, "run_result", manifest_path.parent)
-            replay_path, replay = _bound_artifact(row, "replay_result", manifest_path.parent)
-            metrics, outcomes, boundary = _verify_run_and_replay(arm=arm, seed=seed, run=run, replay=replay)
+            replay_path, replay = _bound_artifact(
+                row, "replay_result", manifest_path.parent
+            )
+            metrics, outcomes, boundary = _verify_run_and_replay(
+                arm=arm, seed=seed, run=run, replay=replay
+            )
             if reference_boundary is None:
                 reference_boundary = boundary
             elif boundary != reference_boundary:
-                raise RuntimeError("arm/seed lineages do not share one parent/source/split boundary")
+                raise RuntimeError(
+                    "arm/seed lineages do not share one parent/source/split boundary"
+                )
             provenance = {
-                key: (str(value["record_id"]), str(value["split"]), str(value["source_family"]))
+                key: (
+                    str(value["record_id"]),
+                    str(value["split"]),
+                    str(value["source_family"]),
+                    str(value["query_source_family"]),
+                )
                 for key, value in outcomes.items()
             }
             if reference_provenance is None:
@@ -305,7 +365,9 @@ def aggregate_evidence(manifest_path: str | Path) -> dict[str, Any]:
             seed_metrics[arm][seed] = metrics
             for metric in PRIMARY_METRICS:
                 for key, outcome in outcomes.items():
-                    example_metrics[metric][arm].setdefault(key, {})[seed] = float(outcome[metric])
+                    example_metrics[metric][arm].setdefault(key, {})[seed] = float(
+                        outcome[metric]
+                    )
             artifacts.append(
                 {
                     "arm": arm,
@@ -319,15 +381,23 @@ def aggregate_evidence(manifest_path: str | Path) -> dict[str, Any]:
 
     comparisons: dict[str, Any] = {}
     for metric in PRIMARY_METRICS:
-        arm_means = {arm: mean(seed_metrics[arm][seed][metric] for seed in seeds) for arm in MATCHED_CONTROL_ARMS}
+        arm_means = {
+            arm: mean(seed_metrics[arm][seed][metric] for seed in seeds)
+            for arm in MATCHED_CONTROL_ARMS
+        }
         strongest = max(MATCHED_CONTROL_ARMS, key=lambda arm: (arm_means[arm], arm))
-        metric_result: dict[str, Any] = {"strongest_matched_control": strongest, "comparisons": {}}
+        metric_result: dict[str, Any] = {
+            "strongest_matched_control": strongest,
+            "comparisons": {},
+        }
         for control in (NO_INTERVENTION_ARM, strongest):
             candidate_rows = {
-                key: [values[seed] for seed in seeds] for key, values in example_metrics[metric][CANDIDATE_ARM].items()
+                key: [values[seed] for seed in seeds]
+                for key, values in example_metrics[metric][CANDIDATE_ARM].items()
             }
             control_rows = {
-                key: [values[seed] for seed in seeds] for key, values in example_metrics[metric][control].items()
+                key: [values[seed] for seed in seeds]
+                for key, values in example_metrics[metric][control].items()
             }
             metric_result["comparisons"][control] = _comparison_gate(
                 [seed_metrics[CANDIDATE_ARM][seed][metric] for seed in seeds],
@@ -335,13 +405,19 @@ def aggregate_evidence(manifest_path: str | Path) -> dict[str, Any]:
                 candidate_rows,
                 control_rows,
             )
-        metric_result["passes_gate"] = all(value["passes_gate"] for value in metric_result["comparisons"].values())
+        metric_result["passes_gate"] = all(
+            value["passes_gate"] for value in metric_result["comparisons"].values()
+        )
         comparisons[metric] = metric_result
 
     all_primary_pass = all(value["passes_gate"] for value in comparisons.values())
     return {
         "schema": SCHEMA,
-        "status": "SUPPORTED_NO_PROMOTION" if all_primary_pass else "UNDERPOWERED_NO_PROMOTION",
+        "status": (
+            "SUPPORTED_NO_PROMOTION"
+            if all_primary_pass
+            else "UNDERPOWERED_NO_PROMOTION"
+        ),
         "manifest": str(manifest_path),
         "manifest_sha256": sha256_file(manifest_path),
         "candidate_arm": CANDIDATE_ARM,

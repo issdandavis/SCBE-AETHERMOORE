@@ -15,6 +15,12 @@ from python.scbe.prime_token_material_runtime import (
     RUNTIME_SCHEMA,
     build_runtime,
 )
+from python.scbe.prime_token_material_cases import build_query_input
+from python.scbe.prime_token_material_cases import (
+    SOURCE_FAMILY_AUDIT_SCHEMA,
+    SOURCE_MANIFEST_SCHEMA,
+    SPLIT_MANIFEST_SCHEMA,
+)
 from python.scbe.prime_token_training import sha256_file
 import python.scbe.prime_token_material_runtime as runtime_module
 
@@ -30,7 +36,7 @@ class _Route:
 class _Core(nn.Module):
     def __init__(self):
         super().__init__()
-        width, vocab, block_size = 8, 16, 8
+        width, vocab, block_size = 8, 256, 8
         self.config = SimpleNamespace(d_model=width, block_size=block_size, route_mode="off")
         self.token = nn.Embedding(vocab, width)
         self.position = nn.Embedding(block_size, width)
@@ -62,7 +68,8 @@ class _Core(nn.Module):
         if return_aux:
             aux = {
                 "lane_logits": torch.stack(
-                    [decoder(raw_lanes[:, :, index]) for index, decoder in enumerate(self.lane_decoders)], dim=2
+                    [decoder(raw_lanes[:, :, index]) for index, decoder in enumerate(self.lane_decoders)],
+                    dim=2,
                 )
             }
         if return_diagnostics and return_aux:
@@ -79,57 +86,148 @@ def _write_json(path: Path, value: object) -> None:
 
 
 def _write_jsonl(path: Path, rows: list[dict]) -> None:
-    path.write_text("".join(json.dumps(row, sort_keys=True) + "\n" for row in rows), encoding="utf-8")
+    path.write_text(
+        "".join(json.dumps(row, sort_keys=True) + "\n" for row in rows),
+        encoding="utf-8",
+    )
 
 
-def _record(name: str, family: str) -> dict:
-    return {
-        "canonical_id": f"token:{name}",
-        "section_id": f"section:{name}",
-        "source_family": family,
-        "views": {view: {"surface": name, "view": view, "index": index} for index, view in enumerate(VIEW_NAMES)},
-    }
+def _source_path(family: str) -> str:
+    return f"fixture://catalog/{family}"
 
 
-def _case(record_id: str, split: str, family: str, target: int) -> dict:
+def _source_sha256(family: str) -> str:
+    return {"family-train": "a", "family-validation": "b", "family-final": "c"}[family] * 64
+
+
+def _case(
+    record_id: str,
+    split: str,
+    family: str,
+    target: int,
+    function_class: str,
+) -> dict:
+    material_input = build_query_input(
+        f"query {record_id}",
+        f"private-session://session-{split}/0/0",
+        max_query_bytes=3,
+    )
+    targets = list(material_input["token_ids"])
+    targets[material_input["output_positions"][0]] = target
     return {
         "record_id": record_id,
         "split": split,
         "source_family": family,
-        "token_ids": [1, 2, 3, 4, 5],
-        "targets": [2, 3, 4, target, 6],
-        "owner_positions": [1],
-        "output_positions": [3],
-        "records": [_record(record_id, family)],
+        "query": f"query {record_id}",
+        "query_source_uri": f"private-session://session-{split}/0/0",
+        **material_input,
+        "target_source_path": _source_path(family),
+        "target_source_sha256": _source_sha256(family),
+        "function_class": function_class,
+        "target_token_id": target,
+        "targets": targets,
     }
 
 
 def _fixture(tmp_path: Path, *, arm: str = "canonical_six_view_reader") -> dict:
     source = tmp_path / "source.json"
     split = tmp_path / "split.json"
-    _write_json(source, {"schema": "fixture.source.v1"})
-    _write_json(split, {"schema": "fixture.split.v1"})
+    source_audit = tmp_path / "source-audit.json"
+    families = ("family-train", "family-validation", "family-final")
+    _write_json(
+        source_audit,
+        {
+            "schema": SOURCE_FAMILY_AUDIT_SCHEMA,
+            "status": "VERIFIED_SOURCE_FAMILY_BOUNDARY_WAITING",
+            "error_count": 0,
+            "families": [{"family_id": family} for family in families],
+            "canonical_sources": [
+                {
+                    "path": _source_path(family),
+                    "family_id": family,
+                    "content_sha256": _source_sha256(family),
+                }
+                for family in families
+            ],
+        },
+    )
+    _write_json(
+        source,
+        {
+            "schema": SOURCE_MANIFEST_SCHEMA,
+            "private_runtime_only": True,
+            "source_family_audit": str(source_audit.resolve()),
+            "source_family_audit_sha256": sha256_file(source_audit),
+        },
+    )
     rows = {
-        "train": [_case("train-1", "train", "family-train", 5)],
-        "validation": [_case("validation-1", "validation", "family-validation", 5)],
-        "final_test": [_case("final-1", "final_test", "family-final", 6)],
-        "ordinary": [{"id": "ordinary-1", "token_ids": [1, 2, 3]}],
-        "retention": [{"id": "retention-1", "token_ids": [3, 2, 1]}],
+        "train": [_case("train-1", "train", "family-train", 5, "left")],
+        "validation": [_case("validation-1", "validation", "family-validation", 6, "left")],
+        "final_test": [_case("final-1", "final_test", "family-final", 7, "right")],
+        "ordinary": [
+            {
+                "id": "ordinary-1",
+                "split": "ordinary",
+                "source_family": "family-ordinary",
+                "source_locator": "fixture://ordinary/1",
+                "content_sha256": "d" * 64,
+                "token_ids": [1, 2, 3],
+            }
+        ],
+        "retention": [
+            {
+                "id": "retention-1",
+                "split": "retention",
+                "source_family": "family-retention",
+                "source_locator": "fixture://retention/1",
+                "content_sha256": "e" * 64,
+                "token_ids": [3, 2, 1],
+            }
+        ],
     }
+    material_lanes = ("train", "validation", "final_test")
+    _write_json(
+        split,
+        {
+            "schema": SPLIT_MANIFEST_SCHEMA,
+            "source_disjoint": True,
+            "query_session_disjoint": True,
+            "component_policy": "catalog-family/query-session connected components",
+            "lane_counts": {lane: len(rows[lane]) for lane in material_lanes},
+            "lane_source_families": {
+                lane: sorted({row["source_family"] for row in rows[lane]}) for lane in material_lanes
+            },
+            "lane_query_source_families": {
+                lane: sorted({row["query_source_family"] for row in rows[lane]}) for lane in material_lanes
+            },
+        },
+    )
     descriptors = {}
     for lane, lane_rows in rows.items():
         path = tmp_path / f"{lane}.jsonl"
         _write_jsonl(path, lane_rows)
-        descriptors[lane] = {"path": path.name, "sha256": sha256_file(path), "count": len(lane_rows)}
+        descriptors[lane] = {
+            "path": path.name,
+            "sha256": sha256_file(path),
+            "count": len(lane_rows),
+        }
     manifest = tmp_path / "cases.json"
     evaluator = tmp_path / "evaluator.json"
     _write_json(
         evaluator,
         {
             "schema": EVALUATOR_RECEIPT_SCHEMA,
-            "allowed_output_token_ids": [5, 6],
-            "relationship_class_by_token_id": {"5": "route", "6": "route"},
-            "function_class_by_token_id": {"5": "left", "6": "right"},
+            "allowed_output_token_ids": [5, 6, 7],
+            "relationship_class_by_token_id": {
+                "5": "family-train",
+                "6": "family-validation",
+                "7": "family-final",
+            },
+            "function_class_by_token_id": {
+                "5": "left",
+                "6": "left",
+                "7": "right",
+            },
             "scoring": "full-vocabulary-argmax_then_exact_and_class_equivalence",
         },
     )
@@ -138,10 +236,22 @@ def _fixture(tmp_path: Path, *, arm: str = "canonical_six_view_reader") -> dict:
         {
             "schema": CASE_MANIFEST_SCHEMA,
             "source_disjoint": True,
+            "query_session_disjoint": True,
+            "max_query_bytes": 3,
             "exact_evaluator_receipt_sha256": sha256_file(evaluator),
-            "allowed_output_token_ids": [5, 6],
-            "relationship_class_by_token_id": {"5": "route", "6": "route"},
-            "function_class_by_token_id": {"5": "left", "6": "right"},
+            "exact_source_manifest_sha256": sha256_file(source),
+            "exact_split_manifest_sha256": sha256_file(split),
+            "allowed_output_token_ids": [5, 6, 7],
+            "relationship_class_by_token_id": {
+                "5": "family-train",
+                "6": "family-validation",
+                "7": "family-final",
+            },
+            "function_class_by_token_id": {
+                "5": "left",
+                "6": "left",
+                "7": "right",
+            },
             "files": descriptors,
         },
     )
@@ -162,6 +272,24 @@ def _fixture(tmp_path: Path, *, arm: str = "canonical_six_view_reader") -> dict:
     }
 
 
+def _lane_rows(config: dict, lane: str) -> tuple[Path, dict, list[dict]]:
+    manifest_path = Path(config["cases_manifest"])
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    lane_path = manifest_path.parent / manifest["files"][lane]["path"]
+    rows = [json.loads(line) for line in lane_path.read_text(encoding="utf-8").splitlines() if line]
+    return lane_path, manifest, rows
+
+
+def _replace_lane(config: dict, lane: str, manifest: dict, rows: list[dict]) -> None:
+    lane_path = Path(config["cases_manifest"]).parent / manifest["files"][lane]["path"]
+    _write_jsonl(lane_path, rows)
+    manifest["files"][lane]["sha256"] = sha256_file(lane_path)
+    manifest["files"][lane]["count"] = len(rows)
+    manifest_path = Path(config["cases_manifest"])
+    _write_json(manifest_path, manifest)
+    config["cases_manifest_sha256"] = sha256_file(manifest_path)
+
+
 @pytest.mark.parametrize("arm", ["canonical_six_view_reader", "no_intervention"])
 def test_runtime_builds_source_disjoint_examples_and_multi_metric_evaluator(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, arm: str
@@ -170,7 +298,10 @@ def test_runtime_builds_source_disjoint_examples_and_multi_metric_evaluator(
     payload = build_runtime(_fixture(tmp_path, arm=arm))
     assert payload["identity"]["arm"] == arm
     assert payload["train_examples"][0].splits == ("train",)
-    assert {case["splits"][0] for case in payload["replay_cases"]} == {"validation", "final_test"}
+    assert {case["splits"][0] for case in payload["replay_cases"]} == {
+        "validation",
+        "final_test",
+    }
     evaluation = payload["evaluate"](payload["model"], arm)
     assert set(evaluation["metrics"]) >= {
         "accuracy",
@@ -211,4 +342,68 @@ def test_single_frame_arm_requires_explicit_nonlexical_ablation(
     assert payload["identity"]["single_frame"] == "prime"
     packet = payload["train_examples"][0].packet
     assert packet.frame == "prime"
-    assert packet.view_mask[0, 1].tolist() == [view == "prime" for view in VIEW_NAMES]
+    assert packet.view_mask[0, 0].tolist() == [view == "prime" for view in VIEW_NAMES]
+
+
+def test_runtime_rejects_target_metadata_in_query_packet(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(runtime_module, "_load_parent", lambda _config: _Core())
+    config = _fixture(tmp_path)
+    _lane_path, manifest, rows = _lane_rows(config, "train")
+    rows[0]["records"][0]["views"]["source"]["target_family"] = rows[0]["source_family"]
+    _replace_lane(config, "train", manifest, rows)
+    with pytest.raises(ValueError, match="query-derived input differs at records"):
+        build_runtime(config)
+
+
+def test_runtime_rejects_query_session_overlap_after_rehash(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(runtime_module, "_load_parent", lambda _config: _Core())
+    config = _fixture(tmp_path)
+    _train_path, _train_manifest, train_rows = _lane_rows(config, "train")
+    _validation_path, manifest, validation_rows = _lane_rows(config, "validation")
+    validation_rows[0]["query_source_uri"] = train_rows[0]["query_source_uri"]
+    rebuilt = build_query_input(
+        validation_rows[0]["query"],
+        validation_rows[0]["query_source_uri"],
+        max_query_bytes=3,
+    )
+    validation_rows[0].update(rebuilt)
+    _replace_lane(config, "validation", manifest, validation_rows)
+    with pytest.raises(ValueError, match="overlap catalog families, query sources"):
+        build_runtime(config)
+
+
+def test_runtime_rejects_packet_free_source_overlap(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(runtime_module, "_load_parent", lambda _config: _Core())
+    config = _fixture(tmp_path)
+    _lane_path, manifest, rows = _lane_rows(config, "ordinary")
+    rows[0]["source_family"] = "family-train"
+    _replace_lane(config, "ordinary", manifest, rows)
+    with pytest.raises(ValueError, match="packet-free lanes overlap"):
+        build_runtime(config)
+
+
+def test_runtime_rejects_target_token_inconsistent_with_family_function_pair(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(runtime_module, "_load_parent", lambda _config: _Core())
+    config = _fixture(tmp_path)
+    _lane_path, manifest, rows = _lane_rows(config, "train")
+    rows[0]["target_token_id"] = 7
+    rows[0]["targets"][rows[0]["output_positions"][0]] = 7
+    _replace_lane(config, "train", manifest, rows)
+    with pytest.raises(ValueError, match="family/function class"):
+        build_runtime(config)
+
+
+def test_runtime_rejects_case_manifest_mixed_with_another_source_manifest(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(runtime_module, "_load_parent", lambda _config: _Core())
+    config = _fixture(tmp_path)
+    source = Path(config["source_manifest"])
+    payload = json.loads(source.read_text(encoding="utf-8"))
+    payload["unbound_change"] = True
+    _write_json(source, payload)
+    config["source_manifest_sha256"] = sha256_file(source)
+    with pytest.raises(RuntimeError, match="another source manifest"):
+        build_runtime(config)

@@ -59,7 +59,9 @@ def atomic_json(path: str | Path, value: Mapping[str, object]) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     pending = target.with_name(f".{target.name}.{os.getpid()}.pending")
-    pending.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    pending.write_text(
+        json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     os.replace(pending, target)
 
 
@@ -122,6 +124,7 @@ class PrimeTrainingExample:
     record_ids: tuple[str, ...]
     splits: tuple[str, ...]
     source_families: tuple[str, ...]
+    query_source_families: tuple[str, ...]
     token_ids: Tensor
     targets: Tensor
     weights: Tensor
@@ -141,7 +144,9 @@ class PrimeTrainingExample:
             raise ValueError("example targets must use torch.long")
         if self.weights.shape != self.token_ids.shape:
             raise ValueError("example weights differ from token IDs")
-        if not torch.is_floating_point(self.weights) or not torch.all(torch.isfinite(self.weights)):
+        if not torch.is_floating_point(self.weights) or not torch.all(
+            torch.isfinite(self.weights)
+        ):
             raise ValueError("example weights must be finite floating-point values")
         if tuple(self.packet.owner_mask.shape) != tuple(self.token_ids.shape):
             raise ValueError("example packet differs from token IDs")
@@ -150,29 +155,50 @@ class PrimeTrainingExample:
             len(self.record_ids)
             == len(self.splits)
             == len(self.source_families)
+            == len(self.query_source_families)
             == len(self.output_positions)
             == batch_size
         ):
             raise ValueError("example provenance rows differ from batch size")
-        if not all(isinstance(value, str) and value.strip() for value in self.record_ids) or not all(
-            isinstance(value, str) and value.strip() for value in self.source_families
+        if (
+            not all(
+                isinstance(value, str) and value.strip() for value in self.record_ids
+            )
+            or not all(
+                isinstance(value, str) and value.strip()
+                for value in self.source_families
+            )
+            or not all(
+                isinstance(value, str) and value.strip()
+                for value in self.query_source_families
+            )
         ):
-            raise ValueError("example record and source-family identities are required")
+            raise ValueError(
+                "example record, catalog-family, and query-source identities are required"
+            )
         if len(set(self.record_ids)) != len(self.record_ids):
             raise ValueError("example repeats a record identity")
-        if any(split not in {"train", "validation", "final_test"} for split in self.splits):
+        if any(
+            split not in {"train", "validation", "final_test"} for split in self.splits
+        ):
             raise ValueError("example split is invalid")
         if self.task_kind != "bounded_route_or_function_token":
             raise ValueError("example task must be a bounded route/function token")
         if len(self.exact_evaluator_receipt_sha256) != 64 or any(
-            character not in "0123456789abcdef" for character in self.exact_evaluator_receipt_sha256
+            character not in "0123456789abcdef"
+            for character in self.exact_evaluator_receipt_sha256
         ):
             raise ValueError("example requires an exact evaluator receipt SHA-256")
         allowed = set(self.allowed_output_token_ids)
         if (
             not allowed
             or len(allowed) != len(self.allowed_output_token_ids)
-            or any(isinstance(token_id, bool) or not isinstance(token_id, int) or token_id < 0 for token_id in allowed)
+            or any(
+                isinstance(token_id, bool)
+                or not isinstance(token_id, int)
+                or token_id < 0
+                for token_id in allowed
+            )
         ):
             raise ValueError("example allowed output token IDs are invalid")
         if not torch.all((self.weights == 0) | (self.weights == 1)):
@@ -183,7 +209,9 @@ class PrimeTrainingExample:
         for batch_index, positions in enumerate(self.output_positions):
             if not positions or positions != tuple(sorted(set(positions))):
                 raise ValueError("example output positions must be sorted and unique")
-            owner_positions = self.packet.owner_mask[batch_index].nonzero().flatten().tolist()
+            owner_positions = (
+                self.packet.owner_mask[batch_index].nonzero().flatten().tolist()
+            )
             if not owner_positions or max(owner_positions) > positions[0]:
                 raise ValueError("example output precedes a required owner position")
             for position in positions:
@@ -191,9 +219,13 @@ class PrimeTrainingExample:
                     raise ValueError("example output position is out of bounds")
                 expected_mask[batch_index, position] = True
                 if int(self.targets[batch_index, position]) not in allowed:
-                    raise ValueError("example target lies outside the bounded output set")
+                    raise ValueError(
+                        "example target lies outside the bounded output set"
+                    )
         if not torch.equal(self.weights.to(dtype=torch.bool), expected_mask):
-            raise ValueError("example supervision exists outside declared output positions")
+            raise ValueError(
+                "example supervision exists outside declared output positions"
+            )
 
 
 def validate_training_examples(examples: Sequence[PrimeTrainingExample]) -> None:
@@ -231,7 +263,9 @@ def masked_language_loss(logits: Tensor, targets: Tensor, weights: Tensor) -> Te
         raise ValueError("targets or supervision weights are invalid")
     if int(targets.min()) < 0 or int(targets.max()) >= logits.shape[-1]:
         raise ValueError("target token lies outside model vocabulary")
-    if not torch.all(torch.isfinite(weights)) or not torch.all((weights == 0) | (weights == 1)):
+    if not torch.all(torch.isfinite(weights)) or not torch.all(
+        (weights == 0) | (weights == 1)
+    ):
         raise ValueError("supervision weights must be finite binary values")
     per_token = F.cross_entropy(logits.transpose(1, 2), targets, reduction="none")
     mass = weights.sum()
@@ -253,7 +287,9 @@ def new_training_state(
     torch.manual_seed(seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
-    optimizer = torch.optim.AdamW(model.reader.parameters(), lr=learning_rate, weight_decay=0.0)
+    optimizer = torch.optim.AdamW(
+        model.reader.parameters(), lr=learning_rate, weight_decay=0.0
+    )
     sampler = torch.Generator(device="cpu").manual_seed(seed + 1009)
     return optimizer, sampler
 
@@ -263,7 +299,9 @@ def _capture_rng(sampler: torch.Generator) -> dict[str, object]:
         "python": random.getstate(),
         "numpy": np.random.get_state(),
         "torch_cpu": torch.get_rng_state(),
-        "torch_cuda": (torch.cuda.get_rng_state_all() if torch.cuda.is_available() else []),
+        "torch_cuda": (
+            torch.cuda.get_rng_state_all() if torch.cuda.is_available() else []
+        ),
         "sampler": sampler.get_state(),
     }
 
@@ -277,7 +315,9 @@ def _restore_rng(state: Mapping[str, object], sampler: torch.Generator) -> None:
     sampler.set_state(state["sampler"])
 
 
-def _optimizer_to_device(optimizer: torch.optim.Optimizer, device: torch.device) -> None:
+def _optimizer_to_device(
+    optimizer: torch.optim.Optimizer, device: torch.device
+) -> None:
     for state in optimizer.state.values():
         for key, value in state.items():
             if isinstance(value, Tensor):
@@ -342,7 +382,9 @@ def load_adapter_checkpoint(
     if pointer.get("schema") != POINTER_SCHEMA:
         raise RuntimeError("adapter pointer schema changed")
     target = (output / str(pointer.get("file"))).resolve(strict=True)
-    if not target.is_relative_to(output) or sha256_file(target) != pointer.get("sha256"):
+    if not target.is_relative_to(output) or sha256_file(target) != pointer.get(
+        "sha256"
+    ):
         raise RuntimeError("adapter checkpoint pointer/hash verification failed")
     payload = torch.load(target, map_location=map_location, weights_only=False)
     if payload.get("schema") != CHECKPOINT_SCHEMA:
@@ -373,7 +415,9 @@ def train_steps(
     optimizer: torch.optim.Optimizer | None = None,
     sampler: torch.Generator | None = None,
     start_step: int = 0,
-    on_step: Callable[[int, torch.optim.Optimizer, torch.Generator, dict], None] | None = None,
+    on_step: (
+        Callable[[int, torch.optim.Optimizer, torch.Generator, dict], None] | None
+    ) = None,
 ) -> tuple[torch.optim.Optimizer, torch.Generator, list[dict[str, object]]]:
     """Advance one reader lineage while proving the parent stayed unchanged."""
 
@@ -387,7 +431,9 @@ def train_steps(
     model.core.eval()
     model.reader.train()
     if optimizer is None or sampler is None:
-        optimizer, sampler = new_training_state(model, learning_rate=learning_rate, seed=seed)
+        optimizer, sampler = new_training_state(
+            model, learning_rate=learning_rate, seed=seed
+        )
     parent_before = module_state_sha256(model.core)
     history: list[dict[str, object]] = []
     for offset in range(1, steps + 1):

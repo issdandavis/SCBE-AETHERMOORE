@@ -104,12 +104,20 @@ def validate_evaluation_result(
         or any(character not in "0123456789abcdef" for character in evaluator_receipt)
     ):
         raise ValueError("runtime evaluator receipt SHA-256 is invalid")
-    required_provenance = {"id", "record_id", "split", "source_family"}
+    required_provenance = {
+        "id",
+        "record_id",
+        "split",
+        "source_family",
+        "query_source_family",
+    }
     outcome_ids: set[str] = set()
     held_record_ids: set[str] = set()
     held_families: set[str] = set()
-    record_provenance: dict[str, tuple[str, str]] = {}
+    held_query_sources: set[str] = set()
+    record_provenance: dict[str, tuple[str, str, str]] = {}
     family_splits: dict[str, str] = {}
+    query_source_splits: dict[str, str] = {}
     for row in outcomes:
         missing_provenance = required_provenance - set(row)
         if missing_provenance:
@@ -117,14 +125,23 @@ def validate_evaluation_result(
         outcome_id = row["id"]
         record_id = row["record_id"]
         source_family = row["source_family"]
-        if not all(isinstance(item, str) and item.strip() for item in (outcome_id, record_id, source_family)):
+        query_source_family = row["query_source_family"]
+        if not all(
+            isinstance(item, str) and item.strip()
+            for item in (
+                outcome_id,
+                record_id,
+                source_family,
+                query_source_family,
+            )
+        ):
             raise ValueError("runtime outcome provenance is empty or invalid")
         if row["split"] not in {"validation", "final_test"}:
             raise ValueError("runtime evaluator returned a training-split outcome")
         if outcome_id in outcome_ids:
             raise ValueError("runtime evaluator repeated an outcome identity")
         outcome_ids.add(outcome_id)
-        provenance = (str(row["split"]), source_family)
+        provenance = (str(row["split"]), source_family, query_source_family)
         if record_id in record_provenance and record_provenance[record_id] != provenance:
             raise ValueError("runtime evaluator changed a record's provenance")
         record_provenance[record_id] = provenance
@@ -132,8 +149,13 @@ def validate_evaluation_result(
         if prior_split is not None and prior_split != row["split"]:
             raise ValueError("runtime evaluator overlaps validation/final source families")
         family_splits[source_family] = str(row["split"])
+        prior_query_split = query_source_splits.get(query_source_family)
+        if prior_query_split is not None and prior_query_split != row["split"]:
+            raise ValueError("runtime evaluator overlaps validation/final query sources")
+        query_source_splits[query_source_family] = str(row["split"])
         held_record_ids.add(record_id)
         held_families.add(source_family)
+        held_query_sources.add(query_source_family)
     if train_examples is not None:
         validate_training_examples(train_examples)
         expected_receipts = {example.exact_evaluator_receipt_sha256 for example in train_examples}
@@ -141,10 +163,13 @@ def validate_evaluation_result(
             raise ValueError("runtime evaluator receipt differs from training contract")
         training_record_ids = {record_id for example in train_examples for record_id in example.record_ids}
         training_families = {family for example in train_examples for family in example.source_families}
+        training_query_sources = {family for example in train_examples for family in example.query_source_families}
         if training_record_ids.intersection(held_record_ids):
             raise ValueError("runtime evaluator overlaps training record identities")
         if training_families.intersection(held_families):
             raise ValueError("runtime evaluator overlaps training source families")
+        if training_query_sources.intersection(held_query_sources):
+            raise ValueError("runtime evaluator overlaps training query sources")
     return {
         "metrics": dict(metrics),
         "per_example": outcomes,

@@ -5,7 +5,10 @@ from pathlib import Path
 
 import pytest
 
-from python.scbe.prime_token_input_access_evidence import REQUIRED_ARMS, aggregate_evidence
+from python.scbe.prime_token_input_access_evidence import (
+    REQUIRED_ARMS,
+    aggregate_evidence,
+)
 from python.scbe.prime_token_training import canonical_sha256, sha256_file
 
 SEEDS = (11, 29, 47)
@@ -22,7 +25,7 @@ def _grid(tmp_path: Path, *, candidate_wins: int = 20) -> tuple[Path, dict[tuple
     for arm in REQUIRED_ARMS:
         for seed in SEEDS:
             values = [
-                1.0 if arm == "canonical_six_view_reader" and index < candidate_wins else 0.0 for index in range(20)
+                (1.0 if arm == "canonical_six_view_reader" and index < candidate_wins else 0.0) for index in range(20)
             ]
             outcomes = [
                 {
@@ -30,6 +33,7 @@ def _grid(tmp_path: Path, *, candidate_wins: int = 20) -> tuple[Path, dict[tuple
                     "record_id": f"held-{index}",
                     "split": "final_test",
                     "source_family": "held-family",
+                    "query_source_family": "held-query-source",
                     "accuracy": value,
                     "relationship": value,
                     "function": value,
@@ -73,6 +77,7 @@ def _grid(tmp_path: Path, *, candidate_wins: int = 20) -> tuple[Path, dict[tuple
                     "record_id": row["record_id"],
                     "split": row["split"],
                     "source_family": row["source_family"],
+                    "query_source_family": row["query_source_family"],
                     "correct": bool(row["accuracy"]),
                 }
                 for row in outcomes
@@ -133,7 +138,9 @@ def _grid(tmp_path: Path, *, candidate_wins: int = 20) -> tuple[Path, dict[tuple
     return manifest, paths
 
 
-def test_aggregate_requires_candidate_to_beat_baseline_and_strongest_control(tmp_path: Path) -> None:
+def test_aggregate_requires_candidate_to_beat_baseline_and_strongest_control(
+    tmp_path: Path,
+) -> None:
     manifest, _ = _grid(tmp_path)
     result = aggregate_evidence(manifest)
     assert result["status"] == "SUPPORTED_NO_PROMOTION"
@@ -143,7 +150,10 @@ def test_aggregate_requires_candidate_to_beat_baseline_and_strongest_control(tmp
     for metric in ("accuracy", "relationship", "function"):
         gate = result["comparisons"][metric]
         assert gate["passes_gate"] is True
-        assert set(gate["comparisons"]) == {"no_intervention", gate["strongest_matched_control"]}
+        assert set(gate["comparisons"]) == {
+            "no_intervention",
+            gate["strongest_matched_control"],
+        }
 
 
 def test_aggregate_marks_finite_sample_failure_underpowered(tmp_path: Path) -> None:

@@ -112,6 +112,13 @@ That boundary is commit
 - `MATERIAL_RUNTIME_IMPLEMENTATION_TEST_RECEIPT_V1.json`
   (`18de849adc4a0165762fc5a4da7385f6ef882a8d513ca2d5337a77c29672c75c`).
 
+The target-invariant material producer, closed-session snapshot binding,
+dual-source connected-component split, exact manifest cross-binding, and
+runtime family/function target check are described in
+`docs/research/PRIME_TOKEN_MATERIAL_CASES_20261111.md`. Its focused suite passes
+`16/16`; the complete prime-token/release suite passes `120/120`. No material
+data or optimizer was opened by that implementation check.
+
 ## Remaining release blockers
 
 The current release remains `WAITING_FOR_RELEASE_REQUIREMENTS`. In particular,

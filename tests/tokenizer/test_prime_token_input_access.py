@@ -157,6 +157,7 @@ def _example(
         record_ids=(record_id,),
         splits=(split,),
         source_families=(family,),
+        query_source_families=(f"query-{family}",),
         token_ids=token_ids,
         targets=targets,
         weights=weights,
@@ -452,6 +453,7 @@ def test_material_evaluator_requires_raw_tri_point_and_system_metrics() -> None:
                 "record_id": "held-1",
                 "split": "final_test",
                 "source_family": "family-held",
+                "query_source_family": "query-family-held",
                 "accuracy": True,
             }
         ],
@@ -515,6 +517,7 @@ def test_evaluator_rejects_training_source_family_overlap() -> None:
                 "record_id": "held-1",
                 "split": "final_test",
                 "source_family": "family-a",
+                "query_source_family": "query-family-a",
                 "correct": True,
             }
         ],
@@ -584,6 +587,7 @@ def test_released_runner_writes_evaluation_and_checkpoint(tmp_path: Path, monkey
                     "record_id": "held-1",
                     "split": "final_test",
                     "source_family": "family-held",
+                    "query_source_family": "query-family-held",
                     "correct": True,
                 }
             ],
@@ -652,6 +656,7 @@ def test_independent_replay_detects_checkpoint_and_ledger_tampering(
         record_ids=held.record_ids,
         splits=held.splits,
         source_families=held.source_families,
+        query_source_families=held.query_source_families,
         output_positions=held.output_positions,
         allowed_output_token_ids=held.allowed_output_token_ids,
         exact_evaluator_receipt_sha256=held.exact_evaluator_receipt_sha256,
@@ -702,6 +707,7 @@ def test_no_intervention_replay_seals_parent_without_checkpoint() -> None:
         record_ids=held.record_ids,
         splits=held.splits,
         source_families=held.source_families,
+        query_source_families=held.query_source_families,
         output_positions=held.output_positions,
         allowed_output_token_ids=held.allowed_output_token_ids,
         exact_evaluator_receipt_sha256=held.exact_evaluator_receipt_sha256,
