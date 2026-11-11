@@ -119,17 +119,22 @@ def audit_release(*, contract_path: Path, state_path: Path) -> dict[str, Any]:
                 blockers.append(f"missing evidence: {evidence_id}")
                 evidence_gates[evidence_id] = {"passed": False, "status": None}
                 continue
-            status = str(entry.get("status") or "")
+            state_status = str(entry.get("status") or "")
+            status = state_status
             artifact_path: Path | None = None
             artifact = entry.get("path")
             if artifact:
                 artifact_path = Path(str(artifact)).resolve(strict=False)
                 if not artifact_path.is_file():
                     blockers.append(f"evidence path is unavailable for {evidence_id}")
-                elif entry.get("read_status_from_artifact"):
+                elif entry.get("read_status_from_artifact") or (
+                    entry.get("immutable") and state_status in accepted and artifact_path.suffix.casefold() == ".json"
+                ):
                     try:
                         artifact_value = _object(artifact_path, f"evidence {evidence_id}")
                         status = str(artifact_value.get("status") or "")
+                        if entry.get("immutable") and state_status in accepted and status != state_status:
+                            errors.append(f"state/artifact status mismatch for {evidence_id}")
                     except (OSError, ValueError, json.JSONDecodeError) as exc:
                         errors.append(f"cannot read evidence status for {evidence_id}: {exc}")
                 expected_hash = str(entry.get("sha256") or "").casefold()

@@ -814,3 +814,16 @@ arrays were not consumed. The evidence aggregator requires those flags and
 hashes, finite per-example target logits/NLL, and exact replay aggregates.
 Focused tests pass `41/41`; the complete prime-token/release suite passes
 `125/125`. Material data and weights were not opened.
+
+## Release evidence authority — 2026-11-11
+
+The release auditor treats a hashed immutable JSON evidence file that claims an
+accepted gate status as the authority for that status. A copied status in
+`CURRENT_RELEASE_STATE.json` must match the status inside that receipt;
+matching the file hash while claiming a different accepted state is an invalid
+release state. Dynamic watcher artifacts may still refresh through
+`read_status_from_artifact` without being immutable.
+
+The release contract also requires the material-runtime implementation and the
+multi-seed evidence-aggregator implementation. A runner plus replay receipt
+alone cannot clear the manual training-review boundary.

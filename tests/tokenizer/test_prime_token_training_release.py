@@ -35,6 +35,8 @@ EVIDENCE = {
     "preregistration": ["FROZEN"],
     "runner_implementation": ["TESTED"],
     "independent_replay_implementation": ["TESTED"],
+    "evidence_aggregator_implementation": ["TESTED"],
+    "material_runtime_implementation": ["TESTED"],
 }
 
 
@@ -135,6 +137,39 @@ def test_rejects_mutated_immutable_evidence(tmp_path: Path) -> None:
 
     assert report["status"] == "INVALID_RELEASE_STATE"
     assert "sha256 mismatch for preregistration" in report["errors"]
+
+
+def test_rejects_state_status_that_disagrees_with_hashed_artifact(tmp_path: Path) -> None:
+    contract, state = _fixture(tmp_path)
+    value = json.loads(state.read_text(encoding="utf-8"))
+    evidence = value["evidence"]["independent_replay_implementation"]
+    artifact = Path(evidence["path"])
+    artifact.write_text('{"status":"TESTED_NO_PROMOTION"}', encoding="utf-8")
+    evidence["sha256"] = hashlib.sha256(artifact.read_bytes()).hexdigest()
+    _write(state, value)
+
+    report = audit_release(contract_path=contract, state_path=state)
+
+    assert report["status"] == "INVALID_RELEASE_STATE"
+    assert "state/artifact status mismatch for independent_replay_implementation" in report["errors"]
+    gate = report["gates"]["evidence"]["independent_replay_implementation"]
+    assert gate["status"] == "TESTED_NO_PROMOTION"
+    assert gate["passed"] is False
+
+
+def test_requires_material_runtime_and_evidence_aggregator(tmp_path: Path) -> None:
+    contract, state = _fixture(tmp_path)
+    value = json.loads(state.read_text(encoding="utf-8"))
+    del value["evidence"]["material_runtime_implementation"]
+    del value["evidence"]["evidence_aggregator_implementation"]
+    _write(state, value)
+
+    report = audit_release(contract_path=contract, state_path=state)
+
+    assert report["status"] == "WAITING_FOR_RELEASE_REQUIREMENTS"
+    assert report["error_count"] == 0
+    assert "missing evidence: material_runtime_implementation" in report["blockers"]
+    assert "missing evidence: evidence_aggregator_implementation" in report["blockers"]
 
 
 def test_rejects_authority_drift(tmp_path: Path) -> None:

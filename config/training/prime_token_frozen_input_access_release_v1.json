@@ -31,7 +31,13 @@
     "e92_result": [
       "COMPLETE"
     ],
+    "evidence_aggregator_implementation": [
+      "TESTED"
+    ],
     "independent_replay_implementation": [
+      "TESTED"
+    ],
+    "material_runtime_implementation": [
       "TESTED"
     ],
     "preregistration": [
