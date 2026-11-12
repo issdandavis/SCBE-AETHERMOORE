@@ -106,8 +106,7 @@ def test_apply_joi_floor_updates_override_and_lock_only(tmp_path: Path) -> None:
                 '      "version": "18.2.9",',
                 '      "resolved": "https://registry.npmjs.org/joi/-/joi-18.2.9.tgz",',
                 '      "integrity": "sha512-old",',
-                '      "license": "BSD-3-Clause"'
-                "    }",
+                '      "license": "BSD-3-Clause"' "    }",
                 "  }",
                 "}",
                 "",
