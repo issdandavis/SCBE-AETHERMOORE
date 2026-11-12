@@ -1,0 +1,117 @@
+name: CI Fixer
+
+# After a trusted nightly or npm-gate failure, apply only the repairs that
+# scripts/ci/repair_plans.py marks safe (a lock snapshot that moved forward,
+# or the known joi high-advisory floor). Pull requests from forks are ignored.
+
+on:
+  workflow_run:
+    workflows:
+      - Nightly Full Python Suite
+      - npm Dependency Security Gate
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+
+concurrency:
+  group: ci-fixer-${{ github.event.workflow_run.id || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event.workflow_run.conclusion == 'failure' &&
+        github.event.workflow_run.event != 'pull_request' &&
+        github.event.workflow_run.head_repository.full_name == github.repository
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout the failing revision
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Download nightly pytest log
+        if: github.event.workflow_run.name == 'Nightly Full Python Suite'
+        uses: actions/download-artifact@v7
+        continue-on-error: true
+        with:
+          name: nightly-pytest-log
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download npm audit report
+        if: github.event.workflow_run.name == 'npm Dependency Security Gate'
+        uses: actions/download-artifact@v7
+        continue-on-error: true
+        with:
+          name: npm-audit-report
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Apply safe repairs
+        id: repair
+        run: |
+          set -eu
+          files=""
+          for candidate in nightly-pytest.log npm-audit-report.json; do
+            if [ -f "$candidate" ]; then
+              files="$files $candidate"
+            fi
+          done
+          if [ -z "$files" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo '{"changed": false, "files": [], "repairs": []}' > /tmp/repair-result.json
+            exit 0
+          fi
+          python scripts/ci/repair_plans.py --apply --json $files > /tmp/repair-result.json
+          python - << 'PY'
+          import json
+          import os
+          result = json.load(open("/tmp/repair-result.json", encoding="utf-8"))
+          if result.get("error"):
+              raise SystemExit(result["error"])
+          path = os.environ["GITHUB_OUTPUT"]
+          with open(path, "a", encoding="utf-8") as handle:
+              handle.write("changed=" + ("true" if result.get("changed") else "false") + "\n")
+          PY
+
+      - name: Open a repair pull request
+        if: steps.repair.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.event.workflow_run.id || github.run_id }}
+        run: |
+          set -eu
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mapfile -t files < <(python -c 'import json; print("\n".join(json.load(open("/tmp/repair-result.json"))["files"]))')
+          git add -- "${files[@]}"
+          if git diff --cached --quiet; then
+            echo "Nothing staged"
+            exit 0
+          fi
+          digest=$(git diff --cached | sha256sum | cut -c1-12)
+          branch="automation/ci-fixer-${digest}"
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
+            echo "Branch $branch already exists"
+            exit 0
+          fi
+          git checkout -b "$branch"
+          git commit -m "fix(ci): apply safe gate repairs from run ${RUN_ID}"
+          git push origin "$branch"
+          gh pr create \
+            --title "fix(ci): apply safe gate repairs" \
+            --body "$(printf '%s\n' '## Summary' '' 'Automated by `.github/workflows/ci-fixer.yml` after a trusted mainline failure.' '' 'Only repairs marked safe by `scripts/ci/repair_plans.py` are included. Floors are never lowered.' '' \"Source run: ${RUN_ID}\" '')"

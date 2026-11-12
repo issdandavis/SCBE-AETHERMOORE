@@ -86,10 +86,33 @@ def apply_fixes(failures: list[dict], fix_commands: list[str], dry_run: bool = F
     """Apply fixes based on failure categories. Returns count of fixes applied."""
     fixes_applied = 0
     strategies_done = set()
+    safe_repairs = []
+    for failure in failures:
+        payload = failure.get("repair")
+        if isinstance(payload, dict) and payload.get("safe"):
+            safe_repairs.append(payload)
+
+    if safe_repairs:
+        print(f"\n  Strategy: bounded repair ({len(safe_repairs)} safe plan(s))")
+        if dry_run:
+            for payload in safe_repairs:
+                print(f"    [DRY RUN] {payload.get('summary')}")
+        else:
+            sys.path.insert(0, str(Path(__file__).parent))
+            from repair_plans import Repair, apply_repairs
+
+            changed = apply_repairs([Repair(**payload) for payload in safe_repairs])
+            print(f"    Updated {', '.join(changed) if changed else 'nothing new'}")
+            fixes_applied += len(changed)
 
     for failure in failures:
         strategy = failure.get("fix_strategy", "")
         if strategy in strategies_done:
+            continue
+        if failure.get("repair"):
+            if not failure["repair"].get("safe"):
+                print(f"\n  Held: {failure.get('description')}")
+                print(f"    {failure.get('details') or 'needs a person'}")
             continue
         strategies_done.add(strategy)
 
@@ -252,6 +275,7 @@ def main():
                 "file_path": f.file_path,
                 "line_number": f.line_number,
                 "details": f.details,
+                "repair": f.repair,
             }
             for f in report.failures
         ]

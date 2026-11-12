@@ -111,6 +111,7 @@ class FailureMatch:
     file_path: Optional[str] = None
     line_number: Optional[int] = None
     details: Optional[str] = None
+    repair: Optional[dict] = None
 
 
 @dataclass
@@ -190,6 +191,34 @@ def strip_log_prefix(line: str) -> str:
 def classify_failures(log_text: str) -> list[FailureMatch]:
     matches = []
     seen = set()
+
+    try:
+        from repair_plans import classify_text
+    except ImportError:
+        from scripts.ci.repair_plans import classify_text
+
+    consumed = []
+    for repair in classify_text(log_text):
+        consumed.append(repair.evidence)
+        matches.append(
+            FailureMatch(
+                pattern_id=repair.kind,
+                category="security" if repair.safe else "held",
+                fix_strategy=repair.kind,
+                description=repair.summary,
+                raw_match=repair.evidence[:200],
+                file_path=repair.file,
+                details=repair.hold_reason,
+                repair=repair.to_dict(),
+            )
+        )
+
+    remaining = []
+    for raw_line in log_text.split("\n"):
+        if any(evidence and evidence in raw_line for evidence in consumed):
+            continue
+        remaining.append(raw_line)
+    log_text = "\n".join(remaining)
 
     for pattern_def in FAILURE_PATTERNS:
         for raw_line in log_text.split("\n"):
@@ -271,6 +300,10 @@ def generate_fix_commands(failures: list[FailureMatch]) -> list[str]:
             commands.append("npm audit fix")
         elif f.fix_strategy == "build_fix":
             commands.append("npm run build 2>&1 | head -30")
+        elif f.fix_strategy in ("purl_floor_drift", "npm_advisory_floor") and f.repair and f.repair.get("safe"):
+            commands.append("python scripts/ci/repair_plans.py --apply")
+        elif f.repair and not f.repair.get("safe"):
+            commands.append(f"# held: {f.details or f.description}")
 
     return commands
 
