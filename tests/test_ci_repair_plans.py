@@ -76,7 +76,9 @@ def test_apply_rewrites_only_the_snapshot_pin(tmp_path: Path) -> None:
     snapshot = tmp_path / "tests"
     snapshot.mkdir()
     target = snapshot / "test_dependency_snapshot.py"
-    target.write_text('EXPECTED = {\n        "pyasn1": "0.6.4",\n        "certifi": "2026.10.23",\n    }\n', encoding="utf-8")
+    target.write_text(
+        'EXPECTED = {\n        "pyasn1": "0.6.4",\n        "certifi": "2026.10.23",\n    }\n', encoding="utf-8"
+    )
     repairs = classify_text(NIGHTLY)
     changed = apply_repairs(repairs, tmp_path)
     assert changed == ["tests/test_dependency_snapshot.py"]
@@ -104,7 +106,7 @@ def test_apply_joi_floor_updates_override_and_lock_only(tmp_path: Path) -> None:
                 '      "version": "18.2.9",',
                 '      "resolved": "https://registry.npmjs.org/joi/-/joi-18.2.9.tgz",',
                 '      "integrity": "sha512-old",',
-                '      "license": "BSD-3-Clause"',
+                '      "license": "BSD-3-Clause"'
                 "    }",
                 "  }",
                 "}",
