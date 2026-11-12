@@ -117,9 +117,9 @@ def classify_text(text: str) -> list[Repair]:
                 package=name,
                 expected=want,
                 resolved=got,
-                hold_reason=None
-                if newer
-                else "Resolved version is not newer than the snapshot. Refusing to lower a floor.",
+                hold_reason=(
+                    None if newer else "Resolved version is not newer than the snapshot. Refusing to lower a floor."
+                ),
             )
         )
 
