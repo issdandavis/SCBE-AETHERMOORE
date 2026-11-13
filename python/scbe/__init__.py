@@ -111,6 +111,13 @@ from .frozen_stitch_protocol import (
     build_stitch_envelope,
     verify_stitch_chain,
 )
+from .concept_exposure_ledger import (
+    ConceptExposureLedger,
+    ExposureSample,
+    class_balanced_probabilities,
+    exposure_manifest_sha256,
+    weight_effect_receipt,
+)
 from .ca_opcode_table import (
     CAOpcodeEntry,
     OP_TABLE as CA_OP_TABLE,
@@ -230,6 +237,11 @@ __all__ += [
     "REFERENCE14_IMPLEMENTATION_SECTIONS",
     "build_stitch_envelope",
     "verify_stitch_chain",
+    "ConceptExposureLedger",
+    "ExposureSample",
+    "class_balanced_probabilities",
+    "exposure_manifest_sha256",
+    "weight_effect_receipt",
     "CAOpcodeEntry",
     "CA_OP_TABLE",
     "validate_ca_table",
