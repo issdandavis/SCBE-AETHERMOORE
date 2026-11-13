@@ -874,5 +874,14 @@ The first real v2 pass measured 16 closed source sessions and one open session:
 The authoritative status is therefore `WAITING_FOR_CLOSED_REVIEW_QUERIES`, not
 `READY_FOR_PINNED_COLLECTOR`. Training intake, scoring, merge, promotion, tool
 dispatch, and partial unfreezing remain unchanged and unauthorized. The full
-tokenizer suite passes `381/381`; the immutable pre-build inventory is at
+tokenizer suite passes `383/383`; the immutable pre-build inventory is at
 `C:/dev/clay-training-runs/prime-token-catalog-20261106/system-audit-20261113/INVENTORY.json`.
+
+The corrected implementation is commit `9ef5f5bd5`. Its separately named v2
+monitor launched headlessly through `run_headless.py` with launcher PID `25352`
+and worker PID `6832`; these PIDs are launch evidence, not durable identities.
+The monitor polls every 600 seconds and remains telemetry-only. Its config,
+current status, bounded log, and launch receipt live under
+`C:/dev/clay-training-runs/prime-token-catalog-20261106/prospective-query-readiness-v2-20261113/`.
+The launch receipt SHA-256 is
+`4f2009dce64752c889b522ed1b67b4ecd3ee1158b96ccc23bf5dae912089606c`.
