@@ -3,14 +3,36 @@
 from __future__ import annotations
 
 import inspect
+import random
 
 import torch
 
 from python.scbe.clay_frozen_multiview_adapter import FrozenActionModel
+from python.scbe.clay_frozen_multiview_data import build_frozen_multiview_dataset
 from python.scbe.clay_frozen_multiview_replay import (
     ReplayFrozenActionModel,
+    build_replay_dataset,
     replay_action_metrics,
 )
+
+
+class FakeReplayProvider:
+    source_hashes = {"fake": "b" * 64}
+
+    def training_sandboxes(self) -> tuple[int, ...]:
+        return (0, 1, 2)
+
+    def holdout_sandbox(self) -> int:
+        return 9
+
+    def sample_state(self, sandbox: int, rng: random.Random) -> int:
+        return rng.randrange(1, 1_000_000)
+
+    def materialize(self, sandbox: int, state: int) -> tuple[torch.Tensor, int, int]:
+        label = state % 5
+        sector = (state // 5) % 8
+        feature = torch.arange(37, dtype=torch.float32) * 0.03125 + state * 1e-5 + sandbox * 0.125
+        return feature, label, sector
 
 
 def test_replay_model_matches_producer_without_importing_it() -> None:
@@ -36,6 +58,21 @@ def test_replay_model_matches_producer_without_importing_it() -> None:
 
     source = inspect.getsource(__import__("python.scbe.clay_frozen_multiview_replay", fromlist=["*"]))
     assert "from python.scbe.clay_frozen_multiview_adapter import" not in source
+    assert "from python.scbe.clay_frozen_multiview_data import" not in source
+
+
+def test_replay_rebuilds_dataset_without_producer_data_builder() -> None:
+    producer = build_frozen_multiview_dataset(FakeReplayProvider(), rows_per_view=10, holdout_rows=15, seed=20261113)
+    replay = build_replay_dataset(FakeReplayProvider(), rows_per_view=10, holdout_rows=15, seed=20261113)
+
+    assert replay.manifest == producer.manifest
+    for replay_rows, producer_rows in (
+        (replay.static_rows, producer.static_rows),
+        (replay.multiview_rows, producer.multiview_rows),
+        (replay.holdout_rows, producer.holdout_rows),
+    ):
+        assert [row.pair() for row in replay_rows] == [row.pair() for row in producer_rows]
+        assert [row.identity_record() for row in replay_rows] == [row.identity_record() for row in producer_rows]
 
 
 def test_replay_metrics_expose_action_and_sector_failures() -> None:

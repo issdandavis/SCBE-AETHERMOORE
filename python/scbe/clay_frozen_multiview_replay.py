@@ -11,25 +11,25 @@ authority.
 from __future__ import annotations
 
 import argparse
+from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
 import json
 import math
 import os
 from pathlib import Path
+import random
 import statistics
+import struct
 from typing import Any, Mapping, Sequence
 
 import torch
 from torch import Tensor, nn
 
-from python.scbe.clay_frozen_multiview_data import (
-    ActionTextRow,
-    build_frozen_multiview_dataset,
-)
 from python.scbe.clay_paired_orbit_training import ClaySourceAdapter
 
 SCHEMA = "clay.frozen-multiview-adapter-independent-replay.v1"
+DATA_SCHEMA = "clay.frozen-multiview-action-data.v1"
 AUTHORITY = "MEASUREMENT_ONLY_NO_EXECUTION_NO_PROMOTION_NO_PARTIAL_UNFREEZE"
 TRAINED_ARMS = (
     "frozen_adapter_static",
@@ -46,6 +46,67 @@ CONTROLS = (
 FROZEN_PREFIXES = ("e.", "g.", "count_head.")
 STRUCTURAL_MISMATCH_DELTA = 1e300
 PAD, BOS, SEP, EOS = "\x00", "\x02", "\x1f", "\x03"
+FEATURE_WIDTH = 37
+ACTION_COUNT = 5
+BYTE_TOKEN_BASE = 0xE100
+STATIC_SOURCE = "clay-action-train-static-v1"
+MULTIVIEW_SOURCES = tuple(f"clay-action-train-view-{index}-v1" for index in range(3))
+HOLDOUT_SOURCE = "clay-action-held-diagonal-v1"
+
+
+@dataclass(frozen=True, slots=True)
+class ReplaySample:
+    """Identity record declared independently from the producer ledger."""
+
+    sample_id: str
+    payload_sha256: str
+    concept_id: str
+    variant_id: str
+    source_family: str
+    split: str
+    operation_id: str
+    view_id: str
+
+    def identity_record(self) -> dict[str, str]:
+        return {
+            "sample_id": self.sample_id,
+            "payload_sha256": self.payload_sha256,
+            "concept_id": self.concept_id,
+            "variant_id": self.variant_id,
+            "source_family": self.source_family,
+            "split": self.split,
+            "operation_id": self.operation_id,
+            "view_id": self.view_id,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class ReplayActionRow:
+    sample: ReplaySample
+    prompt: str
+    target: str
+    label: int
+    sector: int
+
+    def pair(self) -> tuple[str, str]:
+        return self.prompt, self.target
+
+    def identity_record(self) -> dict[str, Any]:
+        return {
+            **self.sample.identity_record(),
+            "prompt_sha256": hashlib.sha256(self.prompt.encode("utf-8")).hexdigest(),
+            "target": self.target,
+            "label": self.label,
+            "sector": self.sector,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class ReplayDataset:
+    static_rows: tuple[ReplayActionRow, ...]
+    multiview_rows: tuple[ReplayActionRow, ...]
+    holdout_rows: tuple[ReplayActionRow, ...]
+    manifest: Mapping[str, Any]
 
 
 def _utc_now() -> str:
@@ -64,6 +125,184 @@ def _canonical_json(value: Any) -> bytes:
 
 def _stable_hash(value: Any) -> str:
     return hashlib.sha256(_canonical_json(value)).hexdigest()
+
+
+def _replay_feature_bytes(feature: Tensor) -> bytes:
+    """Serialize one state without calling the producer's byte bridge."""
+
+    value = feature.detach().cpu().to(torch.float32).contiguous()
+    if value.shape != (FEATURE_WIDTH,) or not bool(torch.isfinite(value).all()):
+        raise ValueError("action feature must be one finite 37-value vector")
+    return struct.pack(f">{FEATURE_WIDTH}f", *value.tolist())
+
+
+def _replay_prompt(feature: Tensor) -> str:
+    payload = _replay_feature_bytes(feature)
+    return "K :" + "".join(chr(BYTE_TOKEN_BASE + item) for item in payload) + " =>"
+
+
+def _replay_quotas(count: int) -> list[int]:
+    if count < ACTION_COUNT:
+        raise ValueError("each replay row bank must cover every action")
+    base, remainder = divmod(count, ACTION_COUNT)
+    return [base + (index < remainder) for index in range(ACTION_COUNT)]
+
+
+def _collect_replay_rows(
+    provider: Any,
+    sandbox: Any,
+    *,
+    count: int,
+    seed: int,
+    view_id: str,
+    source_family: str,
+    split: str,
+    used_payloads: set[str],
+) -> tuple[ReplayActionRow, ...]:
+    """Recreate accepted rows through replay-local balancing and serialization."""
+
+    quotas = _replay_quotas(count)
+    accepted = [0] * ACTION_COUNT
+    rng = random.Random(seed)
+    rows: list[ReplayActionRow] = []
+    attempts = 0
+    while len(rows) < count and attempts < count * 512:
+        attempts += 1
+        state = provider.sample_state(sandbox, rng)
+        feature, raw_label, raw_sector = provider.materialize(sandbox, state)
+        label = int(raw_label)
+        sector = int(raw_sector)
+        if label not in range(ACTION_COUNT) or accepted[label] >= quotas[label]:
+            continue
+        payload = _replay_feature_bytes(feature)
+        payload_sha256 = hashlib.sha256(
+            payload + bytes((label, sector & 0xFF))
+        ).hexdigest()
+        if payload_sha256 in used_payloads:
+            continue
+        used_payloads.add(payload_sha256)
+        sample_id = f"{split}-{view_id}-{len(rows):06d}"
+        rows.append(
+            ReplayActionRow(
+                sample=ReplaySample(
+                    sample_id=sample_id,
+                    payload_sha256=payload_sha256,
+                    concept_id=f"sector-{sector}",
+                    variant_id=f"byte-state-{payload_sha256[:24]}",
+                    source_family=source_family,
+                    split=split,
+                    operation_id=f"action-{label}",
+                    view_id=view_id,
+                ),
+                prompt=_replay_prompt(feature),
+                target=str(label),
+                label=label,
+                sector=sector,
+            )
+        )
+        accepted[label] += 1
+    if len(rows) != count:
+        raise RuntimeError(
+            f"could not fill replay view {view_id}: {len(rows)}/{count}; "
+            f"action counts={accepted}"
+        )
+    return tuple(rows)
+
+
+def _replay_action_counts(rows: Sequence[ReplayActionRow]) -> dict[str, int]:
+    return {
+        f"action-{action}": sum(row.label == action for row in rows)
+        for action in range(ACTION_COUNT)
+    }
+
+
+def build_replay_dataset(
+    provider: Any,
+    *,
+    rows_per_view: int,
+    holdout_rows: int,
+    seed: int,
+) -> ReplayDataset:
+    """Independently reconstruct the producer's deterministic dataset deed."""
+
+    if rows_per_view < ACTION_COUNT or holdout_rows < ACTION_COUNT:
+        raise ValueError("replay row counts must cover every action")
+    sandboxes = provider.training_sandboxes()
+    if len(sandboxes) != 3:
+        raise ValueError("replay requires exactly three legal train views")
+    used_payloads: set[str] = set()
+    static_rows = _collect_replay_rows(
+        provider,
+        sandboxes[0],
+        count=rows_per_view * 3,
+        seed=seed + 11,
+        view_id="static-view-0",
+        source_family=STATIC_SOURCE,
+        split="train",
+        used_payloads=used_payloads,
+    )
+    multiview_rows = tuple(
+        row
+        for view, sandbox in enumerate(sandboxes)
+        for row in _collect_replay_rows(
+            provider,
+            sandbox,
+            count=rows_per_view,
+            seed=seed + 101 + 37 * view,
+            view_id=f"train-view-{view}",
+            source_family=MULTIVIEW_SOURCES[view],
+            split="train",
+            used_payloads=used_payloads,
+        )
+    )
+    held_rows = _collect_replay_rows(
+        provider,
+        provider.holdout_sandbox(),
+        count=holdout_rows,
+        seed=seed + 1009,
+        view_id="held-diagonal",
+        source_family=HOLDOUT_SOURCE,
+        split="holdout",
+        used_payloads=used_payloads,
+    )
+    body: dict[str, Any] = {
+        "schema": DATA_SCHEMA,
+        "seed": seed,
+        "feature_width": FEATURE_WIDTH,
+        "feature_bytes_per_row": FEATURE_WIDTH * 4,
+        "byte_token_base": BYTE_TOKEN_BASE,
+        "byte_token_count": 256,
+        "rows_per_view": rows_per_view,
+        "static_rows": len(static_rows),
+        "multiview_rows": len(multiview_rows),
+        "holdout_rows": len(held_rows),
+        "static_sha256": _stable_hash([row.identity_record() for row in static_rows]),
+        "multiview_sha256": _stable_hash(
+            [row.identity_record() for row in multiview_rows]
+        ),
+        "holdout_sha256": _stable_hash([row.identity_record() for row in held_rows]),
+        "static_action_counts": _replay_action_counts(static_rows),
+        "multiview_action_counts": _replay_action_counts(multiview_rows),
+        "holdout_action_counts": _replay_action_counts(held_rows),
+        "source_hashes": dict(sorted(provider.source_hashes.items())),
+        "source_families": {
+            "static": [STATIC_SOURCE],
+            "multiview": list(MULTIVIEW_SOURCES),
+            "holdout": [HOLDOUT_SOURCE],
+        },
+        "source_disjoint": HOLDOUT_SOURCE not in {STATIC_SOURCE, *MULTIVIEW_SOURCES},
+        "authority": {
+            "execution": "NONE",
+            "compiler": "DETERMINISTIC_LABEL_AUTHORITY_ONLY",
+            "promotion": "NOT_AUTHORIZED",
+        },
+    }
+    return ReplayDataset(
+        static_rows=static_rows,
+        multiview_rows=multiview_rows,
+        holdout_rows=held_rows,
+        manifest={**body, "manifest_sha256": _stable_hash(body)},
+    )
 
 
 def _file_sha256(path: Path) -> str:
@@ -198,7 +437,7 @@ def _generate_integer(
 
 def _predict_actions(
     model: ReplayFrozenActionModel,
-    rows: Sequence[ActionTextRow],
+    rows: Sequence[ReplayActionRow],
     stoi: Mapping[str, int],
     itos: Mapping[int, str],
     *,
@@ -434,6 +673,188 @@ def _load_payload(path: Path, expected_sha256: str) -> dict[str, Any]:
     return payload
 
 
+def verify_completed_artifacts(
+    run_dir: Path, *, tolerance: float = 1e-12
+) -> dict[str, Any]:
+    """Replay only terminal artifacts without computing a campaign verdict.
+
+    The producer emits each file atomically, but the model/result pair is not a
+    transaction. Missing or half-written pairs are therefore reported as
+    pending rather than failed. This receipt is deliberately incapable of
+    aggregate comparison or promotion.
+    """
+
+    run_dir = run_dir.resolve(strict=True)
+    manifest = _read_json(run_dir / "RUN_MANIFEST.json")
+    config = manifest["config"]
+    errors: list[str] = []
+
+    provider = ClaySourceAdapter(Path(config["source_dir"]))
+    dataset = build_replay_dataset(
+        provider,
+        rows_per_view=int(config["rows_per_view"]),
+        holdout_rows=int(config["holdout_rows"]),
+        seed=int(config["data_seed"]),
+    )
+    dataset_matches = dict(dataset.manifest) == dict(manifest["dataset"])
+    if not dataset_matches:
+        errors.append("independently rebuilt dataset manifest mismatch")
+    source_hashes_match = dict(sorted(provider.source_hashes.items())) == dict(
+        config["source_hashes"]
+    )
+    if not source_hashes_match:
+        errors.append("source hash mismatch")
+
+    count_train = _counting_rows(False)
+    count_holdout = _counting_rows(True)
+    vocab, stoi = _vocab_of(
+        count_train,
+        count_holdout,
+        tuple(row.pair() for row in dataset.static_rows),
+        tuple(row.pair() for row in dataset.multiview_rows),
+        tuple(row.pair() for row in dataset.holdout_rows),
+    )
+    vocab_matches = _stable_hash(vocab) == manifest["vocab_sha256"]
+    if not vocab_matches:
+        errors.append("vocabulary hash mismatch")
+    itos = {index: char for char, index in stoi.items()}
+
+    receipts: list[dict[str, Any]] = []
+    pending: list[str] = []
+    incomplete_pairs: list[str] = []
+    expected = len(config["seeds"]) * len(ALL_ARMS)
+    for seed in (int(value) for value in config["seeds"]):
+        parent_dir = run_dir / "parents" / f"seed-{seed}"
+        parent_result_path = parent_dir / "RESULT.json"
+        parent_path = parent_dir / "PARENT.pt"
+        if parent_result_path.is_file() != parent_path.is_file():
+            identity = f"no_intervention_adapter:seed-{seed}"
+            pending.append(identity)
+            incomplete_pairs.append(identity)
+            parent = None
+            parent_result = None
+        elif not parent_result_path.is_file():
+            pending.append(f"no_intervention_adapter:seed-{seed}")
+            parent = None
+            parent_result = None
+        else:
+            parent_result = _read_json(parent_result_path)
+            parent = _load_payload(parent_path, str(parent_result["parent_sha256"]))
+            if parent.get("vocab") != vocab:
+                errors.append(f"parent vocabulary mismatch for seed {seed}")
+
+        candidates: list[tuple[str, Path, Path, Mapping[str, Any] | None]] = []
+        if parent is not None and parent_result is not None:
+            candidates.append(
+                ("no_intervention_adapter", parent_path, parent_result_path, parent)
+            )
+        for arm in TRAINED_ARMS:
+            horse_dir = run_dir / "horses" / f"{arm}-seed-{seed}"
+            result_path = horse_dir / "RESULT.json"
+            artifact = horse_dir / "MODEL.pt"
+            if result_path.is_file() != artifact.is_file():
+                identity = f"{arm}:seed-{seed}"
+                pending.append(identity)
+                incomplete_pairs.append(identity)
+            elif result_path.is_file():
+                candidates.append((arm, artifact, result_path, None))
+            else:
+                pending.append(f"{arm}:seed-{seed}")
+
+        for arm, artifact, result_path, loaded_parent in candidates:
+            recorded = _read_json(result_path)
+            if str(recorded.get("status")) != "COMPLETE":
+                errors.append(f"{arm} seed {seed}: result is not terminal")
+                continue
+            if arm == "no_intervention_adapter":
+                payload = dict(loaded_parent or {})
+                expected_sha = str(recorded["parent_sha256"])
+                null_carrier = False
+            else:
+                expected_sha = str(recorded["model_sha256"])
+                payload = _load_payload(artifact, expected_sha)
+                null_carrier = arm == "frozen_adapter_null"
+            if payload.get("vocab") != vocab:
+                errors.append(f"{arm} seed {seed}: artifact vocabulary mismatch")
+            model = ReplayFrozenActionModel(len(vocab))
+            model.load_state_dict(payload["model_state"], strict=True)
+            predictions = _predict_actions(
+                model,
+                dataset.holdout_rows,
+                stoi,
+                itos,
+                null_carrier=null_carrier,
+            )
+            metrics = replay_action_metrics(predictions)
+            count_score = _counting_accuracy(model, count_holdout, stoi, itos)
+            mismatch_count = _prediction_mismatches(
+                predictions, recorded["predictions"]
+            )
+            metric_delta = _max_numeric_delta(metrics, recorded["metrics"])
+            count_delta = abs(count_score - float(recorded["counting_accuracy"]))
+            frozen_exact = bool(
+                parent is not None
+                and _frozen_equal(parent["model_state"], payload["model_state"])
+            )
+            if mismatch_count:
+                errors.append(
+                    f"{arm} seed {seed}: {mismatch_count} prediction mismatches"
+                )
+            if metric_delta > tolerance:
+                errors.append(f"{arm} seed {seed}: metric delta {metric_delta}")
+            if count_delta > tolerance:
+                errors.append(f"{arm} seed {seed}: counting delta {count_delta}")
+            if not frozen_exact:
+                errors.append(f"{arm} seed {seed}: frozen core differs")
+            receipts.append(
+                {
+                    "arm": arm,
+                    "seed": seed,
+                    "artifact": str(artifact),
+                    "artifact_sha256": _file_sha256(artifact),
+                    "expected_artifact_sha256": expected_sha,
+                    "prediction_sha256": _stable_hash(predictions),
+                    "prediction_mismatches": mismatch_count,
+                    "max_metric_delta": metric_delta,
+                    "counting_delta": count_delta,
+                    "frozen_core_bit_identical": frozen_exact,
+                    "metrics": metrics,
+                    "counting_accuracy": count_score,
+                }
+            )
+
+    if errors:
+        status = "FAIL_PARTIAL_INDEPENDENT_REPLAY"
+    elif receipts:
+        status = "PASS_PARTIAL_INDEPENDENT_REPLAY_NO_VERDICT"
+    else:
+        status = "WAITING_FOR_TERMINAL_ARTIFACTS"
+    result = {
+        "schema": f"{SCHEMA}.partial",
+        "status": status,
+        "authority": AUTHORITY,
+        "campaign_verdict": "NONE_PARTIAL_REPLAY_ONLY",
+        "promotion": "NONE",
+        "partial_unfreeze_authorized": False,
+        "run_dir": str(run_dir),
+        "independent_dataset_builder": str(Path(__file__).resolve()),
+        "independent_dataset_builder_sha256": _file_sha256(Path(__file__).resolve()),
+        "dataset_manifest_sha256": dataset.manifest["manifest_sha256"],
+        "dataset_manifest_matches": dataset_matches,
+        "source_hashes_match": source_hashes_match,
+        "vocabulary_matches": vocab_matches,
+        "completed_terminal_count": len(receipts),
+        "expected_terminal_count": expected,
+        "pending_terminal_artifacts": sorted(pending),
+        "incomplete_terminal_pairs": sorted(incomplete_pairs),
+        "model_receipts": receipts,
+        "errors": errors,
+        "completed_at_utc": _utc_now(),
+    }
+    result["replay_sha256"] = _stable_hash(result)
+    return result
+
+
 def verify_run(run_dir: Path, *, tolerance: float = 1e-12) -> dict[str, Any]:
     run_dir = run_dir.resolve(strict=True)
     manifest = _read_json(run_dir / "RUN_MANIFEST.json")
@@ -442,7 +863,7 @@ def verify_run(run_dir: Path, *, tolerance: float = 1e-12) -> dict[str, Any]:
     errors: list[str] = []
 
     provider = ClaySourceAdapter(Path(config["source_dir"]))
-    dataset = build_frozen_multiview_dataset(
+    dataset = build_replay_dataset(
         provider,
         rows_per_view=int(config["rows_per_view"]),
         holdout_rows=int(config["holdout_rows"]),
@@ -575,6 +996,8 @@ def verify_run(run_dir: Path, *, tolerance: float = 1e-12) -> dict[str, Any]:
         "promotion": "NONE",
         "partial_unfreeze_authorized": False,
         "run_dir": str(run_dir),
+        "independent_dataset_builder": str(Path(__file__).resolve()),
+        "independent_dataset_builder_sha256": _file_sha256(Path(__file__).resolve()),
         "producer_result_sha256": _file_sha256(run_dir / "RESULT.json"),
         "dataset_manifest_sha256": dataset.manifest["manifest_sha256"],
         "model_receipts": receipts,
@@ -596,6 +1019,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output", type=Path)
     parser.add_argument("--tolerance", type=float, default=1e-12)
     parser.add_argument("--threads", type=int, default=2)
+    parser.add_argument(
+        "--partial-completed",
+        action="store_true",
+        help=(
+            "replay only completed parent/horse artifacts and emit no campaign "
+            "verdict"
+        ),
+    )
+    parser.add_argument(
+        "--summary-only",
+        action="store_true",
+        help="print a compact receipt summary while retaining full JSON on disk",
+    )
     return parser.parse_args()
 
 
@@ -603,10 +1039,27 @@ def main() -> int:
     args = parse_args()
     torch.set_num_threads(args.threads)
     torch.use_deterministic_algorithms(True)
-    result = verify_run(args.run_dir, tolerance=args.tolerance)
-    output = args.output or args.run_dir / "INDEPENDENT_REPLAY.json"
+    if args.partial_completed:
+        result = verify_completed_artifacts(args.run_dir, tolerance=args.tolerance)
+        default_output = args.run_dir / "PARTIAL_INDEPENDENT_REPLAY.json"
+    else:
+        result = verify_run(args.run_dir, tolerance=args.tolerance)
+        default_output = args.run_dir / "INDEPENDENT_REPLAY.json"
+    output = args.output or default_output
     _atomic_json(output, result)
-    print(json.dumps(result, indent=2, sort_keys=True, ensure_ascii=True))
+    printable = (
+        {
+            "status": result["status"],
+            "completed_terminal_count": result.get("completed_terminal_count"),
+            "expected_terminal_count": result.get("expected_terminal_count"),
+            "error_count": len(result["errors"]),
+            "output": str(output),
+            "replay_sha256": result["replay_sha256"],
+        }
+        if args.summary_only
+        else result
+    )
+    print(json.dumps(printable, indent=2, sort_keys=True, ensure_ascii=True))
     return 0 if not result["errors"] else 1
 
 

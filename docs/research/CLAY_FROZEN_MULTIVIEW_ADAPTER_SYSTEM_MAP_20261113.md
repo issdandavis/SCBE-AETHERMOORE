@@ -38,11 +38,14 @@ held diagonal source family
 
 - `python/scbe/clay_frozen_multiview_data.py`: exact byte-token data bridge.
 - `python/scbe/clay_frozen_multiview_adapter.py`: controlled producer.
-- `python/scbe/clay_frozen_multiview_replay.py`: separately declared model,
-  held-data regeneration, inference replay, and metric/gate comparison.
+- `python/scbe/clay_frozen_multiview_replay.py`: separately declared model and
+  separately implemented byte serialization, row balancing, manifest
+  reconstruction, inference replay, and metric/gate comparison. It does not
+  import the producer model, producer metrics, or producer data bridge.
 - `scripts/research/run_clay_frozen_multiview_adapter.py`: CLI entry point.
 - `scripts/research/verify_clay_frozen_multiview_adapter.py`: independent replay
-  CLI; it does not import the producer model or metric implementation.
+  CLI. `--partial-completed` audits only atomic terminal artifacts and emits
+  `PARTIAL_INDEPENDENT_REPLAY.json` without calculating a campaign verdict.
 - `tests/governance/test_clay_frozen_multiview_data.py`: byte and split receipts.
 - `tests/governance/test_clay_frozen_multiview_adapter.py`: frozen-surface and
   output-accounting tests.
@@ -56,4 +59,25 @@ held diagonal source family
   alter deterministic compiler authority.
 - No selector, geometry view, or partial-unfreeze claim is under test.
 - No result can promote a checkpoint under this experiment's authority.
+- Partial replay is an early corruption/evaluator-drift check only. Missing
+  horses remain pending, aggregate comparisons are absent, promotion is
+  `NONE`, and partial unfreeze remains false.
+
+## Live independent receipt — 2026-11-13
+
+At campaign step 15,000/18,000 for the first multi-view horse, the partial
+replay independently reconstructed the exact dataset manifest and vocabulary,
+then reopened the completed parent and static-adapter artifacts:
+
+- status: `PASS_PARTIAL_INDEPENDENT_REPLAY_NO_VERDICT`
+- terminal artifacts checked: `2 / 12`
+- dataset/source/vocabulary receipts: exact match
+- prediction mismatches: `0` for both artifacts
+- metric and counting deltas: `0.0`
+- frozen core: bit-identical for both artifacts
+- static held result: accuracy `0.2166666667`, macro-F1 `0.2105417755`
+
+This verifies artifact integrity and evaluator agreement. It does not say the
+multi-view intervention wins; ten terminal artifacts and all preregistered
+matched-control gates are still outstanding.
 
