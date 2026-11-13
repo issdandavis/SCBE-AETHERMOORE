@@ -9,11 +9,11 @@ published**.
 | --- | --- | --- | --- | --- |
 | PyPI current | `4.3.2`, registry | `5/5` installed commands pass | package 15,427,454 B; environment delta 178,048,901 B; 52 distributions | Works, but the default dependency declaration is a space and supply-chain failure. Do not market it as lean. |
 | PyPI current, forced `--no-deps` | `4.3.2`, registry | `5/5` pass | 15,427,454 B; 2 distributions | Proves the scanner and CLIs did not need the 51 extra distributions. This was diagnostic, not an installation recommendation. |
-| PyPI candidate | `4.3.4`, local wheel | `5/5`; all four clean-installed entry points pass; README scanner examples pass | wheel 2,286,144 B; package 7,673,184 B; environment delta 17,274,604 B; 2 distributions | **Release candidate.** Default install is dependency-free; numerical, governance, crypto, vision, MCP, and ML stacks are explicit extras. |
+| PyPI candidate | `4.3.4`, local wheel | `5/5`; all four clean-installed entry points pass; README scanner examples pass | wheel 2,286,267 B; package 7,673,978 B; environment delta 17,275,001 B; 2 distributions | **Release candidate.** Default install is dependency-free; numerical, governance, crypto, vision, MCP, and ML stacks are explicit extras. |
 | npm current suite | registry releases | `9/9` published command claims pass | root 8,411,249 B; CLI 979,434 B; bus 1,108,062 B; Polly 162,789 B | Existing products work. Versions are not synchronized across packages. |
 | npm candidate suite | local packages | `10/10` command claims plus CommonJS, ESM, scanner, GeoSeal, agent-bus API/server and governed-task consumer smoke | root 8,470,703 B / 51,936,413 B installed; CLI 1,442,342 B / 53,559,394 B; bus 1,250,933 B / 7,453,243 B; Polly 190,133 B / 192,235 B | **Root `4.3.4` candidate passes.** CLI local `4.5.0` is older than registry `4.5.2`, so it must not be republished. Polly `0.2.0` needs its own release decision. |
 
-The npm strict pack receipt reports a 1,909,163-byte compressed root tarball,
+The npm strict pack receipt reports a 1,909,288-byte compressed root tarball,
 1,407 entries, and a clean content guard.  The production dependency audit is
 zero vulnerabilities after refreshing transitive `@hono/node-server` to
 `2.1.8` and `hono` to `4.13.18`.  Five moderate development-only findings may
@@ -94,8 +94,8 @@ Candidate artifacts:
 
 | Artifact | Bytes | SHA-256 |
 | --- | ---: | --- |
-| `scbe_aethermoore-4.3.4-py3-none-any.whl` | 2,286,144 | `df5c4ffd82b6dcb57385ef215e1eb93ddb253274b7b447e6dd5f3787a1741419` |
-| `scbe_aethermoore-4.3.4.tar.gz` | 2,076,477 | `705d911dcced194c9e606fdf042aee3ca55d0dd68e39093b86ea3a48deeae4a4` |
+| `scbe_aethermoore-4.3.4-py3-none-any.whl` | 2,286,267 | `eecd47fa8af6e231cff76707a7536dfb1a8e19f1188bbfcfdccb0f38f31b2456` |
+| `scbe_aethermoore-4.3.4.tar.gz` | 2,076,692 | `0ca182567030786273b03d9e4c4fb0f051808c1344473855f456c5a7c57d9399` |
 
 Publishing is an external state change and was not performed.  Before an
 authorized publish, rerun the strict npm pack guard, clean-wheel gate, and

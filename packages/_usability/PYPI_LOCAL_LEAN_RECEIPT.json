@@ -6,7 +6,7 @@
   "temp_path": null,
   "package": {
     "version": "4.3.4",
-    "own_bytes": 7673184,
+    "own_bytes": 7673978,
     "own_files": 514,
     "distribution_count": 2,
     "distributions": [
@@ -16,7 +16,7 @@
   },
   "venv_baseline_bytes": 12017100,
   "venv_baseline_files": 861,
-  "installed_delta_bytes": 17274604,
+  "installed_delta_bytes": 17275001,
   "installed_delta_files": 991,
   "passed": 5,
   "failed": 0,

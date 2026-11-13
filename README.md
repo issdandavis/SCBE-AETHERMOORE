@@ -109,10 +109,15 @@ pip install "scbe-aethermoore[mcp]"        # MCP room/client integration
 pip install "scbe-aethermoore[full]"       # all non-model feature families
 ```
 
-See the [product quickstart](docs/PRODUCT_QUICKSTART.md) for measured install
-sizes and first-use proofs. The planned popup-style profile selector, cloud
-compiler fallback, and privacy-preserving issue-report contract are documented
-in the [guided installer specification](docs/specs/GUIDED_INSTALLER_AND_SUPPORT.md).
+See the
+[product quickstart](https://github.com/issdandavis/SCBE-AETHERMOORE/blob/v4.3.4/docs/PRODUCT_QUICKSTART.md)
+for measured install sizes and first-use proofs. The planned popup-style
+profile selector, cloud compiler fallback, and privacy-preserving issue-report
+contract are documented in the
+[guided installer specification](https://github.com/issdandavis/SCBE-AETHERMOORE/blob/v4.3.4/docs/specs/GUIDED_INSTALLER_AND_SUPPORT.md).
+The opt-in paid lane is a separate, design-only
+[hosted credit and model-router contract](https://github.com/issdandavis/SCBE-AETHERMOORE/blob/v4.3.4/docs/specs/HOSTED_CREDITS_AND_MODEL_ROUTER.md);
+the local scanner and Clay action paths remain usable without an account.
 
 ---
 
