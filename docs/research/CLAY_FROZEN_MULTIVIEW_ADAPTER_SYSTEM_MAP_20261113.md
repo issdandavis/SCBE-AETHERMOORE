@@ -63,7 +63,7 @@ held diagonal source family
   horses remain pending, aggregate comparisons are absent, promotion is
   `NONE`, and partial unfreeze remains false.
 
-## Live independent receipt — 2026-11-13
+## Earlier independent receipt during the first multi-view horse — 2026-11-13
 
 At campaign step 15,000/18,000 for the first multi-view horse, the partial
 replay independently reconstructed the exact dataset manifest and vocabulary,
@@ -80,4 +80,84 @@ then reopened the completed parent and static-adapter artifacts:
 This verifies artifact integrity and evaluator agreement. It does not say the
 multi-view intervention wins; ten terminal artifacts and all preregistered
 matched-control gates are still outstanding.
+
+## First multi-view terminal output audit — 2026-11-13
+
+The first multi-view horse (`seed=20261131`) is terminal and independently
+replayed. The partial receipt now covers `3 / 12` terminal artifacts with zero
+prediction, metric, counting, source, vocabulary, or frozen-core mismatches.
+The hardened replay receipt at this boundary has SHA-256
+`c7ed09ebd13304e62a0baf8fae9b5a8ad8436df793f72b442d0024a943ef6e29`.
+Its validator rejects fractional action IDs, correctness flags that disagree
+with the actual target/prediction pair, and duplicate held-example keys rather
+than truncating or overwriting them.
+
+| Held output | Static | Multi-view | Difference |
+| --- | ---: | ---: | ---: |
+| Accuracy | 0.216667 | 0.214000 | -0.002667 |
+| Macro-F1 | 0.210542 | 0.213184 | +0.002642 |
+| Worst-action accuracy | 0.116667 | 0.163333 | +0.046667 |
+| Valid action-ID rate | 0.999333 | 1.000000 | +0.000667 |
+
+Multi-view changed `1,155 / 1,500` predictions, but those changes produced 230
+fixes and 234 regressions. The exact paired two-sided p-value is `0.889255`, so
+the finite-evaluation gate is false. Only 91 examples were correct under both
+arms; 254 were wrong with the same output and 691 were wrong with different
+outputs. This is a redistribution of behavior, not evidence of a net win.
+
+The redistribution is still diagnostically useful. Static predictions were
+concentrated on `push_y_positive` (483 outputs), while multi-view outputs were
+more balanced across the five actions (`310, 314, 242, 331, 303`). Multi-view
+fixed more than it regressed for `push_x_positive` and `push_y_negative`, but
+regressed more for `push_x_negative` and `push_y_positive`. It improved sectors
+0 and 6 while losing most heavily in sectors 3 and 4. Full confusion matrices,
+per-sector distributions, and error flows are stored in
+`PARTIAL_INDEPENDENT_REPLAY.json` rather than inferred from averages.
+
+## What performed the reasoning
+
+The action target is created by the deterministic developmental sandbox sieve:
+all five bounded motor actions are executed one step and the highest
+action-credit reward wins. That sieve is teacher/label authority only.
+
+The learned inference path is:
+
+```text
+37-value state
+  -> exact 148-byte token deed
+  -> frozen embedding
+  -> frozen two-layer GRU
+  -> trainable adapter + action head
+  -> greedy integer action-ID decode
+```
+
+It does not call a route sieve, centroid index, topology operator, tool, beam,
+vote, or triangulation pass at inference. Sector is an evaluation coordinate,
+not an input route. Therefore this campaign isolates whether three legal input
+views teach the downstream adapter a better boundary; it does not test the
+user's answer-space vacuum/triangulation proposal.
+
+## Existing sieve components and the next seam
+
+The connected action worktree already contains the pieces that should be
+reused after this campaign rather than rebuilt:
+
+- `centroid_trit_vector_sieve.py`: prime-radial trit/Hydra candidate index;
+  mechanics work, but three-candidate winner recall fell to 81.48% on one seed,
+  so speed and model benefit remain unproven.
+- `topology_sector_action_ab.py`: fixed reflection/push/pull topology; the
+  controlled 72-run study changed trajectories but failed the primary held
+  accuracy/F1 gate.
+- `compiled_action_input_access.py` and `full_system_action_input_access.py`:
+  the verified before-block-0 causal seam into the frozen 14-layer byte model;
+  material source-disjoint training remains gated.
+
+The next model-level sieve trial must remain a separately preregistered child of
+the completed campaign. It should attach a fixed-width centroid/trit summary at
+the existing causal input-access seam and compare ordinary/no-intervention,
+equal-width random-fixed, one-to-one shuffled binding, means-only, and full
+sieve arms across fresh seeds. It must preserve the exact byte/token deed,
+retain the frozen parent, keep labels/rewards out of the packet, and judge
+source-disjoint action, reasoning/coding transfer, retention, false action
+calls, throughput, and independent replay. No such child is authorized yet.
 

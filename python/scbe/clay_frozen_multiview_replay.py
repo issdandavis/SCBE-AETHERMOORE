@@ -16,6 +16,7 @@ from datetime import datetime, timezone
 import hashlib
 import json
 import math
+from numbers import Integral
 import os
 from pathlib import Path
 import random
@@ -52,6 +53,23 @@ BYTE_TOKEN_BASE = 0xE100
 STATIC_SOURCE = "clay-action-train-static-v1"
 MULTIVIEW_SOURCES = tuple(f"clay-action-train-view-{index}-v1" for index in range(3))
 HOLDOUT_SOURCE = "clay-action-held-diagonal-v1"
+ACTION_NAMES = (
+    "rest",
+    "push_x_positive",
+    "push_x_negative",
+    "push_y_positive",
+    "push_y_negative",
+)
+INFERENCE_PATH = {
+    "input": "exact 148-byte encoding of the 37-value float32 state",
+    "learned_path": "frozen embedding -> frozen two-layer GRU -> adapter -> action head",
+    "decode": "greedy character decode to one integer action ID",
+    "target_authority": "DevelopmentalGameSandbox.sieve_actions one-step reward argmax",
+    "sector_role": "held-output diagnostic coordinate only",
+    "routing_sieve_at_inference": False,
+    "triangulation_or_ensemble_at_inference": False,
+    "tool_calls_at_inference": False,
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -543,6 +561,179 @@ def replay_action_metrics(predictions: Sequence[Mapping[str, Any]]) -> dict[str,
     }
 
 
+def _prediction_bucket(value: Any) -> str:
+    if isinstance(value, bool) or not isinstance(value, Integral):
+        return "invalid"
+    integer = int(value)
+    return str(integer) if integer in range(ACTION_COUNT) else "invalid"
+
+
+def replay_output_diagnostics(
+    predictions: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Expose output flow instead of hiding behavior behind mean accuracy."""
+
+    buckets = tuple(str(index) for index in range(ACTION_COUNT)) + ("invalid",)
+    confusion = {
+        str(target): {bucket: 0 for bucket in buckets} for target in range(ACTION_COUNT)
+    }
+    distribution = {bucket: 0 for bucket in buckets}
+    per_sector: dict[str, dict[str, Any]] = {}
+    correct_count = 0
+    for row in predictions:
+        target = int(row["target"])
+        if target not in range(ACTION_COUNT):
+            raise ValueError(f"invalid replay target: {target}")
+        bucket = _prediction_bucket(row.get("prediction"))
+        correct = bucket == str(target)
+        if bool(row["correct"]) != correct:
+            raise ValueError("replay correctness flag disagrees with target/prediction")
+        confusion[str(target)][bucket] += 1
+        distribution[bucket] += 1
+        correct_count += int(correct)
+        sector = str(int(row["sector"]))
+        if sector not in per_sector:
+            per_sector[sector] = {
+                "support": 0,
+                "correct": 0,
+                "invalid": 0,
+                "prediction_distribution": {name: 0 for name in buckets},
+            }
+        sector_row = per_sector[sector]
+        sector_row["support"] += 1
+        sector_row["correct"] += int(correct)
+        sector_row["invalid"] += int(bucket == "invalid")
+        sector_row["prediction_distribution"][bucket] += 1
+
+    top_error_flows = []
+    for target in range(ACTION_COUNT):
+        for bucket in buckets:
+            if bucket == str(target):
+                continue
+            count = confusion[str(target)][bucket]
+            if count:
+                top_error_flows.append(
+                    {
+                        "target_id": target,
+                        "target_action": ACTION_NAMES[target],
+                        "prediction": (
+                            ACTION_NAMES[int(bucket)]
+                            if bucket != "invalid"
+                            else "invalid"
+                        ),
+                        "count": count,
+                    }
+                )
+    top_error_flows.sort(
+        key=lambda row: (
+            -int(row["count"]),
+            int(row["target_id"]),
+            str(row["prediction"]),
+        )
+    )
+    total = len(predictions)
+    invalid = distribution["invalid"]
+    return {
+        "example_count": total,
+        "correct_count": correct_count,
+        "valid_prediction_count": total - invalid,
+        "invalid_prediction_count": invalid,
+        "valid_prediction_rate": (total - invalid) / total if total else 0.0,
+        "prediction_distribution": distribution,
+        "confusion": confusion,
+        "per_sector": dict(sorted(per_sector.items(), key=lambda item: int(item[0]))),
+        "top_error_flows": top_error_flows[:12],
+    }
+
+
+def paired_output_diagnostics(
+    contender: Sequence[Mapping[str, Any]],
+    control: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Trace which exact held examples a contender fixes or regresses."""
+
+    def index_rows(
+        rows: Sequence[Mapping[str, Any]], *, label: str
+    ) -> dict[tuple[int, str], Mapping[str, Any]]:
+        indexed: dict[tuple[int, str], Mapping[str, Any]] = {}
+        for row in rows:
+            key = (int(row["example_index"]), str(row["payload_sha256"]))
+            if key in indexed:
+                raise RuntimeError(f"duplicate {label} output diagnostic key: {key}")
+            indexed[key] = row
+        return indexed
+
+    left = index_rows(contender, label="contender")
+    right = index_rows(control, label="control")
+    if left.keys() != right.keys():
+        raise RuntimeError("paired output diagnostic keys differ")
+    by_action = {
+        str(index): {"wins": 0, "losses": 0, "ties": 0} for index in range(ACTION_COUNT)
+    }
+    sectors = sorted({int(row["sector"]) for row in contender})
+    by_sector = {str(sector): {"wins": 0, "losses": 0, "ties": 0} for sector in sectors}
+    wins = losses = both_correct = both_wrong_same = both_wrong_different = 0
+    changed = 0
+    for key in left:
+        contender_row = left[key]
+        control_row = right[key]
+        if int(contender_row["target"]) != int(control_row["target"]) or int(
+            contender_row["sector"]
+        ) != int(control_row["sector"]):
+            raise RuntimeError("paired output targets or sectors differ")
+        contender_correct = _prediction_bucket(contender_row.get("prediction")) == str(
+            int(contender_row["target"])
+        )
+        control_correct = _prediction_bucket(control_row.get("prediction")) == str(
+            int(control_row["target"])
+        )
+        if (
+            bool(contender_row["correct"]) != contender_correct
+            or bool(control_row["correct"]) != control_correct
+        ):
+            raise RuntimeError(
+                "paired output correctness flag disagrees with target/prediction"
+            )
+        target = str(int(contender_row["target"]))
+        sector = str(int(contender_row["sector"]))
+        if contender_correct and not control_correct:
+            wins += 1
+            outcome = "wins"
+        elif control_correct and not contender_correct:
+            losses += 1
+            outcome = "losses"
+        else:
+            outcome = "ties"
+            if contender_correct:
+                both_correct += 1
+            elif _prediction_bucket(
+                contender_row.get("prediction")
+            ) == _prediction_bucket(control_row.get("prediction")):
+                both_wrong_same += 1
+            else:
+                both_wrong_different += 1
+        by_action[target][outcome] += 1
+        by_sector[sector][outcome] += 1
+        changed += _prediction_bucket(
+            contender_row.get("prediction")
+        ) != _prediction_bucket(control_row.get("prediction"))
+    p_value = _paired_exact_p(wins, losses)
+    return {
+        "examples": len(left),
+        "wins": wins,
+        "losses": losses,
+        "ties": len(left) - wins - losses,
+        "both_correct": both_correct,
+        "both_wrong_same_output": both_wrong_same,
+        "both_wrong_different_output": both_wrong_different,
+        "prediction_changed_count": changed,
+        "two_sided_exact_p": p_value,
+        "clears_finite_uncertainty_gate": wins > losses and p_value <= 0.05,
+        "by_action": by_action,
+        "by_sector": by_sector,
+    }
+
+
 def _paired_exact_p(wins: int, losses: int) -> float:
     discordant = wins + losses
     if not discordant:
@@ -720,6 +911,7 @@ def verify_completed_artifacts(
     itos = {index: char for char, index in stoi.items()}
 
     receipts: list[dict[str, Any]] = []
+    replayed_predictions: dict[tuple[str, int], list[dict[str, Any]]] = {}
     pending: list[str] = []
     incomplete_pairs: list[str] = []
     expected = len(config["seeds"]) * len(ALL_ARMS)
@@ -785,7 +977,9 @@ def verify_completed_artifacts(
                 itos,
                 null_carrier=null_carrier,
             )
+            replayed_predictions[(arm, seed)] = predictions
             metrics = replay_action_metrics(predictions)
+            output_diagnostics = replay_output_diagnostics(predictions)
             count_score = _counting_accuracy(model, count_holdout, stoi, itos)
             mismatch_count = _prediction_mismatches(
                 predictions, recorded["predictions"]
@@ -813,14 +1007,30 @@ def verify_completed_artifacts(
                     "artifact": str(artifact),
                     "artifact_sha256": _file_sha256(artifact),
                     "expected_artifact_sha256": expected_sha,
+                    "recorded_result_sha256": _file_sha256(result_path),
                     "prediction_sha256": _stable_hash(predictions),
                     "prediction_mismatches": mismatch_count,
                     "max_metric_delta": metric_delta,
                     "counting_delta": count_delta,
                     "frozen_core_bit_identical": frozen_exact,
                     "metrics": metrics,
+                    "output_diagnostics": output_diagnostics,
                     "counting_accuracy": count_score,
                 }
+            )
+
+    per_seed_output_comparisons = {}
+    for seed in (int(value) for value in config["seeds"]):
+        contender = replayed_predictions.get((PRIMARY_ARM, seed))
+        if contender is None:
+            continue
+        for control in CONTROLS:
+            control_predictions = replayed_predictions.get((control, seed))
+            if control_predictions is None:
+                continue
+            name = f"{PRIMARY_ARM}_vs_{control}:seed-{seed}"
+            per_seed_output_comparisons[name] = paired_output_diagnostics(
+                contender, control_predictions
             )
 
     if errors:
@@ -836,6 +1046,7 @@ def verify_completed_artifacts(
         "campaign_verdict": "NONE_PARTIAL_REPLAY_ONLY",
         "promotion": "NONE",
         "partial_unfreeze_authorized": False,
+        "inference_path": INFERENCE_PATH,
         "run_dir": str(run_dir),
         "independent_dataset_builder": str(Path(__file__).resolve()),
         "independent_dataset_builder_sha256": _file_sha256(Path(__file__).resolve()),
@@ -848,6 +1059,7 @@ def verify_completed_artifacts(
         "pending_terminal_artifacts": sorted(pending),
         "incomplete_terminal_pairs": sorted(incomplete_pairs),
         "model_receipts": receipts,
+        "per_seed_output_comparisons": per_seed_output_comparisons,
         "errors": errors,
         "completed_at_utc": _utc_now(),
     }
@@ -906,11 +1118,15 @@ def verify_run(run_dir: Path, *, tolerance: float = 1e-12) -> dict[str, Any]:
             if arm == "no_intervention_adapter":
                 payload = parent
                 artifact = parent_path
+                recorded_result_path = (
+                    run_dir / "parents" / f"seed-{seed}" / "RESULT.json"
+                )
                 null_carrier = False
             else:
                 result_path = run_dir / "horses" / f"{arm}-seed-{seed}" / "RESULT.json"
                 horse_result = _read_json(result_path)
                 artifact = run_dir / "horses" / f"{arm}-seed-{seed}" / "MODEL.pt"
+                recorded_result_path = result_path
                 payload = _load_payload(artifact, str(horse_result["model_sha256"]))
                 null_carrier = arm == "frozen_adapter_null"
             model = ReplayFrozenActionModel(len(vocab))
@@ -923,6 +1139,7 @@ def verify_run(run_dir: Path, *, tolerance: float = 1e-12) -> dict[str, Any]:
                 null_carrier=null_carrier,
             )
             metrics = replay_action_metrics(predictions)
+            output_diagnostics = replay_output_diagnostics(predictions)
             count_score = _counting_accuracy(model, count_holdout, stoi, itos)
             mismatch_count = _prediction_mismatches(
                 predictions, recorded["predictions"]
@@ -954,11 +1171,13 @@ def verify_run(run_dir: Path, *, tolerance: float = 1e-12) -> dict[str, Any]:
                     "seed": seed,
                     "artifact": str(artifact),
                     "artifact_sha256": _file_sha256(artifact),
+                    "recorded_result_sha256": _file_sha256(recorded_result_path),
                     "prediction_sha256": _stable_hash(predictions),
                     "prediction_mismatches": mismatch_count,
                     "max_metric_delta": metric_delta,
                     "counting_delta": count_delta,
                     "frozen_core_bit_identical": frozen_exact,
+                    "output_diagnostics": output_diagnostics,
                 }
             )
 
@@ -975,6 +1194,19 @@ def verify_run(run_dir: Path, *, tolerance: float = 1e-12) -> dict[str, Any]:
         paired[name] = _paired_comparison(
             replay_by_arm[PRIMARY_ARM], replay_by_arm[control]
         )
+    per_seed_output_comparisons = {}
+    for seed in (int(value) for value in config["seeds"]):
+        contender = next(
+            row for row in replay_by_arm[PRIMARY_ARM] if int(row["seed"]) == seed
+        )
+        for control in CONTROLS:
+            control_row = next(
+                row for row in replay_by_arm[control] if int(row["seed"]) == seed
+            )
+            name = f"{PRIMARY_ARM}_vs_{control}:seed-{seed}"
+            per_seed_output_comparisons[name] = paired_output_diagnostics(
+                contender["predictions"], control_row["predictions"]
+            )
     comparison_delta = _max_numeric_delta(comparisons, producer["comparisons"])
     paired_delta = _max_numeric_delta(paired, producer["paired_comparisons"])
     if comparison_delta > tolerance:
@@ -995,6 +1227,7 @@ def verify_run(run_dir: Path, *, tolerance: float = 1e-12) -> dict[str, Any]:
         "authority": AUTHORITY,
         "promotion": "NONE",
         "partial_unfreeze_authorized": False,
+        "inference_path": INFERENCE_PATH,
         "run_dir": str(run_dir),
         "independent_dataset_builder": str(Path(__file__).resolve()),
         "independent_dataset_builder_sha256": _file_sha256(Path(__file__).resolve()),
@@ -1003,6 +1236,7 @@ def verify_run(run_dir: Path, *, tolerance: float = 1e-12) -> dict[str, Any]:
         "model_receipts": receipts,
         "comparisons": comparisons,
         "paired_comparisons": paired,
+        "per_seed_output_comparisons": per_seed_output_comparisons,
         "max_metric_delta": max_metric_delta,
         "aggregate_comparison_delta": comparison_delta,
         "aggregate_paired_delta": paired_delta,

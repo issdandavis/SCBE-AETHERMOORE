@@ -5,6 +5,7 @@ from __future__ import annotations
 import inspect
 import random
 
+import pytest
 import torch
 
 from python.scbe.clay_frozen_multiview_adapter import FrozenActionModel
@@ -12,7 +13,9 @@ from python.scbe.clay_frozen_multiview_data import build_frozen_multiview_datase
 from python.scbe.clay_frozen_multiview_replay import (
     ReplayFrozenActionModel,
     build_replay_dataset,
+    paired_output_diagnostics,
     replay_action_metrics,
+    replay_output_diagnostics,
 )
 
 
@@ -91,3 +94,90 @@ def test_replay_metrics_expose_action_and_sector_failures() -> None:
     assert metrics["worst_action_accuracy"] == 0.0
     assert metrics["per_action"]["1"]["false_negative"] == 1
     assert metrics["per_sector_accuracy"] == {"1": 0.5, "4": 0.5, "7": 1.0}
+
+    outputs = replay_output_diagnostics(
+        [*predictions, {"target": 0, "prediction": None, "correct": False, "sector": 7}]
+    )
+    assert outputs["correct_count"] == 3
+    assert outputs["invalid_prediction_count"] == 1
+    assert outputs["prediction_distribution"] == {
+        "0": 2,
+        "1": 0,
+        "2": 2,
+        "3": 0,
+        "4": 1,
+        "invalid": 1,
+    }
+    assert outputs["confusion"]["0"] == {
+        "0": 1,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "invalid": 1,
+    }
+
+
+def test_paired_output_diagnostics_expose_fixes_regressions_and_changed_answers() -> None:
+    def row(index: int, target: int, prediction: int | None, sector: int) -> dict[str, object]:
+        return {
+            "example_index": index,
+            "payload_sha256": f"{index:064x}",
+            "target": target,
+            "prediction": prediction,
+            "correct": prediction == target,
+            "sector": sector,
+        }
+
+    control = [
+        row(0, 0, 1, 0),
+        row(1, 1, 1, 0),
+        row(2, 2, 2, 1),
+        row(3, 3, 4, 1),
+        row(4, 4, None, 2),
+    ]
+    contender = [
+        row(0, 0, 0, 0),
+        row(1, 1, 2, 0),
+        row(2, 2, 2, 1),
+        row(3, 3, 0, 1),
+        row(4, 4, None, 2),
+    ]
+
+    result = paired_output_diagnostics(contender, control)
+
+    assert result["wins"] == 1
+    assert result["losses"] == 1
+    assert result["both_correct"] == 1
+    assert result["both_wrong_same_output"] == 1
+    assert result["both_wrong_different_output"] == 1
+    assert result["prediction_changed_count"] == 3
+    assert result["two_sided_exact_p"] == 1.0
+    assert result["clears_finite_uncertainty_gate"] is False
+
+
+def test_output_diagnostics_reject_fractional_ids_and_false_correctness() -> None:
+    fractional = {
+        "target": 1,
+        "prediction": 1.75,
+        "correct": False,
+        "sector": 0,
+    }
+    outputs = replay_output_diagnostics([fractional])
+    assert outputs["invalid_prediction_count"] == 1
+
+    with pytest.raises(ValueError, match="correctness flag"):
+        replay_output_diagnostics([{**fractional, "correct": True}])
+
+
+def test_paired_output_diagnostics_reject_duplicate_examples() -> None:
+    row = {
+        "example_index": 0,
+        "payload_sha256": "0" * 64,
+        "target": 0,
+        "prediction": 0,
+        "correct": True,
+        "sector": 0,
+    }
+    with pytest.raises(RuntimeError, match="duplicate contender"):
+        paired_output_diagnostics([row, row], [row])
