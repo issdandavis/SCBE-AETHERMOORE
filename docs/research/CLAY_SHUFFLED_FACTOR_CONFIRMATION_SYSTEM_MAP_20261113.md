@@ -155,3 +155,23 @@ and sampler-reference source hashes reproduced exactly.
 The live confirmation will receive its own non-overwriting v2 receipt only
 after all 60 horse results and the aggregate producer result exist. Until then,
 the auditor refuses to label intended schedules as observed training.
+
+## Completion receipt
+
+The confirmation completed all 60 horses at `2026-11-13T14:40:14Z`.  The
+independent outcome audit verified 60 horse receipts, 180 checkpoint state
+hashes, 15 matched initialization groups, three selection receipts, and an
+exact reconstruction of the stratified gate.  The independent exposure audit
+verified all 15 sampling streams and their full per-row count vectors.
+
+- Producer result:
+  `1f636d08d7392bce2f3607da04208ff6de68fcfdb8d7d29a12afeb0f70ad843f`.
+- Gate: `94b353e73f75906a9ea570bf0afdae549f68b0bde14fa6732797ba0355d126e5`.
+- Exposure audit:
+  `096a9ffd63464901d2d81218b55b8da4f0efa60b19bd553afde6912e143899c9`.
+- Exposure file:
+  `a320e1e4170f792a0935d8256c54102b98d3ccab5b8145d870cfae9d545635fb`.
+- Verdict: `NO_SELECTION`; promotion false; partial unfreeze false.
+
+Detailed interpretation:
+`docs/research/CLAY_SHUFFLED_FACTOR_CONFIRMATION_RESULT_20261113.md`.

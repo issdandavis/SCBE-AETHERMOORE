@@ -56,7 +56,7 @@ def _bank(path: Path, name: str, records: int = 7) -> str:
     return manifest
 
 
-def _completed_campaign(root: Path) -> Path:
+def _completed_campaign(root: Path, *, schema: str = audit.CAMPAIGN_SCHEMA) -> Path:
     arms = ["static_unique", "multiview_random"]
     seeds = [11, 29]
     held_sectors = [1]
@@ -71,7 +71,7 @@ def _completed_campaign(root: Path) -> Path:
         "records_per_arm": 7,
     }
     campaign_body = {
-        "schema": audit.CAMPAIGN_SCHEMA,
+        "schema": schema,
         "created_at_utc": "2026-11-13T00:00:00+00:00",
         "configuration": config,
         "source_hashes": {"fixture": "0" * 64},
@@ -106,7 +106,7 @@ def _completed_campaign(root: Path) -> Path:
                 )
                 horses.append(horse)
     result_body = {
-        "schema": audit.CAMPAIGN_SCHEMA,
+        "schema": schema,
         "campaign_sha256": campaign["campaign_sha256"],
         "state": audit.COMPLETE_STATE,
         "configuration": config,
@@ -143,6 +143,16 @@ def test_completed_campaign_emits_exact_outcome_agnostic_receipt(
     assert result["outcome_values_used_for_exposure"] is False
     assert result["promotion_authorized"] is False
     assert result["partial_unfreeze_authorized"] is False
+
+
+def test_hash_spread_campaign_schema_is_supported(tmp_path: Path) -> None:
+    root = _completed_campaign(
+        tmp_path / "campaign",
+        schema="clay.multiview-hash-spread-campaign.v1",
+    )
+    result = audit.audit_completed_campaign(root)
+    assert result["producer_result_sha256"]
+    assert result["promotion_authorized"] is False
 
 
 def test_manifest_tampering_fails_closed(tmp_path: Path) -> None:

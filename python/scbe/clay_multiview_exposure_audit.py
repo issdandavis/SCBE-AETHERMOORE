@@ -21,6 +21,10 @@ from torch import Tensor
 
 SCHEMA = "clay.multiview-exposure-audit.v2"
 CAMPAIGN_SCHEMA = "clay.multiview-factor-coverage-campaign.v1"
+CAMPAIGN_SCHEMAS = (
+    CAMPAIGN_SCHEMA,
+    "clay.multiview-hash-spread-campaign.v1",
+)
 COMPLETE_STATE = "COMPLETE_MECHANICS_NO_PROMOTION"
 FEATURE_WIDTH = 37
 ACTION_COUNT = 5
@@ -248,7 +252,7 @@ def audit_completed_campaign(root: str | Path) -> dict[str, Any]:
     result_path = campaign_root / "RESULT.json"
     campaign = _load_json(campaign_path)
     result = _load_json(result_path)
-    if campaign.get("schema") != CAMPAIGN_SCHEMA:
+    if campaign.get("schema") not in CAMPAIGN_SCHEMAS:
         raise ExposureAuditError("campaign schema is not supported")
     campaign_sha = _verify_json_receipt(campaign_path, campaign, "campaign_sha256")
     result_sha = _verify_json_receipt(result_path, result, "result_sha256")
@@ -424,6 +428,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 __all__ = [
     "CAMPAIGN_SCHEMA",
+    "CAMPAIGN_SCHEMAS",
     "ExposureAuditError",
     "SCHEMA",
     "audit_completed_campaign",
