@@ -1,0 +1,91 @@
+{
+  "bounded_intervention": {
+    "charge_gain": 0.25,
+    "tau_hat": {"AV": 1, "CA": 0, "DR": 1, "KO": 1, "RU": 1, "UM": 0},
+    "vote_delta": {
+      "AV": -0.034377889004785,
+      "CA": -0.22768759446121137,
+      "DR": -0.15959666276003737,
+      "KO": 0.06260938687762518,
+      "RU": 0.22768759446121134,
+      "UM": -0.6149718516824605
+    },
+    "votes": {
+      "AV": 2.0956221109952153,
+      "CA": -0.09768759446121125,
+      "DR": 1.970403337239963,
+      "KO": 3.1926093868776255,
+      "RU": 2.3576875944612117,
+      "UM": -0.4849718516824604
+    }
+  },
+  "bundle_hash": "4da1d402647e658b77a0d4a86702f15408ec22cc9abcf525463cb238b5d5dbf7",
+  "claim_boundary": [
+    "mechanics and replay only; no neural gain measured",
+    "semantic charge is not physical electrostatic charge",
+    "drift clock is not photon propagation or relativistic time dilation",
+    "deterministic compiler authority is unchanged"
+  ],
+  "claim_status": "PASS_MECHANICS_ONLY",
+  "drift_clock": {
+    "bundle_hash": "4da1d402647e658b77a0d4a86702f15408ec22cc9abcf525463cb238b5d5dbf7",
+    "claim_boundary": "scheduler telemetry only; not photon propagation or physical time dilation",
+    "congestion": 0.0,
+    "context_epoch": 0,
+    "equilibrium_hash": "ec64f71239d0b15950753f56fa99012d85b839332cbce5a7bb28e3b803d9a9b9",
+    "mean_charge_motion": 0.6493497406872455,
+    "model_time_increment": 0.6062995466221272,
+    "pressure": 0.6493497406872455,
+    "route_cost": 0.0,
+    "schema_version": "scbe_computational_drift_clock_v1",
+    "step_clock": 1,
+    "wrapped_phase_radians": 1.0471975511965976
+  },
+  "edge_count": 5,
+  "equilibrium_hash": "ec64f71239d0b15950753f56fa99012d85b839332cbce5a7bb28e3b803d9a9b9",
+  "frozen_baseline": {
+    "tau_hat": {"AV": 1, "CA": 0, "DR": 1, "KO": 1, "RU": 1, "UM": 0},
+    "votes": {
+      "AV": 2.1300000000000003,
+      "CA": 0.13000000000000012,
+      "DR": 2.1300000000000003,
+      "KO": 3.1300000000000003,
+      "RU": 2.1300000000000003,
+      "UM": 0.13000000000000012
+    }
+  },
+  "node_count": 4,
+  "receipt_sha256": "eee608ec4accbe413a89702aa38f55a85963ce8e4d9c60ee74407eda764b69ad",
+  "runtime_profile": "PY_REFERENCE14+ATOMIC_STITCH_V1",
+  "schema_version": "scbe_atomic_stitch_demo_receipt_v1",
+  "semantic_charge": {
+    "active_bound_count": 0,
+    "bundle_hash": "4da1d402647e658b77a0d4a86702f15408ec22cc9abcf525463cb238b5d5dbf7",
+    "charge_by_node": [
+      ["node-0000", -1.1611879253553503],
+      ["node-0001", 0.38794910352964596],
+      ["node-0002", 0.9107503778448449],
+      ["node-0003", -0.1375115560191409]
+    ],
+    "condition_number": 2.1222895714851724,
+    "conservation_error": 3.3306690738754696e-16,
+    "converged": true,
+    "edge_tension": [
+      ["node-0000", "node-0001", -0.09682106430531226],
+      ["node-0000", "node-0002", -0.05755384175556097],
+      ["node-0001", "node-0002", -0.032675079644699935],
+      ["node-0001", "node-0003", 0.014596129431910744],
+      ["node-0002", "node-0003", 0.06551637086649911]
+    ],
+    "energy": -1.6909651918619117,
+    "method": "box-constrained-graph-laplacian-qeq-inspired-v2",
+    "projected_residual": 3.1401849173675503e-16,
+    "schema_version": "scbe_semantic_charge_equilibrium_v1",
+    "total_charge": -3.3306690738754696e-16
+  },
+  "stitch_registry_hash": "714f37630db2dbd900a94b584e7bde20933b6d13e056c0db4aae9ea016241390",
+  "token_table_sha256": "fc85ad01480c1d0b72de32645b77538dfc0110cc58461eb9e8f9a50bc2d51009",
+  "tokenizer_id": "clay-frozen-bpe4096:6c14a5cd26188678f920273cff49483f535e340caa98e3a7eb4d3285286c37c6",
+  "tokens": ["not", "build", "the", "compiler"],
+  "training_authorized": false
+}

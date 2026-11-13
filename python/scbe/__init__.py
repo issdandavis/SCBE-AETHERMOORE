@@ -82,8 +82,35 @@ from .atomic_tokenization import (
     element_to_tau,
     element_to_trit_vector,
 )
-from .atomic_tokenization import map_token_to_atomic_state, map_token_to_element, read_molecule, read_spectrum
+from .atomic_tokenization import (
+    map_token_to_atomic_state,
+    map_token_to_element,
+    read_molecule,
+    read_spectrum,
+)
 from .chemical_fusion import FusionParams, FusionResult, fuse_atomic_states, fuse_tokens
+from .atomic_context_bundle import (
+    AtomicContextBundle,
+    AtomicEdgeContext,
+    AtomicNodeContext,
+    ComputationalDriftClock,
+    SemanticChargeEquilibrium,
+    build_atomic_context_bundle,
+    compute_drift_clock,
+    equilibrate_semantic_charge,
+    fuse_atomic_context,
+)
+from .frozen_stitch_protocol import (
+    DEFAULT_STITCH_PATH,
+    DEFAULT_STITCH_REGISTRY,
+    REFERENCE14_IMPLEMENTATION_SECTIONS,
+    ComponentSpec,
+    StitchContract,
+    StitchEnvelope,
+    StitchRegistry,
+    build_stitch_envelope,
+    verify_stitch_chain,
+)
 from .ca_opcode_table import (
     CAOpcodeEntry,
     OP_TABLE as CA_OP_TABLE,
@@ -185,6 +212,24 @@ __all__ += [
     "FusionResult",
     "fuse_atomic_states",
     "fuse_tokens",
+    "AtomicContextBundle",
+    "AtomicEdgeContext",
+    "AtomicNodeContext",
+    "ComputationalDriftClock",
+    "SemanticChargeEquilibrium",
+    "build_atomic_context_bundle",
+    "compute_drift_clock",
+    "equilibrate_semantic_charge",
+    "fuse_atomic_context",
+    "ComponentSpec",
+    "StitchContract",
+    "StitchEnvelope",
+    "StitchRegistry",
+    "DEFAULT_STITCH_PATH",
+    "DEFAULT_STITCH_REGISTRY",
+    "REFERENCE14_IMPLEMENTATION_SECTIONS",
+    "build_stitch_envelope",
+    "verify_stitch_chain",
     "CAOpcodeEntry",
     "CA_OP_TABLE",
     "validate_ca_table",
