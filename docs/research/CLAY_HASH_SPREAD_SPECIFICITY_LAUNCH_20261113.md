@@ -60,6 +60,23 @@ recomputed, and the source-pinned exposure auditor reconstructs the exact row
 counts.  No intermediate result authorizes model promotion, deployment,
 execution authority, deletion, or partial unfreezing.
 
+## Completion
+
+All 60 horses completed at `2026-11-13T07:40:36-08:00`.  Producer and
+independent gate verdicts are `NO_SELECTION`; promotion and partial unfreeze
+remain false.  The independent result verifier checked 24 banks, 60 horse
+receipts, and 180 checkpoints.  The exposure auditor reconstructed all 15
+schedules and proved that every row position was seen.
+
+- Result: `0deb8e9b96a09f42f527b7ff72c1bfaf39b3ecc712f3e227f2853265975c29e8`.
+- Gate: `5e8664cb324accd4ddf11dac35c3ba21ecf1ca53dc80b8da1c0cff2d7b499b87`.
+- Independent result audit:
+  `4ee18b6a1a8bfc665534ee3fb4e546d65f7aa357b4c71bd6253d2f271e87f7cf`.
+- Exposure audit:
+  `f0701502dc50be7261d336fb6c7b5085e3a02cd400acdea189c8a8226e68fd65`.
+- Detailed result:
+  `docs/research/CLAY_HASH_SPREAD_SPECIFICITY_RESULT_20261113.md`.
+
 ## Verification before launch
 
 - 22 neighboring trainer, factor, hash-spread, and exposure-audit tests passed.
