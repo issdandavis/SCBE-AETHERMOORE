@@ -21,6 +21,8 @@ def _sample(
     *,
     split: str = "train",
     source: str = "train-family",
+    operation: str = "unspecified",
+    view: str = "canonical",
 ) -> ExposureSample:
     return ExposureSample(
         sample_id=name,
@@ -29,6 +31,8 @@ def _sample(
         variant_id=variant,
         source_family=source,
         split=split,
+        operation_id=operation,
+        view_id=view,
     )
 
 
@@ -97,6 +101,37 @@ def test_report_tracks_variants_and_elite_gradient_coherence_without_payloads() 
     assert "holdout" not in report["train_source_families"]
 
 
+def test_report_exposes_concept_operation_view_source_presentation_tensor() -> None:
+    samples = [
+        _sample("a0", "shape", "left", operation="route", view="front"),
+        _sample("a1", "shape", "right", operation="route", view="side"),
+        _sample(
+            "holdout",
+            "shape",
+            "center",
+            split="holdout",
+            source="eval-family",
+            operation="route",
+            view="held-diagonal",
+        ),
+    ]
+    ledger = ConceptExposureLedger(samples, gradient_width=2)
+    ledger.observe_batch(["a0", "a0", "a1"], [0.6, 0.5, 0.7], [[1, 0]] * 3)
+
+    tensor = ledger.report()["exposure_tensor"]
+    assert tensor["axes"] == [
+        "concept_id",
+        "operation_id",
+        "view_id",
+        "source_family",
+        "presentations",
+    ]
+    assert tensor["view_ids"] == ["front", "side"]
+    assert [cell["presentations"] for cell in tensor["cells"]] == [2, 1]
+    assert all(cell["source_family"] == "train-family" for cell in tensor["cells"])
+    assert "eval-family" not in tensor["source_families"]
+
+
 def test_checkpoint_state_round_trips_exactly_and_rejects_another_manifest() -> None:
     ledger = ConceptExposureLedger(_samples(), gradient_width=2)
     ledger.observe_batch(["a0", "b1"], [0.7, 1.2], [[1.0, 0.0], [0.0, 1.0]])
@@ -112,6 +147,34 @@ def test_checkpoint_state_round_trips_exactly_and_rejects_another_manifest() -> 
     other = ConceptExposureLedger(changed, gradient_width=2)
     with pytest.raises(ValueError, match="manifest mismatch"):
         other.restore_state(state)
+
+
+def test_legacy_v1_checkpoint_restores_only_for_default_axes() -> None:
+    source = ConceptExposureLedger(_samples(), gradient_width=2)
+    source.observe_batch(["a0", "b1"], [0.7, 1.2], [[1.0, 0.0], [0.0, 1.0]])
+    legacy = source.state_dict()
+    legacy["schema"] = "scbe.concept-exposure-ledger.v1"
+    legacy["manifest_sha256"] = source._legacy_manifest_sha256
+
+    restored = ConceptExposureLedger(_samples(), gradient_width=2)
+    restored.restore_state(legacy)
+    assert restored.state_dict()["counts"] == source.state_dict()["counts"]
+
+    explicit_axes = [
+        _sample("a0", "alpha", "left", operation="route", view="front"),
+        _sample(
+            "held",
+            "alpha",
+            "right",
+            split="holdout",
+            source="eval-family",
+            operation="route",
+            view="held",
+        ),
+    ]
+    strict = ConceptExposureLedger(explicit_axes, gradient_width=2)
+    with pytest.raises(ValueError, match="unknown exposure-ledger state schema"):
+        strict.restore_state(legacy)
 
 
 def test_class_balanced_control_assigns_equal_concept_mass() -> None:

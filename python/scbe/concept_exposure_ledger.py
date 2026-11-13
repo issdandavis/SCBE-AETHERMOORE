@@ -16,8 +16,9 @@ from typing import Any, Iterable, Mapping, Sequence
 
 import numpy as np
 
-EXPOSURE_LEDGER_SCHEMA = "scbe.concept-exposure-ledger.v1"
-EXPOSURE_REPORT_SCHEMA = "scbe.concept-exposure-report.v1"
+EXPOSURE_LEDGER_SCHEMA = "scbe.concept-exposure-ledger.v2"
+EXPOSURE_REPORT_SCHEMA = "scbe.concept-exposure-report.v2"
+LEGACY_EXPOSURE_LEDGER_SCHEMA = "scbe.concept-exposure-ledger.v1"
 WEIGHT_EFFECT_SCHEMA = "scbe.weight-effect-receipt.v1"
 VALID_SPLITS = frozenset({"train", "holdout", "anchor"})
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
@@ -60,9 +61,18 @@ class ExposureSample:
     variant_id: str
     source_family: str
     split: str
+    operation_id: str = "unspecified"
+    view_id: str = "canonical"
 
     def __post_init__(self) -> None:
-        for name in ("sample_id", "concept_id", "variant_id", "source_family"):
+        for name in (
+            "sample_id",
+            "concept_id",
+            "variant_id",
+            "source_family",
+            "operation_id",
+            "view_id",
+        ):
             value = str(getattr(self, name)).strip()
             if not value or len(value) > 160:
                 raise ValueError(f"{name} must contain 1..160 characters")
@@ -84,6 +94,8 @@ class ExposureSample:
             "variant_id": self.variant_id,
             "source_family": self.source_family,
             "split": self.split,
+            "operation_id": self.operation_id,
+            "view_id": self.view_id,
         }
 
 
@@ -170,6 +182,15 @@ class ConceptExposureLedger:
         self._sample_variants = np.asarray(
             [variant_index[key] for key in variant_keys], dtype=np.int64
         )
+        self._sample_operations, self._operation_keys = self._axis_indices(
+            sample.operation_id for sample in self._train_samples
+        )
+        self._sample_views, self._view_keys = self._axis_indices(
+            sample.view_id for sample in self._train_samples
+        )
+        self._sample_sources, self._source_keys = self._axis_indices(
+            sample.source_family for sample in self._train_samples
+        )
 
         size = len(self._train_samples)
         self._counts = np.zeros(size, dtype=np.int64)
@@ -192,6 +213,27 @@ class ConceptExposureLedger:
             "saturation_loss": self.saturation_loss,
         }
         self.manifest_sha256 = _canonical_sha256(self._manifest)
+        self._legacy_manifest_sha256: str | None = None
+        if all(
+            sample.operation_id == "unspecified" and sample.view_id == "canonical"
+            for sample in self.samples
+        ):
+            legacy_manifest = {
+                **self._manifest,
+                "schema": LEGACY_EXPOSURE_LEDGER_SCHEMA,
+                "samples": [
+                    {
+                        "sample_id": sample.sample_id,
+                        "payload_sha256": sample.payload_sha256,
+                        "concept_id": sample.concept_id,
+                        "variant_id": sample.variant_id,
+                        "source_family": sample.source_family,
+                        "split": sample.split,
+                    }
+                    for sample in self.samples
+                ],
+            }
+            self._legacy_manifest_sha256 = _canonical_sha256(legacy_manifest)
 
     @property
     def train_sample_ids(self) -> tuple[str, ...]:
@@ -214,6 +256,20 @@ class ConceptExposureLedger:
         if norm <= 1e-12:
             return None
         return prototype / norm
+
+    @staticmethod
+    def _axis_indices(values: Iterable[str]) -> tuple[np.ndarray, tuple[str, ...]]:
+        rows = tuple(values)
+        keys = tuple(sorted(set(rows)))
+        index = {name: position for position, name in enumerate(keys)}
+        return np.asarray([index[name] for name in rows], dtype=np.int64), keys
+
+    def _axis_need(self, indices: np.ndarray, cardinality: int) -> np.ndarray:
+        total_exposures = int(self._counts.sum())
+        counts = np.bincount(indices, weights=self._counts, minlength=cardinality)
+        mean = total_exposures / max(1, cardinality)
+        need = np.sqrt((mean + 1.0) / (counts[indices] + 1.0))
+        return np.clip(need, 0.5, 2.5)
 
     def observe_batch(
         self,
@@ -299,6 +355,11 @@ class ConceptExposureLedger:
         concept_need = np.clip(concept_need, 0.5, 2.5)
         sample_need = np.clip(sample_need, 0.5, 2.5)
         variant_need = np.clip(variant_need, 0.5, 2.5)
+        operation_need = self._axis_need(
+            self._sample_operations, len(self._operation_keys)
+        )
+        view_need = self._axis_need(self._sample_views, len(self._view_keys))
+        source_need = self._axis_need(self._sample_sources, len(self._source_keys))
 
         finite_losses = self._loss_ema[np.isfinite(self._loss_ema)]
         loss_fill = float(np.median(finite_losses)) if finite_losses.size else 1.0
@@ -319,7 +380,14 @@ class ConceptExposureLedger:
                     alignment_factor[indices] = np.clip(1.0 + 0.2 * alignment, 0.8, 1.2)
 
         scores = (
-            concept_need * sample_need * variant_need * loss_factor * alignment_factor
+            concept_need
+            * sample_need
+            * variant_need
+            * operation_need
+            * view_need
+            * source_need
+            * loss_factor
+            * alignment_factor
         )
         median_score = max(float(np.median(scores)), 1e-12)
         scores = np.clip(scores, median_score / 8.0, median_score * 8.0)
@@ -386,6 +454,41 @@ class ConceptExposureLedger:
     def report(self) -> dict[str, Any]:
         """Return a payload-free, replayable accounting report."""
 
+        cells: dict[tuple[str, str, str, str], list[int]] = {}
+        for index, sample in enumerate(self._train_samples):
+            key = (
+                sample.concept_id,
+                sample.operation_id,
+                sample.view_id,
+                sample.source_family,
+            )
+            cells.setdefault(key, []).append(index)
+        tensor_rows = []
+        for key, indices in sorted(cells.items()):
+            counts = self._counts[np.asarray(indices, dtype=np.int64)]
+            presentations = int(counts.sum())
+            tensor_rows.append(
+                {
+                    "concept_id": key[0],
+                    "operation_id": key[1],
+                    "view_id": key[2],
+                    "source_family": key[3],
+                    "sample_count": len(indices),
+                    "presentations": presentations,
+                    "unique_samples_seen": int(np.count_nonzero(counts)),
+                    "effective_sample_presentations": (
+                        float(
+                            presentations
+                            * presentations
+                            / np.square(counts, dtype=np.float64).sum()
+                        )
+                        if presentations
+                        and np.square(counts, dtype=np.float64).sum() > 0.0
+                        else 0.0
+                    ),
+                }
+            )
+
         report: dict[str, Any] = {
             "schema": EXPOSURE_REPORT_SCHEMA,
             "ledger_manifest_sha256": self.manifest_sha256,
@@ -411,6 +514,20 @@ class ConceptExposureLedger:
                 }
             ),
             "total_exposures": int(self._counts.sum()),
+            "exposure_tensor": {
+                "axes": [
+                    "concept_id",
+                    "operation_id",
+                    "view_id",
+                    "source_family",
+                    "presentations",
+                ],
+                "operation_ids": list(self._operation_keys),
+                "view_ids": list(self._view_keys),
+                "source_families": list(self._source_keys),
+                "cell_count": len(tensor_rows),
+                "cells": tensor_rows,
+            },
             "concepts": {
                 concept: self._concept_report(concept) for concept in self._concepts
             },
@@ -449,9 +566,17 @@ class ConceptExposureLedger:
     def restore_state(self, state: Mapping[str, Any]) -> None:
         """Restore a state only when its sealed sample manifest matches."""
 
-        if state.get("schema") != EXPOSURE_LEDGER_SCHEMA:
+        schema = state.get("schema")
+        if schema == EXPOSURE_LEDGER_SCHEMA:
+            expected_manifest = self.manifest_sha256
+        elif (
+            schema == LEGACY_EXPOSURE_LEDGER_SCHEMA
+            and self._legacy_manifest_sha256 is not None
+        ):
+            expected_manifest = self._legacy_manifest_sha256
+        else:
             raise ValueError("unknown exposure-ledger state schema")
-        if state.get("manifest_sha256") != self.manifest_sha256:
+        if state.get("manifest_sha256") != expected_manifest:
             raise ValueError("exposure-ledger manifest mismatch")
         size = len(self._train_samples)
         counts = np.asarray(state.get("counts"), dtype=np.int64)
