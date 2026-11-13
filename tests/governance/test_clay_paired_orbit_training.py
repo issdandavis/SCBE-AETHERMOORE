@@ -61,6 +61,20 @@ def test_static_repeated_reuses_each_latent_row_three_times() -> None:
         assert torch.equal(rows[1], rows[2])
 
 
+def test_metrics_do_not_treat_absent_classes_as_failed_classes() -> None:
+    labels = torch.tensor([0, 0, 1, 1], dtype=torch.int64)
+    logits = torch.full((4, orbit.ACTION_COUNT), -8.0)
+    logits[0:2, 0] = 8.0
+    logits[2:4, 1] = 8.0
+    metrics = orbit._metrics(logits, labels)
+    assert metrics["accuracy"] == 1.0
+    assert metrics["macro_f1"] == 1.0
+    assert metrics["worst_class_accuracy"] == 1.0
+    assert metrics["supported_class_count"] == 2
+    assert metrics["absent_true_classes"] == [2, 3, 4]
+    assert metrics["per_class_accuracy"] == [1.0, 1.0, None, None, None]
+
+
 def test_small_campaign_changes_weights_and_preserves_controls(tmp_path) -> None:
     result = orbit.run_campaign(
         tmp_path / "run",

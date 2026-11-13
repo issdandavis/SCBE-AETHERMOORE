@@ -26,7 +26,7 @@ import torch
 from torch import Tensor, nn
 import torch.nn.functional as F
 
-SCHEMA = "clay.paired-orbit-data-campaign.v1"
+SCHEMA = "clay.paired-orbit-data-campaign.v2"
 ARMS = (
     "static_unique",
     "static_repeated",
@@ -118,6 +118,13 @@ def _atomic_torch(path: Path, value: Mapping[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(path.suffix + ".tmp")
     torch.save(dict(value), temporary)
+    os.replace(temporary, path)
+
+
+def _atomic_text(path: Path, value: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(value, encoding="utf-8", newline="\n")
     os.replace(temporary, path)
 
 
@@ -440,24 +447,40 @@ def _metrics(logits: Tensor, labels: Tensor) -> dict[str, Any]:
     confusion = torch.zeros((ACTION_COUNT, ACTION_COUNT), dtype=torch.int64)
     for truth, predicted in zip(labels.cpu(), predictions.cpu(), strict=True):
         confusion[int(truth), int(predicted)] += 1
-    per_class: list[float] = []
-    f1_values: list[float] = []
+    per_class: list[float | None] = []
+    supported_f1: list[float] = []
+    all_f1: list[float] = []
+    absent_classes: list[int] = []
     for index in range(ACTION_COUNT):
         true_positive = int(confusion[index, index])
         support = int(confusion[index].sum())
         predicted = int(confusion[:, index].sum())
-        per_class.append(true_positive / support if support else 0.0)
+        if support:
+            per_class.append(true_positive / support)
+        else:
+            per_class.append(None)
+            absent_classes.append(index)
         precision = true_positive / predicted if predicted else 0.0
         recall = true_positive / support if support else 0.0
-        f1_values.append(
+        f1 = (
             2 * precision * recall / (precision + recall) if precision + recall else 0.0
         )
+        all_f1.append(f1)
+        if support:
+            supported_f1.append(f1)
+    supported_accuracy = [value for value in per_class if value is not None]
     return {
         "accuracy": float((predictions == labels).to(torch.float64).mean().item()),
-        "macro_f1": statistics.fmean(f1_values),
-        "worst_class_accuracy": min(per_class),
+        "macro_f1": statistics.fmean(supported_f1),
+        "full_action_macro_f1": statistics.fmean(all_f1),
+        "worst_class_accuracy": min(supported_accuracy),
         "cross_entropy": float(F.cross_entropy(logits, labels).item()),
         "per_class_accuracy": per_class,
+        "supported_class_count": len(supported_accuracy),
+        "absent_true_classes": absent_classes,
+        "predictions_into_absent_classes": int(
+            confusion[:, absent_classes].sum().item() if absent_classes else 0
+        ),
         "confusion": confusion.tolist(),
     }
 
@@ -657,7 +680,7 @@ def train_horse(
     _atomic_torch(horse / "BEST.pt", best_state)
     _atomic_torch(horse / "FINAL.pt", final_state)
     body: dict[str, Any] = {
-        "schema": "clay.paired-orbit-horse.v1",
+        "schema": "clay.paired-orbit-horse.v2",
         "held_sector": held_sector,
         "arm": arm,
         "seed": seed,
@@ -860,6 +883,7 @@ def run_campaign(
         "schema": SCHEMA,
         "created_at_utc": utc_now(),
         "configuration": configuration,
+        "implementation_sha256": {"module": file_sha256(Path(__file__))},
         "source_hashes": dict(provider.source_hashes),
         "standard_control": "static_unique",
         "primary_arm": PRIMARY_ARM,
@@ -968,9 +992,7 @@ def run_campaign(
     }
     result = {**body, "result_sha256": sha256_json(body)}
     _atomic_json(root / "RESULT.json", result)
-    (root / "MARKET_REPORT.md").write_text(
-        render_market(result), encoding="utf-8", newline="\n"
-    )
+    _atomic_text(root / "MARKET_REPORT.md", render_market(result))
     _atomic_json(
         root / "STATUS.json",
         {

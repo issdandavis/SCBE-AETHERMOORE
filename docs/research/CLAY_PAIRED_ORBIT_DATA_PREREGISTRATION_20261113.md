@@ -44,6 +44,8 @@ checkpoints and measures retention.
 ## Measurements
 
 - held accuracy, macro-F1, worst-class accuracy, and cross-entropy;
+- macro-F1 and worst-class accuracy over true-supported held classes, with
+  predictions into absent action classes reported separately;
 - cardinal-anchor retention;
 - cosine similarity among the three per-view gradient vectors;
 - exact initial/best/final weight hashes, changed scalars, and L2 drift;
