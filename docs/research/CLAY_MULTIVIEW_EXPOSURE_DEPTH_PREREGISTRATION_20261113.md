@@ -33,8 +33,9 @@ showed that raw pooling mixes tasks with substantially different class support.
 For accuracy and stable macro-F1, the primary arm must:
 
 1. have a positive mean delta against both controls in every held sector;
-2. exceed two pooled standard deviations against both controls in at least two
-   of three sectors; and
+2. exceed the larger of two pooled standard deviations and a conservative
+   finite-evaluation floor of `2 / sqrt(10,000) = 0.02` against both controls
+   in at least two of three sectors; and
 3. retain anchor accuracy within two percentage points in every sector.
 
 Global pooled metrics, matched win/loss counts, worst stable-class accuracy,
@@ -44,4 +45,8 @@ step, and final trace direction remain mandatory diagnostics.  A miss is
 
 No result from this mechanics campaign authorizes promotion, execution
 authority, partial unfreezing, or deletion of earlier checkpoints.
+
+The frozen evaluator is
+`python/scbe/clay_multiview_stratified_gate.py`; the CLI writes a separate
+receipt and never changes the producer's verdict or weights.
 
