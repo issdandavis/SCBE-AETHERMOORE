@@ -101,10 +101,15 @@ the confirmation gate includes stable-class F1 plus exact support receipts.
 The fresh confirmation is defined in
 `CLAY_MULTIVIEW_DATA_CONFIRMATION_PREREGISTRATION_20261113.md` and runs at:
 
-`C:\dev\clay-training-runs\paired-orbit-data-20261113\multiview-confirm-v1`
+`C:\dev\clay-training-runs\paired-orbit-data-20261113\multiview-confirm-v2`
 
 It uses new data seeds, 30,000 rows per arm, 10,000-row held and anchor banks,
 five unseen model seeds, 2,400 steps, and the two controls needed to distinguish
 cross-view support from raw row count and exact repetition.
+
+The initial v1 preparation was stopped before any optimizer step because data
+inspection found that its repetition arm inherited an extra all-view eligibility
+filter. The correction and zero-weight abort receipt are documented in
+`CLAY_MULTIVIEW_DATA_CONFIRMATION_AMENDMENT_20261113.md`.
 
 Status remains `NO_SELECTION`. Existing weights are preserved.
