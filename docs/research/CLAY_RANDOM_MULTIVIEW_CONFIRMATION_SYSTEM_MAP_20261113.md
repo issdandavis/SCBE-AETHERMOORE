@@ -68,3 +68,21 @@ the standard baseline.
 The existing implementation and its focused tests are reused unchanged.  This
 avoids introducing a new training code path after seeing the prior outcomes.
 
+## Post-launch data-support receipt
+
+The independent exposure auditor was extended after launch as an
+observability-only change.  For each immutable bank it now records unique
+feature rows, action counts, view counts, the view-by-action table, group
+multiplicity, complete three-view groups, and whether a repeated group keeps or
+changes its action label.  It still reads no losses, predictions, rewards, or
+holdout outcomes and does not enter the trainer, sampler, optimizer, gate, or
+weights.
+
+This separates two questions that raw epoch counts conflate:
+
+1. how often a stored row was sampled; and
+2. which concept/view/factor relationships existed in the stored support.
+
+Repeated sampling can reinforce the first.  Only the data builder can expand
+the second.
+

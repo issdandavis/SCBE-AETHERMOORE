@@ -140,6 +140,18 @@ def test_completed_campaign_emits_exact_outcome_agnostic_receipt(
     assert all(row["draws"] == 15 for row in result["schedules"])
     assert all(sum(row["row_exposure_counts"]) == 15 for row in result["schedules"])
     assert all(row["applies_to_arms"] == ["static_unique", "multiview_random"] for row in result["schedules"])
+    support = result["banks"]["held-1/multiview_random"]["data_support"]
+    assert support["unique_feature_rows"] == 7
+    assert support["action_counts"] == [2, 2, 1, 1, 1]
+    assert support["view_counts"] == [3, 2, 2]
+    assert support["view_action_counts"] == [
+        [1, 1, 0, 1, 0],
+        [0, 1, 0, 0, 1],
+        [1, 0, 1, 0, 0],
+    ]
+    assert support["unique_groups"] == 7
+    assert support["multirow_groups"] == 0
+    assert support["groups_covering_all_views"] == 0
     assert result["outcome_values_used_for_exposure"] is False
     assert result["promotion_authorized"] is False
     assert result["partial_unfreeze_authorized"] is False

@@ -28,6 +28,7 @@ CAMPAIGN_SCHEMAS = (
 COMPLETE_STATE = "COMPLETE_MECHANICS_NO_PROMOTION"
 FEATURE_WIDTH = 37
 ACTION_COUNT = 5
+VIEW_COUNT = 3
 
 
 class ExposureAuditError(RuntimeError):
@@ -97,6 +98,53 @@ def _bank_body(name: str, payload: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def _bank_support_receipt(payload: Mapping[str, Any]) -> dict[str, Any]:
+    """Describe what one bank can teach without reading learned outcomes."""
+
+    features = payload["features"]
+    labels = payload["labels"]
+    groups = payload["groups"]
+    views = payload["views"]
+    unique_groups, group_counts = torch.unique(groups, return_counts=True)
+    multirow_groups = unique_groups[group_counts > 1]
+    all_view_groups = 0
+    invariant_label_groups = 0
+    transformed_label_groups = 0
+    for group in multirow_groups.tolist():
+        mask = groups == group
+        group_views = torch.unique(views[mask])
+        group_labels = torch.unique(labels[mask])
+        all_view_groups += int(
+            group_views.numel() == VIEW_COUNT
+            and torch.equal(
+                torch.sort(group_views).values,
+                torch.arange(VIEW_COUNT, dtype=torch.int64),
+            )
+        )
+        invariant_label_groups += int(group_labels.numel() == 1)
+        transformed_label_groups += int(group_labels.numel() > 1)
+
+    view_action_counts = [
+        [
+            int(torch.sum((views == view) & (labels == action)).item())
+            for action in range(ACTION_COUNT)
+        ]
+        for view in range(VIEW_COUNT)
+    ]
+    return {
+        "unique_feature_rows": int(torch.unique(features, dim=0).shape[0]),
+        "action_counts": torch.bincount(labels, minlength=ACTION_COUNT).tolist(),
+        "view_counts": torch.bincount(views, minlength=VIEW_COUNT).tolist(),
+        "view_action_counts": view_action_counts,
+        "unique_groups": int(unique_groups.numel()),
+        "multirow_groups": int(multirow_groups.numel()),
+        "groups_covering_all_views": all_view_groups,
+        "invariant_label_multirow_groups": invariant_label_groups,
+        "transformed_label_multirow_groups": transformed_label_groups,
+        "complete_groups_declared": bool(payload["complete_groups"]),
+    }
+
+
 def verify_bank(path: Path, *, name: str) -> dict[str, Any]:
     """Verify one producer bank without importing the producer implementation."""
 
@@ -138,6 +186,9 @@ def verify_bank(path: Path, *, name: str) -> dict[str, Any]:
         raise ExposureAuditError(
             f"training labels are outside the action range: {path}"
         )
+    views = payload["views"]
+    if bool(torch.any((views < 0) | (views >= VIEW_COUNT))):
+        raise ExposureAuditError(f"training views are outside the view range: {path}")
     if not isinstance(payload["complete_groups"], bool):
         raise ExposureAuditError(f"complete_groups is not boolean: {path}")
     manifest = str(payload["manifest_sha256"])
@@ -150,6 +201,7 @@ def verify_bank(path: Path, *, name: str) -> dict[str, Any]:
         "records": records,
         "feature_width": int(features.shape[1]),
         "complete_groups": payload["complete_groups"],
+        "data_support": _bank_support_receipt(payload),
     }
 
 
