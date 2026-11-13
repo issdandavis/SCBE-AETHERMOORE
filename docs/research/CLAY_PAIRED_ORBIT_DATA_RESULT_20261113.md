@@ -56,6 +56,14 @@ by 0.78 accuracy points and 0.61 macro-F1 points, and trailed shuffled paired
 orbits by 0.42 and 0.25 points. The useful part was view diversity, not forcing
 three views of one latent state into one gradient unit.
 
+The views are action-equivariant rather than label-invariant. In a fresh
+10,000-state orbit bank, only 54.88% of latent states kept one action label
+across all three views. Canonical-to-view-1 labels matched 65.34% of the time;
+canonical-to-view-2 matched 62.58%. The geometry matrix and frame fields must
+therefore teach how an action rotates, not merely declare three rows identical.
+This gives a concrete reason that independent mixing can help while forced
+grouping supplies no automatic advantage.
+
 An initial `full-v1` launch was stopped before any horse trained because data
 inspection exposed an evaluator defect: absent action classes were being scored
 as failures. The corrected evaluator scores only true-supported classes and
