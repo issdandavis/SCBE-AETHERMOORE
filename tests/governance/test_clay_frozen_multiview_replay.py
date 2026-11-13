@@ -12,6 +12,7 @@ from python.scbe.clay_frozen_multiview_adapter import FrozenActionModel
 from python.scbe.clay_frozen_multiview_data import build_frozen_multiview_dataset
 from python.scbe.clay_frozen_multiview_replay import (
     ReplayFrozenActionModel,
+    byte_token_identity_receipt,
     build_replay_dataset,
     paired_output_diagnostics,
     replay_action_metrics,
@@ -36,6 +37,23 @@ class FakeReplayProvider:
         sector = (state // 5) % 8
         feature = torch.arange(37, dtype=torch.float32) * 0.03125 + state * 1e-5 + sandbox * 0.125
         return feature, label, sector
+
+
+def test_byte_token_identity_receipt_requires_the_complete_256_plane() -> None:
+    byte_plane = [chr(0xE100 + value) for value in range(256)]
+    receipt = byte_token_identity_receipt(["\x00", "\x02", "\x1f", "\x03", *byte_plane])
+
+    assert receipt["pass"] is True
+    assert receipt["present_byte_token_count"] == 256
+    assert receipt["model_token_ids_contiguous"] is True
+    assert receipt["logical_model_tokens_per_payload_byte"] == 1
+    assert receipt["utf8_storage_bytes_per_carrier_token"] == [3]
+    assert receipt["feature_payload_bytes"] == 148
+    assert receipt["feature_payload_model_tokens"] == 148
+
+    missing = byte_token_identity_receipt(["\x00", *byte_plane[:-1]])
+    assert missing["pass"] is False
+    assert missing["missing_byte_values"] == [255]
 
 
 def test_replay_model_matches_producer_without_importing_it() -> None:

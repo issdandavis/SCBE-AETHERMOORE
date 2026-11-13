@@ -378,6 +378,58 @@ def _vocab_of(*rowsets: Sequence[tuple[str, str]]) -> tuple[list[str], dict[str,
     return vocab, {char: index for index, char in enumerate(vocab)}
 
 
+def byte_token_identity_receipt(vocab: Sequence[str]) -> dict[str, Any]:
+    """Prove the logical one-token-per-byte carrier without hiding storage cost."""
+
+    token_to_id = {token: index for index, token in enumerate(vocab)}
+    byte_tokens = tuple(chr(BYTE_TOKEN_BASE + value) for value in range(256))
+    missing = [
+        value for value, token in enumerate(byte_tokens) if token not in token_to_id
+    ]
+    token_ids = [token_to_id[token] for token in byte_tokens if token in token_to_id]
+    contiguous = bool(token_ids) and token_ids == list(
+        range(token_ids[0], token_ids[0] + len(token_ids))
+    )
+    table_rows = [
+        {
+            "byte": value,
+            "code_point": f"U+{ord(token):04X}",
+            "model_token_id": token_to_id.get(token),
+        }
+        for value, token in enumerate(byte_tokens)
+    ]
+    storage_widths = sorted({len(token.encode("utf-8")) for token in byte_tokens})
+    passed = (
+        not missing
+        and len(set(byte_tokens)) == 256
+        and len(set(token_ids)) == 256
+        and contiguous
+    )
+    return {
+        "schema": "clay.byte-token-identity-receipt.v1",
+        "pass": passed,
+        "canonical_identity": "unsigned byte value 0..255",
+        "carrier_mapping": "token_code_point = U+E100 + byte_value",
+        "canonical_byte_count": 256,
+        "present_byte_token_count": len(token_ids),
+        "missing_byte_values": missing,
+        "distinct_carrier_token_count": len(set(byte_tokens)),
+        "distinct_model_token_id_count": len(set(token_ids)),
+        "model_token_ids_contiguous": contiguous,
+        "first_model_token_id": token_ids[0] if token_ids else None,
+        "last_model_token_id": token_ids[-1] if token_ids else None,
+        "logical_model_tokens_per_payload_byte": 1,
+        "utf8_storage_bytes_per_carrier_token": storage_widths,
+        "feature_payload_bytes": FEATURE_WIDTH * 4,
+        "feature_payload_model_tokens": FEATURE_WIDTH * 4,
+        "table_sha256": _stable_hash(table_rows),
+        "view_boundary": (
+            "B256 and Six-Tongues spellings are reversible views over the same "
+            "byte identity; they are not input arms in this campaign"
+        ),
+    }
+
+
 class ReplayAdapter(nn.Module):
     """Separately declared adapter with producer-compatible state keys."""
 
@@ -908,6 +960,9 @@ def verify_completed_artifacts(
     vocab_matches = _stable_hash(vocab) == manifest["vocab_sha256"]
     if not vocab_matches:
         errors.append("vocabulary hash mismatch")
+    token_identity = byte_token_identity_receipt(vocab)
+    if not token_identity["pass"]:
+        errors.append("byte-token identity receipt failed")
     itos = {index: char for char, index in stoi.items()}
 
     receipts: list[dict[str, Any]] = []
@@ -1054,6 +1109,7 @@ def verify_completed_artifacts(
         "dataset_manifest_matches": dataset_matches,
         "source_hashes_match": source_hashes_match,
         "vocabulary_matches": vocab_matches,
+        "token_identity": token_identity,
         "completed_terminal_count": len(receipts),
         "expected_terminal_count": expected,
         "pending_terminal_artifacts": sorted(pending),
@@ -1097,6 +1153,9 @@ def verify_run(run_dir: Path, *, tolerance: float = 1e-12) -> dict[str, Any]:
     )
     if _stable_hash(vocab) != manifest["vocab_sha256"]:
         errors.append("vocabulary hash mismatch")
+    token_identity = byte_token_identity_receipt(vocab)
+    if not token_identity["pass"]:
+        errors.append("byte-token identity receipt failed")
     itos = {index: char for char, index in stoi.items()}
 
     recorded_by_arm = {
@@ -1233,6 +1292,7 @@ def verify_run(run_dir: Path, *, tolerance: float = 1e-12) -> dict[str, Any]:
         "independent_dataset_builder_sha256": _file_sha256(Path(__file__).resolve()),
         "producer_result_sha256": _file_sha256(run_dir / "RESULT.json"),
         "dataset_manifest_sha256": dataset.manifest["manifest_sha256"],
+        "token_identity": token_identity,
         "model_receipts": receipts,
         "comparisons": comparisons,
         "paired_comparisons": paired,

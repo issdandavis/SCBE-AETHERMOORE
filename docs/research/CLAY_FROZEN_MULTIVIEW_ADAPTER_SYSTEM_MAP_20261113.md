@@ -87,7 +87,7 @@ The first multi-view horse (`seed=20261131`) is terminal and independently
 replayed. The partial receipt now covers `3 / 12` terminal artifacts with zero
 prediction, metric, counting, source, vocabulary, or frozen-core mismatches.
 The hardened replay receipt at this boundary has SHA-256
-`c7ed09ebd13304e62a0baf8fae9b5a8ad8436df793f72b442d0024a943ef6e29`.
+`1507a436b46a6928b0fa14bb8ff4ce78eac38ea120ad88830cb607c8d40809ea`.
 Its validator rejects fractional action IDs, correctness flags that disagree
 with the actual target/prediction pair, and duplicate held-example keys rather
 than truncating or overwriting them.
@@ -130,6 +130,18 @@ The learned inference path is:
   -> trainable adapter + action head
   -> greedy integer action-ID decode
 ```
+
+The byte deed is exact at the model boundary: all byte values `0..255` are
+reserved as `U+E100 + byte`, all 256 carrier symbols occupy contiguous model
+token IDs, and each 148-byte feature deed enters as exactly 148 embedding
+tokens. This is a logical one-token-per-byte mapping. It is not a claim that the
+intermediate Unicode string is one physical storage byte per token: each
+private-use carrier occupies three bytes when encoded as UTF-8. B256 and the
+six tongue spellings remain reversible names/views over the same canonical byte
+identity and are not silently mixed into this controlled campaign.
+The independently reconstructed live table spans model IDs `20..275`, has no
+missing byte values, and has table SHA-256
+`00f5567f26c8d0c946eea62052100f3bc43f363c8703a5eb2f8fafd8d69cfc3c`.
 
 It does not call a route sieve, centroid index, topology operator, tool, beam,
 vote, or triangulation pass at inference. Sector is an evaluation coordinate,
