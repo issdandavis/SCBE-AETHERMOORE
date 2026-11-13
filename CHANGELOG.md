@@ -24,6 +24,13 @@
 
 ### Changed
 
+- **Lean `4.3.4` package boundary**: the default PyPI install now contains the
+  standard-library scanner, receipts, and CLIs without pulling 51 unrelated
+  distributions. NumPy geometry, governance, crypto, vision, MCP, and model
+  stacks are explicit extras. The npm runtime floor is Node 20.19+, matching
+  the tested release surface, and the public product door now names the
+  scanner/SDK and agent bus while keeping the Docker/API lane in preview.
+
 - **Article 12 rewritten to lead with its own defect** (`articles/12_trichromatic_forgery_resistance.md`, still `published: false`): the previous draft claimed a "504-bit state space", `10^71` times the atoms in the observable universe, and "5 out of 5 forgeries caught". Every one of those was produced by code that could not have produced another answer. The forgery test's adversary drew its hidden bands from `np.random.RandomState(42)` seeded **inside** the function, so all five attacks received byte-identical forged values — n=1 reported five times. Detection was declared when fewer than 6 tongues matched on all three bands; per tongue the chance two uniform draws both land inside the 0.15 tolerance is 0.0772, so all six is ≈2e-7 — **0 occurrences in 200,000 simulated trials**. The bridge check read `bridge_matches += 0` with `bridge_match_rate` hardcoded to `0.0`, so the 45 bridge channels the headline counted contributed nothing to the verdict. The article now claims what the code supports: *63-dimensional trichromatic detection overlay with a 256-bit authenticated, replay-resistant state chain*.
 
 - **Legal/patent documents moved to private storage**: `docs/legal/` (96 files — patent workbench, claims, prosecution material) plus the patent portfolio docs in `docs/` and `docs/business/` are no longer tracked in the public repo. The public site pages (`docs/legal/privacy.html`, `docs/legal/terms.html`) and the commercial license terms remain. `scbe-patent init` regenerates the workbench locally; its output is now gitignored. Note: prior revisions remain in git history until a history rewrite.
@@ -31,6 +38,13 @@
 - **Nightly full-suite workflow hardened**: on failure it now opens (or appends to) a `nightly-failure` issue automatically instead of relying on someone noticing a red scheduled run.
 
 ### Fixed
+
+- **Registry-facing package usability**: `scbe-convert-to-sft` now launches
+  through a dependency-light module instead of importing the NumPy-heavy
+  `symphonic_cipher` facade. npm/PyPI usability harnesses build the candidate,
+  use disposable caches, remove temporary installs, and measure package versus
+  dependency footprint. The npm lock also moves transitive Hono packages to
+  patched versions, leaving the production audit at zero vulnerabilities.
 
 - **npm pack builds before validating the tarball**: the strict pack guard no
   longer rejects a clean checkout for a missing generated `dist/src/index.d.ts`.

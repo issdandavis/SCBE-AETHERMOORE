@@ -7,9 +7,9 @@
 
 Post-quantum AI governance through geometric adversarial cost scaling.
 
-**Product door:** `RELEASE.md`. One process (`src.api.main:app` on port 8000). Users stream agent traffic through SCBE; SCBE PQC-seals it (ML-KEM-768 / ML-DSA-65), gates it, and bills provider cost + 2%. AetherDesk is the optional operator client. Dataset `kernel-data-sync-*` tags are not the product.
+**Product door:** `RELEASE.md`. The installable scanner/SDK and agent bus are the supported public products. The API/container lane is a preview until its packaged health, auth, and action smoke is attached. AetherDesk is the optional operator client. Dataset `kernel-data-sync-*` tags are not the product.
 
-Adversarial inputs cost exponentially more the further they drift from safe operation. The mechanism is hyperbolic geometry applied to semantic embeddings — not heuristic classifiers or blocklists. The pipeline runs locally, produces audit receipts, and composes with upstream safety tools.
+The full framework can apply hyperbolic geometry to semantic embeddings so adversarial drift carries increasing cost. The dependency-free scanner is a smaller deterministic prefilter: it uses located injection patterns and byte statistics, runs locally, and emits audit receipts. It is not a universal semantic detector. Optional geometry, governance, crypto, MCP, vision, and model integrations build on that verified front door.
 
 **npm** · **PyPI** · **Patent pending: USPTO #19/691,526 (non-provisional, filed 2026-05-28), claiming priority to provisional #63/961,403 (2026-01-15)** · **CAGE 1EXD5** · **SAM UEI J4NXHM6N5F59**
 
@@ -70,7 +70,7 @@ The installable package surface is the simplest public entry point.
 
 | Package | Runtime | Install |
 |---|---|---|
-| [`scbe-aethermoore`](https://www.npmjs.com/package/scbe-aethermoore) | TypeScript / Node 18+ | `npm install scbe-aethermoore` |
+| [`scbe-aethermoore`](https://www.npmjs.com/package/scbe-aethermoore) | TypeScript / Node 20.19+ | `npm install scbe-aethermoore` |
 | [`scbe-aethermoore`](https://pypi.org/project/scbe-aethermoore/) | Python 3.11+ | `pip install scbe-aethermoore` |
 | [`scbe-agent-bus`](https://pypi.org/project/scbe-agent-bus/) | Python agent bus | `pip install scbe-agent-bus` |
 | [`@scbe/kernel`](https://www.npmjs.com/package/@scbe/kernel) | Lightweight kernel | `npm install @scbe/kernel` |
@@ -97,6 +97,22 @@ Service credits are pay-as-you-go: billable provider/model usage is passed throu
 npm install scbe-aethermoore    # TypeScript/Node
 pip install scbe-aethermoore    # Python
 ```
+
+The Python default is the dependency-free scanner and audit-receipt surface.
+Install only the feature families you use:
+
+```bash
+pip install "scbe-aethermoore[geometry]"   # NumPy geometry
+pip install "scbe-aethermoore[crypto]"     # geometry + cryptography
+pip install "scbe-aethermoore[vision]"     # geometry + Pillow
+pip install "scbe-aethermoore[mcp]"        # MCP room/client integration
+pip install "scbe-aethermoore[full]"       # all non-model feature families
+```
+
+See the [product quickstart](docs/PRODUCT_QUICKSTART.md) for measured install
+sizes and first-use proofs. The planned popup-style profile selector, cloud
+compiler fallback, and privacy-preserving issue-report contract are documented
+in the [guided installer specification](docs/specs/GUIDED_INSTALLER_AND_SUPPORT.md).
 
 ---
 

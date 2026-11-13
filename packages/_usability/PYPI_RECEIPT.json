@@ -1,0 +1,125 @@
+{
+  "schema": "scbe_pypi_usability_receipt_v1",
+  "spec": "scbe-aethermoore==4.3.2",
+  "temp_retained": false,
+  "temp_path": null,
+  "package": {
+    "version": "4.3.2",
+    "own_bytes": 15427454,
+    "own_files": 938,
+    "distribution_count": 52,
+    "distributions": [
+      "PyJWT",
+      "aiohappyeyeballs",
+      "aiohttp",
+      "aiosignal",
+      "annotated-types",
+      "anyio",
+      "attrs",
+      "bedrock-agentcore",
+      "boto3",
+      "botocore",
+      "certifi",
+      "cffi",
+      "click",
+      "cryptography",
+      "frozenlist",
+      "h11",
+      "httpcore",
+      "httpx",
+      "httpx-sse",
+      "idna",
+      "jmespath",
+      "jsonschema",
+      "jsonschema-specifications",
+      "mcp",
+      "multidict",
+      "numpy",
+      "pillow",
+      "pip",
+      "propcache",
+      "pyasn1",
+      "pycparser",
+      "pydantic",
+      "pydantic-settings",
+      "pydantic_core",
+      "python-dateutil",
+      "python-dotenv",
+      "python-multipart",
+      "pywin32",
+      "referencing",
+      "rpds-py",
+      "s3transfer",
+      "scbe-aethermoore",
+      "six",
+      "soupsieve",
+      "sse-starlette",
+      "starlette",
+      "typing-inspection",
+      "typing_extensions",
+      "urllib3",
+      "uvicorn",
+      "websockets",
+      "yarl"
+    ]
+  },
+  "venv_baseline_bytes": 12017100,
+  "venv_baseline_files": 861,
+  "installed_delta_bytes": 178048901,
+  "installed_delta_files": 8360,
+  "passed": 5,
+  "failed": 0,
+  "checks": [
+    {
+      "command": [
+        "python.exe",
+        "-c",
+        "import scbe_aethermoore as m; print(m.__version__)"
+      ],
+      "expected": "4.3.2",
+      "exit": 0,
+      "passed": true,
+      "output_head": "4.3.2"
+    },
+    {
+      "command": [
+        "scbe-scan.exe",
+        "--help"
+      ],
+      "expected": "Usage",
+      "exit": 0,
+      "passed": true,
+      "output_head": "usage: scbe-scan [-h] [--json] [--explain] [--batch FILE] [--chat] [--scores] [--version] [text] Scan text through the SCBE AI governance pipeline. positional arguments: text Text to scan (or pipe via stdin) options: -h, --help show this help message and exit --json, -j Output full JSON result --explain, -e Explain result via LLM (Ollama/HuggingFace) --batch FILE, -b FILE Scan each line of FILE as"
+    },
+    {
+      "command": [
+        "scbe-scan.exe",
+        "clean text"
+      ],
+      "expected": "ALLOW",
+      "exit": 0,
+      "passed": true,
+      "output_head": "[OK] ALLOW nothing matched - no located trigger"
+    },
+    {
+      "command": [
+        "scbe.exe",
+        "--help"
+      ],
+      "expected": "usage",
+      "exit": 0,
+      "passed": true,
+      "output_head": "usage: scbe [-h] [-V] <command> ... SCBE-AETHERMOORE \u2014 Unified CLI for crypto, governance, and AI safety positional arguments: <command> tongues Sacred Tongue tokenization pipeline 14-layer governance pipeline ai AI onboard \u2014 code task assistant docs Document verification (Round Table consensus) system PC health, memory, and maintenance preflights prove Run product proof paths without setup or sal"
+    },
+    {
+      "command": [
+        "scbe-code-prism.exe",
+        "--help"
+      ],
+      "expected": "usage",
+      "exit": 0,
+      "passed": true,
+      "output_head": "usage: scbe-code-prism [-h] --input INPUT --source-lang SOURCE_LANG --targets TARGETS [TARGETS ...] [--out-dir OUT_DIR] [--module-name MODULE_NAME] [--tongue-combo TONGUE_COMBO] Code Prism transpilation scaffold. options: -h, --help show this help message and exit --input INPUT Source file to translate. --source-lang SOURCE_LANG Source language (python/typescript). --targets TARGETS [TARGETS ...] "
+    }
+  ]
+}

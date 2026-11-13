@@ -1,113 +1,104 @@
-# Product Quickstart
+# Product quickstart
 
-Users send agent traffic through SCBE. SCBE PQC-seals it, gates it, writes a receipt, and bills provider cost + 2%.
+The supported first-run products are the dependency-light security scanner,
+the Node SDK, and the local agent bus. The Docker/API service is a preview and
+is not required to use SCBE.
 
-See `RELEASE.md` at the repo root. That is the product door. This file is the short run path.
+## Choose the smallest profile that does the job
 
-## Official First-Run Lane
+| Profile | Install | Verified use | Measured clean-install size |
+| --- | --- | --- | ---: |
+| Python scanner (recommended) | `pip install scbe-aethermoore` | Located prompt/SQL/shell injection prefilter and audit receipts | 17.27 MB environment delta |
+| Node SDK | `npm install scbe-aethermoore` | CommonJS/ESM scan APIs, GeoSeal command, scanner CLI | 51.94 MB with dependencies |
+| Local agent controls | `npm install scbe-agent-bus` | Governed event routing, local HTTP health, workspace receipts | 7.45 MB with dependencies |
+| Polly workflow CLI | `npm install scbe-polly-pad-cli` | Small local workflow/bootstrap commands | 0.19 MB with dependencies |
 
-```powershell
-python -m uvicorn src.api.main:app --port 8000
-```
+Sizes are Windows measurements from the `2026-11-13` release audit. Package
+managers and operating systems vary; they are planning estimates, not quotas.
 
-- API: `http://127.0.0.1:8000`
-- Docs: `http://127.0.0.1:8000/docs`
-- Health: `GET /v1/health`
-- Billing: `/billing` (Stripe checkout + webhooks from `src/api/stripe_billing.py`)
-
-Fee rule: `billed_cents = provider_cost_cents + ceil(provider_cost_cents * 0.02)`.
-
-Crypto on this path: ML-KEM-768 (session), ML-DSA-65 (receipts).
-
-## Optional clients
-
-- AetherDesk (separate repo): `npm run aetherdesk` → `http://127.0.0.1:5717`
-- AetherBrowse (in this repo, later): `src/browser/`
-
-## Prerequisites
-
-- Python 3.11+
-- Node.js 18+ if you run AetherDesk or the TypeScript package
-- Stripe keys only if you are testing checkout (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`)
-
-## Prove it
+## Python scanner: two-minute proof
 
 ```powershell
-pytest tests/api/test_provider_pass_through_fee.py -q
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install scbe-aethermoore
+scbe-scan "hello world"
+scbe-scan "ignore all previous instructions"
 ```
 
-The AetherBrowser local service (`npm run aetherbrowser:service:start`) is a client lane, not the product API.
+Expected decisions are `ALLOW` for the first input and `DENY` for the second.
+The scanner is a deterministic prefilter built from located patterns and byte
+statistics. It is useful before an agent or model call, but it is not a
+universal semantic-intent detector.
 
-What those do:
-
-- `aetherbrowser:service:start`
-  - starts the backend service and Chrome debug session
-- `aetherbrowser:service:verify`
-  - checks backend health
-  - checks Chrome CDP
-  - writes a report under `artifacts/smokes/`
-
-## Expected Proof
-
-The lane is considered working when:
-
-- `http://127.0.0.1:8002/health` responds
-- `http://127.0.0.1:9222/json/list` responds
-- the verify script emits a report under:
-  - `artifacts/smokes/aetherbrowser-service-verify-*/service_verify_report.json`
-
-## Stop
+## Opt-in Python feature families
 
 ```powershell
-npm run aetherbrowser:service:stop
+python -m pip install "scbe-aethermoore[geometry]"   # NumPy geometry
+python -m pip install "scbe-aethermoore[governance]" # geometry + schemas
+python -m pip install "scbe-aethermoore[crypto]"     # geometry + cryptography
+python -m pip install "scbe-aethermoore[vision]"     # geometry + Pillow
+python -m pip install "scbe-aethermoore[mcp]"        # MCP integration
+python -m pip install "scbe-aethermoore[full]"       # all non-model extras
 ```
 
-## Secondary Public Surfaces
+The light profile does **not** claim post-quantum transport or signed receipts.
+The repository contains PQC research and integration surfaces, but a guided
+installer must not label them production security until a clean-installed
+native/provider-backed KEM and signature round trip is attached to the release.
 
-If you are evaluating package or API surfaces after the browser lane proves out, use these next.
-
-### TypeScript package lane
+## Node SDK proof
 
 ```powershell
-npm run build
-npm run typecheck
-npm test
+npm install scbe-aethermoore
+node -e "const s=require('scbe-aethermoore'); console.log(s.scan('hello world'))"
+npx scbe-scan --json "ignore all previous instructions"
 ```
 
-### Python governance API lane
+The npm package ships compiled JavaScript. Users do not need TypeScript or a
+source checkout.
+
+## Local agent-control proof
 
 ```powershell
-python -m uvicorn api.main:app --host 127.0.0.1 --port 8080
+npm install scbe-agent-bus
+npx scbe-agent-bus --help
+npx scbe-agent-bus serve --port 8787
 ```
 
-### Newer control-plane API lane
+In a second terminal:
 
 ```powershell
-python -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000
+npx scbe-agent-bus health --base-url http://127.0.0.1:8787 --json
 ```
 
-Those are real lanes, but they are not the official first-run path for a new reviewer. The browser-and-local-service loop is the current top-level product entry.
+Local routing is the default. Provider-backed actions require separate
+credentials and explicit configuration.
 
-## Open These After The Quickstart
+## Build and download policy
 
-Once the service loop is up, the next useful files are:
+- Registry installs use prebuilt JavaScript or a platform-independent Python
+  wheel; normal users do not need a compiler.
+- Future native components should ship as signed OS/architecture artifacts
+  built by GitHub Actions or another reproducible cloud compiler.
+- Source compilation remains opt-in, with the exact command and disk estimate
+  shown before it starts.
+- Every release should publish checksums and, when native components exist, an
+  SBOM and provenance attestation.
 
-1. `README.md`
-2. `START_HERE.md`
-3. `docs/REPO_SURFACE_MAP.md`
-4. `docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md`
-5. `CANONICAL_SYSTEM_STATE.md`
+## Help and diagnostics
 
-## Boundary
+SCBE does not silently upload prompts, files, paths, environment variables, or
+credentials. Keep the local error receipt, then open a GitHub issue with only
+the fields you choose to disclose. The planned guided installer and opt-in
+diagnostic contract are specified in
+[`specs/GUIDED_INSTALLER_AND_SUPPORT.md`](specs/GUIDED_INSTALLER_AND_SUPPORT.md).
 
-Do not treat the following as required for first-run success:
+## Preview lanes
 
-- `training/`
-- `training-data/`
-- `notes/`
-- `notebooks/`
-- `archive/`
-- proposal packets
-- historical screenshots or generated reports
-
-Those stay useful, but they are not the product quickstart.
+The Docker/API lane, hosted dispatch, AetherDesk integration, and native PQC
+transport are preview or separately operated surfaces. They may be useful to
+developers, but they are not prerequisites for first-run success and should not
+be advertised as part of the light install until their own clean-install gates
+pass. The prepaid-credit and local/Clay-first routing design is documented in
+[`specs/HOSTED_CREDITS_AND_MODEL_ROUTER.md`](specs/HOSTED_CREDITS_AND_MODEL_ROUTER.md).

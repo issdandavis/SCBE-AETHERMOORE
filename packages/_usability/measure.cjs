@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 
-const { execSync, spawnSync } = require('node:child_process');
+const { execFileSync, spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -46,14 +46,23 @@ function parseArgs(argv) {
 function parseTable(content) {
   const lines = content.split(/\r?\n/).filter((line) => line.trim().startsWith('|'));
   if (lines.length < 3) return [];
-  const headers = lines[0].split('|').slice(1, -1).map((cell) => cell.trim());
-  return lines.slice(2).map((line) => {
-    const cells = line.split('|').slice(1, -1).map((cell) => cell.trim());
-    return headers.reduce((obj, header, i) => {
-      obj[header] = cells[i];
-      return obj;
-    }, {});
-  }).filter((row) => row.package);
+  const headers = lines[0]
+    .split('|')
+    .slice(1, -1)
+    .map((cell) => cell.trim());
+  return lines
+    .slice(2)
+    .map((line) => {
+      const cells = line
+        .split('|')
+        .slice(1, -1)
+        .map((cell) => cell.trim());
+      return headers.reduce((obj, header, i) => {
+        obj[header] = cells[i];
+        return obj;
+      }, {});
+    })
+    .filter((row) => row.package);
 }
 
 function parseClaims(surface) {
@@ -78,8 +87,11 @@ function tokenize(command) {
   return tokens;
 }
 
-function npmBin() {
-  return process.platform === 'win32' ? 'npm.cmd' : 'npm';
+function npmCli() {
+  return (
+    process.env.npm_execpath ||
+    path.join(path.dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js')
+  );
 }
 
 function run(cmd, args, opts = {}) {
@@ -89,8 +101,28 @@ function run(cmd, args, opts = {}) {
     cwd: opts.cwd,
     env: opts.env || process.env,
     windowsHide: true,
-    shell: process.platform === 'win32' && cmd.endsWith('.cmd'),
   });
+}
+
+function buildLocal(pkgName) {
+  const dir = PKG_DIRS[pkgName];
+  if (!dir || !fs.existsSync(dir)) {
+    throw new Error(`no local dir for ${pkgName}`);
+  }
+  const result = run(process.execPath, [npmCli(), 'run', 'build', '--if-present'], {
+    cwd: dir,
+    timeout: 300000,
+  });
+  if (result.status !== 0) {
+    throw new Error(
+      `npm build failed for ${pkgName} (${result.status}): ${(
+        result.stderr ||
+        result.stdout ||
+        (result.error && result.error.message) ||
+        ''
+      ).slice(0, 1200)}`
+    );
+  }
 }
 
 function packLocal(pkgName, destDir) {
@@ -99,13 +131,25 @@ function packLocal(pkgName, destDir) {
     throw new Error(`no local dir for ${pkgName}`);
   }
   fs.mkdirSync(destDir, { recursive: true });
-  const out = execSync(`npm pack --json --ignore-scripts --pack-destination "${destDir}"`, {
-    cwd: dir,
-    encoding: 'utf8',
-    timeout: 300000,
-    windowsHide: true,
-    shell: true,
-  });
+  const out = execFileSync(
+    process.execPath,
+    [
+      npmCli(),
+      'pack',
+      '--json',
+      '--ignore-scripts',
+      '--pack-destination',
+      destDir,
+      '--cache',
+      path.join(destDir, '.npm-cache'),
+    ],
+    {
+      cwd: dir,
+      encoding: 'utf8',
+      timeout: 300000,
+      windowsHide: true,
+    }
+  );
   const parsed = JSON.parse(out);
   const filename = Array.isArray(parsed) ? parsed[0].filename : parsed.filename;
   const tgz = path.join(destDir, filename);
@@ -116,23 +160,35 @@ function packLocal(pkgName, destDir) {
 }
 
 function fetchPublished(pkgName) {
-  const spec = execSync(`npm view ${pkgName} dist.tarball --silent`, {
-    encoding: 'utf8',
-    timeout: 60000,
-    windowsHide: true,
-  }).trim();
+  const spec = execFileSync(
+    process.execPath,
+    [npmCli(), 'view', pkgName, 'dist.tarball', '--silent'],
+    { encoding: 'utf8', timeout: 60000, windowsHide: true }
+  ).trim();
   if (!spec) throw new Error(`no tarball for ${pkgName}`);
   return spec;
 }
 
 function installPrefix(tarball, prefix) {
   fs.mkdirSync(prefix, { recursive: true });
-  const result = run(npmBin(), ['install', '--ignore-scripts', '--omit=dev', '--prefix', prefix, tarball], {
-    timeout: 300000,
-  });
+  const result = run(
+    process.execPath,
+    [
+      npmCli(),
+      'install',
+      '--ignore-scripts',
+      '--omit=dev',
+      '--prefix',
+      prefix,
+      '--cache',
+      path.join(prefix, '.npm-cache'),
+      tarball,
+    ],
+    { timeout: 300000 }
+  );
   if (result.status !== 0) {
     throw new Error(
-      `npm install failed (${result.status}): ${(result.stderr || result.stdout || result.error && result.error.message || '').slice(0, 800)}`
+      `npm install failed (${result.status}): ${(result.stderr || result.stdout || (result.error && result.error.message) || '').slice(0, 800)}`
     );
   }
 }
@@ -145,7 +201,38 @@ function resolveBin(prefix, binName) {
 }
 
 function clip(text, n = 240) {
-  return String(text || '').replace(/\s+/g, ' ').trim().slice(0, n);
+  return String(text || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, n);
+}
+
+function measureTree(root) {
+  let bytes = 0;
+  let files = 0;
+  let directories = 0;
+  if (!fs.existsSync(root)) return { root, bytes, files, directories };
+  const pending = [root];
+  while (pending.length) {
+    const current = pending.pop();
+    const stat = fs.lstatSync(current);
+    if (stat.isSymbolicLink()) {
+      files += 1;
+      continue;
+    }
+    if (stat.isDirectory()) {
+      directories += 1;
+      for (const name of fs.readdirSync(current)) pending.push(path.join(current, name));
+      continue;
+    }
+    files += 1;
+    bytes += stat.size;
+  }
+  return { root, bytes, files, directories };
+}
+
+function installedPackagePath(prefix, pkgName) {
+  return path.join(prefix, 'node_modules', ...pkgName.split('/'));
 }
 
 function evaluate(claim, prefix, workdir) {
@@ -193,48 +280,71 @@ function main() {
   }
 
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-usability-'));
-  const prefixes = {};
-  const tarballs = {};
-  const needed = [...new Set(claims.map((row) => row.package))];
+  const retainTemp = process.env.SCBE_KEEP_USABILITY_TEMP === '1';
+  try {
+    const prefixes = {};
+    const tarballs = {};
+    const footprints = {};
+    const needed = [...new Set(claims.map((row) => row.package))];
 
-  for (const pkgName of needed) {
-    const prefix = path.join(tmp, pkgName);
-    process.stderr.write(`packing ${pkgName} (${surface})\n`);
-    const tarball =
-      surface === 'local' ? packLocal(pkgName, path.join(tmp, 'tarballs')) : fetchPublished(pkgName);
-    tarballs[pkgName] = tarball;
-    process.stderr.write(`installing ${pkgName} from ${tarball}\n`);
-    installPrefix(tarball, prefix);
-    prefixes[pkgName] = prefix;
+    for (const pkgName of needed) {
+      const prefix = path.join(tmp, pkgName);
+      if (surface === 'local') {
+        process.stderr.write(`building ${pkgName} (${surface})\n`);
+        buildLocal(pkgName);
+      }
+      process.stderr.write(`packing ${pkgName} (${surface})\n`);
+      const tarball =
+        surface === 'local'
+          ? packLocal(pkgName, path.join(tmp, 'tarballs'))
+          : fetchPublished(pkgName);
+      tarballs[pkgName] = tarball;
+      process.stderr.write(`installing ${pkgName} from ${tarball}\n`);
+      installPrefix(tarball, prefix);
+      prefixes[pkgName] = prefix;
+      footprints[pkgName] = {
+        package: measureTree(installedPackagePath(prefix, pkgName)),
+        install_with_dependencies: measureTree(path.join(prefix, 'node_modules')),
+      };
+    }
+
+    const rows = [];
+    for (const claim of claims) {
+      const workdir = fs.mkdtempSync(path.join(tmp, 'work-'));
+      rows.push(evaluate(claim, prefixes[claim.package], workdir));
+    }
+
+    const receipt = {
+      schema: 'scbe_usability_receipt_v1',
+      measured_at: new Date().toISOString(),
+      surface,
+      temp_retained: retainTemp,
+      temp_path: retainTemp ? tmp : null,
+      tarballs,
+      footprints,
+      passed: rows.filter((row) => row.pass).length,
+      failed: rows.filter((row) => !row.pass).length,
+      rows,
+    };
+    fs.writeFileSync(RECEIPT_FILE, `${JSON.stringify(receipt, null, 2)}\n`, 'utf8');
+
+    process.stdout.write(
+      `usability ${surface}: ${receipt.passed} pass / ${receipt.failed} fail  (${rows.length} claims)\n`
+    );
+    for (const row of rows) {
+      const mark = row.pass ? 'PASS' : 'FAIL';
+      process.stdout.write(`  ${mark}  ${row.package}  ${row.command}  ${row.why}\n`);
+    }
+    for (const [pkgName, footprint] of Object.entries(footprints)) {
+      process.stdout.write(
+        `  SIZE  ${pkgName}  package=${footprint.package.bytes}B  installed=${footprint.install_with_dependencies.bytes}B\n`
+      );
+    }
+    process.stdout.write(`receipt ${RECEIPT_FILE}\n`);
+    process.exitCode = receipt.failed ? 1 : 0;
+  } finally {
+    if (!retainTemp) fs.rmSync(tmp, { recursive: true, force: true });
   }
-
-  const rows = [];
-  for (const claim of claims) {
-    const workdir = fs.mkdtempSync(path.join(tmp, 'work-'));
-    rows.push(evaluate(claim, prefixes[claim.package], workdir));
-  }
-
-  const receipt = {
-    schema: 'scbe_usability_receipt_v1',
-    measured_at: new Date().toISOString(),
-    surface,
-    tmp,
-    tarballs,
-    passed: rows.filter((row) => row.pass).length,
-    failed: rows.filter((row) => !row.pass).length,
-    rows,
-  };
-  fs.writeFileSync(RECEIPT_FILE, `${JSON.stringify(receipt, null, 2)}\n`, 'utf8');
-
-  process.stdout.write(
-    `usability ${surface}: ${receipt.passed} pass / ${receipt.failed} fail  (${rows.length} claims)\n`
-  );
-  for (const row of rows) {
-    const mark = row.pass ? 'PASS' : 'FAIL';
-    process.stdout.write(`  ${mark}  ${row.package}  ${row.command}  ${row.why}\n`);
-  }
-  process.stdout.write(`receipt ${RECEIPT_FILE}\n`);
-  process.exitCode = receipt.failed ? 1 : 0;
 }
 
 module.exports = { parseTable, parseClaims, PKG_DIRS };

@@ -113,3 +113,10 @@ def test_entry_point_module_is_actually_packaged(command, target):
             f"console script {command!r} targets top-level {top!r}, which is not under src/ "
             "and is not the root scbe module — it will not be in the wheel."
         )
+
+
+def test_sft_entry_point_uses_dependency_light_launcher():
+    """The standard-library converter must not import the NumPy-heavy facade."""
+
+    scripts = dict(_declared_scripts())
+    assert scripts["scbe-convert-to-sft"] == "scbe_aethermoore.sft_cli:main"

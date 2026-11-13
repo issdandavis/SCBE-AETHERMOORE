@@ -1,0 +1,76 @@
+{
+  "schema": "scbe_pypi_usability_receipt_v1",
+  "spec": "artifacts\\pypi-dist\\scbe_aethermoore-4.3.4-py3-none-any.whl",
+  "no_deps": false,
+  "temp_retained": false,
+  "temp_path": null,
+  "package": {
+    "version": "4.3.4",
+    "own_bytes": 7673184,
+    "own_files": 514,
+    "distribution_count": 2,
+    "distributions": [
+      "pip",
+      "scbe-aethermoore"
+    ]
+  },
+  "venv_baseline_bytes": 12017100,
+  "venv_baseline_files": 861,
+  "installed_delta_bytes": 17274604,
+  "installed_delta_files": 991,
+  "passed": 5,
+  "failed": 0,
+  "checks": [
+    {
+      "command": [
+        "python.exe",
+        "-c",
+        "import scbe_aethermoore as m; print(m.__version__)"
+      ],
+      "expected": "4.3.4",
+      "exit": 0,
+      "passed": true,
+      "output_head": "4.3.4"
+    },
+    {
+      "command": [
+        "scbe-scan.exe",
+        "--help"
+      ],
+      "expected": "Usage",
+      "exit": 0,
+      "passed": true,
+      "output_head": "usage: scbe-scan [-h] [--json] [--explain] [--batch FILE] [--chat] [--scores] [--version] [text] Scan text through the SCBE AI governance pipeline. positional arguments: text Text to scan (or pipe via stdin) options: -h, --help show this help message and exit --json, -j Output full JSON result --explain, -e Explain result via LLM (Ollama/HuggingFace) --batch FILE, -b FILE Scan each line of FILE as"
+    },
+    {
+      "command": [
+        "scbe-scan.exe",
+        "clean text"
+      ],
+      "expected": "ALLOW",
+      "exit": 0,
+      "passed": true,
+      "output_head": "[OK] ALLOW nothing matched - no located trigger"
+    },
+    {
+      "command": [
+        "scbe.exe",
+        "--help"
+      ],
+      "expected": "usage",
+      "exit": 0,
+      "passed": true,
+      "output_head": "usage: scbe [-h] [-V] <command> ... SCBE-AETHERMOORE \u2014 Unified CLI for crypto, governance, and AI safety positional arguments: <command> tongues Sacred Tongue tokenization pipeline 14-layer governance pipeline ai AI onboard \u2014 code task assistant docs Document verification (Round Table consensus) system PC health, memory, and maintenance preflights prove Run product proof paths without setup or sal"
+    },
+    {
+      "command": [
+        "scbe-code-prism.exe",
+        "--help"
+      ],
+      "expected": "usage",
+      "exit": 0,
+      "passed": true,
+      "output_head": "usage: scbe-code-prism [-h] --input INPUT --source-lang SOURCE_LANG --targets TARGETS [TARGETS ...] [--out-dir OUT_DIR] [--module-name MODULE_NAME] [--tongue-combo TONGUE_COMBO] Code Prism transpilation scaffold. options: -h, --help show this help message and exit --input INPUT Source file to translate. --source-lang SOURCE_LANG Source language (python/typescript). --targets TARGETS [TARGETS ...] "
+    }
+  ]
+}

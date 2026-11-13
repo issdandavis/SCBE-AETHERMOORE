@@ -15,3 +15,12 @@ Standards the packages already state. `measure.cjs` parses this table.
 | scbe-polly-pad-cli | local | polly | 0 | init |
 | scbe-polly-pad-cli | local | polly init | 0 | .polly |
 | clay-system | local | clay doctor | 0 | Loom checkout |
+| scbe-aethermoore-cli | published | scbe selftest | 0 | scbe_aethermoore_cli_selftest_v1 |
+| scbe-aethermoore-cli | published | scbe --help | 0 | scan |
+| scbe-aethermoore-cli | published | scbe-task --help | 0 | do_not_promote_to_fact |
+| scbe-aethermoore-cli | published | scbe version --json | 0 | scbe_aethermoore_cli_version_v1 |
+| scbe-aethermoore | published | scbe-scan "clean text" | 0 | OK |
+| scbe-aethermoore | published | scbe-scan --help | 0 | Usage |
+| scbe-agent-bus | published | scbe-agent-bus --help | 0 | serve |
+| scbe-polly-pad-cli | published | polly | 0 | init |
+| scbe-polly-pad-cli | published | polly init | 0 | .polly |

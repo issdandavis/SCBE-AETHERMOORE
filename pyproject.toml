@@ -4,37 +4,17 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "scbe-aethermoore"
-version = "4.3.2"
+version = "4.3.4"
 description = "Hyperbolic Geometry AI Safety Framework with 14-Layer Architecture"
 readme = "README.md"
 license = "MIT OR Apache-2.0"
 license-files = ["LICENSE", "LICENSE-APACHE"]
 requires-python = ">=3.11"
-dependencies = [
-    "numpy>=1.24",
-    "jsonschema>=4.0",
-    # security floor: exclude the pydantic-settings symlink-traversal advisory (Dependabot #308; first
-    # patched 2.14.2). Transitive today and already pinned in requirements-lock.txt, but constrained here
-    # so the manifest itself can never resolve the vulnerable range.
-    "pydantic-settings>=2.14.2",
-    # Security floors, same reasoning, added 2026-08-05. All of these are
-    # TRANSITIVE -- none is imported directly by this package -- but Dependabot
-    # resolves pyproject.toml and reported 24 open pip alerts against it, every
-    # one of them here. requirements.txt already floors most of them; a
-    # requirements file does not constrain what `pip install scbe-aethermoore`
-    # resolves, so the floor has to live in the manifest too.
-    #
-    # Floors, not pins: >= lets a consumer take anything newer and keeps this
-    # from fighting their solver. Each is the FIRST PATCHED version from the
-    # advisory, so nothing below is reachable.
-    "pillow>=12.3.0",           # 13 alerts: OOB read/write + decompression-bomb bypass
-    "aiohttp>=3.14.3",          # 6 alerts, high+medium
-    "cryptography>=50.0.0",     # vulnerable range is >=44.0.0,<50.0.0 -- see note below
-    "pyasn1>=0.6.4",            # 3 alerts, high
-    "soupsieve>=2.8.4",         # 2 alerts: selector-parser ReDoS + memory exhaustion
-    "mcp>=1.28.1",              # 1 alert, high
-    "bedrock-agentcore>=1.18.1",  # argument-delimiter injection in install_packages()
-]
+# The public scan/is_safe API and console scanner are intentionally
+# zero-dependency.  Published 4.3.2 pulled 51 distributions (178 MB installed)
+# because advisory floors for unrelated optional integrations were declared as
+# runtime requirements.  Feature families now opt into their actual imports.
+dependencies = []
 authors = [
     {name = "Issac Daniel Davis", email = "issdandavis@users.noreply.github.com"},
 ]
@@ -63,6 +43,31 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
+geometry = [
+    "numpy>=1.24",
+]
+governance = [
+    "numpy>=1.24",
+    "jsonschema>=4.0",
+]
+crypto = [
+    "numpy>=1.24",
+    "cryptography>=50.0.0",
+]
+vision = [
+    "numpy>=1.24",
+    "pillow>=12.3.0",
+]
+mcp = [
+    "mcp>=1.28.1,<2.0.0",
+]
+full = [
+    "numpy>=1.24",
+    "jsonschema>=4.0",
+    "cryptography>=50.0.0",
+    "pillow>=12.3.0",
+    "mcp>=1.28.1,<2.0.0",
+]
 # Model-grade second-tier injection detector (python/scbe/intent_model.py).
 # Opt-in -- the default gate stays pure-python; enable with SCBE_INJECTION_MODEL=1
 # after installing this extra.
@@ -94,7 +99,7 @@ scbe-scan = "scbe_aethermoore.__main__:main"
 # that always died with ModuleNotFoundError. Shipping it is not the fix either: it would put
 # a top-level module named `scripts` into site-packages, squatting a name almost any other
 # project could also claim. Verified broken on published 4.2.1 and on a clean 4.3.0 wheel.
-scbe-convert-to-sft = "symphonic_cipher.scbe_aethermoore.convert_to_sft:main"
+scbe-convert-to-sft = "scbe_aethermoore.sft_cli:main"
 scbe-code-prism = "code_prism.cli:main"
 
 # Package discovery is in setup.py — the mixed layout (src/ packages PLUS the

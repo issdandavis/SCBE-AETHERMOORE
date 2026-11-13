@@ -8,7 +8,7 @@ and CLI entrypoints a downloader expects to use.
 */
 
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import os from 'node:os';
 import path from 'node:path';
@@ -29,10 +29,31 @@ function run(cmd, args, options = {}) {
   });
 }
 
+const scratchRoot = mkdtempSync(path.join(os.tmpdir(), 'scbe-npm-consumer-'));
+const tarballDir = path.join(scratchRoot, 'tarballs');
+const npmCache = path.join(scratchRoot, '.npm-cache');
+const consumerDir = path.join(scratchRoot, 'consumer');
+mkdirSync(tarballDir, { recursive: true });
+mkdirSync(consumerDir, { recursive: true });
+
+process.on('exit', () => {
+  rmSync(scratchRoot, { recursive: true, force: true });
+});
+
 function pack(cwd) {
+  run(node, [npmCli, 'run', 'build', '--if-present'], { cwd });
   const stdout = run(
     node,
-    [npmCli, 'pack', '--json', '--cache', path.join(repoRoot, '.npm-cache')],
+    [
+      npmCli,
+      'pack',
+      '--json',
+      '--ignore-scripts',
+      '--pack-destination',
+      tarballDir,
+      '--cache',
+      npmCache,
+    ],
     { cwd }
   );
   const lines = stdout.split(/\r?\n/);
@@ -41,7 +62,7 @@ function pack(cwd) {
     throw new Error(`npm pack did not emit JSON: ${stdout.slice(0, 1000)}`);
   }
   const payload = JSON.parse(lines.slice(jsonStart).join('\n'));
-  return path.join(cwd, payload[0].filename);
+  return path.join(tarballDir, payload[0].filename);
 }
 
 function assertIncludes(text, expected, label) {
@@ -52,7 +73,6 @@ function assertIncludes(text, expected, label) {
 
 const rootTarball = pack(repoRoot);
 const busTarball = pack(path.join(repoRoot, 'packages', 'agent-bus'));
-const consumerDir = mkdtempSync(path.join(os.tmpdir(), 'scbe-npm-consumer-'));
 const rootPackage = JSON.parse(readFileSync(path.join(repoRoot, 'package.json'), 'utf-8'));
 
 run(node, [npmCli, 'init', '-y'], { cwd: consumerDir });
@@ -151,9 +171,7 @@ console.log(
   JSON.stringify(
     {
       ok: true,
-      consumer_dir: consumerDir,
-      root_tarball: rootTarball,
-      agent_bus_tarball: busTarball,
+      temporary_artifacts_cleaned_on_exit: true,
     },
     null,
     2
