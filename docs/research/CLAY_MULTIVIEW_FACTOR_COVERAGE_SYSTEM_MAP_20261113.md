@@ -1,6 +1,6 @@
 # Clay multi-view factor-coverage system map — 2026-11-13
 
-Status: pre-build map; no optimizer result has been observed.
+Status: completed build and measured 60-horse result; `NO_SELECTION`.
 
 Inventory receipt:
 `CLAY_MULTIVIEW_FACTOR_COVERAGE_INVENTORY_20261113.json`
@@ -136,4 +136,23 @@ Its configuration SHA-256 is
 `9f4269b5e00b18cb2242611579ccb21fab2d3c76a07a84c34e0c784696139e01`.
 Data construction for all folds precedes every optimizer step, so a failed
 full-scale intervention check leaves zero trained horses.
+
+## Measured closure
+
+The run completed all 60 horses.  The semantic factor arm increased declared
+factor-cell entropy in every fold but lost to random multi-view data in all
+three held sectors and missed anchor retention in all three.  The producer and
+stratified verdicts are both `NO_SELECTION`.
+
+The unexpected shuffled-factor control led globally at `0.9166` accuracy and
+`0.7763` stable F1 while retaining `0.9816` anchor accuracy.  Because it was an
+ablation rather than the preregistered primary arm, this is exploratory and
+requires fresh confirmation.  Exact results and the receipt audit are in
+`CLAY_MULTIVIEW_FACTOR_COVERAGE_RESULT_20261113.md`.
+
+Result receipt:
+`b51cd41d2d441c95333e164d99301119d730ebba8927bd600c28502dc28113fc`.
+
+Stratified gate receipt:
+`c57a0913f409fe353d1979010ad4546aeb3e6bc9945a38e2187fed5d9945c009`.
 

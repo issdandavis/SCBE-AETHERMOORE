@@ -635,9 +635,15 @@ def evaluate_factor_gate(result: Mapping[str, Any]) -> dict[str, Any]:
     horses = result.get("horses")
     if not isinstance(configuration, Mapping) or not isinstance(horses, list):
         raise FactorCoverageError("producer result is incomplete")
+    primary_arm = str(configuration.get("primary_arm", ""))
+    controls = tuple(str(value) for value in configuration.get("controls", ()))
+    configured_arms = tuple(str(value) for value in configuration.get("arms", ()))
     if (
-        configuration.get("primary_arm") != PRIMARY_ARM
-        or tuple(configuration.get("controls", ())) != CONTROLS
+        primary_arm not in ARMS
+        or not controls
+        or any(control not in ARMS or control == primary_arm for control in controls)
+        or set(configured_arms) != {primary_arm, *controls}
+        or len(configured_arms) != 1 + len(controls)
     ):
         raise FactorCoverageError("producer comparison differs from preregistration")
     source_body = {
@@ -650,13 +656,13 @@ def evaluate_factor_gate(result: Mapping[str, Any]) -> dict[str, Any]:
         raise FactorCoverageError("factor gate requires three held sectors")
     floor = 2.0 / math.sqrt(int(configuration["evaluation_records"]))
     comparisons: dict[str, Any] = {}
-    for control in CONTROLS:
+    for control in controls:
         sectors: dict[str, Any] = {}
         for held in held_sectors:
             candidate_rows = [
                 row
                 for row in horses
-                if int(row["held_sector"]) == held and row["arm"] == PRIMARY_ARM
+                if int(row["held_sector"]) == held and row["arm"] == primary_arm
             ]
             control_rows = [
                 row
@@ -727,13 +733,19 @@ def evaluate_factor_gate(result: Mapping[str, Any]) -> dict[str, Any]:
     body: dict[str, Any] = {
         "schema": GATE_SCHEMA,
         "source_result_sha256": result["result_sha256"],
-        "primary_arm": PRIMARY_ARM,
-        "controls": list(CONTROLS),
+        "primary_arm": primary_arm,
+        "controls": list(controls),
         "held_sectors": list(held_sectors),
         "finite_evaluation_floor": floor,
         "comparisons": comparisons,
         "verdict": (
-            "PASS_FACTOR_DATA_MECHANICS_NO_PROMOTION" if passed else "NO_SELECTION"
+            (
+                "PASS_SHUFFLED_DATA_MECHANICS_NO_PROMOTION"
+                if primary_arm == "multiview_factor_shuffled"
+                else "PASS_FACTOR_DATA_MECHANICS_NO_PROMOTION"
+            )
+            if passed
+            else "NO_SELECTION"
         ),
         "promotion_authorized": False,
         "partial_unfreeze_authorized": False,
@@ -787,11 +799,29 @@ def run_factor_campaign(
     device_name: str = "auto",
     data_seed_offset: int = 4_000_000,
     evaluation_min_class_support: int = 32,
+    arms: Sequence[str] = ARMS,
+    primary_arm: str = PRIMARY_ARM,
+    controls: Sequence[str] = CONTROLS,
 ) -> dict[str, Any]:
     root = Path(output).resolve()
     root.mkdir(parents=True, exist_ok=True)
+    selected_arms = tuple(str(value) for value in arms)
+    selected_controls = tuple(str(value) for value in controls)
     if len(seeds) < 2 or len(held_sectors) != 3:
         raise FactorCoverageError("campaign requires multiple seeds and three folds")
+    if (
+        not selected_arms
+        or any(arm not in ARMS for arm in selected_arms)
+        or len(set(selected_arms)) != len(selected_arms)
+        or primary_arm not in selected_arms
+        or len(set(selected_controls)) != len(selected_controls)
+        or any(
+            control not in selected_arms or control == primary_arm
+            for control in selected_controls
+        )
+        or set(selected_arms) != {primary_arm, *selected_controls}
+    ):
+        raise FactorCoverageError("campaign comparison arms are invalid")
     if batch_size < 1 or steps < 1 or evaluation_records < 1:
         raise FactorCoverageError("campaign dimensions must be positive")
     if device_name == "cuda" and not torch.cuda.is_available():
@@ -803,9 +833,9 @@ def run_factor_campaign(
         else "cpu"
     )
     configuration = {
-        "arms": list(ARMS),
-        "primary_arm": PRIMARY_ARM,
-        "controls": list(CONTROLS),
+        "arms": list(selected_arms),
+        "primary_arm": primary_arm,
+        "controls": list(selected_controls),
         "seeds": list(seeds),
         "held_sectors": list(held_sectors),
         "rows_per_view": rows_per_view,
@@ -911,10 +941,10 @@ def run_factor_campaign(
     _atomic_json(root / "SELECTION_MANIFESTS.json", selections)
 
     horses: list[dict[str, Any]] = []
-    total = len(held_sectors) * len(ARMS) * len(seeds)
+    total = len(held_sectors) * len(selected_arms) * len(seeds)
     for held in held_sectors:
         banks, paired_probe, holdout, anchor = fold_data[int(held)]
-        for arm in ARMS:
+        for arm in selected_arms:
             for seed in seeds:
                 _atomic_json(
                     root / "ACTIVE_HORSE.json",
@@ -961,7 +991,10 @@ def run_factor_campaign(
                 )
 
     aggregate_result = aggregate(
-        horses, arms=ARMS, primary_arm=PRIMARY_ARM, controls=CONTROLS
+        horses,
+        arms=selected_arms,
+        primary_arm=primary_arm,
+        controls=selected_controls,
     )
     body: dict[str, Any] = {
         "schema": SCHEMA,

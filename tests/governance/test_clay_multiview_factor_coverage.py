@@ -55,6 +55,7 @@ def _producer(candidate: float = 0.80, control: float = 0.70) -> dict:
                 )
     body = {
         "configuration": {
+            "arms": list(factor.ARMS),
             "primary_arm": factor.PRIMARY_ARM,
             "controls": list(factor.CONTROLS),
             "held_sectors": [1, 4, 7],
@@ -86,6 +87,27 @@ def test_factor_gate_rejects_small_lead_and_tampering() -> None:
         factor.evaluate_factor_gate(tampered)
 
 
+def test_factor_gate_accepts_preregistered_shuffled_primary() -> None:
+    producer = _producer(candidate=0.70, control=0.70)
+    producer["configuration"]["primary_arm"] = "multiview_factor_shuffled"
+    producer["configuration"]["controls"] = [
+        "static_unique",
+        "multiview_random",
+        "multiview_factor",
+    ]
+    producer["configuration"]["arms"] = list(factor.ARMS)
+    for row in producer["horses"]:
+        if row["arm"] == "multiview_factor_shuffled":
+            row["holdout"]["accuracy"] = 0.82
+            row["holdout"]["stable_macro_f1"] = 0.77
+    body = {key: value for key, value in producer.items() if key != "result_sha256"}
+    producer["result_sha256"] = sha256_json(body)
+
+    report = factor.evaluate_factor_gate(producer)
+    assert report["verdict"] == "PASS_SHUFFLED_DATA_MECHANICS_NO_PROMOTION"
+    assert report["primary_arm"] == "multiview_factor_shuffled"
+
+
 def test_small_factor_campaign_changes_weights_and_writes_gate(tmp_path) -> None:
     result = factor.run_factor_campaign(
         tmp_path / "run",
@@ -107,3 +129,27 @@ def test_small_factor_campaign_changes_weights_and_writes_gate(tmp_path) -> None
     assert result["promotion_authorized"] is False
     assert (tmp_path / "run" / "STRATIFIED_GATE.json").is_file()
     assert (tmp_path / "run" / "MARKET_REPORT.md").is_file()
+
+
+def test_small_campaign_preserves_requested_shuffled_comparison(tmp_path) -> None:
+    result = factor.run_factor_campaign(
+        tmp_path / "shuffled",
+        FakeProvider(),
+        seeds=(11, 29),
+        held_sectors=(1, 4, 7),
+        rows_per_view=30,
+        candidate_rows_per_view=120,
+        evaluation_records=32,
+        steps=1,
+        batch_size=12,
+        log_every=1,
+        hidden_width=8,
+        device_name="cpu",
+        evaluation_min_class_support=1,
+        primary_arm="multiview_factor_shuffled",
+        controls=("static_unique", "multiview_random", "multiview_factor"),
+    )
+    gate = factor.evaluate_factor_gate(result)
+    assert result["configuration"]["primary_arm"] == "multiview_factor_shuffled"
+    assert gate["primary_arm"] == "multiview_factor_shuffled"
+    assert gate["promotion_authorized"] is False

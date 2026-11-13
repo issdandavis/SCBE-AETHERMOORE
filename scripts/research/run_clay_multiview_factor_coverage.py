@@ -11,7 +11,12 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from python.scbe.clay_multiview_factor_coverage import run_factor_campaign  # noqa: E402
+from python.scbe.clay_multiview_factor_coverage import (  # noqa: E402
+    ARMS,
+    CONTROLS,
+    PRIMARY_ARM,
+    run_factor_campaign,
+)
 from python.scbe.clay_paired_orbit_training import ClaySourceAdapter  # noqa: E402
 
 
@@ -33,6 +38,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
     parser.add_argument("--data-seed-offset", type=int, default=4_000_000)
     parser.add_argument("--evaluation-min-class-support", type=int, default=32)
+    parser.add_argument("--arms", nargs="+", choices=ARMS, default=ARMS)
+    parser.add_argument("--primary-arm", choices=ARMS, default=PRIMARY_ARM)
+    parser.add_argument("--controls", nargs="+", choices=ARMS, default=CONTROLS)
     return parser.parse_args()
 
 
@@ -55,6 +63,9 @@ def main() -> int:
         device_name=args.device,
         data_seed_offset=args.data_seed_offset,
         evaluation_min_class_support=args.evaluation_min_class_support,
+        arms=tuple(args.arms),
+        primary_arm=args.primary_arm,
+        controls=tuple(args.controls),
     )
     print(
         json.dumps(
