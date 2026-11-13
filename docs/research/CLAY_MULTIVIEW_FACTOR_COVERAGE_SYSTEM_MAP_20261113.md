@@ -111,3 +111,29 @@ Even a passing mechanics gate cannot promote a checkpoint or authorize partial
 unfreeze.  It can only select the data construction for a later independent
 model confirmation.
 
+## Post-build update
+
+Implementation commit: `1f0fbb83e1a584791061f5c2ae8cb7d867481278`.
+
+Changed executable surfaces:
+
+- `python/scbe/clay_multiview_factor_coverage.py`
+- `scripts/research/run_clay_multiview_factor_coverage.py`
+- `tests/governance/test_clay_multiview_factor_coverage.py`
+
+Verification after the commit hook:
+
+- Ruff: all selected files passed.
+- Focused plus related regressions: `19 passed`.
+- Real Clay preflight, held sector 1, 18,000 candidate rows and 3,000 rows per
+  arm: true-factor entropy `0.98553`, random `0.94086`, shuffled `0.92878`;
+  true-factor cell coverage `0.99850`; zero selected-index and exact-feature
+  overlap; all view/action quotas matched.
+
+The full immutable run was launched headlessly at
+`C:\dev\clay-training-runs\paired-orbit-data-20261113\multiview-factor-coverage-v1`.
+Its configuration SHA-256 is
+`9f4269b5e00b18cb2242611579ccb21fab2d3c76a07a84c34e0c784696139e01`.
+Data construction for all folds precedes every optimizer step, so a failed
+full-scale intervention check leaves zero trained horses.
+
