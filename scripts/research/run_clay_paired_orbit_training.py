@@ -12,6 +12,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from python.scbe.clay_paired_orbit_training import (  # noqa: E402
+    ARMS,
     ClaySourceAdapter,
     run_campaign,
 )
@@ -32,6 +33,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--log-every", type=int, default=100)
     parser.add_argument("--hidden-width", type=int, default=64)
     parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
+    parser.add_argument("--arms", nargs="+", choices=ARMS, default=ARMS)
+    parser.add_argument("--primary-arm", choices=ARMS, default="paired_orbit_grouped")
+    parser.add_argument("--controls", nargs="+", choices=ARMS)
+    parser.add_argument("--data-seed-offset", type=int, default=0)
+    parser.add_argument("--evaluation-min-class-support", type=int, default=1)
     return parser.parse_args()
 
 
@@ -52,6 +58,11 @@ def main() -> int:
         log_every=args.log_every,
         hidden_width=args.hidden_width,
         device_name=args.device,
+        arms=tuple(args.arms),
+        primary_arm=args.primary_arm,
+        controls=tuple(args.controls) if args.controls else None,
+        data_seed_offset=args.data_seed_offset,
+        evaluation_min_class_support=args.evaluation_min_class_support,
     )
     print(
         json.dumps(

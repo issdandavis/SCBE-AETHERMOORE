@@ -71,6 +71,8 @@ def test_metrics_do_not_treat_absent_classes_as_failed_classes() -> None:
     assert metrics["accuracy"] == 1.0
     assert metrics["macro_f1"] == 1.0
     assert metrics["worst_class_accuracy"] == 1.0
+    assert metrics["stable_macro_f1"] == 1.0
+    assert metrics["worst_stable_class_accuracy"] == 1.0
     assert metrics["supported_class_count"] == 2
     assert metrics["absent_true_classes"] == [2, 3, 4]
     assert metrics["per_class_accuracy"] == [1.0, 1.0, None, None, None]
@@ -106,12 +108,45 @@ def test_small_campaign_changes_weights_and_preserves_controls(tmp_path) -> None
         records=64,
         seed_offset=500_000,
         device_name="cpu",
+        min_stable_support=1,
     )
     assert len(diagnostic["rows"]) == len(orbit.ARMS)
     assert diagnostic["source_records_per_split_per_fold"] == 32
     assert diagnostic["records_per_split_per_fold"] == 64
     assert diagnostic["evaluation_scale_factor"] == 2.0
+    assert diagnostic["min_stable_support"] == 1
     assert diagnostic["promotion_authorized"] is False
     assert diagnostic["partial_unfreeze_authorized"] is False
     assert orbit.file_sha256(checkpoint) == checkpoint_before
     assert (tmp_path / "run" / "large-holdout-diagnostic" / "MARKET_REPORT.md").is_file()
+
+
+def test_focused_campaign_declares_primary_and_controls(tmp_path) -> None:
+    selected = ("static_unique", "static_repeated", "curriculum_independent")
+    controls = ("static_unique", "static_repeated")
+    result = orbit.run_campaign(
+        tmp_path / "focused",
+        FakeProvider(),
+        seeds=(71,),
+        held_sectors=(1,),
+        orbit_count=12,
+        evaluation_records=16,
+        steps=2,
+        batch_size=12,
+        log_every=1,
+        hidden_width=8,
+        device_name="cpu",
+        arms=selected,
+        primary_arm="curriculum_independent",
+        controls=controls,
+        data_seed_offset=1_000_000,
+        evaluation_min_class_support=4,
+    )
+    assert result["configuration"]["arms"] == list(selected)
+    assert result["aggregate"]["primary_arm"] == "curriculum_independent"
+    assert result["aggregate"]["controls"] == list(controls)
+    assert result["configuration"]["data_seed_offset"] == 1_000_000
+    assert result["configuration"]["evaluation_min_class_support"] == 4
+    assert set(result["aggregate"]["comparisons"]) == set(controls)
+    assert len(result["horses"]) == len(selected)
+    assert result["promotion_authorized"] is False

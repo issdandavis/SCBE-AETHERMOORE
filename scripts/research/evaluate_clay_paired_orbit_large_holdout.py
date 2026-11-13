@@ -24,6 +24,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--records", type=int, default=10_000)
     parser.add_argument("--seed-offset", type=int, default=500_000)
     parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
+    parser.add_argument("--min-stable-support", type=int, default=32)
     return parser.parse_args()
 
 
@@ -35,6 +36,7 @@ def main() -> int:
         records=args.records,
         seed_offset=args.seed_offset,
         device_name=args.device,
+        min_stable_support=args.min_stable_support,
     )
     print(
         json.dumps(

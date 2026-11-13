@@ -107,14 +107,22 @@ def _aggregate(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
             for metric in (
                 "accuracy",
                 "macro_f1",
+                "stable_macro_f1",
                 "worst_class_accuracy",
+                "worst_stable_class_accuracy",
                 "cross_entropy",
             )
         }
     comparisons = {
         f"{candidate}_vs_static_unique": {
             metric: _paired_delta_receipt(rows, candidate, "static_unique", metric)
-            for metric in ("accuracy", "macro_f1", "worst_class_accuracy")
+            for metric in (
+                "accuracy",
+                "macro_f1",
+                "stable_macro_f1",
+                "worst_class_accuracy",
+                "worst_stable_class_accuracy",
+            )
         }
         for candidate in ARMS[1:]
     }
@@ -147,6 +155,23 @@ def _save_bank(path: Path, bank: OrbitBank) -> None:
     )
 
 
+def _load_bank(path: Path, name: str) -> OrbitBank:
+    payload = torch.load(path, map_location="cpu", weights_only=True)
+    bank = OrbitBank(
+        name,
+        payload["features"],
+        payload["labels"],
+        payload["sectors"],
+        payload["groups"],
+        payload["views"],
+        False,
+        payload["manifest_sha256"],
+    )
+    if not bank.verify():
+        raise PairedOrbitError(f"saved evaluation bank failed receipt: {path}")
+    return bank
+
+
 def render_diagnostic(report: Mapping[str, Any]) -> str:
     scale = float(report["evaluation_scale_factor"])
     lines = [
@@ -159,15 +184,16 @@ def render_diagnostic(report: Mapping[str, Any]) -> str:
         f"({scale:.2f}x the original evaluation size). It diagnoses rare-class",
         "stability; it is not a promotion gate.",
         "",
-        "| Data arm | Held acc | Macro-F1 | Worst supported | Anchor acc |",
-        "| --- | ---: | ---: | ---: | ---: |",
+        "| Data arm | Held acc | All-supported F1 | Stable F1 | Worst stable | Anchor acc |",
+        "| --- | ---: | ---: | ---: | ---: | ---: |",
     ]
     for arm in ARMS:
         row = report["aggregate"]["arms"][arm]
         lines.append(
             f"| {arm} | {row['holdout_accuracy']['mean']:.4f} | "
             f"{row['holdout_macro_f1']['mean']:.4f} | "
-            f"{row['holdout_worst_class_accuracy']['mean']:.4f} | "
+            f"{row['holdout_stable_macro_f1']['mean']:.4f} | "
+            f"{row['holdout_worst_stable_class_accuracy']['mean']:.4f} | "
             f"{row['anchor_accuracy']['mean']:.4f} |"
         )
     lines.extend(
@@ -188,6 +214,7 @@ def evaluate_saved_campaign(
     records: int = 10_000,
     seed_offset: int = 500_000,
     device_name: str = "auto",
+    min_stable_support: int = 1,
 ) -> dict[str, Any]:
     root = Path(run_root).resolve(strict=True)
     campaign = json.loads((root / "CAMPAIGN.json").read_text(encoding="utf-8"))
@@ -196,6 +223,8 @@ def evaluate_saved_campaign(
         raise PairedOrbitError("source campaign is not complete")
     if records < 1:
         raise PairedOrbitError("diagnostic record count must be positive")
+    if min_stable_support < 1:
+        raise PairedOrbitError("minimum stable support must be positive")
     configuration = campaign["configuration"]
     held_sectors = [int(value) for value in configuration["held_sectors"]]
     hidden_width = int(configuration["hidden_width"])
@@ -204,19 +233,44 @@ def evaluate_saved_campaign(
         device_name = "cuda" if torch.cuda.is_available() else "cpu"
     device = torch.device(device_name)
 
+    output = root / "large-holdout-diagnostic"
+    previous_path = output / "RESULT.json"
+    previous = (
+        json.loads(previous_path.read_text(encoding="utf-8"))
+        if previous_path.is_file()
+        else None
+    )
+    can_reuse = bool(
+        previous
+        and previous.get("source_result_sha256") == result["result_sha256"]
+        and int(previous.get("records_per_split_per_fold", -1)) == records
+        and int(previous.get("seed_offset", -1)) == seed_offset
+    )
+
     eval_banks: dict[int, tuple[OrbitBank, OrbitBank]] = {}
     fold_receipts: dict[str, Any] = {}
     for held in held_sectors:
-        holdout, anchor = build_evaluation_banks(
-            provider,
-            held_sector=held,
-            count=records,
-            seed=2026111300 + held + seed_offset,
-        )
+        folder = output / "inputs" / f"held-{held}"
+        holdout_path = folder / "holdout.pt"
+        anchor_path = folder / "anchor.pt"
+        if can_reuse and holdout_path.is_file() and anchor_path.is_file():
+            holdout = _load_bank(holdout_path, "holdout")
+            anchor = _load_bank(anchor_path, "anchor")
+            if (
+                holdout.features.shape[0] != records
+                or anchor.features.shape[0] != records
+            ):
+                raise PairedOrbitError("reused evaluation bank has the wrong row count")
+        else:
+            holdout, anchor = build_evaluation_banks(
+                provider,
+                held_sector=held,
+                count=records,
+                seed=2026111300 + held + seed_offset,
+            )
+            _save_bank(holdout_path, holdout)
+            _save_bank(anchor_path, anchor)
         eval_banks[held] = (holdout, anchor)
-        folder = root / "large-holdout-diagnostic" / "inputs" / f"held-{held}"
-        _save_bank(folder / "holdout.pt", holdout)
-        _save_bank(folder / "anchor.pt", anchor)
         fold_receipts[str(held)] = {
             "holdout_manifest_sha256": holdout.manifest_sha256,
             "anchor_manifest_sha256": anchor.manifest_sha256,
@@ -240,8 +294,18 @@ def evaluate_saved_campaign(
                 "arm": arm,
                 "seed": seed,
                 "checkpoint_sha256": file_sha256(checkpoint),
-                "holdout": evaluate(model, holdout, device),
-                "anchor": evaluate(model, anchor, device),
+                "holdout": evaluate(
+                    model,
+                    holdout,
+                    device,
+                    min_stable_support=min_stable_support,
+                ),
+                "anchor": evaluate(
+                    model,
+                    anchor,
+                    device,
+                    min_stable_support=min_stable_support,
+                ),
             }
         )
 
@@ -251,10 +315,13 @@ def evaluate_saved_campaign(
         "evidence_class": "posthoc_large_holdout_diagnostic_not_promotion_gate",
         "source_result_sha256": result["result_sha256"],
         "source_campaign_sha256": campaign["campaign_sha256"],
+        "implementation_sha256": file_sha256(Path(__file__)),
         "records_per_split_per_fold": records,
         "source_records_per_split_per_fold": source_records,
         "evaluation_scale_factor": records / source_records,
         "seed_offset": seed_offset,
+        "min_stable_support": min_stable_support,
+        "reused_input_banks": can_reuse,
         "device": str(device),
         "fold_receipts": fold_receipts,
         "rows": rows,
@@ -263,7 +330,6 @@ def evaluate_saved_campaign(
         "partial_unfreeze_authorized": False,
     }
     report = {**body, "diagnostic_sha256": sha256_json(body)}
-    output = root / "large-holdout-diagnostic"
     _atomic_json(output / "RESULT.json", report)
     _atomic_text(output / "MARKET_REPORT.md", render_diagnostic(report))
     _atomic_json(

@@ -441,7 +441,11 @@ class StandardActionMLP(nn.Module):
         return self.output_layer(hidden)
 
 
-def _metrics(logits: Tensor, labels: Tensor) -> dict[str, Any]:
+def _metrics(
+    logits: Tensor, labels: Tensor, *, min_stable_support: int = 1
+) -> dict[str, Any]:
+    if min_stable_support < 1:
+        raise PairedOrbitError("minimum stable class support must be positive")
     probabilities = F.softmax(logits, dim=-1)
     predictions = probabilities.argmax(dim=-1)
     confusion = torch.zeros((ACTION_COUNT, ACTION_COUNT), dtype=torch.int64)
@@ -449,11 +453,16 @@ def _metrics(logits: Tensor, labels: Tensor) -> dict[str, Any]:
         confusion[int(truth), int(predicted)] += 1
     per_class: list[float | None] = []
     supported_f1: list[float] = []
+    stable_f1: list[float] = []
+    stable_accuracy: list[float] = []
     all_f1: list[float] = []
     absent_classes: list[int] = []
+    sparse_classes: list[int] = []
+    class_support: list[int] = []
     for index in range(ACTION_COUNT):
         true_positive = int(confusion[index, index])
         support = int(confusion[index].sum())
+        class_support.append(support)
         predicted = int(confusion[:, index].sum())
         if support:
             per_class.append(true_positive / support)
@@ -468,16 +477,31 @@ def _metrics(logits: Tensor, labels: Tensor) -> dict[str, Any]:
         all_f1.append(f1)
         if support:
             supported_f1.append(f1)
+        if support >= min_stable_support:
+            stable_f1.append(f1)
+            stable_accuracy.append(true_positive / support)
+        elif support:
+            sparse_classes.append(index)
     supported_accuracy = [value for value in per_class if value is not None]
+    if not stable_f1:
+        raise PairedOrbitError(
+            "evaluation has no class at the stable support threshold"
+        )
     return {
         "accuracy": float((predictions == labels).to(torch.float64).mean().item()),
         "macro_f1": statistics.fmean(supported_f1),
         "full_action_macro_f1": statistics.fmean(all_f1),
+        "stable_macro_f1": statistics.fmean(stable_f1),
         "worst_class_accuracy": min(supported_accuracy),
+        "worst_stable_class_accuracy": min(stable_accuracy),
         "cross_entropy": float(F.cross_entropy(logits, labels).item()),
         "per_class_accuracy": per_class,
         "supported_class_count": len(supported_accuracy),
+        "stable_class_count": len(stable_f1),
+        "stable_class_support_threshold": min_stable_support,
+        "class_support": class_support,
         "absent_true_classes": absent_classes,
+        "sparse_true_classes": sparse_classes,
         "predictions_into_absent_classes": int(
             confusion[:, absent_classes].sum().item() if absent_classes else 0
         ),
@@ -486,12 +510,20 @@ def _metrics(logits: Tensor, labels: Tensor) -> dict[str, Any]:
 
 
 @torch.no_grad()
-def evaluate(model: nn.Module, bank: OrbitBank, device: torch.device) -> dict[str, Any]:
+def evaluate(
+    model: nn.Module,
+    bank: OrbitBank,
+    device: torch.device,
+    *,
+    min_stable_support: int = 1,
+) -> dict[str, Any]:
     model.eval()
     logits: list[Tensor] = []
     for chunk in bank.features.split(2048):
         logits.append(model(chunk.to(device)).cpu())
-    return _metrics(torch.cat(logits), bank.labels)
+    return _metrics(
+        torch.cat(logits), bank.labels, min_stable_support=min_stable_support
+    )
 
 
 def _group_matrix(bank: OrbitBank) -> Tensor:
@@ -606,6 +638,7 @@ def train_horse(
     log_every: int,
     hidden_width: int,
     device: torch.device,
+    evaluation_min_class_support: int,
 ) -> dict[str, Any]:
     horse = root / "horses" / f"held-{held_sector}" / f"{arm}-seed-{seed}"
     result_path = horse / "RESULT.json"
@@ -630,7 +663,12 @@ def train_horse(
     group_matrix = _group_matrix(bank) if arm == "paired_orbit_grouped" else None
 
     best_state = _clone_state(model)
-    best_anchor = evaluate(model, anchor, device)
+    best_anchor = evaluate(
+        model,
+        anchor,
+        device,
+        min_stable_support=evaluation_min_class_support,
+    )
     best_step = 0
     trace: list[dict[str, Any]] = []
     started = time.perf_counter()
@@ -646,7 +684,12 @@ def train_horse(
         )
         optimizer.step()
         if step % log_every == 0 or step == steps:
-            anchor_metrics = evaluate(model, anchor, device)
+            anchor_metrics = evaluate(
+                model,
+                anchor,
+                device,
+                min_stable_support=evaluation_min_class_support,
+            )
             score = (
                 anchor_metrics["macro_f1"],
                 anchor_metrics["accuracy"],
@@ -673,8 +716,18 @@ def train_horse(
 
     final_state = _clone_state(model)
     model.load_state_dict(best_state, strict=True)
-    holdout_metrics = evaluate(model, holdout, device)
-    selected_anchor = evaluate(model, anchor, device)
+    holdout_metrics = evaluate(
+        model,
+        holdout,
+        device,
+        min_stable_support=evaluation_min_class_support,
+    )
+    selected_anchor = evaluate(
+        model,
+        anchor,
+        device,
+        min_stable_support=evaluation_min_class_support,
+    )
     final_coherence = gradient_coherence(model, paired_probe, device=device)
     _atomic_torch(horse / "INITIAL.pt", initial)
     _atomic_torch(horse / "BEST.pt", best_state)
@@ -724,10 +777,18 @@ def _two_pooled_sd(left: Sequence[float], right: Sequence[float]) -> float | Non
     return 2.0 * pooled
 
 
-def aggregate(horses: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+def aggregate(
+    horses: Sequence[Mapping[str, Any]],
+    *,
+    arms: Sequence[str] = ARMS,
+    primary_arm: str = PRIMARY_ARM,
+    controls: Sequence[str] = CONTROLS,
+) -> dict[str, Any]:
     summary: dict[str, Any] = {}
-    for arm in ARMS:
+    for arm in arms:
         rows = [row for row in horses if row["arm"] == arm]
+        if not rows:
+            raise PairedOrbitError(f"arm has no completed horses: {arm}")
         # Flattening names keeps the market writer compact and avoids hiding split zeros.
         summary[arm] = {
             f"{split}_{metric}": _mean_sd([float(row[split][metric]) for row in rows])
@@ -735,7 +796,9 @@ def aggregate(horses: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
             for metric in (
                 "accuracy",
                 "macro_f1",
+                "stable_macro_f1",
                 "worst_class_accuracy",
+                "worst_stable_class_accuracy",
                 "cross_entropy",
             )
         }
@@ -747,11 +810,17 @@ def aggregate(horses: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         )
 
     comparisons: dict[str, Any] = {}
-    candidate_rows = [row for row in horses if row["arm"] == PRIMARY_ARM]
-    for control in CONTROLS:
+    candidate_rows = [row for row in horses if row["arm"] == primary_arm]
+    for control in controls:
         control_rows = [row for row in horses if row["arm"] == control]
         metrics: dict[str, Any] = {}
-        for metric in ("accuracy", "macro_f1", "worst_class_accuracy"):
+        for metric in (
+            "accuracy",
+            "macro_f1",
+            "stable_macro_f1",
+            "worst_class_accuracy",
+            "worst_stable_class_accuracy",
+        ):
             candidate = [float(row["holdout"][metric]) for row in candidate_rows]
             baseline = [float(row["holdout"][metric]) for row in control_rows]
             threshold = _two_pooled_sd(candidate, baseline)
@@ -776,15 +845,20 @@ def aggregate(horses: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     fully_powered = all(
         comparison["holdout"][metric]["clears_noise_gate"]
         for comparison in comparisons.values()
-        for metric in ("accuracy", "macro_f1")
+        for metric in ("accuracy", "stable_macro_f1")
     )
     retained = all(
         comparison["retention_within_two_points"] for comparison in comparisons.values()
     )
-    verdict = (
-        "PAIRED_ORBIT_DATA_SIGNAL" if fully_powered and retained else "NO_SELECTION"
+    signal_name = (
+        "PAIRED_ORBIT_DATA_SIGNAL"
+        if primary_arm == PRIMARY_ARM
+        else f"{primary_arm.upper()}_DATA_SIGNAL"
     )
+    verdict = signal_name if fully_powered and retained else "NO_SELECTION"
     return {
+        "primary_arm": primary_arm,
+        "controls": list(controls),
         "arms": summary,
         "comparisons": comparisons,
         "verdict": verdict,
@@ -814,15 +888,16 @@ def render_market(result: Mapping[str, Any]) -> str:
         "",
         f"Verdict: `{result['aggregate']['verdict']}`",
         "",
-        "| Data arm | Holdout acc | Macro-F1 | Worst class | Anchor acc | Gradient cosine | Weight drift |",
-        "| --- | ---: | ---: | ---: | ---: | ---: | ---: |",
+        "| Data arm | Holdout acc | All-supported F1 | Stable F1 | Worst stable | Anchor acc | Gradient cosine | Weight drift |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
     ]
-    for arm in ARMS:
+    for arm in result["configuration"]["arms"]:
         row = result["aggregate"]["arms"][arm]
         lines.append(
             f"| {arm} | {row['holdout_accuracy']['mean']:.4f} | "
             f"{row['holdout_macro_f1']['mean']:.4f} | "
-            f"{row['holdout_worst_class_accuracy']['mean']:.4f} | "
+            f"{row['holdout_stable_macro_f1']['mean']:.4f} | "
+            f"{row['holdout_worst_stable_class_accuracy']['mean']:.4f} | "
             f"{row['anchor_accuracy']['mean']:.4f} | "
             f"{row['gradient_coherence']['mean']:.4f} | "
             f"{row['weight_l2_drift']['mean']:.4f} |"
@@ -854,6 +929,11 @@ def run_campaign(
     log_every: int = 100,
     hidden_width: int = 64,
     device_name: str = "auto",
+    arms: Sequence[str] = ARMS,
+    primary_arm: str = PRIMARY_ARM,
+    controls: Sequence[str] | None = None,
+    data_seed_offset: int = 0,
+    evaluation_min_class_support: int = 1,
 ) -> dict[str, Any]:
     root = Path(output).resolve()
     root.mkdir(parents=True, exist_ok=True)
@@ -861,11 +941,33 @@ def run_campaign(
         raise PairedOrbitError("campaign needs seeds and held sectors")
     if batch_size % VIEW_COUNT:
         raise PairedOrbitError("batch size must be divisible by three")
+    if evaluation_min_class_support < 1:
+        raise PairedOrbitError("evaluation minimum class support must be positive")
+    selected_arms = tuple(dict.fromkeys(arms))
+    if not selected_arms or any(arm not in ARMS for arm in selected_arms):
+        raise PairedOrbitError("campaign arms must be a non-empty subset of ARMS")
+    if primary_arm not in selected_arms:
+        raise PairedOrbitError("primary arm must be included in campaign arms")
+    selected_controls = tuple(
+        controls
+        if controls is not None
+        else (arm for arm in selected_arms if arm != primary_arm)
+    )
+    if (
+        not selected_controls
+        or any(control not in selected_arms for control in selected_controls)
+        or primary_arm in selected_controls
+    ):
+        raise PairedOrbitError("controls must be non-primary selected arms")
     if device_name == "auto":
         device_name = "cuda" if torch.cuda.is_available() else "cpu"
     device = torch.device(device_name)
     configuration = {
-        "arms": list(ARMS),
+        "arms": list(selected_arms),
+        "primary_arm": primary_arm,
+        "controls": list(selected_controls),
+        "data_seed_offset": data_seed_offset,
+        "evaluation_min_class_support": evaluation_min_class_support,
         "seeds": list(seeds),
         "held_sectors": list(held_sectors),
         "orbit_count": orbit_count,
@@ -886,7 +988,7 @@ def run_campaign(
         "implementation_sha256": {"module": file_sha256(Path(__file__))},
         "source_hashes": dict(provider.source_hashes),
         "standard_control": "static_unique",
-        "primary_arm": PRIMARY_ARM,
+        "primary_arm": primary_arm,
         "promotion_authorized": False,
         "partial_unfreeze_authorized": False,
     }
@@ -909,7 +1011,7 @@ def run_campaign(
     data_manifests: dict[str, Any] = {}
     fold_data: dict[int, tuple[dict[str, OrbitBank], OrbitBank, OrbitBank]] = {}
     for held in held_sectors:
-        data_seed = 2026111300 + held
+        data_seed = 2026111300 + held + data_seed_offset
         banks = build_data_arms(
             provider, held_sector=held, orbit_count=orbit_count, seed=data_seed
         )
@@ -932,10 +1034,10 @@ def run_campaign(
     _atomic_json(root / "DATASET_MANIFESTS.json", data_manifests)
 
     horses: list[dict[str, Any]] = []
-    total = len(held_sectors) * len(ARMS) * len(seeds)
+    total = len(held_sectors) * len(selected_arms) * len(seeds)
     for held in held_sectors:
         banks, holdout, anchor = fold_data[held]
-        for arm in ARMS:
+        for arm in selected_arms:
             for seed in seeds:
                 active = {
                     "schema": "clay.paired-orbit-active.v1",
@@ -964,6 +1066,7 @@ def run_campaign(
                         log_every=log_every,
                         hidden_width=hidden_width,
                         device=device,
+                        evaluation_min_class_support=evaluation_min_class_support,
                     )
                 )
                 _atomic_json(
@@ -978,7 +1081,12 @@ def run_campaign(
                     },
                 )
 
-    aggregate_result = aggregate(horses)
+    aggregate_result = aggregate(
+        horses,
+        arms=selected_arms,
+        primary_arm=primary_arm,
+        controls=selected_controls,
+    )
     body = {
         "schema": SCHEMA,
         "campaign_sha256": campaign["campaign_sha256"],

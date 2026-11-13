@@ -8,7 +8,10 @@ four-example supported class remained at zero.
 The diagnostic does not retrain or select checkpoints. It loads the already
 saved best weights and evaluates them on a new, independently seeded 10,000-row
 holdout and 10,000-row anchor for each held sector. It reports supported-class
-macro-F1, worst supported class, absent classes, and matched fold/seed deltas.
+macro-F1, a stable-class view requiring at least 32 natural examples, worst
+supported class, absent and sparse classes, and matched fold/seed deltas. Saved
+input banks are receipt-checked and may be reused for metric-only reruns; model
+checkpoints remain immutable.
 
 Because this check was motivated by inspecting the first evaluation, it is
 post-hoc evidence and cannot authorize promotion or partial unfreeze.
