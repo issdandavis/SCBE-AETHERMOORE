@@ -54,7 +54,19 @@ def test_data_arms_are_equal_count_and_paired() -> None:
 
 
 def test_static_repeated_reuses_each_latent_row_three_times() -> None:
-    bank = orbit.build_data_arms(FakeProvider(), held_sector=4, orbit_count=12, seed=202)["static_repeated"]
+    provider = FakeProvider()
+    bank = orbit.build_data_arms(provider, held_sector=4, orbit_count=12, seed=202)["static_repeated"]
+    expected = orbit._collect_rows(
+        provider,
+        provider.training_sandboxes()[0],
+        count=12,
+        held_sector=4,
+        include_held=False,
+        seed=202 + 37,
+        view=0,
+    )
+    expected_features = torch.stack([row[0] for row in expected])
+    assert torch.equal(bank.features[:: orbit.VIEW_COUNT], expected_features)
     for group in range(12):
         rows = bank.features[bank.groups == group]
         assert rows.shape[0] == 3

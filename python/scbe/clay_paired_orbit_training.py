@@ -326,6 +326,15 @@ def build_data_arms(
         seed=seed + 11,
         view=0,
     )
+    repeated_source_rows = _collect_rows(
+        provider,
+        sandboxes[0],
+        count=orbit_count,
+        held_sector=held_sector,
+        include_held=False,
+        seed=seed + 37,
+        view=0,
+    )
     independent_rows: list[tuple[Tensor, int, int, int, int]] = []
     for view, sandbox in enumerate(sandboxes):
         rows = _collect_rows(
@@ -362,7 +371,7 @@ def build_data_arms(
 
     repeated_rows = [
         (feature.clone(), label, sector, group, repeat)
-        for feature, label, sector, group, _ in canonical_rows
+        for feature, label, sector, group, _ in repeated_source_rows
         for repeat in range(VIEW_COUNT)
     ]
     banks = {
