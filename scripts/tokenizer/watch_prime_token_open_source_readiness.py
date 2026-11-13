@@ -16,7 +16,8 @@ import time
 from types import ModuleType
 from typing import Any
 
-SCHEMA = "scbe.prime-token-open-source-readiness.v1"
+SCHEMA_V1 = "scbe.prime-token-open-source-readiness.v1"
+SCHEMA_V2 = "scbe.prime-token-query-readiness.v2"
 CATALOG_SCHEMA = "scbe.prime-token-catalog.v1"
 
 
@@ -88,11 +89,43 @@ def _load_collector(path: Path, expected_sha256: str) -> ModuleType:
         "_source_session",
         "extract_user_text",
         "normalized_hash",
+        "scrub",
         "source_is_closed",
     )
     missing = [name for name in required if not hasattr(module, name)]
     if missing:
         raise RuntimeError(f"collector interface is incomplete: {', '.join(missing)}")
+    return module
+
+
+def _load_selector(path: Path, expected_sha256: str) -> ModuleType:
+    selector = path.resolve(strict=True)
+    expected = expected_sha256.strip().casefold()
+    if len(expected) != 64 or sha256_file(selector) != expected:
+        raise RuntimeError("selector hash mismatch")
+    name = f"prime_token_readiness_selector_{expected[:12]}"
+    spec = importlib.util.spec_from_file_location(name, selector)
+    if spec is None or spec.loader is None:
+        raise RuntimeError("selector module cannot be loaded")
+    module = importlib.util.module_from_spec(spec)
+    repo_root = str(selector.parents[2])
+    inserted = repo_root not in sys.path
+    if inserted:
+        sys.path.insert(0, repo_root)
+    try:
+        spec.loader.exec_module(module)
+    finally:
+        if inserted:
+            sys.path.remove(repo_root)
+    required = (
+        "DEFAULT_MAX_REQUEST_CHARS",
+        "DEFAULT_MIN_REQUEST_CHARS",
+        "classify_review_request",
+        "normalize_review_request",
+    )
+    missing = [name for name in required if not hasattr(module, name)]
+    if missing:
+        raise RuntimeError(f"selector interface is incomplete: {', '.join(missing)}")
     return module
 
 
@@ -102,11 +135,16 @@ def _scan_source(
     cutoff: datetime,
     collector: ModuleType,
     seen: set[str],
-) -> tuple[dict[str, Any], set[str]]:
+    selector: ModuleType | None = None,
+    candidate_seen: set[str] | None = None,
+) -> tuple[dict[str, Any], set[str], set[str]]:
     initial = path.stat()
+    initially_closed = bool(collector.source_is_closed(path))
     counts: Counter[str] = Counter()
     local_seen: set[str] = set()
     accepted: set[str] = set()
+    local_candidates: set[str] = set()
+    known_candidates = candidate_seen if candidate_seen is not None else set()
     with path.open("rb") as handle:
         for raw in handle:
             counts["lines"] += 1
@@ -141,11 +179,26 @@ def _scan_source(
                 continue
             accepted.add(identity)
             counts["eligible_unique_turns"] += 1
+            if selector is not None:
+                scrubbed_text, _ = collector.scrub(text)
+                selection = selector.classify_review_request(scrubbed_text)
+                reason = str(selection.get("reason") or "invalid")
+                if not selection.get("eligible"):
+                    counts[f"review_rejected_{reason}"] += 1
+                    continue
+                candidate_identity = selector.normalize_review_request(scrubbed_text)
+                if candidate_identity in known_candidates or candidate_identity in local_candidates:
+                    counts["review_duplicate"] += 1
+                    continue
+                local_candidates.add(candidate_identity)
+                counts["review_query_candidates"] += 1
     final = path.stat()
     stable = final.st_size == initial.st_size and final.st_mtime_ns == initial.st_mtime_ns
     closed = bool(collector.source_is_closed(path))
+    stable = stable and initially_closed == closed
     if not stable:
         accepted.clear()
+        local_candidates.clear()
     return (
         {
             "path_sha256": hashlib.sha256(str(path.resolve()).encode("utf-8")).hexdigest(),
@@ -157,6 +210,7 @@ def _scan_source(
             "counts": dict(sorted(counts.items())),
         },
         accepted,
+        local_candidates,
     )
 
 
@@ -168,6 +222,8 @@ def measure_readiness(
     collector_sha256: str,
     minimum_candidates: int,
     minimum_closed_sessions: int,
+    selector_path: Path | None = None,
+    selector_sha256: str | None = None,
 ) -> dict[str, Any]:
     if minimum_candidates < 1 or minimum_closed_sessions < 1:
         raise ValueError("minimums must be positive")
@@ -177,35 +233,63 @@ def measure_readiness(
     boundary = _catalog_boundary(catalog_manifest)
     cutoff = _utc(boundary["catalog_generated_at_utc"])
     collector = _load_collector(collector_path, collector_sha256)
+    if (selector_path is None) != (selector_sha256 is None):
+        raise ValueError("selector path and SHA-256 must be provided together")
+    selector = _load_selector(selector_path, str(selector_sha256)) if selector_path is not None else None
     selected = [
         path
         for path in sorted(sessions.rglob("rollout-*.jsonl"))
         if datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc) > cutoff
     ]
+    # The pinned collector consumes closed sources only, in lexical path order.
+    # Measure those first so an open-source duplicate cannot suppress a closed
+    # candidate. Open sources are then a projection of what could be added after
+    # closure, not an authority over the current queue.
+    selected.sort(key=lambda path: (not collector.source_is_closed(path), str(path)))
     seen: set[str] = set()
     sources: list[dict[str, Any]] = []
     stable_sources = 0
     closed_sources = 0
     open_sources = 0
     eligible = 0
+    candidate_seen: set[str] = set()
+    closed_review_candidates = 0
+    open_review_candidates = 0
     for path in selected:
-        row, identities = _scan_source(path, cutoff=cutoff, collector=collector, seen=seen)
+        row, identities, candidates = _scan_source(
+            path,
+            cutoff=cutoff,
+            collector=collector,
+            seen=seen,
+            selector=selector,
+            candidate_seen=candidate_seen,
+        )
         sources.append(row)
         if not row["stable_during_scan"]:
             continue
         stable_sources += 1
         if row["closed"]:
             closed_sources += 1
+            closed_review_candidates += len(candidates)
         else:
             open_sources += 1
+            open_review_candidates += len(candidates)
         seen.update(identities)
+        candidate_seen.update(candidates)
         eligible += len(identities)
 
-    candidate_deficit = max(0, minimum_candidates - eligible)
+    measured_candidates = closed_review_candidates if selector is not None else eligible
+    candidate_deficit = max(0, minimum_candidates - measured_candidates)
     closed_session_deficit = max(0, minimum_closed_sessions - closed_sources)
     distinct_session_deficit = max(0, minimum_closed_sessions - stable_sources)
     if any(not row["stable_during_scan"] for row in sources):
         status = "RETRY_UNSTABLE_SOURCE"
+    elif selector is not None and candidate_deficit and closed_session_deficit:
+        status = "WAITING_FOR_REVIEW_QUERIES_AND_CLOSED_SESSIONS"
+    elif selector is not None and candidate_deficit:
+        status = "WAITING_FOR_CLOSED_REVIEW_QUERIES"
+    elif selector is not None and closed_session_deficit:
+        status = "WAITING_FOR_CLOSED_SESSIONS"
     elif candidate_deficit and distinct_session_deficit:
         status = "WAITING_FOR_MORE_AUTHORED_TURNS_AND_DISTINCT_SESSIONS"
     elif candidate_deficit:
@@ -216,8 +300,8 @@ def measure_readiness(
         status = "WAITING_FOR_SESSION_CLOSE"
     else:
         status = "READY_FOR_PINNED_COLLECTOR"
-    return {
-        "schema": SCHEMA,
+    result = {
+        "schema": SCHEMA_V2 if selector is not None else SCHEMA_V1,
         "status": status,
         "updated_at_utc": utc_now(),
         "sessions_root": str(sessions),
@@ -255,6 +339,38 @@ def measure_readiness(
             "scored, or admitted to training. The pinned closed-session collector remains authoritative."
         ),
     }
+    if selector is not None and selector_path is not None:
+        result["selector"] = {
+            "path": str(selector_path.resolve()),
+            "sha256": str(selector_sha256).casefold(),
+            "minimum_chars": int(selector.DEFAULT_MIN_REQUEST_CHARS),
+            "maximum_chars": int(selector.DEFAULT_MAX_REQUEST_CHARS),
+        }
+        result["minimums"] = {
+            "closed_review_query_candidates": minimum_candidates,
+            "closed_source_sessions": minimum_closed_sessions,
+        }
+        result["observed"].update(
+            {
+                "collector_eligible_unique_turns": eligible,
+                "closed_review_query_candidates": closed_review_candidates,
+                "open_review_query_candidates": open_review_candidates,
+                "projected_review_query_candidates_if_open_sources_close": (
+                    closed_review_candidates + open_review_candidates
+                ),
+            }
+        )
+        result["deficits"] = {
+            "closed_review_query_candidates": candidate_deficit,
+            "closed_source_sessions": closed_session_deficit,
+            "additional_distinct_sessions_even_if_current_sources_close": (distinct_session_deficit),
+        }
+        result["claim_boundary"] = (
+            "Readiness telemetry only. The hash-pinned review selector is applied in memory, but open source "
+            "text and identities are never emitted, queued, scored, or admitted to training. Only the pinned "
+            "closed-session collector may create a review queue."
+        )
+    return result
 
 
 def main() -> int:
@@ -263,6 +379,8 @@ def main() -> int:
     parser.add_argument("--catalog-manifest", required=True, type=Path)
     parser.add_argument("--collector", required=True, type=Path)
     parser.add_argument("--collector-sha256", required=True)
+    parser.add_argument("--selector-module", type=Path)
+    parser.add_argument("--selector-sha256")
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--minimum-candidates", type=int, default=30)
     parser.add_argument("--minimum-closed-sessions", type=int, default=3)
@@ -279,6 +397,8 @@ def main() -> int:
             collector_sha256=args.collector_sha256,
             minimum_candidates=args.minimum_candidates,
             minimum_closed_sessions=args.minimum_closed_sessions,
+            selector_path=args.selector_module,
+            selector_sha256=args.selector_sha256,
         )
         atomic_json(args.output.resolve(), result)
         print(

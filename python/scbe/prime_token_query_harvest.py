@@ -22,6 +22,8 @@ REVIEW_LABEL_SCHEMA = "scbe.prime-token-independent-review-labels.v1"
 SESSION_CHUNK_SCHEMA = "clay.session.chunk.v1"
 DIRECT_SPEECH_SCHEMA = "clay.direct-speech-turn.v1"
 EXPLICIT_ROUTE_SCOPE_REVISION = "prime-token-explicit-route-scope-v1"
+DEFAULT_MIN_REQUEST_CHARS = 20
+DEFAULT_MAX_REQUEST_CHARS = 1600
 EXPLICIT_ROUTE_SCOPE_COUNTS = {
     "five_w": 3,
     "publication": 20,
@@ -89,8 +91,55 @@ def review_queue_sha256(queue: Mapping[str, Any]) -> str:
     return sha256(encoded).hexdigest()
 
 
-def _normalized_request(text: str) -> str:
+def normalize_review_request(text: str) -> str:
+    """Return the exact normalization used by queue deduplication."""
+
     return " ".join(text.split()).casefold()
+
+
+def _normalized_request(text: str) -> str:
+    """Backward-compatible private alias for the public normalization rule."""
+
+    return normalize_review_request(text)
+
+
+def classify_review_request(
+    text: str,
+    *,
+    min_chars: int = DEFAULT_MIN_REQUEST_CHARS,
+    max_chars: int = DEFAULT_MAX_REQUEST_CHARS,
+) -> dict[str, Any]:
+    """Classify one request with the queue's frozen, label-free policy.
+
+    The result contains no target, relevance, or source-family information, so
+    a telemetry process can count policy matches without constructing a review
+    queue or exposing request text.
+    """
+
+    if min_chars < 1 or max_chars < min_chars:
+        raise ValueError("invalid request length bounds")
+    request = text.strip()
+    if not request:
+        return {"eligible": False, "reason": "empty", "topic_groups": ()}
+    if not min_chars <= len(request) <= max_chars:
+        return {"eligible": False, "reason": "length", "topic_groups": ()}
+    folded = request.casefold()
+    if any(marker in folded for marker in REJECT_MARKERS):
+        return {
+            "eligible": False,
+            "reason": "context_marker",
+            "topic_groups": (),
+        }
+    if SYNTHETIC_TURN_PREFIX.search(request):
+        return {
+            "eligible": False,
+            "reason": "synthetic_prefix",
+            "topic_groups": (),
+        }
+    groups = tuple(_topic_groups(request))
+    if not groups:
+        return {"eligible": False, "reason": "topic", "topic_groups": ()}
+    return {"eligible": True, "reason": "accepted", "topic_groups": groups}
 
 
 def _request_turns(text: str) -> Iterable[str]:
@@ -150,8 +199,8 @@ def _catalog_boundary(manifest: str | Path) -> dict[str, str]:
 def harvest_review_queue(
     dataset: str | Path,
     *,
-    min_chars: int = 20,
-    max_chars: int = 1600,
+    min_chars: int = DEFAULT_MIN_REQUEST_CHARS,
+    max_chars: int = DEFAULT_MAX_REQUEST_CHARS,
     authored_after_utc: str | None = None,
     catalog_manifest: str | Path | None = None,
 ) -> dict[str, Any]:
@@ -214,17 +263,15 @@ def harvest_review_queue(
                     continue
                 ordinal = global_ordinal
                 global_ordinal += 1
-                folded = request.casefold()
-                if not min_chars <= len(request) <= max_chars:
+                selection = classify_review_request(
+                    request,
+                    min_chars=min_chars,
+                    max_chars=max_chars,
+                )
+                if not selection["eligible"]:
                     continue
-                if any(
-                    marker in folded for marker in REJECT_MARKERS
-                ) or SYNTHETIC_TURN_PREFIX.search(request):
-                    continue
-                groups = _topic_groups(request)
-                if not groups:
-                    continue
-                normalized = _normalized_request(request)
+                groups = list(selection["topic_groups"])
+                normalized = normalize_review_request(request)
                 if normalized in seen:
                     continue
                 seen.add(normalized)

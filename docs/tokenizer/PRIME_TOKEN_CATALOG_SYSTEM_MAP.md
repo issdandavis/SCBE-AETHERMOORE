@@ -847,3 +847,32 @@ The headless monitor runs every 600 seconds through `run_headless.py`; its
 launch receipt is SHA-256
 `4386049b707bb32116dd069a6fd1b195e87e0e234a913bd0b852345b57534383`.
 The expanded controlled suite passes `130/130`.
+
+## Query-policy readiness correction — 2026-11-13
+
+The v1 open-source readiness monitor counted every collector-eligible unique
+turn against the 30-query floor. That is an upstream intake count, not the
+review queue's narrower query count: the queue additionally enforces its frozen
+length, context-marker, synthetic-prefix, topic, and exact-deduplication policy.
+Calling all 175 upstream turns candidates therefore overstated readiness.
+
+The backward-compatible v2 mode now hash-pins and applies the exact selector in
+memory while emitting counts only. It never emits query text, normalized
+identities, labels, scores, or training rows. The existing v1 watcher and pinned
+collector remain unchanged; only a separately named v2 telemetry lane uses the
+new measurement.
+
+The first real v2 pass measured 16 closed source sessions and one open session:
+
+- 175 collector-eligible unique turns;
+- 4 closed review-query candidates, exactly matching the pinned collector's
+  current four-row review queue;
+- 8 candidates in the still-open session;
+- 12 projected candidates if that source closes, still 18 short of the frozen
+  30-query floor.
+
+The authoritative status is therefore `WAITING_FOR_CLOSED_REVIEW_QUERIES`, not
+`READY_FOR_PINNED_COLLECTOR`. Training intake, scoring, merge, promotion, tool
+dispatch, and partial unfreezing remain unchanged and unauthorized. The full
+tokenizer suite passes `381/381`; the immutable pre-build inventory is at
+`C:/dev/clay-training-runs/prime-token-catalog-20261106/system-audit-20261113/INVENTORY.json`.
