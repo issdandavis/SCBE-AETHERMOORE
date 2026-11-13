@@ -6,6 +6,7 @@ from typing import Any
 import torch
 
 from python.scbe import clay_paired_orbit_training as orbit
+from python.scbe import clay_paired_orbit_evaluation as orbit_evaluation
 
 
 class FakeSandbox:
@@ -96,3 +97,21 @@ def test_small_campaign_changes_weights_and_preserves_controls(tmp_path) -> None
     assert all(row["final_weight_effect"]["changed_scalars"] > 0 for row in result["horses"])
     assert result["promotion_authorized"] is False
     assert (tmp_path / "run" / "MARKET_REPORT.md").is_file()
+
+    checkpoint = tmp_path / "run" / "horses" / "held-1" / "static_unique-seed-11" / "BEST.pt"
+    checkpoint_before = orbit.file_sha256(checkpoint)
+    diagnostic = orbit_evaluation.evaluate_saved_campaign(
+        tmp_path / "run",
+        FakeProvider(),
+        records=64,
+        seed_offset=500_000,
+        device_name="cpu",
+    )
+    assert len(diagnostic["rows"]) == len(orbit.ARMS)
+    assert diagnostic["source_records_per_split_per_fold"] == 32
+    assert diagnostic["records_per_split_per_fold"] == 64
+    assert diagnostic["evaluation_scale_factor"] == 2.0
+    assert diagnostic["promotion_authorized"] is False
+    assert diagnostic["partial_unfreeze_authorized"] is False
+    assert orbit.file_sha256(checkpoint) == checkpoint_before
+    assert (tmp_path / "run" / "large-holdout-diagnostic" / "MARKET_REPORT.md").is_file()
