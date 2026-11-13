@@ -103,6 +103,12 @@ accepted after seeing the result.
 - Matched initialization groups: `15/15`.
 - Tensor-bank manifests: `24/24`.
 - Selection receipts: `3/3`.
+- Independent exposure audit: `60/60` horse lineages and `15/15` deterministic
+  schedules verified.  Every horse drew exactly 921,600 rows; every 30,000-row
+  bank position was seen 10--60 times with median 31.  Audit receipt:
+  `f791bb97c0b1a9e289b1cbeea0841fc66d3a9b5769b153ac749bd329363ab00f`;
+  file SHA-256:
+  `e57a4ac04d385d866b439652e0c91da1a126dbc2d182e7fd66195f454b999b7f`.
 - Promotion authority: false.
 - Partial-unfreeze authority: false.
 
