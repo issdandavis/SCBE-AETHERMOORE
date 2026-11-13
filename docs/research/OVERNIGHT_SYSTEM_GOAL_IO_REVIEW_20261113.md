@@ -136,10 +136,14 @@ Natural image/audio/language material, token-level action compilation, the
 
 Next legitimate order:
 
-1. finish the active random-multiview confirmation;
-2. independently replay outcomes and exact exposure/support receipts;
-3. keep `NO_SELECTION` if any sector/control gate misses;
-4. only then preregister a frozen-input-adapter run using the confirmed data
-   recipe and the existing deterministic compiler boundary;
+1. ~~finish the active random-multiview confirmation~~ — completed `60/60`;
+2. ~~independently replay outcomes and exact exposure/support receipts~~ — all
+   180 checkpoints and 120 prediction ledgers closed;
+3. keep `NO_SELECTION`: random multi-view cleared every sector against static
+   but did not separate from shuffled multi-view or clear the factor control;
+4. preregister a frozen-input-adapter run around the confirmed multi-view versus
+   static-view distinction and the existing deterministic compiler boundary;
 5. do not add another selector, scheduler, or geometry layer before that test.
+
+Post-review closure: `CLAY_RANDOM_MULTIVIEW_CONFIRMATION_RESULT_20261113.md`.
 
