@@ -87,3 +87,10 @@ Log exposure as a tensor with at least
 that ledger to per-region gradient and error saturation.  This tests the user's
 "build gradients across a concept" hypothesis without confusing repeated
 examples with new information.
+
+Reuse and extend `python/scbe/concept_exposure_ledger.py` for that accounting;
+do not create a parallel tracker.  Its sealed identities, source-disjoint split
+guard, loss/improvement EMAs, bounded elite-gradient sketches, coherence, and
+saturation receipts already implement most of the required surface.  The next
+extension is to make operation and view explicit coordinates instead of hiding
+both inside a generic variant string.
