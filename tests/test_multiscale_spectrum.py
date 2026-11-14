@@ -238,8 +238,9 @@ class TestAnomalyDetection:
     def test_replay_attack_high_replay_score(self):
         """Constant trajectory -> high replay score."""
         X = make_constant_trajectory(100, 21)
-        # Add tiny noise to avoid degenerate zero increments
-        X += np.random.default_rng(0).normal(0, 1e-6, X.shape)
+        # Exact static input has zero observed rank. Full-dimensional white noise
+        # has the same spectral shape at any amplitude; its smallness alone is
+        # not a low participation ratio. Activity floors belong to valence/tonic.
         report = analyze_trajectory(X)
         assert report.replay_score > 0.8
 
