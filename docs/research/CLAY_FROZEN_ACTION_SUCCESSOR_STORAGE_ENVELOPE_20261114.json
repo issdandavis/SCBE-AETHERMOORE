@@ -1,0 +1,79 @@
+{
+  "schema": "clay.frozen-action-successor-storage-envelope.v1",
+  "measured_at_utc": "2026-11-14T06:15:00+00:00",
+  "status": "PARTIAL_MEASUREMENT_LAUNCH_CLOSED",
+  "authority": {
+    "launch": "NONE",
+    "partial_unfreeze": "NONE",
+    "promotion": "NONE",
+    "tool_dispatch": "DISABLED"
+  },
+  "storage_receipt": {
+    "source": "C:\\Users\\issda\\storage.ps1 AgentStatus",
+    "updated_at_utc": "2026-11-14T05:47:31.666420+00:00",
+    "cloud_enumerated": false,
+    "c_free_bytes": 29701353472,
+    "pressure": "HEALTHY",
+    "fixed_floor_bytes": 26843545600,
+    "headroom_above_floor_bytes": 2857807872
+  },
+  "parent_checkpoint": {
+    "path": "C:\\dev\\clay-training-runs\\authority-cache-20261108\\clay-full-system-best-recovery-20261029-v1\\clay_full_system_run\\checkpoint_A.pt",
+    "bytes": 543385036,
+    "sha256": "f3988a328cd18a082e3e058827c65cc9f0947b6695abc757fcd3e1ee11181b2e",
+    "expected_sha256": "f3988a328cd18a082e3e058827c65cc9f0947b6695abc757fcd3e1ee11181b2e",
+    "hash_matches": true,
+    "read_only_parent": true,
+    "already_present_locally": true,
+    "included_in_current_free_space_measurement": true
+  },
+  "observed_mechanics_reference": {
+    "run_root": "C:\\dev\\clay-training-runs\\action-input-full-system-mechanics-20261111\\run-v2",
+    "run_result_sha256": "2a53f1afcf3f36f3bbdf045d15ef9f4d3b50897fe326fd3f04c1358a8526409d",
+    "campaign_source": "C:\\dev\\_wt_clay_action_byte_confirm_20261110\\experiments\\clay_action_compiler_20261109\\full_system_action_campaign.py",
+    "campaign_source_sha256": "6a0850c2bfe3d19e808a20322939ff2fb9b966c86e2ba2838e968fd2ea3430c9",
+    "run_total_bytes": 167771,
+    "learned_horses": 3,
+    "checkpoint_slots_written_per_horse": 1,
+    "max_observed_adapter_checkpoint_bytes": 48535,
+    "example_adapter_checkpoint_sha256": "a7c93977029d5e56c28fe9bf0ca4d42acdfb3ffcb13c5445a73000a6c3866f52",
+    "frozen_core_parameters": 45235182,
+    "trainable_reader_parameters": 2104
+  },
+  "preregistered_minimum_material_shape": {
+    "learned_arms": 3,
+    "minimum_fresh_seeds": 3,
+    "minimum_learned_horses": 9,
+    "checkpoint_slots_per_horse": 2,
+    "concurrent_checkpoint_writers": 1
+  },
+  "checkpoint_write_measurement": {
+    "classification": "MEASURED_LOWER_BOUND_NOT_TOTAL_RESERVE",
+    "persistent_two_slot_bytes_at_observed_checkpoint_size": 873630,
+    "single_writer_temporary_overlap_bytes": 48535,
+    "known_checkpoint_plus_temporary_peak_bytes": 922165,
+    "calculation": "(3 learned arms * 3 seeds * 2 slots * 48535 bytes) + (1 temporary writer * 48535 bytes)",
+    "headroom_after_floor_and_known_checkpoint_peak_bytes": 2856885707
+  },
+  "cold_restore_contingency": {
+    "needed_for_current_local_cache": false,
+    "atomic_parent_temporary_plus_final_bytes": 1086770072,
+    "headroom_after_floor_cold_restore_and_known_checkpoint_peak_bytes": 1770115635,
+    "calculation": "(2 * 543385036 parent bytes) + 922165 known checkpoint peak bytes"
+  },
+  "unmeasured_before_material_launch": [
+    "admitted material dataset and source-authority ledger bytes",
+    "per-example terminal result ledgers, whose size depends on admitted holdout, ordinary, and retention rows",
+    "independent replay artifacts",
+    "a separately declared positive recovery margin",
+    "future checkpoint-size growth, if material metrics or lineage metadata exceed the mechanics fixture"
+  ],
+  "launch_gate": {
+    "storage_checkpoint_component_measured": true,
+    "total_peak_write_reserve_measured": false,
+    "material_source_disjoint_dataset_admitted": false,
+    "active_predecessor_campaign_closed": false,
+    "launch_authorized": false,
+    "reason": "The parent and checkpoint component are verified, but the material dataset, result/replay ledger sizes, recovery margin, and predecessor campaign closure are still absent."
+  }
+}

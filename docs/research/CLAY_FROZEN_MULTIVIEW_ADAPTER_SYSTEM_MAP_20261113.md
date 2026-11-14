@@ -318,16 +318,16 @@ guards, not model benefit. The experiment worktree has `134` pre-existing
 status entries and remains deliberately untouched; successor evidence is being
 recorded only in this clean worktree.
 
-The recorded parent path currently points to an unavailable `S:` drive, but the
-parent is not lost or silently substituted. Kaggle reports
-`issacizrealdavis/clay-full-system-best-recovery-20261029/1` complete and lists
-`checkpoint_A.pt`; the prior recovery watcher independently verified that file
-at step `13,400` with SHA-256
-`f3988a328cd18a082e3e058827c65cc9f0947b6695abc757fcd3e1ee11181b2e`.
-The canonical `FullSystemLM` source remains locally available under
+The recorded `S:` parent path is currently unavailable, but the parent is not
+lost or silently substituted. The local authority cache now contains the exact
+`543,385,036`-byte step-`13,400` `checkpoint_A.pt`; a fresh SHA-256 pass returned
+`f3988a328cd18a082e3e058827c65cc9f0947b6695abc757fcd3e1ee11181b2e`, matching
+both its local pointer and the sealed Kaggle recovery receipt for
+`issacizrealdavis/clay-full-system-best-recovery-20261029/1`. The canonical
+`FullSystemLM` source remains locally available under
 `C:\dev\tongue-compiler\artifacts\kaggle_full_system_recovery_20261026`.
-Any material child must restore the exact remote checkpoint and rehash it before
-use; an arbitrary local checkpoint is not an acceptable replacement.
+The successor can therefore reuse the verified read-only local parent; any
+replacement must still restore the exact remote object and rehash it before use.
 
 The course-source `S:` ledger and derived transcripts are also not mounted.
 However, all three original videos remain locally accessible and their freshly
@@ -339,13 +339,27 @@ measured hashes exactly match the sealed audit:
 | Tracing Lists | 30,226,656 | `42bc9a3eb2d10a6d212120ef240c15eb674023134becc25440e6f8a1aceb58cb` |
 | Tracing Nested Loops | 40,587,138 | `0ee8da1342d532e251fadabee11868932eafbb3579368c50b0a8f0d66ec60634` |
 
-This preserves a verified recovery route, but it does not satisfy the material
-data gate: the 279 indexed transcript spans remain unreviewed and ineligible,
-and no disjoint holdout, ordinary, or retention source family has been admitted.
-Current local capacity is healthy at about `27.6 GiB` free, while the exact
-successor peak-write reserve has not yet been measured. The live campaign and
-its final independent replay must close first. Therefore successor launch,
-promotion, partial unfreeze, and tool dispatch all remain unauthorized.
+The checkpoint portion of the storage gate is now measured in
+`CLAY_FROZEN_ACTION_SUCCESSOR_STORAGE_ENVELOPE_20261114.json`, SHA-256
+`46ad937de345fe44cf03797c0bd32c6f5ae8ecfcb59bffb96c815a682e841013`.
+The recovered-parent mechanics run wrote a maximum `48,535`-byte adapter
+checkpoint for a `2,104`-parameter before-block-0 reader. At the preregistered
+minimum of three learned arms by three fresh seeds, retaining both slots for all
+nine horses plus one single-writer temporary file requires `922,165` bytes at
+that observed size. An atomic cold restore would transiently require another
+`1,086,770,072` bytes for parent temporary-plus-final files, but it is not needed
+while the verified local cache remains present. The fresh compact storage
+receipt reports `29,701,353,472` bytes free: `2,857,807,872` above the fixed
+25-GiB floor, or `2,856,885,707` after the measured checkpoint component.
+
+This is deliberately a lower bound, not a launch value for
+`--peak-write-reserve-bytes`. The admitted material dataset, per-example result
+ledgers, independent replay artifacts, positive recovery margin, and any
+checkpoint growth beyond the mechanics fixture remain unmeasured. The 279
+indexed transcript spans also remain unreviewed and ineligible, and no disjoint
+holdout, ordinary, or retention source family has been admitted. The live
+campaign and its final independent replay must close first. Therefore successor
+launch, promotion, partial unfreeze, and tool dispatch all remain unauthorized.
 
 The next model-level sieve trial must remain a separately preregistered child of
 the completed campaign. It should attach a fixed-width centroid/trit summary at
