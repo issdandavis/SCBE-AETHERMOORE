@@ -1,6 +1,6 @@
 # Clay frozen-multiview Kaggle compatibility map — 2026-11-14
 
-Status: `LOCAL_AND_KAGGLE_TRAINING_ACTIVE`
+Status: `LOCAL_TRAINING_ACTIVE_CLOUD_COMPAT_COMPLETE_NO_PROMOTION`
 
 ## Capability and boundary
 
@@ -34,8 +34,8 @@ local full campaign -------------------------------------> independent replay
 | Packet builder | `scripts/research/build_clay_frozen_multiview_kaggle_packet.py` | Copies exact bytes, emits a deterministic ZIP-framed `.packet` archive and private Kaggle metadata | Locally replayed; provider readback verified |
 | Kaggle entry | `scripts/research/run_clay_frozen_multiview_kaggle_compat.py` | Verifies packet, records environment, runs unchanged trainer, seals recovery | New; private cloud CPU |
 | Private dataset | `issacizrealdavis/clay-frozen-multiview-compat-input-20261114`, version 2 | Immutable code/source packet | Uploaded privately; exact provider readback verified |
-| Private kernel | Requested `issacizrealdavis/clay-frozen-multiview-compat-20261114`; provider slug `issacizrealdavis/clay-frozen-multiview-compatibility-20261114` | Three new seeds and all four matched arms | Private version 1 launched; `RUNNING` at 2026-11-14T10:39:41Z |
-| Recovery root | `C:\dev\clay-training-runs\cloud-review\frozen-multiview-compat-20261114` | Downloaded cloud receipts/checkpoints | Proposed until completion |
+| Private kernel | Requested `issacizrealdavis/clay-frozen-multiview-compat-20261114`; provider slug `issacizrealdavis/clay-frozen-multiview-compatibility-20261114` | Three new seeds and all four matched arms | Private version 1 complete; compatibility only; no promotion |
+| Recovery root | `C:\dev\clay-training-runs\cloud-review\frozen-multiview-compat-20261114` | Downloaded cloud receipts/checkpoints | `66/66` files and all enclosing hashes verified; `36/36` tensor files safely loaded |
 
 Read-only inventory:
 `docs/research/CLAY_FROZEN_MULTIVIEW_KAGGLE_COMPAT_INVENTORY_20261114.json`,
@@ -140,3 +140,39 @@ At the same time, the canonical local process set remained alive. Its current
 `frozen_adapter_static-seed-20261133` checkpoint advanced to
 `slot-a.pt`, 3,714,435 bytes, at 2026-11-14T10:36:56Z. Thus the two compute
 lineages are concurrent and have disjoint seeds and checkpoint roots.
+
+## Cloud completion and recovery verification
+
+Private kernel version 1 completed with
+`COMPLETE_COMPATIBILITY_ONLY_NO_PROMOTION`. The bounded local recovery audit
+then checked every manifest entry rather than relying on the provider status:
+
+- Recovery files: `66/66` present; `130,884,004/130,884,004` bytes; zero size
+  or SHA-256 mismatches.
+- Recovery manifest SHA-256:
+  `024f91e8f7f6e5e49e03ff8ab5da02e5c868a46302fbe5174de2b706b1c40e81`.
+- Campaign result SHA-256:
+  `c0d599036137ba821e037ac2f640a7a33204fd56c5f5f07f6034a262388ef8aa`.
+- Safe reload: all `36/36` `.pt` files opened locally with
+  `torch.load(..., map_location="cpu", weights_only=True)`.
+- All trained arms had the matched `140,820` trainable parameters, and the
+  counting result was preserved exactly for each seed.
+
+The multiview arm beat the static arm on accuracy and macro F1 in all three
+matched seeds, but the preregistered uncertainty gates did not clear:
+
+| Metric | Multiview mean | Static mean | Mean delta | `2 x` pooled SD | Gate |
+|---|---:|---:|---:|---:|---|
+| Accuracy | 0.251111 | 0.226667 | +0.024444 | 0.109781 | `NOT_MET` |
+| Macro F1 | 0.234052 | 0.200095 | +0.033958 | 0.083638 | `NOT_MET` |
+
+The paired static comparison was also underpowered: 168 wins, 146 losses, 586
+ties over 900 examples, two-sided exact `p = 0.2359286094`. Therefore this run
+proves cross-platform training/checkpoint compatibility and gives a positive
+directional signal, but it neither proves a capability gain nor authorizes
+promotion, merging, execution, tool dispatch, or partial unfreezing.
+
+The canonical local campaign remained alive after cloud recovery. At
+2026-11-14T11:30:23Z its latest checkpoint was
+`frozen_adapter_multiview-seed-20261133/checkpoints/slot-a.pt`, 3,711,427
+bytes; all six trainer/supervisor/watcher processes were present.
