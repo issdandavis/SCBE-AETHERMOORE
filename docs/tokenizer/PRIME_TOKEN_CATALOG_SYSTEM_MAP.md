@@ -972,6 +972,15 @@ unopened. The 30-query threshold is unchanged. No live release state, model,
 checkpoint, score, promotion, or partial-unfreeze decision was changed by the
 code integration.
 
+After the branch was committed and pushed, the live release state was updated
+only to reference that dynamic waiting watcher. A separately named audit bound
+to the committed contract reports zero errors and ten blockers, including the
+new component-gate blocker. It remains
+`WAITING_FOR_RELEASE_REQUIREMENTS`; training intake, merge, promotion, tool
+dispatch, and partial unfreeze remain unauthorized. The report is
+`RELEASE_AUDIT_COMPONENT_BOUND_20261114.json` with report SHA-256
+`99e170700f5874adbaa64c743989e8f83de4148fc047579a9edf0e76b5e3d82b`.
+
 The exact node/edge map, rollback boundary, test commands, and storage guard
 are in
 `docs/research/PRIME_TOKEN_COMPONENT_RELEASE_INTEGRATION_MAP_20261114.md`.

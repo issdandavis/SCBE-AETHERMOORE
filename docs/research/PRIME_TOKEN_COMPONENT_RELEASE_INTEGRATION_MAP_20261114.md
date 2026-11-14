@@ -2,7 +2,7 @@
 
 Date: 2026-11-14
 
-Status: `IMPLEMENTED_TESTED_AWAITING_LIVE_STATE_BIND_NO_TRAINING_NO_PROMOTION`
+Status: `IMPLEMENTED_TESTED_LIVE_STATE_BOUND_FAIL_CLOSED_NO_TRAINING_NO_PROMOTION`
 
 ## Capability boundary
 
@@ -30,7 +30,7 @@ inspection, runtime receipts, and SHA-256 values instead.
 | Component algebra | `python/scbe/prime_token_query_family_components.py` / `scbe.prime-token-query-session-family-components.v1` | Builds bipartite connected components and neutral fold assignment from reviewed hashes | Cherry-picked from the isolated component branch; SHA-256 `c3750f9dfe37603660a3363e24285e5e0a6c310cf8c9e1e75fd96d6fe7e0a2cd` |
 | Component watcher | `scripts/tokenizer/watch_prime_query_family_components.py` / `scbe.prime-token-query-session-family-component-watcher.v1` | Waits for prepared/selection evidence, then runs the pinned component audit once | Live external watcher is fail-closed at `WAITING_FOR_PREPARATION_PACKET`; source SHA-256 `fc842e6bd660561e36d0823ff9ee7ca44531837d333da42302685b363fee1454` |
 | Live watcher receipt | `C:/dev/clay-training-runs/prime-token-catalog-20261106/prospective-query-session-family-component-watcher-v7-20261114/QUERY_SESSION_FAMILY_COMPONENT_WATCHER_STATUS.json` | Dynamic evidence consumed only after its terminal verified status | 10 candidates; labels not opened; scoring/training/promotion unauthorized; observed SHA-256 `6f46f80366010a36724ce628d485d93ee9783f943f666080e20973d251dcb36d` |
-| Current release state | `C:/dev/clay-training-runs/prime-token-catalog-20261106/successor-training-release-20261111/CURRENT_RELEASE_STATE.json` / `scbe.prime-token-frozen-input-access-release-state.v1` | Binds dynamic and immutable evidence into one audit input | Missing the component watcher entry; current SHA-256 `c7d03688bd1ba52f69c84ee98d926d6f800281f3117cdf7a7d0826dab7c7e021` |
+| Current release state | `C:/dev/clay-training-runs/prime-token-catalog-20261106/successor-training-release-20261111/CURRENT_RELEASE_STATE.json` / `scbe.prime-token-frozen-input-access-release-state.v1` | Binds dynamic and immutable evidence into one audit input | Now includes the dynamic component watcher without changing authority; SHA-256 `3ecdeeede2d6b72044924d53ed0ecf87eb839dd53d46feb92b40bd356e3c7a99` |
 | Frozen model campaign | `C:/dev/clay-training-runs/frozen-multiview-adapter-replication-20261114-v1` | Separate three-seed frozen-core replication | Live and untouched; no edge from this code-only change into its process or checkpoints |
 
 ## Edges and invariants
@@ -92,10 +92,9 @@ the downstream six-arm material experiment.
 
 ## Build decision
 
-The seam is sufficiently mapped for a bounded code-and-contract integration.
-Updating the live release-state JSON is a separate post-test operation; it may
-only add the waiting component watcher as another blocker and must regenerate
-the audit without opening labels or starting training.
+The bounded code-and-contract integration passed. The post-commit live-state
+update added only the waiting component watcher and regenerated a separate
+fail-closed audit without opening labels or starting training.
 
 ## Implementation evidence
 
@@ -123,6 +122,13 @@ existing `lexicons` cone made the same tests pass without a code change. This
 was an environment-coverage failure, not a product regression.
 
 No optimizer, label file, model state, adapter checkpoint, parent tensor, or
-tool dispatcher was opened or changed. The live release state remains
-deliberately unmodified until this branch is committed and its fail-closed
-audit can be regenerated against the exact committed contract.
+tool dispatcher was opened or changed. After commit `c3ba86a00`, the live
+release state gained the dynamic component-watcher entry. The regenerated
+audit is
+`C:/dev/clay-training-runs/prime-token-catalog-20261106/successor-training-release-20261111/RELEASE_AUDIT_COMPONENT_BOUND_20261114.json`.
+It reports `WAITING_FOR_RELEASE_REQUIREMENTS`, zero errors, ten blockers, and
+report SHA-256
+`99e170700f5874adbaa64c743989e8f83de4148fc047579a9edf0e76b5e3d82b`.
+The new blocker is exactly
+`query_session_family_component_gate status is WAITING_FOR_PREPARATION_PACKET`;
+all no-training/no-promotion authority fields remain unchanged.
