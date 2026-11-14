@@ -954,3 +954,24 @@ at `WAITING_FOR_PREPARATION_PACKET` with four candidates and labels unopened;
 the committed persistent worker is now active in that same fail-closed waiting
 state. Two advancing poll receipts prove liveness only. No labels, component
 report, score, training intake, promotion or partial unfreeze has been produced.
+
+## Component gate bound to the frozen release contract — 2026-11-14
+
+The isolated component-gate commits and the frozen-input release branch are now
+combined in `research/prime-component-release-gate-20261114`. The shipped
+release contract requires the dynamic component watcher to report exactly
+`QUERY_SESSION_FAMILY_COMPONENT_GATE_VERIFIED`; missing, waiting,
+underpowered, or invalid states cannot reach manual launch review. The generic
+auditor remains unchanged and still grants no training or promotion authority.
+
+The combined branch passes 25 focused release/component tests and 141 wider
+prime-token/watcher regressions, plus Black and Ruff. The current live watcher
+has advanced from the historical four-candidate activation snapshot to ten
+closed candidates, but remains at `WAITING_FOR_PREPARATION_PACKET` with labels
+unopened. The 30-query threshold is unchanged. No live release state, model,
+checkpoint, score, promotion, or partial-unfreeze decision was changed by the
+code integration.
+
+The exact node/edge map, rollback boundary, test commands, and storage guard
+are in
+`docs/research/PRIME_TOKEN_COMPONENT_RELEASE_INTEGRATION_MAP_20261114.md`.

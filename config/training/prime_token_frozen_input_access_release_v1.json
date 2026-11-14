@@ -46,6 +46,9 @@
     "prospective_collector": [
       "READY_FOR_REVIEW"
     ],
+    "query_session_family_component_gate": [
+      "QUERY_SESSION_FAMILY_COMPONENT_GATE_VERIFIED"
+    ],
     "runner_implementation": [
       "TESTED"
     ],

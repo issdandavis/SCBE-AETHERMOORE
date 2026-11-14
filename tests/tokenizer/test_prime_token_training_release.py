@@ -4,6 +4,8 @@ import hashlib
 import json
 from pathlib import Path
 
+import pytest
+
 from scripts.tokenizer.audit_prime_token_training_release import audit_release
 
 ARMS = [
@@ -27,6 +29,7 @@ METRICS = [
 EVIDENCE = {
     "storage_envelope": ["SPACE_ENVELOPE_OPEN"],
     "prospective_collector": ["READY_FOR_REVIEW"],
+    "query_session_family_component_gate": ["QUERY_SESSION_FAMILY_COMPONENT_GATE_VERIFIED"],
     "selection_audit": ["VERIFIED_SELECTION_AUDIT"],
     "e92_result": ["COMPLETE"],
     "e92_independent_verification": ["VERIFIED"],
@@ -66,12 +69,16 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path]:
     evidence = {}
     for evidence_id, statuses in EVIDENCE.items():
         artifact = _write(tmp_path / f"{evidence_id}.json", {"status": statuses[0]})
-        evidence[evidence_id] = {
+        entry = {
             "status": statuses[0],
             "path": str(artifact),
-            "sha256": hashlib.sha256(artifact.read_bytes()).hexdigest(),
-            "immutable": True,
         }
+        if evidence_id == "query_session_family_component_gate":
+            entry["read_status_from_artifact"] = True
+        else:
+            entry["sha256"] = hashlib.sha256(artifact.read_bytes()).hexdigest()
+            entry["immutable"] = True
+        evidence[evidence_id] = entry
     state = _write(
         tmp_path / "state.json",
         {
@@ -110,6 +117,17 @@ def test_ready_state_still_grants_no_authority(tmp_path: Path) -> None:
     assert report["blocker_count"] == 0
     assert report["authority"]["training_intake"] == "NOT_AUTHORIZED"
     assert report["authority"]["partial_unfreeze"] == "NONE"
+
+
+def test_shipped_contract_requires_query_session_family_component_gate() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+    contract = json.loads(
+        (repo_root / "config/training/prime_token_frozen_input_access_release_v1.json").read_text(encoding="utf-8")
+    )
+
+    assert contract["required_evidence"]["query_session_family_component_gate"] == [
+        "QUERY_SESSION_FAMILY_COMPONENT_GATE_VERIFIED"
+    ]
 
 
 def test_waits_for_closed_query_sources_and_candidates(tmp_path: Path) -> None:
@@ -170,6 +188,45 @@ def test_requires_material_runtime_and_evidence_aggregator(tmp_path: Path) -> No
     assert report["error_count"] == 0
     assert "missing evidence: material_runtime_implementation" in report["blockers"]
     assert "missing evidence: evidence_aggregator_implementation" in report["blockers"]
+
+
+def test_requires_query_session_family_component_gate(tmp_path: Path) -> None:
+    contract, state = _fixture(tmp_path)
+    value = json.loads(state.read_text(encoding="utf-8"))
+    del value["evidence"]["query_session_family_component_gate"]
+    _write(state, value)
+
+    report = audit_release(contract_path=contract, state_path=state)
+
+    assert report["status"] == "WAITING_FOR_RELEASE_REQUIREMENTS"
+    assert report["error_count"] == 0
+    assert "missing evidence: query_session_family_component_gate" in report["blockers"]
+
+
+@pytest.mark.parametrize(
+    "dynamic_status",
+    [
+        "WAITING_FOR_PREPARATION_PACKET",
+        "QUERY_SESSION_FAMILY_COMPONENT_GATE_UNDERPOWERED",
+        "QUERY_SESSION_FAMILY_COMPONENT_GATE_INVALID_NEEDS_REVIEW",
+    ],
+)
+def test_reads_component_gate_status_from_dynamic_artifact(tmp_path: Path, dynamic_status: str) -> None:
+    contract, state = _fixture(tmp_path)
+    value = json.loads(state.read_text(encoding="utf-8"))
+    evidence = value["evidence"]["query_session_family_component_gate"]
+    artifact = Path(evidence["path"])
+    artifact.write_text(json.dumps({"status": dynamic_status}), encoding="utf-8")
+    _write(state, value)
+
+    report = audit_release(contract_path=contract, state_path=state)
+
+    assert report["status"] == "WAITING_FOR_RELEASE_REQUIREMENTS"
+    assert report["error_count"] == 0
+    gate = report["gates"]["evidence"]["query_session_family_component_gate"]
+    assert gate["status"] == dynamic_status
+    assert gate["passed"] is False
+    assert f"query_session_family_component_gate status is {dynamic_status}" in report["blockers"]
 
 
 def test_rejects_authority_drift(tmp_path: Path) -> None:
