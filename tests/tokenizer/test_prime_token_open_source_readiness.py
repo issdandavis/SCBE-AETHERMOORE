@@ -218,6 +218,13 @@ def test_v2_counts_exact_review_policy_without_emitting_text(tmp_path: Path) -> 
     assert result["observed"]["closed_review_query_candidates"] == 2
     assert result["observed"]["open_review_query_candidates"] == 1
     assert result["observed"]["projected_review_query_candidates_if_open_sources_close"] == 3
+    diagnostics = result["selection_diagnostics"]
+    assert diagnostics["source_health"] == "HEALTHY"
+    assert diagnostics["candidate_shortfall_classification"] == "MINIMUM_REACHED"
+    assert diagnostics["closed_sources"]["review_query_candidates"] == 2
+    assert diagnostics["closed_sources"]["review_rejected_by_reason"] == {"topic": 1}
+    assert diagnostics["combined_stable_sources"]["selector_accounting_gap"] == 0
+    assert diagnostics["combined_stable_sources"]["candidate_yield_per_collector_eligible_turn"] == pytest.approx(0.75)
     serialized = json.dumps(result)
     assert "research prime sieve" not in serialized
     assert "publish a book" not in serialized
@@ -317,3 +324,64 @@ def test_v2_applies_collector_scrub_before_review_policy(tmp_path: Path) -> None
     assert result["status"] == "WAITING_FOR_CLOSED_REVIEW_QUERIES"
     assert result["observed"]["collector_eligible_unique_turns"] == 1
     assert result["observed"]["closed_review_query_candidates"] == 0
+
+
+def test_v2_distinguishes_fixed_selector_scarcity_from_pipeline_failure(
+    tmp_path: Path,
+) -> None:
+    collector = tmp_path / "collector.py"
+    collector_hash = _write_collector(collector)
+    manifest = tmp_path / "manifest.json"
+    _write_manifest(manifest)
+    sessions = tmp_path / "sessions"
+    _write_rollout(
+        sessions / "rollout-closed-0.jsonl",
+        [
+            {
+                "role": "user",
+                "timestamp": "2026-01-02T00:00:00+00:00",
+                "text": "research prime sieve source metadata alpha",
+            }
+        ],
+    )
+    _write_rollout(
+        sessions / "rollout-closed-1.jsonl",
+        [
+            {
+                "role": "user",
+                "timestamp": "2026-01-02T00:01:00+00:00",
+                "text": "ordinary unrelated request with no selected topic",
+            }
+        ],
+    )
+    _write_rollout(
+        sessions / "rollout-open.jsonl",
+        [
+            {
+                "role": "user",
+                "timestamp": "2026-01-02T00:02:00+00:00",
+                "text": "another ordinary request outside the frozen topics",
+            }
+        ],
+    )
+    selector = Path(prime_token_query_harvest.__file__).resolve()
+    selector_hash = hashlib.sha256(selector.read_bytes()).hexdigest()
+
+    result = measure_readiness(
+        sessions_root=sessions,
+        catalog_manifest=manifest,
+        collector_path=collector,
+        collector_sha256=collector_hash,
+        minimum_candidates=3,
+        minimum_closed_sessions=2,
+        selector_path=selector,
+        selector_sha256=selector_hash,
+    )
+
+    diagnostics = result["selection_diagnostics"]
+    assert result["status"] == "WAITING_FOR_CLOSED_REVIEW_QUERIES"
+    assert diagnostics["source_health"] == "HEALTHY"
+    assert diagnostics["candidate_shortfall_classification"] == "FIXED_SELECTOR_CANDIDATE_SCARCITY"
+    assert diagnostics["projected_closed_review_candidate_deficit_if_open_sources_close"] == 2
+    assert diagnostics["combined_stable_sources"]["dominant_review_rejection_reason"] == "topic"
+    assert diagnostics["combined_stable_sources"]["selector_accounting_gap"] == 0

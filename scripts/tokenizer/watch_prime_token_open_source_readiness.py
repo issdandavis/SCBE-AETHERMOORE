@@ -214,6 +214,36 @@ def _scan_source(
     )
 
 
+def _review_selection_summary(counts: Counter[str]) -> dict[str, Any]:
+    """Summarize selector outcomes without retaining query text or identities."""
+
+    rejected_by_reason = {
+        key.removeprefix("review_rejected_"): int(value)
+        for key, value in sorted(counts.items())
+        if key.startswith("review_rejected_") and value
+    }
+    rejected_total = sum(rejected_by_reason.values())
+    candidates = int(counts["review_query_candidates"])
+    review_duplicates = int(counts["review_duplicate"])
+    eligible = int(counts["eligible_unique_turns"])
+    accounted = candidates + review_duplicates + rejected_total
+    dominant_reason = None
+    if rejected_by_reason:
+        largest = max(rejected_by_reason.values())
+        dominant_reason = min(reason for reason, count in rejected_by_reason.items() if count == largest)
+    return {
+        "collector_eligible_unique_turns": eligible,
+        "review_query_candidates": candidates,
+        "review_duplicates": review_duplicates,
+        "review_rejected_total": rejected_total,
+        "review_rejected_by_reason": rejected_by_reason,
+        "dominant_review_rejection_reason": dominant_reason,
+        "selector_accounted_turns": accounted,
+        "selector_accounting_gap": eligible - accounted,
+        "candidate_yield_per_collector_eligible_turn": (candidates / eligible if eligible else None),
+    }
+
+
 def measure_readiness(
     *,
     sessions_root: Path,
@@ -255,6 +285,9 @@ def measure_readiness(
     candidate_seen: set[str] = set()
     closed_review_candidates = 0
     open_review_candidates = 0
+    all_source_counts: Counter[str] = Counter()
+    closed_selection_counts: Counter[str] = Counter()
+    open_selection_counts: Counter[str] = Counter()
     for path in selected:
         row, identities, candidates = _scan_source(
             path,
@@ -265,15 +298,19 @@ def measure_readiness(
             candidate_seen=candidate_seen,
         )
         sources.append(row)
+        row_counts = Counter(row["counts"])
+        all_source_counts.update(row_counts)
         if not row["stable_during_scan"]:
             continue
         stable_sources += 1
         if row["closed"]:
             closed_sources += 1
             closed_review_candidates += len(candidates)
+            closed_selection_counts.update(row_counts)
         else:
             open_sources += 1
             open_review_candidates += len(candidates)
+            open_selection_counts.update(row_counts)
         seen.update(identities)
         candidate_seen.update(candidates)
         eligible += len(identities)
@@ -340,6 +377,27 @@ def measure_readiness(
         ),
     }
     if selector is not None and selector_path is not None:
+        combined_selection_counts = closed_selection_counts + open_selection_counts
+        closed_selection_summary = _review_selection_summary(closed_selection_counts)
+        open_selection_summary = _review_selection_summary(open_selection_counts)
+        combined_selection_summary = _review_selection_summary(combined_selection_counts)
+        projected_candidate_deficit = max(
+            0,
+            minimum_candidates - closed_review_candidates - open_review_candidates,
+        )
+        unstable_source_sessions = len(sources) - stable_sources
+        invalid_json_lines = int(all_source_counts["invalid_json"])
+        source_health = "HEALTHY"
+        if unstable_source_sessions or invalid_json_lines or combined_selection_summary["selector_accounting_gap"]:
+            source_health = "ATTENTION"
+        if source_health != "HEALTHY":
+            shortfall_classification = "PIPELINE_INPUT_ATTENTION"
+        elif candidate_deficit == 0:
+            shortfall_classification = "MINIMUM_REACHED"
+        elif projected_candidate_deficit == 0:
+            shortfall_classification = "WAITING_FOR_OPEN_SOURCE_CLOSURE"
+        else:
+            shortfall_classification = "FIXED_SELECTOR_CANDIDATE_SCARCITY"
         result["selector"] = {
             "path": str(selector_path.resolve()),
             "sha256": str(selector_sha256).casefold(),
@@ -364,6 +422,20 @@ def measure_readiness(
             "closed_review_query_candidates": candidate_deficit,
             "closed_source_sessions": closed_session_deficit,
             "additional_distinct_sessions_even_if_current_sources_close": (distinct_session_deficit),
+        }
+        result["selection_diagnostics"] = {
+            "source_health": source_health,
+            "unstable_source_sessions": unstable_source_sessions,
+            "invalid_json_lines": invalid_json_lines,
+            "closed_sources": closed_selection_summary,
+            "open_sources": open_selection_summary,
+            "combined_stable_sources": combined_selection_summary,
+            "projected_closed_review_candidate_deficit_if_open_sources_close": (projected_candidate_deficit),
+            "candidate_shortfall_classification": shortfall_classification,
+            "claim_boundary": (
+                "Count-only selector accounting. It does not expose query text or identities, "
+                "alter the frozen selector, lower minimums, close sources, or authorize training."
+            ),
         }
         result["claim_boundary"] = (
             "Readiness telemetry only. The hash-pinned review selector is applied in memory, but open source "

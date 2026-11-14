@@ -883,5 +883,32 @@ and worker PID `6832`; these PIDs are launch evidence, not durable identities.
 The monitor polls every 600 seconds and remains telemetry-only. Its config,
 current status, bounded log, and launch receipt live under
 `C:/dev/clay-training-runs/prime-token-catalog-20261106/prospective-query-readiness-v2-20261113/`.
+
+## Count-only selector accounting — 2026-11-13
+
+The v2 watcher now aggregates its existing per-source selector reasons without
+retaining query text or normalized identities. Every collector-eligible turn
+must be accounted for as a review candidate, an exact review duplicate, or a
+named rejection under the hash-pinned selector. A nonzero accounting gap,
+malformed JSON, or an unstable source changes source health to `ATTENTION`;
+none changes the frozen selector, its minimums, or any training authority.
+
+The first independent diagnostic pass measured:
+
+- 194 collector-eligible unique turns and 194 selector-accounted turns;
+- 14 projected review candidates: four closed and ten still open;
+- 180 fixed-policy rejections: 143 for topic and 37 for length;
+- zero selector-accounting gap, zero invalid JSON lines, and zero unstable
+  sources;
+- `HEALTHY` source handling with
+  `FIXED_SELECTOR_CANDIDATE_SCARCITY` as the shortfall classification;
+- a projected deficit of 16 even if the current open source closes.
+
+This proves the current wait is material candidate scarcity under the frozen
+policy, not an observed collector crash or unexplained accounting loss. It does
+not prove that rejected turns are bad data, and it does not justify broadening
+topics after seeing the result. The count-only receipt is
+`QUERY_READINESS_DIAGNOSTIC.json` with SHA-256
+`05da8b583a9e6be0c59cfe1f774bf5eb6c45bd9918f949db69adfb7a63580e0f`.
 The launch receipt SHA-256 is
 `4f2009dce64752c889b522ed1b67b4ecd3ee1158b96ccc23bf5dae912089606c`.
