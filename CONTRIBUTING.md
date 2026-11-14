@@ -15,8 +15,8 @@ Thank you for your interest in contributing to SCBE-AETHERMOORE! This document p
 
 ### Prerequisites
 
-- **Node.js**: >= 18.0.0
-- **Python**: >= 3.9
+- **Node.js**: >= 20.19.0
+- **Python**: >= 3.11
 - **Git**: Latest version
 - **npm**: Comes with Node.js
 
