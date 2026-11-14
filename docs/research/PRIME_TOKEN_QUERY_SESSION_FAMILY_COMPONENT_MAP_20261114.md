@@ -110,11 +110,11 @@ evidence, not a capability result.
 Implemented paths:
 
 - `python/scbe/prime_token_query_family_components.py`
-  (`8e65188f93fef41635daf301481de33f929f8c0d87ec70d3c2980def8ee643f2`)
+  (`c3750f9dfe37603660a3363e24285e5e0a6c310cf8c9e1e75fd96d6fe7e0a2cd`)
 - `scripts/tokenizer/audit_prime_query_family_components.py`
-  (`1ebcecd69b473c472739c4e02e12092a34320312c657a804b875a41b5b749a18`)
+  (`402eaa01c6b0e4fec6cd2eea01e2d1521854e65c209430ef1c2c0a8c30896442`)
 - `tests/tokenizer/test_prime_token_query_family_components.py`
-  (`aa9a53b9d4941a8e297755313ddf8ebb892b5b9dc639aa0bbd54352cb46f8d70`)
+  (`4107a5756e3da85560099ba93c605d10f3628c4d3be38f3868a47685b77b0cf7`)
 - `docs/research/SYSTEM_INVENTORY_20261114_PRIME_QUERY_SESSION_GATE.json`
   (`0276f7af90bd80c0c27c430694c6973850519148c84d3e4bab7205917e2c3215`)
 
