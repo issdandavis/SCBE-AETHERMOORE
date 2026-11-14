@@ -1,0 +1,1250 @@
+{
+  "decisions": [
+    {
+      "content_sha256": "108a7213363f0556bb029ad575be3062f3a4311451f7694517e35a83ee231cd8",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0000",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "d112d06b578f9f8bef215e1287bf3840a36b493ee54f1d42e1c6c7bd49df1c9b",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0001",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "14b3bbdf5dd8c07de4275fef534c48e02da505e7a6a9ff0ec36ad8fc94ec3e96",
+      "decision": "REJECT",
+      "id": "text-python-cpython-controlflow:ordinary:0002",
+      "lane": "ordinary",
+      "reason_codes": [
+        "INCOMPLETE_CONTEXT"
+      ],
+      "review_note": "Future chapter reference provides little standalone programming content."
+    },
+    {
+      "content_sha256": "030766807e52affb284dacc669fbad71accf275e5c997ea80519819539efcac5",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0003",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "a8c4e7bf0923882f80e43ece9f58a783ada381db7ec824f839106dbe5a056078",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0004",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "c9ec96df1c02284f41786d58a4b19f225da31d3f467dba77140382dfe1bd5181",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0005",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "24a23d59ff94c5f31fda2a4988b5fe7ed6f9ebefe888c05562a4de9ada7ad84c",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0006",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "bf7da6896aa23b5887a98b36fef921b758fd4b76ef287b4fe3a17ffc967fab2c",
+      "decision": "REJECT",
+      "id": "text-python-cpython-controlflow:ordinary:0007",
+      "lane": "ordinary",
+      "reason_codes": [
+        "INCOMPLETE_CONTEXT"
+      ],
+      "review_note": "The pronoun lacks the preceding else-clause referent."
+    },
+    {
+      "content_sha256": "4defc554ae465b640f6a004c5af8360f7c7ef0153c9c60402178664571ca8b3a",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0008",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "681505240ff619ad881e3d20dd2d71e1fe7da63b8a94d64a36dc2c2025eea81b",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0009",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "6a29534747ea6afb8de7153cee15675111fa6d89a81d96b83c42c5416e95cfa0",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0010",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "688ae385f21e19c1bdc285e060fb367dd1fc300d504703efd3308d1ac72e465e",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0011",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "fc3135b1474dbc3feb33ced89ada8a898268d3485787767a3dfa3d5f24b9c737",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0012",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "49c81136084e27fac1781f62e5060f09dd25ed63fa4d430ff6e5ffdcf46f7f23",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0013",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "0cbcc94151261246ec687589d39fd75964635d41e9c1f80a9b6b837968b93ce2",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0014",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "49aa5fafde96503885109c5e8be70212ef133b88d1d3570f82e1f77d40788173",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0015",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "c8b72cd543533d50bc296d01519ed930bafa2dfbc8bf2a0280d7ca13c6a4a82b",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0016",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "48b4240e7478bb6b2bb941da4ed1402548d4a32a99ee0b1dd13e116ac23e98cc",
+      "decision": "REJECT",
+      "id": "text-python-cpython-controlflow:ordinary:0017",
+      "lane": "ordinary",
+      "reason_codes": [
+        "INCOMPLETE_CONTEXT"
+      ],
+      "review_note": "Announces a Fibonacci-list implementation but omits the function and its logic."
+    },
+    {
+      "content_sha256": "74d22a0b56f46bdc115f4387e68c9a20ae2fa4d8f3a67a8697be7ebbc080617e",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0018",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "7ca4f2cbc6e82889fc8280365f459791bce4c754c4ee71fdc13e7e0492f67266",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0019",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "04138c9f57c497332aebe2c50eaba7492f5e5992d1ff843cdf25c595e23fef5a",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0020",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "77459b419bfe9610a10d1bf9bea21ca66db5b3dec7071c8302824ed2a0d11e35",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0021",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "4963ef4c0bf5e810e1e838f3bebcf2b4e4a7fbe361f43e14905f774377540efa",
+      "decision": "REJECT",
+      "id": "text-python-cpython-controlflow:ordinary:0022",
+      "lane": "ordinary",
+      "reason_codes": [
+        "INCOMPLETE_CONTEXT"
+      ],
+      "review_note": "Refers to a shared default and replacement function that are not included."
+    },
+    {
+      "content_sha256": "d85fe59682576ffc2f99f3b72f9a5aae74318d25c57dc2bb9e4b4e469f26a732",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0023",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "0b07e2e9155872479e3bca364d0b616ec795dc9b06d6918a95af0e0dccbdcd4a",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0024",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "1970470c7563624f0b67d58a8d55f68b04d2d3d3aed675aa85a65986356326af",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0025",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "186271c411a8ba8a3cd376969910e3b0ea2e08de7b4351bfe1d301d0a564e17f",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0026",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "ad5c2cdd599468668e6f075abc06ad4265693ea2cc9c5b2878e8acefc63c7497",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0027",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "8e60ed795d3bd6f413bf3cca89488b01273ad4b98d2ad83e604ee19ee69a89a4",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0028",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "35c9e61fe29ad6b12df7a9077a2dab9e9374a62dbc4afec82cf9978eaf7869e7",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0029",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "ba7bcf5232a694aab998ef5c36471813cb3167922cfcd6967c8edcdaa1a17679",
+      "decision": "REJECT",
+      "id": "text-python-cpython-controlflow:ordinary:0030",
+      "lane": "ordinary",
+      "reason_codes": [
+        "OTHER_REVIEWED_REJECTION"
+      ],
+      "review_note": "Output-only transcript lacks substantive programming or control-flow semantics."
+    },
+    {
+      "content_sha256": "de7447ae16b1e30ef200f67d3bd5ee7acd7105d67ed693a9d2cc8f9b4045bbf8",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0031",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "5a8e7686e24bd499f7143b8d1c51af6e2091947167572c61cb70f23d33a8005c",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0032",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "0f9bc83809a4e5709210b23ed494c48e7cd304ca6fbdb83ea7ce11765e02bf6f",
+      "decision": "REJECT",
+      "id": "text-python-cpython-controlflow:ordinary:0033",
+      "lane": "ordinary",
+      "reason_codes": [
+        "INCOMPLETE_CONTEXT"
+      ],
+      "review_note": "Explains symbols from an omitted function-signature form."
+    },
+    {
+      "content_sha256": "ca5a37c0ff5781aaedd09fe1ce20736bbc5b39fa4414613f596f09a3eab9bdb4",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0034",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "8cdc039968ff76ae83c010e8f16fdd493362e1ea0df2151f611df2d17f11a471",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0035",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "4d89d3c8821103a9c8453315309bd5c01b0b4b2205dfcf5b0671505fe0d5e7a5",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0036",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "96b43d046fda5b0550a7bf2c9814aecb7f96f56fd3bcfab58d93ed9deb3158a8",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0037",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "c6ab3775300750a3f86a89d5ca35054ea4a3952cab93a1eef91956000188bf05",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0038",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "034ea6ec742289bcd890004970e69f1af7a8700d341679fd4e5186e427b6610b",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0039",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "18b694022c42177d461a19b49f769c9003dea54efaf2b084136f661f67d7d42b",
+      "decision": "REJECT",
+      "id": "text-python-cpython-controlflow:ordinary:0040",
+      "lane": "ordinary",
+      "reason_codes": [
+        "INCOMPLETE_CONTEXT"
+      ],
+      "review_note": "References an absent final definition without explaining the conventions."
+    },
+    {
+      "content_sha256": "e0527341ed9def996ebc396f78a3718a948cc3a871d1c15760e9025a7992506e",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0041",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "d8c211aafeb302ed8a76f57186ea538fbd4a533ebbfa9f92c00bdccc423e4035",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0042",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "738a5400373dc165a1709c6c8cd9370ea1ccc88045ddad762b0f609a81936877",
+      "decision": "REJECT",
+      "id": "text-python-cpython-controlflow:ordinary:0043",
+      "lane": "ordinary",
+      "reason_codes": [
+        "INCOMPLETE_CONTEXT"
+      ],
+      "review_note": "The claimed binding behavior depends on an omitted function definition."
+    },
+    {
+      "content_sha256": "f91478127adc22a270ae569005c6b12e3d6dd635d69fb6c160230d09e509a9be",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0044",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "d9aebfed57bd46e372fcf551bd6207b2cb8f422162a96c74d42e5a53d58ab9a0",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0045",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "4c5b55683b36174323c2608c6d4a8ad6f351ba00690c70621fcf09122981f1be",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0046",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "3f774cb0742e6875d29425dac1eb4281b79784e0d9a5ae3c99dac5a6d999a98c",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0047",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "d581699b090877f46d6e97c0ca9e12facf054970c1c0b890fe1478c6a6e5bff4",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0048",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "addac66cf8aace6b049ded5fb132e1275d198fa29fbd080295b9ed177ae46f26",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0049",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "4807485bf52f58b118f4c2d333340cf18915652aa7aedf6b7f9ecab58ef9db35",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0050",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "3f2825101d4db6a9d01d21ab46fdf7ad4374e8008d801a66fd0b33e544099851",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0051",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "12d7d7bef0371a648b256ff8657f2308d564eb79d1a03166bc64a01d8d4bed15",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0052",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "0bbc78b8d09278cf86d85059126b0a3bb11b282aaf8a0efc21fcb74fe7da84e3",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0053",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "be3649c064e9a39ffa7a400a7dd6c2d5e0cfa0235f84c57bdc34eb7891c02788",
+      "decision": "ADMIT",
+      "id": "text-python-cpython-controlflow:ordinary:0054",
+      "lane": "ordinary",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "7059a21622b71317704973972d7258eabb9f1c8756b9296e66f71a84f141f924",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0000",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "ef1ef1bcf5939de7e0ebc4576a4ff0d88c17ebb23105ad49867e0847f7d54a32",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0001",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "062027167473842f0c15a41497090dab6703591a96d45e1f4871c18f5f64d1e0",
+      "decision": "REJECT",
+      "id": "text-rust-lang-book-control-flow:retention:0002",
+      "lane": "retention",
+      "reason_codes": [
+        "INCOMPLETE_CONTEXT"
+      ],
+      "review_note": "Setup instruction depends on omitted code."
+    },
+    {
+      "content_sha256": "c6bc903ed57e354cbe52acb179b24e353ac421eb71a8f0232525b130aa192517",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0003",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "7e4239be33f91466b8306468a3b09d1487787a8a9afe37fc34fdfb3d27502753",
+      "decision": "REJECT",
+      "id": "text-rust-lang-book-control-flow:retention:0004",
+      "lane": "retention",
+      "reason_codes": [
+        "INCOMPLETE_CONTEXT"
+      ],
+      "review_note": "Experiment prompt depends on omitted code."
+    },
+    {
+      "content_sha256": "405284fa3327d32401edb2e821e0a9945ddde4cfbdb5f81c3ed5cdbe7e29059d",
+      "decision": "REJECT",
+      "id": "text-rust-lang-book-control-flow:retention:0005",
+      "lane": "retention",
+      "reason_codes": [
+        "MARKUP_ONLY"
+      ],
+      "review_note": "Code fence contains only an include directive."
+    },
+    {
+      "content_sha256": "fef594834f0ace433436a2313ed0af2553725be905a448773def37dece38bfff",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0006",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "78524590a867ccf1aa3a66dfd4ce5518e9a4ec51cbeba2d9d28f2a1a06b6dae6",
+      "decision": "REJECT",
+      "id": "text-rust-lang-book-control-flow:retention:0007",
+      "lane": "retention",
+      "reason_codes": [
+        "MARKUP_ONLY"
+      ],
+      "review_note": "Code fence contains only an include directive."
+    },
+    {
+      "content_sha256": "9f86893fb64851b0379589b3a63e31512137b68738a479a3e06363bad8d0a646",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0008",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "7ed1fe4f72b58da0ffb7aa06b53026c3b45a6f64e1b357009c5bcceef3fd9239",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0009",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "0d713664e273a562e5f68ae6afe09ed99584d799832a475c245f905f77190ef7",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0010",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "6f5f9abc6b78429603b36020a746f10604ce7cd12fa984db68b8a437959b17e6",
+      "decision": "REJECT",
+      "id": "text-rust-lang-book-control-flow:retention:0011",
+      "lane": "retention",
+      "reason_codes": [
+        "INCOMPLETE_CONTEXT"
+      ],
+      "review_note": "References an omitted program and output."
+    },
+    {
+      "content_sha256": "87988e9c8701d0e88d8cabeb22fe4a0f9b6a6643bb69d6e520bc4ba4d763175b",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0012",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "da5c772205b97295a2f1a7804dbaeaedc80d6d15b6d02ce8ccd0554e0def4d50",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0013",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "7c2c6cc27d6d45fa7da3dd8715233a9b40eda296e1df907d030d8a2feecdab28",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0014",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "89d76ff3517e6c6131ad70a59421e9596516a35731b3d7e4d63b805aa34f63bd",
+      "decision": "REJECT",
+      "id": "text-rust-lang-book-control-flow:retention:0015",
+      "lane": "retention",
+      "reason_codes": [
+        "MARKUP_ONLY"
+      ],
+      "review_note": "Listing metadata without code or explanatory prose."
+    },
+    {
+      "content_sha256": "f7a79e7afe2f055102383f71904b846eb2e6e7262a7a637818df5460aa34195f",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0016",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "483433d15b3193dc0b0e351662b1aea48bf12fb921696dbc8cc1e871c6fc616b",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0017",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "6d1f8669f91ce6cc9723d6009ac432a410d9b250f4fbe296016b2fc6dc937878",
+      "decision": "REJECT",
+      "id": "text-rust-lang-book-control-flow:retention:0018",
+      "lane": "retention",
+      "reason_codes": [
+        "MARKUP_ONLY"
+      ],
+      "review_note": "Code fence contains only an include directive."
+    },
+    {
+      "content_sha256": "08516f4df2add2f2e30ec401be47236688c83b62522bea8da7b9f4a102651724",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0019",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "299e2d995699d64785e757080c5a487877ffb8f45ef8274f1985bfe70c0d0326",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0020",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "b1f0450f3d78e23553f704cf679d0f6ebd9657ce1f13cfa369b932eeac58c901",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0021",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "7fc7b9294766bc15073f4a3e081e553c8088445ca5f0997acd36c1b3d2b52f4c",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0022",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "cf187c24fbef038881d7e046f68ffb5b6c95f6cd3792a22f240e7e912ae2f7bf",
+      "decision": "REJECT",
+      "id": "text-rust-lang-book-control-flow:retention:0023",
+      "lane": "retention",
+      "reason_codes": [
+        "INCOMPLETE_CONTEXT"
+      ],
+      "review_note": "File-edit instruction depends on omitted code."
+    },
+    {
+      "content_sha256": "5f8ec147692e0729e5d4b6f810207f33010c7c44c81f0cd3bbd03f2a32b12276",
+      "decision": "REJECT",
+      "id": "text-rust-lang-book-control-flow:retention:0024",
+      "lane": "retention",
+      "reason_codes": [
+        "MARKUP_ONLY"
+      ],
+      "review_note": "Code fence contains only an include directive."
+    },
+    {
+      "content_sha256": "5c12bdb0eacc4bb20a0645621816fb01568ecc3213d74a6bb59b48fa939fe207",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0025",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "441233681782b1621e5765ec99d0bc77777b7f01072f01da95472a109f2972ec",
+      "decision": "REJECT",
+      "id": "text-rust-lang-book-control-flow:retention:0026",
+      "lane": "retention",
+      "reason_codes": [
+        "OTHER_REVIEWED_REJECTION"
+      ],
+      "review_note": "Build transcript and repeated output contain no substantive prose or code."
+    },
+    {
+      "content_sha256": "f4efc05e367cbe63112eb2362bd990182896eb58e07dade54208bf2dd0ebac8e",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0027",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "10d6b974e4b1f380f48096c39710204de10beb3cb8e364f3015b2a95925427cf",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0028",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "ca51dbdd944f8a2f2517614b8af422e965490f75a02a8c0c27793a3d8d80c477",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0029",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "bbcfe95026a73bdf9ea623454f188f69375b0551d4b46285a2b75330f401d825",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0030",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "33dfbdd3a6ce1be1a77da834b2c2cc5272cc73010f30aaa845415d687435f243",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0031",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "fa57a44e572e6547ad0945a0f61f7105245a1c6a68141fb7ab2725cd1a1ed203",
+      "decision": "REJECT",
+      "id": "text-rust-lang-book-control-flow:retention:0032",
+      "lane": "retention",
+      "reason_codes": [
+        "MARKUP_ONLY"
+      ],
+      "review_note": "HTML comment and anchor only."
+    },
+    {
+      "content_sha256": "c6dd4e2de6ca62e539723234e38d4dcad9639875d38935bc74c87a13febed9ed",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0033",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "a0de6e917fcf69d514cdbb20a4a827e44f268429f60e84435d985f7bb51f56ac",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0034",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "28aef7d1fff50cb21e8de3d7c62020df038d972465f16e4eef00d0cb4fad3242",
+      "decision": "REJECT",
+      "id": "text-rust-lang-book-control-flow:retention:0035",
+      "lane": "retention",
+      "reason_codes": [
+        "MARKUP_ONLY"
+      ],
+      "review_note": "HTML comment and anchor only."
+    },
+    {
+      "content_sha256": "1ad69da2c3264eb7069ebb421fe6e2d9d00e2c2e14668bab3fb9973acd5a1053",
+      "decision": "REJECT",
+      "id": "text-rust-lang-book-control-flow:retention:0036",
+      "lane": "retention",
+      "reason_codes": [
+        "MARKUP_ONLY"
+      ],
+      "review_note": "Listing metadata without code or explanatory prose."
+    },
+    {
+      "content_sha256": "d40db2431883e6211c3ba4e9e15610b2d2557a46d0c766e9471694985087ee13",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0037",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "dda59793638d982a378d13c21f4f1fff225cb1688b8b3cc6298ddf587f50e194",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0038",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "f368c7a33925ae58c5d71d535b2d9ea701d67439d7bb3995d3b7e88c2a59b949",
+      "decision": "REJECT",
+      "id": "text-rust-lang-book-control-flow:retention:0039",
+      "lane": "retention",
+      "reason_codes": [
+        "MARKUP_ONLY"
+      ],
+      "review_note": "Listing metadata without code or explanatory prose."
+    },
+    {
+      "content_sha256": "37005eca1d03c7bf8420247ff768f6150f120fdb340de7d48e0b8f7d3f3679f3",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0040",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "5c846fd0d5a6bf44ce8035a6974fc6cda78fd907ab11249358002fe40a1d41ba",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0041",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "a2c175b148fe10a2a6aa585983925b9921ebf29c6d3d8940b6219ceb1715d6fc",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0042",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "e73cb4407089b934bda93054783a3aea4832b36e09206dc31851f84cc1e3d988",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0043",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "3e8cfd463dc595a68ee2f8c55816076f0a7e0ca610a80c0316eb418309fb6365",
+      "decision": "REJECT",
+      "id": "text-rust-lang-book-control-flow:retention:0044",
+      "lane": "retention",
+      "reason_codes": [
+        "MARKUP_ONLY"
+      ],
+      "review_note": "Listing metadata without code or explanatory prose."
+    },
+    {
+      "content_sha256": "605c5d5504266745de029bd4bc96791cc56bf0ed5c148bd55d1f6be18660bc09",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0045",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "ca605252ce152e579d74eac7687d84a1418ecb968d8f139799c04b552a16e458",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0046",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "ecbc1eeaa94973d0cf6beceab1e420acb0c0a7be01ba0e24b6e0ddc2287c6fb8",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0047",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "9867dc6deaf6dbe1bfa96f4e748dc38f219bbc7586c17c63a9ca7bfe5ef28df5",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0048",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "747113b4b1f3cc034a5b76c7f9f188975557493dcdaa6175cc2b7d3e8f8052ef",
+      "decision": "ADMIT",
+      "id": "text-rust-lang-book-control-flow:retention:0049",
+      "lane": "retention",
+      "reason_codes": [
+        "LANE_ROLE_APPROPRIATE",
+        "LICENSE_RECEIPT_VERIFIED",
+        "SOURCE_PROVENANCE_VERIFIED",
+        "SUBSTANTIVE_CONTROL_TEXT"
+      ]
+    },
+    {
+      "content_sha256": "ae4ea2e05e0c30aacdb0d4ca3e4dc92b8377bb7002d143c720a6843519087897",
+      "decision": "REJECT",
+      "id": "text-rust-lang-book-control-flow:retention:0050",
+      "lane": "retention",
+      "reason_codes": [
+        "WRONG_LANE"
+      ],
+      "review_note": "Generic exercise list lacks substantive control-flow content."
+    },
+    {
+      "content_sha256": "ef0fb58735467acdea5cc4f294754d50ab5ab639fdff0f7f7fcbcffba193a369",
+      "decision": "REJECT",
+      "id": "text-rust-lang-book-control-flow:retention:0051",
+      "lane": "retention",
+      "reason_codes": [
+        "WRONG_LANE"
+      ],
+      "review_note": "Transition to ownership is outside the control-flow lane."
+    }
+  ],
+  "review_packet_records": 107,
+  "review_packet_sha256": "e718ec2b2fd98f0f1c5d0f7b64b6f6f985d8772e4a59da0d0f2ed0379656a7da",
+  "reviewer": {
+    "evidence_boundary": "THREAD_IDS_DECLARED_NOT_AUTHENTICATED",
+    "id": "semantic-review-reconciliation-20261114",
+    "role": "two-independent-lane-reviewers-plus-main-agent-reconciliation",
+    "separation": "DECLARED_SEPARATE_REVIEW_SESSIONS",
+    "ordinary_review_thread": "01a1db56-a8c9-7c30-a42d-44d4ab19c031",
+    "retention_review_thread": "01a1db56-a8b2-7941-a10f-c0ec4c5dbcfa",
+    "reconciliation": "Main agent inspected all 107 rows and added one conservative incomplete-context rejection."
+  },
+  "schema": "scbe.prime-token-packet-free-review-decisions.v1"
+}
