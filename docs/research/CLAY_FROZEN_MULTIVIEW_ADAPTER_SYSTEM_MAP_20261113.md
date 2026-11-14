@@ -395,6 +395,21 @@ material manifest, and final storage accounting remain required. MBPP was
 deliberately excluded because its local immutable registry marks it permanent
 zero-training and tokenizer-ineligible.
 
+The four lanes were then materialized as a deliberately non-launchable candidate
+bundle. `CLAY_FROZEN_ACTION_CANDIDATE_BUNDLE_20261114.json`, SHA-256
+`8b413d5cd0a6202b2aff15e0147291ac31386d30565992bd8e851001925e5b63`,
+binds `7,165` GSM8K train actions, `999` SVAMP held actions, `55` CPython
+ordinary controls, and `52` Rust Book retention controls to `8,271` exact source
+authorities. The parent-boundary check excluded `210` otherwise accepted GSM8K
+rows whose compiled sequence would exceed 512 tokens; no SVAMP row overflowed.
+Independent file/authority replay passed, and the real campaign loader rejected
+the candidate manifest with `action dataset schema changed`, as required. All
+rows remain `NOT_REVIEWED`, `training_eligible=false`, and the candidate schema
+is not the material campaign schema. The complete bundle uses `11,745,382`
+bytes; the compact storage receipt still reports `2,805,350,400` bytes above the
+fixed floor after creation. Result/replay growth and a positive recovery margin
+remain unmeasured, so this closes preparation work only and authorizes no launch.
+
 The next model-level sieve trial must remain a separately preregistered child of
 the completed campaign. It should attach a fixed-width centroid/trit summary at
 the existing causal input-access seam and compare ordinary/no-intervention,

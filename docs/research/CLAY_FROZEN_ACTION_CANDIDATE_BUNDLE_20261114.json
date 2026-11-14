@@ -1,0 +1,111 @@
+{
+  "schema": "clay.frozen-action-candidate-bundle-audit.v1",
+  "status": "COMPLETE_NOT_ADMITTED",
+  "authority": {
+    "dataset_admission": "NONE",
+    "launch": "NONE",
+    "material_evidence": "NONE",
+    "partial_unfreeze": "NONE",
+    "promotion": "NONE",
+    "tool_dispatch": "DISABLED"
+  },
+  "builder": {
+    "commit": "f6fdb7f9beb45fe1cdcfdb4dc92ee5b86f8013b3",
+    "path": "scripts/research/build_frozen_action_candidate_bundle.py",
+    "sha256": "5980c3ff08ba7ed168745ad5bdc994772de193c29d11cc7b7c96e4e6ae315cfe",
+    "test_path": "tests/research/test_build_frozen_action_candidate_bundle.py",
+    "test_sha256": "ba11f938ff9cebf6147c8485b51fe6e35a3839f002a18d93776865f6f578bfdd",
+    "focused_tests": "3 passed",
+    "ruff": "PASS"
+  },
+  "inputs": {
+    "source_audit_receipt_sha256": "9f270d1103c54b5dd4efc07fa31090c46d5b32135880485f1dc39e47e8b5c856",
+    "math_audit_ledger_sha256": "a62b1364a04ec0c50b1280d22cac63e270eb110c50a2a79f154ffe8f0a84cd02",
+    "text_audit_ledger_sha256": "7f63e612304b8516111ef4c5896aed99f7e34a07d3e902e357b632e50385f618",
+    "frozen_parent_block_size": 512
+  },
+  "bundle": {
+    "root": "C:\\dev\\clay-training-runs\\source-audits\\frozen-action-material-candidate-20261114",
+    "total_bytes": 11745382,
+    "file_count": 7,
+    "build_receipt": {
+      "path": "C:\\dev\\clay-training-runs\\source-audits\\frozen-action-material-candidate-20261114\\BUILD_RECEIPT.json",
+      "bytes": 8562,
+      "sha256": "c1e0069c00f0efe0c96513a3daa020a793f9d882d9275d922d609955543c59bc"
+    },
+    "manifest": {
+      "schema": "clay.full-system-action-dataset-candidate.v1",
+      "accepted_campaign_schema": "clay.full-system-action-dataset.v1",
+      "accepted_by_campaign_loader": false,
+      "path": "C:\\dev\\clay-training-runs\\source-audits\\frozen-action-material-candidate-20261114\\CANDIDATE_MANIFEST.json",
+      "bytes": 1320,
+      "sha256": "bc35be1d1b78c03cf18033e7998e97f835bd03a9e10a21ee1f80883247736e6f",
+      "review_status": "NOT_REVIEWED",
+      "training_authorized": false,
+      "material_evidence_authorized": false
+    },
+    "lanes": {
+      "train": {
+        "source_family": "openai-gsm8k",
+        "records": 7165,
+        "bytes": 5066577,
+        "sha256": "7e14e6b97a9d32a1b509a1aaa613516cd3e4ca485dccd6d5091ae5feefd11a88"
+      },
+      "holdout": {
+        "source_family": "arkilpatel-svamp",
+        "records": 999,
+        "bytes": 685067,
+        "sha256": "66c6118d24c3c398558721940fef3c10146a2dacdf0a7048b27b7767f55dc17c"
+      },
+      "ordinary": {
+        "source_family": "python-cpython-documentation",
+        "records": 55,
+        "bytes": 30835,
+        "sha256": "c84b48a697a9cd00f3f8465037f65876b08f0472c26534a3a234afc269408e0b"
+      },
+      "retention": {
+        "source_family": "rust-lang-book",
+        "records": 52,
+        "bytes": 27844,
+        "sha256": "44944b1858e9eb23c04238565383c45f4da3399b8febd49b13b3ee056edd7f84"
+      }
+    },
+    "source_authorities": {
+      "records": 8271,
+      "bytes": 5925177,
+      "sha256": "23fe34f106d75c016a28ffa059315bfec8f3c2ab82b37bb7c25ae62893c9fef6"
+    }
+  },
+  "filtering": {
+    "accepted_records": 8271,
+    "train_rows_rejected_for_512_token_parent_boundary": 210,
+    "holdout_rows_rejected_for_512_token_parent_boundary": 0
+  },
+  "verification": {
+    "source_family_disjoint": true,
+    "exact_prompt_disjoint": true,
+    "independent_file_and_authority_replay": "PASS",
+    "campaign_loader_candidate_schema_rejection": "PASS",
+    "campaign_loader_error": "action dataset schema changed"
+  },
+  "storage": {
+    "status_receipt_updated_at_utc": "2026-11-14T06:47:31.996618+00:00",
+    "c_free_bytes_after_bundle": 29648896000,
+    "fixed_floor_bytes": 26843545600,
+    "headroom_after_bundle_bytes": 2805350400,
+    "pressure": "HEALTHY",
+    "cloud_enumerated": false,
+    "result_ledger_bytes_measured": false,
+    "independent_replay_bytes_measured": false,
+    "positive_recovery_margin_declared": false,
+    "launch_reserve_complete": false
+  },
+  "remaining_gates": [
+    "review candidate action mappings and all ordinary/retention text rows",
+    "promote only reviewed rows into a new source-authority ledger and accepted material schema",
+    "finish the active frozen-multiview predecessor and its independent replay",
+    "measure result-ledger, independent-replay, checkpoint-growth, and positive-recovery-margin bytes",
+    "preregister the successor controls and fresh seeds before any material launch"
+  ],
+  "claim_boundary": "This receipt proves deterministic construction, exact source-span coverage, disjoint source families, the 512-token fit filter, independent file/authority replay, and deliberate campaign-loader rejection. It is not an admitted dataset, training authorization, model result, promotion, tool-dispatch permission, or partial-unfreeze permission."
+}
