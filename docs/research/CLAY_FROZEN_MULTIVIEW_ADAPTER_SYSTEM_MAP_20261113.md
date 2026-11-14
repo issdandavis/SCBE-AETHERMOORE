@@ -364,7 +364,7 @@ launch, promotion, partial unfreeze, and tool dispatch all remain unauthorized.
 ### Candidate material-source pinning
 
 `CLAY_FROZEN_ACTION_MATH_SOURCE_AUDIT_20261114.json`, SHA-256
-`7a052dfde97a364c5983e78e951da174dd1871704aeb988426ec7a349c7fcdda`,
+`9f270d1103c54b5dd4efc07fa31090c46d5b32135880485f1dc39e47e8b5c856`,
 records a bounded source-preparation pass performed while the predecessor kept
 training. Four independent published-source families are now pinned by
 immutable repository commit, local artifact hash, byte count, and license hash:

@@ -194,9 +194,9 @@
   },
   "text_span_audit": {
     "implementation_path": "scripts/research/audit_frozen_action_text_sources.py",
-    "implementation_sha256": "598ed7e5eefb004896581fe4e9cacbd492270e63879b1fbcadfa7589dceb51cd",
+    "implementation_sha256": "c41dc67ec797abb782d335cfa0a2f63c33a0739dd950c4f3167dfaf97cbce86a",
     "test_path": "tests/research/test_audit_frozen_action_text_sources.py",
-    "test_sha256": "abd6d973a96dd60d6b1059b6027c9cd5421e22841347e3de812eb6c95e2beac9",
+    "test_sha256": "ec5b48bf1564d332eb06f8a87f285a0195e64906e140e53d0fb5153c1bc13f0f",
     "path": "C:\\dev\\clay-training-runs\\source-audits\\frozen-action-math-sources-20261114\\TEXT_SOURCE_SPAN_AUDIT.json",
     "bytes": 2164,
     "sha256": "3dad57c0ab73d7a9a9aeb783dbfd03d584b0cdc010b0d1f01534baed17fd9a01",
