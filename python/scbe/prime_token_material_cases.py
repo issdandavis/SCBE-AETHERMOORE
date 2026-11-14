@@ -25,11 +25,15 @@ from .prime_token_query_harvest import (
     REVIEW_QUEUE_SCHEMA,
     review_queue_sha256,
 )
+from .prime_token_packet_free_authority import (
+    PACKET_FREE_AUTHORITY_SCHEMA,
+    validate_packet_free_rows,
+)
 from .prime_token_training import canonical_sha256, sha256_file
 
 PLAN_SCHEMA = "scbe.prime-token-material-case-plan.v1"
 BUILD_RECEIPT_SCHEMA = "scbe.prime-token-material-case-build.v1"
-SOURCE_MANIFEST_SCHEMA = "scbe.prime-token-material-source-manifest.v1"
+SOURCE_MANIFEST_SCHEMA = "scbe.prime-token-material-source-manifest.v2"
 SPLIT_MANIFEST_SCHEMA = "scbe.prime-token-dual-source-split.v1"
 EVALUATOR_RECEIPT_SCHEMA = "scbe.prime-token-evaluator-receipt.v1"
 CASE_MANIFEST_SCHEMA = "scbe.prime-token-material-cases.v1"
@@ -59,6 +63,13 @@ def _required_sha256(value: object, *, label: str) -> str:
     ):
         raise ValueError(f"{label} must be lowercase SHA-256")
     return digest
+
+
+def _path_key(value: object) -> str:
+    path = Path(_required_text(value, label="source path"))
+    if not path.is_absolute():
+        raise ValueError("source path must be absolute")
+    return str(path.resolve(strict=False)).replace("\\", "/").casefold()
 
 
 def query_session_id(query_source_uri: object) -> str:
@@ -667,50 +678,6 @@ def _validate_benchmark_queue_binding(
             )
 
 
-def _packet_free_rows(
-    path: Path, *, lane: str, max_bytes: int = 512
-) -> list[dict[str, object]]:
-    if max_bytes < 1 or max_bytes > 512:
-        raise ValueError("packet-free byte bound must be in [1,512]")
-    rows = []
-    identities: set[str] = set()
-    for value in _load_jsonl(path):
-        identity = _required_text(value.get("id"), label=f"{lane} identity")
-        if identity in identities:
-            raise ValueError(f"{lane} repeats an identity")
-        identities.add(identity)
-        text = _required_text(value.get("text"), label=f"{lane} text")
-        source_family = _required_text(
-            value.get("source_family"), label=f"{lane} source family"
-        )
-        source_locator = _required_text(
-            value.get("source_locator"), label=f"{lane} source locator"
-        )
-        content_sha256 = _required_text(
-            value.get("content_sha256"), label=f"{lane} content hash"
-        ).casefold()
-        if len(content_sha256) != 64 or any(
-            character not in "0123456789abcdef" for character in content_sha256
-        ):
-            raise ValueError(f"{lane} content hash must be lowercase SHA-256")
-        token_ids = list(text.encode("utf-8")[:max_bytes])
-        if not token_ids:
-            raise ValueError(f"{lane} text produced no byte tokens")
-        rows.append(
-            {
-                "id": identity,
-                "split": lane,
-                "source_family": source_family,
-                "source_locator": source_locator,
-                "content_sha256": content_sha256,
-                "token_ids": token_ids,
-            }
-        )
-    if not rows:
-        raise ValueError(f"{lane} source lane is empty")
-    return rows
-
-
 def _write_json(path: Path, value: object) -> None:
     path.write_text(
         json.dumps(value, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
@@ -736,7 +703,9 @@ def build_material_case_bundle(
     source_queue_path: str | Path,
     closed_source_snapshot_path: str | Path,
     ordinary_source_path: str | Path,
+    ordinary_source_authority_path: str | Path,
     retention_source_path: str | Path,
+    retention_source_authority_path: str | Path,
     output_dir: str | Path,
     minimum_final_test: int = 30,
     maximum_source_fraction: float = 0.40,
@@ -751,7 +720,11 @@ def build_material_case_bundle(
     queue_file = Path(source_queue_path).resolve(strict=True)
     snapshot_file = Path(closed_source_snapshot_path).resolve(strict=True)
     ordinary_file = Path(ordinary_source_path).resolve(strict=True)
+    ordinary_authority_file = Path(ordinary_source_authority_path).resolve(strict=True)
     retention_file = Path(retention_source_path).resolve(strict=True)
+    retention_authority_file = Path(retention_source_authority_path).resolve(
+        strict=True
+    )
     benchmark = _load_json(benchmark_file)
     source_family_audit = _load_json(audit_file)
     queue = _load_json(queue_file)
@@ -771,8 +744,16 @@ def build_material_case_bundle(
         max_query_bytes=max_query_bytes,
         start_token_id=start_token_id,
     )
-    ordinary = _packet_free_rows(ordinary_file, lane="ordinary")
-    retention = _packet_free_rows(retention_file, lane="retention")
+    ordinary, ordinary_authority = validate_packet_free_rows(
+        _load_jsonl(ordinary_file),
+        authority_path=ordinary_authority_file,
+        lane="ordinary",
+    )
+    retention, retention_authority = validate_packet_free_rows(
+        _load_jsonl(retention_file),
+        authority_path=retention_authority_file,
+        lane="retention",
+    )
     material_families = {
         str(row["source_family"]) for lane in LANES for row in plan["lanes"][lane]
     } | {
@@ -784,6 +765,30 @@ def build_material_case_bundle(
         raise ValueError("packet-free lanes overlap material source families")
     if ordinary_families & retention_families:
         raise ValueError("ordinary and retention source families overlap")
+    material_sources = _canonical_sources(source_family_audit)
+    material_paths = {_path_key(row["path"]) for row in material_sources}
+    material_hashes = {str(row["content_sha256"]) for row in material_sources}
+    ordinary_paths = set(ordinary_authority["source_paths"])
+    retention_paths = set(retention_authority["source_paths"])
+    ordinary_hashes = set(ordinary_authority["source_sha256s"])
+    retention_hashes = set(retention_authority["source_sha256s"])
+    ordinary_content_hashes = set(ordinary_authority["content_sha256s"])
+    retention_content_hashes = set(retention_authority["content_sha256s"])
+    material_query_hashes = {
+        str(row["query_sha256"]) for lane in LANES for row in plan["lanes"][lane]
+    }
+    if material_paths & (ordinary_paths | retention_paths):
+        raise ValueError("packet-free lanes reuse a material source path")
+    if material_hashes & (ordinary_hashes | retention_hashes):
+        raise ValueError("packet-free lanes reuse a material source artifact")
+    if ordinary_paths & retention_paths:
+        raise ValueError("ordinary and retention lanes reuse a source path")
+    if ordinary_hashes & retention_hashes:
+        raise ValueError("ordinary and retention lanes reuse a source artifact")
+    if ordinary_content_hashes & retention_content_hashes:
+        raise ValueError("ordinary and retention lanes reuse exact source content")
+    if material_query_hashes & (ordinary_content_hashes | retention_content_hashes):
+        raise ValueError("packet-free lanes reuse a material query")
 
     output = Path(output_dir).resolve()
     pending = output.with_name(f"{output.name}.pending")
@@ -841,8 +846,16 @@ def build_material_case_bundle(
             "closed_source_snapshot_sha256": sha256_file(snapshot_file),
             "ordinary_source": str(ordinary_file),
             "ordinary_source_sha256": sha256_file(ordinary_file),
+            "ordinary_source_authority": str(ordinary_authority_file),
+            "ordinary_source_authority_sha256": sha256_file(ordinary_authority_file),
             "retention_source": str(retention_file),
             "retention_source_sha256": sha256_file(retention_file),
+            "retention_source_authority": str(retention_authority_file),
+            "retention_source_authority_sha256": sha256_file(retention_authority_file),
+            "packet_free_authorities": {
+                "ordinary": ordinary_authority,
+                "retention": retention_authority,
+            },
             "closed_query_sessions": closed_sessions,
             "private_runtime_only": True,
         }
@@ -852,6 +865,8 @@ def build_material_case_bundle(
             "schema": CASE_MANIFEST_SCHEMA,
             "source_disjoint": True,
             "query_session_disjoint": True,
+            "packet_free_source_authority_bound": True,
+            "packet_free_source_authority_schema": PACKET_FREE_AUTHORITY_SCHEMA,
             "max_query_bytes": max_query_bytes,
             "exact_evaluator_receipt_sha256": sha256_file(evaluator_path),
             "exact_source_manifest_sha256": sha256_file(source_manifest_path),
@@ -869,6 +884,10 @@ def build_material_case_bundle(
             "status": "BUILT_NO_TRAINING_AUTHORITY",
             "query_count": plan["query_count"],
             "lane_counts": {lane: len(rows) for lane, rows in lane_rows.items()},
+            "packet_free_family_ids": {
+                "ordinary": ordinary_authority["family_id"],
+                "retention": retention_authority["family_id"],
+            },
             "source_manifest": source_manifest_path.name,
             "source_manifest_sha256": sha256_file(source_manifest_path),
             "split_manifest": split_path.name,

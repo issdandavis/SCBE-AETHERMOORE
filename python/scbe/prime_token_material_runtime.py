@@ -35,6 +35,10 @@ from .prime_token_material_cases import (
     SPLIT_MANIFEST_SCHEMA,
     build_query_input,
 )
+from .prime_token_packet_free_authority import (
+    PACKET_FREE_AUTHORITY_SCHEMA,
+    validate_packet_free_rows,
+)
 from .prime_token_training import (
     PrimeTrainingExample,
     canonical_sha256,
@@ -367,6 +371,12 @@ def build_runtime(config: Mapping[str, Any]) -> dict[str, object]:
         raise ValueError("case manifest is not source-disjoint")
     if cases_manifest.get("query_session_disjoint") is not True:
         raise ValueError("case manifest is not query-session-disjoint")
+    if (
+        cases_manifest.get("packet_free_source_authority_bound") is not True
+        or cases_manifest.get("packet_free_source_authority_schema")
+        != PACKET_FREE_AUTHORITY_SCHEMA
+    ):
+        raise ValueError("case manifest omits packet-free source authority")
     if cases_manifest.get("exact_source_manifest_sha256") != sha256_file(source_path):
         raise RuntimeError("case manifest names another source manifest")
     if cases_manifest.get("exact_split_manifest_sha256") != sha256_file(split_path):
@@ -400,6 +410,23 @@ def build_runtime(config: Mapping[str, Any]) -> dict[str, object]:
         lane: _manifest_lane(cases_path.parent, files[lane], lane=lane)
         for lane in CASE_LANES
     }
+    packet_free_receipts: dict[str, dict[str, object]] = {}
+    for lane in ("ordinary", "retention"):
+        authority_path, _authority = _object_file(
+            source_manifest.get(f"{lane}_source_authority"),
+            source_manifest.get(f"{lane}_source_authority_sha256"),
+            label=f"{lane} source authority",
+        )
+        canonical_rows, authority_receipt = validate_packet_free_rows(
+            lane_rows[lane], authority_path=authority_path, lane=lane
+        )
+        if canonical_rows != lane_rows[lane]:
+            raise RuntimeError(
+                f"{lane} lane differs from its canonical source authority"
+            )
+        packet_free_receipts[lane] = authority_receipt
+    if source_manifest.get("packet_free_authorities") != packet_free_receipts:
+        raise RuntimeError("source manifest packet-free authority receipts differ")
     if (
         not lane_rows["train"]
         or not lane_rows["validation"]
@@ -589,6 +616,32 @@ def build_runtime(config: Mapping[str, Any]) -> dict[str, object]:
         raise ValueError("packet-free lanes overlap material source families")
     if ordinary_source_families & retention_source_families:
         raise ValueError("ordinary and retention source families overlap")
+    material_source_paths = {
+        str(Path(path).resolve(strict=False)).replace("\\", "/").casefold()
+        for path in source_authorities
+    }
+    material_source_hashes = {digest for _family, digest in source_authorities.values()}
+    ordinary_paths = set(packet_free_receipts["ordinary"]["source_paths"])
+    retention_paths = set(packet_free_receipts["retention"]["source_paths"])
+    ordinary_hashes = set(packet_free_receipts["ordinary"]["source_sha256s"])
+    retention_hashes = set(packet_free_receipts["retention"]["source_sha256s"])
+    ordinary_content_hashes = set(packet_free_receipts["ordinary"]["content_sha256s"])
+    retention_content_hashes = set(packet_free_receipts["retention"]["content_sha256s"])
+    material_query_hashes = {
+        str(row["query_sha256"])
+        for lane in ("train", "validation", "final_test")
+        for row in lane_rows[lane]
+    }
+    if material_source_paths & (ordinary_paths | retention_paths):
+        raise ValueError("packet-free lanes reuse a material source path")
+    if material_source_hashes & (ordinary_hashes | retention_hashes):
+        raise ValueError("packet-free lanes reuse a material source artifact")
+    if ordinary_paths & retention_paths or ordinary_hashes & retention_hashes:
+        raise ValueError("ordinary and retention lanes reuse a source authority")
+    if ordinary_content_hashes & retention_content_hashes:
+        raise ValueError("ordinary and retention lanes reuse exact source content")
+    if material_query_hashes & (ordinary_content_hashes | retention_content_hashes):
+        raise ValueError("packet-free lanes reuse a material query")
 
     @torch.no_grad()
     def evaluate(

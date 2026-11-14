@@ -22,7 +22,9 @@ def main() -> int:
     parser.add_argument("--source-queue", required=True, type=Path)
     parser.add_argument("--closed-source-snapshot", required=True, type=Path)
     parser.add_argument("--ordinary-source", required=True, type=Path)
+    parser.add_argument("--ordinary-source-authority", required=True, type=Path)
     parser.add_argument("--retention-source", required=True, type=Path)
+    parser.add_argument("--retention-source-authority", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--minimum-final-test", type=int, default=30)
     parser.add_argument("--maximum-source-fraction", type=float, default=0.40)
@@ -36,7 +38,9 @@ def main() -> int:
         source_queue_path=args.source_queue,
         closed_source_snapshot_path=args.closed_source_snapshot,
         ordinary_source_path=args.ordinary_source,
+        ordinary_source_authority_path=args.ordinary_source_authority,
         retention_source_path=args.retention_source,
+        retention_source_authority_path=args.retention_source_authority,
         output_dir=args.output,
         minimum_final_test=args.minimum_final_test,
         maximum_source_fraction=args.maximum_source_fraction,

@@ -784,6 +784,27 @@ mixed source manifest. The focused producer/runtime suite passes `16/16`, and
 the complete prime-token/release suite passes `120/120`. This is still mechanics
 evidence only and grants no training authority.
 
+### Packet-free source authority correction — 2026-11-14
+
+The original material-case boundary checked ordinary and retention separation
+with caller-supplied `source_family` strings. That was not an authoritative
+source boundary: one artifact could be relabeled and pass the literal set
+comparison. The isolated v2 correction binds each packet-free row to an
+`ADMITTED` authority file, an exact source artifact hash and byte count, and an
+exact UTF-8 byte span. The raw span has its own hash; an allow-listed named
+transform derives the final prompt, which has a second hash. Its family ID is
+derived from the authority-file SHA-256.
+
+Builder and runtime reject overlap by normalized source path or artifact hash,
+not by label alone. Independent replay repeats the source-file, span, transform,
+digest, family, and overlap checks through separate code. The focused synthetic
+suite passes `28/28`, including identity and multiline strip/join
+reconstruction, and the complete tokenizer regression passes `392/392`; no live
+v7 watcher or model state uses this branch yet. Real
+ordinary and retention authority files remain a prerequisite, so optimization,
+promotion, tool dispatch, and partial unfreezing stay unauthorized. Detailed
+map: `docs/research/PRIME_TOKEN_PACKET_FREE_SOURCE_AUTHORITY_20261114.md`.
+
 ## Independent source-derived replay boundary — 2026-11-11
 
 The replay edge no longer accepts `replay_cases` from the material runtime.

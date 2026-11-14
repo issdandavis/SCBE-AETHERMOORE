@@ -1,6 +1,14 @@
 # Prime-token material case boundary — 2026-11-11
 
-Status: `CASE_MECHANICS_TESTED_MATERIAL_DATA_NOT_IMPORTED`
+Status: `CASE_MECHANICS_TESTED_PACKET_FREE_AUTHORITY_V2_MATERIAL_DATA_NOT_IMPORTED`
+
+The 2026-11-14 packet-free authority extension removes one weakness in the
+original mechanics: ordinary and retention family labels are no longer accepted
+as source evidence. Each control row now requires a reviewed, hash-pinned source
+artifact, exact byte span, raw excerpt hash, allow-listed deterministic text
+transform, and final prompt hash. See
+`PRIME_TOKEN_PACKET_FREE_SOURCE_AUTHORITY_20261114.md`. This extension is on an
+isolated branch and is not substituted into the hash-pinned live v7 watchers.
 
 ## Producer boundary
 

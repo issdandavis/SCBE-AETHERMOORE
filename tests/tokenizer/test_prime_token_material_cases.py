@@ -19,6 +19,12 @@ from python.scbe.prime_token_material_cases import (
     plan_material_cases,
     query_session_id,
 )
+from python.scbe.prime_token_packet_free_authority import (
+    IDENTITY_TRANSFORM,
+    NO_AUTHORITY,
+    PACKET_FREE_AUTHORITY_SCHEMA,
+    packet_free_family_id,
+)
 from python.scbe.prime_token_query_harvest import (
     REVIEW_QUEUE_SCHEMA,
     review_queue_sha256,
@@ -30,6 +36,67 @@ SOURCES = {
     "family-b": (r"C:\sources\b-one.py",),
     "family-c": (r"C:\sources\c-one.md",),
 }
+
+
+def _packet_free_fixture(
+    tmp_path: Path,
+    *,
+    lane: str,
+    identity: str,
+    text: str,
+    artifact_prefix: str = "",
+    artifact_suffix: str = "",
+) -> tuple[Path, Path]:
+    source = tmp_path / f"{lane}-artifact.txt"
+    source.write_text(f"{artifact_prefix}{text}{artifact_suffix}", encoding="utf-8", newline="")
+    digest = sha256(text.encode("utf-8")).hexdigest()
+    byte_start = len(artifact_prefix.encode("utf-8"))
+    source_path = tmp_path / f"{lane}-source.jsonl"
+    source_path.write_text(
+        json.dumps(
+            {
+                "id": identity,
+                "text": text,
+                "source_locator": f"fixture://{lane}/1",
+                "content_sha256": digest,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    authority = {
+        "schema": PACKET_FREE_AUTHORITY_SCHEMA,
+        "lane": lane,
+        "review_status": "ADMITTED",
+        "authority": {
+            "training_intake": NO_AUTHORITY,
+            "optimization": NO_AUTHORITY,
+            "promotion": NO_AUTHORITY,
+            "partial_unfreeze": NO_AUTHORITY,
+            "tool_dispatch": NO_AUTHORITY,
+        },
+        "sources": [
+            {
+                "path": str(source.resolve()),
+                "sha256": sha256(source.read_bytes()).hexdigest(),
+                "bytes": source.stat().st_size,
+                "records": [
+                    {
+                        "id": identity,
+                        "source_locator": f"fixture://{lane}/1",
+                        "byte_start": byte_start,
+                        "byte_end": byte_start + len(text.encode("utf-8")),
+                        "excerpt_sha256": digest,
+                        "text_transform": IDENTITY_TRANSFORM,
+                        "content_sha256": digest,
+                    }
+                ],
+            }
+        ],
+    }
+    authority_path = tmp_path / f"{lane}-authority.json"
+    authority_path.write_text(json.dumps(authority), encoding="utf-8")
+    return source_path, authority_path
 
 
 def _audit() -> dict:
@@ -241,37 +308,21 @@ def test_bundle_writer_is_immutable_and_binds_all_runtime_files(
     audit_path = tmp_path / "SOURCE_FAMILY_AUDIT.json"
     queue_path = tmp_path / "SOURCE_QUEUE.json"
     snapshot_path = _snapshot(tmp_path, benchmark)
-    ordinary_path = tmp_path / "ordinary-source.jsonl"
-    retention_path = tmp_path / "retention-source.jsonl"
+    ordinary_path, ordinary_authority_path = _packet_free_fixture(
+        tmp_path,
+        lane="ordinary",
+        identity="ordinary-1",
+        text="ordinary packet-free prompt",
+    )
+    retention_path, retention_authority_path = _packet_free_fixture(
+        tmp_path,
+        lane="retention",
+        identity="retention-1",
+        text="retention packet-free prompt",
+    )
     benchmark_path.write_text(json.dumps(benchmark), encoding="utf-8")
     audit_path.write_text(json.dumps(_audit()), encoding="utf-8")
     queue_path.write_text(json.dumps(_queue(benchmark)), encoding="utf-8")
-    ordinary_path.write_text(
-        json.dumps(
-            {
-                "id": "ordinary-1",
-                "text": "ordinary packet-free prompt",
-                "source_family": "ordinary-family",
-                "source_locator": "fixture://ordinary/1",
-                "content_sha256": "1" * 64,
-            }
-        )
-        + "\n",
-        encoding="utf-8",
-    )
-    retention_path.write_text(
-        json.dumps(
-            {
-                "id": "retention-1",
-                "text": "retention packet-free prompt",
-                "source_family": "retention-family",
-                "source_locator": "fixture://retention/1",
-                "content_sha256": "2" * 64,
-            }
-        )
-        + "\n",
-        encoding="utf-8",
-    )
     output = tmp_path / "bundle"
     receipt = build_material_case_bundle(
         benchmark_path=benchmark_path,
@@ -279,7 +330,9 @@ def test_bundle_writer_is_immutable_and_binds_all_runtime_files(
         source_queue_path=queue_path,
         closed_source_snapshot_path=snapshot_path,
         ordinary_source_path=ordinary_path,
+        ordinary_source_authority_path=ordinary_authority_path,
         retention_source_path=retention_path,
+        retention_source_authority_path=retention_authority_path,
         output_dir=output,
         minimum_final_test=3,
         maximum_source_fraction=1.0,
@@ -292,6 +345,10 @@ def test_bundle_writer_is_immutable_and_binds_all_runtime_files(
         "final_test": 3,
         "ordinary": 1,
         "retention": 1,
+    }
+    assert receipt["packet_free_family_ids"] == {
+        "ordinary": packet_free_family_id(ordinary_authority_path),
+        "retention": packet_free_family_id(retention_authority_path),
     }
     cases = json.loads((output / "CASES_MANIFEST.json").read_text(encoding="utf-8"))
     assert cases["source_disjoint"] is True
@@ -327,7 +384,9 @@ def test_bundle_writer_is_immutable_and_binds_all_runtime_files(
             source_queue_path=queue_path,
             closed_source_snapshot_path=snapshot_path,
             ordinary_source_path=ordinary_path,
+            ordinary_source_authority_path=ordinary_authority_path,
             retention_source_path=retention_path,
+            retention_source_authority_path=retention_authority_path,
             output_dir=output,
             minimum_final_test=3,
             maximum_source_fraction=1.0,
@@ -343,28 +402,24 @@ def test_bundle_writer_rejects_queue_session_absent_from_closed_snapshot(
     audit_path = tmp_path / "SOURCE_FAMILY_AUDIT.json"
     queue_path = tmp_path / "SOURCE_QUEUE.json"
     snapshot_path = _snapshot(tmp_path, benchmark)
-    ordinary_path = tmp_path / "ordinary-source.jsonl"
-    retention_path = tmp_path / "retention-source.jsonl"
+    ordinary_path, ordinary_authority_path = _packet_free_fixture(
+        tmp_path,
+        lane="ordinary",
+        identity="row-1",
+        text="packet-free fixture",
+    )
+    retention_path, retention_authority_path = _packet_free_fixture(
+        tmp_path,
+        lane="retention",
+        identity="row-2",
+        text="different packet-free fixture",
+    )
     benchmark_path.write_text(json.dumps(benchmark), encoding="utf-8")
     audit_path.write_text(json.dumps(_audit()), encoding="utf-8")
     queue_path.write_text(json.dumps(_queue(benchmark)), encoding="utf-8")
     snapshot = json.loads(snapshot_path.read_text(encoding="utf-8"))
     snapshot["sources"].pop()
     snapshot_path.write_text(json.dumps(snapshot), encoding="utf-8")
-    row = {
-        "id": "row-1",
-        "text": "packet-free fixture",
-        "source_locator": "fixture://row/1",
-        "content_sha256": "c" * 64,
-    }
-    ordinary_path.write_text(
-        json.dumps({**row, "source_family": "ordinary-family"}) + "\n",
-        encoding="utf-8",
-    )
-    retention_path.write_text(
-        json.dumps({**row, "id": "row-2", "source_family": "retention-family"}) + "\n",
-        encoding="utf-8",
-    )
     with pytest.raises(ValueError, match="absent from the closed snapshot"):
         build_material_case_bundle(
             benchmark_path=benchmark_path,
@@ -372,7 +427,52 @@ def test_bundle_writer_rejects_queue_session_absent_from_closed_snapshot(
             source_queue_path=queue_path,
             closed_source_snapshot_path=snapshot_path,
             ordinary_source_path=ordinary_path,
+            ordinary_source_authority_path=ordinary_authority_path,
             retention_source_path=retention_path,
+            retention_source_authority_path=retention_authority_path,
+            output_dir=tmp_path / "bundle",
+            minimum_final_test=3,
+            maximum_source_fraction=1.0,
+            maximum_family_fraction=1.0,
+        )
+
+
+def test_bundle_rejects_same_packet_free_content_under_distinct_artifacts(
+    tmp_path: Path,
+) -> None:
+    benchmark = _benchmark(large=False)
+    benchmark_path = tmp_path / "BENCHMARK.json"
+    audit_path = tmp_path / "SOURCE_FAMILY_AUDIT.json"
+    queue_path = tmp_path / "SOURCE_QUEUE.json"
+    snapshot_path = _snapshot(tmp_path, benchmark)
+    benchmark_path.write_text(json.dumps(benchmark), encoding="utf-8")
+    audit_path.write_text(json.dumps(_audit()), encoding="utf-8")
+    queue_path.write_text(json.dumps(_queue(benchmark)), encoding="utf-8")
+    ordinary_path, ordinary_authority_path = _packet_free_fixture(
+        tmp_path,
+        lane="ordinary",
+        identity="ordinary-shared",
+        text="identical source artifact",
+        artifact_prefix="ordinary wrapper\n",
+    )
+    retention_path, retention_authority_path = _packet_free_fixture(
+        tmp_path,
+        lane="retention",
+        identity="retention-shared",
+        text="identical source artifact",
+        artifact_prefix="retention wrapper\n",
+    )
+
+    with pytest.raises(ValueError, match="reuse exact source content"):
+        build_material_case_bundle(
+            benchmark_path=benchmark_path,
+            source_family_audit_path=audit_path,
+            source_queue_path=queue_path,
+            closed_source_snapshot_path=snapshot_path,
+            ordinary_source_path=ordinary_path,
+            ordinary_source_authority_path=ordinary_authority_path,
+            retention_source_path=retention_path,
+            retention_source_authority_path=retention_authority_path,
             output_dir=tmp_path / "bundle",
             minimum_final_test=3,
             maximum_source_fraction=1.0,

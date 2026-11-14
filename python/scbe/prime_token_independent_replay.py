@@ -39,8 +39,11 @@ from .prime_token_training import (
 
 RUNTIME_SCHEMA = "scbe.prime-token-material-runtime.v1"
 BENCHMARK_SCHEMA = "scbe.prime-token-benchmark.v1"
-SOURCE_MANIFEST_SCHEMA = "scbe.prime-token-material-source-manifest.v1"
+SOURCE_MANIFEST_SCHEMA = "scbe.prime-token-material-source-manifest.v2"
 SOURCE_FAMILY_AUDIT_SCHEMA = "scbe.prime-token-source-family-audit.v1"
+PACKET_FREE_AUTHORITY_SCHEMA = "scbe.prime-token-packet-free-source-authority.v1"
+PACKET_FREE_IDENTITY_TRANSFORM = "identity_utf8_v1"
+PACKET_FREE_LINE_JOIN_TRANSFORM = "line_strip_join_space_v1"
 SPLIT_MANIFEST_SCHEMA = "scbe.prime-token-dual-source-split.v1"
 CASE_MANIFEST_SCHEMA = "scbe.prime-token-material-cases.v1"
 EVALUATOR_RECEIPT_SCHEMA = "scbe.prime-token-evaluator-receipt.v1"
@@ -302,6 +305,183 @@ def _source_authorities(audit: Mapping[str, Any]) -> list[dict[str, str]]:
     return rows
 
 
+def _rebuild_packet_free_authority(
+    authority_path: Path,
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    lane: str,
+) -> dict[str, object]:
+    """Independently reconstruct source spans and deterministic prompt transforms."""
+
+    authority = json.loads(authority_path.read_text(encoding="utf-8"))
+    if not isinstance(authority, dict):
+        raise TypeError(f"{lane} source authority must contain one object")
+    if authority.get("schema") != PACKET_FREE_AUTHORITY_SCHEMA:
+        raise ValueError(f"{lane} source authority schema changed")
+    if authority.get("lane") != lane or authority.get("review_status") != "ADMITTED":
+        raise ValueError(f"{lane} source authority is not admitted for this lane")
+    grants = authority.get("authority")
+    required_grants = (
+        "training_intake",
+        "optimization",
+        "promotion",
+        "partial_unfreeze",
+        "tool_dispatch",
+    )
+    if not isinstance(grants, dict) or any(
+        grants.get(field) != "NOT_AUTHORIZED" for field in required_grants
+    ):
+        raise ValueError(
+            f"{lane} source authority grants execution or training authority"
+        )
+    authority_sha256 = _file_sha256(authority_path)
+    family_id = f"packet-free-authority:{authority_sha256}"
+    raw_sources = authority.get("sources")
+    if not isinstance(raw_sources, list) or not raw_sources:
+        raise ValueError(f"{lane} source authority has no source artifacts")
+    records: dict[str, dict[str, object]] = {}
+    paths: set[str] = set()
+    hashes: set[str] = set()
+    locators: set[str] = set()
+    for source in raw_sources:
+        if not isinstance(source, dict):
+            raise TypeError(f"{lane} source artifact must be an object")
+        path_text = _required_text(source.get("path"), label=f"{lane} source path")
+        path = Path(path_text)
+        if not path.is_absolute():
+            raise ValueError(f"{lane} source path must be absolute")
+        path = path.resolve(strict=True)
+        path_key = str(path).replace("\\", "/").casefold()
+        if path_key in paths:
+            raise ValueError(f"{lane} source authority repeats a source path")
+        paths.add(path_key)
+        expected_hash = _required_sha256(
+            source.get("sha256"), label=f"{lane} source hash"
+        )
+        source_bytes = path.read_bytes()
+        if hashlib.sha256(source_bytes).hexdigest() != expected_hash:
+            raise RuntimeError(f"{lane} source artifact hash differs")
+        byte_count = source.get("bytes")
+        if (
+            isinstance(byte_count, bool)
+            or not isinstance(byte_count, int)
+            or byte_count != len(source_bytes)
+        ):
+            raise RuntimeError(f"{lane} source artifact byte count differs")
+        hashes.add(expected_hash)
+        raw_records = source.get("records")
+        if not isinstance(raw_records, list) or not raw_records:
+            raise ValueError(f"{lane} source artifact has no record spans")
+        for record in raw_records:
+            if not isinstance(record, dict):
+                raise TypeError(f"{lane} source record must be an object")
+            identity = _required_text(
+                record.get("id"), label=f"{lane} source record id"
+            )
+            if identity in records:
+                raise ValueError(f"{lane} source authority repeats a record identity")
+            locator = _required_text(
+                record.get("source_locator"), label=f"{lane} source locator"
+            )
+            if locator.casefold() in locators:
+                raise ValueError(f"{lane} source authority repeats a source locator")
+            locators.add(locator.casefold())
+            start = record.get("byte_start")
+            end = record.get("byte_end")
+            if (
+                isinstance(start, bool)
+                or not isinstance(start, int)
+                or isinstance(end, bool)
+                or not isinstance(end, int)
+                or start < 0
+                or end <= start
+                or end > len(source_bytes)
+            ):
+                raise ValueError(f"{lane} source span is empty or out of bounds")
+            span = source_bytes[start:end]
+            try:
+                excerpt = span.decode("utf-8")
+            except UnicodeDecodeError as exc:
+                raise ValueError(f"{lane} source span is not exact UTF-8 text") from exc
+            excerpt_hash = _required_sha256(
+                record.get("excerpt_sha256"),
+                label=f"{lane} source record excerpt hash",
+            )
+            if hashlib.sha256(span).hexdigest() != excerpt_hash:
+                raise RuntimeError(f"{lane} source record excerpt hash differs")
+            text_transform = _required_text(
+                record.get("text_transform"),
+                label=f"{lane} source record text transform",
+            )
+            if text_transform == PACKET_FREE_IDENTITY_TRANSFORM:
+                text = excerpt
+            elif text_transform == PACKET_FREE_LINE_JOIN_TRANSFORM:
+                text = " ".join(
+                    part.strip() for part in excerpt.splitlines() if part.strip()
+                )
+            else:
+                raise ValueError(
+                    f"unsupported packet-free text transform: {text_transform}"
+                )
+            if not text.strip():
+                raise ValueError(f"{lane} source transform produced empty text")
+            content_hash = _required_sha256(
+                record.get("content_sha256"), label=f"{lane} source record content hash"
+            )
+            if hashlib.sha256(text.encode("utf-8")).hexdigest() != content_hash:
+                raise RuntimeError(f"{lane} source record content hash differs")
+            records[identity] = {
+                "text": text,
+                "source_locator": locator,
+                "source_artifact_path": str(path),
+                "source_artifact_sha256": expected_hash,
+                "source_byte_start": start,
+                "source_byte_end": end,
+                "source_excerpt_sha256": excerpt_hash,
+                "text_transform": text_transform,
+                "content_sha256": content_hash,
+            }
+    seen: set[str] = set()
+    for row in rows:
+        identity = _required_text(row.get("id"), label=f"{lane} row id")
+        if identity in seen or identity not in records:
+            raise ValueError(f"{lane} row identity is repeated or unauthorized")
+        seen.add(identity)
+        expected = records[identity]
+        expected_fields = {
+            "split": lane,
+            "text": expected["text"],
+            "source_family": family_id,
+            "source_locator": expected["source_locator"],
+            "source_authority_sha256": authority_sha256,
+            "source_artifact_path": expected["source_artifact_path"],
+            "source_artifact_sha256": expected["source_artifact_sha256"],
+            "source_byte_start": expected["source_byte_start"],
+            "source_byte_end": expected["source_byte_end"],
+            "source_excerpt_sha256": expected["source_excerpt_sha256"],
+            "text_transform": expected["text_transform"],
+            "content_sha256": expected["content_sha256"],
+            "token_ids": list(str(expected["text"]).encode("utf-8")[:512]),
+        }
+        for field, expected_value in expected_fields.items():
+            if row.get(field) != expected_value:
+                raise ValueError(f"{lane} row differs from source authority at {field}")
+    if seen != set(records):
+        raise ValueError(f"{lane} source authority and lane record sets differ")
+    return {
+        "lane": lane,
+        "family_id": family_id,
+        "authority_path": str(authority_path),
+        "authority_sha256": authority_sha256,
+        "record_count": len(rows),
+        "source_paths": sorted(paths),
+        "source_sha256s": sorted(hashes),
+        "content_sha256s": sorted(
+            str(value["content_sha256"]) for value in records.values()
+        ),
+    }
+
+
 def _resolve_source(
     relevant_source_suffix: object,
     authorities: Sequence[Mapping[str, str]],
@@ -403,7 +583,9 @@ def reconstruct_material_replay_cases(config: Mapping[str, Any]) -> dict[str, ob
         "source_queue",
         "closed_source_snapshot",
         "ordinary_source",
+        "ordinary_source_authority",
         "retention_source",
+        "retention_source_authority",
     ):
         pinned[name] = _pinned_path(
             source_manifest.get(name),
@@ -461,6 +643,12 @@ def reconstruct_material_replay_cases(config: Mapping[str, Any]) -> dict[str, ob
         or cases_manifest.get("query_session_disjoint") is not True
     ):
         raise ValueError("case manifest does not declare the dual-source boundary")
+    if (
+        cases_manifest.get("packet_free_source_authority_bound") is not True
+        or cases_manifest.get("packet_free_source_authority_schema")
+        != PACKET_FREE_AUTHORITY_SCHEMA
+    ):
+        raise ValueError("case manifest omits packet-free source authority")
     if cases_manifest.get("exact_source_manifest_sha256") != _file_sha256(source_path):
         raise RuntimeError("case manifest names another source manifest")
     if cases_manifest.get("exact_split_manifest_sha256") != _file_sha256(split_path):
@@ -524,6 +712,40 @@ def reconstruct_material_replay_cases(config: Mapping[str, Any]) -> dict[str, ob
         lane: _manifest_rows(cases_path.parent, files[lane], lane=lane)
         for lane in ALL_CASE_LANES
     }
+    packet_free_receipts = {
+        lane: _rebuild_packet_free_authority(
+            pinned[f"{lane}_source_authority"], lane_rows[lane], lane=lane
+        )
+        for lane in ("ordinary", "retention")
+    }
+    if source_manifest.get("packet_free_authorities") != packet_free_receipts:
+        raise RuntimeError("source manifest packet-free authority receipts differ")
+    material_paths = {
+        str(Path(row["path"]).resolve(strict=False)).replace("\\", "/").casefold()
+        for row in authorities
+    }
+    material_hashes = {row["content_sha256"] for row in authorities}
+    ordinary_paths = set(packet_free_receipts["ordinary"]["source_paths"])
+    retention_paths = set(packet_free_receipts["retention"]["source_paths"])
+    ordinary_hashes = set(packet_free_receipts["ordinary"]["source_sha256s"])
+    retention_hashes = set(packet_free_receipts["retention"]["source_sha256s"])
+    ordinary_content_hashes = set(packet_free_receipts["ordinary"]["content_sha256s"])
+    retention_content_hashes = set(packet_free_receipts["retention"]["content_sha256s"])
+    material_query_hashes = {
+        _required_sha256(row.get("query_sha256"), label="material query hash")
+        for lane in MATERIAL_LANES
+        for row in lane_rows[lane]
+    }
+    if material_paths & (ordinary_paths | retention_paths):
+        raise ValueError("packet-free lanes reuse a material source path")
+    if material_hashes & (ordinary_hashes | retention_hashes):
+        raise ValueError("packet-free lanes reuse a material source artifact")
+    if ordinary_paths & retention_paths or ordinary_hashes & retention_hashes:
+        raise ValueError("ordinary and retention lanes reuse a source authority")
+    if ordinary_content_hashes & retention_content_hashes:
+        raise ValueError("ordinary and retention lanes reuse exact source content")
+    if material_query_hashes & (ordinary_content_hashes | retention_content_hashes):
+        raise ValueError("packet-free lanes reuse a material query")
     max_query_bytes = cases_manifest.get("max_query_bytes")
     if isinstance(max_query_bytes, bool) or not isinstance(max_query_bytes, int):
         raise ValueError("case manifest max_query_bytes is invalid")
@@ -721,6 +943,15 @@ def reconstruct_material_replay_cases(config: Mapping[str, Any]) -> dict[str, ob
         "producer_targets_verified": True,
         "query_inputs_rebuilt_from_benchmark": True,
         "targets_rebuilt_from_source_and_evaluator": True,
+        "packet_free_authorities_rebuilt_from_exact_spans": True,
+        "packet_free_authority_sha256s": {
+            lane: packet_free_receipts[lane]["authority_sha256"]
+            for lane in ("ordinary", "retention")
+        },
+        "packet_free_source_artifact_sha256s": {
+            lane: packet_free_receipts[lane]["source_sha256s"]
+            for lane in ("ordinary", "retention")
+        },
     }
     return {"cases": cases, "receipt": receipt}
 

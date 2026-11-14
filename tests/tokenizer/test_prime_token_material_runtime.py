@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from hashlib import sha256
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -24,6 +25,12 @@ from python.scbe.prime_token_material_cases import (
     SPLIT_MANIFEST_SCHEMA,
 )
 from python.scbe.prime_token_training import sha256_file
+from python.scbe.prime_token_packet_free_authority import (
+    IDENTITY_TRANSFORM,
+    NO_AUTHORITY,
+    PACKET_FREE_AUTHORITY_SCHEMA,
+    validate_packet_free_rows,
+)
 import python.scbe.prime_token_material_runtime as runtime_module
 from scripts.tokenizer.replay_prime_token_input_access import (
     run as run_independent_replay,
@@ -105,6 +112,58 @@ def _source_sha256(family: str) -> str:
     return {"family-train": "a", "family-validation": "b", "family-final": "c"}[family] * 64
 
 
+def _packet_free_authority(
+    tmp_path: Path, *, lane: str, identity: str, text: str
+) -> tuple[list[dict], Path, Path, dict[str, object]]:
+    artifact = tmp_path / f"{lane}-artifact.txt"
+    artifact.write_text(text, encoding="utf-8")
+    digest = sha256(text.encode("utf-8")).hexdigest()
+    raw_row = {
+        "id": identity,
+        "text": text,
+        "source_locator": f"fixture://{lane}/1",
+        "content_sha256": digest,
+    }
+    source = tmp_path / f"{lane}-source.jsonl"
+    _write_jsonl(source, [raw_row])
+    authority = tmp_path / f"{lane}-authority.json"
+    _write_json(
+        authority,
+        {
+            "schema": PACKET_FREE_AUTHORITY_SCHEMA,
+            "lane": lane,
+            "review_status": "ADMITTED",
+            "authority": {
+                "training_intake": NO_AUTHORITY,
+                "optimization": NO_AUTHORITY,
+                "promotion": NO_AUTHORITY,
+                "partial_unfreeze": NO_AUTHORITY,
+                "tool_dispatch": NO_AUTHORITY,
+            },
+            "sources": [
+                {
+                    "path": str(artifact.resolve()),
+                    "sha256": digest,
+                    "bytes": len(text.encode("utf-8")),
+                    "records": [
+                        {
+                            "id": identity,
+                            "source_locator": raw_row["source_locator"],
+                            "byte_start": 0,
+                            "byte_end": len(text.encode("utf-8")),
+                            "excerpt_sha256": digest,
+                            "text_transform": IDENTITY_TRANSFORM,
+                            "content_sha256": digest,
+                        }
+                    ],
+                }
+            ],
+        },
+    )
+    rows, receipt = validate_packet_free_rows([raw_row], authority_path=authority, lane=lane)
+    return rows, source, authority, receipt
+
+
 def _case(
     record_id: str,
     split: str,
@@ -156,36 +215,28 @@ def _fixture(tmp_path: Path, *, arm: str = "canonical_six_view_reader") -> dict:
             ],
         },
     )
+    ordinary_rows, ordinary_source, ordinary_authority, ordinary_receipt = _packet_free_authority(
+        tmp_path,
+        lane="ordinary",
+        identity="ordinary-1",
+        text="ord",
+    )
+    retention_rows, retention_source, retention_authority, retention_receipt = _packet_free_authority(
+        tmp_path,
+        lane="retention",
+        identity="retention-1",
+        text="ret",
+    )
     rows = {
         "train": [_case("train-1", "train", "family-train", 5, "left")],
         "validation": [_case("validation-1", "validation", "family-validation", 6, "left")],
         "final_test": [_case("final-1", "final_test", "family-final", 7, "right")],
-        "ordinary": [
-            {
-                "id": "ordinary-1",
-                "split": "ordinary",
-                "source_family": "family-ordinary",
-                "source_locator": "fixture://ordinary/1",
-                "content_sha256": "d" * 64,
-                "token_ids": [1, 2, 3],
-            }
-        ],
-        "retention": [
-            {
-                "id": "retention-1",
-                "split": "retention",
-                "source_family": "family-retention",
-                "source_locator": "fixture://retention/1",
-                "content_sha256": "e" * 64,
-                "token_ids": [3, 2, 1],
-            }
-        ],
+        "ordinary": ordinary_rows,
+        "retention": retention_rows,
     }
     benchmark = tmp_path / "benchmark.json"
     queue = tmp_path / "source-queue.json"
     snapshot = tmp_path / "closed-source-snapshot.json"
-    ordinary_source = tmp_path / "ordinary-source.jsonl"
-    retention_source = tmp_path / "retention-source.jsonl"
     material_rows = [row for lane in ("train", "validation", "final_test") for row in rows[lane]]
     _write_json(
         benchmark,
@@ -219,8 +270,6 @@ def _fixture(tmp_path: Path, *, arm: str = "canonical_six_view_reader") -> dict:
             "sources": [{"source_session": session} for session in sessions],
         },
     )
-    _write_jsonl(ordinary_source, rows["ordinary"])
-    _write_jsonl(retention_source, rows["retention"])
     _write_json(
         source,
         {
@@ -236,8 +285,16 @@ def _fixture(tmp_path: Path, *, arm: str = "canonical_six_view_reader") -> dict:
             "closed_source_snapshot_sha256": sha256_file(snapshot),
             "ordinary_source": str(ordinary_source.resolve()),
             "ordinary_source_sha256": sha256_file(ordinary_source),
+            "ordinary_source_authority": str(ordinary_authority.resolve()),
+            "ordinary_source_authority_sha256": sha256_file(ordinary_authority),
             "retention_source": str(retention_source.resolve()),
             "retention_source_sha256": sha256_file(retention_source),
+            "retention_source_authority": str(retention_authority.resolve()),
+            "retention_source_authority_sha256": sha256_file(retention_authority),
+            "packet_free_authorities": {
+                "ordinary": ordinary_receipt,
+                "retention": retention_receipt,
+            },
             "closed_query_sessions": sessions,
         },
     )
@@ -248,6 +305,8 @@ def _fixture(tmp_path: Path, *, arm: str = "canonical_six_view_reader") -> dict:
             "schema": SPLIT_MANIFEST_SCHEMA,
             "source_disjoint": True,
             "query_session_disjoint": True,
+            "packet_free_source_authority_bound": True,
+            "packet_free_source_authority_schema": PACKET_FREE_AUTHORITY_SCHEMA,
             "component_policy": "catalog-family/query-session connected components",
             "lane_counts": {lane: len(rows[lane]) for lane in material_lanes},
             "lane_source_families": {
@@ -293,6 +352,8 @@ def _fixture(tmp_path: Path, *, arm: str = "canonical_six_view_reader") -> dict:
             "schema": CASE_MANIFEST_SCHEMA,
             "source_disjoint": True,
             "query_session_disjoint": True,
+            "packet_free_source_authority_bound": True,
+            "packet_free_source_authority_schema": PACKET_FREE_AUTHORITY_SCHEMA,
             "max_query_bytes": 3,
             "exact_evaluator_receipt_sha256": sha256_file(evaluator),
             "exact_source_manifest_sha256": sha256_file(source),
@@ -438,6 +499,18 @@ def test_independent_replay_rejects_open_query_session_even_when_case_hashes_mat
         reconstruct_material_replay_cases(config)
 
 
+def test_independent_replay_rejects_packet_free_source_artifact_drift(
+    tmp_path: Path,
+) -> None:
+    config = _fixture(tmp_path)
+    source_manifest = json.loads(Path(config["source_manifest"]).read_text(encoding="utf-8"))
+    authority = json.loads(Path(source_manifest["ordinary_source_authority"]).read_text(encoding="utf-8"))
+    Path(authority["sources"][0]["path"]).write_text("changed after authority admission", encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="ordinary source artifact hash differs"):
+        reconstruct_material_replay_cases(config)
+
+
 def test_replay_entrypoint_uses_source_reconstruction_not_runtime_cases(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -512,7 +585,7 @@ def test_runtime_rejects_packet_free_source_overlap(tmp_path: Path, monkeypatch:
     _lane_path, manifest, rows = _lane_rows(config, "ordinary")
     rows[0]["source_family"] = "family-train"
     _replace_lane(config, "ordinary", manifest, rows)
-    with pytest.raises(ValueError, match="packet-free lanes overlap"):
+    with pytest.raises(ValueError, match="not authority-derived"):
         build_runtime(config)
 
 
