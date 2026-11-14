@@ -46,6 +46,11 @@ held diagonal source family
 - `scripts/research/verify_clay_frozen_multiview_adapter.py`: independent replay
   CLI. `--partial-completed` audits only atomic terminal artifacts and emits
   `PARTIAL_INDEPENDENT_REPLAY.json` without calculating a campaign verdict.
+- `scripts/research/watch_clay_frozen_multiview_replay.py`: final-only watcher.
+  It polls for the producer's atomic campaign `RESULT.json` without opening
+  checkpoints, runs the independent replay once after training terminates,
+  preserves stale/unbound receipts for review, and exits with no promotion or
+  partial-unfreeze authority.
 - `tests/governance/test_clay_frozen_multiview_data.py`: byte and split receipts.
 - `tests/governance/test_clay_frozen_multiview_adapter.py`: frozen-surface and
   output-accounting tests.
