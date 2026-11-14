@@ -697,4 +697,6 @@ reports as distinct terminal states. It never maps neutral folds to semantic
 train/holdout roles and grants no downstream authority. Nine watcher tests and
 the complete `324 / 324` tokenizer suite pass. A real v7 one-shot smoke remained
 at `WAITING_FOR_PREPARATION_PACKET` with four candidates and labels unopened;
-the persistent worker is not yet activated.
+the committed persistent worker is now active in that same fail-closed waiting
+state. Two advancing poll receipts prove liveness only. No labels, component
+report, score, training intake, promotion or partial unfreeze has been produced.
