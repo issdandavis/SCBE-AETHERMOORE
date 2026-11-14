@@ -1,6 +1,6 @@
 # Clay frozen-multiview Kaggle compatibility map — 2026-11-14
 
-Status: `PROVIDER_PACKET_READBACK_VERIFIED_PRELAUNCH`
+Status: `LOCAL_AND_KAGGLE_TRAINING_ACTIVE`
 
 ## Capability and boundary
 
@@ -34,7 +34,7 @@ local full campaign -------------------------------------> independent replay
 | Packet builder | `scripts/research/build_clay_frozen_multiview_kaggle_packet.py` | Copies exact bytes, emits a deterministic ZIP-framed `.packet` archive and private Kaggle metadata | Locally replayed; provider readback verified |
 | Kaggle entry | `scripts/research/run_clay_frozen_multiview_kaggle_compat.py` | Verifies packet, records environment, runs unchanged trainer, seals recovery | New; private cloud CPU |
 | Private dataset | `issacizrealdavis/clay-frozen-multiview-compat-input-20261114`, version 2 | Immutable code/source packet | Uploaded privately; exact provider readback verified |
-| Private kernel | `issacizrealdavis/clay-frozen-multiview-compat-20261114` | Three new seeds and all four matched arms | Proposed until launched |
+| Private kernel | Requested `issacizrealdavis/clay-frozen-multiview-compat-20261114`; provider slug `issacizrealdavis/clay-frozen-multiview-compatibility-20261114` | Three new seeds and all four matched arms | Private version 1 launched; `RUNNING` at 2026-11-14T10:39:41Z |
 | Recovery root | `C:\dev\clay-training-runs\cloud-review\frozen-multiview-compat-20261114` | Downloaded cloud receipts/checkpoints | Proposed until completion |
 
 Read-only inventory:
@@ -125,3 +125,18 @@ version 2, and was downloaded back from Kaggle byte-for-byte:
 The eight-update smoke produced zero task accuracy, as expected for a transport
 check this short. It is mechanics evidence only. The private Kaggle run retains
 the preregistered three-seed compatibility budget of 1,000/1,000 updates.
+
+## Live launch receipt
+
+Kaggle accepted private kernel version 1 and returned
+`https://www.kaggle.com/code/issacizrealdavis/clay-frozen-multiview-compatibility-20261114`.
+The provider normalized the requested `compat` slug from the kernel title to
+`compatibility`; querying the returned slug reported
+`KernelWorkerStatus.RUNNING`. Querying the requested-but-unresolved slug failed,
+so monitoring and recovery use only the provider-returned slug and no duplicate
+kernel was submitted.
+
+At the same time, the canonical local process set remained alive. Its current
+`frozen_adapter_static-seed-20261133` checkpoint advanced to
+`slot-a.pt`, 3,714,435 bytes, at 2026-11-14T10:36:56Z. Thus the two compute
+lineages are concurrent and have disjoint seeds and checkpoint roots.
