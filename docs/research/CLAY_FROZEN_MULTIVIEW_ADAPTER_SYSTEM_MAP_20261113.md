@@ -255,6 +255,63 @@ reused after this campaign rather than rebuilt:
   the verified before-block-0 causal seam into the frozen 14-layer byte model;
   material source-disjoint training remains gated.
 
+### Pre-block-0 successor readiness map — 2026-11-14
+
+The successor was mapped rather than rebuilt. The bounded three-root inventory
+is `SYSTEM_INVENTORY_20261114_FROZEN_ACTION_SUCCESSOR.json`, SHA-256
+`89733ad1d4fbd292bb151ec2bca722aa8d11ec758892b933e11f4ae08744d853`.
+It covers this clean research worktree, the existing action-compiler experiment,
+and the live frozen-multiview run. The action experiment already contains the
+required before-block-0 reader, full-system bridge, exact compiler fallback,
+source-authority admission contract, two-slot exact-resume mechanics, and the
+no-circuit, authority-row, equal-shape random-fixed, and one-to-one
+shuffled-binding controls. Its action reader is the only trainable component;
+the recovered 14-layer parent remains frozen.
+
+The current implementation surface was rechecked without writing pytest caches
+or bytecode:
+
+```text
+python -X utf8 -B -m pytest -q \
+  test_compiled_action_input_access.py \
+  test_full_system_action_input_access.py \
+  test_full_system_action_campaign.py -p no:cacheprovider
+```
+
+Observed result: `37 passed in 18.53s`. This verifies mechanics and admission
+guards, not model benefit. The experiment worktree has `134` pre-existing
+status entries and remains deliberately untouched; successor evidence is being
+recorded only in this clean worktree.
+
+The recorded parent path currently points to an unavailable `S:` drive, but the
+parent is not lost or silently substituted. Kaggle reports
+`issacizrealdavis/clay-full-system-best-recovery-20261029/1` complete and lists
+`checkpoint_A.pt`; the prior recovery watcher independently verified that file
+at step `13,400` with SHA-256
+`f3988a328cd18a082e3e058827c65cc9f0947b6695abc757fcd3e1ee11181b2e`.
+The canonical `FullSystemLM` source remains locally available under
+`C:\dev\tongue-compiler\artifacts\kaggle_full_system_recovery_20261026`.
+Any material child must restore the exact remote checkpoint and rehash it before
+use; an arbitrary local checkpoint is not an acceptable replacement.
+
+The course-source `S:` ledger and derived transcripts are also not mounted.
+However, all three original videos remain locally accessible and their freshly
+measured hashes exactly match the sealed audit:
+
+| Source | Bytes | SHA-256 |
+| --- | ---: | --- |
+| Tracing Code | 40,211,741 | `d663332be980169f296890e31ffab4c0b20887cac4e71a9c99edf560e3d0d4a4` |
+| Tracing Lists | 30,226,656 | `42bc9a3eb2d10a6d212120ef240c15eb674023134becc25440e6f8a1aceb58cb` |
+| Tracing Nested Loops | 40,587,138 | `0ee8da1342d532e251fadabee11868932eafbb3579368c50b0a8f0d66ec60634` |
+
+This preserves a verified recovery route, but it does not satisfy the material
+data gate: the 279 indexed transcript spans remain unreviewed and ineligible,
+and no disjoint holdout, ordinary, or retention source family has been admitted.
+Current local capacity is healthy at about `27.6 GiB` free, while the exact
+successor peak-write reserve has not yet been measured. The live campaign and
+its final independent replay must close first. Therefore successor launch,
+promotion, partial unfreeze, and tool dispatch all remain unauthorized.
+
 The next model-level sieve trial must remain a separately preregistered child of
 the completed campaign. It should attach a fixed-width centroid/trit summary at
 the existing causal input-access seam and compare ordinary/no-intervention,
