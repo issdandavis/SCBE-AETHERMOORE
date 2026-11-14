@@ -29,7 +29,9 @@ METRICS = [
 EVIDENCE = {
     "storage_envelope": ["SPACE_ENVELOPE_OPEN"],
     "prospective_collector": ["READY_FOR_REVIEW"],
-    "query_session_family_component_gate": ["QUERY_SESSION_FAMILY_COMPONENT_GATE_VERIFIED"],
+    "query_session_family_component_gate": [
+        "QUERY_SESSION_FAMILY_COMPONENT_GATE_VERIFIED"
+    ],
     "selection_audit": ["VERIFIED_SELECTION_AUDIT"],
     "e92_result": ["COMPLETE"],
     "e92_independent_verification": ["VERIFIED"],
@@ -41,11 +43,77 @@ EVIDENCE = {
     "evidence_aggregator_implementation": ["TESTED"],
     "material_runtime_implementation": ["TESTED"],
 }
+COMPONENT_AUTHORITY = {
+    "scoring": "NOT_AUTHORIZED",
+    "training_intake": "NOT_AUTHORIZED",
+    "execution": "NONE",
+    "merge": "NOT_AUTHORIZED",
+    "promotion": "NOT_AUTHORIZED",
+    "partial_unfreeze": "NONE",
+}
 
 
 def _write(path: Path, value: dict) -> Path:
     path.write_text(json.dumps(value), encoding="utf-8")
     return path
+
+
+def _canonical(value: object) -> str:
+    encoded = json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+        allow_nan=False,
+    ).encode("ascii")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _component_watcher(tmp_path: Path) -> Path:
+    split = {
+        "fold_names": ["fold-0", "fold-1", "fold-2"],
+        "components": [
+            {"component_id": "component-0", "fold": "fold-0", "query_count": 10},
+            {"component_id": "component-1", "fold": "fold-1", "query_count": 10},
+            {"component_id": "component-2", "fold": "fold-2", "query_count": 10},
+        ],
+        "folds": {
+            "fold-0": {"component_count": 1, "query_count": 10},
+            "fold-1": {"component_count": 1, "query_count": 10},
+            "fold-2": {"component_count": 1, "query_count": 10},
+        },
+    }
+    report = {
+        "schema": "scbe.prime-token-query-session-family-components.v1",
+        "status": "VERIFIED_QUERY_SESSION_FAMILY_COMPONENT_SPLIT",
+        "error_count": 0,
+        **split,
+        "component_split_sha256": _canonical(split),
+        "gates": {
+            "minimum_accepted_queries": True,
+            "minimum_query_sessions": True,
+            "minimum_manifest_bound_families": True,
+            "minimum_indivisible_components": True,
+            "all_folds_nonempty": True,
+            "maximum_component_share": True,
+            "zero_query_session_overlap": True,
+            "zero_target_family_overlap": True,
+        },
+        "authority": dict(COMPONENT_AUTHORITY),
+    }
+    report["report_sha256"] = _canonical(report)
+    report_path = _write(tmp_path / "component-report.json", report)
+    watcher = {
+        "schema": "scbe.prime-token-query-session-family-component-watcher.v1",
+        "status": "QUERY_SESSION_FAMILY_COMPONENT_GATE_VERIFIED",
+        "gate_result": "VERIFIED_QUERY_SESSION_FAMILY_COMPONENT_SPLIT",
+        "gate_report": str(report_path),
+        "gate_report_sha256": hashlib.sha256(report_path.read_bytes()).hexdigest(),
+        "component_split_sha256": report["component_split_sha256"],
+        "authority": dict(COMPONENT_AUTHORITY),
+        **COMPONENT_AUTHORITY,
+    }
+    return _write(tmp_path / "query_session_family_component_gate.json", watcher)
 
 
 def _fixture(tmp_path: Path) -> tuple[Path, Path]:
@@ -68,7 +136,11 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path]:
     )
     evidence = {}
     for evidence_id, statuses in EVIDENCE.items():
-        artifact = _write(tmp_path / f"{evidence_id}.json", {"status": statuses[0]})
+        artifact = (
+            _component_watcher(tmp_path)
+            if evidence_id == "query_session_family_component_gate"
+            else _write(tmp_path / f"{evidence_id}.json", {"status": statuses[0]})
+        )
         entry = {
             "status": statuses[0],
             "path": str(artifact),
@@ -122,7 +194,10 @@ def test_ready_state_still_grants_no_authority(tmp_path: Path) -> None:
 def test_shipped_contract_requires_query_session_family_component_gate() -> None:
     repo_root = Path(__file__).resolve().parents[2]
     contract = json.loads(
-        (repo_root / "config/training/prime_token_frozen_input_access_release_v1.json").read_text(encoding="utf-8")
+        (
+            repo_root
+            / "config/training/prime_token_frozen_input_access_release_v1.json"
+        ).read_text(encoding="utf-8")
     )
 
     assert contract["required_evidence"]["query_session_family_component_gate"] == [
@@ -141,8 +216,12 @@ def test_waits_for_closed_query_sources_and_candidates(tmp_path: Path) -> None:
 
     assert report["status"] == "WAITING_FOR_RELEASE_REQUIREMENTS"
     assert report["error_count"] == 0
-    assert any("accepted_final_test_queries" in blocker for blocker in report["blockers"])
-    assert any("closed_query_source_sessions" in blocker for blocker in report["blockers"])
+    assert any(
+        "accepted_final_test_queries" in blocker for blocker in report["blockers"]
+    )
+    assert any(
+        "closed_query_source_sessions" in blocker for blocker in report["blockers"]
+    )
 
 
 def test_rejects_mutated_immutable_evidence(tmp_path: Path) -> None:
@@ -157,7 +236,9 @@ def test_rejects_mutated_immutable_evidence(tmp_path: Path) -> None:
     assert "sha256 mismatch for preregistration" in report["errors"]
 
 
-def test_rejects_state_status_that_disagrees_with_hashed_artifact(tmp_path: Path) -> None:
+def test_rejects_state_status_that_disagrees_with_hashed_artifact(
+    tmp_path: Path,
+) -> None:
     contract, state = _fixture(tmp_path)
     value = json.loads(state.read_text(encoding="utf-8"))
     evidence = value["evidence"]["independent_replay_implementation"]
@@ -169,7 +250,10 @@ def test_rejects_state_status_that_disagrees_with_hashed_artifact(tmp_path: Path
     report = audit_release(contract_path=contract, state_path=state)
 
     assert report["status"] == "INVALID_RELEASE_STATE"
-    assert "state/artifact status mismatch for independent_replay_implementation" in report["errors"]
+    assert (
+        "state/artifact status mismatch for independent_replay_implementation"
+        in report["errors"]
+    )
     gate = report["gates"]["evidence"]["independent_replay_implementation"]
     assert gate["status"] == "TESTED_NO_PROMOTION"
     assert gate["passed"] is False
@@ -211,12 +295,16 @@ def test_requires_query_session_family_component_gate(tmp_path: Path) -> None:
         "QUERY_SESSION_FAMILY_COMPONENT_GATE_INVALID_NEEDS_REVIEW",
     ],
 )
-def test_reads_component_gate_status_from_dynamic_artifact(tmp_path: Path, dynamic_status: str) -> None:
+def test_reads_component_gate_status_from_dynamic_artifact(
+    tmp_path: Path, dynamic_status: str
+) -> None:
     contract, state = _fixture(tmp_path)
     value = json.loads(state.read_text(encoding="utf-8"))
     evidence = value["evidence"]["query_session_family_component_gate"]
     artifact = Path(evidence["path"])
-    artifact.write_text(json.dumps({"status": dynamic_status}), encoding="utf-8")
+    artifact_value = json.loads(artifact.read_text(encoding="utf-8"))
+    artifact_value["status"] = dynamic_status
+    artifact.write_text(json.dumps(artifact_value), encoding="utf-8")
     _write(state, value)
 
     report = audit_release(contract_path=contract, state_path=state)
@@ -226,7 +314,64 @@ def test_reads_component_gate_status_from_dynamic_artifact(tmp_path: Path, dynam
     gate = report["gates"]["evidence"]["query_session_family_component_gate"]
     assert gate["status"] == dynamic_status
     assert gate["passed"] is False
-    assert f"query_session_family_component_gate status is {dynamic_status}" in report["blockers"]
+    assert (
+        f"query_session_family_component_gate status is {dynamic_status}"
+        in report["blockers"]
+    )
+
+
+def test_rejects_component_verified_status_without_report_binding(
+    tmp_path: Path,
+) -> None:
+    contract, state = _fixture(tmp_path)
+    value = json.loads(state.read_text(encoding="utf-8"))
+    artifact = Path(value["evidence"]["query_session_family_component_gate"]["path"])
+    watcher = json.loads(artifact.read_text(encoding="utf-8"))
+    watcher.pop("gate_report_sha256")
+    artifact.write_text(json.dumps(watcher), encoding="utf-8")
+
+    report = audit_release(contract_path=contract, state_path=state)
+
+    assert report["status"] == "INVALID_RELEASE_STATE"
+    assert "component gate component report file hash mismatch" in report["errors"]
+
+
+def test_rejects_component_report_or_split_digest_drift(tmp_path: Path) -> None:
+    contract, state = _fixture(tmp_path)
+    value = json.loads(state.read_text(encoding="utf-8"))
+    artifact = Path(value["evidence"]["query_session_family_component_gate"]["path"])
+    watcher = json.loads(artifact.read_text(encoding="utf-8"))
+    component_report = Path(watcher["gate_report"])
+    component_value = json.loads(component_report.read_text(encoding="utf-8"))
+    component_value["folds"]["fold-0"]["query_count"] = 11
+    component_report.write_text(json.dumps(component_value), encoding="utf-8")
+    watcher["gate_report_sha256"] = hashlib.sha256(
+        component_report.read_bytes()
+    ).hexdigest()
+    artifact.write_text(json.dumps(watcher), encoding="utf-8")
+
+    report = audit_release(contract_path=contract, state_path=state)
+
+    assert report["status"] == "INVALID_RELEASE_STATE"
+    assert "component gate component split digest does not replay" in report["errors"]
+    assert "component gate component report digest does not replay" in report["errors"]
+
+
+def test_rejects_component_watcher_authority_drift(tmp_path: Path) -> None:
+    contract, state = _fixture(tmp_path)
+    value = json.loads(state.read_text(encoding="utf-8"))
+    artifact = Path(value["evidence"]["query_session_family_component_gate"]["path"])
+    watcher = json.loads(artifact.read_text(encoding="utf-8"))
+    watcher["authority"]["training_intake"] = "AUTHORIZED"
+    artifact.write_text(json.dumps(watcher), encoding="utf-8")
+
+    report = audit_release(contract_path=contract, state_path=state)
+
+    assert report["status"] == "INVALID_RELEASE_STATE"
+    assert (
+        "component gate watcher authority differs from the fail-closed contract"
+        in report["errors"]
+    )
 
 
 def test_rejects_authority_drift(tmp_path: Path) -> None:

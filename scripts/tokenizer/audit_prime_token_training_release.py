@@ -15,11 +15,38 @@ CONTRACT_SCHEMA = "scbe.prime-token-frozen-input-access-release-contract.v1"
 STATE_SCHEMA = "scbe.prime-token-frozen-input-access-release-state.v1"
 REPORT_SCHEMA = "scbe.prime-token-frozen-input-access-release-audit.v1"
 NOT_AUTHORIZED = "NOT_AUTHORIZED"
+COMPONENT_EVIDENCE_ID = "query_session_family_component_gate"
+COMPONENT_WATCHER_SCHEMA = "scbe.prime-token-query-session-family-component-watcher.v1"
+COMPONENT_REPORT_SCHEMA = "scbe.prime-token-query-session-family-components.v1"
+COMPONENT_WATCHER_VERIFIED = "QUERY_SESSION_FAMILY_COMPONENT_GATE_VERIFIED"
+COMPONENT_REPORT_VERIFIED = "VERIFIED_QUERY_SESSION_FAMILY_COMPONENT_SPLIT"
+COMPONENT_AUTHORITY = {
+    "scoring": NOT_AUTHORIZED,
+    "training_intake": NOT_AUTHORIZED,
+    "execution": "NONE",
+    "merge": NOT_AUTHORIZED,
+    "promotion": NOT_AUTHORIZED,
+    "partial_unfreeze": "NONE",
+}
+HEX64 = frozenset("0123456789abcdef")
 
 
 def canonical_sha256(value: Any) -> str:
-    payload = json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    payload = json.dumps(
+        value, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    )
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def canonical_ascii_sha256(value: Any) -> str:
+    payload = json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+        allow_nan=False,
+    )
+    return hashlib.sha256(payload.encode("ascii")).hexdigest()
 
 
 def sha256_file(path: Path) -> str:
@@ -38,12 +65,118 @@ def _object(path: Path, label: str) -> dict[str, Any]:
 
 
 def _string_set(value: Any, label: str, errors: list[str]) -> set[str]:
-    if not isinstance(value, list) or not all(isinstance(item, str) and item for item in value):
+    if not isinstance(value, list) or not all(
+        isinstance(item, str) and item for item in value
+    ):
         errors.append(f"{label} must be a list of non-empty strings")
         return set()
     if len(set(value)) != len(value):
         errors.append(f"{label} contains duplicates")
     return set(value)
+
+
+def _is_hex64(value: Any) -> bool:
+    text = str(value or "").casefold()
+    return len(text) == 64 and all(character in HEX64 for character in text)
+
+
+def _validate_component_gate_artifact(
+    *,
+    artifact_value: dict[str, Any],
+    artifact_path: Path,
+    status: str,
+    errors: list[str],
+) -> tuple[bool, dict[str, Any]]:
+    """Replay the dynamic component evidence before manual release review."""
+
+    valid = True
+    details: dict[str, Any] = {}
+
+    def reject(message: str) -> None:
+        nonlocal valid
+        valid = False
+        errors.append(f"component gate {message}")
+
+    if artifact_value.get("schema") != COMPONENT_WATCHER_SCHEMA:
+        reject("watcher schema mismatch")
+    authority = artifact_value.get("authority")
+    if not isinstance(authority, dict) or authority != COMPONENT_AUTHORITY:
+        reject("watcher authority differs from the fail-closed contract")
+    for field, expected in COMPONENT_AUTHORITY.items():
+        if artifact_value.get(field) != expected:
+            reject(f"watcher top-level authority drifted for {field}")
+
+    if status != COMPONENT_WATCHER_VERIFIED:
+        return valid, details
+    if artifact_value.get("gate_result") != COMPONENT_REPORT_VERIFIED:
+        reject("verified watcher has the wrong report result")
+
+    report_text = str(artifact_value.get("gate_report") or "")
+    report_path = Path(report_text).resolve(strict=False) if report_text else None
+    if report_path is None:
+        reject("verified watcher lacks a component report path")
+        return valid, details
+    if report_path.parent != artifact_path.resolve().parent:
+        reject("component report is not colocated with its watcher")
+    if not report_path.is_file():
+        reject("component report is unavailable")
+        return valid, details
+
+    expected_file_hash = str(artifact_value.get("gate_report_sha256") or "").casefold()
+    actual_file_hash = sha256_file(report_path)
+    details["component_report_path"] = str(report_path)
+    details["component_report_sha256"] = actual_file_hash
+    if not _is_hex64(expected_file_hash) or expected_file_hash != actual_file_hash:
+        reject("component report file hash mismatch")
+
+    try:
+        report = _object(report_path, "component gate report")
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        reject(f"component report cannot be read: {exc}")
+        return valid, details
+    if report.get("schema") != COMPONENT_REPORT_SCHEMA:
+        reject("component report schema mismatch")
+    if (
+        report.get("status") != COMPONENT_REPORT_VERIFIED
+        or report.get("error_count") != 0
+    ):
+        reject("component report is not a zero-error verified split")
+    if report.get("authority") != COMPONENT_AUTHORITY:
+        reject("component report authority differs from the fail-closed contract")
+    gates = report.get("gates")
+    if (
+        not isinstance(gates, dict)
+        or not gates
+        or not all(value is True for value in gates.values())
+    ):
+        reject("component report contains a failed gate")
+
+    split_payload = {
+        "fold_names": report.get("fold_names"),
+        "components": report.get("components"),
+        "folds": report.get("folds"),
+    }
+    split_hash = str(report.get("component_split_sha256") or "").casefold()
+    watcher_split_hash = str(
+        artifact_value.get("component_split_sha256") or ""
+    ).casefold()
+    details["component_split_sha256"] = split_hash or None
+    if (
+        not _is_hex64(split_hash)
+        or canonical_ascii_sha256(split_payload) != split_hash
+        or watcher_split_hash != split_hash
+    ):
+        reject("component split digest does not replay")
+
+    declared_report_hash = str(report.get("report_sha256") or "").casefold()
+    report_without_hash = dict(report)
+    report_without_hash.pop("report_sha256", None)
+    if (
+        not _is_hex64(declared_report_hash)
+        or canonical_ascii_sha256(report_without_hash) != declared_report_hash
+    ):
+        reject("component report digest does not replay")
+    return valid, details
 
 
 def audit_release(*, contract_path: Path, state_path: Path) -> dict[str, Any]:
@@ -68,7 +201,9 @@ def audit_release(*, contract_path: Path, state_path: Path) -> dict[str, Any]:
     if missing_arms:
         blockers.append(f"missing required arms: {', '.join(missing_arms)}")
 
-    required_metrics = _string_set(contract.get("required_metrics"), "required_metrics", errors)
+    required_metrics = _string_set(
+        contract.get("required_metrics"), "required_metrics", errors
+    )
     observed_metrics = _string_set(state.get("metrics"), "state metrics", errors)
     missing_metrics = sorted(required_metrics - observed_metrics)
     if missing_metrics:
@@ -85,7 +220,11 @@ def audit_release(*, contract_path: Path, state_path: Path) -> dict[str, Any]:
                 errors.append(f"minimum {name} must be a non-negative integer")
                 continue
             actual = observed.get(name)
-            passed = isinstance(actual, int) and not isinstance(actual, bool) and actual >= minimum
+            passed = (
+                isinstance(actual, int)
+                and not isinstance(actual, bool)
+                and actual >= minimum
+            )
             count_gates[name] = {
                 "minimum": minimum,
                 "observed": actual,
@@ -102,9 +241,13 @@ def audit_release(*, contract_path: Path, state_path: Path) -> dict[str, Any]:
         seed_count = len(set(seeds))
         if seed_count != len(seeds):
             errors.append("state seeds contain duplicates")
-    fresh_seed_minimum = int((minimums or {}).get("fresh_seeds", 0)) if isinstance(minimums, dict) else 0
+    fresh_seed_minimum = (
+        int((minimums or {}).get("fresh_seeds", 0)) if isinstance(minimums, dict) else 0
+    )
     if seed_count < fresh_seed_minimum:
-        blockers.append(f"fresh seed count is below {fresh_seed_minimum}: observed {seed_count}")
+        blockers.append(
+            f"fresh seed count is below {fresh_seed_minimum}: observed {seed_count}"
+        )
 
     required_evidence = contract.get("required_evidence")
     evidence = state.get("evidence")
@@ -113,7 +256,9 @@ def audit_release(*, contract_path: Path, state_path: Path) -> dict[str, Any]:
         errors.append("required_evidence and state evidence must be JSON objects")
     else:
         for evidence_id, accepted_value in sorted(required_evidence.items()):
-            accepted = _string_set(accepted_value, f"accepted statuses for {evidence_id}", errors)
+            accepted = _string_set(
+                accepted_value, f"accepted statuses for {evidence_id}", errors
+            )
             entry = evidence.get(evidence_id)
             if not isinstance(entry, dict):
                 blockers.append(f"missing evidence: {evidence_id}")
@@ -122,37 +267,83 @@ def audit_release(*, contract_path: Path, state_path: Path) -> dict[str, Any]:
             state_status = str(entry.get("status") or "")
             status = state_status
             artifact_path: Path | None = None
+            artifact_value: dict[str, Any] | None = None
+            evidence_valid = True
+            evidence_details: dict[str, Any] = {}
             artifact = entry.get("path")
             if artifact:
                 artifact_path = Path(str(artifact)).resolve(strict=False)
                 if not artifact_path.is_file():
                     blockers.append(f"evidence path is unavailable for {evidence_id}")
-                elif entry.get("read_status_from_artifact") or (
-                    entry.get("immutable") and state_status in accepted and artifact_path.suffix.casefold() == ".json"
+                elif (
+                    evidence_id == COMPONENT_EVIDENCE_ID
+                    or entry.get("read_status_from_artifact")
+                    or (
+                        entry.get("immutable")
+                        and state_status in accepted
+                        and artifact_path.suffix.casefold() == ".json"
+                    )
                 ):
                     try:
-                        artifact_value = _object(artifact_path, f"evidence {evidence_id}")
+                        artifact_value = _object(
+                            artifact_path, f"evidence {evidence_id}"
+                        )
                         status = str(artifact_value.get("status") or "")
-                        if entry.get("immutable") and state_status in accepted and status != state_status:
-                            errors.append(f"state/artifact status mismatch for {evidence_id}")
+                        if (
+                            entry.get("immutable")
+                            and state_status in accepted
+                            and status != state_status
+                        ):
+                            errors.append(
+                                f"state/artifact status mismatch for {evidence_id}"
+                            )
                     except (OSError, ValueError, json.JSONDecodeError) as exc:
-                        errors.append(f"cannot read evidence status for {evidence_id}: {exc}")
+                        errors.append(
+                            f"cannot read evidence status for {evidence_id}: {exc}"
+                        )
+                        evidence_valid = False
+                if evidence_id == COMPONENT_EVIDENCE_ID:
+                    if entry.get("read_status_from_artifact") is not True:
+                        errors.append(
+                            "component gate evidence must read status from its dynamic artifact"
+                        )
+                        evidence_valid = False
+                    if artifact_value is not None:
+                        component_valid, component_details = (
+                            _validate_component_gate_artifact(
+                                artifact_value=artifact_value,
+                                artifact_path=artifact_path,
+                                status=status,
+                                errors=errors,
+                            )
+                        )
+                        evidence_valid = evidence_valid and component_valid
+                        evidence_details.update(component_details)
                 expected_hash = str(entry.get("sha256") or "").casefold()
                 if expected_hash:
                     if len(expected_hash) != 64:
                         errors.append(f"invalid sha256 for {evidence_id}")
-                    elif artifact_path.is_file() and sha256_file(artifact_path) != expected_hash:
+                    elif (
+                        artifact_path.is_file()
+                        and sha256_file(artifact_path) != expected_hash
+                    ):
                         errors.append(f"sha256 mismatch for {evidence_id}")
                 elif entry.get("immutable"):
                     errors.append(f"immutable evidence lacks sha256: {evidence_id}")
             elif entry.get("immutable"):
                 blockers.append(f"immutable evidence path is missing: {evidence_id}")
-            passed = status in accepted and artifact_path is not None and artifact_path.is_file()
+            passed = (
+                status in accepted
+                and artifact_path is not None
+                and artifact_path.is_file()
+                and evidence_valid
+            )
             evidence_gates[evidence_id] = {
                 "accepted_statuses": sorted(accepted),
                 "path": str(artifact_path) if artifact_path else None,
                 "passed": passed,
                 "status": status or None,
+                **evidence_details,
             }
             if not passed:
                 blockers.append(f"{evidence_id} status is {status or 'MISSING'}")
@@ -217,7 +408,9 @@ def audit_release(*, contract_path: Path, state_path: Path) -> dict[str, Any]:
 def atomic_json(path: Path, value: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     pending = path.with_name(f".{path.name}.{os.getpid()}.pending")
-    pending.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    pending.write_text(
+        json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     os.replace(pending, path)
 
 

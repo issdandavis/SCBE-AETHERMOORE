@@ -2,7 +2,7 @@
 
 Date: 2026-11-14
 
-Status: `IMPLEMENTED_TESTED_LIVE_STATE_BOUND_FAIL_CLOSED_NO_TRAINING_NO_PROMOTION`
+Status: `IMPLEMENTED_TESTED_LIVE_STATE_AND_REPORT_BOUND_FAIL_CLOSED_NO_TRAINING_NO_PROMOTION`
 
 ## Capability boundary
 
@@ -26,7 +26,7 @@ inspection, runtime receipts, and SHA-256 values instead.
 | Node | Path / schema | Role | Current status |
 | --- | --- | --- | --- |
 | Frozen release contract | `config/training/prime_token_frozen_input_access_release_v1.json` / `scbe.prime-token-frozen-input-access-release-contract.v1` | Declares counts, arms, metrics, and required evidence | Now requires the component gate; SHA-256 `ccebfb4a646c80dc61b129316b176321c2bae20249f746cf10f4cf79d909f83b` |
-| Release auditor | `scripts/tokenizer/audit_prime_token_training_release.py` / `scbe.prime-token-frozen-input-access-release-audit.v1` | Hash-checks evidence and returns only waiting, invalid, or manual-review-ready | Reused unchanged unless tests expose a generic evidence defect; SHA-256 `d7eee04968d8cbcd978fadc06a24447f4c78fcaf5d309e5e951ed378103a7d6b` |
+| Release auditor | `scripts/tokenizer/audit_prime_token_training_release.py` / `scbe.prime-token-frozen-input-access-release-audit.v1` | Hash-checks evidence and returns only waiting, invalid, or manual-review-ready | Now independently replays the dynamic component watcher, colocated report hash, split digest, report digest, all component gates, and fail-closed authority before accepting the verified status |
 | Component algebra | `python/scbe/prime_token_query_family_components.py` / `scbe.prime-token-query-session-family-components.v1` | Builds bipartite connected components and neutral fold assignment from reviewed hashes | Cherry-picked from the isolated component branch; SHA-256 `c3750f9dfe37603660a3363e24285e5e0a6c310cf8c9e1e75fd96d6fe7e0a2cd` |
 | Component watcher | `scripts/tokenizer/watch_prime_query_family_components.py` / `scbe.prime-token-query-session-family-component-watcher.v1` | Waits for prepared/selection evidence, then runs the pinned component audit once | Live external watcher is fail-closed at `WAITING_FOR_PREPARATION_PACKET`; source SHA-256 `fc842e6bd660561e36d0823ff9ee7ca44531837d333da42302685b363fee1454` |
 | Live watcher receipt | `C:/dev/clay-training-runs/prime-token-catalog-20261106/prospective-query-session-family-component-watcher-v7-20261114/QUERY_SESSION_FAMILY_COMPONENT_WATCHER_STATUS.json` | Dynamic evidence consumed only after its terminal verified status | 10 candidates; labels not opened; scoring/training/promotion unauthorized; observed SHA-256 `6f46f80366010a36724ce628d485d93ee9783f943f666080e20973d251dcb36d` |
@@ -50,6 +50,10 @@ closed reviewed queries + manifest-bound target families
   predictions into the release auditor.
 - The release state must use `read_status_from_artifact: true`; copied stale
   status text cannot satisfy the gate.
+- A terminal verified status is insufficient by itself. The release auditor
+  requires the watcher schema and fail-closed authority, resolves a colocated
+  component report, matches its file hash, recomputes its split and report
+  digests, and requires every component gate to be true.
 - The contract accepts exactly
   `QUERY_SESSION_FAMILY_COMPONENT_GATE_VERIFIED`. Waiting, underpowered,
   invalid, missing, unreadable, or hash-drifted states remain blockers/errors.
@@ -110,8 +114,8 @@ Changed integration paths:
 Verification:
 
 ```text
-25 focused release/component tests passed
-141 prime-token/watcher regression tests passed
+23 focused release/watcher tests passed
+406 tokenizer regression tests passed
 Black check passed
 Ruff check passed
 ```
@@ -132,3 +136,23 @@ report SHA-256
 The new blocker is exactly
 `query_session_family_component_gate status is WAITING_FOR_PREPARATION_PACKET`;
 all no-training/no-promotion authority fields remain unchanged.
+
+## Dynamic-report replay hardening
+
+A follow-up audit found that the first integration consumed the live watcher
+status dynamically but did not itself reopen the component report. That left a
+manual-edit trust gap between the watcher and release review. The release
+auditor now treats the watcher as a structured dynamic receipt rather than a
+status string. Tests reject a missing report binding, report-file hash drift,
+component split drift, report digest drift, watcher authority drift, and a
+missing dynamic-read declaration.
+
+The hardened auditor was run against the unchanged live waiting state and
+wrote
+`C:/dev/clay-training-runs/prime-token-catalog-20261106/successor-training-release-20261111/RELEASE_AUDIT_COMPONENT_REPORT_BOUND_20261114.json`.
+It correctly exited `2` with `WAITING_FOR_RELEASE_REQUIREMENTS`, zero errors,
+ten blockers, promotion `NOT_AUTHORIZED`, and partial unfreeze `NONE`. Its
+canonical report SHA-256 is
+`672e8b6ddbe62fca761d67cce8207c12fbdb2fe0ef066180b5a38c3f221072d3`;
+the serialized file SHA-256 is
+`0b80346308139e2f39704b39594276fb6b4245c10c054f6a60e5f2cd1c469c15`.
