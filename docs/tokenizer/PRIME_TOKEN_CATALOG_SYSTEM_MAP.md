@@ -686,3 +686,15 @@ still has 4 closed candidates and no labels, so no component receipt, scoring,
 training intake, promotion, or partial unfreeze exists yet. Detailed contracts
 and hashes are in
 `docs/research/PRIME_TOKEN_QUERY_SESSION_FAMILY_COMPONENT_MAP_20261114.md`.
+
+The component gate now also has a fail-closed dormant watcher at
+`scripts/tokenizer/watch_prime_query_family_components.py`. It waits for both
+the prepared packet and exact-selection audit before resolving the queue,
+inventory or labels; hash-pins the component CLI and source-family audit; runs
+once through an exclusive pending path; independently replays the input,
+component and report hashes; and preserves verified, underpowered and invalid
+reports as distinct terminal states. It never maps neutral folds to semantic
+train/holdout roles and grants no downstream authority. Nine watcher tests and
+the complete `324 / 324` tokenizer suite pass. A real v7 one-shot smoke remained
+at `WAITING_FOR_PREPARATION_PACKET` with four candidates and labels unopened;
+the persistent worker is not yet activated.

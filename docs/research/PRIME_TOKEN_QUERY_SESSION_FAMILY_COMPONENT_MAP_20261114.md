@@ -49,7 +49,7 @@ not a broad merge or cherry-pick.
 ## New node and exact contract
 
 Implemented module: `python/scbe/prime_token_query_family_components.py`
-Proposed CLI: `scripts/tokenizer/audit_prime_query_family_components.py`
+Implemented CLI: `scripts/tokenizer/audit_prime_query_family_components.py`
 
 Inputs are the four immutable JSON files above. For every accepted query, the
 audit joins:
@@ -128,3 +128,51 @@ The active v7 chain remains unchanged and underpowered at 4 closed candidates.
 Its one unstable open session presently contains 10 selector matches; even a
 clean close would yield only 14, below 30. Therefore no real component receipt,
 labels, score, model update, promotion, or unfreeze has been produced.
+
+## Dormant watcher operationalization — pre-build gate
+
+The bounded inventory and targeted search found no watcher for this component
+audit. The existing E92 source-family watcher is the reusable control pattern,
+but it does not construct or verify query-session/target-family components.
+
+The new watcher may add only this capability:
+
+```text
+preparer ready + exact-selection audit ready + independent labels present
+    -> verify queue, inventory, family-audit and auditor hashes
+    -> run the component CLI once into an exclusive pending path
+    -> independently verify report schema, input hashes and no-authority fields
+    -> atomically seal a terminal component report and watcher status
+```
+
+It must keep labels unopened while either upstream status is waiting, refuse a
+stale or partial report, preserve `UNDERPOWERED` and `INVALID` as evidence, and
+never assign semantic train/holdout roles to the neutral folds. Its state lives
+in a new run directory; it does not alter the active v7 collector, queue,
+selector, packet, labels, scoring, model weights, or workers. Polling is bounded
+CPU-only work with no network/GPU requirement. Any hash/schema/authority drift,
+unexpected auditor return code, or pre-existing pending file stops the watcher
+before downstream use.
+
+## Watcher implementation receipt — 2026-11-14
+
+Implemented but not yet launched as a persistent worker:
+
+- `scripts/tokenizer/watch_prime_query_family_components.py`
+  (`fc842e6bd660561e36d0823ff9ee7ca44531837d333da42302685b363fee1454`)
+- `tests/tokenizer/test_watch_prime_query_family_components.py`
+  (`35697a27c00dfbfc94fd0e2244411532204e2d4d59b1f83715bcdbe5ca4cf754`)
+
+Nine focused tests cover upstream waiting, absent labels, verified,
+underpowered and invalid terminal reports, executable hash drift, pending-file
+non-overwrite, sealed-report revalidation, label drift, digest tampering and
+auditor return-code disagreement. The complete tokenizer suite passed
+`324 / 324`.
+
+A one-shot run against the real v7 status files wrote only
+`query-session-family-component-watcher-smoke-20261114/QUERY_SESSION_FAMILY_COMPONENT_WATCHER_STATUS.json`
+(`ae5aea76b782cdb37ec8b65b6f1ee8c1c6cea1163c70d4f6f03cdacd519acb29`).
+It reported `WAITING_FOR_PREPARATION_PACKET`, candidate count `4`, labels
+`NOT_OPENED`, and no scoring, training, execution, merge, promotion or partial
+unfreeze authority. This proves waiting-path wiring only; it is not a component
+evaluation, persistent activation, or model result.
