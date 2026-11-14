@@ -1,0 +1,144 @@
+{
+  "schema": "clay.frozen-action-math-source-audit.v1",
+  "generated_at_utc": "2026-11-14T06:29:44.5935472+00:00",
+  "status": "PINNED_CANDIDATE_SOURCES_NOT_ADMITTED",
+  "authority": {
+    "dataset_admission": "NONE",
+    "launch": "NONE",
+    "partial_unfreeze": "NONE",
+    "promotion": "NONE",
+    "tool_dispatch": "DISABLED"
+  },
+  "source_root": "C:\\dev\\clay-training-runs\\source-audits\\frozen-action-math-sources-20261114",
+  "candidate_lanes": {
+    "train": "openai-gsm8k",
+    "holdout": "arkilpatel-svamp",
+    "ordinary": null,
+    "retention": null
+  },
+  "sources": {
+    "openai-gsm8k": {
+      "source_kind": "published_source",
+      "repository": "https://github.com/openai/grade-school-math",
+      "commit": "3101c7d5072418e28b9008a6636bde82a006892c",
+      "artifact": "grade_school_math/data/train.jsonl",
+      "local_path": "C:\\dev\\clay-training-runs\\source-audits\\frozen-action-math-sources-20261114\\gsm8k-train.jsonl",
+      "bytes": 4166206,
+      "sha256": "17f347dc51477c50d4efb83959dbb7c56297aba886e5544ee2aaed3024813465",
+      "license": "MIT",
+      "license_bytes": 1062,
+      "license_sha256": "86bbb73e855821d7c401912fd4bf82e34313e6e3b6fd6f909f2b6cc9e209a53b",
+      "rows": 7473,
+      "existing_parquet_mirror": {
+        "path": "C:\\dev\\clay_home\\ingest\\gsm8k_v1\\gsm8k.zip",
+        "archive_bytes": 5153336,
+        "archive_sha256": "6b1e04fe7fc603ada326dc1c3411a3ebec162b95c3ed7e65f160e07b67dd5cec",
+        "member": "main/train.parquet",
+        "rows": 7473,
+        "exact_rows_matching_official_jsonl": 7473,
+        "all_rows_equal": true,
+        "canonical_row_sha256": "dca449882e67a1e7716b5da453650a7b16588a1f2d1a0d82394a43d75ea7e9ca"
+      },
+      "target_extraction_probe": {
+        "rule": "last <<expression=result>> annotation",
+        "rows_with_annotation": 7378,
+        "rows_without_annotation": 95,
+        "safe_arithmetic_ast_rows": 7378,
+        "safe_arithmetic_value_matches": 7378,
+        "known_exact_compiler_rejects": [
+          {
+            "row_index": 394,
+            "expression": "560//10",
+            "reason": "the exact action compiler rejects floor-division syntax"
+          },
+          {
+            "row_index": 4170,
+            "expression": "+55",
+            "reason": "the exact action compiler rejects unary-plus syntax"
+          },
+          {
+            "row_index": 5209,
+            "expression": "3*+6",
+            "reason": "the exact action compiler rejects unary-plus syntax"
+          }
+        ],
+        "full_exact_compiler_audit": {
+          "status": "COMPLETE_NO_ADMISSION",
+          "compiler_source_sha256": "86882f87b16c12d16d4501f89b8bfd579c8671fcf3f5afb080fde14b7868c457",
+          "audited_rows": 7473,
+          "accepted_rows": 7375,
+          "rejected_rows": 98,
+          "missing_expression_rows": 95,
+          "compiler_rejected_rows": 3,
+          "value_inconsistent_rows": 0,
+          "accepted_ledger_sha256": "366b1e3ed13ae0d77a759c21bd4c283f917f706b1c2342cfeb71fc1de39f54d0"
+        }
+      }
+    },
+    "arkilpatel-svamp": {
+      "source_kind": "published_source",
+      "repository": "https://github.com/arkilpatel/SVAMP",
+      "commit": "78e727689e1c1bebfc4be39c446898e8e10b0518",
+      "artifact": "SVAMP.json",
+      "local_path": "C:\\dev\\clay-training-runs\\source-audits\\frozen-action-math-sources-20261114\\svamp.json",
+      "bytes": 339970,
+      "sha256": "5be77703a6d891ae476d7c082787ad361392aa02453b132516cdd5f4e7934e3e",
+      "license": "MIT",
+      "license_bytes": 1068,
+      "license_sha256": "07ce3a34de7a865345634f9278bc26ddcacc2d0defd348c28e3f4603448b9ba4",
+      "readme_bytes": 8186,
+      "readme_sha256": "e1c76aba0141c8c62e778b600cd8b576782d207a0cd91dddbfc0d3c7f43f5f54",
+      "rows": 1000,
+      "target_extraction_probe": {
+        "rule": "Equation field with Answer consistency check",
+        "safe_arithmetic_ast_rows": 1000,
+        "safe_arithmetic_value_matches": 999,
+        "internally_inconsistent_rows": [
+          {
+            "id": "chal-680",
+            "equation": "( ( 4.0 - 2.0 ) + 3.0 )",
+            "equation_value": 5.0,
+            "answer": 1.0
+          }
+        ],
+        "full_exact_compiler_audit": {
+          "status": "COMPLETE_NO_ADMISSION",
+          "compiler_source_sha256": "86882f87b16c12d16d4501f89b8bfd579c8671fcf3f5afb080fde14b7868c457",
+          "audited_rows": 1000,
+          "accepted_rows": 999,
+          "rejected_rows": 1,
+          "compiler_rejected_rows": 0,
+          "value_inconsistent_rows": 1,
+          "accepted_ledger_sha256": "15cddd1ffc655c477c498687e4841af39ba1dc80ff11eca33a6f2f7d38fb4098"
+        }
+      }
+    }
+  },
+  "excluded_sources": {
+    "mbpp": {
+      "path": "C:\\dev\\clay_home\\eval\\open_core\\mbpp_google_research_8dadc6c_v1\\EVAL_REGISTRY.json",
+      "reason": "The local immutable registry declares permanent_zero_train=true, tokenizer_eligible=false, and training_weight=0."
+    }
+  },
+  "remaining_gates": [
+    "select and pin independent published-source families for ordinary and retention lanes",
+    "build exact source spans, excerpt hashes, and replayable source-authority receipts",
+    "review the action mapping before setting material_evidence_authorized or training_authorized",
+    "finish the active frozen-multiview campaign and its independent replay",
+    "measure final dataset, result-ledger, replay, and recovery-margin bytes"
+  ],
+  "exact_compiler_audit": {
+    "implementation_path": "scripts/research/audit_frozen_action_math_sources.py",
+    "implementation_sha256": "f3f8ea31b07d4b11abc5c358fe676ae55de4cd615ce2839eedbdee1127dd1866",
+    "test_path": "tests/research/test_audit_frozen_action_math_sources.py",
+    "test_sha256": "c7adb33ce6328ada1333d626174aecf24945ddd6fb59ae18b5939ebfb8a9d605",
+    "path": "C:\\dev\\clay-training-runs\\source-audits\\frozen-action-math-sources-20261114\\EXACT_COMPILER_AUDIT.json",
+    "bytes": 4778,
+    "sha256": "127ff9ed83972e6711060fd8fddbb0b208c37b0a9d5ba2b2aecb758b9a5f954a",
+    "row_ledger_path": "C:\\dev\\clay-training-runs\\source-audits\\frozen-action-math-sources-20261114\\EXACT_COMPILER_AUDIT.rows.jsonl",
+    "row_ledger_bytes": 3737889,
+    "row_ledger_rows": 8473,
+    "row_ledger_sha256": "a62b1364a04ec0c50b1280d22cac63e270eb110c50a2a79f154ffe8f0a84cd02"
+  },
+  "claim_boundary": "This receipt proves immutable source identity, licensing artifacts, local mirror equality, and exact-compiler acceptance for candidate rows. It is not a material dataset manifest, source-authority ledger, training authorization, or evidence of model benefit."
+}

@@ -361,6 +361,31 @@ holdout, ordinary, or retention source family has been admitted. The live
 campaign and its final independent replay must close first. Therefore successor
 launch, promotion, partial unfreeze, and tool dispatch all remain unauthorized.
 
+### Candidate material-source pinning
+
+`CLAY_FROZEN_ACTION_MATH_SOURCE_AUDIT_20261114.json`, SHA-256
+`99abd68fb6336e8400a537e880bb6d7fe1ae0c4d6acdec3ebc1012bde403caac`,
+records a bounded source-preparation pass performed while the predecessor kept
+training. Two independent MIT-licensed source families are now pinned by
+immutable repository commit, local artifact hash, byte count, and license hash:
+OpenAI GSM8K at `3101c7d5072418e28b9008a6636bde82a006892c` as a candidate
+training family, and SVAMP at
+`78e727689e1c1bebfc4be39c446898e8e10b0518` as a candidate held family.
+The existing local GSM8K parquet mirror matches all `7,473 / 7,473` official
+training rows exactly under canonical hashing.
+
+This is source pinning, not dataset admission. The headless exact-compiler sweep
+sealed `8,473` row receipts at SHA-256
+`a62b1364a04ec0c50b1280d22cac63e270eb110c50a2a79f154ffe8f0a84cd02`.
+GSM8K contributes `7,375 / 7,473` value-consistent, compiler-accepted rows;
+`95` rows lack calculator annotations and three expressions use syntax the exact
+compiler rejects (`560//10`, `+55`, and `3*+6`). SVAMP contributes
+`999 / 1,000`; `chal-680` is internally inconsistent (`5.0` from the equation
+versus answer `1.0`) and remains excluded. Independent ordinary and retention
+source families, exact span receipts, and human review remain required. MBPP was
+deliberately excluded because its local immutable registry marks it permanent
+zero-training and tokenizer-ineligible.
+
 The next model-level sieve trial must remain a separately preregistered child of
 the completed campaign. It should attach a fixed-width centroid/trit summary at
 the existing causal input-access seam and compare ordinary/no-intervention,
