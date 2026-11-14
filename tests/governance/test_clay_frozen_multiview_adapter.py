@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import random
 
 import torch
@@ -11,6 +12,7 @@ from python.scbe.clay_frozen_multiview_adapter import (
     counting_rows,
     frozen_state,
     frozen_state_identical,
+    paired_exact_p,
     train_steps,
     vocab_of,
 )
@@ -33,6 +35,11 @@ class FakeProvider:
     def materialize(self, sandbox: int, state: int) -> tuple[torch.Tensor, int, int]:
         feature = torch.arange(37, dtype=torch.float32) * 0.0625 + state * 1e-6 + sandbox * 0.25
         return feature, state % 5, (state // 5) % 8
+
+
+def test_paired_exact_p_handles_large_discordant_counts_without_overflow() -> None:
+    assert paired_exact_p(5, 0) == 0.0625
+    assert paired_exact_p(5000, 0) == math.nextafter(0.0, 1.0)
 
 
 def _config(dataset_hash: str) -> RunConfig:

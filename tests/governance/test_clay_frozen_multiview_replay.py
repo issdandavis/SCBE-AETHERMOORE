@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import inspect
+import math
 import random
 
 import pytest
@@ -12,6 +13,7 @@ from python.scbe.clay_frozen_multiview_adapter import FrozenActionModel
 from python.scbe.clay_frozen_multiview_data import build_frozen_multiview_dataset
 from python.scbe.clay_frozen_multiview_replay import (
     ReplayFrozenActionModel,
+    _paired_exact_p,
     byte_token_identity_receipt,
     build_replay_dataset,
     compare_producer_weight_effect,
@@ -20,6 +22,11 @@ from python.scbe.clay_frozen_multiview_replay import (
     replay_output_diagnostics,
     trainable_weight_diagnostics,
 )
+
+
+def test_replay_paired_exact_p_handles_large_discordant_counts() -> None:
+    assert _paired_exact_p(5, 0) == 0.0625
+    assert _paired_exact_p(5000, 0) == math.nextafter(0.0, 1.0)
 
 
 class FakeReplayProvider:
