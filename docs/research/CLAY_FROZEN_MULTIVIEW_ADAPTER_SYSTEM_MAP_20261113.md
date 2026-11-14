@@ -145,6 +145,39 @@ gain: every trainable scalar moved, held accuracy did not improve, and only one
 seed is terminal. The remaining seeds and matched null arm decide whether this
 pattern is stable.
 
+## Six-artifact replay and first null control — 2026-11-13
+
+After the first null arm and the second seed's parent/static pair became
+terminal, independent replay expanded to `6 / 12` expected artifacts. It
+reconstructed inference for every terminal model and reported zero prediction,
+metric, counting, frozen-core, source, vocabulary, or producer weight-receipt
+mismatches. Status remains `PASS_PARTIAL_INDEPENDENT_REPLAY_NO_VERDICT`; the
+partial receipt's internal replay SHA-256 is
+`ff97b3fd66802b197f6c3adf756e429a16bec6ef638431e96b7ea0645d5e2374`.
+
+The first null control is diagnostically sharp but not a competitive learned
+model. All `140,820` trainable scalars changed, with aggregate delta L2
+`151.5694`, yet all `1,500 / 1,500` held decodes were invalid action IDs. Most
+movement concentrated in `adapter_head` (delta L2 `149.4215`). Multi-view
+therefore beats null with 321 paired wins, zero losses, and exact two-sided
+`p=4.68e-97`; however, that only proves the real byte input carries usable
+action information. It does not establish a multi-view advantage because the
+matched static arm remains the relevant non-degenerate control, and seed one
+was 230 wins versus 234 losses against static (`p=0.8893`).
+
+The second-seed static arm independently replayed at accuracy `0.217333` and
+macro-F1 `0.217502`, close to seed one's `0.216667` and `0.210542`. Its parent
+counting accuracy was `0.629630`, versus `0.740741` for seed one, confirming why
+the preregistered multi-seed analysis must finish before any inference about
+stability. No promotion or partial unfreeze is authorized.
+
+The final-only independent replay watcher is committed at `90ac8e73c` and runs
+headlessly with launcher PID `24116` and worker PID `3396` (launch identities,
+not durable authorities). While the campaign is active it performs only atomic
+result-file polling. Once the aggregate result exists, it runs the independent
+replay once, seals `INDEPENDENT_REPLAY.json`, and exits. Its immutable launch
+receipt is `FINAL_REPLAY_WATCH_LAUNCH_RECEIPT.json` in the run directory.
+
 ## What performed the reasoning
 
 The action target is created by the deterministic developmental sandbox sieve:
