@@ -66,7 +66,9 @@ def _path_key(path: Path) -> str:
     return str(path.resolve()).replace("\\", "/").casefold()
 
 
-def _transform_text(value: str, transform: str) -> str:
+def transform_packet_free_text(value: str, transform: str) -> str:
+    """Apply one allow-listed, deterministic packet-free text transform."""
+
     if transform == IDENTITY_TRANSFORM:
         return value
     if transform == LINE_STRIP_JOIN_TRANSFORM:
@@ -203,7 +205,7 @@ def validate_packet_free_rows(
                 raise ValueError(
                     f"unsupported packet-free text transform: {text_transform}"
                 )
-            transformed_text = _transform_text(text, text_transform)
+            transformed_text = transform_packet_free_text(text, text_transform)
             if not transformed_text.strip():
                 raise ValueError(f"{lane} source transform produced empty text")
             content_sha256 = _required_sha256(
