@@ -1,0 +1,279 @@
+{
+  "schema": "codex.system-inventory.v2",
+  "generated_at": "2026-11-13T21:31:00-08:00",
+  "read_only": true,
+  "purpose": "Bounded inventory and dependency map for the prime-token v7 source-disjoint readiness chain. It records existing code, immutable receipts, and authority boundaries; it does not authorize scoring or training.",
+  "enumeration": {
+    "method": "rg --files with ignored files omitted; the inventory file itself is excluded from its own root count",
+    "path_samples_are_dependency_claims_only": true,
+    "raw_rollout_text_copied": false,
+    "runtime_receipts_copied_into_git": false
+  },
+  "authority": {
+    "closed_source_collection": true,
+    "unreviewed_packet_preparation_after_minimum": true,
+    "minimum_candidates": 30,
+    "labels": false,
+    "scoring": false,
+    "training_intake": false,
+    "catalog_write": false,
+    "weight_write": false,
+    "promotion": false,
+    "partial_unfreeze": false
+  },
+  "roots": [
+    {
+      "id": "scbe_integration",
+      "root": "C:\\dev\\_wt_scbe_atomic_stitch_20261113",
+      "role": "Integration code, independent watch-chain audit, tests, and durable system maps",
+      "git_branch": "research/atomic-stitch-context-20261113",
+      "git_head_before_inventory_commit": "1878edfba2a3cd49bef539e6ec771332a6e65186",
+      "enumerated_file_count": 6637,
+      "enumerated_bytes": 93152271,
+      "instructions": [
+        "AGENTS.md",
+        "config/AGENTS.md",
+        "docs/AGENTS.md"
+      ],
+      "key_paths": [
+        "python/scbe/prime_token_query_harvest.py",
+        "python/scbe/prime_token_watch_audit.py",
+        "scripts/tokenizer/harvest_prime_token_queries.py",
+        "scripts/tokenizer/verify_prime_token_watch_chain.py",
+        "scripts/tokenizer/watch_prime_token_open_source_readiness.py",
+        "tests/tokenizer/test_prime_token_open_source_readiness.py",
+        "tests/tokenizer/test_prime_token_query_harvest.py",
+        "docs/tokenizer/PRIME_TOKEN_CATALOG_SYSTEM_MAP.md",
+        "docs/research/PRIME_TOKEN_SOURCE_DISJOINT_READINESS_20261113.md"
+      ]
+    },
+    {
+      "id": "e92_independent_gate",
+      "root": "C:\\Users\\issda\\_worktrees\\scbe-e92-selection-audit-binding-20261110",
+      "role": "Independent E92 verification, selection-audit binding, and source-family gate",
+      "git_branch": "research/e92-selection-audit-binding-20261110",
+      "git_head": "6db589b73da4d2de371c36edafcadec3d1897097",
+      "enumerated_file_count": 6577,
+      "enumerated_bytes": 92559614,
+      "key_paths": [
+        "python/scbe/prime_token_prospective_verify.py",
+        "scripts/tokenizer/verify_e92_prospective.py",
+        "scripts/tokenizer/watch_run_e92_prospective.py",
+        "scripts/tokenizer/audit_e92_source_family_gate.py",
+        "scripts/tokenizer/watch_audit_e92_source_family_gate.py",
+        "tests/tokenizer/test_watch_run_e92_prospective.py",
+        "tests/tokenizer/test_watch_audit_e92_source_family_gate.py",
+        "tests/tokenizer/test_e92_source_family_gate.py"
+      ]
+    },
+    {
+      "id": "loom_collector_reference",
+      "root": "C:\\dev\\_wt_clay_prospective_v3_20261109\\experiments\\clay_codex_session_harvest_20261107",
+      "role": "Closed-source collector and prospective-review implementation reference",
+      "containing_git_branch": "fix/prospective-closed-snapshot-v3",
+      "containing_git_head": "e2ac4eee3a778bbcfa38de03736016f346b23f25",
+      "enumerated_file_count": 44,
+      "enumerated_bytes": 409101,
+      "key_paths": [
+        "harvest_prospective_codex_sessions.py",
+        "watch_prospective_codex_sessions.py",
+        "prepare_prospective_review.py",
+        "watch_prepare_prospective_review.py",
+        "SOURCE_SESSION_DISJOINT_GATE_SYSTEM_MAP.md",
+        "PROSPECTIVE_WATCHER_SYSTEM_MAP.md",
+        "PROSPECTIVE_PREPARER_WATCHER_SYSTEM_MAP.md"
+      ]
+    },
+    {
+      "id": "loom_pinned_preparer",
+      "root": "C:\\dev\\_wt_clay_sidecar_multiseed_20261107\\experiments\\clay_codex_session_harvest_20261107",
+      "role": "Exact source of the currently pinned unreviewed-packet preparer and watcher",
+      "containing_git_branch": "research/sidecar-input-access-multiseed",
+      "containing_git_head": "3dc2fda1840e2808ac79566e584fc416617e8a93",
+      "pinned_commit": "43efe7c21621d9443743552a3f5d2548db6b2424",
+      "enumerated_file_count": 42,
+      "enumerated_bytes": 377225,
+      "key_paths": [
+        "prepare_prospective_review.py",
+        "watch_prepare_prospective_review.py"
+      ],
+      "pinned_sha256": {
+        "prepare_prospective_review.py": "9b348e059bb6074385d5537e204af90a7b9b2171376724af9e0b4e9c46e80a58",
+        "watch_prepare_prospective_review.py": "6623f8d0682709c8457c3bccfce564ce1b74d7802af3c6b1ef5c2bf7ca0d0564"
+      }
+    },
+    {
+      "id": "runtime_receipts",
+      "root": "C:\\dev\\clay-training-runs\\prime-token-catalog-20261106",
+      "role": "Immutable catalogs, queue snapshots, watch statuses, audits, and readiness receipts",
+      "enumerated_file_count": 565,
+      "enumerated_bytes": 2216872415,
+      "catalog_database": "catalog-v7-corrected-20261110/catalog.sqlite3",
+      "catalog_sha256": "a720faae57ca5f64424624dd53f4a8913a7b01fdf12ae9b8e6855bd294ba751a"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "closed_rollout_snapshot",
+      "kind": "source boundary",
+      "rule": "Only stable, closed, post-freeze user-authored turns may enter; the current open session remains deferred."
+    },
+    {
+      "id": "loom_closed_source_collector",
+      "kind": "deterministic collector",
+      "inputs": [
+        "rollout metadata",
+        "closed-source snapshot"
+      ],
+      "outputs": [
+        "immutable scrubbed direct-speech dataset",
+        "source/hash receipt"
+      ]
+    },
+    {
+      "id": "scbe_manifest_bound_harvester",
+      "kind": "deterministic queue builder",
+      "implementation": [
+        "python/scbe/prime_token_query_harvest.py",
+        "scripts/tokenizer/harvest_prime_token_queries.py"
+      ],
+      "output": "v7-manifest-bound prospective queue"
+    },
+    {
+      "id": "pinned_packet_preparer",
+      "kind": "deterministic preparer",
+      "pin_receipt": "prospective-preparer-watcher-v7-20261110/PREPARER_WATCHER_PIN.json",
+      "output": "unreviewed packet only after the immutable candidate floor is met"
+    },
+    {
+      "id": "selection_audit",
+      "kind": "fail-closed audit",
+      "status_receipt": "prospective-selection-audit-watcher-v7-20261110/SELECTION_AUDIT_WATCHER_STATUS.json"
+    },
+    {
+      "id": "e92_independent_verifier",
+      "kind": "independent audit",
+      "status_receipt": "prospective-e92-watcher-v7-20261110/E92_WATCHER_STATUS.json"
+    },
+    {
+      "id": "source_family_gate",
+      "kind": "source-disjoint gate",
+      "status_receipt": "prospective-source-family-gate-watcher-v7-20261111/SOURCE_FAMILY_GATE_WATCHER_STATUS.json"
+    },
+    {
+      "id": "human_hash_bound_review",
+      "kind": "manual evidence boundary",
+      "enabled": false,
+      "enable_condition": "At least 30 accepted closed-session requests"
+    },
+    {
+      "id": "controlled_evaluator",
+      "kind": "matched evaluation",
+      "enabled": false,
+      "required_controls": [
+        "lexical baseline",
+        "no-intervention baseline",
+        "route-null equal-width control",
+        "shuffled binding",
+        "ablation",
+        "multi-seed and two-pooled-SD gate"
+      ]
+    },
+    {
+      "id": "training_release",
+      "kind": "authority boundary",
+      "enabled": false
+    }
+  ],
+  "edges": [
+    {
+      "from": "closed_rollout_snapshot",
+      "to": "loom_closed_source_collector",
+      "state": "live"
+    },
+    {
+      "from": "loom_closed_source_collector",
+      "to": "scbe_manifest_bound_harvester",
+      "state": "live"
+    },
+    {
+      "from": "scbe_manifest_bound_harvester",
+      "to": "pinned_packet_preparer",
+      "state": "waiting",
+      "reason": "4 of 30 closed-session candidates"
+    },
+    {
+      "from": "pinned_packet_preparer",
+      "to": "selection_audit",
+      "state": "waiting"
+    },
+    {
+      "from": "selection_audit",
+      "to": "e92_independent_verifier",
+      "state": "waiting"
+    },
+    {
+      "from": "e92_independent_verifier",
+      "to": "source_family_gate",
+      "state": "waiting"
+    },
+    {
+      "from": "source_family_gate",
+      "to": "human_hash_bound_review",
+      "state": "blocked_by_fixed_candidate_floor"
+    },
+    {
+      "from": "human_hash_bound_review",
+      "to": "controlled_evaluator",
+      "state": "not_authorized"
+    },
+    {
+      "from": "controlled_evaluator",
+      "to": "training_release",
+      "state": "not_authorized"
+    }
+  ],
+  "current_accounting": {
+    "stable_sessions": 17,
+    "closed_sessions": 16,
+    "open_sessions": 1,
+    "collector_eligible_unique_turns": 195,
+    "accepted_closed_candidates": 4,
+    "deferred_open_candidates": 10,
+    "projected_if_open_closes_unchanged": 14,
+    "candidate_deficit_after_projection": 16,
+    "topic_rejections": 143,
+    "length_rejections": 38,
+    "accounting_gap": 0,
+    "invalid_json": 0,
+    "classification": "FIXED_SELECTOR_CANDIDATE_SCARCITY"
+  },
+  "live_status": {
+    "collector": "WAITING_FOR_NEW_CLOSED_SESSION",
+    "preparer": "WAITING_FOR_PROSPECTIVE_QUEUE",
+    "selection_audit": "WAITING_FOR_PROSPECTIVE_QUEUE",
+    "e92": "WAITING_FOR_PROSPECTIVE_QUEUE",
+    "source_family_gate": "WAITING_FOR_PREPARATION_PACKET"
+  },
+  "evidence": {
+    "live_chain_audit": {
+      "path": "C:\\dev\\clay-training-runs\\prime-token-catalog-20261106\\source-disjoint-audit-20261114\\LIVE_CHAIN_AUDIT_20261114T0520Z.json",
+      "status": "VERIFIED_WAITING_NO_SCORING",
+      "canonical_audit_sha256": "e68775d64ab4d1ca3d37d5d53adc20f1446963abb697dc762b61700d6ae32e48",
+      "file_sha256": "ce8195eba9441c2513576dd6dd94215e19abc0d92641a6ccf0fd9bdae626d5ad"
+    },
+    "query_readiness_snapshot": {
+      "path": "C:\\dev\\clay-training-runs\\prime-token-catalog-20261106\\source-disjoint-audit-20261114\\QUERY_READINESS_SNAPSHOT_20261114T0522Z.json",
+      "status": "WAITING_FOR_CLOSED_REVIEW_QUERIES",
+      "file_sha256": "8934aa1253e7b093ba5d65079329f8b4ebd358260d4cdf3e0b8786d2d172c1fe"
+    }
+  },
+  "verification": {
+    "command": "python -X utf8 -B -m pytest -q tests/tokenizer/test_prime_token_open_source_readiness.py tests/tokenizer/test_prime_token_query_harvest.py -p no:cacheprovider",
+    "result": "20 passed in 2.00s",
+    "selector_changed": false,
+    "minimum_changed": false,
+    "catalog_changed": false,
+    "model_or_weights_changed": false
+  }
+}
