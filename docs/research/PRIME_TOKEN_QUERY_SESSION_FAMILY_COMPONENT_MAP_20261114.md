@@ -1,6 +1,6 @@
 # Prime-token query-session/family component gate — system map
 
-Status: `IMPLEMENTED_NOT_ACTIVATED`; audit-only; not connected to the active v7 workers
+Status: `IMPLEMENTED_WAITING_FAIL_CLOSED`; audit-only; connected only to v7 readiness receipts
 Date: 2026-11-14
 
 ## Capability boundary
@@ -156,7 +156,7 @@ before downstream use.
 
 ## Watcher implementation receipt — 2026-11-14
 
-Implemented but not yet launched as a persistent worker:
+Implemented and launched as a separate fail-closed waiting worker:
 
 - `scripts/tokenizer/watch_prime_query_family_components.py`
   (`fc842e6bd660561e36d0823ff9ee7ca44531837d333da42302685b363fee1454`)
@@ -175,4 +175,16 @@ A one-shot run against the real v7 status files wrote only
 It reported `WAITING_FOR_PREPARATION_PACKET`, candidate count `4`, labels
 `NOT_OPENED`, and no scoring, training, execution, merge, promotion or partial
 unfreeze authority. This proves waiting-path wiring only; it is not a component
-evaluation, persistent activation, or model result.
+evaluation or model result.
+
+The persistent worker was then launched through the existing hidden
+`run_headless.py` path from commit
+`ad052f7f01106d2924e5302034a86e4d87c21d85`. Wrapper PID `9116` and worker PID
+`3184` remained live across two advancing poll cycles (`08:16:02` and
+`08:17:02` UTC), both reporting `WAITING_FOR_PREPARATION_PACKET`, four
+candidates and labels `NOT_OPENED`. The runtime receipt is
+`prospective-query-session-family-component-watcher-v7-20261114/ACTIVATION_RECEIPT.json`
+(`98b42592a944ac5e4518e3c9158ef13bd94fdc4c6491f2b23cb30acf07ede4f5`).
+Activation adds no evaluation result or authority; it only makes the sealed
+audit run automatically if the existing packet, selection and label gates later
+become valid.
