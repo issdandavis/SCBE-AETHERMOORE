@@ -51,6 +51,15 @@ held diagonal source family
   checkpoints, runs the independent replay once after training terminates,
   preserves stale/unbound receipts for review, and exits with no promotion or
   partial-unfreeze authority.
+- `python/scbe/clay_frozen_multiview_supervisor.py` and
+  `scripts/research/watch_clay_frozen_multiview_training.py`: a separate,
+  fail-closed liveness guard. It exact-matches the producer command, verifies
+  the immutable manifest/runner/data/preregistration/launcher hashes and each
+  active two-slot checkpoint pointer, preserves the original storage gate, and
+  may relaunch only the already pinned hidden command. It never edits model
+  state, changes parameters, dispatches a cloud duplicate, scores results,
+  promotes a checkpoint, or authorizes partial unfreeze. Three bounded restart
+  attempts without durable progress terminate in review rather than a loop.
 - `tests/governance/test_clay_frozen_multiview_data.py`: byte and split receipts.
 - `tests/governance/test_clay_frozen_multiview_adapter.py`: frozen-surface and
   output-accounting tests.
