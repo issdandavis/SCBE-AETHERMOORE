@@ -60,7 +60,7 @@ jobs:
 
       - name: Create or update website betterment issue
         if: steps.betterment.outputs.issue_needed == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           ISSUE_PATH: ${{ steps.betterment.outputs.issue_path }}
           OVERALL: ${{ steps.betterment.outputs.overall }}
