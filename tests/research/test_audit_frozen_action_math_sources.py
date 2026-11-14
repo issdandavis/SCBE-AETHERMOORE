@@ -32,6 +32,7 @@ def test_audit_row_requires_value_consistency_and_compiler_acceptance() -> None:
             "prompt": "What is three plus four?",
             "source_expression": "3+4",
             "expected": "7",
+            "final_expected": "7",
         },
         compile_action=compile_action,
     )
@@ -43,6 +44,7 @@ def test_audit_row_requires_value_consistency_and_compiler_acceptance() -> None:
             "prompt": "Divide evenly.",
             "source_expression": "560//10",
             "expected": "56",
+            "final_expected": "56",
         },
         compile_action=compile_action,
     )
@@ -54,6 +56,19 @@ def test_audit_row_requires_value_consistency_and_compiler_acceptance() -> None:
             "prompt": "A mismatched source row.",
             "source_expression": "4-2+3",
             "expected": "1",
+            "final_expected": "1",
+        },
+        compile_action=compile_action,
+    )
+    intermediate = _audit_row(
+        {
+            "source": "fixture",
+            "source_row_id": "intermediate",
+            "source_index": 3,
+            "prompt": "The last annotation is not the final answer.",
+            "source_expression": "5+8+0",
+            "expected": "13",
+            "final_expected": "10",
         },
         compile_action=compile_action,
     )
@@ -64,14 +79,18 @@ def test_audit_row_requires_value_consistency_and_compiler_acceptance() -> None:
     assert unsupported["compiler_error"]["type"] == "ValueError"
     assert inconsistent["accepted"] is False
     assert inconsistent["compiler_receipt_sha256"] == "a" * 64
-    assert _summarize([good, unsupported, inconsistent]) == {
+    assert intermediate["accepted"] is False
+    assert intermediate["value_consistent"] is True
+    assert intermediate["target_consistent"] is False
+    assert _summarize([good, unsupported, inconsistent, intermediate]) == {
         "accepted": 1,
         "accepted_ledger_sha256": _summarize([good])["accepted_ledger_sha256"],
         "compiler_rejected": 1,
         "missing_expression": 0,
-        "rejected": 2,
-        "rejected_row_ids": ["unsupported", "inconsistent"],
-        "total": 3,
+        "rejected": 3,
+        "rejected_row_ids": ["unsupported", "inconsistent", "intermediate"],
+        "target_inconsistent": 2,
+        "total": 4,
         "value_inconsistent": 1,
     }
 
@@ -82,7 +101,7 @@ def test_source_rows_extracts_last_gsm8k_annotation(tmp_path) -> None:
         json.dumps(
             {
                 "question": "Two steps.",
-                "answer": "First <<1+1=2>>. Then <<2*3=6>>.\n#### 6",
+                "answer": "First <<1+1=2>>. Then <<2*3=6>>.\n#### 7",
             }
         )
         + "\n",
@@ -107,4 +126,6 @@ def test_source_rows_extracts_last_gsm8k_annotation(tmp_path) -> None:
     rows = list(_source_rows(gsm8k, svamp))
     assert rows[0]["source_expression"] == "2*3"
     assert rows[0]["expected"] == "6"
+    assert rows[0]["final_expected"] == "7"
     assert rows[1]["prompt"] == "There were four. Two left; how many remain?"
+    assert rows[1]["final_expected"] == 2

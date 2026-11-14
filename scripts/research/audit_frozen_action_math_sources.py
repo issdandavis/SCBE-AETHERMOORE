@@ -18,8 +18,9 @@ import re
 import sys
 from typing import Any, Callable, Iterable
 
-SCHEMA = "clay.frozen-action-math-exact-compiler-audit.v1"
+SCHEMA = "clay.frozen-action-math-exact-compiler-audit.v2"
 GSM8K_ANNOTATION = re.compile(r"<<([^<>]+)=([^<>]+)>>")
+GSM8K_FINAL_ANSWER = re.compile(r"####\s*([^\r\n]+)")
 
 
 def _canonical_json(value: Any) -> str:
@@ -109,6 +110,7 @@ def _source_rows(gsm8k: Path, svamp: Path) -> Iterable[dict[str, Any]]:
         for index, line in enumerate(handle):
             raw = json.loads(line)
             matches = GSM8K_ANNOTATION.findall(str(raw["answer"]))
+            final_answers = GSM8K_FINAL_ANSWER.findall(str(raw["answer"]))
             expression = matches[-1][0] if matches else None
             expected = matches[-1][1] if matches else None
             yield {
@@ -118,6 +120,7 @@ def _source_rows(gsm8k: Path, svamp: Path) -> Iterable[dict[str, Any]]:
                 "prompt": str(raw["question"]),
                 "source_expression": expression,
                 "expected": expected,
+                "final_expected": final_answers[-1] if final_answers else None,
             }
 
     payload = json.loads(svamp.read_text(encoding="utf-8"))
@@ -132,6 +135,7 @@ def _source_rows(gsm8k: Path, svamp: Path) -> Iterable[dict[str, Any]]:
             "prompt": prompt,
             "source_expression": str(raw["Equation"]),
             "expected": raw["Answer"],
+            "final_expected": raw["Answer"],
         }
 
 
@@ -144,11 +148,13 @@ def _audit_row(
     normalized = None if source_expression is None else str(source_expression).replace(",", "").strip()
     safe_value: Fraction | None = None
     value_consistent = False
+    target_consistent = False
     arithmetic_error: dict[str, str] | None = None
     if normalized is not None:
         try:
             safe_value = _safe_value(normalized)
             value_consistent = safe_value == _fraction(row["expected"])
+            target_consistent = safe_value == _fraction(row["final_expected"])
         except (ValueError, ZeroDivisionError, SyntaxError) as error:
             arithmetic_error = {"type": type(error).__name__, "message": str(error)}
 
@@ -161,13 +167,14 @@ def _audit_row(
         except Exception as error:  # The external exact compiler owns its error taxonomy.
             compiler_error = {"type": type(error).__name__, "message": str(error)}
 
-    accepted = bool(value_consistent and compiler_receipt is not None)
+    accepted = bool(value_consistent and target_consistent and compiler_receipt is not None)
     return {
         "accepted": accepted,
         "arithmetic_error": arithmetic_error,
         "compiler_error": compiler_error,
         "compiler_receipt_sha256": compiler_receipt,
         "expected": None if row["expected"] is None else str(row["expected"]),
+        "final_expected": (None if row["final_expected"] is None else str(row["final_expected"])),
         "normalized_expression": normalized,
         "prompt_sha256": _prompt_sha256(row["prompt"]),
         "safe_value": None if safe_value is None else _fraction_text(safe_value),
@@ -175,6 +182,7 @@ def _audit_row(
         "source_expression": source_expression,
         "source_index": row["source_index"],
         "source_row_id": row["source_row_id"],
+        "target_consistent": target_consistent,
         "value_consistent": value_consistent,
     }
 
@@ -192,6 +200,9 @@ def _summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "rejected": len(rejected),
         "rejected_row_ids": [row["source_row_id"] for row in rejected],
         "total": len(rows),
+        "target_inconsistent": sum(
+            row["normalized_expression"] is not None and not row["target_consistent"] for row in rows
+        ),
         "value_inconsistent": sum(
             row["normalized_expression"] is not None and not row["value_consistent"] for row in rows
         ),
