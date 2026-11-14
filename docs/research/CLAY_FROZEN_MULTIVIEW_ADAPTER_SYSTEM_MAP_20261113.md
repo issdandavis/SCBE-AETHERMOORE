@@ -87,7 +87,7 @@ The first multi-view horse (`seed=20261131`) is terminal and independently
 replayed. The partial receipt now covers `3 / 12` terminal artifacts with zero
 prediction, metric, counting, source, vocabulary, or frozen-core mismatches.
 The hardened replay receipt at this boundary has SHA-256
-`1507a436b46a6928b0fa14bb8ff4ce78eac38ea120ad88830cb607c8d40809ea`.
+`666d90e61f1028f7040645b44d08499813d7ade3b2c02c5620866352852cc6c6`.
 Its validator rejects fractional action IDs, correctness flags that disagree
 with the actual target/prediction pair, and duplicate held-example keys rather
 than truncating or overwriting them.
@@ -113,6 +113,32 @@ regressed more for `push_x_negative` and `push_y_positive`. It improved sectors
 0 and 6 while losing most heavily in sectors 3 and 4. Full confusion matrices,
 per-sector distributions, and error flows are stored in
 `PARTIAL_INDEPENDENT_REPLAY.json` rather than inferred from averages.
+
+## First-seed trainable-weight audit — 2026-11-13
+
+The independent replay now reconstructs the parent and candidate trainable
+states without the producer's flattening helper. It hashes the named tensors,
+measures each adapter group, and compares scalar counts and norms with the
+producer receipt. All comparisons passed. The frozen embedding, GRU, and
+counting head remain excluded from these numbers and separately bit-identical.
+
+| Trainable movement | Static | Multi-view |
+| --- | ---: | ---: |
+| Changed scalars | 140,820 / 140,820 | 140,820 / 140,820 |
+| Aggregate delta L2 | 109.2001 | 90.5166 |
+| Aggregate max absolute delta | 3.5135 | 2.1894 |
+| Mean absolute delta | 0.19184 | 0.15078 |
+| Delta / initial L2 | 7.7212 | 6.4001 |
+| Initial/final cosine | 0.15184 | 0.18307 |
+
+Multi-view moved about 17.1% less in aggregate. Its largest movement remained
+the zero-initialized `adapter.up` bridge (`72.7266` versus static `85.6336`).
+The clearest reduction was in `adapter_head` (`28.8784` versus `47.9529`, about
+39.8% less). This is compatible with the observed redistribution toward more
+balanced action outputs, but it does not establish efficiency or a capability
+gain: every trainable scalar moved, held accuracy did not improve, and only one
+seed is terminal. The remaining seeds and matched null arm decide whether this
+pattern is stable.
 
 ## What performed the reasoning
 

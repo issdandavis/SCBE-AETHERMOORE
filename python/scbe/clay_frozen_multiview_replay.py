@@ -45,6 +45,8 @@ CONTROLS = (
     "no_intervention_adapter",
 )
 FROZEN_PREFIXES = ("e.", "g.", "count_head.")
+TRAINABLE_PREFIXES = ("adapter.", "adapter_head.")
+WEIGHT_EFFECT_TOLERANCE = 1e-4
 STRUCTURAL_MISMATCH_DELTA = 1e300
 PAD, BOS, SEP, EOS = "\x00", "\x02", "\x1f", "\x03"
 FEATURE_WIDTH = 37
@@ -907,6 +909,153 @@ def _frozen_equal(
     )
 
 
+def _state_subset_sha256(state: Mapping[str, Tensor], keys: Sequence[str]) -> str:
+    """Hash a named tensor subset without using the producer's flat-array helper."""
+
+    digest = hashlib.sha256()
+    for key in keys:
+        tensor = state[key].detach().cpu().contiguous()
+        descriptor = _canonical_json(
+            {
+                "key": key,
+                "dtype": str(tensor.dtype),
+                "shape": list(tensor.shape),
+            }
+        )
+        payload = tensor.view(torch.uint8).numpy().tobytes()
+        digest.update(struct.pack(">Q", len(descriptor)))
+        digest.update(descriptor)
+        digest.update(struct.pack(">Q", len(payload)))
+        digest.update(payload)
+    return digest.hexdigest()
+
+
+def _trainable_group(key: str) -> str:
+    if key.startswith("adapter_head."):
+        return "adapter_head"
+    parts = key.split(".")
+    if len(parts) >= 2 and parts[0] == "adapter":
+        return ".".join(parts[:2])
+    raise ValueError(f"not a trainable adapter key: {key}")
+
+
+def trainable_weight_diagnostics(
+    parent_state: Mapping[str, Tensor], candidate_state: Mapping[str, Tensor]
+) -> dict[str, Any]:
+    """Measure where trainable weights moved while excluding the frozen core."""
+
+    parent_keys = sorted(
+        key for key in parent_state if key.startswith(TRAINABLE_PREFIXES)
+    )
+    candidate_keys = sorted(
+        key for key in candidate_state if key.startswith(TRAINABLE_PREFIXES)
+    )
+    if parent_keys != candidate_keys or not parent_keys:
+        raise RuntimeError("trainable adapter key sets differ or are empty")
+
+    def summarize(keys: Sequence[str]) -> dict[str, Any]:
+        scalar_count = 0
+        changed_scalars = 0
+        initial_square = 0.0
+        final_square = 0.0
+        delta_square = 0.0
+        dot = 0.0
+        delta_abs_sum = 0.0
+        delta_linf = 0.0
+        tensor_count = 0
+        for key in keys:
+            before = parent_state[key].detach().cpu()
+            after = candidate_state[key].detach().cpu()
+            if before.shape != after.shape or before.dtype != after.dtype:
+                raise RuntimeError(f"trainable tensor shape/dtype mismatch: {key}")
+            if before.is_floating_point() and (
+                not bool(torch.isfinite(before).all())
+                or not bool(torch.isfinite(after).all())
+            ):
+                raise RuntimeError(f"non-finite trainable tensor: {key}")
+            before64 = before.to(torch.float64)
+            after64 = after.to(torch.float64)
+            delta64 = after64 - before64
+            scalar_count += before.numel()
+            changed_scalars += int(torch.count_nonzero(before != after))
+            initial_square += float(torch.sum(before64 * before64))
+            final_square += float(torch.sum(after64 * after64))
+            delta_square += float(torch.sum(delta64 * delta64))
+            dot += float(torch.sum(before64 * after64))
+            delta_abs_sum += float(torch.sum(torch.abs(delta64)))
+            if delta64.numel():
+                delta_linf = max(delta_linf, float(torch.max(torch.abs(delta64))))
+            tensor_count += 1
+        initial_l2 = math.sqrt(initial_square)
+        final_l2 = math.sqrt(final_square)
+        delta_l2 = math.sqrt(delta_square)
+        return {
+            "tensor_count": tensor_count,
+            "scalar_count": scalar_count,
+            "changed_scalars": changed_scalars,
+            "changed_fraction": changed_scalars / scalar_count if scalar_count else 0.0,
+            "initial_l2": initial_l2,
+            "final_l2": final_l2,
+            "delta_l2": delta_l2,
+            "delta_linf": delta_linf,
+            "mean_abs_delta": delta_abs_sum / scalar_count if scalar_count else 0.0,
+            "relative_delta_l2": delta_l2 / initial_l2 if initial_l2 else None,
+            "initial_final_cosine": (
+                dot / (initial_l2 * final_l2) if initial_l2 and final_l2 else None
+            ),
+        }
+
+    grouped_keys: dict[str, list[str]] = {}
+    for key in parent_keys:
+        grouped_keys.setdefault(_trainable_group(key), []).append(key)
+    return {
+        "schema": "clay.frozen-adapter-weight-diagnostics.v1",
+        "scope": "adapter and adapter_head only; frozen core excluded",
+        "trainable_keys": parent_keys,
+        "initial_state_sha256": _state_subset_sha256(parent_state, parent_keys),
+        "final_state_sha256": _state_subset_sha256(candidate_state, parent_keys),
+        "aggregate": summarize(parent_keys),
+        "groups": {
+            group: summarize(keys) for group, keys in sorted(grouped_keys.items())
+        },
+    }
+
+
+def compare_producer_weight_effect(
+    independent: Mapping[str, Any], recorded: Mapping[str, Any] | None
+) -> dict[str, Any]:
+    """Compare independent norms/counts with the producer's aggregate receipt."""
+
+    aggregate = independent["aggregate"]
+    if recorded is None:
+        passed = int(aggregate["changed_scalars"]) == 0
+        return {
+            "applicable": False,
+            "pass": passed,
+            "reason": "untouched parent has no producer weight-effect receipt",
+        }
+    count_match = int(aggregate["scalar_count"]) == int(recorded["scalar_count"])
+    changed_match = int(aggregate["changed_scalars"]) == int(
+        recorded["changed_scalars"]
+    )
+    l2_delta = abs(float(aggregate["delta_l2"]) - float(recorded["delta_l2"]))
+    linf_delta = abs(float(aggregate["delta_linf"]) - float(recorded["delta_linf"]))
+    return {
+        "applicable": True,
+        "pass": (
+            count_match
+            and changed_match
+            and l2_delta <= WEIGHT_EFFECT_TOLERANCE
+            and linf_delta <= WEIGHT_EFFECT_TOLERANCE
+        ),
+        "scalar_count_match": count_match,
+        "changed_scalars_match": changed_match,
+        "delta_l2_abs_difference": l2_delta,
+        "delta_linf_abs_difference": linf_delta,
+        "tolerance": WEIGHT_EFFECT_TOLERANCE,
+    }
+
+
 def _load_payload(path: Path, expected_sha256: str) -> dict[str, Any]:
     if _file_sha256(path) != expected_sha256:
         raise RuntimeError(f"artifact hash mismatch: {path}")
@@ -1004,7 +1153,13 @@ def verify_completed_artifacts(
                 pending.append(identity)
                 incomplete_pairs.append(identity)
             elif result_path.is_file():
-                candidates.append((arm, artifact, result_path, None))
+                if parent is None:
+                    identity = f"{arm}:seed-{seed}"
+                    pending.append(identity)
+                    incomplete_pairs.append(identity)
+                    errors.append(f"{identity}: terminal horse exists without parent")
+                else:
+                    candidates.append((arm, artifact, result_path, None))
             else:
                 pending.append(f"{arm}:seed-{seed}")
 
@@ -1045,6 +1200,12 @@ def verify_completed_artifacts(
                 parent is not None
                 and _frozen_equal(parent["model_state"], payload["model_state"])
             )
+            weight_diagnostics = trainable_weight_diagnostics(
+                parent["model_state"], payload["model_state"]
+            )
+            weight_comparison = compare_producer_weight_effect(
+                weight_diagnostics, recorded.get("weight_effect")
+            )
             if mismatch_count:
                 errors.append(
                     f"{arm} seed {seed}: {mismatch_count} prediction mismatches"
@@ -1055,6 +1216,8 @@ def verify_completed_artifacts(
                 errors.append(f"{arm} seed {seed}: counting delta {count_delta}")
             if not frozen_exact:
                 errors.append(f"{arm} seed {seed}: frozen core differs")
+            if not weight_comparison["pass"]:
+                errors.append(f"{arm} seed {seed}: weight-effect receipt differs")
             receipts.append(
                 {
                     "arm": arm,
@@ -1068,6 +1231,8 @@ def verify_completed_artifacts(
                     "max_metric_delta": metric_delta,
                     "counting_delta": count_delta,
                     "frozen_core_bit_identical": frozen_exact,
+                    "weight_diagnostics": weight_diagnostics,
+                    "producer_weight_effect_comparison": weight_comparison,
                     "metrics": metrics,
                     "output_diagnostics": output_diagnostics,
                     "counting_accuracy": count_score,
@@ -1206,6 +1371,12 @@ def verify_run(run_dir: Path, *, tolerance: float = 1e-12) -> dict[str, Any]:
             metric_delta = _max_numeric_delta(metrics, recorded["metrics"])
             count_delta = abs(count_score - float(recorded["counting_accuracy"]))
             frozen_exact = _frozen_equal(parent_state, payload["model_state"])
+            weight_diagnostics = trainable_weight_diagnostics(
+                parent_state, payload["model_state"]
+            )
+            weight_comparison = compare_producer_weight_effect(
+                weight_diagnostics, recorded.get("weight_effect")
+            )
             if mismatch_count:
                 errors.append(
                     f"{arm} seed {seed}: {mismatch_count} prediction mismatches"
@@ -1216,6 +1387,8 @@ def verify_run(run_dir: Path, *, tolerance: float = 1e-12) -> dict[str, Any]:
                 errors.append(f"{arm} seed {seed}: counting delta {count_delta}")
             if not frozen_exact:
                 errors.append(f"{arm} seed {seed}: frozen core differs")
+            if not weight_comparison["pass"]:
+                errors.append(f"{arm} seed {seed}: weight-effect receipt differs")
             replay_row = {
                 "arm": arm,
                 "seed": seed,
@@ -1236,6 +1409,8 @@ def verify_run(run_dir: Path, *, tolerance: float = 1e-12) -> dict[str, Any]:
                     "max_metric_delta": metric_delta,
                     "counting_delta": count_delta,
                     "frozen_core_bit_identical": frozen_exact,
+                    "weight_diagnostics": weight_diagnostics,
+                    "producer_weight_effect_comparison": weight_comparison,
                     "output_diagnostics": output_diagnostics,
                 }
             )

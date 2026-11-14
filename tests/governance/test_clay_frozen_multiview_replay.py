@@ -14,9 +14,11 @@ from python.scbe.clay_frozen_multiview_replay import (
     ReplayFrozenActionModel,
     byte_token_identity_receipt,
     build_replay_dataset,
+    compare_producer_weight_effect,
     paired_output_diagnostics,
     replay_action_metrics,
     replay_output_diagnostics,
+    trainable_weight_diagnostics,
 )
 
 
@@ -54,6 +56,46 @@ def test_byte_token_identity_receipt_requires_the_complete_256_plane() -> None:
     missing = byte_token_identity_receipt(["\x00", *byte_plane[:-1]])
     assert missing["pass"] is False
     assert missing["missing_byte_values"] == [255]
+
+
+def test_weight_diagnostics_isolate_groups_and_verify_aggregate_receipt() -> None:
+    parent = {
+        "e.weight": torch.tensor([[9.0]]),
+        "adapter.down.weight": torch.tensor([[1.0, 2.0]]),
+        "adapter.down.bias": torch.tensor([0.0]),
+        "adapter.up.weight": torch.tensor([[0.0]]),
+        "adapter_head.weight": torch.tensor([[3.0]]),
+        "adapter_head.bias": torch.tensor([0.0]),
+    }
+    candidate = {key: value.clone() for key, value in parent.items()}
+    candidate["adapter.down.weight"][0, 1] = 4.0
+    candidate["adapter_head.bias"][0] = -0.5
+
+    receipt = trainable_weight_diagnostics(parent, candidate)
+    aggregate = receipt["aggregate"]
+
+    assert aggregate["scalar_count"] == 6
+    assert aggregate["changed_scalars"] == 2
+    assert aggregate["delta_l2"] == pytest.approx((4.0 + 0.25) ** 0.5)
+    assert aggregate["delta_linf"] == 2.0
+    assert set(receipt["groups"]) == {
+        "adapter.down",
+        "adapter.up",
+        "adapter_head",
+    }
+    assert receipt["groups"]["adapter.down"]["changed_scalars"] == 1
+    assert receipt["groups"]["adapter_head"]["changed_scalars"] == 1
+    assert parent["e.weight"].tolist() == [[9.0]]
+
+    producer = {
+        "scalar_count": 6,
+        "changed_scalars": 2,
+        "delta_l2": aggregate["delta_l2"],
+        "delta_linf": aggregate["delta_linf"],
+    }
+    assert compare_producer_weight_effect(receipt, producer)["pass"] is True
+    producer["changed_scalars"] = 1
+    assert compare_producer_weight_effect(receipt, producer)["pass"] is False
 
 
 def test_replay_model_matches_producer_without_importing_it() -> None:
