@@ -171,6 +171,33 @@ counting accuracy was `0.629630`, versus `0.740741` for seed one, confirming why
 the preregistered multi-seed analysis must finish before any inference about
 stability. No promotion or partial unfreeze is authorized.
 
+### Cross-experiment location of the current bottleneck
+
+The low held score here does not show that the legal geometry views contain no
+learnable action signal. The earlier matched raw-state study used an ordinary
+`37 -> 64 -> 64 -> 5` MLP and the same three legal view families. Its
+independent-view arm reached held accuracy `0.8923` versus `0.8251` for unique
+static data, with positive accuracy and stable-F1 deltas in every one of the
+`15 / 15` matched seed/fold comparisons. Those results remain
+variance-qualified `NO_SELECTION`, but they establish that a small learner with
+direct access to the 37-value state can use the additional view support.
+
+The present partial frozen-descendant evidence is sharply different. The first
+multi-view horse reached final training loss `2.64e-5` while held accuracy stayed
+at `0.2140`; the second static horse reached final training loss `8.73e-7` while
+held accuracy stayed at `0.2173`. The trainable adapter is downstream of the
+frozen byte embedding and two-layer GRU, so it can only reorganize distinctions
+that survive that recurrence. At this boundary, more optimization can fit the
+training source nearly exactly without recovering held-diagonal action
+structure.
+
+This is a location diagnosis, not a final causal verdict: only one multi-view
+seed is terminal, and the preregistered campaign must finish. If the remaining
+seeds repeat the pattern, the supported next seam is the already implemented
+causal input-access point before block 0, with the frozen downstream adapter
+retained as a matched control. Adding downstream width or relabelling this as a
+geometry failure would not follow from the evidence.
+
 The final-only independent replay watcher is committed at `90ac8e73c` and runs
 headlessly with launcher PID `24116` and worker PID `3396` (launch identities,
 not durable authorities). While the campaign is active it performs only atomic
