@@ -700,3 +700,21 @@ at `WAITING_FOR_PREPARATION_PACKET` with four candidates and labels unopened;
 the committed persistent worker is now active in that same fail-closed waiting
 state. Two advancing poll receipts prove liveness only. No labels, component
 report, score, training intake, promotion or partial unfreeze has been produced.
+
+## Pre-label output vocabulary bridge audit — 2026-11-14
+
+The family-by-review-stratum vocabulary and its ordinary/retention overlap
+checks already exist on the E92 branch; they were not rebuilt or broad-merged
+into the active branch. The verified catalog side is sufficient to derive a
+12-row Cartesian vocabulary (three manifest families by four preregistered
+strata) without opening labels. The currently available ordinary/retention
+bundle, however, is an unreviewed action-data candidate whose source-family
+identifiers have no authoritative crosswalk to the catalog family IDs and whose
+loader admission is explicitly disabled. Treating those names as prime-token
+family authority would create an unproved zero-overlap result.
+
+The bounded map therefore records
+`REUSE_FOUND_WAITING_FOR_ADMISSIBLE_LANE_AUTHORITIES` and stops before code
+extraction, labels, scoring, or training intake. Exact commits, hashes, branch
+divergence, required registry fields, and the inventory receipt are in
+`docs/research/PRIME_TOKEN_OUTPUT_VOCABULARY_BRIDGE_MAP_20261114.md`.
