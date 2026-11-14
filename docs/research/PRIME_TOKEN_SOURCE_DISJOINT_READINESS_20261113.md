@@ -99,3 +99,23 @@ Focused selector/readiness verification passed `20 / 20` tests.  No selector,
 minimum, catalog, probability table, model weight, training intake, promotion,
 tool-dispatch, or partial-unfreeze authority changed.
 
+## Live material-flow update — 2026-11-14 17:53 UTC
+
+The closed-session gate advanced from `4 / 30` to `5 / 30` without changing the
+frozen selector or minimum. Collector scan `026` contains 17 stable sources,
+zero deferred sources and 12 review-queue rows. Its collection report SHA-256
+is `c40a29aab0769a606adfb5644d94d4db1423e1ebdc2f171a52215e830f00bfa7`;
+its queue SHA-256 is
+`5445f7ecee526cd8cbe74b53a60fdb1278c300fc7383647be7bb3156a8a924af`.
+
+The preparer, exact-selection auditor and query-session/family-component
+watcher independently report five candidates. Labels remain unopened and
+scoring, training intake, execution, merge, promotion and partial unfreezing
+remain disabled. The focused live-chain suite passed `42 / 42` tests.
+
+The immutable progress receipt is
+`docs/research/PRIME_TOKEN_LIVE_PROGRESS_20261114T1753Z.json`, SHA-256
+`b0b791fda553eccefe79414ca0e5936d8ad8eb5574f6c981b4af452fcbf2ce20`.
+This supersedes only the live count in the earlier snapshot; it does not rewrite
+that historical receipt or create prospective-evaluation evidence.
+

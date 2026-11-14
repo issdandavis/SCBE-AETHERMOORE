@@ -1,0 +1,58 @@
+{
+  "schema": "scbe.prime-token-live-progress-receipt.v1",
+  "captured_at_utc": "2026-11-14T17:53:51.317782+00:00",
+  "status": "VERIFIED_WAITING_NO_SCORING",
+  "candidate_gate": {
+    "accepted_closed_candidates": 5,
+    "minimum_candidates": 30,
+    "candidate_deficit": 25,
+    "labels": "NOT_OPENED"
+  },
+  "source_collection": {
+    "scan": "prospective-collector-v7-20261110/scan-026",
+    "stable_sources": 17,
+    "deferred_sources": 0,
+    "accepted_queue_rows": 12,
+    "collection_report_sha256": "c40a29aab0769a606adfb5644d94d4db1423e1ebdc2f171a52215e830f00bfa7",
+    "review_queue_sha256": "5445f7ecee526cd8cbe74b53a60fdb1278c300fc7383647be7bb3156a8a924af"
+  },
+  "watchers": {
+    "preparer": {
+      "status": "WAITING_FOR_PROSPECTIVE_QUEUE",
+      "upstream_status": "WAITING_FOR_NEW_CLOSED_SESSION",
+      "candidate_count": 5,
+      "updated_at_utc": "2026-11-14T17:53:51.317782+00:00"
+    },
+    "selection_audit": {
+      "status": "WAITING_FOR_PROSPECTIVE_QUEUE",
+      "upstream_status": "WAITING_FOR_NEW_CLOSED_SESSION",
+      "candidate_count": 5,
+      "updated_at_utc": "2026-11-14T17:53:27.585408+00:00"
+    },
+    "query_session_family_component": {
+      "status": "WAITING_FOR_PREPARATION_PACKET",
+      "candidate_count": 5,
+      "updated_at_utc": "2026-11-14T17:53:19.338228+00:00"
+    }
+  },
+  "authority": {
+    "scoring": "NOT_AUTHORIZED",
+    "training_intake": "NOT_AUTHORIZED",
+    "execution": "NONE",
+    "merge": "NOT_AUTHORIZED",
+    "promotion": "NOT_AUTHORIZED",
+    "partial_unfreeze": "NONE"
+  },
+  "verification": {
+    "focused_tests_passed": 42,
+    "focused_tests_failed": 0,
+    "test_scope": [
+      "prime_token_query_harvest",
+      "prime_token_prospective",
+      "prime_token_query_family_components",
+      "watch_prime_query_family_components",
+      "prime_token_watch_audit"
+    ],
+    "interpretation": "One additional real closed-session candidate entered the frozen selector since the earlier 4/30 snapshot. This is material-flow progress only and does not authorize evaluation or training."
+  }
+}
