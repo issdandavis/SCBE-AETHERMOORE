@@ -364,7 +364,7 @@ launch, promotion, partial unfreeze, and tool dispatch all remain unauthorized.
 ### Candidate material-source pinning
 
 `CLAY_FROZEN_ACTION_MATH_SOURCE_AUDIT_20261114.json`, SHA-256
-`9f270d1103c54b5dd4efc07fa31090c46d5b32135880485f1dc39e47e8b5c856`,
+`cfee86638e08d7db1267526f9fb9b38706a4748a9477a25e7efbbdf69c7a8f23`,
 records a bounded source-preparation pass performed while the predecessor kept
 training. Four independent published-source families are now pinned by
 immutable repository commit, local artifact hash, byte count, and license hash:
@@ -379,10 +379,15 @@ retention. The existing local GSM8K parquet mirror matches all
 
 This is source pinning, not dataset admission. The headless exact-compiler sweep
 sealed `8,473` row receipts at SHA-256
-`a62b1364a04ec0c50b1280d22cac63e270eb110c50a2a79f154ffe8f0a84cd02`.
-GSM8K contributes `7,375 / 7,473` value-consistent, compiler-accepted rows;
-`95` rows lack calculator annotations and three expressions use syntax the exact
-compiler rejects (`560//10`, `+55`, and `3*+6`). SVAMP contributes
+`bc9f118206d80579f5e39e102f61d7eeda62fab8b39519dfe5303dc734ee308d`.
+The corrected v2 audit requires the selected GSM8K calculator result to equal
+the final `####` answer, rather than accepting an intermediate calculation.
+GSM8K contributes `7,000 / 7,473` final-target-consistent,
+compiler-accepted rows; `377` rows have a last calculator annotation that does
+not equal the final answer, `95` lack calculator annotations, and three
+expressions use syntax the exact compiler rejects (`560//10`, `+55`, and
+`3*+6`). These diagnostics overlap and therefore must not be added as disjoint
+counts. SVAMP contributes
 `999 / 1,000`; `chal-680` is internally inconsistent (`5.0` from the equation
 versus answer `1.0`) and remains excluded. A second headless audit sealed `55`
 CPython ordinary candidates and `52` Rust retention candidates in a `107`-row
@@ -397,18 +402,21 @@ zero-training and tokenizer-ineligible.
 
 The four lanes were then materialized as a deliberately non-launchable candidate
 bundle. `CLAY_FROZEN_ACTION_CANDIDATE_BUNDLE_20261114.json`, SHA-256
-`8b413d5cd0a6202b2aff15e0147291ac31386d30565992bd8e851001925e5b63`,
-binds `7,165` GSM8K train actions, `999` SVAMP held actions, `55` CPython
-ordinary controls, and `52` Rust Book retention controls to `8,271` exact source
-authorities. The parent-boundary check excluded `210` otherwise accepted GSM8K
+`3f1458eeac1988339922c071ecd7ff2783c3c4e239be8599c935ca881be95ade`,
+binds `6,806` GSM8K train actions, `999` SVAMP held actions, `55` CPython
+ordinary controls, and `52` Rust Book retention controls to `7,912` exact source
+authorities. The parent-boundary check excluded `194` otherwise accepted GSM8K
 rows whose compiled sequence would exceed 512 tokens; no SVAMP row overflowed.
 Independent file/authority replay passed, and the real campaign loader rejected
 the candidate manifest with `action dataset schema changed`, as required. All
 rows remain `NOT_REVIEWED`, `training_eligible=false`, and the candidate schema
-is not the material campaign schema. The complete bundle uses `11,745,382`
+is not the material campaign schema. The complete v2 bundle uses `11,231,275`
 bytes; the compact storage receipt still reports `2,805,350,400` bytes above the
 fixed floor after creation. Result/replay growth and a positive recovery margin
 remain unmeasured, so this closes preparation work only and authorizes no launch.
+The v1 bundle remains preserved with build-receipt SHA-256
+`c1e0069c00f0efe0c96513a3daa020a793f9d882d9275d922d609955543c59bc`,
+but is superseded because it admitted intermediate-target rows.
 
 The next model-level sieve trial must remain a separately preregistered child of
 the completed campaign. It should attach a fixed-width centroid/trit summary at

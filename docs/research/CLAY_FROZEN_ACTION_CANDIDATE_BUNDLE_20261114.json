@@ -1,6 +1,11 @@
 {
   "schema": "clay.frozen-action-candidate-bundle-audit.v1",
   "status": "COMPLETE_NOT_ADMITTED",
+  "supersedes": {
+    "reason": "The v1 GSM8K extractor accepted the last calculator annotation without requiring agreement with the final #### answer.",
+    "v1_build_receipt_sha256": "c1e0069c00f0efe0c96513a3daa020a793f9d882d9275d922d609955543c59bc",
+    "v1_bundle_preserved": true
+  },
   "authority": {
     "dataset_admission": "NONE",
     "launch": "NONE",
@@ -19,27 +24,27 @@
     "ruff": "PASS"
   },
   "inputs": {
-    "source_audit_receipt_sha256": "9f270d1103c54b5dd4efc07fa31090c46d5b32135880485f1dc39e47e8b5c856",
-    "math_audit_ledger_sha256": "a62b1364a04ec0c50b1280d22cac63e270eb110c50a2a79f154ffe8f0a84cd02",
+    "source_audit_receipt_sha256": "cfee86638e08d7db1267526f9fb9b38706a4748a9477a25e7efbbdf69c7a8f23",
+    "math_audit_ledger_sha256": "bc9f118206d80579f5e39e102f61d7eeda62fab8b39519dfe5303dc734ee308d",
     "text_audit_ledger_sha256": "7f63e612304b8516111ef4c5896aed99f7e34a07d3e902e357b632e50385f618",
     "frozen_parent_block_size": 512
   },
   "bundle": {
-    "root": "C:\\dev\\clay-training-runs\\source-audits\\frozen-action-material-candidate-20261114",
-    "total_bytes": 11745382,
+    "root": "C:\\dev\\clay-training-runs\\source-audits\\frozen-action-material-candidate-v2-20261114",
+    "total_bytes": 11231275,
     "file_count": 7,
     "build_receipt": {
-      "path": "C:\\dev\\clay-training-runs\\source-audits\\frozen-action-material-candidate-20261114\\BUILD_RECEIPT.json",
-      "bytes": 8562,
-      "sha256": "c1e0069c00f0efe0c96513a3daa020a793f9d882d9275d922d609955543c59bc"
+      "path": "C:\\dev\\clay-training-runs\\source-audits\\frozen-action-material-candidate-v2-20261114\\BUILD_RECEIPT.json",
+      "bytes": 8120,
+      "sha256": "223e11cb84513bb209b7f7137136440eaf4c399c1ec3e3909799cc3513f84fc3"
     },
     "manifest": {
       "schema": "clay.full-system-action-dataset-candidate.v1",
       "accepted_campaign_schema": "clay.full-system-action-dataset.v1",
       "accepted_by_campaign_loader": false,
-      "path": "C:\\dev\\clay-training-runs\\source-audits\\frozen-action-material-candidate-20261114\\CANDIDATE_MANIFEST.json",
+      "path": "C:\\dev\\clay-training-runs\\source-audits\\frozen-action-material-candidate-v2-20261114\\CANDIDATE_MANIFEST.json",
       "bytes": 1320,
-      "sha256": "bc35be1d1b78c03cf18033e7998e97f835bd03a9e10a21ee1f80883247736e6f",
+      "sha256": "39794f18fc48c4f9331d6b5befba506a33e692069519bf0b25af5b5ed3eadf3a",
       "review_status": "NOT_REVIEWED",
       "training_authorized": false,
       "material_evidence_authorized": false
@@ -47,9 +52,9 @@
     "lanes": {
       "train": {
         "source_family": "openai-gsm8k",
-        "records": 7165,
-        "bytes": 5066577,
-        "sha256": "7e14e6b97a9d32a1b509a1aaa613516cd3e4ca485dccd6d5091ae5feefd11a88"
+        "records": 6806,
+        "bytes": 4810825,
+        "sha256": "59f13b255553857020d44d9bafd73c5fa498f995926cc028158b208fe3a5336e"
       },
       "holdout": {
         "source_family": "arkilpatel-svamp",
@@ -71,14 +76,15 @@
       }
     },
     "source_authorities": {
-      "records": 8271,
-      "bytes": 5925177,
-      "sha256": "23fe34f106d75c016a28ffa059315bfec8f3c2ab82b37bb7c25ae62893c9fef6"
+      "records": 7912,
+      "bytes": 5667264,
+      "sha256": "fb21ddfb3d0e4f9ffe9510be067e206309df891dd5db75ab4e088a6d05b300b7"
     }
   },
   "filtering": {
-    "accepted_records": 8271,
-    "train_rows_rejected_for_512_token_parent_boundary": 210,
+    "gsm8k_rows_rejected_for_final_target_mismatch": 377,
+    "accepted_records": 7912,
+    "train_rows_rejected_for_512_token_parent_boundary": 194,
     "holdout_rows_rejected_for_512_token_parent_boundary": 0
   },
   "verification": {
@@ -107,5 +113,5 @@
     "measure result-ledger, independent-replay, checkpoint-growth, and positive-recovery-margin bytes",
     "preregister the successor controls and fresh seeds before any material launch"
   ],
-  "claim_boundary": "This receipt proves deterministic construction, exact source-span coverage, disjoint source families, the 512-token fit filter, independent file/authority replay, and deliberate campaign-loader rejection. It is not an admitted dataset, training authorization, model result, promotion, tool-dispatch permission, or partial-unfreeze permission."
+  "claim_boundary": "This receipt proves deterministic construction after requiring final-answer agreement, exact source-span coverage, disjoint source families, the 512-token fit filter, independent file/authority replay, and deliberate campaign-loader rejection. It is not an admitted dataset, training authorization, model result, promotion, tool-dispatch permission, or partial-unfreeze permission."
 }

@@ -40,9 +40,12 @@
         "canonical_row_sha256": "dca449882e67a1e7716b5da453650a7b16588a1f2d1a0d82394a43d75ea7e9ca"
       },
       "target_extraction_probe": {
-        "rule": "last <<expression=result>> annotation",
+        "rule": "last <<expression=result>> annotation whose result equals the final #### answer",
         "rows_with_annotation": 7378,
         "rows_without_annotation": 95,
+        "rows_with_final_answer": 7473,
+        "last_annotation_matches_final_answer": 7001,
+        "last_annotation_differs_from_final_answer": 377,
         "safe_arithmetic_ast_rows": 7378,
         "safe_arithmetic_value_matches": 7378,
         "known_exact_compiler_rejects": [
@@ -66,12 +69,13 @@
           "status": "COMPLETE_NO_ADMISSION",
           "compiler_source_sha256": "86882f87b16c12d16d4501f89b8bfd579c8671fcf3f5afb080fde14b7868c457",
           "audited_rows": 7473,
-          "accepted_rows": 7375,
-          "rejected_rows": 98,
+          "accepted_rows": 7000,
+          "rejected_rows": 473,
           "missing_expression_rows": 95,
           "compiler_rejected_rows": 3,
+          "target_inconsistent_rows": 377,
           "value_inconsistent_rows": 0,
-          "accepted_ledger_sha256": "366b1e3ed13ae0d77a759c21bd4c283f917f706b1c2342cfeb71fc1de39f54d0"
+          "accepted_ledger_sha256": "723d2f89707137dd26dba2996e62e0d8ea65940c64c82da7a60c52a04d0cc858"
         }
       }
     },
@@ -108,8 +112,9 @@
           "accepted_rows": 999,
           "rejected_rows": 1,
           "compiler_rejected_rows": 0,
+          "target_inconsistent_rows": 1,
           "value_inconsistent_rows": 1,
-          "accepted_ledger_sha256": "15cddd1ffc655c477c498687e4841af39ba1dc80ff11eca33a6f2f7d38fb4098"
+          "accepted_ledger_sha256": "7a851ee638d5e144f9591b0f711cf174922fe1a09e307da315359fdbb10519d6"
         }
       }
     },
@@ -174,23 +179,24 @@
   },
   "remaining_gates": [
     "review the 107 exact ordinary and retention candidate spans",
-    "build replayable source-authority receipts and the four-lane material dataset manifest",
+    "rebuild the non-launchable candidate bundle from the corrected v2 math ledger",
+    "promote reviewed rows into a replayable source-authority ledger and four-lane material dataset manifest",
     "review the action mapping before setting material_evidence_authorized or training_authorized",
     "finish the active frozen-multiview campaign and its independent replay",
     "measure final dataset, result-ledger, replay, and recovery-margin bytes"
   ],
   "exact_compiler_audit": {
     "implementation_path": "scripts/research/audit_frozen_action_math_sources.py",
-    "implementation_sha256": "b278f787e1732bf4c4861474076dc7789433e1325584ea266186792f89394370",
+    "implementation_sha256": "f2ae03f285618615a636bd7fd4ac6d6a46ada3869b037b3cbbc636171561098b",
     "test_path": "tests/research/test_audit_frozen_action_math_sources.py",
-    "test_sha256": "c7adb33ce6328ada1333d626174aecf24945ddd6fb59ae18b5939ebfb8a9d605",
-    "path": "C:\\dev\\clay-training-runs\\source-audits\\frozen-action-math-sources-20261114\\EXACT_COMPILER_AUDIT.json",
-    "bytes": 4778,
-    "sha256": "127ff9ed83972e6711060fd8fddbb0b208c37b0a9d5ba2b2aecb758b9a5f954a",
-    "row_ledger_path": "C:\\dev\\clay-training-runs\\source-audits\\frozen-action-math-sources-20261114\\EXACT_COMPILER_AUDIT.rows.jsonl",
-    "row_ledger_bytes": 3737889,
+    "test_sha256": "ec0fef79b4e7b8315ac09e2b8ea048d2d303ec34f892d3db5216cddeffd21f66",
+    "path": "C:\\dev\\clay-training-runs\\source-audits\\frozen-action-math-sources-20261114\\EXACT_COMPILER_AUDIT_V2.json",
+    "bytes": 15293,
+    "sha256": "da0cf5ea99d328c0163722ff5c9478519b1c683fa40996f18e7536379195feb2",
+    "row_ledger_path": "C:\\dev\\clay-training-runs\\source-audits\\frozen-action-math-sources-20261114\\EXACT_COMPILER_AUDIT_V2.rows.jsonl",
+    "row_ledger_bytes": 4141295,
     "row_ledger_rows": 8473,
-    "row_ledger_sha256": "a62b1364a04ec0c50b1280d22cac63e270eb110c50a2a79f154ffe8f0a84cd02"
+    "row_ledger_sha256": "bc9f118206d80579f5e39e102f61d7eeda62fab8b39519dfe5303dc734ee308d"
   },
   "text_span_audit": {
     "implementation_path": "scripts/research/audit_frozen_action_text_sources.py",
@@ -208,5 +214,5 @@
     "retention_candidates": 52,
     "independent_reconstruction": "PASS_INDEPENDENT_RECONSTRUCTION"
   },
-  "claim_boundary": "This receipt proves immutable source identity, licensing artifacts, local mirror equality, exact-compiler acceptance for candidate action rows, and exact reconstruction of unreviewed ordinary/retention spans. It is not a material dataset manifest, source-authority ledger, training authorization, or evidence of model benefit, specificity, or retention."
+  "claim_boundary": "This receipt proves immutable source identity, licensing artifacts, local mirror equality, exact-compiler acceptance plus final-target agreement for candidate action rows, and exact reconstruction of unreviewed ordinary/retention spans. It is not a material dataset manifest, source-authority ledger, training authorization, or evidence of model benefit, specificity, or retention."
 }
