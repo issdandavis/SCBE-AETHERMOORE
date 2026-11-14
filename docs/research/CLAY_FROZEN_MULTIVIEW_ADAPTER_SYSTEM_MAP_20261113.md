@@ -436,3 +436,38 @@ retain the frozen parent, keep labels/rewards out of the packet, and judge
 source-disjoint action, reasoning/coding transfer, retention, false action
 calls, throughput, and independent replay. No such child is authorized yet.
 
+## Replication liveness and final-replay attachment — 2026-11-14
+
+The fresh preregistered replication at
+`C:\dev\clay-training-runs\frozen-multiview-adapter-replication-20261114-v1`
+now reuses both existing operational controls. No new evaluator or trainer was
+built. The repository-local inventory helper named by the mapping workflow is
+absent in this worktree, so the already sealed bounded inventory and this map
+were used instead of importing an unrelated copy.
+
+The hash-pinned training supervisor observed exactly one matching producer
+(PID `11600` at launch), one terminal parent result and checkpoint step sum
+`37,500`; it performed no restart. Its wrapper/worker launch identities were
+`26812 / 23876`, and status was `RUNNING_EXACT_PRODUCER`. The supervisor can
+restart only the exact manifest-bound command, retains the 25-GiB storage gate,
+and has no checkpoint-mutation, cloud-dispatch, execution, promotion or
+partial-unfreeze authority.
+
+The final-only replay watcher observed no aggregate `RESULT.json`, did not open
+partial checkpoints, and entered `WAITING_FOR_ATOMIC_CAMPAIGN_RESULT`. Its
+wrapper/worker launch identities were `34736 / 29416`. When the producer closes
+atomically, it will run the separately implemented inference replay once and
+seal `INDEPENDENT_REPLAY.json`; it cannot select or promote a model.
+
+Focused replay, watcher and supervisor verification passed `22 / 22` tests.
+The launch receipts are:
+
+- `TRAINING_SUPERVISOR_LAUNCH_RECEIPT.json`, SHA-256
+  `36f2bc340199b0b7080b7c171e2f9a9efb3d14313b95292d0519b77af15e96ff`;
+- `FINAL_REPLAY_WATCH_LAUNCH_RECEIPT.json`, SHA-256
+  `e352483f6101807f38839c70882885cddcea3849597bad6bc468786a5188456a`.
+
+At attachment time the active static-adapter horse had advanced to step
+`9,500 / 18,000`. This proves continuity and evaluator readiness only; held-out
+benefit, aggregate control gates and promotion remain unmeasured or disabled.
+
