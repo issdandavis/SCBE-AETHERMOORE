@@ -129,7 +129,7 @@
   ],
   "exact_compiler_audit": {
     "implementation_path": "scripts/research/audit_frozen_action_math_sources.py",
-    "implementation_sha256": "f3f8ea31b07d4b11abc5c358fe676ae55de4cd615ce2839eedbdee1127dd1866",
+    "implementation_sha256": "b278f787e1732bf4c4861474076dc7789433e1325584ea266186792f89394370",
     "test_path": "tests/research/test_audit_frozen_action_math_sources.py",
     "test_sha256": "c7adb33ce6328ada1333d626174aecf24945ddd6fb59ae18b5939ebfb8a9d605",
     "path": "C:\\dev\\clay-training-runs\\source-audits\\frozen-action-math-sources-20261114\\EXACT_COMPILER_AUDIT.json",
