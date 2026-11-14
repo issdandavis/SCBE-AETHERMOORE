@@ -171,6 +171,41 @@ counting accuracy was `0.629630`, versus `0.740741` for seed one, confirming why
 the preregistered multi-seed analysis must finish before any inference about
 stability. No promotion or partial unfreeze is authorized.
 
+## Seven-artifact replay and second multi-view seed — 2026-11-13
+
+The second multi-view horse completed all `18,000` steps and emitted an atomic
+model/result pair. `MODEL.pt` is `2,341,123` bytes with SHA-256
+`4138306caeb177dcfe381a6f219ab761385da254d2b59237d5320e8904b3f9f7`, exactly
+matching the producer receipt. `RESULT.json` has SHA-256
+`ee835d707cf13964edbb358c9e923d5de2cea357d27935ddd1129fd564ac1719`.
+
+The independent inference path then replayed all `7 / 12` terminal artifacts.
+It rebuilt the held rows and network, reproduced all `1,500` seed-two
+multi-view predictions with zero mismatches and maximum metric delta `0.0`,
+matched counting accuracy with delta `0.0`, and confirmed the frozen core was
+bit-identical. The partial receipt reports
+`PASS_PARTIAL_INDEPENDENT_REPLAY_NO_VERDICT`, zero errors, no promotion, and no
+partial-unfreeze authority; its internal replay SHA-256 is
+`ced90fad559de17f753bcfa89822f89f6ff2f7b616b2f11de7895b9b3605b868`.
+
+Seed two's multi-view held accuracy is `0.220000` and macro-F1 is `0.219923`,
+versus static accuracy `0.217333` and macro-F1 `0.217502`. The paired ledger is
+`254` wins, `250` losses, and `996` ties with exact two-sided `p=0.893712`; it
+does not clear the finite-evaluation gate. Per-action multi-view accuracy ranges
+from `0.193333` to `0.236667`, so the small aggregate increase does not hide a
+uniform action-family gain.
+
+The adapter changed all `140,820` trainable scalars with delta L2 `72.9316` and
+delta Linf `1.7027`. Independent reconstruction matched those producer norms
+within `5.80e-6` and `2.61e-8`, respectively. The held predictions are not
+collapsed: class counts are `310 / 284 / 302 / 273 / 330`, with entropy
+`2.32519` bits. Yet their target/prediction mutual information is only
+`0.007859` bits. The measured failure is therefore weak held binding despite
+substantial, distributed weight movement—not inactivity or one-class output
+collapse. Two multi-view seeds now agree that no static-control advantage is
+established; the third seed and both remaining null controls are still required
+for the preregistered aggregate.
+
 ### Cross-experiment location of the current bottleneck
 
 The low held score here does not show that the legal geometry views contain no
