@@ -13,8 +13,8 @@
   "candidate_lanes": {
     "train": "openai-gsm8k",
     "holdout": "arkilpatel-svamp",
-    "ordinary": null,
-    "retention": null
+    "ordinary": "python-cpython-documentation",
+    "retention": "rust-lang-book"
   },
   "sources": {
     "openai-gsm8k": {
@@ -112,6 +112,58 @@
           "accepted_ledger_sha256": "15cddd1ffc655c477c498687e4841af39ba1dc80ff11eca33a6f2f7d38fb4098"
         }
       }
+    },
+    "python-cpython-controlflow": {
+      "source_kind": "published_source",
+      "source_family": "python-cpython-documentation",
+      "lane": "ordinary",
+      "repository": "https://github.com/python/cpython",
+      "commit": "797087c386dfaeaafe7fdd741194f10100f3ac13",
+      "artifact": "Doc/tutorial/controlflow.rst",
+      "local_path": "C:\\dev\\clay-training-runs\\source-audits\\frozen-action-math-sources-20261114\\cpython-controlflow.rst",
+      "bytes": 40620,
+      "sha256": "3d0ca7d818cf84cdeee42e3735ae78d3b82025f62c7ef36f5c1c14b9ef6eeeb8",
+      "license": "Python Software Foundation License Version 2",
+      "license_path": "C:\\dev\\clay-training-runs\\source-audits\\frozen-action-math-sources-20261114\\cpython-LICENSE",
+      "license_bytes": 13804,
+      "license_sha256": "b0e25a78cffb43f4d92de8b61ccfa1f1f98ecbc22330b54b5251e7b6ba010231",
+      "candidate_span_audit": {
+        "blocks_scanned": 253,
+        "accepted_candidates": 55,
+        "requires_action_term": true,
+        "review_status": "NOT_REVIEWED",
+        "training_eligible": false
+      }
+    },
+    "rust-lang-book-control-flow": {
+      "source_kind": "published_source",
+      "source_family": "rust-lang-book",
+      "lane": "retention",
+      "repository": "https://github.com/rust-lang/book",
+      "commit": "2771df165f092a4fbb9f46b5b2e7450f19010adb",
+      "artifact": "src/ch03-05-control-flow.md",
+      "local_path": "C:\\dev\\clay-training-runs\\source-audits\\frozen-action-math-sources-20261114\\rust-book-control-flow.md",
+      "bytes": 17064,
+      "sha256": "dcf589530b27653579874f189bf572600a3061712964f525a06844642a2defb6",
+      "license": "MIT OR Apache-2.0",
+      "license_files": [
+        {
+          "path": "C:\\dev\\clay-training-runs\\source-audits\\frozen-action-math-sources-20261114\\rust-book-LICENSE-MIT",
+          "bytes": 1071,
+          "sha256": "0621878e61f0d0fda054bcbe02df75192c28bde1ecc8289cbd86aeba2dd72720"
+        },
+        {
+          "path": "C:\\dev\\clay-training-runs\\source-audits\\frozen-action-math-sources-20261114\\rust-book-LICENSE-APACHE",
+          "bytes": 10847,
+          "sha256": "0f2763086f981043fb18879abfa15e75ecfc188219ef9eba4483f45ce7438e1c"
+        }
+      ],
+      "candidate_span_audit": {
+        "blocks_scanned": 103,
+        "accepted_candidates": 52,
+        "review_status": "NOT_REVIEWED",
+        "training_eligible": false
+      }
     }
   },
   "excluded_sources": {
@@ -121,8 +173,8 @@
     }
   },
   "remaining_gates": [
-    "select and pin independent published-source families for ordinary and retention lanes",
-    "build exact source spans, excerpt hashes, and replayable source-authority receipts",
+    "review the 107 exact ordinary and retention candidate spans",
+    "build replayable source-authority receipts and the four-lane material dataset manifest",
     "review the action mapping before setting material_evidence_authorized or training_authorized",
     "finish the active frozen-multiview campaign and its independent replay",
     "measure final dataset, result-ledger, replay, and recovery-margin bytes"
@@ -140,5 +192,21 @@
     "row_ledger_rows": 8473,
     "row_ledger_sha256": "a62b1364a04ec0c50b1280d22cac63e270eb110c50a2a79f154ffe8f0a84cd02"
   },
-  "claim_boundary": "This receipt proves immutable source identity, licensing artifacts, local mirror equality, and exact-compiler acceptance for candidate rows. It is not a material dataset manifest, source-authority ledger, training authorization, or evidence of model benefit."
+  "text_span_audit": {
+    "implementation_path": "scripts/research/audit_frozen_action_text_sources.py",
+    "implementation_sha256": "598ed7e5eefb004896581fe4e9cacbd492270e63879b1fbcadfa7589dceb51cd",
+    "test_path": "tests/research/test_audit_frozen_action_text_sources.py",
+    "test_sha256": "abd6d973a96dd60d6b1059b6027c9cd5421e22841347e3de812eb6c95e2beac9",
+    "path": "C:\\dev\\clay-training-runs\\source-audits\\frozen-action-math-sources-20261114\\TEXT_SOURCE_SPAN_AUDIT.json",
+    "bytes": 2164,
+    "sha256": "3dad57c0ab73d7a9a9aeb783dbfd03d584b0cdc010b0d1f01534baed17fd9a01",
+    "row_ledger_path": "C:\\dev\\clay-training-runs\\source-audits\\frozen-action-math-sources-20261114\\TEXT_SOURCE_SPAN_AUDIT.rows.jsonl",
+    "row_ledger_bytes": 85564,
+    "row_ledger_rows": 107,
+    "row_ledger_sha256": "7f63e612304b8516111ef4c5896aed99f7e34a07d3e902e357b632e50385f618",
+    "ordinary_candidates": 55,
+    "retention_candidates": 52,
+    "independent_reconstruction": "PASS_INDEPENDENT_RECONSTRUCTION"
+  },
+  "claim_boundary": "This receipt proves immutable source identity, licensing artifacts, local mirror equality, exact-compiler acceptance for candidate action rows, and exact reconstruction of unreviewed ordinary/retention spans. It is not a material dataset manifest, source-authority ledger, training authorization, or evidence of model benefit, specificity, or retention."
 }

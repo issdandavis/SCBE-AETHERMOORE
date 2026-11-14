@@ -364,15 +364,18 @@ launch, promotion, partial unfreeze, and tool dispatch all remain unauthorized.
 ### Candidate material-source pinning
 
 `CLAY_FROZEN_ACTION_MATH_SOURCE_AUDIT_20261114.json`, SHA-256
-`f11180c2a3c6cfa7cf44d6ec39af16e184b279d6874309dc4f1e0ff32f095b18`,
+`7a052dfde97a364c5983e78e951da174dd1871704aeb988426ec7a349c7fcdda`,
 records a bounded source-preparation pass performed while the predecessor kept
-training. Two independent MIT-licensed source families are now pinned by
+training. Four independent published-source families are now pinned by
 immutable repository commit, local artifact hash, byte count, and license hash:
-OpenAI GSM8K at `3101c7d5072418e28b9008a6636bde82a006892c` as a candidate
-training family, and SVAMP at
-`78e727689e1c1bebfc4be39c446898e8e10b0518` as a candidate held family.
-The existing local GSM8K parquet mirror matches all `7,473 / 7,473` official
-training rows exactly under canonical hashing.
+OpenAI GSM8K at `3101c7d5072418e28b9008a6636bde82a006892c` for candidate
+training, SVAMP at `78e727689e1c1bebfc4be39c446898e8e10b0518` for candidate
+holdout, CPython documentation at
+`797087c386dfaeaafe7fdd741194f10100f3ac13` for candidate ordinary-text
+specificity, and the Rust Book at
+`2771df165f092a4fbb9f46b5b2e7450f19010adb` for candidate frozen-parent
+retention. The existing local GSM8K parquet mirror matches all
+`7,473 / 7,473` official training rows exactly under canonical hashing.
 
 This is source pinning, not dataset admission. The headless exact-compiler sweep
 sealed `8,473` row receipts at SHA-256
@@ -381,8 +384,14 @@ GSM8K contributes `7,375 / 7,473` value-consistent, compiler-accepted rows;
 `95` rows lack calculator annotations and three expressions use syntax the exact
 compiler rejects (`560//10`, `+55`, and `3*+6`). SVAMP contributes
 `999 / 1,000`; `chal-680` is internally inconsistent (`5.0` from the equation
-versus answer `1.0`) and remains excluded. Independent ordinary and retention
-source families, exact span receipts, and human review remain required. MBPP was
+versus answer `1.0`) and remains excluded. A second headless audit sealed `55`
+CPython ordinary candidates and `52` Rust retention candidates in a `107`-row
+exact-span ledger at SHA-256
+`7f63e612304b8516111ef4c5896aed99f7e34a07d3e902e357b632e50385f618`;
+an independent pass reconstructed every line span, excerpt hash, and normalized
+prompt. Every text row remains `NOT_REVIEWED` and `training_eligible=false`.
+Action mapping review, a replayable source-authority ledger, the four-lane
+material manifest, and final storage accounting remain required. MBPP was
 deliberately excluded because its local immutable registry marks it permanent
 zero-training and tokenizer-ineligible.
 
