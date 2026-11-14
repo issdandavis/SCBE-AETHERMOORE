@@ -306,7 +306,10 @@ def build_packet(
         }
         packet_manifest_path = packet_root / "CLAY_FROZEN_MULTIVIEW_KAGGLE_PACKET.json"
         write_json(packet_manifest_path, packet_manifest)
-        archive_path = dataset_dir / "clay-frozen-multiview-kaggle-packet.zip"
+        # Kaggle expands files named ``.zip`` during dataset ingestion.  Keep
+        # ZIP framing but use a neutral suffix so the mounted bytes remain the
+        # exact archive named by PACKET_DESCRIPTOR.json.
+        archive_path = dataset_dir / "clay-frozen-multiview-kaggle.packet"
         deterministic_zip(packet_root, archive_path)
 
         dataset_descriptor = {

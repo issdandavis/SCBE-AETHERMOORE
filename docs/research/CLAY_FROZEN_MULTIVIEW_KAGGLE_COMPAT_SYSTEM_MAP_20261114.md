@@ -1,6 +1,6 @@
 # Clay frozen-multiview Kaggle compatibility map — 2026-11-14
 
-Status: `PRELAUNCH_PACKET_VALIDATED`
+Status: `PROVIDER_PACKET_READBACK_VERIFIED_PRELAUNCH`
 
 ## Capability and boundary
 
@@ -14,7 +14,7 @@ The cloud lineage is intentionally separate:
 
 ```text
 local immutable trainer/source bytes
-  -> deterministic hash manifest + private packet ZIP
+  -> deterministic hash manifest + private packet archive
   -> private Kaggle dataset version
   -> private Kaggle CPU script (new seeds, reduced rows/steps)
   -> two-slot checkpoints + RESULT.json
@@ -31,9 +31,9 @@ local full campaign -------------------------------------> independent replay
 | Local source commit | `da5536eb8e39dfff18073d300a307c39f0e2b851` | SCBE trainer and data-builder lineage | Clean source worktree |
 | Local run manifest | `...\RUN_MANIFEST.json` | Pins config, source hashes, trainer, data builder and preregistration | Immutable input to packet builder |
 | Action source | `C:\dev\_wt_clay_action_byte_confirm_20261110\experiments\clay_action_compiler_20261109` | Deterministic sandbox/policy data authority | Four consumed files hash-pinned; no execution |
-| Packet builder | `scripts/research/build_clay_frozen_multiview_kaggle_packet.py` | Copies exact bytes, emits deterministic ZIP and private Kaggle metadata | New; local CPU only |
+| Packet builder | `scripts/research/build_clay_frozen_multiview_kaggle_packet.py` | Copies exact bytes, emits a deterministic ZIP-framed `.packet` archive and private Kaggle metadata | Locally replayed; provider readback verified |
 | Kaggle entry | `scripts/research/run_clay_frozen_multiview_kaggle_compat.py` | Verifies packet, records environment, runs unchanged trainer, seals recovery | New; private cloud CPU |
-| Private dataset | `issacizrealdavis/clay-frozen-multiview-compat-input-20261114` | Immutable code/source packet | Proposed until uploaded |
+| Private dataset | `issacizrealdavis/clay-frozen-multiview-compat-input-20261114`, version 2 | Immutable code/source packet | Uploaded privately; exact provider readback verified |
 | Private kernel | `issacizrealdavis/clay-frozen-multiview-compat-20261114` | Three new seeds and all four matched arms | Proposed until launched |
 | Recovery root | `C:\dev\clay-training-runs\cloud-review\frozen-multiview-compat-20261114` | Downloaded cloud receipts/checkpoints | Proposed until completion |
 
@@ -89,23 +89,36 @@ The advancing local campaign and its checkpoints are never modified.
 
 ## Measured prelaunch result
 
-Packet v1 was deliberately not uploaded after the local replay found that it
+Packet stage v1 was deliberately not uploaded after local replay found that it
 contained the pinned trainer module but omitted the thin direct-launch wrapper.
-Packet v2 adds that exact wrapper and passed a three-seed local end-to-end smoke:
+Stage v2 added that exact wrapper and passed a three-seed local end-to-end
+smoke. Its first private Kaggle dataset version exposed a provider behavior:
+Kaggle automatically expanded the file named `.zip`, so the kernel could not
+receive the byte-identical archive described by the packet receipt.
 
-- Stage: `C:\dev\_kaggle_stage\clay-frozen-multiview-compat-20261114-v2`
-- Build receipt: `1,665` bytes, SHA-256
-  `4ef7104855ed74c8dc21c540d8d8f6731c6fcab44724d77bd8fb0e4db39ee152`
-- Deterministic packet ZIP: `1,186,394` bytes, SHA-256
-  `4a6a8eb1776752cc7d5042e7f57cf7e955387b017a0d5c3454e206ff53da9f0c`
+Stage v3 retains deterministic ZIP framing but uses the neutral `.packet`
+suffix. It passed the same end-to-end smoke, was uploaded as private dataset
+version 2, and was downloaded back from Kaggle byte-for-byte:
+
+- Stage: `C:\dev\_kaggle_stage\clay-frozen-multiview-compat-20261114-v3`
+- Deterministic packet archive: `1,186,395` bytes, SHA-256
+  `fd58b7e7da03f583f696a4e91eb03223ca3d93cdf3e64997ca0d2e24d2fffc75`
+- Dataset descriptor: `1,023` bytes, SHA-256
+  `b571e1fc6811eab5dc45027ca05a3e119e475ac8ac1d9b5f9645824044af7e2d`
 - Packet files: `313`
 - Local compatibility smoke: three seeds, all four arms, `8` parent and `8`
   adapter updates per trained arm, two-slot checkpoints, final result and recovery
   manifest present
 - Smoke receipt: SHA-256
-  `37b4969574f73e0b3a0b32e0bd8347b8fa57632ecbcf05a1de98e8173b343f07`
+  `7e68834425c35888aff71066f1b3a1bc811ad3a6c7867a369853e3bf33225b7e`
+- Smoke recovery manifest: SHA-256
+  `8a67a877ca3aa1704df273ab48529f2842e8db3ca1a0f0fb0e32f034ac5d347c`
 - Safe local reload: all `36` generated `.pt` artifacts opened with
   `torch.load(..., weights_only=True)` and yielded mappings
+- Provider file listing: exactly `PACKET_DESCRIPTOR.json` and
+  `clay-frozen-multiview-kaggle.packet`; provider readback of the packet matched
+  both `1,186,395` bytes and SHA-256
+  `fd58b7e7da03f583f696a4e91eb03223ca3d93cdf3e64997ca0d2e24d2fffc75`
 - Focused regression: `21 passed` across the existing adapter, replay,
   supervisor, and new cloud-packet tests
 
