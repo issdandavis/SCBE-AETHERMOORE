@@ -62,6 +62,9 @@ Start here if you just want to see the safety gate work: [DEMO.md](DEMO.md).
 
 ## Choose your entry path
 
+For the exact package call paths, CLI exit behavior, and contributor checks, see
+[Public scan code flow and contributor procedure](docs/PUBLIC_SCAN_FLOW.md).
+
 | Audience | Start here |
 |---|---|
 | Security engineer / AI safety reviewer | [Engineering Overview](#engineering-overview) — math, decision tiers, benchmarks, PQC |

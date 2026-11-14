@@ -1,4 +1,14 @@
-# docs/ — moved
+# Documentation navigation
+
+Start with these current guides:
+
+- [Repository load order](../SYSTEM_MAP.md) and [flow diagram](../SYSTEM_FLOW.mmd)
+- [Canonical system state and runtime profiles](CANONICAL_SYSTEM_STATE.md)
+- [Public scan code flow and contributor procedure](PUBLIC_SCAN_FLOW.md)
+- [Product Quickstart](PRODUCT_QUICKSTART.md)
+- [Repository surface map](REPO_SURFACE_MAP.md)
+
+## Historical extraction
 
 A high-value subset of this directory was extracted from the monolith and now lives in its own repo:
 
