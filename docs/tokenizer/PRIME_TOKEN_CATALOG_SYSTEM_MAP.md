@@ -662,3 +662,27 @@ The valid next edge is therefore additional independently authored,
 selector-matching source sessions. Lowering the selector, reusing consumed
 queries, admitting the open source early, or manufacturing rows remains outside
 the frozen evaluation contract.
+
+## Query-session/target-family component gate — 2026-11-14
+
+The next evaluator seam is now implemented but deliberately unactivated. The
+existing v7 scope caps one candidate per source session inside each stratum, and
+the E92 family audit collapses line fragments to canonical source families.
+Neither alone guarantees that one query session or one selected target family
+cannot cross later train/holdout-style partitions.
+
+`python/scbe/prime_token_query_family_components.py` joins accepted query hashes
+to hashed query-session IDs and reviewer-selected manifest family IDs, constructs
+their bipartite connected components, and assigns whole components to neutral
+fold names. It never emits query text or raw session IDs, and target metadata
+remains evaluator-only. Fewer than three components, an oversized component,
+an empty fold, any session/family overlap, an incomplete review, an unknown
+suffix, or a broken source/catalog binding fails or reports `UNDERPOWERED`
+without splitting a component or lowering the 30-query floor.
+
+The audit and CLI are covered by five adversarial tests; the full tokenizer
+suite passes `315 / 315`. This establishes mechanics only. The active v7 chain
+still has 4 closed candidates and no labels, so no component receipt, scoring,
+training intake, promotion, or partial unfreeze exists yet. Detailed contracts
+and hashes are in
+`docs/research/PRIME_TOKEN_QUERY_SESSION_FAMILY_COMPONENT_MAP_20261114.md`.
