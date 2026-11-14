@@ -639,3 +639,26 @@ authorize promotion. Before catalog integration, compare it against a lexical
 baseline, equal-width random features, shuffled case binding, shuffled
 role-to-slot binding, case/grammar ablations, and the source-session-disjoint
 holdout under the existing multi-seed gates.
+
+## V7 source-readiness accounting — 2026-11-14
+
+The live v7 chain is operational but still lacks enough admissible independent
+queries. A stable count-only snapshot accounts for all 195 collector-eligible
+turns across 16 closed sessions and one open session. The frozen selector accepts
+4 closed-session candidates and 10 deferred open-session candidates; closing the
+open source unchanged would yield 14, still 16 below the immutable floor of 30.
+The remaining 181 turns are fully explained by 143 topic rejections and 38 length
+rejections, with no selector-accounting gap or invalid JSON. This is classified
+as `FIXED_SELECTOR_CANDIDATE_SCARCITY`, not pipeline failure.
+
+A fresh independent pre-score audit reports `VERIFIED_WAITING_NO_SCORING` with
+zero errors and verifies the frozen v7 catalog, closed-source snapshot,
+collector/preparer pins, absent scoring artifacts, and disabled training and
+promotion authority. Receipt paths, hashes, and the `20 / 20` focused test result
+are recorded in
+`docs/research/PRIME_TOKEN_SOURCE_DISJOINT_READINESS_20261113.md`.
+
+The valid next edge is therefore additional independently authored,
+selector-matching source sessions. Lowering the selector, reusing consumed
+queries, admitting the open source early, or manufacturing rows remains outside
+the frozen evaluation contract.
