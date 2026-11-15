@@ -46,13 +46,15 @@ TONGUE_PREFIX = {
     "DR": "dra",
 }
 
+LEXICAL_TOKEN_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*|==|!=|<=|>=|->|=>|::|[^\s]")
+
 
 def _sha256_text(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
 def _lexical_tokens(source: str) -> list[str]:
-    return re.findall(r"[A-Za-z_][A-Za-z0-9_]*|==|!=|<=|>=|->|=>|::|[^\s]", source)
+    return [match.group(0) for match in LEXICAL_TOKEN_RE.finditer(source)]
 
 
 # ─── Domain-specific token classification tables ─────────────────────────────
@@ -263,11 +265,37 @@ def semantic_class_for_domain(token: str, language: str) -> str:
 
 def _semantic_class(token: str) -> str:
     lowered = token.lower()
-    if lowered in {"return", "if", "else", "for", "while", "def", "fn", "function", "let", "const"}:
+    if lowered in {
+        "return",
+        "if",
+        "else",
+        "for",
+        "while",
+        "def",
+        "fn",
+        "function",
+        "let",
+        "const",
+    }:
         return "ACTION"
     if lowered in {"none", "null", "nothing", "true", "false"} or len(token) == 1:
         return "INERT_WITNESS"
-    if token in {"+", "-", "*", "/", "=", "==", "!=", "<", ">", "<=", ">=", "->", "=>", "::"}:
+    if token in {
+        "+",
+        "-",
+        "*",
+        "/",
+        "=",
+        "==",
+        "!=",
+        "<",
+        ">",
+        "<=",
+        ">=",
+        "->",
+        "=>",
+        "::",
+    }:
         return "RELATION"
     return "ENTITY"
 
@@ -399,7 +427,7 @@ def analyze_chemical_composition(
         "token_count": len(tokens),
         "element_count": len(elements),
         "symbol_counts": symbol_counts,
-        "dominant_symbol": max(symbol_counts, key=symbol_counts.get) if symbol_counts else None,
+        "dominant_symbol": (max(symbol_counts, key=symbol_counts.get) if symbol_counts else None),
         "average_z": total_z / count,
         "average_valence": total_valence / count,
         "stable_witness_count": stable_witnesses,
@@ -497,6 +525,45 @@ def _token_roles(tokens: list[str]) -> list[dict[str, Any]]:
     return roles
 
 
+def lexical_token_spans(source: str) -> list[dict[str, Any]]:
+    """Return the exact source spans consumed by the code-weight tokenizer.
+
+    The semantic operation signature is built from ``_lexical_tokens``.  This
+    companion surface uses the same regular expression and adds exact UTF-8
+    byte offsets, so model tokenizations can meet the operation signature on a
+    shared byte deed rather than by comparing display strings alone.
+    """
+
+    if not isinstance(source, str):
+        raise TypeError("source must be text")
+    byte_offsets = [0]
+    for character in source:
+        byte_offsets.append(byte_offsets[-1] + len(character.encode("utf-8")))
+    matches = list(LEXICAL_TOKEN_RE.finditer(source))
+    roles = _token_roles([match.group(0) for match in matches])
+    source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
+    rows: list[dict[str, Any]] = []
+    for index, (match, role) in enumerate(zip(matches, roles, strict=True)):
+        byte_start = byte_offsets[match.start()]
+        byte_end = byte_offsets[match.end()]
+        token_bytes = source.encode("utf-8")[byte_start:byte_end]
+        deed_payload = f"{source_sha256}:{index}:{byte_start}:{byte_end}:{token_bytes.hex()}"
+        rows.append(
+            {
+                "token_index": index,
+                "token": match.group(0),
+                "role": role["role"],
+                "char_start": match.start(),
+                "char_end": match.end(),
+                "byte_start": byte_start,
+                "byte_end": byte_end,
+                "utf8_hex": token_bytes.hex(),
+                "deed_id": hashlib.sha256(deed_payload.encode("ascii")).hexdigest(),
+            }
+        )
+    return rows
+
+
 def _find_after(tokens: list[str], candidates: set[str], start: int = 0) -> int | None:
     for index in range(start, len(tokens)):
         if tokens[index].lower() in candidates:
@@ -504,28 +571,34 @@ def _find_after(tokens: list[str], candidates: set[str], start: int = 0) -> int 
     return None
 
 
-def _function_name(tokens: list[str], language: str) -> str | None:
+def _function_declaration(tokens: list[str], language: str) -> tuple[str, int] | None:
     lowered = [token.lower() for token in tokens]
     for keyword in ("def", "fn", "function"):
         if keyword in lowered:
             index = lowered.index(keyword)
             if index + 1 < len(tokens) and re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", tokens[index + 1]):
-                return tokens[index + 1]
+                return tokens[index + 1], index + 1
 
     # C-like declarations often arrive as: int add(int a, int b) { ... }
     if language.lower() in {"c", "cpp", "c++", "java", "go"}:
         for index in range(1, len(tokens) - 1):
             if tokens[index + 1] == "(" and re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", tokens[index]):
-                if tokens[index].lower() not in {"if", "for", "while", "switch", "return"}:
-                    return tokens[index]
+                if tokens[index].lower() not in {
+                    "if",
+                    "for",
+                    "while",
+                    "switch",
+                    "return",
+                }:
+                    return tokens[index], index
     return None
 
 
-def _extract_params(tokens: list[str], function_name: str | None) -> list[str]:
-    if function_name is None:
+def _extract_params(tokens: list[str], function_index: int | None) -> list[str]:
+    if function_index is None:
         return []
     try:
-        open_index = tokens.index("(", tokens.index(function_name))
+        open_index = tokens.index("(", function_index + 1)
     except ValueError:
         return []
     depth = 0
@@ -563,8 +636,9 @@ def _normalize_param(param: str) -> str:
 
 def _operation_atoms(tokens: list[str], language: str) -> list[dict[str, Any]]:
     atoms: list[dict[str, Any]] = []
-    function_name = _function_name(tokens, language)
-    params = [_normalize_param(param) for param in _extract_params(tokens, function_name)]
+    declaration = _function_declaration(tokens, language)
+    function_name, function_index = declaration or (None, None)
+    params = [_normalize_param(param) for param in _extract_params(tokens, function_index)]
     if function_name:
         atoms.append(
             {
@@ -572,28 +646,59 @@ def _operation_atoms(tokens: list[str], language: str) -> list[dict[str, Any]]:
                 "name": function_name,
                 "arity": len(params),
                 "params": params,
+                "token_index": function_index,
             }
         )
 
     return_index = _find_after(tokens, {"return"})
     if return_index is not None:
-        atoms.append({"kind": "return_flow"})
+        atoms.append({"kind": "return_flow", "token_index": return_index})
 
     arithmetic_ops = {"+": "add", "-": "sub", "*": "mul", "/": "div", "%": "mod"}
-    comparison_ops = {"==": "eq", "!=": "neq", "<": "lt", "<=": "lte", ">": "gt", ">=": "gte"}
+    comparison_ops = {
+        "==": "eq",
+        "!=": "neq",
+        "<": "lt",
+        "<=": "lte",
+        ">": "gt",
+        ">=": "gte",
+    }
     for index, token in enumerate(tokens):
         if token in arithmetic_ops:
-            atoms.append({"kind": "arithmetic", "operator": arithmetic_ops[token], "arity": 2, "token_index": index})
+            atoms.append(
+                {
+                    "kind": "arithmetic",
+                    "operator": arithmetic_ops[token],
+                    "arity": 2,
+                    "token_index": index,
+                }
+            )
         elif token in comparison_ops:
-            atoms.append({"kind": "comparison", "operator": comparison_ops[token], "arity": 2, "token_index": index})
+            atoms.append(
+                {
+                    "kind": "comparison",
+                    "operator": comparison_ops[token],
+                    "arity": 2,
+                    "token_index": index,
+                }
+            )
         elif token in {"=", "+=", "-=", "*=", "/=", "%="}:
             operator = "assign" if token == "=" else f"{arithmetic_ops[token[0]]}_assign"
-            atoms.append({"kind": "assignment", "operator": operator, "arity": 2, "token_index": index})
+            atoms.append(
+                {
+                    "kind": "assignment",
+                    "operator": operator,
+                    "arity": 2,
+                    "token_index": index,
+                }
+            )
 
-    if any(token.lower() in {"for", "while"} for token in tokens):
-        atoms.append({"kind": "iteration_flow"})
-    if any(token.lower() in {"if", "else"} for token in tokens):
-        atoms.append({"kind": "control_guard"})
+    iteration_index = _find_after(tokens, {"for", "while"})
+    if iteration_index is not None:
+        atoms.append({"kind": "iteration_flow", "token_index": iteration_index})
+    guard_index = _find_after(tokens, {"if", "else"})
+    if guard_index is not None:
+        atoms.append({"kind": "control_guard", "token_index": guard_index})
     return atoms
 
 
@@ -692,6 +797,7 @@ __all__ = [
     "analyze_chemical_composition",
     "build_code_weight_packet",
     "build_semantic_operation_signature",
+    "lexical_token_spans",
     "resolve_element",
     "semantic_class_for_domain",
     "semantic_operation_signature_from_tokens",

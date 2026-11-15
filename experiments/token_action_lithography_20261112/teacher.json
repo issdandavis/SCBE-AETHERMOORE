@@ -1,0 +1,15 @@
+{
+  "tables": [
+    {
+      "table_id": "action-table",
+      "tokenizer_fingerprint": "declared-action-fixture-v1",
+      "tokens": [
+        {"token_id": 0, "byte_hex": "6c6f61642d61", "probability": 0.2, "label": "LOAD A 7"},
+        {"token_id": 1, "byte_hex": "6c6f61642d62", "probability": 0.2, "label": "LOAD B 7"},
+        {"token_id": 2, "byte_hex": "636f6d70617265", "probability": 0.2, "label": "COMPARE A B"},
+        {"token_id": 3, "byte_hex": "766572696679", "probability": 0.2, "label": "VERIFY"},
+        {"token_id": 4, "byte_hex": "68616c74", "probability": 0.2, "label": "HALT"}
+      ]
+    }
+  ]
+}

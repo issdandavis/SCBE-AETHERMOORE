@@ -1,0 +1,10 @@
+{
+  "projection_receipt_sha256": "b050b3b1e6657a28d99594b54233b9c3aabaf326a906e27092e4775c6212c402",
+  "bindings": [
+    {"table_id": "action-table", "token_id": 0, "byte_hex": "6c6f61642d61", "semantic_token": "LOAD", "operands": ["A", "7"]},
+    {"table_id": "action-table", "token_id": 1, "byte_hex": "6c6f61642d62", "semantic_token": "LOAD", "operands": ["B", "7"]},
+    {"table_id": "action-table", "token_id": 2, "byte_hex": "636f6d70617265", "semantic_token": "COMPARE", "operands": ["A", "B"]},
+    {"table_id": "action-table", "token_id": 3, "byte_hex": "766572696679", "semantic_token": "VERIFY", "operands": []},
+    {"table_id": "action-table", "token_id": 4, "byte_hex": "68616c74", "semantic_token": "HALT", "operands": []}
+  ]
+}

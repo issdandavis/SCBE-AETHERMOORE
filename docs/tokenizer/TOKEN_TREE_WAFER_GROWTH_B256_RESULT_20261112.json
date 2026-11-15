@@ -1,0 +1,2298 @@
+{
+  "base_table": {
+    "identity_sha256": "291ef0746a1187e173d19faea0375204bd6640232804ea31dad5ae93f0b4cfeb",
+    "measure_sha256": "e605d21b287f974ee6bd5b16b608e624ff7dc65b48bfa655edf3c71812d838a5",
+    "source_table_sha256": "fc85ad01480c1d0b72de32645b77538dfc0110cc58461eb9e8f9a50bc2d51009",
+    "table_id": "b256-uniform",
+    "token_count": 4096,
+    "tokenizer_fingerprint": "6c14a5cd26188678f920273cff49483f535e340caa98e3a7eb4d3285286c37c6"
+  },
+  "claim_boundary": {
+    "byte_identity_changed": false,
+    "deterministic_views_add_shannon_information": false,
+    "identity_preservation_checked_each_generation": true,
+    "model_quality_gain_proven": false,
+    "neural_weights_trained": false,
+    "probability_fields_are_not_neural_checkpoint_weights": true,
+    "probability_tilt_uses_ordered_full_decoded_byte_path": true,
+    "token_topology_may_remain_constant_across_weight_fields": true,
+    "versioned_wafer_to_isa_crosswalk_applied": false,
+    "wafer_opcode_cell_is_not_ca_or_vm_execution_semantics": true
+  },
+  "metrics": {
+    "all_quine_probes_pass": true,
+    "built_tree_count": 64,
+    "capacity_is_lower_bound_when_no_collision": true,
+    "first_collision": null,
+    "generated_token_row_count": 262144,
+    "maximum_path_reconstruction_abs_error": 2.168404344971009e-19,
+    "requested_tree_count": 64,
+    "trees_before_first_collision": 64,
+    "unique_combined_tree_count": 64,
+    "unique_measure_count": 64,
+    "unique_view_count": 64
+  },
+  "receipt_security": "unkeyed-corruption-detection-only",
+  "receipt_sha256": "b050b3b1e6657a28d99594b54233b9c3aabaf326a906e27092e4775c6212c402",
+  "records": [
+    {
+      "atlas": {
+        "atlas_sha256": "29af6ff0088f35f84551bed40397f776f890cc2df627b1feb465017a014f7fd6",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 0,
+      "generation": 0,
+      "global_rotation_degrees": 0.0,
+      "lattice_sha256": "76e4b0787cd9a160cd1f50302ca4f84f7bfa1afa3dc9a4b33cb54ffdc9138c6f",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "50c26040c5029dab8fee023540365749e81d4fb34081672efbb1e385d0443c21",
+      "patch_orientation": 0,
+      "patch_rotation_degrees": 1e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "f8a56df3a1914f8886b9095dbeb206c35137cdf728376c287ef829a1ba19c143",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 0,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "6c3d1826393e5b62153cce77681601aad40b455e132c84e3e03006491f08ddd1",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "44422a0f2c3b239318b6af8350c801784875538630b7e906cb2f8e96ce8897cd"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "d164807986de536c5fb21906d002a19b92a3d6f3f6cf627b75dc6e14acea38bf",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 1,
+      "generation": 1,
+      "global_rotation_degrees": 0.0001,
+      "lattice_sha256": "10ce9d35ffba689eacebdba3a3303c8828039ccb64939be8955d3b7d38a3526e",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "9c8fc1e2ed84e1cc42374ad8daa13ef4141c325a83d15cdfd2340b60da0504f2",
+      "patch_orientation": 1,
+      "patch_rotation_degrees": 1e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "8a0ada44cd7ffac503a4026f8d195f39dc4edc49e1b240fd41f0996a5a008c5c",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 0,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "a8b5b4c074200f0f0be9ace937697c604f029f3829c7735a073909acb953da3f",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "de03a3c931a080b7d61a2ce0eb1458184fb083ad1136f80a4f82611ad3d1f3bb"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "c66524a8fdd321ab0917c9a21a817bd1f4c46f30de6abf2464c2be4a98258b4b",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 2,
+      "generation": 2,
+      "global_rotation_degrees": 0.0002,
+      "lattice_sha256": "c3ebc92beadb2d9ede54d6b5b9a69c7fb48daa4bbf1be66b131a9dcb99ef7e08",
+      "maximum_reconstruction_error": 2.168404344971009e-19,
+      "measure_sha256": "9afb53b1a2433b6238833e2ba2ac57cf4e61556ab05e3b5ae90f6d77f2d8825f",
+      "patch_orientation": 2,
+      "patch_rotation_degrees": 1e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "97aa6ef5763a97feef1a2082319f3a09baffce78ee25d1cd3c5909245ce74612",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 0,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "f4ce187dcb1edd9d967156ddec86d016e286332e28a2480a5cfd4aee70e202e7",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "65432b5686ac122627768fe821932e01c6c407c87cf6694dc767d9ebeca9c933"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "6eaec3bdb1e003bcd16b4719c78907eef6cf9bf576f884845957f14116567c75",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 3,
+      "generation": 3,
+      "global_rotation_degrees": 0.00030000000000000003,
+      "lattice_sha256": "352eb417bce998983726bf741341d8897ff4cda185e57416d5f0f72ba4cae39f",
+      "maximum_reconstruction_error": 1.3552527156068805e-19,
+      "measure_sha256": "162f94092c58c124a992fbe73399f832e37a8f40b4a96e5b9e171dd6bb791947",
+      "patch_orientation": 3,
+      "patch_rotation_degrees": 1e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "e1223fea4f7adc526c6654605ef4d6ea27978a37aa12d063d4fa22dda7d656cd",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 0,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "8a0bde2ab643eb3dc3cd815795c74fa2b83b102219af3f2ddb5b4d6c5ac0e9b5",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "ab47e6841eb69c79b580f866399030e4b606320446181372431e3c261989b1f3"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "6b5d2767fb6a77a1857f7f7c0c1e5e2c48a71c4d185034650fc96699b69c965d",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 4,
+      "generation": 4,
+      "global_rotation_degrees": 0.0004,
+      "lattice_sha256": "c470bc6d0d106476bcf8429cfbb56efb12009c6e7aa7dec7da85be9dfa287319",
+      "maximum_reconstruction_error": 1.0842021724855044e-19,
+      "measure_sha256": "fb89d01174eae3b40d7460c79daed83dfbc762383f5a211a505fdd4ae06fe18a",
+      "patch_orientation": 0,
+      "patch_rotation_degrees": 1e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "9d757f52154a7daf943eae36bbae485002660b28afb6c171df99f8b55ac7e337",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 0,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "ec77b3656ebeb9785caf3d048cbc4d1d849e49b11b8106d18128c87d4e8bc14b",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "f6e9ba9318fd66f97d857ae0aedfc9c47dee4d24f4e984841a4b8a03451ec076"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "ea2d263bbc5c458341cb476643dd4bf2379fe20f6043c37adbe3d4cf6c865eba",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 5,
+      "generation": 5,
+      "global_rotation_degrees": 0.0005,
+      "lattice_sha256": "9133b46905471f6bb826c8ea4d1a338ab0cca8a1e6d316c22d4c7fd32dfff8c7",
+      "maximum_reconstruction_error": 1.0842021724855044e-19,
+      "measure_sha256": "57ce66a2430b28dfaf8d8151d8ca87093be409d3ccb5714bd10d0ff760ef7902",
+      "patch_orientation": 1,
+      "patch_rotation_degrees": 1e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "4046d11ff5d73d2c337647ec4c21201df9a811d01fb6ad9aefc56c41f7d3944c",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 0,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "4d2fa8e5c84c27a83b20c137710ac40c1ae3690379c2d426612a630a83201ace",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "f6ac1c260986c415cd1475f9259f028709691a3f106b25ffcf224d5cf07d34e9"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "f2bf4c8a491dcf268e11888472c962fec3fee7a7766fbf8489fd776c5455d8e6",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 6,
+      "generation": 6,
+      "global_rotation_degrees": 0.0006000000000000001,
+      "lattice_sha256": "a526dcaf072e0705ab315a4c0a1838aff274c2454ac7b56824af37fb0d27e690",
+      "maximum_reconstruction_error": 1.0842021724855044e-19,
+      "measure_sha256": "c38015620f04403f0ee3d839b7bf5138e2ef77a666d37d54e8faf81de85c7df9",
+      "patch_orientation": 2,
+      "patch_rotation_degrees": 1e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "595975da6b462d7a589879dad4aa21364db3c1f632f3991f37cb1c798d19e715",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 0,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "da75bb8920bd54c3a66d738ae1c41ce8317820c649534177fd7d785ccc622fa2",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "9337b5f4c581bcfff21bc5d7ce613ae1e70ce8338c0ef31edbf6d93c11272b79"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "a59738a5e4bd23cea2a0c3bdf24215e69ce7c993f33d56384e830c0017498e45",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 7,
+      "generation": 7,
+      "global_rotation_degrees": 0.0007,
+      "lattice_sha256": "4379c3627ee6d74c7973b6ae4d2723a14f80d3be5348b1806cebb3189913485a",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "688849a1dc8973c501a732994b6486c76386ad35484048f5f70a957862fe519f",
+      "patch_orientation": 3,
+      "patch_rotation_degrees": 1e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "c55045b37e375a2dd0ad7564b28b99ea7ee9319a02f60a3afcca9942270f031b",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 0,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "b20167089cb7dc217b5fa2f0bb46eb7dbb4b6a61bdb08059091103b31e0de803",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "75e90093eafa9d4c3be15d55727aaa54d1cefc49571610803cfaa54aaaaa5a62"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "d2a20919d35f9ab4ce634c883ad4e0ab98e80f09c65e075964004679301a1514",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 8,
+      "generation": 8,
+      "global_rotation_degrees": 0.0008,
+      "lattice_sha256": "3faab3c00f8551a623fc93c9057d7aabfe7ad000193a4a5e36b8220098784d0b",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "85b22b4b46f77308fd7ae3584cef8b3d046f0dcad491feb94726375aeb0b7ed1",
+      "patch_orientation": 0,
+      "patch_rotation_degrees": 1e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "8a8360bccd20767b481b51347857cd72c45ec05b978ea67c79bf87afaabaa512",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 0,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "60d0df2ed4259fa1ee4e043f062b58d538581d6ffd55539361ede8950424f9d9",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "f96d0ded8c86282d9e415ca501f974788afc9b6793e9ef225c8022b92438b727"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "478eb5759ae9235b6401688262f259c024b7efd0c4049a57332f01c99c8c39c9",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 9,
+      "generation": 9,
+      "global_rotation_degrees": 0.0009000000000000001,
+      "lattice_sha256": "ea647302156568aabdcf80ede446bc2f2c6c6ff810502d8791317c0143fd1386",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "38b1d75a29993f43834c653706c68a19601cd6363723354dbf3ddbd6eaee76f8",
+      "patch_orientation": 1,
+      "patch_rotation_degrees": 1e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "ba32c358e6284703d23e0b0afa7d277945c63c2a0a47b8f7c1f909e11459f0f4",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 0,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "176771eb0059e5b4cbf55997742abc8cafbae6cbe4ef43ab999091e688cdf16c",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "6a4aa49ae10e79cb5c10053f984d3fdcf9110c29d153fd339646a10709687a78"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "022b96bef6fdd26635613eb27f08f8b3ba316f1e3cbed451418076a30fcf3372",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 10,
+      "generation": 10,
+      "global_rotation_degrees": 0.001,
+      "lattice_sha256": "139dc589f2ed47a024f41a131e4ed61d697abdd3c8fc58b2cfe0b3a1dce078f5",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "9d6e817117a3a07accc4d2445264eea3c99cd67b10cc2b3076a6f752bcbc9646",
+      "patch_orientation": 2,
+      "patch_rotation_degrees": 1e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "e170859dfab6de0b838e760b8b5c576bb4f376cf601b8aa1c0070234ada694ce",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 0,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "87606df0a311dfaef69663900bd32e7661072d94ebb4a8c251737615a17679d6",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "15cb49f91ab7a059b391b2d4ab79738e0c1e51a2cd254e0ae3a51a7f38cce5ec"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "38a4229ce9dfcd18710cdc9dd49897c4e33d1a10c2e7c33fbb44480efc4841ff",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 11,
+      "generation": 11,
+      "global_rotation_degrees": 0.0011,
+      "lattice_sha256": "2e329e5fad54440657e8ac8667e72400b9825e0cafcf793195fff651c6647a30",
+      "maximum_reconstruction_error": 1.3552527156068805e-19,
+      "measure_sha256": "66fddae748ecf2ba7f89c51f74baf9916db0a02feb9bc1f5f0ac2bb821315c76",
+      "patch_orientation": 3,
+      "patch_rotation_degrees": 1e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "a34d0100d95b41936f5629f9416a4037147555a81e06ef5534d4076fce4d5c56",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 0,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "538e748d63efe8e3434cd6d96b2b8af7b54d7f550376615bb4dbbe5283f90fe4",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "e0c0d4fe0cea7dcd763680a43df671b0d035e84ebf266fcd31311bdb6ebce9d6"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "be711d010c2e7b8ac03772f783b4192c866c41fb2a4ded3657a4353b1e17eeac",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 12,
+      "generation": 12,
+      "global_rotation_degrees": 0.0012000000000000001,
+      "lattice_sha256": "7ec13d8a9bfd632eabf899baf14323458e597a2ab5d366d15b3c656d7567b589",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "4fcd32edfc29e15dd3c501568174e1cc589990f76efb5a77b2f0bb0ece4c425d",
+      "patch_orientation": 0,
+      "patch_rotation_degrees": 1e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "302be5aa8d4d6a6a1e3df15e4cfbb4bcf15e2463034479fe9434bab2b122383d",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 0,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "9c98384283212419dd0b0e0b0b7d2269e0b674bdc1c43a5d1f4e2a63df5fec85",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "c7695f0a0574de349b8fe5d916afdd5f2c884b6c5bb65fd9f735605be09c6265"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "930f1869646c5f137117feb8764d2b0029ee980ca8faa77fcc9eaff95e735139",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 13,
+      "generation": 13,
+      "global_rotation_degrees": 0.0013000000000000002,
+      "lattice_sha256": "f2d8435fb698d25d1fc729771336e868894f4ba312378e5cd4bdaae1fe52b9ff",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "4601315ab34c698c103d436bbd69f0bfd3993d57e2163ba07d9ffe869692ee2a",
+      "patch_orientation": 1,
+      "patch_rotation_degrees": 1e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "6257e0e4942f425161b1a6c053bea917d6da76c4496793df3703e25a190bae48",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 0,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "2d4fb02ea1a6fb4f3b6f82f0d1f9aeb615421bac025e1880b8e4bb919aa54c2e",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "b8b4046a5b33128525d25db503b33c41b1f42664c839e8f765ee32f570554b8e"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "aa142f1fadf606e37409eea7d774efce71f2a71ff0ffa27d6a4e027105b9f6f6",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 0,
+      "generation": 14,
+      "global_rotation_degrees": 0.0014,
+      "lattice_sha256": "8920788e7ac98dad3b76804eb1ff3c946c4061b11b2f95c798dda2fb7fc7e612",
+      "maximum_reconstruction_error": 1.0842021724855044e-19,
+      "measure_sha256": "a0c45dc4ddfed6af1a5397fb7d95d1814ccd3348426a3bf367b3753f8f9ae085",
+      "patch_orientation": 2,
+      "patch_rotation_degrees": 2e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "1a82a52bfc5ce75409af0467810a1425a460a5ad59d46d42658f42370ef76495",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 1,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "6cb70dd5d8320df3ce701543668c45481e534feeea8cf841a466efc23158352e",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "7b2b9aa6d2930258f648f3259117612c17f0fb24e0ec4a91806093143c140e47"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "d3b7c09470c9418b0f6d2924fa44541a9e2f8bd66e78977f8343a7f238fb2402",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 1,
+      "generation": 15,
+      "global_rotation_degrees": 0.0015,
+      "lattice_sha256": "8cfecce1f10dd3f85c807baca2849cc6b6eaa7725c21722eb6f4dad66f087ccb",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "c832be46902a195f86070959198ce2a7d350cd007f419aec4ac7b8acbdbd0800",
+      "patch_orientation": 3,
+      "patch_rotation_degrees": 2e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "9b4610cd134002c6127cae68a8ad6b627b550434c3a39669359a065cff1eb5f0",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 1,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "4444430151f65a0951f73830877c9b075ff593c1d99e59100f5a88c77adf3ff7",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "5f53709f5d8ecefd9b9b8d38a07f67616877b6101e88970aa912ffeacecdc27c"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "9e06d557a3433376139c2eef674ad6c03052fb4210cd1156ec0515b0ab075971",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 2,
+      "generation": 16,
+      "global_rotation_degrees": 0.0016,
+      "lattice_sha256": "c6a5b9138d65d9f39515ffde84f8024655d303f10fb2bc6f0b2cd890f20f226d",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "95249d1955f524d02f6711b5db8a35c424ec24080cd37ab3ca35619976207469",
+      "patch_orientation": 0,
+      "patch_rotation_degrees": 2e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "dcaded8413210eb65667a39f8090e3fe70093721d5a1229ebb730ac014bc1b6f",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 1,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "11e1e08653cd6216fa63f598437b47d432a117c455e1daeafe292ac07cf9fbca",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "b0f8ebb105154b8057413a9d54810c98a616abe3b1b9bddd74f522966478e30d"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "856c1579638eb9e08811d486910e797c09dca5e68c5d810af86f5e02d8694f41",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 3,
+      "generation": 17,
+      "global_rotation_degrees": 0.0017000000000000001,
+      "lattice_sha256": "95982f98425240f661666e5a2764f029fb3307200fecaaaf79beaa37ee4ea513",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "9149177f89f4ba5d2db4ea01539ef3fab8a15d3efa3948147d94820df639df49",
+      "patch_orientation": 1,
+      "patch_rotation_degrees": 2e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "895aada366939f74d4bf1f9d9d0bce4f1680206c899e035085f9771e1d82465b",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 1,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "1b615e6514e3fc570f4801d053b26ff8f5a69b518fcac20b26406d56dae517eb",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "be30b4105f29cb04224ff9fdf541825d4e3212c407a22b1d49df1ecc01687c81"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "db471843e508e7bd21e664c04d8c0d3680cde62c74bf53ae764d5e84aab0e383",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 4,
+      "generation": 18,
+      "global_rotation_degrees": 0.0018000000000000002,
+      "lattice_sha256": "ef67c71b2479a944e7406cea7c3d58a4bf53b2b9b56e50faffb7a13ff9b1050e",
+      "maximum_reconstruction_error": 1.0842021724855044e-19,
+      "measure_sha256": "b51fb72d817250f06031fb0cf7dae6298aa406f7b42afeb0618f0d2af78bae9d",
+      "patch_orientation": 2,
+      "patch_rotation_degrees": 2e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "f240c909ab8b813842141637da58747e98863dec4f8d15f608b7ba90c572871c",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 1,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "a309290588f190309c4ebc89401548817ad6e52773cb94396ee1fa287cc16359",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "58c8fa8c1adb7f73b1a9cdf220f03f0e90f68ecc736e121b042a408bc6f1383c"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "a0f2b40b478c7a7ab092cf84c9d445895c6a02e75ca4f333aaeae8165c2357da",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 5,
+      "generation": 19,
+      "global_rotation_degrees": 0.0019,
+      "lattice_sha256": "ec6e419170fd6139bc74c48d66af1867858f5178d80caec8cea19880ad13ecd7",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "8523cbf9048ac60fde912b9a4dd2c28badc95c553e981992037c7a9bae703bd5",
+      "patch_orientation": 3,
+      "patch_rotation_degrees": 2e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "ded2d116f63cad001e2be911cc1ee58e021a5fe48756e5074744a2b32b0e70ec",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 1,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "a9868113727c59fc365aae040dc7b67fcb653089abce30c8606f5949ab42deea",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "526e874c22568005da184a5742046785c102534ae4e1ac00c481cf76c2f1ac90"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "9380d1d230be559e0d4cc1a95c5d7964575a32411b158a6ec4f61bbe33bb49d2",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 6,
+      "generation": 20,
+      "global_rotation_degrees": 0.002,
+      "lattice_sha256": "b9168a2b6bae000a8a75830bba88f6428573ad98708a9d24748d18b2d66001ee",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "ffa734ad7b351ddb9c410b5e4abc97247990e04a4714fe97bef3a95844b88768",
+      "patch_orientation": 0,
+      "patch_rotation_degrees": 2e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "a7b6151e89c21029fbde028954caf8d05bb7a172e39e18d1447d4cd3626d1c71",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 1,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "812a88e12b17e5773dfc338d17a3bc0a62cf4e1eba6172720bd6e7f6b681f324",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "6b49445e4384566929caa14fbddf7a974df789557fbfc00e4ece3e182a5cd2a1"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "7bac1a9a194cb560e6ad885708b222c3c3b4a5884d4f1941a40dc37463d13806",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 7,
+      "generation": 21,
+      "global_rotation_degrees": 0.0021000000000000003,
+      "lattice_sha256": "b0e72b2333d5309c658555cdd419c5ec84f783dbae8d420fb4257dfee0af692b",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "e827e1c5f9f27c2462dc0582b1cd659e98391d7c5f6697c9a72ba294bf7ed6b2",
+      "patch_orientation": 1,
+      "patch_rotation_degrees": 2e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "2cbb836ef00cc1f98311d9c67c8fb913fc45662af14231811bde26773a95f2a0",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 1,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "d534f026b4550584d3f48d59ca421eadb816be139e93af2bcbd74685562bc8cc",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "65c85aba5590bda3e8e2736956930c70a040dfff39bb9c5efc39383f344e21c6"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "1ef550ef9203282774a74f6b18ce54967d7bc40a5682a2968881ab545a4341e6",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 8,
+      "generation": 22,
+      "global_rotation_degrees": 0.0022,
+      "lattice_sha256": "ad50addaed0a716ea14f941ca163971628ee54497c11b31c2bf7aab01ee128c4",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "163d3349066028925dbc8dc83ad63ca04a593b393f821fddbaaca957640f8021",
+      "patch_orientation": 2,
+      "patch_rotation_degrees": 2e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "8412a569fabc2b5e7dde55cb332c4fc7029657181f25226fbab9b671ee9c64e6",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 1,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "0e9d8c5e715c0009e4bd84b94d93aaf65ffd936ddc46f5ba73c3b9f0d4690cbe",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "434354a46acfef76ef343a70072c1157111e2f330b9e1c342b7ea2fb43da453d"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "8e3d14686a00d39ab598830085bdcba1411a0d1f1ee2befb2ddaed1ee50b0f56",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 9,
+      "generation": 23,
+      "global_rotation_degrees": 0.0023,
+      "lattice_sha256": "cbcf4115d9a7513b5703811cca2af58dfc11b72883a4c90aa185deeedb40b985",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "ba8d95110bff9946de6274b11aabc1d37e5cc2147d19797b8f78ccff62f40bcf",
+      "patch_orientation": 3,
+      "patch_rotation_degrees": 2e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "ac7745abdcfc7e8a4296e2c715e28d799b5256bdb3c6d0bce38f2e5bab1df07a",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 1,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "41079cec3db85364dbdcd0062fbb88aa3404d400737faccbc7ac9dc96f8da024",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "67c393257b91fd91c8d53966f6212eeaecfe6934fdd8041117a681f0c377a1aa"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "6f3efb31069b0b1282ec531c7fb280b30a559d81070c6393bc59219142291fef",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 10,
+      "generation": 24,
+      "global_rotation_degrees": 0.0024000000000000002,
+      "lattice_sha256": "7004ebbe7d199263903a0cd4a74fb943b9fbbcd813ffac3b72dd1e840785270d",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "f913bb8b61c1225cffae8c803bcb5bce2515b4529da28bcfea7ef8a867ec7821",
+      "patch_orientation": 0,
+      "patch_rotation_degrees": 2e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "b5d1835d55f2f9b4e984a40977a4cad1c50040ebfd3652c3f9ddeb49d27d1d17",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 1,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "cbe98fa56212636e335f06d69bd94fcefd1d40fc63c5b2927b44895341801462",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "32b33fcc1ff2f4ab25e300a382711955845e3075c10b56c1a8dbfdae4cbb7c7e"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "dea944feb3e358b9f48f7d666b12e742f7b0401e913647861522d6c4654dc2fc",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 11,
+      "generation": 25,
+      "global_rotation_degrees": 0.0025,
+      "lattice_sha256": "19643e62feb8f90b7159d4ec49fb9444678c6e98c1d8348c8dcff31e6f42502e",
+      "maximum_reconstruction_error": 2.168404344971009e-19,
+      "measure_sha256": "239e419a228edbf2f9a3a4d9312e3afc1cb37b73c8a27177d879d5e5035e09ea",
+      "patch_orientation": 1,
+      "patch_rotation_degrees": 2e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "63c9568f5669b9629c606082878698fec59b452abb9a38f979fa65f8b8fccc1d",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 1,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "7c3e9e906dc4eb0431cdd3ff7a72688cd5165bd49cf222f37f345b5ab753368d",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "864f86abc329466454ce829f55ed60d23088f63be3a1b395dd578763ad7cb2f5"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "a59ba2215e51c4d6566cea1e63b6fd03d2bbd173aa75ff6c92755f9731661523",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 12,
+      "generation": 26,
+      "global_rotation_degrees": 0.0026000000000000003,
+      "lattice_sha256": "0d2cfcbee707513493001a6ec7179dddc13568d3e1de2bee182509b28897465c",
+      "maximum_reconstruction_error": 1.3552527156068805e-19,
+      "measure_sha256": "c666ed9b70e0a491c2c4eaf07d1f03329bc2d7577139117020e6c82f93b3e32c",
+      "patch_orientation": 2,
+      "patch_rotation_degrees": 2e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "ca3a5db6ab49f3c9ba72becf3c3588201ca2692bafa09f2cdf057040c964e941",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 1,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "f4e2df8020c492ca95244448fa2eed648a587bdbfdfa3c8f2313212c12f2746e",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "45e9ad21906951bcd1e0dad51d9a4ddf13336919dc07052993f0904c6809703a"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "18a6e4e1964b2b385757d68d7061292e8fc57e72c8b24fa437f514fb01125944",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 13,
+      "generation": 27,
+      "global_rotation_degrees": 0.0027,
+      "lattice_sha256": "3725239680412b5c758f77f106a6394cd54ddfd1edf66bcb9067f4db998a8607",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "3b0e328b66802730e7eccc50188428bde26a45c95329633b9c602f0d2102d192",
+      "patch_orientation": 3,
+      "patch_rotation_degrees": 2e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "f96b1297c033b6e1b49c06db2d1702177a323dbf03db6fdd85540b6d3a10637e",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 1,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "0401ee19dd8cf3b752522563500a75cc1665c5bf1708286af0ebcb9279fcec5f",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "1f24762eccaefd4cd0374729cca98bceede3a870963866a3d836187d885aabb4"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "aa986b61a427a9a73a4a837bd3793820ea2fee437a5d169be9ee664e7710a054",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 0,
+      "generation": 28,
+      "global_rotation_degrees": 0.0028,
+      "lattice_sha256": "8989d4d84baa4893d4369bb66df056169f322f8cb026c63e8414786f080526a9",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "a510bc95a7ad7c2ac3542353b50667f641ab3dce4befe65ce9ce40587e6234e8",
+      "patch_orientation": 0,
+      "patch_rotation_degrees": 3.0000000000000004e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "7411929ecaaf31f069a1a7ab7a0ae9b7b623457644d48c2c15f9c287ec03f455",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 2,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "e9e54215022e3f1b836fbebaa5d94c409561ae16f34ea9217cd38b5d2d15ddd6",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "73397b74fde793e214bea8908a5d0c01caca2710dbf2746bf38feae5ea00c4fb"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "826aa81f2c995656190b96bcd25b53406a1fa690e48e6808693a625912b7f124",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 1,
+      "generation": 29,
+      "global_rotation_degrees": 0.0029000000000000002,
+      "lattice_sha256": "479fb768469fafb7e9486b413f7e700415423f6861df59a9941070b097371858",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "b863f2d1926fc3bb6823a405decd1fec8808e4cdcc1df22df05e9515846a920e",
+      "patch_orientation": 1,
+      "patch_rotation_degrees": 3.0000000000000004e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "a8d226f900c5533c173f9000e93eeda645ae63d2572fcf520b4958ff06e6a1c7",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 2,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "c4c2fedf33c30fb7bc0f9d218ad56ee29c71c07cb157152b71b45ca790b4b785",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "91069d8901135d9297e7b1647344dd75cefa8251e09974a09b09ef701f374704"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "0a3465da2abe12f52cc30515d908dc7380567119913b752ad5b261a5ebb7f0cb",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 2,
+      "generation": 30,
+      "global_rotation_degrees": 0.003,
+      "lattice_sha256": "84627927e174f2234c7f130c81589d8c2539903eb78aa357c4f03f7752ecceda",
+      "maximum_reconstruction_error": 1.0842021724855044e-19,
+      "measure_sha256": "5469ad8c81fafa4a4a5dbb385c5655503c489cf25f4856c819ba4bb9fc6ac2bf",
+      "patch_orientation": 2,
+      "patch_rotation_degrees": 3.0000000000000004e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "3eb27b62ffcaf7ca9f0b70bada1fa183a3196b3f4ca1ef09bd6c6e57819f285c",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 2,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "64f5f01699f1aee11dff10e1e94804524ed6f5eb854c1853406673e8d0d30a18",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "c9580c395e0e7820d867e136b912215b144460f6f004814d4a4bdeb1b8165071"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "9c02080b0f667ba3d35c55e8b14f80b06b2a9f360d22058a74cc02db513bcb0c",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 3,
+      "generation": 31,
+      "global_rotation_degrees": 0.0031000000000000003,
+      "lattice_sha256": "cd054e190d33c753b147a5e1d5fcc455934d7103f0cc82a3556044f2a25138af",
+      "maximum_reconstruction_error": 1.0842021724855044e-19,
+      "measure_sha256": "4dd4ee43e7ae52c027da5cc62aa0335dea9a6dbd11c523081f45600d35808259",
+      "patch_orientation": 3,
+      "patch_rotation_degrees": 3.0000000000000004e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "73214f52b1f15a3f2eb0ef8a3dba4c29d5febfb58bdd10f12fb91c9873180d1e",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 2,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "4a96f38004f017cc0ddfc4d8c5bbc9b6cacd47921ace2487ba7d13f6329a2c2a",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "61772cacd300b7a83624f67746610ba64a980c9d3c151fd478876df3b347c8a9"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "245c394249562b89d96801b4b3da802e25a7ea7ed024a00fe5430fcd91c2eb2b",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 4,
+      "generation": 32,
+      "global_rotation_degrees": 0.0032,
+      "lattice_sha256": "6b0d14d88e808b6f8f669cad559e548ccfb105cad42c1512955ed86be1cf27a4",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "b9f279e88f1b47cf01fc34e704bdc0c99287a92ad3ac08ac85191c0b54f96f8b",
+      "patch_orientation": 0,
+      "patch_rotation_degrees": 3.0000000000000004e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "920b74897828b5cb343f8de6745fec86903f75f0e32d9a981e5821cd73c9921a",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 2,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "e337b53fa5b376414ac723f612ab6725bcd3a5ec7e3e2e24537d32fafe6f3e47",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "b888d8cbae7378bd812828b3747c8d98d2aaec74c833a66aa5c93f81e5062ecd"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "f717589ebb5137899da4f75ad210cbb3939a87252f2b5a674717228bbb54374d",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 5,
+      "generation": 33,
+      "global_rotation_degrees": 0.0033,
+      "lattice_sha256": "073b948cbf033d7443e3e9f97b52e8d34f9e368f375979092c3e0ac51824d463",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "40d9c4c0b244ee918d43f50e4e2682efc0660d77d06cf97f48161b7ebb5e004e",
+      "patch_orientation": 1,
+      "patch_rotation_degrees": 3.0000000000000004e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "58b03c5c69afbadbc5382ebad398c9baecd529629e2b1cfcac51289948767d8c",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 2,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "d2c60f7fdc7d2f411649a92b3fe2be908869269bed041f6790375d58cada337f",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "a2ffbb9fcf402a5f9fd1149737cf56cc24162a743a210ee8907353eaab882db8"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "9fac1c42b8479af3b3dfd971fe9ef511a169a959a415d3113e9ef98a488fc65a",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 6,
+      "generation": 34,
+      "global_rotation_degrees": 0.0034000000000000002,
+      "lattice_sha256": "8f20bcc21355603c157a9bd7ab3c4f7d2bc68b93e08739706c25dbea2d038257",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "ff9b25288843211f295dad70cd9ad758e067795871445ac299109c84b7634a50",
+      "patch_orientation": 2,
+      "patch_rotation_degrees": 3.0000000000000004e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "9cac8b903adaa857451deb536c3ead0eb70cd696fada13b68949330c76e185d3",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 2,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "5b2e8654f4eafd75d2505e38e0f60c5c87d2bd2700dbd73e082a495972f89661",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "d30258a3f4600362944390001b734117759686a96987589bb6ddd9b39c182131"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "97b099d5b31a58d74ac9311e9d08b3b501121c3ccd01f273a5a10825323455a9",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 7,
+      "generation": 35,
+      "global_rotation_degrees": 0.0035,
+      "lattice_sha256": "01e6630c486a6359b92043054ae60c5a88311d3c455e3ec3de07944708f70674",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "a2f5924dbec0970ef77060150c53297eb7f1036ee4ec73de6747b4c754d1a71b",
+      "patch_orientation": 3,
+      "patch_rotation_degrees": 3.0000000000000004e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "d50fc7f4df1f543cf233d44691759a5103b500f9f9dcbd3c5b873f65eb769c9e",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 2,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "168176800505dd4673d825bec3577ed969cb52e88079b81d87b630e9175581af",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "86e65ca93358a299e6610abbf7919fb6f324c2f6294e349877f938c69f84a521"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "fa2956a4691a297d24d2f3689c1fde932f0c7a5efb919f089d522e17631e8d15",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 8,
+      "generation": 36,
+      "global_rotation_degrees": 0.0036000000000000003,
+      "lattice_sha256": "780fd6adfc18e38b824b8f648125f874033e1716f03149efec8a62dd11397a97",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "975b421a33402a06659396eeb119d9878e24cbb39239cacffd726dc0859f3027",
+      "patch_orientation": 0,
+      "patch_rotation_degrees": 3.0000000000000004e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "6cf723755a100077c203c80763b0562c369a18e24feb461ff15af4b6887a5d07",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 2,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "aaf71b450df00227a8736d421fd6064e89ea09eadd51b00822f4d69f38fafa75",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "54529f3fcf59282bb31ec3b72622c4ca6683e991f234a0357d5ec71ace5b101d"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "f3543fe155d2c01733d3aeb82f2e232dbe9c4a9dc21cdc76fcfef02702108e69",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 9,
+      "generation": 37,
+      "global_rotation_degrees": 0.0037,
+      "lattice_sha256": "11c693fd4965861377e8c5ee6d4cfcb781e893522146d80635732b31dad3ee81",
+      "maximum_reconstruction_error": 1.0842021724855044e-19,
+      "measure_sha256": "cc97766543480803c445c859e16adad9f386a5e5f1082b7764132c4a3d241bf1",
+      "patch_orientation": 1,
+      "patch_rotation_degrees": 3.0000000000000004e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "ef9d828133462131d7c912b58fffa7c2678da53bcf6638ae194875d5f6ae3e99",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 2,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "9ba13488a1ccb4b38426e80a5604a3d42ef936429c255fda12fbf1f29b0d5a50",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "4f8a3e69f38aa0fd15ab207223006aa420a490c116de74737fdcf7c6c25c2140"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "e90c8e9aa5261214f557699f66c691b1440e29f8a4667b9bdfa36c37c0265b50",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 10,
+      "generation": 38,
+      "global_rotation_degrees": 0.0038,
+      "lattice_sha256": "8493740c13eb7072d1d26e491587644e0233389277464e9e3cb53dbbd5e840cc",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "e6720547a729f0dc1409b66d5723635c8ea3c7e400e83059223e3b42dd1822ef",
+      "patch_orientation": 2,
+      "patch_rotation_degrees": 3.0000000000000004e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "2ab8fd417087e30a321d760c23738f910589f7f10a58b6711103f7f017c28275",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 2,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "e8809b8fd83716fe3c62f1ff7d12eafc8a34403e1c564d0b370bd4f21956065a",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "0d3e3ed29b7ca74f584a89fdf501eedd11954c3b661cced1167a6acfa338dd63"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "1382c26019144ceec245255bc4cebc7c68c62e6ea219eed76ed077e79e7f523f",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 11,
+      "generation": 39,
+      "global_rotation_degrees": 0.0039000000000000003,
+      "lattice_sha256": "026b33e8e1811aa94a1922f7d4b1b86c2b002a66213184bc5d27daac5905b258",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "ce556243bf0a6215d91c20201dd93eb429536b26473705d2fbf78fa86b4e07eb",
+      "patch_orientation": 3,
+      "patch_rotation_degrees": 3.0000000000000004e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "614fbbf3785814fee62bbf17fde7d5ad1e50cbc7766a9bf3a2d3e1e1a8dd96ad",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 2,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "46a0cdd657fb87ed159dec3607abf7645de118bb40de5b09271fbddae41953eb",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "a7065cb384a948c72352a6ba87156106edbd16432f160452b5a7d24f65116726"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "7190d5a9ecf496042922ffce0cab6e2056361c484726e33cd02de8c3c35b760c",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 12,
+      "generation": 40,
+      "global_rotation_degrees": 0.004,
+      "lattice_sha256": "7abcc0a7af2a693253db5f179fa2303ef97e0e7c3ac90ecb20299d8490e86290",
+      "maximum_reconstruction_error": 1.0842021724855044e-19,
+      "measure_sha256": "c55082bf3899dd1440cb88a8ab15b5ce4bfc55b56bd5279de94571e81eea837b",
+      "patch_orientation": 0,
+      "patch_rotation_degrees": 3.0000000000000004e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "1cb7188858d306eedf34db92311ac2ab6ee637236b9bd96db047612dea01dc54",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 2,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "95113377ea36e8617ccaf885f6c724b69d2cb18abe0bc8d14aaee4b84736f26e",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "fb78fdaa1ed2aaa184b681d96c0729372a9ffecd568b3c31ba2db71062c4693a"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "1b83e47b755e40412b3bfb21b322ea3eb1b8e7fa86a068392905bc453359818b",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 13,
+      "generation": 41,
+      "global_rotation_degrees": 0.0041,
+      "lattice_sha256": "716f8d510ae33b0869343d3f112839882235984ede18c2c3f80c77e3456631de",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "ce7148723f2be09d88c2369686251d1e4ed09eec1eabc067170b7f119724e069",
+      "patch_orientation": 1,
+      "patch_rotation_degrees": 3.0000000000000004e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "be3c5f12f6adf702a7b084055ebe92e3e7efa0ebf8adf3948f7aa4e44f75b2ef",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 2,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "28e07be2df231f8b561243ade10fc2b1a74384620c92a626cb9f696938703041",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "1bb055a0be1eedf4db623fe88ea03545cf07a15f1475daa4b811d901f3511a12"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "d1097b22bb88babaee6b31670b87dbd51fccd915408136a048ac73df888524a3",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 0,
+      "generation": 42,
+      "global_rotation_degrees": 0.004200000000000001,
+      "lattice_sha256": "4beed4e4529710a84263af2afc88d885b37fbd07e010acffbee5c9d56a6fa461",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "eea53152bb793bc14d4f6e3a3bff7e593869d737a86c173748e72eb1ac8bb17c",
+      "patch_orientation": 2,
+      "patch_rotation_degrees": 4e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "884bc5de4318b3c16438f7ce1594d1f40e6154349eebc9c1bfcad3af8cf6cbcc",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 3,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "f2eb4be6669065f48d34da6d196cca1eb2a08a508caf8cdcf7c1c39db98d07ca",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "36c4c0dec6ee941f90742c89b457aea7af0d0679d8fb2a8b68edbc974e424e1e"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "18058700ea2959049ed478c9af7a834c24f8b2f4313393e5d444c244c527b41a",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 1,
+      "generation": 43,
+      "global_rotation_degrees": 0.0043,
+      "lattice_sha256": "168bd5886c64adaa76de218b7763433fc87fba96282b6eda7fab731f77a86c86",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "a191f0986476c34efc533b927bd2bae81b00e01b7c12066c6653f0a7bf6ded3f",
+      "patch_orientation": 3,
+      "patch_rotation_degrees": 4e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "c8d82223668f441320e14025d7ddb2c0a2a11fb69b29b7ea4f78422873d97a34",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 3,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "7f04047c1efee88207a34340ee429ec9951a773ab0314804b893925f5284eb32",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "9d7c07b5c0e7c991b6c9bb4198b3543dd019a9a78527c7765081261b71801b77"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "af86ab036b855ea152320377fd99083774c82dfeadd4b720912ac186d8e9324d",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 2,
+      "generation": 44,
+      "global_rotation_degrees": 0.0044,
+      "lattice_sha256": "7b66d0bc6241748a36179eafd3ff939bcae87b4f702bf5de56998e28b785f260",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "a252cde55f1d53dc775a853525356942a57f648861efd22e64da9de2fa91cd69",
+      "patch_orientation": 0,
+      "patch_rotation_degrees": 4e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "8b7b8f42f2ec51bf04ef87ebeffc67de2c74d407e33135aeb865130724b58fd6",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 3,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "cac75d709142adf7772fa78feea9b95170165ae0713380c635c517dc00ae34b0",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "733ecf94e84b0b58a1bafc1dfd644d2f7af0a949fac5e6b85c7415d533b0ecd8"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "313018d9874bdf14a6ec3882a6b7078cb47a525fc6145a1c2f8f6af47b49b703",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 3,
+      "generation": 45,
+      "global_rotation_degrees": 0.0045000000000000005,
+      "lattice_sha256": "47cb536769d9ef163698c121cedb3de505edef73ef47426704a3941aa23e0d0a",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "7d9e92e45cb09b71605850f51db64bb96f2ae7b756cb07c19b1db0ab15982506",
+      "patch_orientation": 1,
+      "patch_rotation_degrees": 4e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "74ec0d26ea97a536cea9b3029361e817ffc927e57784649617e03621cff38f59",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 3,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "c4f6a5c08de69eb6c80d18a0be53747d5ce589227dd4b4936c245f7de7b939c9",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "2a7065cf8f5e6e0b64440923de4063f824df0628d433c5faac992d4118ff8464"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "9965d222d54139d7125fa44744ebe03a99eb79aa1cba45fdbb21570955d55823",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 4,
+      "generation": 46,
+      "global_rotation_degrees": 0.0046,
+      "lattice_sha256": "9c8b936c69ad1c1ff19b16cef60af90a532ba2507282d4c3e29a2fb909211454",
+      "maximum_reconstruction_error": 2.168404344971009e-19,
+      "measure_sha256": "018e5d02a69a9a866f3650bb9ee1b834837862b2ba2291be21e98eea178fe834",
+      "patch_orientation": 2,
+      "patch_rotation_degrees": 4e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "5795260d8c411eed4a5d6e41578bf8f5f68af2e8793175d6af04b6e248eee775",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 3,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "7a430de8fb8b0bbcf9b42349e68e471ab99b086d929cd048907c1c718f97fc01",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "774a47b7b9246efae56d1095de6bf48f5080619c8edc59fc1bb84f25fc284d67"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "512741f6a0fa900f10bc2bfe90bc5bf0209a697f7d58e6bcce86a0a48aaf6c63",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 5,
+      "generation": 47,
+      "global_rotation_degrees": 0.0047,
+      "lattice_sha256": "17e7087f74869bee72006ab9be95df3f55f0d80455d37ff0754aaa856a9a0816",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "462834ace7c127b6f8473a0e8d7e11979702a4fb44cd43180f52a4deecd80a39",
+      "patch_orientation": 3,
+      "patch_rotation_degrees": 4e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "aa9ed467e3ab5178dac07d2974e99b03d120782b7a8e93889f6d5d6f778c7a71",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 3,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "ba76c05cfa833c01f4643c18c61f029953cbd39c854b1169a76cdbe2f8134081",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "ca8dbe6f155d9d4743e92acb7af1d49f319ac420c2d4f2499111e37d79fd1c58"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "5d5f014bec533d67aeede4e3b94fe30b8c5b05cdbee1d6edfacf5309716f8c53",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 6,
+      "generation": 48,
+      "global_rotation_degrees": 0.0048000000000000004,
+      "lattice_sha256": "3ad4dceffc3bb2fddd1b8fd6e8757a5c1fdce51ad72743981de825be3ba12070",
+      "maximum_reconstruction_error": 2.168404344971009e-19,
+      "measure_sha256": "5978111594e107f51adddc48d4868bf57381347bf058d395268a5ef229686599",
+      "patch_orientation": 0,
+      "patch_rotation_degrees": 4e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "2a41d31059087e36243451c6d58d3171cbbc399beabfb673383dacf03088e239",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 3,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "449011fdb2c19b282f05f680ef96988b54975dd112315fb5c4a394d92a1a9c7a",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "7ff29fc00f5363a0cc59358c1f53c3962bd6043352ff040083e174ee6b5ccbeb"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "bd49f7a5df50b82b0c858965a067006c8d53563e4ca362833ccb77b3c0fb1417",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 7,
+      "generation": 49,
+      "global_rotation_degrees": 0.0049,
+      "lattice_sha256": "61ec4f516048d35314d63d287caec0e448b77d4fa448e9ba1a46711d4fd17f43",
+      "maximum_reconstruction_error": 1.3552527156068805e-19,
+      "measure_sha256": "b105dc1022de28154da81a06dcce29512ba3b9e9d76217a1b987269502abd3c3",
+      "patch_orientation": 1,
+      "patch_rotation_degrees": 4e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "d5d04f4aa485c9048c6a221c8e0fd19883824de83efce421deb51dabd4c334dd",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 3,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "c5a0a3ac571dab6069321da3718d982aaa6950bd423b831243a352c39713cd0d",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "3f10ad3a67aebf7bd3e7289971284c8418a02ec087364f52d3679ab03309ba46"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "5a1da82162b1b5df1e6b161e121e21fe5c46a6165e50e4e7319394f9601341a7",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 8,
+      "generation": 50,
+      "global_rotation_degrees": 0.005,
+      "lattice_sha256": "ab60f2b8972e036e70a8446a6919134c5c31858c1b19ddf4a850f77e08cf8349",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "1f1aa049b3970e4130358fff18f2a999c7b7a69794c164329bbcb331503fe077",
+      "patch_orientation": 2,
+      "patch_rotation_degrees": 4e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "fbb6c049090053f76bef542bb8801a634949b110582b2e84a1e77b930e981a2a",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 3,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "1c14ed105e843d0717d2f447dbf7c0708991f41f68ab61cf16ba6b2732b4fbd7",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "93666122237b811c9fd85dc2a8be4682a5b3a72f6bcfaa988ad32de517636d5e"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "24694b211a2d3e602eeed7dcc1f6a26946a20c5ec0af3a0b8338c9ba2962260e",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 9,
+      "generation": 51,
+      "global_rotation_degrees": 0.0051,
+      "lattice_sha256": "568afa5a27b44d196c8173c653e7f576e41482669d4c47e93d7fb22ad3c25a99",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "517358838203f6b90af3e06da339fb0190f4acf18c19743c5a875a219408d508",
+      "patch_orientation": 3,
+      "patch_rotation_degrees": 4e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "645390c27471aa4a94092aae7aaa7a1df844e9d138a595fd4dda7774a7d3ef3b",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 3,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "33cbac02a670db5259fa1998704d4ced4240a40855e34eb3416eda221e8c2e27",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "696247da5d5fc2baf890e6d0092e0550aeca337a1a29320412ca8f38c5b8c278"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "7706b656db596307f89a6596d8c3b9892f0401c449bd96621b7aa43286638f86",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 10,
+      "generation": 52,
+      "global_rotation_degrees": 0.005200000000000001,
+      "lattice_sha256": "cea2169d264abca75df7b1d5ad968080c3468a8a6eb7b1a4b3a8a0db0028dc28",
+      "maximum_reconstruction_error": 1.3552527156068805e-19,
+      "measure_sha256": "aaeed147d55d47767dbd8119bedfbe088f45796ff3cc308ebb6dafb0962ba5f2",
+      "patch_orientation": 0,
+      "patch_rotation_degrees": 4e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "76800977f9bb01febbd9ec98ef275005f4c088907cfed06763c75ded8149eb8c",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 3,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "b870cc5904ccc1694e4fc865e4b0467a97762d8761785421f7c4ab5f40f2876e",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "4da651a87a1aba67195cc5efa56aa1f099a3adffc90b4509eb852567e23acf57"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "3d92bcbcff9ac5b263ec4ab6683bf40ba464e79549572a172600ef0bff0037fa",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 11,
+      "generation": 53,
+      "global_rotation_degrees": 0.0053,
+      "lattice_sha256": "c017f441fe3ca5d12c810e71227ecf22f30864be0a915f336564e77fc6518c6f",
+      "maximum_reconstruction_error": 2.168404344971009e-19,
+      "measure_sha256": "1f5589469666a4529d6960e8bdef27177abe7346ce1acb3f74ad371d9087252f",
+      "patch_orientation": 1,
+      "patch_rotation_degrees": 4e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "969919637ca3eaf4e0ce5d5b2f2d4d5fac546ad8b1633755b7690dd5b4888b23",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 3,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "ff3d77e0d2efaceee113661aea5ef87590e6087004fbd9bc6677f26856ad5cd6",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "3419886f3551b08d27bacc508fb11e1458c9e91cf6fe2c139f500cdd54cb060a"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "cdbb439bcbef05cf128ea43103a03908981a6e4b6c9186c52ee124992b3c470b",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 12,
+      "generation": 54,
+      "global_rotation_degrees": 0.0054,
+      "lattice_sha256": "3c39f6547583b5f1914e67d39c05212384f48d3bd66e92538ebdc126c258999a",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "098af9fe9d9ebdc21a2eae297182b56dad1eb0ad2f126a36a49d0b7657b58241",
+      "patch_orientation": 2,
+      "patch_rotation_degrees": 4e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "fbea39c2a7b765cfe19149b36adc6d67f1bb0b05d9514855ecd5a4e0a81c7ebe",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 3,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "96dc3d6af981aabb13b29f4445474e73e57b1b5f33ae5c7cd8ea1a29889c08d6",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "e1cc118d73dda7949157a42b959e1d2c095cb71ae6872eb1f18641362e41ab5d"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "6219b6e62a2544f6cc5c4d00c692cb736a232293526f4d12be5263b346588707",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 13,
+      "generation": 55,
+      "global_rotation_degrees": 0.0055000000000000005,
+      "lattice_sha256": "6b98162373760242f6c90e674be4501ee16694c3cbf95a360a90b201ec4de5b3",
+      "maximum_reconstruction_error": 2.168404344971009e-19,
+      "measure_sha256": "d3d82146f03bd9b2d5488e062f105e709e5c89e011633a61b54fb41fa8349432",
+      "patch_orientation": 3,
+      "patch_rotation_degrees": 4e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "31c4c914a5a228c698ba79bfcfc27fc2defbfc29adbbff26e1d75532e0bd6fcb",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 3,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "92a53bddd1308119886df714d78bb6f0516deba07f0f5be9db085cd46a070989",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "9675fe4acc1137c27b7be08ac0ae31ee77909d22d56a6e242fcd6bd0ab675af9"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "6d8a1e255222e70eaea870f5d16fffdc5a57f2db2dc2b3578c4f094aa2dd7872",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 0,
+      "generation": 56,
+      "global_rotation_degrees": 0.0056,
+      "lattice_sha256": "28441aaefe6e6b04cbb3883eb637b95ad41ce58b69395509a3d4231fe8f89113",
+      "maximum_reconstruction_error": 1.0842021724855044e-19,
+      "measure_sha256": "6ed41ac6c67c736cd2ee6905ebfc6f766cd0621b4c9b0ee84965ff6147200fd3",
+      "patch_orientation": 0,
+      "patch_rotation_degrees": 5e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "616238316f83e79b14a52ef9b2aba4daa2769f4dbed2c41bbaafceb922ebbe38",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 4,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "193b8dad6e7a2734628c84265a22a22690495637fe542dd50b5682bdbec30eab",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "a22e7d6ea26457e15a1c331a533f240b0cf91dc919c065f6a8eefbcc32c9544d"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "c0867e51451d824b5f245b46a2be4c7afdbeb0149e2135b865474b7ecfa01f9f",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 1,
+      "generation": 57,
+      "global_rotation_degrees": 0.0057,
+      "lattice_sha256": "e497997a69a000dc9a9daa451e62d384391dac5cacf94a6796b0e061e7962100",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "6efab44ec2334f8d73e0e0c2b33e5078c05188f87cbd43f80c2205a123235a83",
+      "patch_orientation": 1,
+      "patch_rotation_degrees": 5e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "b11149be589a7c99b247e819fa95d978464b922e6f36701a26693a11d5a46308",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 4,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "a35dfc7ac309d3e1ec5c96378ce5ffbb3e27cb11116cbc441e46ab5bf06c5f30",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "76cbf719d5d12e464550f2ea0556fbf78e0d09881ad8deef3d17e4eb51b5f48e"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "daed6e8e84f25928e06d171ac108984bf733b31e2952c4e61f1ec4e04b58c68e",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 2,
+      "generation": 58,
+      "global_rotation_degrees": 0.0058000000000000005,
+      "lattice_sha256": "da7d418dd07ca4c85e952a59368a12906e2c9d1cab312ec41c5d75b4624a4e11",
+      "maximum_reconstruction_error": 1.0842021724855044e-19,
+      "measure_sha256": "e0472735197b6f21f55c590394000502900df387444a2e4d33e99a29e90091a8",
+      "patch_orientation": 2,
+      "patch_rotation_degrees": 5e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "e8944275b2250e49a19f0a316ee79cacf89f2cb9513af8fd20ec91c3f810d7da",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 4,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "5cdf2da64692426ac7ca7a93ce5a5f2cd8f155c40e22c72639e8f0d9b22eef46",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "e695487be2b69c068b22474e2ebadf78338117e6fe22d7527dba724f9987aa9a"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "b51f0bf8224adc1fba4633ba82cb522867455be90cc1739809be986321c17a3e",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 3,
+      "generation": 59,
+      "global_rotation_degrees": 0.0059,
+      "lattice_sha256": "09a19d85e8985fdf2aefef7f37990acec961fb43432ad337539bd056118178d5",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "89268b348b28a0027786c22f7cb111e4e12a92d9b3035c120eafef5e9a89a997",
+      "patch_orientation": 3,
+      "patch_rotation_degrees": 5e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "c81c6430af2637e881ad2160e9f7431717de2eac62ac05a2f4ec66c512dfb5e8",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 4,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "c125c995a5ecc1d5823b9d0de9fad24c6d3c431a4aaa786341318f47660aa89a",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "f8320f7147ee12cb082290abbb104c918629922a4758d2e48770a20121a3213f"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "3e6768b3c2c5d05da624356576cec8d22e41dcac0400238a5844dd2cf61347cd",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 4,
+      "generation": 60,
+      "global_rotation_degrees": 0.006,
+      "lattice_sha256": "e5c28930d6de70466618afdc603e30188097c29676c15bc75ce21fbce203f4c8",
+      "maximum_reconstruction_error": 1.0842021724855044e-19,
+      "measure_sha256": "153f9a56ae2d6821fb58d6d0afac5b0ba8034c708f0e357b2e723a7704853d4f",
+      "patch_orientation": 0,
+      "patch_rotation_degrees": 5e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "53cff080e1b4279ae67481ef979a0a01a9721c78e90e5defe1bff2b2293f83a4",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 4,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "5dd132be7432158d48f355ef35c9ee232eb8cd8b14215faf0168a46c5f1e810b",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "9561754e995903cb3f1f0e53972f795fb89b4a7dadb7ae90873e67bfd90e5446"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "3cf004033cdad9f4b8938ff8d630dafe52b9a6a3c9252e95965affbfb1bcbbab",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 5,
+      "generation": 61,
+      "global_rotation_degrees": 0.0061,
+      "lattice_sha256": "275e281c68e501d7c5cfd8ee405887864402b7a3bffe770a82997af4bd0a105d",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "850a2f342766e0f8abf5056adad5bc2aa130ca48c3580a53d36a7e516a692538",
+      "patch_orientation": 1,
+      "patch_rotation_degrees": 5e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "dd63627440877a1138ae0e587d0b53860e59059a05e8ded42a545b6450a948f4",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 4,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "ad9a993685b50be149ee60d715292e8b3d3f24728dc0cfff5246c72dad95b0c5",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "a70e110f3a5071ef9483061e6682fca1c70269671ffa636836080417dd88b6f5"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "fb969821ef51ed5c422518d377ef1904fb0fa783e99217b47977b222231b5c21",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 6,
+      "generation": 62,
+      "global_rotation_degrees": 0.006200000000000001,
+      "lattice_sha256": "19ba8abebfa203d62e24a8de19dbd2f6af98a3c10c2f939955a39e9b236984d4",
+      "maximum_reconstruction_error": 1.6263032587282567e-19,
+      "measure_sha256": "c8742e6edca74e353de236938517a73fe1c7aea233ecfdcc63358c90e2a55903",
+      "patch_orientation": 2,
+      "patch_rotation_degrees": 5e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "f55d9b49d5b171022dfcfe16936f4786e6d3e641a72bef5d1e4c01e9470e6af5",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 4,
+      "side": 1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "c7f55e4c539082947dd62f895fa392d349a43abceffc8d6500d0d94e58dae7d5",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "6b64ef70981ba97c8b427b622b7c4ff352c8545a84df92eb674c33e1c89f19c8"
+    },
+    {
+      "atlas": {
+        "atlas_sha256": "a88e145287600c2ed589ab1ab7b3936f959c39f96d185ff4c59b8af48374aaa5",
+        "coordinate_collision_group_count": 0,
+        "coordinate_collision_occupant_count": 0,
+        "root_cells": 256,
+        "unique_quantized_coordinates": 256
+      },
+      "depth": 7,
+      "generation": 63,
+      "global_rotation_degrees": 0.0063,
+      "lattice_sha256": "2fe199b8937095ba655cde2b2b2ca6e3607f6b03117b064fc22e7e5ca7a87b27",
+      "maximum_reconstruction_error": 1.0842021724855044e-19,
+      "measure_sha256": "6951941ae1eb36c2146eba24f84ff07bd0241c610cfcbad9866bcebec8fc9e51",
+      "patch_orientation": 3,
+      "patch_rotation_degrees": 5e-05,
+      "prefix_node_count": 7755,
+      "quine_probe": {
+        "binary_roundtrip": true,
+        "kind": "variable-injection-quine-record",
+        "primary_consistent": true,
+        "rendered_sha256": "fb5e8f81f251337aeab89dbeb7ffc78b23b13e874dbf65cbaac66ffacd074c09",
+        "self_check": true,
+        "template_hash": "4d8c323a2352eeec"
+      },
+      "shell": 4,
+      "side": -1,
+      "token_path_projection": {
+        "projection_mode": "ordered-full-decoded-byte-path",
+        "token_path_signal_sha256": "7dc1423478495547cf6c41fe008fbf569129ba6e6d35a86a5e63cf39784b8b99",
+        "unique_quantized_token_path_signals": 4096
+      },
+      "topology_sha256": "7afe84cae71ddfbf7ea894868ecd6058288b7c5bb326ea256aa1725c5de3da22",
+      "tree_sha256": "36580302814600b42077822923f0b1ad1ff9a78ecb20652d29b643a3887bab3a"
+    }
+  ],
+  "schema": "scbe.quine-wafer-token-tree-growth.v2",
+  "spec": {
+    "coordinate_decimals": 12,
+    "depth_cycle": 14,
+    "generations": 64,
+    "global_rotation_step_degrees": 0.0001,
+    "modulation_strength": 0.25,
+    "patch_rotation_step_degrees": 1e-05,
+    "seed": 0
+  },
+  "wafer_adapter": {
+    "adapter_kind": "external-quine-wafer",
+    "external_wafer_invoked": true,
+    "opcode_cells_are_geometry_keys_not_isa_semantics": true,
+    "rotor_angle_degrees": 29.999999999999996,
+    "rotor_magnitude": 0.5773502691896257,
+    "source_locator": "clay_wafer_net/wafer_6d_quine.py",
+    "source_sha256": "6e2fa4641628688055f8fcadbe9cda6137852d9fec35072a2d6a253037e07e61"
+  }
+}

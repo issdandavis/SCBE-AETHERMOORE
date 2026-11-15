@@ -1,0 +1,1607 @@
+{
+  "lattice": {
+    "alphabet": {
+      "byte_range": [
+        0,
+        255
+      ],
+      "eot_is_not_a_byte": true,
+      "eot_symbol": 256
+    },
+    "composition_contract": {
+      "decoded_byte_aliases_share_pushforward_path_mass": true,
+      "edge_functions_are_append_byte_or_close_token": true,
+      "external_covering_sieve_invoked": false,
+      "external_quine_adapter_invoked": false,
+      "individual_alias_token_probability_retained_separately": true,
+      "path_composition_is_ordered_function_composition": true
+    },
+    "metrics": {
+      "all_path_masses_exact_within_1e_12": true,
+      "cross_table_intersection_count": 0,
+      "intersection_order_histogram": {
+        "1": 25
+      },
+      "maximum_path_reconstruction_abs_error": 0.0,
+      "positive_probability_path_count": 5,
+      "prefix_node_count": 25,
+      "table_count": 1,
+      "token_count": 5,
+      "total_decoded_token_bytes": 29,
+      "zero_probability_path_count": 0
+    },
+    "nodes": [
+      {
+        "depth": 0,
+        "incoming_byte": null,
+        "is_cross_table_intersection": false,
+        "node_id": 0,
+        "parent_node_id": null,
+        "participating_table_count": 1,
+        "participating_table_ids": [
+          "action-table"
+        ],
+        "table_pair_relationship_count": 0,
+        "table_views": [
+          {
+            "continuation_mass": 1.0,
+            "edges": [
+              {
+                "child_node_id": 1,
+                "conditional_probability": 0.2,
+                "mass": 0.2,
+                "root_address": {
+                  "byte_cell": 99,
+                  "opcode_cell": 35,
+                  "orientation": 1
+                },
+                "symbol": 99,
+                "symbol_label": "byte:63",
+                "transition_function": {
+                  "codomain_node_id": 1,
+                  "domain_node_id": 0,
+                  "function_sha256": "5246ab851c267c43ae7299f18d663cde0b8bc2cb361487c4e8b60a3f15abebd5",
+                  "operation": "append_byte",
+                  "symbol": 99
+                }
+              },
+              {
+                "child_node_id": 8,
+                "conditional_probability": 0.2,
+                "mass": 0.2,
+                "root_address": {
+                  "byte_cell": 104,
+                  "opcode_cell": 40,
+                  "orientation": 1
+                },
+                "symbol": 104,
+                "symbol_label": "byte:68",
+                "transition_function": {
+                  "codomain_node_id": 8,
+                  "domain_node_id": 0,
+                  "function_sha256": "ed1161275b24b1d0007bfa4db881d7e6ea5c21ba4994818affca2ffe722fb75a",
+                  "operation": "append_byte",
+                  "symbol": 104
+                }
+              },
+              {
+                "child_node_id": 12,
+                "conditional_probability": 0.4,
+                "mass": 0.4,
+                "root_address": {
+                  "byte_cell": 108,
+                  "opcode_cell": 44,
+                  "orientation": 1
+                },
+                "symbol": 108,
+                "symbol_label": "byte:6c",
+                "transition_function": {
+                  "codomain_node_id": 12,
+                  "domain_node_id": 0,
+                  "function_sha256": "d6dfa8457cd30a6f05775733d6c21ba716efa1c32c9ea5e049ba89e43f9ac73c",
+                  "operation": "append_byte",
+                  "symbol": 108
+                }
+              },
+              {
+                "child_node_id": 19,
+                "conditional_probability": 0.2,
+                "mass": 0.2,
+                "root_address": {
+                  "byte_cell": 118,
+                  "opcode_cell": 54,
+                  "orientation": 1
+                },
+                "symbol": 118,
+                "symbol_label": "byte:76",
+                "transition_function": {
+                  "codomain_node_id": 19,
+                  "domain_node_id": 0,
+                  "function_sha256": "9c283a6871e8e836059e80a8ac4652dcba8374deee28c4eb82d5f76a841fe116",
+                  "operation": "append_byte",
+                  "symbol": 118
+                }
+              }
+            ],
+            "fold_trit": -1,
+            "interior_mass": 1.0,
+            "table_id": "action-table",
+            "wall_mass": 0.0,
+            "wall_ratio": 0.0
+          }
+        ]
+      },
+      {
+        "depth": 1,
+        "incoming_byte": 99,
+        "is_cross_table_intersection": false,
+        "node_id": 1,
+        "parent_node_id": 0,
+        "participating_table_count": 1,
+        "participating_table_ids": [
+          "action-table"
+        ],
+        "table_pair_relationship_count": 0,
+        "table_views": [
+          {
+            "continuation_mass": 0.2,
+            "edges": [
+              {
+                "child_node_id": 2,
+                "conditional_probability": 1.0,
+                "mass": 0.2,
+                "root_address": {
+                  "byte_cell": 111,
+                  "opcode_cell": 47,
+                  "orientation": 1
+                },
+                "symbol": 111,
+                "symbol_label": "byte:6f",
+                "transition_function": {
+                  "codomain_node_id": 2,
+                  "domain_node_id": 1,
+                  "function_sha256": "02773ee6aaa73b300d98a9779eb8a8398e1a9fddcd592723c06f950f0afb0313",
+                  "operation": "append_byte",
+                  "symbol": 111
+                }
+              }
+            ],
+            "fold_trit": -1,
+            "interior_mass": 0.2,
+            "table_id": "action-table",
+            "wall_mass": 0.0,
+            "wall_ratio": 0.0
+          }
+        ]
+      },
+      {
+        "depth": 2,
+        "incoming_byte": 111,
+        "is_cross_table_intersection": false,
+        "node_id": 2,
+        "parent_node_id": 1,
+        "participating_table_count": 1,
+        "participating_table_ids": [
+          "action-table"
+        ],
+        "table_pair_relationship_count": 0,
+        "table_views": [
+          {
+            "continuation_mass": 0.2,
+            "edges": [
+              {
+                "child_node_id": 3,
+                "conditional_probability": 1.0,
+                "mass": 0.2,
+                "root_address": {
+                  "byte_cell": 109,
+                  "opcode_cell": 45,
+                  "orientation": 1
+                },
+                "symbol": 109,
+                "symbol_label": "byte:6d",
+                "transition_function": {
+                  "codomain_node_id": 3,
+                  "domain_node_id": 2,
+                  "function_sha256": "ff79e0d5dd88830484801afec0b00e2907ed1be470adbfcd04f8121ab95f11cf",
+                  "operation": "append_byte",
+                  "symbol": 109
+                }
+              }
+            ],
+            "fold_trit": -1,
+            "interior_mass": 0.2,
+            "table_id": "action-table",
+            "wall_mass": 0.0,
+            "wall_ratio": 0.0
+          }
+        ]
+      },
+      {
+        "depth": 3,
+        "incoming_byte": 109,
+        "is_cross_table_intersection": false,
+        "node_id": 3,
+        "parent_node_id": 2,
+        "participating_table_count": 1,
+        "participating_table_ids": [
+          "action-table"
+        ],
+        "table_pair_relationship_count": 0,
+        "table_views": [
+          {
+            "continuation_mass": 0.2,
+            "edges": [
+              {
+                "child_node_id": 4,
+                "conditional_probability": 1.0,
+                "mass": 0.2,
+                "root_address": {
+                  "byte_cell": 112,
+                  "opcode_cell": 48,
+                  "orientation": 1
+                },
+                "symbol": 112,
+                "symbol_label": "byte:70",
+                "transition_function": {
+                  "codomain_node_id": 4,
+                  "domain_node_id": 3,
+                  "function_sha256": "7f3aa36d422bd0a50d4b0efa6c30efe1a757c7f45ad5bfaa743df8adfcfc9696",
+                  "operation": "append_byte",
+                  "symbol": 112
+                }
+              }
+            ],
+            "fold_trit": -1,
+            "interior_mass": 0.2,
+            "table_id": "action-table",
+            "wall_mass": 0.0,
+            "wall_ratio": 0.0
+          }
+        ]
+      },
+      {
+        "depth": 4,
+        "incoming_byte": 112,
+        "is_cross_table_intersection": false,
+        "node_id": 4,
+        "parent_node_id": 3,
+        "participating_table_count": 1,
+        "participating_table_ids": [
+          "action-table"
+        ],
+        "table_pair_relationship_count": 0,
+        "table_views": [
+          {
+            "continuation_mass": 0.2,
+            "edges": [
+              {
+                "child_node_id": 5,
+                "conditional_probability": 1.0,
+                "mass": 0.2,
+                "root_address": {
+                  "byte_cell": 97,
+                  "opcode_cell": 33,
+                  "orientation": 1
+                },
+                "symbol": 97,
+                "symbol_label": "byte:61",
+                "transition_function": {
+                  "codomain_node_id": 5,
+                  "domain_node_id": 4,
+                  "function_sha256": "32fb244ea5c26f6be46fff76300e0216d70146a02abcfd7525ca38adeebdbd99",
+                  "operation": "append_byte",
+                  "symbol": 97
+                }
+              }
+            ],
+            "fold_trit": -1,
+            "interior_mass": 0.2,
+            "table_id": "action-table",
+            "wall_mass": 0.0,
+            "wall_ratio": 0.0
+          }
+        ]
+      },
+      {
+        "depth": 5,
+        "incoming_byte": 97,
+        "is_cross_table_intersection": false,
+        "node_id": 5,
+        "parent_node_id": 4,
+        "participating_table_count": 1,
+        "participating_table_ids": [
+          "action-table"
+        ],
+        "table_pair_relationship_count": 0,
+        "table_views": [
+          {
+            "continuation_mass": 0.2,
+            "edges": [
+              {
+                "child_node_id": 6,
+                "conditional_probability": 1.0,
+                "mass": 0.2,
+                "root_address": {
+                  "byte_cell": 114,
+                  "opcode_cell": 50,
+                  "orientation": 1
+                },
+                "symbol": 114,
+                "symbol_label": "byte:72",
+                "transition_function": {
+                  "codomain_node_id": 6,
+                  "domain_node_id": 5,
+                  "function_sha256": "ade63574460b32dd8c342faddf64b2559dfd25a98b897a5789d30d3d8fa6a166",
+                  "operation": "append_byte",
+                  "symbol": 114
+                }
+              }
+            ],
+            "fold_trit": -1,
+            "interior_mass": 0.2,
+            "table_id": "action-table",
+            "wall_mass": 0.0,
+            "wall_ratio": 0.0
+          }
+        ]
+      },
+      {
+        "depth": 6,
+        "incoming_byte": 114,
+        "is_cross_table_intersection": false,
+        "node_id": 6,
+        "parent_node_id": 5,
+        "participating_table_count": 1,
+        "participating_table_ids": [
+          "action-table"
+        ],
+        "table_pair_relationship_count": 0,
+        "table_views": [
+          {
+            "continuation_mass": 0.2,
+            "edges": [
+              {
+                "child_node_id": 7,
+                "conditional_probability": 1.0,
+                "mass": 0.2,
+                "root_address": {
+                  "byte_cell": 101,
+                  "opcode_cell": 37,
+                  "orientation": 1
+                },
+                "symbol": 101,
+                "symbol_label": "byte:65",
+                "transition_function": {
+                  "codomain_node_id": 7,
+                  "domain_node_id": 6,
+                  "function_sha256": "25460dd16cc43670215d8a3e4fa5bb2281caf71cf69316d8b7cd48ac885a4b51",
+                  "operation": "append_byte",
+                  "symbol": 101
+                }
+              }
+            ],
+            "fold_trit": -1,
+            "interior_mass": 0.2,
+            "table_id": "action-table",
+            "wall_mass": 0.0,
+            "wall_ratio": 0.0
+          }
+        ]
+      },
+      {
+        "depth": 7,
+        "incoming_byte": 101,
+        "is_cross_table_intersection": false,
+        "node_id": 7,
+        "parent_node_id": 6,
+        "participating_table_count": 1,
+        "participating_table_ids": [
+          "action-table"
+        ],
+        "table_pair_relationship_count": 0,
+        "table_views": [
+          {
+            "continuation_mass": 0.0,
+            "edges": [
+              {
+                "child_node_id": null,
+                "conditional_probability": 1.0,
+                "mass": 0.2,
+                "root_address": null,
+                "symbol": 256,
+                "symbol_label": "<eot>",
+                "transition_function": {
+                  "codomain_node_id": null,
+                  "domain_node_id": 7,
+                  "function_sha256": "294a1b66cfcead494007780685b609141b0dad88cb50b67229a748b02c8efbfd",
+                  "operation": "close_token",
+                  "symbol": 256
+                }
+              }
+            ],
+            "fold_trit": 1,
+            "interior_mass": 0.2,
+            "table_id": "action-table",
+            "wall_mass": 0.2,
+            "wall_ratio": 1.0
+          }
+        ]
+      },
+      {
+        "depth": 1,
+        "incoming_byte": 104,
+        "is_cross_table_intersection": false,
+        "node_id": 8,
+        "parent_node_id": 0,
+        "participating_table_count": 1,
+        "participating_table_ids": [
+          "action-table"
+        ],
+        "table_pair_relationship_count": 0,
+        "table_views": [
+          {
+            "continuation_mass": 0.2,
+            "edges": [
+              {
+                "child_node_id": 9,
+                "conditional_probability": 1.0,
+                "mass": 0.2,
+                "root_address": {
+                  "byte_cell": 97,
+                  "opcode_cell": 33,
+                  "orientation": 1
+                },
+                "symbol": 97,
+                "symbol_label": "byte:61",
+                "transition_function": {
+                  "codomain_node_id": 9,
+                  "domain_node_id": 8,
+                  "function_sha256": "08a16fa728bf54033efd9e701a7d887a419a53fec81c83274e7a18e5c58db5c3",
+                  "operation": "append_byte",
+                  "symbol": 97
+                }
+              }
+            ],
+            "fold_trit": -1,
+            "interior_mass": 0.2,
+            "table_id": "action-table",
+            "wall_mass": 0.0,
+            "wall_ratio": 0.0
+          }
+        ]
+      },
+      {
+        "depth": 2,
+        "incoming_byte": 97,
+        "is_cross_table_intersection": false,
+        "node_id": 9,
+        "parent_node_id": 8,
+        "participating_table_count": 1,
+        "participating_table_ids": [
+          "action-table"
+        ],
+        "table_pair_relationship_count": 0,
+        "table_views": [
+          {
+            "continuation_mass": 0.2,
+            "edges": [
+              {
+                "child_node_id": 10,
+                "conditional_probability": 1.0,
+                "mass": 0.2,
+                "root_address": {
+                  "byte_cell": 108,
+                  "opcode_cell": 44,
+                  "orientation": 1
+                },
+                "symbol": 108,
+                "symbol_label": "byte:6c",
+                "transition_function": {
+                  "codomain_node_id": 10,
+                  "domain_node_id": 9,
+                  "function_sha256": "3e9e3ae6bb9a560aa782838708075f554fa6f2140235e49855e41da2144f56fe",
+                  "operation": "append_byte",
+                  "symbol": 108
+                }
+              }
+            ],
+            "fold_trit": -1,
+            "interior_mass": 0.2,
+            "table_id": "action-table",
+            "wall_mass": 0.0,
+            "wall_ratio": 0.0
+          }
+        ]
+      },
+      {
+        "depth": 3,
+        "incoming_byte": 108,
+        "is_cross_table_intersection": false,
+        "node_id": 10,
+        "parent_node_id": 9,
+        "participating_table_count": 1,
+        "participating_table_ids": [
+          "action-table"
+        ],
+        "table_pair_relationship_count": 0,
+        "table_views": [
+          {
+            "continuation_mass": 0.2,
+            "edges": [
+              {
+                "child_node_id": 11,
+                "conditional_probability": 1.0,
+                "mass": 0.2,
+                "root_address": {
+                  "byte_cell": 116,
+                  "opcode_cell": 52,
+                  "orientation": 1
+                },
+                "symbol": 116,
+                "symbol_label": "byte:74",
+                "transition_function": {
+                  "codomain_node_id": 11,
+                  "domain_node_id": 10,
+                  "function_sha256": "cb821127673541debaef52b22eb0dd01878d297800ceb34ad1d8ae14b1d58b7d",
+                  "operation": "append_byte",
+                  "symbol": 116
+                }
+              }
+            ],
+            "fold_trit": -1,
+            "interior_mass": 0.2,
+            "table_id": "action-table",
+            "wall_mass": 0.0,
+            "wall_ratio": 0.0
+          }
+        ]
+      },
+      {
+        "depth": 4,
+        "incoming_byte": 116,
+        "is_cross_table_intersection": false,
+        "node_id": 11,
+        "parent_node_id": 10,
+        "participating_table_count": 1,
+        "participating_table_ids": [
+          "action-table"
+        ],
+        "table_pair_relationship_count": 0,
+        "table_views": [
+          {
+            "continuation_mass": 0.0,
+            "edges": [
+              {
+                "child_node_id": null,
+                "conditional_probability": 1.0,
+                "mass": 0.2,
+                "root_address": null,
+                "symbol": 256,
+                "symbol_label": "<eot>",
+                "transition_function": {
+                  "codomain_node_id": null,
+                  "domain_node_id": 11,
+                  "function_sha256": "b7edbe1dcb691154782cc9b8962dc4da56d98dee5f0cb6744b9e724b15749acd",
+                  "operation": "close_token",
+                  "symbol": 256
+                }
+              }
+            ],
+            "fold_trit": 1,
+            "interior_mass": 0.2,
+            "table_id": "action-table",
+            "wall_mass": 0.2,
+            "wall_ratio": 1.0
+          }
+        ]
+      },
+      {
+        "depth": 1,
+        "incoming_byte": 108,
+        "is_cross_table_intersection": false,
+        "node_id": 12,
+        "parent_node_id": 0,
+        "participating_table_count": 1,
+        "participating_table_ids": [
+          "action-table"
+        ],
+        "table_pair_relationship_count": 0,
+        "table_views": [
+          {
+            "continuation_mass": 0.4,
+            "edges": [
+              {
+                "child_node_id": 13,
+                "conditional_probability": 1.0,
+                "mass": 0.4,
+                "root_address": {
+                  "byte_cell": 111,
+                  "opcode_cell": 47,
+                  "orientation": 1
+                },
+                "symbol": 111,
+                "symbol_label": "byte:6f",
+                "transition_function": {
+                  "codomain_node_id": 13,
+                  "domain_node_id": 12,
+                  "function_sha256": "a17ac1e09930305ea32b8f7589fcc3417197b02fabe6df22b5ceb6c4a3d3b6a0",
+                  "operation": "append_byte",
+                  "symbol": 111
+                }
+              }
+            ],
+            "fold_trit": -1,
+            "interior_mass": 0.4,
+            "table_id": "action-table",
+            "wall_mass": 0.0,
+            "wall_ratio": 0.0
+          }
+        ]
+      },
+      {
+        "depth": 2,
+        "incoming_byte": 111,
+        "is_cross_table_intersection": false,
+        "node_id": 13,
+        "parent_node_id": 12,
+        "participating_table_count": 1,
+        "participating_table_ids": [
+          "action-table"
+        ],
+        "table_pair_relationship_count": 0,
+        "table_views": [
+          {
+            "continuation_mass": 0.4,
+            "edges": [
+              {
+                "child_node_id": 14,
+                "conditional_probability": 1.0,
+                "mass": 0.4,
+                "root_address": {
+                  "byte_cell": 97,
+                  "opcode_cell": 33,
+                  "orientation": 1
+                },
+                "symbol": 97,
+                "symbol_label": "byte:61",
+                "transition_function": {
+                  "codomain_node_id": 14,
+                  "domain_node_id": 13,
+                  "function_sha256": "5f7d68484ceb0638102fda16cbfd82aeb017121707521769b1ba55e61effc9b3",
+                  "operation": "append_byte",
+                  "symbol": 97
+                }
+              }
+            ],
+            "fold_trit": -1,
+            "interior_mass": 0.4,
+            "table_id": "action-table",
+            "wall_mass": 0.0,
+            "wall_ratio": 0.0
+          }
+        ]
+      },
+      {
+        "depth": 3,
+        "incoming_byte": 97,
+        "is_cross_table_intersection": false,
+        "node_id": 14,
+        "parent_node_id": 13,
+        "participating_table_count": 1,
+        "participating_table_ids": [
+          "action-table"
+        ],
+        "table_pair_relationship_count": 0,
+        "table_views": [
+          {
+            "continuation_mass": 0.4,
+            "edges": [
+              {
+                "child_node_id": 15,
+                "conditional_probability": 1.0,
+                "mass": 0.4,
+                "root_address": {
+                  "byte_cell": 100,
+                  "opcode_cell": 36,
+                  "orientation": 1
+                },
+                "symbol": 100,
+                "symbol_label": "byte:64",
+                "transition_function": {
+                  "codomain_node_id": 15,
+                  "domain_node_id": 14,
+                  "function_sha256": "c4dcf8560a790668b08e84a0b24c04e172df3df59fd3dbdd4a4c73346a5e7191",
+                  "operation": "append_byte",
+                  "symbol": 100
+                }
+              }
+            ],
+            "fold_trit": -1,
+            "interior_mass": 0.4,
+            "table_id": "action-table",
+            "wall_mass": 0.0,
+            "wall_ratio": 0.0
+          }
+        ]
+      },
+      {
+        "depth": 4,
+        "incoming_byte": 100,
+        "is_cross_table_intersection": false,
+        "node_id": 15,
+        "parent_node_id": 14,
+        "participating_table_count": 1,
+        "participating_table_ids": [
+          "action-table"
+        ],
+        "table_pair_relationship_count": 0,
+        "table_views": [
+          {
+            "continuation_mass": 0.4,
+            "edges": [
+              {
+                "child_node_id": 16,
+                "conditional_probability": 1.0,
+                "mass": 0.4,
+                "root_address": {
+                  "byte_cell": 45,
+                  "opcode_cell": 45,
+                  "orientation": 0
+                },
+                "symbol": 45,
+                "symbol_label": "byte:2d",
+                "transition_function": {
+                  "codomain_node_id": 16,
+                  "domain_node_id": 15,
+                  "function_sha256": "21fa90de6120dad18e532f118ff983504aae267846896a3b0873b01f6a3af3eb",
+                  "operation": "append_byte",
+                  "symbol": 45
+                }
+              }
+            ],
+            "fold_trit": -1,
+            "interior_mass": 0.4,
+            "table_id": "action-table",
+            "wall_mass": 0.0,
+            "wall_ratio": 0.0
+          }
+        ]
+      },
+      {
+        "depth": 5,
+        "incoming_byte": 45,
+        "is_cross_table_intersection": false,
+        "node_id": 16,
+        "parent_node_id": 15,
+        "participating_table_count": 1,
+        "participating_table_ids": [
+          "action-table"
+        ],
+        "table_pair_relationship_count": 0,
+        "table_views": [
+          {
+            "continuation_mass": 0.4,
+            "edges": [
+              {
+                "child_node_id": 17,
+                "conditional_probability": 0.5,
+                "mass": 0.2,
+                "root_address": {
+                  "byte_cell": 97,
+                  "opcode_cell": 33,
+                  "orientation": 1
+                },
+                "symbol": 97,
+                "symbol_label": "byte:61",
+                "transition_function": {
+                  "codomain_node_id": 17,
+                  "domain_node_id": 16,
+                  "function_sha256": "08ea9a0c1e07bd8c9ab661b017bc60a685d7b261df3d6f734ec5273449c49c10",
+                  "operation": "append_byte",
+                  "symbol": 97
+                }
+              },
+              {
+                "child_node_id": 18,
+                "conditional_probability": 0.5,
+                "mass": 0.2,
+                "root_address": {
+                  "byte_cell": 98,
+                  "opcode_cell": 34,
+                  "orientation": 1
+                },
+                "symbol": 98,
+                "symbol_label": "byte:62",
+                "transition_function": {
+                  "codomain_node_id": 18,
+                  "domain_node_id": 16,
+                  "function_sha256": "00753f137894aa228bfde58ec9341eecf4768725a0029df5a957366c870c9f05",
+                  "operation": "append_byte",
+                  "symbol": 98
+                }
+              }
+            ],
+            "fold_trit": -1,
+            "interior_mass": 0.4,
+            "table_id": "action-table",
+            "wall_mass": 0.0,
+            "wall_ratio": 0.0
+          }
+        ]
+      },
+      {
+        "depth": 6,
+        "incoming_byte": 97,
+        "is_cross_table_intersection": false,
+        "node_id": 17,
+        "parent_node_id": 16,
+        "participating_table_count": 1,
+        "participating_table_ids": [
+          "action-table"
+        ],
+        "table_pair_relationship_count": 0,
+        "table_views": [
+          {
+            "continuation_mass": 0.0,
+            "edges": [
+              {
+                "child_node_id": null,
+                "conditional_probability": 1.0,
+                "mass": 0.2,
+                "root_address": null,
+                "symbol": 256,
+                "symbol_label": "<eot>",
+                "transition_function": {
+                  "codomain_node_id": null,
+                  "domain_node_id": 17,
+                  "function_sha256": "554c8f9473d3ca96d2a8f37cc9d45df824bd55a75bf2d03274952470982d4b9e",
+                  "operation": "close_token",
+                  "symbol": 256
+                }
+              }
+            ],
+            "fold_trit": 1,
+            "interior_mass": 0.2,
+            "table_id": "action-table",
+            "wall_mass": 0.2,
+            "wall_ratio": 1.0
+          }
+        ]
+      },
+      {
+        "depth": 6,
+        "incoming_byte": 98,
+        "is_cross_table_intersection": false,
+        "node_id": 18,
+        "parent_node_id": 16,
+        "participating_table_count": 1,
+        "participating_table_ids": [
+          "action-table"
+        ],
+        "table_pair_relationship_count": 0,
+        "table_views": [
+          {
+            "continuation_mass": 0.0,
+            "edges": [
+              {
+                "child_node_id": null,
+                "conditional_probability": 1.0,
+                "mass": 0.2,
+                "root_address": null,
+                "symbol": 256,
+                "symbol_label": "<eot>",
+                "transition_function": {
+                  "codomain_node_id": null,
+                  "domain_node_id": 18,
+                  "function_sha256": "092fb66fe27f61a31961bc23f13e7627de37e27d171f05e55c4f3e380f12cad0",
+                  "operation": "close_token",
+                  "symbol": 256
+                }
+              }
+            ],
+            "fold_trit": 1,
+            "interior_mass": 0.2,
+            "table_id": "action-table",
+            "wall_mass": 0.2,
+            "wall_ratio": 1.0
+          }
+        ]
+      },
+      {
+        "depth": 1,
+        "incoming_byte": 118,
+        "is_cross_table_intersection": false,
+        "node_id": 19,
+        "parent_node_id": 0,
+        "participating_table_count": 1,
+        "participating_table_ids": [
+          "action-table"
+        ],
+        "table_pair_relationship_count": 0,
+        "table_views": [
+          {
+            "continuation_mass": 0.2,
+            "edges": [
+              {
+                "child_node_id": 20,
+                "conditional_probability": 1.0,
+                "mass": 0.2,
+                "root_address": {
+                  "byte_cell": 101,
+                  "opcode_cell": 37,
+                  "orientation": 1
+                },
+                "symbol": 101,
+                "symbol_label": "byte:65",
+                "transition_function": {
+                  "codomain_node_id": 20,
+                  "domain_node_id": 19,
+                  "function_sha256": "d3edb42ac7e8d63d5da3bbb8347a3d057d962f14cb98871ab55a0faa90ff246a",
+                  "operation": "append_byte",
+                  "symbol": 101
+                }
+              }
+            ],
+            "fold_trit": -1,
+            "interior_mass": 0.2,
+            "table_id": "action-table",
+            "wall_mass": 0.0,
+            "wall_ratio": 0.0
+          }
+        ]
+      },
+      {
+        "depth": 2,
+        "incoming_byte": 101,
+        "is_cross_table_intersection": false,
+        "node_id": 20,
+        "parent_node_id": 19,
+        "participating_table_count": 1,
+        "participating_table_ids": [
+          "action-table"
+        ],
+        "table_pair_relationship_count": 0,
+        "table_views": [
+          {
+            "continuation_mass": 0.2,
+            "edges": [
+              {
+                "child_node_id": 21,
+                "conditional_probability": 1.0,
+                "mass": 0.2,
+                "root_address": {
+                  "byte_cell": 114,
+                  "opcode_cell": 50,
+                  "orientation": 1
+                },
+                "symbol": 114,
+                "symbol_label": "byte:72",
+                "transition_function": {
+                  "codomain_node_id": 21,
+                  "domain_node_id": 20,
+                  "function_sha256": "b39b11c0d53603c358be6202386f1b8bf76bdfa8053645c8b182b41cb2da08cd",
+                  "operation": "append_byte",
+                  "symbol": 114
+                }
+              }
+            ],
+            "fold_trit": -1,
+            "interior_mass": 0.2,
+            "table_id": "action-table",
+            "wall_mass": 0.0,
+            "wall_ratio": 0.0
+          }
+        ]
+      },
+      {
+        "depth": 3,
+        "incoming_byte": 114,
+        "is_cross_table_intersection": false,
+        "node_id": 21,
+        "parent_node_id": 20,
+        "participating_table_count": 1,
+        "participating_table_ids": [
+          "action-table"
+        ],
+        "table_pair_relationship_count": 0,
+        "table_views": [
+          {
+            "continuation_mass": 0.2,
+            "edges": [
+              {
+                "child_node_id": 22,
+                "conditional_probability": 1.0,
+                "mass": 0.2,
+                "root_address": {
+                  "byte_cell": 105,
+                  "opcode_cell": 41,
+                  "orientation": 1
+                },
+                "symbol": 105,
+                "symbol_label": "byte:69",
+                "transition_function": {
+                  "codomain_node_id": 22,
+                  "domain_node_id": 21,
+                  "function_sha256": "1c2c501ea913e57371dbc73500a5adc28e03a38d62b08d3d9c6bf113efb29f2f",
+                  "operation": "append_byte",
+                  "symbol": 105
+                }
+              }
+            ],
+            "fold_trit": -1,
+            "interior_mass": 0.2,
+            "table_id": "action-table",
+            "wall_mass": 0.0,
+            "wall_ratio": 0.0
+          }
+        ]
+      },
+      {
+        "depth": 4,
+        "incoming_byte": 105,
+        "is_cross_table_intersection": false,
+        "node_id": 22,
+        "parent_node_id": 21,
+        "participating_table_count": 1,
+        "participating_table_ids": [
+          "action-table"
+        ],
+        "table_pair_relationship_count": 0,
+        "table_views": [
+          {
+            "continuation_mass": 0.2,
+            "edges": [
+              {
+                "child_node_id": 23,
+                "conditional_probability": 1.0,
+                "mass": 0.2,
+                "root_address": {
+                  "byte_cell": 102,
+                  "opcode_cell": 38,
+                  "orientation": 1
+                },
+                "symbol": 102,
+                "symbol_label": "byte:66",
+                "transition_function": {
+                  "codomain_node_id": 23,
+                  "domain_node_id": 22,
+                  "function_sha256": "7aae642d169716e3554896a660ffc8b0191e70f113961f73bd9bce4b95891155",
+                  "operation": "append_byte",
+                  "symbol": 102
+                }
+              }
+            ],
+            "fold_trit": -1,
+            "interior_mass": 0.2,
+            "table_id": "action-table",
+            "wall_mass": 0.0,
+            "wall_ratio": 0.0
+          }
+        ]
+      },
+      {
+        "depth": 5,
+        "incoming_byte": 102,
+        "is_cross_table_intersection": false,
+        "node_id": 23,
+        "parent_node_id": 22,
+        "participating_table_count": 1,
+        "participating_table_ids": [
+          "action-table"
+        ],
+        "table_pair_relationship_count": 0,
+        "table_views": [
+          {
+            "continuation_mass": 0.2,
+            "edges": [
+              {
+                "child_node_id": 24,
+                "conditional_probability": 1.0,
+                "mass": 0.2,
+                "root_address": {
+                  "byte_cell": 121,
+                  "opcode_cell": 57,
+                  "orientation": 1
+                },
+                "symbol": 121,
+                "symbol_label": "byte:79",
+                "transition_function": {
+                  "codomain_node_id": 24,
+                  "domain_node_id": 23,
+                  "function_sha256": "aa385d2f90ca664673ffbacae5262fc09362f9596a2217a7c7aa0af03f735f15",
+                  "operation": "append_byte",
+                  "symbol": 121
+                }
+              }
+            ],
+            "fold_trit": -1,
+            "interior_mass": 0.2,
+            "table_id": "action-table",
+            "wall_mass": 0.0,
+            "wall_ratio": 0.0
+          }
+        ]
+      },
+      {
+        "depth": 6,
+        "incoming_byte": 121,
+        "is_cross_table_intersection": false,
+        "node_id": 24,
+        "parent_node_id": 23,
+        "participating_table_count": 1,
+        "participating_table_ids": [
+          "action-table"
+        ],
+        "table_pair_relationship_count": 0,
+        "table_views": [
+          {
+            "continuation_mass": 0.0,
+            "edges": [
+              {
+                "child_node_id": null,
+                "conditional_probability": 1.0,
+                "mass": 0.2,
+                "root_address": null,
+                "symbol": 256,
+                "symbol_label": "<eot>",
+                "transition_function": {
+                  "codomain_node_id": null,
+                  "domain_node_id": 24,
+                  "function_sha256": "959538d141b5abd59e0d85dce707f5b62a7a39d48667a6e6c7642a41ac2904a5",
+                  "operation": "close_token",
+                  "symbol": 256
+                }
+              }
+            ],
+            "fold_trit": 1,
+            "interior_mass": 0.2,
+            "table_id": "action-table",
+            "wall_mass": 0.2,
+            "wall_ratio": 1.0
+          }
+        ]
+      }
+    ],
+    "receipt_security": "unkeyed-corruption-detection-only",
+    "receipt_sha256": "a2a0da42576933f42ea835fd6c4af239209b08f2cdd487333d78afb49351ff73",
+    "schema": "scbe.interwoven-eot-token-lattice.v1",
+    "tables": [
+      {
+        "input_probability_sum": 1.0,
+        "probabilities_normalized_for_lattice": true,
+        "table_id": "action-table",
+        "token_count": 5,
+        "tokenizer_fingerprint": "declared-action-fixture-v1"
+      }
+    ],
+    "token_paths": [
+      {
+        "active_probability_path": true,
+        "byte_hex": "636f6d70617265",
+        "byte_path_alias_count": 1,
+        "exact_byte_path_mass": 0.2,
+        "label": "COMPARE A B",
+        "node_route": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "normalized_teacher_token_probability": 0.2,
+        "raw_aggregate_byte_path_mass": 0.2,
+        "reconstructed_path_mass": 0.2,
+        "reconstruction_abs_error": 0.0,
+        "steps": [
+          {
+            "conditional_probability": 0.2,
+            "node_id": 0,
+            "positive_mass_edge_present": true,
+            "symbol": 99,
+            "transition_function_sha256": "5246ab851c267c43ae7299f18d663cde0b8bc2cb361487c4e8b60a3f15abebd5"
+          },
+          {
+            "conditional_probability": 1.0,
+            "node_id": 1,
+            "positive_mass_edge_present": true,
+            "symbol": 111,
+            "transition_function_sha256": "02773ee6aaa73b300d98a9779eb8a8398e1a9fddcd592723c06f950f0afb0313"
+          },
+          {
+            "conditional_probability": 1.0,
+            "node_id": 2,
+            "positive_mass_edge_present": true,
+            "symbol": 109,
+            "transition_function_sha256": "ff79e0d5dd88830484801afec0b00e2907ed1be470adbfcd04f8121ab95f11cf"
+          },
+          {
+            "conditional_probability": 1.0,
+            "node_id": 3,
+            "positive_mass_edge_present": true,
+            "symbol": 112,
+            "transition_function_sha256": "7f3aa36d422bd0a50d4b0efa6c30efe1a757c7f45ad5bfaa743df8adfcfc9696"
+          },
+          {
+            "conditional_probability": 1.0,
+            "node_id": 4,
+            "positive_mass_edge_present": true,
+            "symbol": 97,
+            "transition_function_sha256": "32fb244ea5c26f6be46fff76300e0216d70146a02abcfd7525ca38adeebdbd99"
+          },
+          {
+            "conditional_probability": 1.0,
+            "node_id": 5,
+            "positive_mass_edge_present": true,
+            "symbol": 114,
+            "transition_function_sha256": "ade63574460b32dd8c342faddf64b2559dfd25a98b897a5789d30d3d8fa6a166"
+          },
+          {
+            "conditional_probability": 1.0,
+            "node_id": 6,
+            "positive_mass_edge_present": true,
+            "symbol": 101,
+            "transition_function_sha256": "25460dd16cc43670215d8a3e4fa5bb2281caf71cf69316d8b7cd48ac885a4b51"
+          },
+          {
+            "conditional_probability": 1.0,
+            "node_id": 7,
+            "positive_mass_edge_present": true,
+            "symbol": 256,
+            "transition_function_sha256": "294a1b66cfcead494007780685b609141b0dad88cb50b67229a748b02c8efbfd"
+          }
+        ],
+        "symbols_with_eot": [
+          99,
+          111,
+          109,
+          112,
+          97,
+          114,
+          101,
+          256
+        ],
+        "table_id": "action-table",
+        "teacher_distribution_normalizer": 1.0,
+        "teacher_token_probability_raw": 0.2,
+        "token_id": 2,
+        "typed_token_id": "int:2"
+      },
+      {
+        "active_probability_path": true,
+        "byte_hex": "68616c74",
+        "byte_path_alias_count": 1,
+        "exact_byte_path_mass": 0.2,
+        "label": "HALT",
+        "node_route": [
+          0,
+          8,
+          9,
+          10,
+          11
+        ],
+        "normalized_teacher_token_probability": 0.2,
+        "raw_aggregate_byte_path_mass": 0.2,
+        "reconstructed_path_mass": 0.2,
+        "reconstruction_abs_error": 0.0,
+        "steps": [
+          {
+            "conditional_probability": 0.2,
+            "node_id": 0,
+            "positive_mass_edge_present": true,
+            "symbol": 104,
+            "transition_function_sha256": "ed1161275b24b1d0007bfa4db881d7e6ea5c21ba4994818affca2ffe722fb75a"
+          },
+          {
+            "conditional_probability": 1.0,
+            "node_id": 8,
+            "positive_mass_edge_present": true,
+            "symbol": 97,
+            "transition_function_sha256": "08a16fa728bf54033efd9e701a7d887a419a53fec81c83274e7a18e5c58db5c3"
+          },
+          {
+            "conditional_probability": 1.0,
+            "node_id": 9,
+            "positive_mass_edge_present": true,
+            "symbol": 108,
+            "transition_function_sha256": "3e9e3ae6bb9a560aa782838708075f554fa6f2140235e49855e41da2144f56fe"
+          },
+          {
+            "conditional_probability": 1.0,
+            "node_id": 10,
+            "positive_mass_edge_present": true,
+            "symbol": 116,
+            "transition_function_sha256": "cb821127673541debaef52b22eb0dd01878d297800ceb34ad1d8ae14b1d58b7d"
+          },
+          {
+            "conditional_probability": 1.0,
+            "node_id": 11,
+            "positive_mass_edge_present": true,
+            "symbol": 256,
+            "transition_function_sha256": "b7edbe1dcb691154782cc9b8962dc4da56d98dee5f0cb6744b9e724b15749acd"
+          }
+        ],
+        "symbols_with_eot": [
+          104,
+          97,
+          108,
+          116,
+          256
+        ],
+        "table_id": "action-table",
+        "teacher_distribution_normalizer": 1.0,
+        "teacher_token_probability_raw": 0.2,
+        "token_id": 4,
+        "typed_token_id": "int:4"
+      },
+      {
+        "active_probability_path": true,
+        "byte_hex": "6c6f61642d61",
+        "byte_path_alias_count": 1,
+        "exact_byte_path_mass": 0.2,
+        "label": "LOAD A 7",
+        "node_route": [
+          0,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17
+        ],
+        "normalized_teacher_token_probability": 0.2,
+        "raw_aggregate_byte_path_mass": 0.2,
+        "reconstructed_path_mass": 0.2,
+        "reconstruction_abs_error": 0.0,
+        "steps": [
+          {
+            "conditional_probability": 0.4,
+            "node_id": 0,
+            "positive_mass_edge_present": true,
+            "symbol": 108,
+            "transition_function_sha256": "d6dfa8457cd30a6f05775733d6c21ba716efa1c32c9ea5e049ba89e43f9ac73c"
+          },
+          {
+            "conditional_probability": 1.0,
+            "node_id": 12,
+            "positive_mass_edge_present": true,
+            "symbol": 111,
+            "transition_function_sha256": "a17ac1e09930305ea32b8f7589fcc3417197b02fabe6df22b5ceb6c4a3d3b6a0"
+          },
+          {
+            "conditional_probability": 1.0,
+            "node_id": 13,
+            "positive_mass_edge_present": true,
+            "symbol": 97,
+            "transition_function_sha256": "5f7d68484ceb0638102fda16cbfd82aeb017121707521769b1ba55e61effc9b3"
+          },
+          {
+            "conditional_probability": 1.0,
+            "node_id": 14,
+            "positive_mass_edge_present": true,
+            "symbol": 100,
+            "transition_function_sha256": "c4dcf8560a790668b08e84a0b24c04e172df3df59fd3dbdd4a4c73346a5e7191"
+          },
+          {
+            "conditional_probability": 1.0,
+            "node_id": 15,
+            "positive_mass_edge_present": true,
+            "symbol": 45,
+            "transition_function_sha256": "21fa90de6120dad18e532f118ff983504aae267846896a3b0873b01f6a3af3eb"
+          },
+          {
+            "conditional_probability": 0.5,
+            "node_id": 16,
+            "positive_mass_edge_present": true,
+            "symbol": 97,
+            "transition_function_sha256": "08ea9a0c1e07bd8c9ab661b017bc60a685d7b261df3d6f734ec5273449c49c10"
+          },
+          {
+            "conditional_probability": 1.0,
+            "node_id": 17,
+            "positive_mass_edge_present": true,
+            "symbol": 256,
+            "transition_function_sha256": "554c8f9473d3ca96d2a8f37cc9d45df824bd55a75bf2d03274952470982d4b9e"
+          }
+        ],
+        "symbols_with_eot": [
+          108,
+          111,
+          97,
+          100,
+          45,
+          97,
+          256
+        ],
+        "table_id": "action-table",
+        "teacher_distribution_normalizer": 1.0,
+        "teacher_token_probability_raw": 0.2,
+        "token_id": 0,
+        "typed_token_id": "int:0"
+      },
+      {
+        "active_probability_path": true,
+        "byte_hex": "6c6f61642d62",
+        "byte_path_alias_count": 1,
+        "exact_byte_path_mass": 0.2,
+        "label": "LOAD B 7",
+        "node_route": [
+          0,
+          12,
+          13,
+          14,
+          15,
+          16,
+          18
+        ],
+        "normalized_teacher_token_probability": 0.2,
+        "raw_aggregate_byte_path_mass": 0.2,
+        "reconstructed_path_mass": 0.2,
+        "reconstruction_abs_error": 0.0,
+        "steps": [
+          {
+            "conditional_probability": 0.4,
+            "node_id": 0,
+            "positive_mass_edge_present": true,
+            "symbol": 108,
+            "transition_function_sha256": "d6dfa8457cd30a6f05775733d6c21ba716efa1c32c9ea5e049ba89e43f9ac73c"
+          },
+          {
+            "conditional_probability": 1.0,
+            "node_id": 12,
+            "positive_mass_edge_present": true,
+            "symbol": 111,
+            "transition_function_sha256": "a17ac1e09930305ea32b8f7589fcc3417197b02fabe6df22b5ceb6c4a3d3b6a0"
+          },
+          {
+            "conditional_probability": 1.0,
+            "node_id": 13,
+            "positive_mass_edge_present": true,
+            "symbol": 97,
+            "transition_function_sha256": "5f7d68484ceb0638102fda16cbfd82aeb017121707521769b1ba55e61effc9b3"
+          },
+          {
+            "conditional_probability": 1.0,
+            "node_id": 14,
+            "positive_mass_edge_present": true,
+            "symbol": 100,
+            "transition_function_sha256": "c4dcf8560a790668b08e84a0b24c04e172df3df59fd3dbdd4a4c73346a5e7191"
+          },
+          {
+            "conditional_probability": 1.0,
+            "node_id": 15,
+            "positive_mass_edge_present": true,
+            "symbol": 45,
+            "transition_function_sha256": "21fa90de6120dad18e532f118ff983504aae267846896a3b0873b01f6a3af3eb"
+          },
+          {
+            "conditional_probability": 0.5,
+            "node_id": 16,
+            "positive_mass_edge_present": true,
+            "symbol": 98,
+            "transition_function_sha256": "00753f137894aa228bfde58ec9341eecf4768725a0029df5a957366c870c9f05"
+          },
+          {
+            "conditional_probability": 1.0,
+            "node_id": 18,
+            "positive_mass_edge_present": true,
+            "symbol": 256,
+            "transition_function_sha256": "092fb66fe27f61a31961bc23f13e7627de37e27d171f05e55c4f3e380f12cad0"
+          }
+        ],
+        "symbols_with_eot": [
+          108,
+          111,
+          97,
+          100,
+          45,
+          98,
+          256
+        ],
+        "table_id": "action-table",
+        "teacher_distribution_normalizer": 1.0,
+        "teacher_token_probability_raw": 0.2,
+        "token_id": 1,
+        "typed_token_id": "int:1"
+      },
+      {
+        "active_probability_path": true,
+        "byte_hex": "766572696679",
+        "byte_path_alias_count": 1,
+        "exact_byte_path_mass": 0.2,
+        "label": "VERIFY",
+        "node_route": [
+          0,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24
+        ],
+        "normalized_teacher_token_probability": 0.2,
+        "raw_aggregate_byte_path_mass": 0.2,
+        "reconstructed_path_mass": 0.2,
+        "reconstruction_abs_error": 0.0,
+        "steps": [
+          {
+            "conditional_probability": 0.2,
+            "node_id": 0,
+            "positive_mass_edge_present": true,
+            "symbol": 118,
+            "transition_function_sha256": "9c283a6871e8e836059e80a8ac4652dcba8374deee28c4eb82d5f76a841fe116"
+          },
+          {
+            "conditional_probability": 1.0,
+            "node_id": 19,
+            "positive_mass_edge_present": true,
+            "symbol": 101,
+            "transition_function_sha256": "d3edb42ac7e8d63d5da3bbb8347a3d057d962f14cb98871ab55a0faa90ff246a"
+          },
+          {
+            "conditional_probability": 1.0,
+            "node_id": 20,
+            "positive_mass_edge_present": true,
+            "symbol": 114,
+            "transition_function_sha256": "b39b11c0d53603c358be6202386f1b8bf76bdfa8053645c8b182b41cb2da08cd"
+          },
+          {
+            "conditional_probability": 1.0,
+            "node_id": 21,
+            "positive_mass_edge_present": true,
+            "symbol": 105,
+            "transition_function_sha256": "1c2c501ea913e57371dbc73500a5adc28e03a38d62b08d3d9c6bf113efb29f2f"
+          },
+          {
+            "conditional_probability": 1.0,
+            "node_id": 22,
+            "positive_mass_edge_present": true,
+            "symbol": 102,
+            "transition_function_sha256": "7aae642d169716e3554896a660ffc8b0191e70f113961f73bd9bce4b95891155"
+          },
+          {
+            "conditional_probability": 1.0,
+            "node_id": 23,
+            "positive_mass_edge_present": true,
+            "symbol": 121,
+            "transition_function_sha256": "aa385d2f90ca664673ffbacae5262fc09362f9596a2217a7c7aa0af03f735f15"
+          },
+          {
+            "conditional_probability": 1.0,
+            "node_id": 24,
+            "positive_mass_edge_present": true,
+            "symbol": 256,
+            "transition_function_sha256": "959538d141b5abd59e0d85dce707f5b62a7a39d48667a6e6c7642a41ac2904a5"
+          }
+        ],
+        "symbols_with_eot": [
+          118,
+          101,
+          114,
+          105,
+          102,
+          121,
+          256
+        ],
+        "table_id": "action-table",
+        "teacher_distribution_normalizer": 1.0,
+        "teacher_token_probability_raw": 0.2,
+        "token_id": 3,
+        "typed_token_id": "int:3"
+      }
+    ],
+    "topology_contract": {
+      "eot_is_an_explicit_boundary_wall": true,
+      "geometry_never_replaces_exact_byte_identity": true,
+      "nodes_store_parent_links_not_copied_full_prefixes": true,
+      "outgoing_byte_edges_are_exterior_folds": true,
+      "prefix_nodes_are_interiors": true,
+      "root_byte_cells_are_immutable_0_to_255": true,
+      "root_bytes_factor_as_four_orientations_of_64_opcode_cells": true,
+      "table_measures_remain_independent_at_shared_nodes": true
+    }
+  }
+}

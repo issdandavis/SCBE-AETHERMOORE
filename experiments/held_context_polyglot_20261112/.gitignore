@@ -1,0 +1,5 @@
+c/*.exe
+c/*.pdb
+java/build/
+python/__pycache__/
+rust/target/

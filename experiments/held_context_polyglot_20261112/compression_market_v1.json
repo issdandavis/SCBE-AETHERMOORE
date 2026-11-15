@@ -1,0 +1,399 @@
+{
+  "boundary": "Synthetic HeldContextPacket-family benchmark. It establishes lossless size/speed on these corpora, not general-purpose or state-of-the-art supremacy.",
+  "library_versions": {
+    "brotli": "1.2.0",
+    "lz4": "unknown",
+    "zstandard": "0.25.0"
+  },
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.10",
+  "repeats": 3,
+  "revision": "abd1ba5962ea488d208b7b1b36a37fd47cc2d62b",
+  "schema": "hctx-compression-market-v1",
+  "workloads": {
+    "mixed-packets": {
+      "raw_bytes": 375808,
+      "records": 320,
+      "results": [
+        {
+          "bytes": 112570,
+          "custom": false,
+          "decode_ms_median": 0.8169,
+          "encode_ms_median": 32.1175,
+          "method": "zlib-9",
+          "ratio": 3.3384383050546327,
+          "savings_percent": 70.04587448910083,
+          "verified": true
+        },
+        {
+          "bytes": 107608,
+          "custom": false,
+          "decode_ms_median": 9.0021,
+          "encode_ms_median": 24.1354,
+          "method": "bzip2-9",
+          "ratio": 3.4923797487175676,
+          "savings_percent": 71.3662295640327,
+          "verified": true
+        },
+        {
+          "bytes": 91176,
+          "custom": false,
+          "decode_ms_median": 5.6642,
+          "encode_ms_median": 57.2823,
+          "method": "lzma-9",
+          "ratio": 4.1217864350267615,
+          "savings_percent": 75.73867506811989,
+          "verified": true
+        },
+        {
+          "bytes": 100937,
+          "custom": false,
+          "decode_ms_median": 0.367,
+          "encode_ms_median": 279.1298,
+          "method": "zstd-22",
+          "ratio": 3.7231936752627877,
+          "savings_percent": 73.14133813010899,
+          "verified": true
+        },
+        {
+          "bytes": 59230,
+          "custom": false,
+          "decode_ms_median": 1.161,
+          "encode_ms_median": 453.9005,
+          "method": "brotli-11",
+          "ratio": 6.344892790815465,
+          "savings_percent": 84.23929240463215,
+          "verified": true
+        },
+        {
+          "bytes": 126647,
+          "custom": false,
+          "decode_ms_median": 0.3077,
+          "encode_ms_median": 13.3627,
+          "method": "lz4-hc-16",
+          "ratio": 2.967365985771475,
+          "savings_percent": 66.30007876362399,
+          "verified": true
+        },
+        {
+          "bytes": 52822,
+          "custom": true,
+          "decode_ms_median": 46.4207,
+          "encode_ms_median": 46.2201,
+          "method": "hctx-sieve+zlib-9",
+          "ratio": 7.11461133618568,
+          "savings_percent": 85.94441842643053,
+          "verified": true
+        },
+        {
+          "bytes": 49246,
+          "custom": true,
+          "decode_ms_median": 47.3477,
+          "encode_ms_median": 109.0321,
+          "method": "hctx-sieve+zstd-22",
+          "ratio": 7.631239085407952,
+          "savings_percent": 86.89596815395095,
+          "verified": true
+        },
+        {
+          "bytes": 48412,
+          "custom": true,
+          "decode_ms_median": 47.6369,
+          "encode_ms_median": 360.0696,
+          "method": "hctx-sieve+brotli-11",
+          "ratio": 7.762703461951582,
+          "savings_percent": 87.11788998637601,
+          "verified": true
+        }
+      ]
+    },
+    "random-payload-control": {
+      "raw_bytes": 129284,
+      "records": 64,
+      "results": [
+        {
+          "bytes": 87508,
+          "custom": false,
+          "decode_ms_median": 0.4424,
+          "encode_ms_median": 11.7163,
+          "method": "zlib-9",
+          "ratio": 1.477396352333501,
+          "savings_percent": 32.31335664119304,
+          "verified": true
+        },
+        {
+          "bytes": 84389,
+          "custom": false,
+          "decode_ms_median": 4.296,
+          "encode_ms_median": 9.3763,
+          "method": "bzip2-9",
+          "ratio": 1.5320006161940538,
+          "savings_percent": 34.72587481822963,
+          "verified": true
+        },
+        {
+          "bytes": 72376,
+          "custom": false,
+          "decode_ms_median": 4.2753,
+          "encode_ms_median": 33.0607,
+          "method": "lzma-9",
+          "ratio": 1.7862827456615453,
+          "savings_percent": 44.01782123077875,
+          "verified": true
+        },
+        {
+          "bytes": 83312,
+          "custom": false,
+          "decode_ms_median": 0.16,
+          "encode_ms_median": 29.2526,
+          "method": "zstd-22",
+          "ratio": 1.5518052621471097,
+          "savings_percent": 35.558924538225924,
+          "verified": true
+        },
+        {
+          "bytes": 43853,
+          "custom": false,
+          "decode_ms_median": 0.8425,
+          "encode_ms_median": 189.9718,
+          "method": "brotli-11",
+          "ratio": 2.948122135315714,
+          "savings_percent": 66.08010271959407,
+          "verified": true
+        },
+        {
+          "bytes": 100818,
+          "custom": false,
+          "decode_ms_median": 0.1393,
+          "encode_ms_median": 4.0382,
+          "method": "lz4-hc-16",
+          "ratio": 1.2823503739411612,
+          "savings_percent": 22.018192506419975,
+          "verified": true
+        },
+        {
+          "bytes": 37523,
+          "custom": true,
+          "decode_ms_median": 14.1609,
+          "encode_ms_median": 17.1444,
+          "method": "hctx-sieve+zlib-9",
+          "ratio": 3.4454601177944193,
+          "savings_percent": 70.9763002382352,
+          "verified": true
+        },
+        {
+          "bytes": 37104,
+          "custom": true,
+          "decode_ms_median": 14.2324,
+          "encode_ms_median": 25.4157,
+          "method": "hctx-sieve+zstd-22",
+          "ratio": 3.484368262181975,
+          "savings_percent": 71.30039293338697,
+          "verified": true
+        },
+        {
+          "bytes": 36864,
+          "custom": true,
+          "decode_ms_median": 14.2147,
+          "encode_ms_median": 104.5608,
+          "method": "hctx-sieve+brotli-11",
+          "ratio": 3.507052951388889,
+          "savings_percent": 71.48603075399895,
+          "verified": true
+        }
+      ]
+    },
+    "structured-sector-packets": {
+      "raw_bytes": 246528,
+      "records": 256,
+      "results": [
+        {
+          "bytes": 25568,
+          "custom": false,
+          "decode_ms_median": 0.372,
+          "encode_ms_median": 18.0323,
+          "method": "zlib-9",
+          "ratio": 9.642052565707134,
+          "savings_percent": 89.62876427829698,
+          "verified": true
+        },
+        {
+          "bytes": 23323,
+          "custom": false,
+          "decode_ms_median": 3.6882,
+          "encode_ms_median": 14.063,
+          "method": "bzip2-9",
+          "ratio": 10.570166788149038,
+          "savings_percent": 90.53941134475598,
+          "verified": true
+        },
+        {
+          "bytes": 21224,
+          "custom": false,
+          "decode_ms_median": 1.5127,
+          "encode_ms_median": 35.8053,
+          "method": "lzma-9",
+          "ratio": 11.615529589144366,
+          "savings_percent": 91.39083592938732,
+          "verified": true
+        },
+        {
+          "bytes": 21281,
+          "custom": false,
+          "decode_ms_median": 0.1726,
+          "encode_ms_median": 253.9108,
+          "method": "zstd-22",
+          "ratio": 11.584418025468729,
+          "savings_percent": 91.36771482346833,
+          "verified": true
+        },
+        {
+          "bytes": 20606,
+          "custom": false,
+          "decode_ms_median": 0.5019,
+          "encode_ms_median": 271.9931,
+          "method": "brotli-11",
+          "ratio": 11.963894011452975,
+          "savings_percent": 91.64151739356178,
+          "verified": true
+        },
+        {
+          "bytes": 26769,
+          "custom": false,
+          "decode_ms_median": 0.2318,
+          "encode_ms_median": 8.7247,
+          "method": "lz4-hc-16",
+          "ratio": 9.209458702230192,
+          "savings_percent": 89.14159852024922,
+          "verified": true
+        },
+        {
+          "bytes": 16013,
+          "custom": true,
+          "decode_ms_median": 34.135,
+          "encode_ms_median": 30.1873,
+          "method": "hctx-sieve+zlib-9",
+          "ratio": 15.395491163429714,
+          "savings_percent": 93.50459177050882,
+          "verified": true
+        },
+        {
+          "bytes": 14561,
+          "custom": true,
+          "decode_ms_median": 32.6638,
+          "encode_ms_median": 77.5043,
+          "method": "hctx-sieve+zstd-22",
+          "ratio": 16.930705308701324,
+          "savings_percent": 94.09357152128764,
+          "verified": true
+        },
+        {
+          "bytes": 13974,
+          "custom": true,
+          "decode_ms_median": 33.3549,
+          "encode_ms_median": 161.752,
+          "method": "hctx-sieve+brotli-11",
+          "ratio": 17.641906397595534,
+          "savings_percent": 94.33167834890965,
+          "verified": true
+        }
+      ]
+    },
+    "tracked-repository-packets": {
+      "raw_bytes": 495075,
+      "records": 28,
+      "results": [
+        {
+          "bytes": 76500,
+          "custom": false,
+          "decode_ms_median": 1.0453,
+          "encode_ms_median": 130.9558,
+          "method": "zlib-9",
+          "ratio": 6.4715686274509805,
+          "savings_percent": 84.5477957885169,
+          "verified": true
+        },
+        {
+          "bytes": 55413,
+          "custom": false,
+          "decode_ms_median": 9.2443,
+          "encode_ms_median": 35.3033,
+          "method": "bzip2-9",
+          "ratio": 8.93427535054951,
+          "savings_percent": 88.80715043175277,
+          "verified": true
+        },
+        {
+          "bytes": 58164,
+          "custom": false,
+          "decode_ms_median": 3.7174,
+          "encode_ms_median": 125.5264,
+          "method": "lzma-9",
+          "ratio": 8.511708273158655,
+          "savings_percent": 88.25147704893197,
+          "verified": true
+        },
+        {
+          "bytes": 60772,
+          "custom": false,
+          "decode_ms_median": 0.493,
+          "encode_ms_median": 193.7029,
+          "method": "zstd-22",
+          "ratio": 8.14643256762983,
+          "savings_percent": 87.72468817855881,
+          "verified": true
+        },
+        {
+          "bytes": 56441,
+          "custom": false,
+          "decode_ms_median": 1.0322,
+          "encode_ms_median": 629.3103,
+          "method": "brotli-11",
+          "ratio": 8.77154905122163,
+          "savings_percent": 88.59950512548603,
+          "verified": true
+        },
+        {
+          "bytes": 85756,
+          "custom": false,
+          "decode_ms_median": 0.4076,
+          "encode_ms_median": 65.4614,
+          "method": "lz4-hc-16",
+          "ratio": 5.773065441485144,
+          "savings_percent": 82.67818007372621,
+          "verified": true
+        },
+        {
+          "bytes": 31047,
+          "custom": true,
+          "decode_ms_median": 46.3097,
+          "encode_ms_median": 47.3491,
+          "method": "hctx-sieve+zlib-9",
+          "ratio": 15.945985119335202,
+          "savings_percent": 93.72882896530828,
+          "verified": true
+        },
+        {
+          "bytes": 28041,
+          "custom": true,
+          "decode_ms_median": 46.2406,
+          "encode_ms_median": 72.3815,
+          "method": "hctx-sieve+zstd-22",
+          "ratio": 17.65539745372847,
+          "savings_percent": 94.33600969550068,
+          "verified": true
+        },
+        {
+          "bytes": 26116,
+          "custom": true,
+          "decode_ms_median": 48.0009,
+          "encode_ms_median": 170.9672,
+          "method": "hctx-sieve+brotli-11",
+          "ratio": 18.95676979629346,
+          "savings_percent": 94.72483967075695,
+          "verified": true
+        }
+      ]
+    }
+  }
+}
