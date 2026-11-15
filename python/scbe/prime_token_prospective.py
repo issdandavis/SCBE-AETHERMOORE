@@ -27,12 +27,18 @@ from python.scbe.prime_token_query_harvest import (
     build_reviewed_benchmark,
     review_queue_sha256,
 )
+from python.scbe.prime_token_query_family_components import (
+    AUTHORITY as COMPONENT_AUTHORITY,
+    SCHEMA as COMPONENT_REPORT_SCHEMA,
+    STATUS_VERIFIED as COMPONENT_STATUS_VERIFIED,
+    audit_query_session_family_components,
+)
 
 PREPARATION_SCHEMA = "clay.prime-token-prospective-review-preparation.v1"
 SOURCE_INVENTORY_SCHEMA = "clay.prime-token-catalog-source-suffixes.v1"
 SELECTION_AUDIT_SCHEMA = "clay.prime-token-selection-audit.v1"
 SELECTION_AUDIT_STATUS = "PASS_EXACT_SELECTION_REPLAY_NO_SCORING"
-E92_RUN_SCHEMA = "scbe.e92-prospective-run.v4"
+E92_RUN_SCHEMA = "scbe.e92-prospective-run.v5"
 SOURCE_CHAIN_BUNDLE_FILES = {
     "queue": "SOURCE_QUEUE.json",
     "selection_audit": "SOURCE_SELECTION_AUDIT.json",
@@ -40,8 +46,34 @@ SOURCE_CHAIN_BUNDLE_FILES = {
     "preparation_receipt": "SOURCE_PREPARATION_RECEIPT.json",
     "source_inventory": "SOURCE_INVENTORY.json",
     "catalog_integrity": "SOURCE_CATALOG_INTEGRITY.json",
+    "component_report": "SOURCE_QUERY_SESSION_FAMILY_COMPONENTS.json",
+    "source_family_audit": "SOURCE_FAMILY_AUDIT.json",
 }
 SHA256_RE = re.compile(r"[0-9a-f]{64}")
+COMPONENT_FOLD_NAMES = ("fold-0", "fold-1", "fold-2")
+COMPONENT_THRESHOLDS = {
+    "minimum_accepted_queries": 30,
+    "minimum_query_sessions": 3,
+    "minimum_manifest_bound_families": 2,
+    "minimum_indivisible_components": 3,
+    "maximum_component_share": 0.8,
+}
+COMPONENT_STABLE_FIELDS = (
+    "schema",
+    "status",
+    "error_count",
+    "errors",
+    "inputs",
+    "thresholds",
+    "observed",
+    "fold_names",
+    "components",
+    "folds",
+    "component_split_sha256",
+    "gates",
+    "authority",
+    "claim_boundary",
+)
 
 
 def canonical_sha256(value: Any) -> str:
@@ -66,6 +98,127 @@ def json_bytes(value: Mapping[str, Any]) -> bytes:
         )
         + "\n"
     ).encode("utf-8")
+
+
+def _component_canonical_sha256(value: Any) -> str:
+    encoded = json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+        allow_nan=False,
+    ).encode("ascii")
+    return sha256(encoded).hexdigest()
+
+
+def _forbidden_component_keys(value: Any) -> list[str]:
+    found: list[str] = []
+    if isinstance(value, Mapping):
+        for key, item in value.items():
+            if str(key) in {"query", "session_id"}:
+                found.append(str(key))
+            found.extend(_forbidden_component_keys(item))
+    elif isinstance(value, list):
+        for item in value:
+            found.extend(_forbidden_component_keys(item))
+    return found
+
+
+def _verify_component_report(
+    report: Mapping[str, Any],
+    *,
+    queue_path: Path,
+    labels_path: Path,
+    source_inventory_path: Path,
+) -> tuple[Path, dict[str, Any]]:
+    if report.get("schema") != COMPONENT_REPORT_SCHEMA:
+        raise ValueError("component report schema mismatch")
+    if report.get("status") != COMPONENT_STATUS_VERIFIED:
+        raise ValueError("query-session/target-family component gate is not verified")
+    if int(report.get("error_count", -1)) != 0 or report.get("errors") != []:
+        raise ValueError("component report did not close without errors")
+    if report.get("authority") != COMPONENT_AUTHORITY:
+        raise ValueError(
+            "component report authority differs from the fail-closed contract"
+        )
+    if _forbidden_component_keys(report):
+        raise ValueError("component report contains raw query or session fields")
+    if report.get("thresholds") != COMPONENT_THRESHOLDS:
+        raise ValueError("component report thresholds differ from the frozen contract")
+    if tuple(report.get("fold_names") or ()) != COMPONENT_FOLD_NAMES:
+        raise ValueError("component report fold names differ from the frozen contract")
+    gates = report.get("gates")
+    if (
+        not isinstance(gates, Mapping)
+        or not gates
+        or not all(value is True for value in gates.values())
+    ):
+        raise ValueError("component report contains a failed gate")
+
+    declared_report_hash = str(report.get("report_sha256") or "").casefold()
+    report_core = dict(report)
+    report_core.pop("report_sha256", None)
+    if (
+        not SHA256_RE.fullmatch(declared_report_hash)
+        or _component_canonical_sha256(report_core) != declared_report_hash
+    ):
+        raise ValueError("component report digest does not replay")
+    split_payload = {
+        "fold_names": report.get("fold_names"),
+        "components": report.get("components"),
+        "folds": report.get("folds"),
+    }
+    if (
+        _component_canonical_sha256(split_payload)
+        != str(report.get("component_split_sha256") or "").casefold()
+    ):
+        raise ValueError("component split digest does not replay")
+
+    inputs = report.get("inputs")
+    if not isinstance(inputs, Mapping):
+        raise ValueError("component report inputs are missing")
+    expected_paths = {
+        "review_queue": queue_path,
+        "review_labels": labels_path,
+        "source_inventory": source_inventory_path,
+    }
+    expected_hashes = {
+        "review_queue_sha256": sha256_file(queue_path),
+        "review_labels_sha256": sha256_file(labels_path),
+        "source_inventory_sha256": sha256_file(source_inventory_path),
+    }
+    for field, expected_path in expected_paths.items():
+        actual_path = Path(str(inputs.get(field) or "")).resolve(strict=True)
+        if actual_path != expected_path:
+            raise ValueError(f"component report input path mismatch: {field}")
+    for field, expected_hash in expected_hashes.items():
+        if str(inputs.get(field) or "").casefold() != expected_hash:
+            raise ValueError(f"component report input hash mismatch: {field}")
+
+    source_family_path = Path(str(inputs.get("source_family_audit") or "")).resolve(
+        strict=True
+    )
+    if str(inputs.get("source_family_audit_sha256") or "").casefold() != sha256_file(
+        source_family_path
+    ):
+        raise ValueError("component report source-family audit hash mismatch")
+    source_family_audit = _load_object(source_family_path, label="source-family audit")
+
+    replay = audit_query_session_family_components(
+        review_queue=queue_path,
+        review_labels=labels_path,
+        source_inventory=source_inventory_path,
+        source_family_audit=source_family_path,
+        fold_names=COMPONENT_FOLD_NAMES,
+        minimum_accepted_queries=COMPONENT_THRESHOLDS["minimum_accepted_queries"],
+        minimum_sessions=COMPONENT_THRESHOLDS["minimum_query_sessions"],
+        minimum_families=COMPONENT_THRESHOLDS["minimum_manifest_bound_families"],
+        maximum_component_share=COMPONENT_THRESHOLDS["maximum_component_share"],
+    )
+    for field in COMPONENT_STABLE_FIELDS:
+        if report.get(field) != replay.get(field):
+            raise ValueError(f"component report replay mismatch: {field}")
+    return source_family_path, source_family_audit
 
 
 def _aware_datetime(value: Any, *, label: str) -> datetime:
@@ -408,6 +561,7 @@ def build_e92_prospective_run(
     preparation_receipt_path: str | Path,
     source_inventory_path: str | Path,
     catalog_integrity_receipt_path: str | Path,
+    component_report_path: str | Path,
     catalog_database: str | Path,
     control_seeds: Sequence[int] = (11, 29, 47),
     limit: int = 20,
@@ -418,12 +572,16 @@ def build_e92_prospective_run(
     preparation_file = Path(preparation_receipt_path).resolve(strict=True)
     source_file = Path(source_inventory_path).resolve(strict=True)
     integrity_file = Path(catalog_integrity_receipt_path).resolve(strict=True)
+    component_file = Path(component_report_path).resolve(strict=True)
     catalog_file = Path(catalog_database).resolve(strict=True)
     queue = _load_object(queue_file, label="review queue")
     selection_audit = _load_object(selection_audit_file, label="queue selection audit")
     preparation = _load_object(preparation_file, label="preparation receipt")
     source_inventory = _load_object(source_file, label="source inventory")
     catalog_integrity = _load_object(integrity_file, label="catalog integrity receipt")
+    component_report = _load_object(
+        component_file, label="query-session/family component report"
+    )
     catalog_hash = sha256_file(catalog_file)
     _verify_catalog_integrity_receipt(
         catalog_integrity,
@@ -455,6 +613,12 @@ def build_e92_prospective_run(
         candidates=candidates,
         source_suffixes=suffixes,
     )
+    source_family_file, source_family_audit = _verify_component_report(
+        component_report,
+        queue_path=queue_file,
+        labels_path=labels_file,
+        source_inventory_path=source_file,
+    )
     benchmark = build_reviewed_benchmark(
         queue,
         labels,
@@ -479,6 +643,8 @@ def build_e92_prospective_run(
         "preparation_receipt": preparation,
         "source_inventory": source_inventory,
         "catalog_integrity": catalog_integrity,
+        "component_report": component_report,
+        "source_family_audit": source_family_audit,
     }
     source_file_hashes = {
         "queue": sha256_file(queue_file),
@@ -487,6 +653,8 @@ def build_e92_prospective_run(
         "preparation_receipt": sha256_file(preparation_file),
         "source_inventory": sha256_file(source_file),
         "catalog_integrity": sha256_file(integrity_file),
+        "component_report": sha256_file(component_file),
+        "source_family_audit": sha256_file(source_family_file),
     }
     source_chain_bundle = {
         role: {
@@ -511,6 +679,9 @@ def build_e92_prospective_run(
         "preparation_receipt_file_sha256": source_file_hashes["preparation_receipt"],
         "source_inventory_file_sha256": source_file_hashes["source_inventory"],
         "catalog_integrity_file_sha256": source_file_hashes["catalog_integrity"],
+        "component_report_file_sha256": source_file_hashes["component_report"],
+        "source_family_audit_file_sha256": source_file_hashes["source_family_audit"],
+        "component_split_sha256": component_report["component_split_sha256"],
         "source_chain_bundle": source_chain_bundle,
         "benchmark_sha256": benchmark_hash,
         "result_sha256": sha256(result_payload).hexdigest(),
@@ -525,6 +696,11 @@ def build_e92_prospective_run(
                 Path(__file__).resolve().with_name("prime_token_query_harvest.py")
             ),
             "prime_token_prospective.py": sha256_file(Path(__file__).resolve()),
+            "prime_token_query_family_components.py": sha256_file(
+                Path(__file__)
+                .resolve()
+                .with_name("prime_token_query_family_components.py")
+            ),
         },
         "review_summary": review_summary,
         "control_seeds": list(control_seeds),

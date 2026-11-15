@@ -24,10 +24,29 @@ SCHEMA = "scbe.e92-prospective-run-watcher.v1"
 COLLECTOR_SCHEMA = "clay.codex-prospective-watcher.v1"
 PREPARER_SCHEMA = "clay.prime-token-preparer-watcher.v1"
 SELECTION_SCHEMA = "clay.prime-token-selection-audit-watcher.v1"
+COMPONENT_WATCHER_SCHEMA = "scbe.prime-token-query-session-family-component-watcher.v1"
+COMPONENT_REPORT_SCHEMA = "scbe.prime-token-query-session-family-components.v1"
 COLLECTOR_READY = "READY_FOR_HUMAN_HASH_BOUND_REVIEW"
 PREPARER_READY = {"PACKET_READY_NO_SCORING", "PACKET_ALREADY_READY_NO_SCORING"}
 SELECTION_READY = {"AUDIT_VERIFIED_NO_SCORING", "AUDIT_ALREADY_VERIFIED_NO_SCORING"}
+COMPONENT_READY = "QUERY_SESSION_FAMILY_COMPONENT_GATE_VERIFIED"
+COMPONENT_REPORT_VERIFIED = "VERIFIED_QUERY_SESSION_FAMILY_COMPONENT_SPLIT"
 VERIFIED_STATUS = "VERIFIED_E92_PROSPECTIVE_NO_AUTOMATIC_PROMOTION"
+COMPONENT_AUTHORITY = {
+    "scoring": "NOT_AUTHORIZED",
+    "training_intake": "NOT_AUTHORIZED",
+    "execution": "NONE",
+    "merge": "NOT_AUTHORIZED",
+    "promotion": "NOT_AUTHORIZED",
+    "partial_unfreeze": "NONE",
+}
+COMPONENT_THRESHOLDS = {
+    "minimum_accepted_queries": 30,
+    "minimum_query_sessions": 3,
+    "minimum_manifest_bound_families": 2,
+    "minimum_indivisible_components": 3,
+    "maximum_component_share": 0.8,
+}
 
 
 Runner = Callable[[list[str]], subprocess.CompletedProcess[str]]
@@ -45,6 +64,30 @@ def require_hash(path: Path, expected: str, label: str) -> None:
     actual = sha256_file(path)
     if actual != expected.casefold():
         raise RuntimeError(f"{label} hash mismatch: {actual}")
+
+
+def canonical_sha256(value: Any) -> str:
+    encoded = json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+        allow_nan=False,
+    ).encode("ascii")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _forbidden_component_keys(value: Any) -> list[str]:
+    found: list[str] = []
+    if isinstance(value, Mapping):
+        for key, item in value.items():
+            if str(key) in {"query", "session_id"}:
+                found.append(str(key))
+            found.extend(_forbidden_component_keys(item))
+    elif isinstance(value, list):
+        for item in value:
+            found.extend(_forbidden_component_keys(item))
+    return found
 
 
 def read_object(path: Path) -> dict[str, Any]:
@@ -82,6 +125,7 @@ def _base(
     collector: Mapping[str, Any],
     preparer: Mapping[str, Any],
     selection: Mapping[str, Any],
+    component: Mapping[str, Any],
 ) -> dict[str, Any]:
     return {
         "schema": SCHEMA,
@@ -89,6 +133,7 @@ def _base(
         "collector_status": str(collector.get("status") or "UNKNOWN"),
         "preparer_status": str(preparer.get("status") or "UNKNOWN"),
         "selection_audit_status": str(selection.get("status") or "UNKNOWN"),
+        "component_gate_status": str(component.get("status") or "UNKNOWN"),
         "candidate_count": int(collector.get("candidate_count", 0)),
         "labels": "NOT_OPENED",
         "scoring": "NOT_AUTHORIZED",
@@ -97,6 +142,91 @@ def _base(
         "merge": "NOT_AUTHORIZED",
         "promotion": "NOT_AUTHORIZED",
     }
+
+
+def _verified_component_report(
+    component_status: Mapping[str, Any],
+    *,
+    queue: Path,
+    labels: Path,
+    source_inventory: Path,
+) -> tuple[Path, dict[str, Any]]:
+    if component_status.get("gate_result") != COMPONENT_REPORT_VERIFIED:
+        raise RuntimeError("component watcher gate result is not verified")
+    if component_status.get("labels") != "OPENED_BY_PINNED_COMPONENT_AUDITOR":
+        raise RuntimeError("component watcher did not record pinned label access")
+    if component_status.get("authority") != COMPONENT_AUTHORITY:
+        raise RuntimeError("component watcher authority differs from the fail-closed contract")
+    for field, expected in COMPONENT_AUTHORITY.items():
+        if component_status.get(field) != expected:
+            raise RuntimeError(f"component watcher top-level authority mismatch: {field}")
+    report_path = Path(str(component_status.get("gate_report") or "")).resolve(strict=True)
+    require_hash(
+        report_path,
+        str(component_status.get("gate_report_sha256") or ""),
+        "component report",
+    )
+    report = read_object(report_path)
+    if (
+        report.get("schema") != COMPONENT_REPORT_SCHEMA
+        or report.get("status") != COMPONENT_REPORT_VERIFIED
+        or int(report.get("error_count", -1)) != 0
+        or report.get("errors") != []
+    ):
+        raise RuntimeError("component report is not a clean verified split")
+    if report.get("authority") != COMPONENT_AUTHORITY:
+        raise RuntimeError("component report authority differs from the fail-closed contract")
+    if report.get("thresholds") != COMPONENT_THRESHOLDS:
+        raise RuntimeError("component report thresholds differ from the frozen contract")
+    if tuple(report.get("fold_names") or ()) != ("fold-0", "fold-1", "fold-2"):
+        raise RuntimeError("component report fold names differ from the frozen contract")
+    gates = report.get("gates")
+    if not isinstance(gates, Mapping) or not gates or not all(value is True for value in gates.values()):
+        raise RuntimeError("component report contains a failed gate")
+    if _forbidden_component_keys(report):
+        raise RuntimeError("component report contains raw query or session fields")
+
+    report_core = dict(report)
+    declared_report_hash = str(report_core.pop("report_sha256", "")).casefold()
+    if canonical_sha256(report_core) != declared_report_hash:
+        raise RuntimeError("component report digest does not replay")
+    split_payload = {
+        "fold_names": report.get("fold_names"),
+        "components": report.get("components"),
+        "folds": report.get("folds"),
+    }
+    split_hash = canonical_sha256(split_payload)
+    if split_hash != str(report.get("component_split_sha256") or "").casefold():
+        raise RuntimeError("component split digest does not replay")
+    if split_hash != str(component_status.get("component_split_sha256") or "").casefold():
+        raise RuntimeError("component watcher split binding mismatch")
+
+    inputs = report.get("inputs")
+    if not isinstance(inputs, Mapping):
+        raise RuntimeError("component report inputs are missing")
+    expected_paths = {
+        "review_queue": queue,
+        "review_labels": labels,
+        "source_inventory": source_inventory,
+    }
+    expected_hashes = {
+        "review_queue_sha256": sha256_file(queue),
+        "review_labels_sha256": sha256_file(labels),
+        "source_inventory_sha256": sha256_file(source_inventory),
+    }
+    for field, expected in expected_paths.items():
+        if Path(str(inputs.get(field) or "")).resolve(strict=True) != expected:
+            raise RuntimeError(f"component report input path mismatch: {field}")
+    for field, expected in expected_hashes.items():
+        if str(inputs.get(field) or "").casefold() != expected:
+            raise RuntimeError(f"component report input hash mismatch: {field}")
+    source_family = Path(str(inputs.get("source_family_audit") or "")).resolve(strict=True)
+    require_hash(
+        source_family,
+        str(inputs.get("source_family_audit_sha256") or ""),
+        "component source-family audit",
+    )
+    return report_path, report
 
 
 def _verified_result(path: Path) -> dict[str, Any]:
@@ -118,6 +248,7 @@ def run_cycle(
     collector_status_path: Path,
     preparer_status_path: Path,
     selection_status_path: Path,
+    component_status_path: Path,
     labels_path: Path,
     catalog_database: Path,
     catalog_database_sha256: str,
@@ -139,13 +270,16 @@ def run_cycle(
     collector = read_object(collector_status_path.resolve(strict=True))
     preparer = read_object(preparer_status_path.resolve(strict=True))
     selection = read_object(selection_status_path.resolve(strict=True))
+    component = read_object(component_status_path.resolve(strict=True))
     if collector.get("schema") != COLLECTOR_SCHEMA:
         raise ValueError("unexpected collector status schema")
     if preparer.get("schema") != PREPARER_SCHEMA:
         raise ValueError("unexpected preparer status schema")
     if selection.get("schema") != SELECTION_SCHEMA:
         raise ValueError("unexpected selection-audit status schema")
-    base = _base(collector, preparer, selection)
+    if component.get("schema") != COMPONENT_WATCHER_SCHEMA:
+        raise ValueError("unexpected component-gate status schema")
+    base = _base(collector, preparer, selection, component)
 
     if collector.get("status") != COLLECTOR_READY:
         status = {**base, "status": "WAITING_FOR_PROSPECTIVE_QUEUE"}
@@ -178,6 +312,10 @@ def run_cycle(
         str(preparer.get("source_inventory_file_sha256") or ""),
         "source inventory",
     )
+    if component.get("status") != COMPONENT_READY:
+        status = {**base, "status": "WAITING_FOR_QUERY_SESSION_FAMILY_COMPONENT_GATE"}
+        atomic_json(status_path, status)
+        return status
     catalog_database = catalog_database.resolve(strict=True)
     require_hash(catalog_database, catalog_database_sha256, "catalog database")
     boundary = collector.get("catalog_boundary")
@@ -205,6 +343,14 @@ def run_cycle(
         atomic_json(status_path, status)
         return status
 
+    labels = labels_path.resolve(strict=True)
+    component_report, component_payload = _verified_component_report(
+        component,
+        queue=queue,
+        labels=labels,
+        source_inventory=source_inventory,
+    )
+
     output_dir = output_dir.resolve()
     pending_output = output_dir.with_name(output_dir.name + ".pending")
     verification_path = state_dir / "E92_VERIFICATION.json"
@@ -230,13 +376,15 @@ def run_cycle(
             "--selection-audit",
             str(audit),
             "--labels",
-            str(labels_path.resolve(strict=True)),
+            str(labels),
             "--preparation-receipt",
             str(preparation_receipt),
             "--source-inventory",
             str(source_inventory),
             "--catalog-integrity-audit",
             str(catalog_integrity_audit),
+            "--component-report",
+            str(component_report),
             "--catalog-database",
             str(catalog_database),
             "--output-dir",
@@ -296,6 +444,8 @@ def run_cycle(
         "result_dir": str(output_dir),
         "result_receipt_sha256": sha256_file(output_dir / "RUN_RECEIPT.json"),
         "verification_file_sha256": sha256_file(verification_path),
+        "component_report_file_sha256": sha256_file(component_report),
+        "component_split_sha256": component_payload["component_split_sha256"],
         "training_intake": "NOT_AUTHORIZED",
         "serving": "NOT_AUTHORIZED",
         "merge": "NOT_AUTHORIZED",
@@ -310,6 +460,7 @@ def main() -> int:
     parser.add_argument("--collector-status", required=True, type=Path)
     parser.add_argument("--preparer-status", required=True, type=Path)
     parser.add_argument("--selection-status", required=True, type=Path)
+    parser.add_argument("--component-status", required=True, type=Path)
     parser.add_argument("--labels", required=True, type=Path)
     parser.add_argument("--catalog-database", required=True, type=Path)
     parser.add_argument("--catalog-database-sha256", required=True)
@@ -332,6 +483,7 @@ def main() -> int:
         "collector_status_path": args.collector_status,
         "preparer_status_path": args.preparer_status,
         "selection_status_path": args.selection_status,
+        "component_status_path": args.component_status,
         "labels_path": args.labels,
         "catalog_database": args.catalog_database,
         "catalog_database_sha256": args.catalog_database_sha256,

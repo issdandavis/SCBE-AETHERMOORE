@@ -2,16 +2,18 @@
 
 from __future__ import annotations
 
-from collections import Counter
+from collections import Counter, defaultdict
 from collections.abc import Mapping, Sequence
 from hashlib import sha256
 import json
 import math
+import os
 from pathlib import Path
+import re
 from statistics import mean, stdev
 from typing import Any
 
-E92_RUN_SCHEMA = "scbe.e92-prospective-run.v4"
+E92_RUN_SCHEMA = "scbe.e92-prospective-run.v5"
 BENCHMARK_SCHEMA = "scbe.prime-token-benchmark.v1"
 RESULT_SCHEMA = "scbe.prime-token-cascade-benchmark-result.v1"
 REVIEW_QUEUE_SCHEMA = "scbe.prime-token-independent-review-queue.v1"
@@ -21,6 +23,9 @@ SOURCE_INVENTORY_SCHEMA = "clay.prime-token-catalog-source-suffixes.v1"
 CATALOG_INTEGRITY_SCHEMA = "scbe.prime-token-relational-integrity-audit.v1"
 SELECTION_AUDIT_SCHEMA = "clay.prime-token-selection-audit.v1"
 SELECTION_AUDIT_STATUS = "PASS_EXACT_SELECTION_REPLAY_NO_SCORING"
+COMPONENT_REPORT_SCHEMA = "scbe.prime-token-query-session-family-components.v1"
+SOURCE_FAMILY_AUDIT_SCHEMA = "scbe.prime-token-source-family-audit.v1"
+COMPONENT_REPORT_VERIFIED = "VERIFIED_QUERY_SESSION_FAMILY_COMPONENT_SPLIT"
 ALGORITHM_REVISION = "six-view-late-output-fusion-v1"
 MIN_CAPABILITY_QUERIES = 30
 DEFAULT_CONTROL_SEEDS = (11, 29, 47)
@@ -40,6 +45,8 @@ SOURCE_CHAIN_BUNDLE_FILES = {
     "preparation_receipt": "SOURCE_PREPARATION_RECEIPT.json",
     "source_inventory": "SOURCE_INVENTORY.json",
     "catalog_integrity": "SOURCE_CATALOG_INTEGRITY.json",
+    "component_report": "SOURCE_QUERY_SESSION_FAMILY_COMPONENTS.json",
+    "source_family_audit": "SOURCE_FAMILY_AUDIT.json",
 }
 SOURCE_HASH_FIELDS = {
     "queue": "queue_file_sha256",
@@ -48,7 +55,26 @@ SOURCE_HASH_FIELDS = {
     "preparation_receipt": "preparation_receipt_file_sha256",
     "source_inventory": "source_inventory_file_sha256",
     "catalog_integrity": "catalog_integrity_file_sha256",
+    "component_report": "component_report_file_sha256",
+    "source_family_audit": "source_family_audit_file_sha256",
 }
+COMPONENT_FOLD_NAMES = ("fold-0", "fold-1", "fold-2")
+COMPONENT_THRESHOLDS = {
+    "minimum_accepted_queries": 30,
+    "minimum_query_sessions": 3,
+    "minimum_manifest_bound_families": 2,
+    "minimum_indivisible_components": 3,
+    "maximum_component_share": 0.8,
+}
+COMPONENT_AUTHORITY = {
+    "scoring": "NOT_AUTHORIZED",
+    "training_intake": "NOT_AUTHORIZED",
+    "execution": "NONE",
+    "merge": "NOT_AUTHORIZED",
+    "promotion": "NOT_AUTHORIZED",
+    "partial_unfreeze": "NONE",
+}
+LINE_FRAGMENT = re.compile(r"^(?P<path>.+)#L[1-9][0-9]*$")
 
 
 def _canonical_sha256(value: Any) -> str:
@@ -82,6 +108,154 @@ def _review_queue_sha256(queue: Mapping[str, Any]) -> str:
     payload = dict(queue)
     payload.pop("queue_sha256", None)
     return _canonical_sha256(payload)
+
+
+def _component_sha256(value: Any) -> str:
+    return sha256(
+        json.dumps(
+            value,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=True,
+            allow_nan=False,
+        ).encode("ascii")
+    ).hexdigest()
+
+
+def _component_forbidden_keys(value: Any, *, path: str = "$") -> list[str]:
+    found: list[str] = []
+    if isinstance(value, Mapping):
+        for key, item in value.items():
+            child = f"{path}.{key}"
+            if str(key) in {"query", "session_id"}:
+                found.append(child)
+            found.extend(_component_forbidden_keys(item, path=child))
+    elif isinstance(value, list):
+        for index, item in enumerate(value):
+            found.extend(_component_forbidden_keys(item, path=f"{path}[{index}]"))
+    return found
+
+
+def _component_source_path(source_uri: str) -> str:
+    match = LINE_FRAGMENT.fullmatch(source_uri)
+    raw = match.group("path") if match else source_uri
+    return os.path.normcase(str(Path(raw).resolve(strict=False)))
+
+
+def _component_session_hash(session_id: str) -> str:
+    return sha256(f"query-session\0{session_id}".encode("utf-8")).hexdigest()
+
+
+class _ComponentUnionFind:
+    def __init__(self) -> None:
+        self.parent: dict[str, str] = {}
+
+    def add(self, value: str) -> None:
+        self.parent.setdefault(value, value)
+
+    def find(self, value: str) -> str:
+        parent = self.parent[value]
+        if parent != value:
+            self.parent[value] = self.find(parent)
+        return self.parent[value]
+
+    def union(self, left: str, right: str) -> None:
+        self.add(left)
+        self.add(right)
+        left_root = self.find(left)
+        right_root = self.find(right)
+        if left_root == right_root:
+            return
+        low, high = sorted((left_root, right_root))
+        self.parent[high] = low
+
+
+def _rebuild_component_split(entries: Sequence[Mapping[str, str]]) -> dict[str, Any]:
+    union = _ComponentUnionFind()
+    for row in entries:
+        union.union(f"session:{row['session_hash']}", f"family:{row['family_id']}")
+
+    by_root: dict[str, list[Mapping[str, str]]] = defaultdict(list)
+    for row in entries:
+        by_root[union.find(f"session:{row['session_hash']}")].append(row)
+
+    components = []
+    for rows in by_root.values():
+        sessions = sorted({row["session_hash"] for row in rows})
+        families = sorted({row["family_id"] for row in rows})
+        query_hashes = sorted(row["query_sha256"] for row in rows)
+        strata = Counter(row["review_stratum"] for row in rows)
+        components.append(
+            {
+                "component_id": _component_sha256(
+                    {"session_hashes": sessions, "family_ids": families}
+                ),
+                "query_count": len(rows),
+                "query_sha256": query_hashes,
+                "query_digest_sha256": _component_sha256(query_hashes),
+                "session_count": len(sessions),
+                "session_hashes": sessions,
+                "family_count": len(families),
+                "family_ids": families,
+                "review_strata_counts": dict(sorted(strata.items())),
+            }
+        )
+    components.sort(key=lambda row: (-row["query_count"], row["component_id"]))
+
+    loads: dict[str, dict[str, Any]] = {
+        name: {
+            "query_count": 0,
+            "component_count": 0,
+            "component_ids": [],
+            "query_sha256": [],
+            "session_hashes": set(),
+            "family_ids": set(),
+            "review_strata_counts": Counter(),
+        }
+        for name in COMPONENT_FOLD_NAMES
+    }
+    assigned = []
+    for original in components:
+        fold = min(
+            COMPONENT_FOLD_NAMES,
+            key=lambda name: (
+                loads[name]["query_count"],
+                loads[name]["component_count"],
+                name,
+            ),
+        )
+        row = {**original, "fold": fold}
+        assigned.append(row)
+        load = loads[fold]
+        load["query_count"] += int(row["query_count"])
+        load["component_count"] += 1
+        load["component_ids"].append(row["component_id"])
+        load["query_sha256"].extend(row["query_sha256"])
+        load["session_hashes"].update(row["session_hashes"])
+        load["family_ids"].update(row["family_ids"])
+        load["review_strata_counts"].update(row["review_strata_counts"])
+
+    folds = {}
+    for name in COMPONENT_FOLD_NAMES:
+        load = loads[name]
+        queries = sorted(load["query_sha256"])
+        folds[name] = {
+            "query_count": load["query_count"],
+            "component_count": load["component_count"],
+            "component_ids": sorted(load["component_ids"]),
+            "query_sha256": queries,
+            "query_digest_sha256": _component_sha256(queries),
+            "session_count": len(load["session_hashes"]),
+            "session_hashes": sorted(load["session_hashes"]),
+            "family_count": len(load["family_ids"]),
+            "family_ids": sorted(load["family_ids"]),
+            "review_strata_counts": dict(sorted(load["review_strata_counts"].items())),
+        }
+    return {
+        "fold_names": list(COMPONENT_FOLD_NAMES),
+        "components": sorted(assigned, key=lambda row: row["component_id"]),
+        "folds": folds,
+    }
 
 
 def _load_source_chain(
@@ -124,6 +298,198 @@ def _load_source_chain(
     return loaded
 
 
+def _verify_component_chain(
+    *,
+    queue: Mapping[str, Any],
+    labels: Mapping[str, Any],
+    source_inventory: Mapping[str, Any],
+    source_family_audit: Mapping[str, Any],
+    report: Mapping[str, Any],
+    receipt: Mapping[str, Any],
+    errors: list[str],
+) -> None:
+    if report.get("schema") != COMPONENT_REPORT_SCHEMA:
+        errors.append("component report schema mismatch")
+    if report.get("status") != COMPONENT_REPORT_VERIFIED:
+        errors.append("component report status is not verified")
+    if int(report.get("error_count", -1)) != 0 or report.get("errors") != []:
+        errors.append("component report did not close without errors")
+    if report.get("authority") != COMPONENT_AUTHORITY:
+        errors.append("component report authority mismatch")
+    if report.get("thresholds") != COMPONENT_THRESHOLDS:
+        errors.append("component report thresholds mismatch")
+    if tuple(report.get("fold_names") or ()) != COMPONENT_FOLD_NAMES:
+        errors.append("component report fold names mismatch")
+    forbidden = _component_forbidden_keys(report)
+    if forbidden:
+        errors.append("component report contains raw query or session fields")
+
+    report_core = dict(report)
+    claimed_report_hash = str(report_core.pop("report_sha256", "")).casefold()
+    if claimed_report_hash != _component_sha256(report_core):
+        errors.append("component report digest mismatch")
+    split_payload = {
+        "fold_names": report.get("fold_names"),
+        "components": report.get("components"),
+        "folds": report.get("folds"),
+    }
+    split_hash = _component_sha256(split_payload)
+    if report.get("component_split_sha256") != split_hash:
+        errors.append("component split digest mismatch")
+    if receipt.get("component_split_sha256") != split_hash:
+        errors.append("run receipt component split binding mismatch")
+
+    inputs = report.get("inputs")
+    if not isinstance(inputs, Mapping):
+        errors.append("component report inputs missing")
+        inputs = {}
+    expected_input_hashes = {
+        "review_queue_sha256": receipt.get("queue_file_sha256"),
+        "review_labels_sha256": receipt.get("labels_file_sha256"),
+        "source_inventory_sha256": receipt.get("source_inventory_file_sha256"),
+        "source_family_audit_sha256": receipt.get("source_family_audit_file_sha256"),
+    }
+    for field, expected in expected_input_hashes.items():
+        if inputs.get(field) != expected:
+            errors.append(f"component report input hash mismatch: {field}")
+    queue_hash = _review_queue_sha256(queue)
+    if inputs.get("review_queue_content_sha256") != queue_hash:
+        errors.append("component report queue content binding mismatch")
+
+    if source_family_audit.get("schema") != SOURCE_FAMILY_AUDIT_SCHEMA:
+        errors.append("source-family audit schema mismatch")
+    if int(source_family_audit.get("error_count", -1)) != 0:
+        errors.append("source-family audit contains errors")
+    family_catalog = source_family_audit.get("catalog")
+    if not isinstance(family_catalog, Mapping) or family_catalog.get(
+        "database_sha256"
+    ) != receipt.get("catalog_sha256"):
+        errors.append("source-family audit catalog binding mismatch")
+
+    canonical_by_path: dict[str, str] = {}
+    canonical_rows = source_family_audit.get("canonical_sources")
+    if not isinstance(canonical_rows, list):
+        errors.append("source-family audit canonical sources missing")
+        canonical_rows = []
+    for index, row in enumerate(canonical_rows):
+        if (
+            not isinstance(row, Mapping)
+            or not row.get("path")
+            or not row.get("family_id")
+        ):
+            errors.append(f"source-family audit row {index} is incomplete")
+            continue
+        key = _component_source_path(str(row["path"]))
+        if key in canonical_by_path:
+            errors.append(f"source-family audit row {index} duplicates a path")
+        canonical_by_path[key] = str(row["family_id"])
+
+    suffix_to_family: dict[str, str] = {}
+    source_rows = source_inventory.get("sources")
+    if not isinstance(source_rows, list):
+        errors.append("component source inventory rows missing")
+        source_rows = []
+    for index, row in enumerate(source_rows):
+        if not isinstance(row, Mapping):
+            errors.append(f"component source inventory row {index} is invalid")
+            continue
+        suffix = str(row.get("unique_suffix") or "")
+        source_uri = str(row.get("source_uri") or "")
+        family = canonical_by_path.get(_component_source_path(source_uri))
+        if not suffix or suffix in suffix_to_family or not family:
+            errors.append(f"component source inventory row {index} is not family-bound")
+            continue
+        suffix_to_family[suffix] = family
+
+    candidate_by_hash: dict[str, Mapping[str, Any]] = {}
+    candidates = queue.get("candidates")
+    if not isinstance(candidates, list):
+        candidates = []
+    for row in candidates:
+        if not isinstance(row, Mapping):
+            continue
+        query_hash = str(row.get("query_sha256") or "")
+        if query_hash:
+            candidate_by_hash[query_hash] = row
+
+    accepted_entries: list[dict[str, str]] = []
+    decisions: set[str] = set()
+    raw_labels = labels.get("labels")
+    if not isinstance(raw_labels, list):
+        raw_labels = []
+    for index, row in enumerate(raw_labels):
+        if not isinstance(row, Mapping):
+            continue
+        query_hash = str(row.get("query_sha256") or "")
+        if query_hash in decisions:
+            errors.append(f"component label {index} duplicates a query")
+            continue
+        decisions.add(query_hash)
+        if row.get("decision") != "accept":
+            continue
+        candidate = candidate_by_hash.get(query_hash)
+        family = suffix_to_family.get(str(row.get("relevant_source_suffix") or ""))
+        stratum = str(row.get("review_stratum") or "")
+        session_id = str(candidate.get("session_id") or "") if candidate else ""
+        if candidate is None or not family or not stratum or not session_id:
+            errors.append(f"component label {index} cannot be reconstructed")
+            continue
+        accepted_entries.append(
+            {
+                "query_sha256": query_hash,
+                "session_hash": _component_session_hash(session_id),
+                "family_id": family,
+                "review_stratum": stratum,
+            }
+        )
+
+    rebuilt = _rebuild_component_split(accepted_entries)
+    accepted_count = len(accepted_entries)
+    session_count = len({row["session_hash"] for row in accepted_entries})
+    family_count = len({row["family_id"] for row in accepted_entries})
+    component_count = len(rebuilt["components"])
+    maximum_share = (
+        max((row["query_count"] for row in rebuilt["components"]), default=0)
+        / accepted_count
+        if accepted_count
+        else 0.0
+    )
+    expected_observed = {
+        "review_candidate_count": len(candidate_by_hash),
+        "review_decision_count": len(decisions),
+        "accepted_query_count": accepted_count,
+        "rejected_query_count": len(decisions) - accepted_count,
+        "query_session_count": session_count,
+        "target_family_count": family_count,
+        "indivisible_component_count": component_count,
+        "maximum_component_share": maximum_share,
+        "query_session_overlap_count": 0,
+        "target_family_overlap_count": 0,
+    }
+    expected_gates = {
+        "minimum_accepted_queries": accepted_count >= 30,
+        "minimum_query_sessions": session_count >= 3,
+        "minimum_manifest_bound_families": family_count >= 2,
+        "minimum_indivisible_components": component_count >= 3,
+        "all_folds_nonempty": all(
+            rebuilt["folds"][name]["query_count"] > 0 for name in COMPONENT_FOLD_NAMES
+        ),
+        "maximum_component_share": maximum_share <= 0.8,
+        "zero_query_session_overlap": True,
+        "zero_target_family_overlap": True,
+    }
+    if report.get("observed") != expected_observed:
+        errors.append("component report observed summary mismatch")
+    if report.get("gates") != expected_gates or not all(expected_gates.values()):
+        errors.append("component report gate replay mismatch")
+    if report.get("components") != rebuilt["components"]:
+        errors.append("component report components do not reconstruct")
+    if report.get("folds") != rebuilt["folds"]:
+        errors.append("component report folds do not reconstruct")
+    if split_hash != _component_sha256(rebuilt):
+        errors.append("component report split differs from independent reconstruction")
+
+
 def _verify_source_chain(
     source_chain: Mapping[str, Mapping[str, Any]],
     *,
@@ -139,6 +505,8 @@ def _verify_source_chain(
     preparation = source_chain["preparation_receipt"]
     source_inventory = source_chain["source_inventory"]
     catalog_integrity = source_chain["catalog_integrity"]
+    component_report = source_chain["component_report"]
+    source_family_audit = source_chain["source_family_audit"]
 
     if queue.get("schema") != REVIEW_QUEUE_SCHEMA:
         errors.append("source queue schema mismatch")
@@ -361,6 +729,16 @@ def _verify_source_chain(
         for field in ("training_intake", "serving", "merge", "promotion")
     ):
         errors.append("source preparation receipt weakens a no-promotion boundary")
+
+    _verify_component_chain(
+        queue=queue,
+        labels=labels,
+        source_inventory=source_inventory,
+        source_family_audit=source_family_audit,
+        report=component_report,
+        receipt=receipt,
+        errors=errors,
+    )
 
 
 def _same_number(left: Any, right: Any) -> bool:
@@ -599,6 +977,7 @@ def verify_e92_prospective_bundle(
             "prime_token_catalog.py",
             "prime_token_benchmark.py",
             "prime_token_query_harvest.py",
+            "prime_token_query_family_components.py",
             "prime_token_prospective.py",
         )
     }

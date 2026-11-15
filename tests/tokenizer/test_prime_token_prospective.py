@@ -28,6 +28,11 @@ from python.scbe.prime_token_query_harvest import (
     REVIEW_QUEUE_SCHEMA,
     review_queue_sha256,
 )
+from python.scbe.prime_token_query_family_components import (
+    STATUS_VERIFIED as COMPONENT_STATUS_VERIFIED,
+    audit_query_session_family_components,
+    canonical_sha256 as component_canonical_sha256,
+)
 
 
 def _write(path: Path, value: dict) -> Path:
@@ -154,6 +159,33 @@ def _fixture(tmp_path: Path) -> dict[str, Path]:
         ],
     }
     labels_path = _write(tmp_path / "LABELS.json", labels)
+    source_family_path = _write(
+        tmp_path / "SOURCE_FAMILIES.json",
+        {
+            "schema": "scbe.prime-token-source-family-audit.v1",
+            "error_count": 0,
+            "catalog": {"database_sha256": catalog_hash},
+            "canonical_sources": [
+                {
+                    "path": f"local://fixture/{name}",
+                    "family_id": f"family-{index}",
+                    "source_kind": "fixture",
+                    "license_name": "fixture",
+                    "content_sha256": sha256(text.encode("utf-8")).hexdigest(),
+                    "catalog_source_rows": 1,
+                }
+                for index, (name, text) in enumerate(records)
+            ],
+        },
+    )
+    component_report = audit_query_session_family_components(
+        review_queue=queue_path,
+        review_labels=labels_path,
+        source_inventory=source_path,
+        source_family_audit=source_family_path,
+    )
+    assert component_report["status"] == COMPONENT_STATUS_VERIFIED
+    component_path = _write(tmp_path / "QUERY_SESSION_FAMILY_COMPONENTS.json", component_report)
     receipt_core = {
         "schema": PREPARATION_SCHEMA,
         "status": "READY_FOR_INDEPENDENT_HASH_BOUND_REVIEW_NO_SCORING",
@@ -182,6 +214,8 @@ def _fixture(tmp_path: Path) -> dict[str, Path]:
         "source_inventory": source_path,
         "preparation": receipt_path,
         "catalog_integrity": integrity_path,
+        "component_report": component_path,
+        "source_family_audit": source_family_path,
     }
 
 
@@ -193,6 +227,7 @@ def _run(paths: dict[str, Path]) -> dict[str, Any]:
         preparation_receipt_path=paths["preparation"],
         source_inventory_path=paths["source_inventory"],
         catalog_integrity_receipt_path=paths["catalog_integrity"],
+        component_report_path=paths["component_report"],
         catalog_database=paths["catalog"],
         control_seeds=(3, 5, 7),
         limit=5,
@@ -302,6 +337,21 @@ def test_e92_prospective_run_refuses_selection_audit_authority_drift(
         _run(paths)
 
 
+def test_e92_prospective_run_refuses_component_authority_drift(
+    tmp_path: Path,
+) -> None:
+    paths = _fixture(tmp_path)
+    report = json.loads(paths["component_report"].read_text(encoding="utf-8"))
+    report["authority"]["scoring"] = "AUTHORIZED"
+    report_core = dict(report)
+    report_core.pop("report_sha256")
+    report["report_sha256"] = component_canonical_sha256(report_core)
+    _write(paths["component_report"], report)
+
+    with pytest.raises(ValueError, match="component report authority"):
+        _run(paths)
+
+
 def test_e92_independent_verifier_rejects_mutated_result(tmp_path: Path) -> None:
     bundle = _run(_fixture(tmp_path))
     output = _write_bundle(tmp_path / "bundle", bundle)
@@ -315,6 +365,45 @@ def test_e92_independent_verifier_rejects_mutated_result(tmp_path: Path) -> None
     )
     assert verification["status"] == "INVALID_E92_PROSPECTIVE_BUNDLE"
     assert verification["error_count"] >= 1
+
+
+def test_e92_independent_verifier_rejects_resealed_component_mutation(
+    tmp_path: Path,
+) -> None:
+    bundle = _run(_fixture(tmp_path))
+    output = _write_bundle(tmp_path / "bundle", bundle)
+    report_path = output / SOURCE_CHAIN_BUNDLE_FILES["component_report"]
+    receipt_path = output / "RUN_RECEIPT.json"
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+
+    report["components"][0]["query_count"] += 1
+    split_payload = {
+        "fold_names": report["fold_names"],
+        "components": report["components"],
+        "folds": report["folds"],
+    }
+    report["component_split_sha256"] = component_canonical_sha256(split_payload)
+    report_core = dict(report)
+    report_core.pop("report_sha256")
+    report["report_sha256"] = component_canonical_sha256(report_core)
+    report_path.write_bytes(json_bytes(report))
+    changed_hash = sha256_file(report_path)
+    receipt["component_split_sha256"] = report["component_split_sha256"]
+    receipt["component_report_file_sha256"] = changed_hash
+    receipt["source_chain_bundle"]["component_report"]["sha256"] = changed_hash
+    receipt["source_chain_bundle"]["component_report"]["source_file_sha256"] = changed_hash
+    receipt_core = dict(receipt)
+    receipt_core.pop("receipt_sha256")
+    receipt["receipt_sha256"] = canonical_sha256(receipt_core)
+    receipt_path.write_bytes(json_bytes(receipt))
+
+    verification = verify_e92_prospective_bundle(
+        output,
+        expected_control_seeds=(3, 5, 7),
+    )
+    assert verification["status"] == "INVALID_E92_PROSPECTIVE_BUNDLE"
+    assert any("components do not reconstruct" in error for error in verification["errors"])
 
 
 def test_e92_independent_verifier_rejects_route_width_contract_tampering(

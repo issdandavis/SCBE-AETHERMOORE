@@ -941,6 +941,29 @@ training intake, promotion, or partial unfreeze exists yet. Detailed contracts
 and hashes are in
 `docs/research/PRIME_TOKEN_QUERY_SESSION_FAMILY_COMPONENT_MAP_20261114.md`.
 
+## E92 component-gate binding — 2026-11-15
+
+The component audit is now bound into a versioned E92 source chain on the
+isolated `research/e92-component-binding-20261115` branch. The E92 watcher must
+observe the terminal `QUERY_SESSION_FAMILY_COMPONENT_GATE_VERIFIED` state before
+it can open labels or launch the scorer. Waiting, underpowered, invalid,
+hash-drifted, authority-drifted, or source-rebound component states stop before
+scoring.
+
+The v5 bundle adds the exact component report and source-family audit. The
+producer replays the existing component auditor before evaluation; the
+independent E92 verifier separately rebuilds the bipartite graph and deterministic
+fold assignment from the bundled queue, labels, source inventory, and canonical
+family map. A resealed adversarial mutation with recomputed outer hashes is still
+rejected when its component graph differs from that reconstruction.
+
+Focused component/E92 tests pass `33/33`; the full tokenizer suite passes
+`402/402`, with Black and Ruff clean. This branch has not replaced or relaunched
+the live pinned watchers. The active prospective chain remains at its frozen
+30-query gate with labels unopened and no scoring, training intake, promotion,
+or partial unfreeze authorized. The scoped build map is
+`docs/research/PRIME_TOKEN_E92_COMPONENT_BINDING_SYSTEM_MAP_20261115.md`.
+
 The component gate now also has a fail-closed dormant watcher at
 `scripts/tokenizer/watch_prime_query_family_components.py`. It waits for both
 the prepared packet and exact-selection audit before resolving the queue,

@@ -7,7 +7,12 @@ import subprocess
 
 import pytest
 
-from scripts.tokenizer.watch_run_e92_prospective import run_cycle
+from scripts.tokenizer.watch_run_e92_prospective import (
+    COMPONENT_AUTHORITY,
+    COMPONENT_THRESHOLDS,
+    canonical_sha256,
+    run_cycle,
+)
 
 
 def _write(path: Path, value: object) -> Path:
@@ -23,7 +28,13 @@ def _sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _fixture(tmp_path: Path, *, audit_ready: bool, labels: bool) -> dict:
+def _fixture(
+    tmp_path: Path,
+    *,
+    audit_ready: bool,
+    labels: bool,
+    component_ready: bool = True,
+) -> dict:
     queue = _write(tmp_path / "scan" / "REVIEW_QUEUE.json", {"queue": True})
     audit = _write(tmp_path / "audit" / "QUEUE_SELECTION_AUDIT.json", {"audit": True})
     packet = tmp_path / "packet"
@@ -34,8 +45,42 @@ def _fixture(tmp_path: Path, *, audit_ready: bool, labels: bool) -> dict:
     runner = _write(tmp_path / "run.py", "# runner")
     verifier = _write(tmp_path / "verify.py", "# verifier")
     labels_path = tmp_path / "REVIEW_LABELS.json"
-    if labels:
-        _write(labels_path, {"labels": []})
+    _write(labels_path, {"labels": []})
+    source_family = _write(tmp_path / "SOURCE_FAMILIES.json", {"families": []})
+    split_payload = {
+        "fold_names": ["fold-0", "fold-1", "fold-2"],
+        "components": [],
+        "folds": {"fold-0": {}, "fold-1": {}, "fold-2": {}},
+    }
+    component_report = {
+        "schema": "scbe.prime-token-query-session-family-components.v1",
+        "created_at_utc": "2026-11-15T00:00:00+00:00",
+        "status": "VERIFIED_QUERY_SESSION_FAMILY_COMPONENT_SPLIT",
+        "error_count": 0,
+        "errors": [],
+        "inputs": {
+            "review_queue": str(queue.resolve()),
+            "review_queue_sha256": _sha(queue),
+            "review_queue_content_sha256": "q" * 64,
+            "review_labels": str(labels_path.resolve()),
+            "review_labels_sha256": _sha(labels_path),
+            "source_inventory": str(inventory.resolve()),
+            "source_inventory_sha256": _sha(inventory),
+            "source_family_audit": str(source_family.resolve()),
+            "source_family_audit_sha256": _sha(source_family),
+        },
+        "thresholds": COMPONENT_THRESHOLDS,
+        "observed": {},
+        **split_payload,
+        "component_split_sha256": canonical_sha256(split_payload),
+        "gates": {"all_controls": True},
+        "authority": COMPONENT_AUTHORITY,
+        "claim_boundary": "fixture",
+    }
+    component_report["report_sha256"] = canonical_sha256(component_report)
+    component_report_path = _write(tmp_path / "COMPONENT_REPORT.json", component_report)
+    if not labels:
+        labels_path.unlink()
 
     collector = {
         "schema": "clay.codex-prospective-watcher.v1",
@@ -59,10 +104,24 @@ def _fixture(tmp_path: Path, *, audit_ready: bool, labels: bool) -> dict:
         "output": str(audit),
         "audit_file_sha256": _sha(audit),
     }
+    component = {
+        "schema": "scbe.prime-token-query-session-family-component-watcher.v1",
+        "status": (
+            "QUERY_SESSION_FAMILY_COMPONENT_GATE_VERIFIED" if component_ready else "WAITING_FOR_INDEPENDENT_LABELS"
+        ),
+        "labels": ("OPENED_BY_PINNED_COMPONENT_AUDITOR" if component_ready else "NOT_OPENED"),
+        "gate_result": ("VERIFIED_QUERY_SESSION_FAMILY_COMPONENT_SPLIT" if component_ready else None),
+        "gate_report": str(component_report_path),
+        "gate_report_sha256": _sha(component_report_path),
+        "component_split_sha256": component_report["component_split_sha256"],
+        "authority": COMPONENT_AUTHORITY,
+        **COMPONENT_AUTHORITY,
+    }
     return {
         "collector_status_path": _write(tmp_path / "collector.json", collector),
         "preparer_status_path": _write(tmp_path / "preparer.json", preparer),
         "selection_status_path": _write(tmp_path / "selection.json", selection),
+        "component_status_path": _write(tmp_path / "component.json", component),
         "labels_path": labels_path,
         "catalog_database": database,
         "catalog_database_sha256": _sha(database),
@@ -99,6 +158,15 @@ def test_ready_authorities_wait_for_missing_human_labels(tmp_path: Path) -> None
     assert status["promotion"] == "NOT_AUTHORIZED"
 
 
+def test_component_gate_blocks_labels_and_runner(tmp_path: Path) -> None:
+    kwargs = _fixture(tmp_path, audit_ready=True, labels=True, component_ready=False)
+
+    status = run_cycle(**kwargs)
+
+    assert status["status"] == "WAITING_FOR_QUERY_SESSION_FAMILY_COMPONENT_GATE"
+    assert status["labels"] == "NOT_OPENED"
+
+
 def test_ready_chain_runs_exact_runner_then_independent_verifier(
     tmp_path: Path,
 ) -> None:
@@ -131,6 +199,7 @@ def test_ready_chain_runs_exact_runner_then_independent_verifier(
 
     assert len(commands) == 2
     assert "--selection-audit" in commands[0]
+    assert "--component-report" in commands[0]
     assert commands[0].count("--control-seed") == 3
     assert status["status"] == "E92_RESULT_INDEPENDENTLY_VERIFIED"
     assert status["query_count"] == 30
@@ -143,4 +212,13 @@ def test_hash_drift_fails_before_labels_or_runner(tmp_path: Path) -> None:
     kwargs["catalog_database"].write_text("changed", encoding="utf-8")
 
     with pytest.raises(RuntimeError, match="catalog database hash mismatch"):
+        run_cycle(**kwargs)
+
+
+def test_component_report_hash_drift_fails_before_runner(tmp_path: Path) -> None:
+    kwargs = _fixture(tmp_path, audit_ready=True, labels=True)
+    component = json.loads(kwargs["component_status_path"].read_text(encoding="utf-8"))
+    Path(component["gate_report"]).write_text("{}", encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="component report hash mismatch"):
         run_cycle(**kwargs)
