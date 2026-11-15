@@ -16,8 +16,6 @@ from pathlib import Path
 import re
 from typing import Any
 
-from python.scbe.prime_token_query_harvest import review_queue_sha256
-
 SCHEMA = "scbe.prime-token-query-session-family-components.v1"
 REVIEW_QUEUE_SCHEMA = "scbe.prime-token-independent-review-queue.v1"
 REVIEW_LABEL_SCHEMA = "scbe.prime-token-independent-review-labels.v1"
@@ -46,6 +44,20 @@ def canonical_sha256(value: Any) -> str:
         ensure_ascii=True,
         allow_nan=False,
     ).encode("ascii")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def review_queue_sha256(queue: Mapping[str, Any]) -> str:
+    """Replay the frozen queue digest without importing the producer module."""
+
+    payload = dict(queue)
+    payload.pop("queue_sha256", None)
+    encoded = json.dumps(
+        payload,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    ).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
 
 

@@ -51,7 +51,15 @@ def _fixture(
     queue = _write(scan / "REVIEW_QUEUE.json", {"queue": "sealed"})
     inventory = _write(packet / "CATALOG_SOURCE_SUFFIXES.json", {"sources": []})
     source_audit = _write(tmp_path / "SOURCE_FAMILY_AUDIT.json", {"families": []})
-    auditor = _write(tmp_path / "audit.py", "# pinned component auditor\n")
+    repo = tmp_path / "repo"
+    auditor = _write(
+        repo / "scripts" / "tokenizer" / "audit_prime_query_family_components.py",
+        "# pinned component auditor\n",
+    )
+    auditor_module = _write(
+        repo / "python" / "scbe" / "prime_token_query_family_components.py",
+        "# pinned component module\n",
+    )
     labels_path = tmp_path / "REVIEW_LABELS.json"
     if labels:
         _write(labels_path, {"labels": []})
@@ -80,6 +88,8 @@ def _fixture(
         "source_family_audit_sha256": _sha(source_audit),
         "auditor": auditor,
         "auditor_sha256": _sha(auditor),
+        "auditor_module": auditor_module,
+        "auditor_module_sha256": _sha(auditor_module),
         "state_dir": tmp_path / "state",
         "python_executable": "python",
     }
@@ -266,6 +276,16 @@ def test_hash_drift_fails_before_component_auditor_runs(tmp_path: Path) -> None:
     kwargs["auditor"].write_text("changed", encoding="utf-8")
 
     with pytest.raises(RuntimeError, match="component auditor hash mismatch"):
+        run_cycle(**kwargs, run_command=_must_not_run)
+
+
+def test_module_hash_drift_fails_even_while_upstreams_are_waiting(
+    tmp_path: Path,
+) -> None:
+    kwargs = _fixture(tmp_path, ready=False)
+    kwargs["auditor_module"].write_text("changed", encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="component auditor module hash mismatch"):
         run_cycle(**kwargs, run_command=_must_not_run)
 
 

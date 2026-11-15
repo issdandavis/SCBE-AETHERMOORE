@@ -206,13 +206,23 @@ The staged component builder now fails closed unless:
 The emitted component receipt uses only the queue-frozen value. Two new tests
 cover label-side stratum mutation and queue/topic mismatch. Verification:
 
-- focused component/watcher suite: `16 passed`;
-- full tokenizer regression suite: `408 passed`;
+- focused component/watcher suite: `17 passed`;
+- full tokenizer regression suite: `409 passed`;
 - Ruff: passed;
 - module SHA-256:
-  `2757ebabc5a6a9c805946b0bada7bf41ee4734dfa91216af3d989e58047818ad`;
+  `b23a1d96e41816075b0c7c9ffabd653be88abfd74329b59cdff678aed714edbd`;
 - component-test SHA-256:
-  `67048d3c5b370feae738faaf12a08513e897b30366936a54d7dfd1b8ccb262f7`.
+  `67048d3c5b370feae738faaf12a08513e897b30366936a54d7dfd1b8ccb262f7`;
+- watcher SHA-256:
+  `3eb5b0519aaa398844c4e6004d413460123528f618ce5bbf2d1e35889bebd771`;
+- watcher-test SHA-256:
+  `1c536755f6cde33b1eb747b41983c383dd1737e242d7dfe4289c9277edabe342`.
+
+The component module now replays the queue digest locally instead of importing
+the producer's larger query-harvest module. The watcher requires both the CLI
+hash and this co-located component-module hash, and checks them even while the
+upstream queue is waiting. A changed logic module therefore fails before any
+label can be opened.
 
 This hardening is staged on the component-release branch. The live v7 watcher
 still points at its earlier hash-pinned implementation and remains waiting with

@@ -403,6 +403,8 @@ def run_cycle(
     source_family_audit_sha256: str,
     auditor: Path,
     auditor_sha256: str,
+    auditor_module: Path,
+    auditor_module_sha256: str,
     state_dir: Path,
     python_executable: str,
     fold_names: Sequence[str] = ("fold-0", "fold-1", "fold-2"),
@@ -421,6 +423,20 @@ def run_cycle(
     )
     state_dir.mkdir(parents=True, exist_ok=True)
     status_path = state_dir / "QUERY_SESSION_FAMILY_COMPONENT_WATCHER_STATUS.json"
+    auditor = auditor.resolve(strict=True)
+    auditor_module = auditor_module.resolve(strict=True)
+    expected_module = (
+        auditor.parents[2]
+        / "python"
+        / "scbe"
+        / "prime_token_query_family_components.py"
+    ).resolve(strict=True)
+    if auditor_module != expected_module:
+        raise RuntimeError(
+            "component auditor module is not co-located with the pinned auditor"
+        )
+    require_hash(auditor, auditor_sha256, "component auditor")
+    require_hash(auditor_module, auditor_module_sha256, "component auditor module")
     preparer = read_object(preparer_status_path.resolve(strict=True))
     selection = read_object(selection_status_path.resolve(strict=True))
     if preparer.get("schema") != PREPARER_SCHEMA:
@@ -472,9 +488,7 @@ def run_cycle(
         "source inventory",
     )
     source_family_audit = source_family_audit.resolve(strict=True)
-    auditor = auditor.resolve(strict=True)
     require_hash(source_family_audit, source_family_audit_sha256, "source-family audit")
-    require_hash(auditor, auditor_sha256, "component auditor")
 
     if not labels_path.is_file():
         status_name = "WAITING_FOR_INDEPENDENT_LABELS"
@@ -597,6 +611,8 @@ def main() -> int:
     parser.add_argument("--source-family-audit-sha256", required=True)
     parser.add_argument("--auditor", required=True, type=Path)
     parser.add_argument("--auditor-sha256", required=True)
+    parser.add_argument("--auditor-module", required=True, type=Path)
+    parser.add_argument("--auditor-module-sha256", required=True)
     parser.add_argument("--state-dir", required=True, type=Path)
     parser.add_argument("--fold-name", action="append", default=[])
     parser.add_argument("--minimum-accepted-queries", type=int, default=30)
@@ -616,6 +632,8 @@ def main() -> int:
         "source_family_audit_sha256": args.source_family_audit_sha256,
         "auditor": args.auditor,
         "auditor_sha256": args.auditor_sha256,
+        "auditor_module": args.auditor_module,
+        "auditor_module_sha256": args.auditor_module_sha256,
         "state_dir": args.state_dir,
         "python_executable": sys.executable,
         "fold_names": tuple(args.fold_name or ("fold-0", "fold-1", "fold-2")),
