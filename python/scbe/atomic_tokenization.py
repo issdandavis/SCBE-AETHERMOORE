@@ -7,8 +7,9 @@ Six Sacred Tongue trit channels. The implementation is intentionally finite and
 deterministic so it can serve as a governance primitive, a training feature
 generator, and a test harness.
 
-This module does not try to model the full periodic table. It encodes the
-publication-facing ideas in a compact runtime form:
+This module does not invent physical features for the full periodic table. It
+encodes the publication-facing ideas in a compact curated runtime form and
+exposes complete periodic identity through ``chemical_identity``:
 
   phi: V x L x C -> P
 
@@ -46,6 +47,7 @@ class Element:
     valence: int
     electronegativity: float
     witness_stable: bool = False
+    feature_source: str = "curated"
 
 
 @dataclass(frozen=True, slots=True)
@@ -452,6 +454,7 @@ PERIODIC_TABLE: Dict[str, Element] = {
     "Zn": Element("Zn", 30, 12, 4, 2, 1.65),
     "Br": Element("Br", 35, 17, 4, 1, 2.96),
     "Ag": Element("Ag", 47, 11, 5, 1, 1.93),
+    "Mo": Element("Mo", 42, 6, 5, 6, 2.16),
     "I": Element("I", 53, 17, 5, 1, 2.66),
     "Au": Element("Au", 79, 11, 6, 3, 2.54),
     "Pb": Element("Pb", 82, 14, 6, 2, 2.33),
@@ -472,6 +475,18 @@ def chemical_element(token: str) -> Optional[Element]:
         return None
     canon = _SYMBOL_BY_LOWER.get(token.strip().lower())
     return PERIODIC_TABLE[canon] if canon else None
+
+
+def chemical_identity(token: str):
+    """Return complete periodic identity without importing chemistry tooling.
+
+    The import stays lazy so this module's standalone, RDKit-free readers keep
+    working when tests load the file directly rather than as package code.
+    """
+
+    from .periodic_identity import periodic_identity
+
+    return periodic_identity(token)
 
 
 def parse_formula(token: str) -> Optional[Dict[str, int]]:
