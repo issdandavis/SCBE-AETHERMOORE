@@ -20,7 +20,9 @@ from scripts.tokenizer.watch_prime_query_family_components import (
 def _write(path: Path, value: object) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     if isinstance(value, (dict, list)):
-        path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        path.write_text(
+            json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
     else:
         path.write_text(str(value), encoding="utf-8")
     return path
@@ -41,7 +43,9 @@ def _canonical(value: Any) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
-def _fixture(tmp_path: Path, *, ready: bool = True, labels: bool = True) -> dict[str, Any]:
+def _fixture(
+    tmp_path: Path, *, ready: bool = True, labels: bool = True
+) -> dict[str, Any]:
     scan = tmp_path / "scan"
     packet = tmp_path / "packet"
     queue = _write(scan / "REVIEW_QUEUE.json", {"queue": "sealed"})
@@ -53,7 +57,9 @@ def _fixture(tmp_path: Path, *, ready: bool = True, labels: bool = True) -> dict
         _write(labels_path, {"labels": []})
     preparer = {
         "schema": "clay.prime-token-preparer-watcher.v1",
-        "status": "PACKET_READY_NO_SCORING" if ready else "WAITING_FOR_PROSPECTIVE_QUEUE",
+        "status": (
+            "PACKET_READY_NO_SCORING" if ready else "WAITING_FOR_PROSPECTIVE_QUEUE"
+        ),
         "candidate_count": 30 if ready else 4,
         "output_dir": str(packet),
         "queue": str(queue),
@@ -62,7 +68,9 @@ def _fixture(tmp_path: Path, *, ready: bool = True, labels: bool = True) -> dict
     }
     selection = {
         "schema": "clay.prime-token-selection-audit-watcher.v1",
-        "status": "AUDIT_VERIFIED_NO_SCORING" if ready else "WAITING_FOR_PROSPECTIVE_QUEUE",
+        "status": (
+            "AUDIT_VERIFIED_NO_SCORING" if ready else "WAITING_FOR_PROSPECTIVE_QUEUE"
+        ),
     }
     return {
         "preparer_status_path": _write(tmp_path / "preparer.json", preparer),
@@ -78,7 +86,9 @@ def _fixture(tmp_path: Path, *, ready: bool = True, labels: bool = True) -> dict
 
 
 def _values(command: list[str], flag: str) -> list[str]:
-    return [command[index + 1] for index, value in enumerate(command[:-1]) if value == flag]
+    return [
+        command[index + 1] for index, value in enumerate(command[:-1]) if value == flag
+    ]
 
 
 def _fake_auditor(
@@ -102,8 +112,17 @@ def _fake_auditor(
         maximum_share = float(_values(command, "--maximum-component-share")[0])
         split = {
             "fold_names": folds,
-            "components": [{"component_id": "component-0", "fold": folds[0], "query_count": minimum_queries}],
-            "folds": {name: {"component_count": 1, "query_count": minimum_queries} for name in folds},
+            "components": [
+                {
+                    "component_id": "component-0",
+                    "fold": folds[0],
+                    "query_count": minimum_queries,
+                }
+            ],
+            "folds": {
+                name: {"component_count": 1, "query_count": minimum_queries}
+                for name in folds
+            },
         }
         gates = {
             "minimum_accepted_queries": True,
@@ -160,7 +179,9 @@ def _must_not_run(command: list[str]) -> subprocess.CompletedProcess[str]:
     raise AssertionError(f"auditor unexpectedly ran: {command}")
 
 
-def test_waits_without_opening_labels_until_both_upstreams_are_ready(tmp_path: Path) -> None:
+def test_waits_without_opening_labels_until_both_upstreams_are_ready(
+    tmp_path: Path,
+) -> None:
     kwargs = _fixture(tmp_path, ready=False, labels=True)
 
     status = run_cycle(**kwargs, run_command=_must_not_run)
@@ -168,6 +189,16 @@ def test_waits_without_opening_labels_until_both_upstreams_are_ready(tmp_path: P
     assert status["status"] == "WAITING_FOR_PREPARATION_PACKET"
     assert status["labels"] == "NOT_OPENED"
     assert status["training_intake"] == "NOT_AUTHORIZED"
+    review = status["review_packet"]
+    assert review["disposition"] == "REVIEW_REQUIRED_NO_AUTOMATIC_TRANSITION"
+    assert (
+        review["deficits"]["additional_candidates_before_acceptance_can_meet_minimum"]
+        == 26
+    )
+    assert review["authority"] == "INFORMATION_ONLY_NO_TRAINING_NO_PROMOTION"
+    serialized_review = json.dumps(review).casefold()
+    assert '"query":' not in serialized_review
+    assert '"session_id":' not in serialized_review
 
 
 def test_waits_for_missing_independent_labels(tmp_path: Path) -> None:
@@ -178,9 +209,12 @@ def test_waits_for_missing_independent_labels(tmp_path: Path) -> None:
     assert status["status"] == "WAITING_FOR_INDEPENDENT_LABELS"
     assert status["labels"] == "NOT_PRESENT"
     assert status["promotion"] == "NOT_AUTHORIZED"
+    assert status["review_packet"]["reason_codes"] == ["WAITING_FOR_INDEPENDENT_LABELS"]
 
 
-def test_runs_pinned_component_auditor_and_seals_verified_report(tmp_path: Path) -> None:
+def test_runs_pinned_component_auditor_and_seals_verified_report(
+    tmp_path: Path,
+) -> None:
     kwargs = _fixture(tmp_path)
 
     status = run_cycle(**kwargs, run_command=_fake_auditor(REPORT_VERIFIED))
@@ -190,8 +224,14 @@ def test_runs_pinned_component_auditor_and_seals_verified_report(tmp_path: Path)
     assert status["authority"] == AUTHORITY
     assert status["training_intake"] == "NOT_AUTHORIZED"
     assert status["partial_unfreeze"] == "NONE"
+    assert (
+        status["review_packet"]["disposition"] == "READY_FOR_MANUAL_RELEASE_REVIEW_ONLY"
+    )
+    assert "unmeasured_until_independent_review" not in status["review_packet"]
     assert (kwargs["state_dir"] / "QUERY_SESSION_FAMILY_COMPONENTS.json").is_file()
-    assert not (kwargs["state_dir"] / ".QUERY_SESSION_FAMILY_COMPONENTS.pending.json").exists()
+    assert not (
+        kwargs["state_dir"] / ".QUERY_SESSION_FAMILY_COMPONENTS.pending.json"
+    ).exists()
 
 
 @pytest.mark.parametrize(
@@ -213,6 +253,12 @@ def test_preserves_nonpassing_terminal_evidence(
     assert status["status"] == watcher_status
     assert status["promotion"] == "NOT_AUTHORIZED"
     assert status["scoring"] == "NOT_AUTHORIZED"
+    review = status["review_packet"]
+    assert review["disposition"] == "REVIEW_REQUIRED_NO_AUTOMATIC_TRANSITION"
+    if report_status == REPORT_UNDERPOWERED:
+        assert review["failed_gates"] == ["minimum_accepted_queries"]
+    else:
+        assert review["report_error_count"] == 1
 
 
 def test_hash_drift_fails_before_component_auditor_runs(tmp_path: Path) -> None:
@@ -234,7 +280,9 @@ def test_pending_report_stops_without_overwrite_or_auditor_call(tmp_path: Path) 
     assert json.loads(pending.read_text(encoding="utf-8")) == {"partial": True}
 
 
-def test_existing_report_is_revalidated_and_label_drift_fails_closed(tmp_path: Path) -> None:
+def test_existing_report_is_revalidated_and_label_drift_fails_closed(
+    tmp_path: Path,
+) -> None:
     kwargs = _fixture(tmp_path)
     first = run_cycle(**kwargs, run_command=_fake_auditor(REPORT_VERIFIED))
 
@@ -249,8 +297,13 @@ def test_existing_report_is_revalidated_and_label_drift_fails_closed(tmp_path: P
 def test_report_digest_and_return_code_mismatches_fail_closed(tmp_path: Path) -> None:
     digest_kwargs = _fixture(tmp_path / "digest")
     with pytest.raises(RuntimeError, match="report digest"):
-        run_cycle(**digest_kwargs, run_command=_fake_auditor(REPORT_VERIFIED, tamper_report_hash=True))
+        run_cycle(
+            **digest_kwargs,
+            run_command=_fake_auditor(REPORT_VERIFIED, tamper_report_hash=True),
+        )
 
     code_kwargs = _fixture(tmp_path / "code")
     with pytest.raises(RuntimeError, match="return code disagrees"):
-        run_cycle(**code_kwargs, run_command=_fake_auditor(REPORT_VERIFIED, returncode=2))
+        run_cycle(
+            **code_kwargs, run_command=_fake_auditor(REPORT_VERIFIED, returncode=2)
+        )

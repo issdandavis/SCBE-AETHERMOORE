@@ -79,7 +79,9 @@ def read_object(path: Path) -> dict[str, Any]:
 def atomic_json(path: Path, value: Mapping[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     pending = path.with_name(f".{path.name}.{os.getpid()}.pending")
-    pending.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    pending.write_text(
+        json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     os.replace(pending, path)
 
 
@@ -109,7 +111,11 @@ def _validate_settings(
     maximum_component_share: float,
 ) -> tuple[str, ...]:
     folds = tuple(str(value).strip() for value in fold_names)
-    if len(folds) < 2 or any(not value for value in folds) or len(set(folds)) != len(folds):
+    if (
+        len(folds) < 2
+        or any(not value for value in folds)
+        or len(set(folds)) != len(folds)
+    ):
         raise ValueError("fold names must contain at least two unique nonempty values")
     if min(minimum_accepted_queries, minimum_sessions, minimum_families) < 1:
         raise ValueError("component minimums must be positive")
@@ -146,6 +152,134 @@ def _base(
         **AUTHORITY,
         "serving": NOT_AUTHORIZED,
     }
+
+
+def _review_packet(
+    status: str,
+    base: Mapping[str, Any],
+    *,
+    report: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Return non-sensitive diagnostics for every non-automatic transition.
+
+    A failed or waiting gate must remain fail-closed, but it should not become
+    a dead end.  This packet exposes counts, deficits, and safe next actions
+    without copying query text, session identifiers, labels, or model output.
+    """
+
+    thresholds = (
+        base.get("thresholds") if isinstance(base.get("thresholds"), Mapping) else {}
+    )
+    candidate_count = int(base.get("candidate_count", 0))
+    minimum_queries = int(thresholds.get("minimum_accepted_queries", 0))
+    packet: dict[str, Any] = {
+        "disposition": "REVIEW_REQUIRED_NO_AUTOMATIC_TRANSITION",
+        "reason_codes": [status],
+        "observed": {
+            "prospective_candidate_count": candidate_count,
+            "preparer_status": str(base.get("preparer_status") or "UNKNOWN"),
+            "selection_audit_status": str(
+                base.get("selection_audit_status") or "UNKNOWN"
+            ),
+        },
+        "deficits": {
+            # This is only a lower bound: independent review may reject rows.
+            "additional_candidates_before_acceptance_can_meet_minimum": max(
+                0, minimum_queries - candidate_count
+            ),
+        },
+        "unmeasured_until_independent_review": [
+            "accepted_query_count",
+            "query_session_count",
+            "target_family_count",
+        ],
+        "next_safe_actions": [],
+        "authority": "INFORMATION_ONLY_NO_TRAINING_NO_PROMOTION",
+    }
+
+    next_actions = {
+        "WAITING_FOR_PREPARATION_PACKET": [
+            "Let the pinned collector accumulate additional post-freeze closed-session candidates.",
+            "Do not open labels or score model arms before preparation and exact selection are ready.",
+        ],
+        "WAITING_FOR_EXACT_SELECTION_AUDIT": [
+            "Complete the hash-bound exact-selection audit before opening independent labels."
+        ],
+        "WAITING_FOR_INDEPENDENT_LABELS": [
+            "Provide the separately reviewed label artifact; do not infer or synthesize labels here."
+        ],
+        "PENDING_COMPONENT_REPORT_REQUIRES_AUDIT": [
+            "Inspect and either verify or quarantine the pending report; never overwrite partial evidence."
+        ],
+        "QUERY_SESSION_FAMILY_COMPONENT_GATE_UNDERPOWERED": [
+            "Collect more source-disjoint material and rerun the pinned audit.",
+            "Keep each connected component indivisible; do not split it to manufacture fold balance.",
+        ],
+        "QUERY_SESSION_FAMILY_COMPONENT_GATE_INVALID_NEEDS_REVIEW": [
+            "Inspect the sealed report errors and repair only the invalid inputs before rerunning."
+        ],
+        "QUERY_SESSION_FAMILY_COMPONENT_GATE_VERIFIED": [
+            "Forward the sealed hashes to the independent release auditor for manual review only."
+        ],
+    }
+    packet["next_safe_actions"] = next_actions.get(
+        status,
+        [
+            "Inspect the status receipt and preserve all fail-closed authority boundaries."
+        ],
+    )
+
+    if report is None:
+        return packet
+
+    packet.pop("unmeasured_until_independent_review", None)
+    report_observed = (
+        report.get("observed") if isinstance(report.get("observed"), Mapping) else {}
+    )
+    safe_observed_keys = (
+        "accepted_query_count",
+        "query_session_count",
+        "target_family_count",
+        "indivisible_component_count",
+        "maximum_component_share",
+        "query_session_overlap_count",
+        "target_family_overlap_count",
+    )
+    for key in safe_observed_keys:
+        if key in report_observed:
+            packet["observed"][key] = report_observed[key]
+
+    gates = report.get("gates") if isinstance(report.get("gates"), Mapping) else {}
+    packet["failed_gates"] = sorted(
+        key for key, value in gates.items() if value is not True
+    )
+    packet["report_error_count"] = int(report.get("error_count", 0))
+    packet["deficits"].update(
+        {
+            "accepted_queries": max(
+                0,
+                minimum_queries - int(report_observed.get("accepted_query_count", 0)),
+            ),
+            "query_sessions": max(
+                0,
+                int(thresholds.get("minimum_query_sessions", 0))
+                - int(report_observed.get("query_session_count", 0)),
+            ),
+            "target_families": max(
+                0,
+                int(thresholds.get("minimum_manifest_bound_families", 0))
+                - int(report_observed.get("target_family_count", 0)),
+            ),
+            "indivisible_components": max(
+                0,
+                len(base.get("fold_names") or ())
+                - int(report_observed.get("indivisible_component_count", 0)),
+            ),
+        }
+    )
+    if status == "QUERY_SESSION_FAMILY_COMPONENT_GATE_VERIFIED":
+        packet["disposition"] = "READY_FOR_MANUAL_RELEASE_REVIEW_ONLY"
+    return packet
 
 
 def _forbidden_report_keys(value: Any, *, path: str = "$") -> list[str]:
@@ -202,13 +336,21 @@ def _verified_report(
         if str(inputs.get(field) or "").casefold() != expected:
             raise RuntimeError(f"component report input hash mismatch: {field}")
 
-    authority = report.get("authority") if isinstance(report.get("authority"), Mapping) else {}
+    authority = (
+        report.get("authority") if isinstance(report.get("authority"), Mapping) else {}
+    )
     if dict(authority) != AUTHORITY:
-        raise RuntimeError("component report authority differs from the fail-closed contract")
+        raise RuntimeError(
+            "component report authority differs from the fail-closed contract"
+        )
     if _forbidden_report_keys(report):
         raise RuntimeError("component report contains raw query or session fields")
 
-    thresholds = report.get("thresholds") if isinstance(report.get("thresholds"), Mapping) else {}
+    thresholds = (
+        report.get("thresholds")
+        if isinstance(report.get("thresholds"), Mapping)
+        else {}
+    )
     expected_thresholds = {
         "minimum_accepted_queries": minimum_accepted_queries,
         "minimum_query_sessions": minimum_sessions,
@@ -216,8 +358,12 @@ def _verified_report(
         "minimum_indivisible_components": len(fold_names),
         "maximum_component_share": maximum_component_share,
     }
-    if dict(thresholds) != expected_thresholds or tuple(report.get("fold_names") or ()) != tuple(fold_names):
-        raise RuntimeError("component report thresholds or neutral folds differ from the pinned contract")
+    if dict(thresholds) != expected_thresholds or tuple(
+        report.get("fold_names") or ()
+    ) != tuple(fold_names):
+        raise RuntimeError(
+            "component report thresholds or neutral folds differ from the pinned contract"
+        )
 
     gates = report.get("gates") if isinstance(report.get("gates"), Mapping) else {}
     all_gates = bool(gates) and all(value is True for value in gates.values())
@@ -233,13 +379,17 @@ def _verified_report(
     }
     if (
         not _is_hex64(report.get("component_split_sha256"))
-        or canonical_sha256(split_payload) != str(report["component_split_sha256"]).casefold()
+        or canonical_sha256(split_payload)
+        != str(report["component_split_sha256"]).casefold()
     ):
         raise RuntimeError("component split digest does not replay")
     declared_report_hash = str(report.get("report_sha256") or "").casefold()
     report_without_hash = dict(report)
     report_without_hash.pop("report_sha256", None)
-    if not _is_hex64(declared_report_hash) or canonical_sha256(report_without_hash) != declared_report_hash:
+    if (
+        not _is_hex64(declared_report_hash)
+        or canonical_sha256(report_without_hash) != declared_report_hash
+    ):
         raise RuntimeError("component report digest does not replay")
     return report
 
@@ -288,20 +438,34 @@ def run_cycle(
     )
 
     if preparer.get("status") not in PREPARER_READY:
-        status = {**base, "status": "WAITING_FOR_PREPARATION_PACKET"}
+        status_name = "WAITING_FOR_PREPARATION_PACKET"
+        status = {
+            **base,
+            "status": status_name,
+            "review_packet": _review_packet(status_name, base),
+        }
         atomic_json(status_path, status)
         return status
     if selection.get("status") not in SELECTION_READY:
-        status = {**base, "status": "WAITING_FOR_EXACT_SELECTION_AUDIT"}
+        status_name = "WAITING_FOR_EXACT_SELECTION_AUDIT"
+        status = {
+            **base,
+            "status": status_name,
+            "review_packet": _review_packet(status_name, base),
+        }
         atomic_json(status_path, status)
         return status
 
     packet_dir = Path(str(preparer.get("output_dir") or "")).resolve(strict=True)
     review_queue = Path(str(preparer.get("queue") or "")).resolve(strict=True)
-    source_inventory = (packet_dir / "CATALOG_SOURCE_SUFFIXES.json").resolve(strict=True)
+    source_inventory = (packet_dir / "CATALOG_SOURCE_SUFFIXES.json").resolve(
+        strict=True
+    )
     if source_inventory.parent != packet_dir:
         raise RuntimeError("source inventory escaped the prepared packet")
-    require_hash(review_queue, str(preparer.get("queue_file_sha256") or ""), "review queue")
+    require_hash(
+        review_queue, str(preparer.get("queue_file_sha256") or ""), "review queue"
+    )
     require_hash(
         source_inventory,
         str(preparer.get("source_inventory_file_sha256") or ""),
@@ -313,12 +477,14 @@ def run_cycle(
     require_hash(auditor, auditor_sha256, "component auditor")
 
     if not labels_path.is_file():
+        status_name = "WAITING_FOR_INDEPENDENT_LABELS"
         status = {
             **base,
-            "status": "WAITING_FOR_INDEPENDENT_LABELS",
+            "status": status_name,
             "labels": "NOT_PRESENT",
             "review_queue_sha256": sha256_file(review_queue),
             "source_inventory_sha256": sha256_file(source_inventory),
+            "review_packet": _review_packet(status_name, base),
         }
         atomic_json(status_path, status)
         return status
@@ -327,10 +493,12 @@ def run_cycle(
     report_path = state_dir / "QUERY_SESSION_FAMILY_COMPONENTS.json"
     pending_report = state_dir / ".QUERY_SESSION_FAMILY_COMPONENTS.pending.json"
     if pending_report.exists():
+        status_name = "PENDING_COMPONENT_REPORT_REQUIRES_AUDIT"
         status = {
             **base,
-            "status": "PENDING_COMPONENT_REPORT_REQUIRES_AUDIT",
+            "status": status_name,
             "labels": "PRESENT_NOT_OPENED_WITH_PENDING_REPORT",
+            "review_packet": _review_packet(status_name, base),
         }
         atomic_json(status_path, status)
         return status
@@ -365,8 +533,12 @@ def run_cycle(
         for fold in folds:
             command.extend(("--fold-name", fold))
         result = command_runner(command)
-        (state_dir / "COMPONENT_AUDITOR_STDOUT.log").write_text(result.stdout, encoding="utf-8")
-        (state_dir / "COMPONENT_AUDITOR_STDERR.log").write_text(result.stderr, encoding="utf-8")
+        (state_dir / "COMPONENT_AUDITOR_STDOUT.log").write_text(
+            result.stdout, encoding="utf-8"
+        )
+        (state_dir / "COMPONENT_AUDITOR_STDERR.log").write_text(
+            result.stderr, encoding="utf-8"
+        )
         if result.returncode not in set(RETURN_CODE_BY_REPORT.values()):
             raise RuntimeError(f"component auditor failed with {result.returncode}")
         pending = _verified_report(
@@ -382,7 +554,9 @@ def run_cycle(
             maximum_component_share=maximum_component_share,
         )
         if result.returncode != RETURN_CODE_BY_REPORT[pending["status"]]:
-            raise RuntimeError("component auditor return code disagrees with its report")
+            raise RuntimeError(
+                "component auditor return code disagrees with its report"
+            )
         os.replace(pending_report, report_path)
 
     report = _verified_report(
@@ -397,9 +571,10 @@ def run_cycle(
         minimum_families=minimum_families,
         maximum_component_share=maximum_component_share,
     )
+    status_name = TERMINAL_STATUS_BY_REPORT[report["status"]]
     status = {
         **base,
-        "status": TERMINAL_STATUS_BY_REPORT[report["status"]],
+        "status": status_name,
         "labels": "OPENED_BY_PINNED_COMPONENT_AUDITOR",
         "gate_result": report["status"],
         "gate_report": str(report_path),
@@ -407,6 +582,7 @@ def run_cycle(
         "component_split_sha256": report["component_split_sha256"],
         "observed": report.get("observed", {}),
         "gates": report.get("gates", {}),
+        "review_packet": _review_packet(status_name, base, report=report),
     }
     atomic_json(status_path, status)
     return status

@@ -156,3 +156,43 @@ canonical report SHA-256 is
 `672e8b6ddbe62fca761d67cce8207c12fbdb2fe0ef066180b5a38c3f221072d3`;
 the serialized file SHA-256 is
 `0b80346308139e2f39704b39594276fb6b4245c10c054f6a60e5f2cd1c469c15`.
+
+## Information-rich review states
+
+Waiting, missing-label, pending-report, underpowered, invalid, and verified
+watcher receipts now include a non-sensitive `review_packet`. The component
+gate remains fail-closed, but it reports:
+
+- a review-only disposition and reason code;
+- safe aggregate observations and explicit deficits;
+- which measurements remain unavailable until independent review;
+- failed component gates after the pinned auditor runs; and
+- the next safe action without granting training, scoring, promotion, serving,
+  merge, execution, or partial-unfreeze authority.
+
+The packet never copies query text, raw session identifiers, labels, model
+outputs, or weights. Its pre-review candidate deficit is intentionally a lower
+bound: independent review may reject candidates, so reaching the candidate
+floor does not imply reaching the accepted-query floor.
+
+A separate one-shot receipt was generated from the live waiting inputs without
+restarting or replacing the authoritative watcher:
+
+`C:/dev/clay-training-runs/prime-token-catalog-20261106/prospective-query-session-family-review-v1-20261115/QUERY_SESSION_FAMILY_COMPONENT_WATCHER_STATUS.json`
+
+It reports 10 prospective candidates, a minimum additional-candidate deficit
+of 20 before 30 acceptances are even possible, labels `NOT_OPENED`, disposition
+`REVIEW_REQUIRED_NO_AUTOMATIC_TRANSITION`, and all execution/training/promotion
+authority disabled. The receipt file SHA-256 is
+`1bbbf3a1387a605dd14eb88445baa0a0723b33f12f827cdf5552ea25cfa524e1`;
+the watcher source SHA-256 is
+`f0e80f9a6e4191a43de445db26d2619c929ad2105b5fea2eb9b86ad69fed21bf`.
+
+Verification after the review-packet change:
+
+```text
+28 focused component/release tests passed
+406 tokenizer regression tests passed
+Ruff passed
+Black passed
+```
