@@ -2,9 +2,9 @@
 """Wait for all E92 authorities, then run and independently verify once.
 
 The watcher never creates or chooses review labels. It does not open the labels
-file until the queue, preparation packet, and exact selection replay are all
-ready and hash-bound. A verified result still authorizes no training, serving,
-merge, or promotion.
+file until the queue, preparation packet, exact selection replay, and
+query-session/target-family component gate are all ready and hash-bound. A
+verified result still authorizes no training, serving, merge, or promotion.
 """
 
 from __future__ import annotations
