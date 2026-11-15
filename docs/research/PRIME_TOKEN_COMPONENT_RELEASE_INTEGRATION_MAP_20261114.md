@@ -196,3 +196,29 @@ Verification after the review-packet change:
 Ruff passed
 Black passed
 ```
+
+## Exact candidate-scarcity diagnosis
+
+The hash-pinned selector was also run once in telemetry-only mode over the
+current closed and open Codex sources. It emitted counts and rejection classes,
+not query text or identities:
+
+`C:/dev/clay-training-runs/prime-token-catalog-20261106/prospective-open-readiness-v2-20261115/OPEN_SOURCE_READINESS.json`
+
+Observed state:
+
+- 31 closed source sessions, so the three-session minimum is already met;
+- 10 closed review-query candidates;
+- 14 additional review-query candidates in the current open source;
+- 24 projected candidates after that source closes, leaving a deficit of 6;
+- 232 selector-accounted turns with an accounting gap of 0;
+- source health `HEALTHY`; and
+- shortfall classification `FIXED_SELECTOR_CANDIDATE_SCARCITY`, with `topic`
+  as the dominant rejection reason.
+
+This rules out storage pressure, missing sessions, or selector-accounting drift
+as the present blocker. The safe path is to let normal, genuinely independent
+post-freeze review requests accumulate. The threshold and selector remain
+unchanged, and no rejected turn is relabeled merely to fill the quota. Receipt
+SHA-256:
+`b01c6a01ed929dd9d337dfdc28432f00aa94e534f13f9f0e5a40de107fe8e647`.
