@@ -188,3 +188,35 @@ candidates and labels `NOT_OPENED`. The runtime receipt is
 Activation adds no evaluation result or authority; it only makes the sealed
 audit run automatically if the existing packet, selection and label gates later
 become valid.
+
+## Queue-frozen stratum hardening — 2026-11-15
+
+A follow-up audit found that the component builder read `review_stratum` from
+the reviewer label even though the selected queue had already frozen that
+field. The label did not change component membership, but it could rewrite
+stratum accounting after selection and violate the requirement that the
+family-by-stratum vocabulary be fixed before labels are consumed.
+
+The staged component builder now fails closed unless:
+
+- every candidate contains a non-empty queue-frozen `review_stratum`;
+- its exclusive `topic_groups` value is exactly that stratum; and
+- an accepted reviewer label repeats the same stratum exactly.
+
+The emitted component receipt uses only the queue-frozen value. Two new tests
+cover label-side stratum mutation and queue/topic mismatch. Verification:
+
+- focused component/watcher suite: `16 passed`;
+- full tokenizer regression suite: `408 passed`;
+- Ruff: passed;
+- module SHA-256:
+  `2757ebabc5a6a9c805946b0bada7bf41ee4734dfa91216af3d989e58047818ad`;
+- component-test SHA-256:
+  `67048d3c5b370feae738faaf12a08513e897b30366936a54d7dfd1b8ccb262f7`.
+
+This hardening is staged on the component-release branch. The live v7 watcher
+still points at its earlier hash-pinned implementation and remains waiting with
+labels unopened. It must be replaced or explicitly repinned to the hardened
+source before any component result from that worker can satisfy this stricter
+boundary. No label, score, model weight, training intake, merge, execution,
+promotion, or partial-unfreeze authority changed.

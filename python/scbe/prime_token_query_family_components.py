@@ -146,7 +146,9 @@ def _component_records(entries: Sequence[Mapping[str, str]]) -> list[dict[str, A
                 "review_strata_counts": dict(sorted(strata.items())),
             }
         )
-    return sorted(components, key=lambda row: (-row["query_count"], row["component_id"]))
+    return sorted(
+        components, key=lambda row: (-row["query_count"], row["component_id"])
+    )
 
 
 def _assign_folds(
@@ -264,9 +266,16 @@ def audit_query_session_family_components(
         errors.append("review labels target a different queue")
     if inventory.get("schema") != SOURCE_INVENTORY_SCHEMA:
         errors.append("source inventory schema mismatch")
-    if family_audit.get("schema") != SOURCE_FAMILY_AUDIT_SCHEMA or int(family_audit.get("error_count", -1)) != 0:
+    if (
+        family_audit.get("schema") != SOURCE_FAMILY_AUDIT_SCHEMA
+        or int(family_audit.get("error_count", -1)) != 0
+    ):
         errors.append("source-family audit is not verified")
-    family_catalog = family_audit.get("catalog") if isinstance(family_audit.get("catalog"), Mapping) else {}
+    family_catalog = (
+        family_audit.get("catalog")
+        if isinstance(family_audit.get("catalog"), Mapping)
+        else {}
+    )
     if (
         str(inventory.get("catalog_sha256") or "").casefold()
         != str(family_catalog.get("database_sha256") or "").casefold()
@@ -274,7 +283,9 @@ def audit_query_session_family_components(
         errors.append("source inventory targets a different catalog")
 
     candidates_raw = queue.get("candidates")
-    if not isinstance(candidates_raw, list) or int(queue.get("candidate_count", -1)) != len(candidates_raw or []):
+    if not isinstance(candidates_raw, list) or int(
+        queue.get("candidate_count", -1)
+    ) != len(candidates_raw or []):
         errors.append("review queue candidate count mismatch")
         candidates_raw = []
     candidate_by_hash: dict[str, dict[str, Any]] = {}
@@ -288,23 +299,43 @@ def audit_query_session_family_components(
         query_hash = str(row.get("query_sha256") or "").strip().casefold()
         query = row.get("query")
         session_id = str(row.get("session_id") or "").strip()
+        review_stratum = str(row.get("review_stratum") or "").strip()
+        topic_groups = row.get("topic_groups")
         if not candidate_id or candidate_id in candidate_ids:
             errors.append(f"review candidate {index} has missing or duplicate identity")
             continue
         if not HEX64.fullmatch(query_hash) or query_hash in candidate_by_hash:
-            errors.append(f"review candidate {index} has missing or duplicate query hash")
+            errors.append(
+                f"review candidate {index} has missing or duplicate query hash"
+            )
             continue
-        if not isinstance(query, str) or hashlib.sha256(query.encode("utf-8")).hexdigest() != query_hash:
+        if (
+            not isinstance(query, str)
+            or hashlib.sha256(query.encode("utf-8")).hexdigest() != query_hash
+        ):
             errors.append(f"review candidate {index} query hash mismatch")
             continue
         if not session_id:
             errors.append(f"review candidate {index} has no source session")
             continue
+        if not review_stratum:
+            errors.append(f"review candidate {index} has no frozen review stratum")
+            continue
+        if not isinstance(topic_groups, list) or [
+            str(value) for value in topic_groups
+        ] != [review_stratum]:
+            errors.append(
+                f"review candidate {index} frozen review stratum does not match its exclusive topic group"
+            )
+            continue
         candidate_ids.add(candidate_id)
         candidate_sessions.add(session_id)
         candidate_by_hash[query_hash] = dict(row)
     declared_sessions = queue.get("session_ids")
-    if not isinstance(declared_sessions, list) or {str(value) for value in declared_sessions} != candidate_sessions:
+    if (
+        not isinstance(declared_sessions, list)
+        or {str(value) for value in declared_sessions} != candidate_sessions
+    ):
         errors.append("review queue session index does not match candidates")
 
     canonical_rows = family_audit.get("canonical_sources")
@@ -313,7 +344,11 @@ def audit_query_session_family_components(
         errors.append("source-family audit lacks canonical source mappings")
         canonical_rows = []
     for index, row in enumerate(canonical_rows):
-        if not isinstance(row, Mapping) or not row.get("path") or not row.get("family_id"):
+        if (
+            not isinstance(row, Mapping)
+            or not row.get("path")
+            or not row.get("family_id")
+        ):
             errors.append(f"canonical source row {index} is incomplete")
             continue
         key = _canonical_path(str(row["path"]))
@@ -323,7 +358,9 @@ def audit_query_session_family_components(
 
     source_rows = inventory.get("sources")
     inventory_by_suffix: dict[str, dict[str, str]] = {}
-    if not isinstance(source_rows, list) or int(inventory.get("source_count", -1)) != len(source_rows or []):
+    if not isinstance(source_rows, list) or int(
+        inventory.get("source_count", -1)
+    ) != len(source_rows or []):
         errors.append("source inventory count mismatch")
         source_rows = []
     for index, row in enumerate(source_rows):
@@ -333,15 +370,21 @@ def audit_query_session_family_components(
         suffix = str(row.get("unique_suffix") or "").strip()
         uri = str(row.get("source_uri") or "").strip()
         if not suffix or not uri or suffix in inventory_by_suffix:
-            errors.append(f"source inventory row {index} has missing or duplicate identity")
+            errors.append(
+                f"source inventory row {index} has missing or duplicate identity"
+            )
             continue
         canonical = canonical_by_path.get(_canonical_path(uri))
         if canonical is None:
-            errors.append(f"source inventory row is not bound to a canonical source: {uri}")
+            errors.append(
+                f"source inventory row is not bound to a canonical source: {uri}"
+            )
             continue
         inventory_by_suffix[suffix] = {
             "family_id": str(canonical["family_id"]),
-            "canonical_source_sha256": hashlib.sha256(str(canonical["path"]).encode("utf-8")).hexdigest(),
+            "canonical_source_sha256": hashlib.sha256(
+                str(canonical["path"]).encode("utf-8")
+            ).hexdigest(),
         }
 
     labels_raw = labels.get("labels")
@@ -357,7 +400,9 @@ def audit_query_session_family_components(
         query_hash = str(row.get("query_sha256") or "").strip().casefold()
         decision = str(row.get("decision") or "").strip().casefold()
         if query_hash not in candidate_by_hash or query_hash in decisions:
-            errors.append(f"review label {index} has unknown or duplicate query identity")
+            errors.append(
+                f"review label {index} has unknown or duplicate query identity"
+            )
             continue
         if decision not in {"accept", "reject"}:
             errors.append(f"review label {index} has invalid decision")
@@ -370,11 +415,14 @@ def audit_query_session_family_components(
         if binding is None:
             errors.append(f"accepted review label {index} has unknown source suffix")
             continue
-        stratum = str(row.get("review_stratum") or "").strip()
-        if not stratum:
-            errors.append(f"accepted review label {index} has no review stratum")
-            continue
         candidate = candidate_by_hash[query_hash]
+        frozen_stratum = str(candidate["review_stratum"])
+        label_stratum = str(row.get("review_stratum") or "").strip()
+        if label_stratum != frozen_stratum:
+            errors.append(
+                f"accepted review label {index} changed the frozen review stratum"
+            )
+            continue
         session_id = str(candidate["session_id"])
         accepted_entries.append(
             {
@@ -382,7 +430,7 @@ def audit_query_session_family_components(
                 "session_hash": _session_hash(session_id),
                 "family_id": binding["family_id"],
                 "canonical_source_sha256": binding["canonical_source_sha256"],
-                "review_stratum": stratum,
+                "review_stratum": frozen_stratum,
             }
         )
     if set(decisions) != set(candidate_by_hash):
@@ -396,14 +444,18 @@ def audit_query_session_family_components(
     family_count = len({row["family_id"] for row in accepted_entries})
     component_count = len(components)
     maximum_observed_share = (
-        max((row["query_count"] for row in components), default=0) / accepted_count if accepted_count else 0.0
+        max((row["query_count"] for row in components), default=0) / accepted_count
+        if accepted_count
+        else 0.0
     )
     gates = {
         "minimum_accepted_queries": accepted_count >= minimum_accepted_queries,
         "minimum_query_sessions": session_count >= minimum_sessions,
         "minimum_manifest_bound_families": family_count >= minimum_families,
         "minimum_indivisible_components": component_count >= len(folds_requested),
-        "all_folds_nonempty": all(folds[name]["query_count"] > 0 for name in folds_requested),
+        "all_folds_nonempty": all(
+            folds[name]["query_count"] > 0 for name in folds_requested
+        ),
         "maximum_component_share": maximum_observed_share <= maximum_component_share,
         "zero_query_session_overlap": session_overlap == 0,
         "zero_target_family_overlap": family_overlap == 0,

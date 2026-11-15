@@ -14,7 +14,9 @@ from python.scbe.prime_token_query_harvest import review_queue_sha256
 
 
 def _write(path: Path, value: dict) -> Path:
-    path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path
 
 
@@ -60,6 +62,7 @@ def _fixture(tmp_path: Path) -> dict[str, Path]:
                 "authored_at_utc": f"2026-11-13T10:{index:02d}:00+00:00",
                 "turn_ordinal": index,
                 "topic_groups": [strata[family]],
+                "review_stratum": strata[family],
                 "query": query,
             }
         )
@@ -185,7 +188,8 @@ def test_cross_family_session_is_kept_in_one_underpowered_component(
     bridged_hash = next(
         row["query_sha256"]
         for row in queue["candidates"]
-        if row["session_id"] == bridge_session and row["query_sha256"] != queue["candidates"][0]["query_sha256"]
+        if row["session_id"] == bridge_session
+        and row["query_sha256"] != queue["candidates"][0]["query_sha256"]
     )
     label = next(row for row in labels["labels"] if row["query_sha256"] == bridged_hash)
     label["relevant_source_suffix"] = "source-1"
@@ -234,3 +238,36 @@ def test_unknown_source_suffix_fails_closed(tmp_path: Path) -> None:
     assert report["error_count"] == 1
     assert "unknown source suffix" in report["errors"][0]
     assert report["authority"]["scoring"] == "NOT_AUTHORIZED"
+
+
+def test_label_cannot_change_queue_frozen_review_stratum(tmp_path: Path) -> None:
+    paths = _fixture(tmp_path)
+    labels = json.loads(paths["labels"].read_text(encoding="utf-8"))
+    labels["labels"][0]["review_stratum"] = "publication"
+    _write(paths["labels"], labels)
+
+    report = _audit(paths)
+
+    assert report["status"] == STATUS_INVALID
+    assert any(
+        "changed the frozen review stratum" in error for error in report["errors"]
+    )
+
+
+def test_queue_stratum_must_match_exclusive_topic_group(tmp_path: Path) -> None:
+    paths = _fixture(tmp_path)
+    queue = json.loads(paths["queue"].read_text(encoding="utf-8"))
+    labels = json.loads(paths["labels"].read_text(encoding="utf-8"))
+    queue["candidates"][0]["review_stratum"] = "publication"
+    queue["queue_sha256"] = review_queue_sha256(queue)
+    labels["queue_sha256"] = queue["queue_sha256"]
+    _write(paths["queue"], queue)
+    _write(paths["labels"], labels)
+
+    report = _audit(paths)
+
+    assert report["status"] == STATUS_INVALID
+    assert any(
+        "does not match its exclusive topic group" in error
+        for error in report["errors"]
+    )
