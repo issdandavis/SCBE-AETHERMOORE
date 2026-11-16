@@ -16,3 +16,23 @@ git clone https://github.com/issdandavis/scbe-docs-archive.git
 ```bash
 git checkout v-monolith-final
 ```
+
+## What is in this directory now
+
+The note above describes the extraction; this directory still holds several hundred tracked files. Start with:
+
+| Document | Use it for |
+|----------|------------|
+| [`SPEC.md`](SPEC.md) | SCBE kernel specification (canonical) |
+| [`LAYER_INDEX.md`](LAYER_INDEX.md) | The 14-layer pipeline, layer by layer |
+| [`SYSTEM_ARCHITECTURE.md`](SYSTEM_ARCHITECTURE.md) | Detailed architecture |
+| [`CORE_AXIOMS_CANONICAL_INDEX.md`](CORE_AXIOMS_CANONICAL_INDEX.md) | Axiom reference |
+| [`PUBLISHING.md`](PUBLISHING.md) | Safe release flow |
+| [`STRUCTURE.md`](STRUCTURE.md), [`REPO_SURFACE_MAP.md`](REPO_SURFACE_MAP.md) | Repository layout |
+| [`file-index/`](file-index/README.md) | One-line explanation of every tracked file in the repository |
+
+`file-index/` is generated. Regenerate it after adding or moving files:
+
+```bash
+python scripts/docs/build_file_index.py
+```
