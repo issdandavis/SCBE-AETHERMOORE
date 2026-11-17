@@ -27,9 +27,7 @@ def load_plan(path: Path) -> dict[str, Any]:
 
 
 def receipt_path(repo_root: Path, cycle: str, role: str, block_id: str) -> Path:
-    return (
-        repo_root / "content" / "book" / "editorial" / cycle / role / f"{block_id}.md"
-    )
+    return repo_root / "content" / "book" / "editorial" / cycle / role / f"{block_id}.md"
 
 
 def validate_plan(plan: dict[str, Any], repo_root: Path) -> list[str]:
@@ -51,22 +49,16 @@ def validate_plan(plan: dict[str, Any], repo_root: Path) -> list[str]:
         seen_ids.add(block_id)
 
         if not minimum <= len(chapters) <= maximum:
-            errors.append(
-                f"{block_id}: expected {minimum}-{maximum} chapters, got {len(chapters)}"
-            )
+            errors.append(f"{block_id}: expected {minimum}-{maximum} chapters, got {len(chapters)}")
         overlap = seen_chapters.intersection(chapters)
         if overlap:
             errors.append(f"{block_id}: overlaps chapters {sorted(overlap)}")
         seen_chapters.update(chapters)
 
         if block.get("reader_actor") != block.get("writer_actor"):
-            errors.append(
-                f"{block_id}: the fresh reader must graduate into writer for the same block"
-            )
+            errors.append(f"{block_id}: the fresh reader must graduate into writer for the same block")
         if block.get("continuity_actor") == block.get("writer_actor"):
-            errors.append(
-                f"{block_id}: continuity keeper must be independent from the writer"
-            )
+            errors.append(f"{block_id}: continuity keeper must be independent from the writer")
 
         sources = block.get("sources", [])
         if len(sources) != len(chapters):
@@ -80,9 +72,7 @@ def validate_plan(plan: dict[str, Any], repo_root: Path) -> list[str]:
                 continue
             actual = sha256(absolute)
             if actual != expected:
-                errors.append(
-                    f"{block_id}: source drift {relative.as_posix()} expected {expected} got {actual}"
-                )
+                errors.append(f"{block_id}: source drift {relative.as_posix()} expected {expected} got {actual}")
     return errors
 
 
@@ -104,35 +94,25 @@ def verify_receipt_chain(
             state = "FRESH_READER"
         if writer.is_file():
             if not reader.is_file():
-                errors.append(
-                    f"{block_id}: writer receipt exists without a fresh-reader receipt"
-                )
+                errors.append(f"{block_id}: writer receipt exists without a fresh-reader receipt")
             else:
                 reader_hash = sha256(reader)
                 writer_text = writer.read_text(encoding="utf-8").lower()
                 if reader_hash not in writer_text:
-                    errors.append(
-                        f"{block_id}: writer receipt does not bind fresh-reader hash {reader_hash}"
-                    )
+                    errors.append(f"{block_id}: writer receipt does not bind fresh-reader hash {reader_hash}")
                 state = "WRITER"
         if continuity.is_file():
             if not writer.is_file():
-                errors.append(
-                    f"{block_id}: continuity receipt exists without a writer receipt"
-                )
+                errors.append(f"{block_id}: continuity receipt exists without a writer receipt")
             else:
                 writer_hash = sha256(writer)
                 continuity_text = continuity.read_text(encoding="utf-8").lower()
                 if writer_hash not in continuity_text:
-                    errors.append(
-                        f"{block_id}: continuity receipt does not bind writer hash {writer_hash}"
-                    )
+                    errors.append(f"{block_id}: continuity receipt does not bind writer hash {writer_hash}")
                 state = "CONTINUITY_REVIEWED"
 
         if require_complete and state != "CONTINUITY_REVIEWED":
-            errors.append(
-                f"{block_id}: incomplete receipt chain (current state {state})"
-            )
+            errors.append(f"{block_id}: incomplete receipt chain (current state {state})")
 
         statuses.append(
             {
@@ -152,9 +132,7 @@ def run(command: str, plan_path: Path) -> int:
     repo_root = plan_path.parents[3]
     plan = load_plan(plan_path)
     errors = validate_plan(plan, repo_root)
-    statuses, receipt_errors = verify_receipt_chain(
-        plan, repo_root, require_complete=command == "verify"
-    )
+    statuses, receipt_errors = verify_receipt_chain(plan, repo_root, require_complete=command == "verify")
     errors.extend(receipt_errors)
 
     if command in {"status", "verify"}:
