@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "cycle": "2026-11-17",
+  "work": "The Six Tongues Protocol",
+  "authority": "Issac Daniel Davis",
+  "chapter_bounds": {"minimum": 2, "maximum": 3},
+  "role_order": ["fresh-reader", "writer", "continuity"],
+  "blocks": [
+    {
+      "id": "chapters-01-03",
+      "chapters": [1, 2, 3],
+      "reader_actor": "reader_protocol",
+      "writer_actor": "reader_protocol",
+      "continuity_actor": "reader_witness",
+      "sources": [
+        {"path": "content/book/reader-edition/ch01.md", "sha256": "e94355604666d47353f99c94b813dd2585af573dcf706bcd52d44adb8892fe2e"},
+        {"path": "content/book/reader-edition/ch02.md", "sha256": "78668c5b109ba925a83b1e3158035e1881d0ad26a94c24a7fa737a86254e55f0"},
+        {"path": "content/book/reader-edition/ch03.md", "sha256": "240256f5a7b0f3c54b1e13b7a1371ef76b210eea6e8784a74c1cb7dd6d2cda28"}
+      ]
+    },
+    {
+      "id": "chapters-17-19",
+      "chapters": [17, 18, 19],
+      "reader_actor": "reader_edge",
+      "writer_actor": "reader_edge",
+      "continuity_actor": "reader_protocol",
+      "sources": [
+        {"path": "content/book/reader-edition/ch17.md", "sha256": "3a95a81db6f2223f1cf6bb9dcc51ede8feb3b1f70b310a6ab8f159bb02d4bdfa"},
+        {"path": "content/book/reader-edition/ch18.md", "sha256": "bf1ba9763365681263b88f4446307a57fc0bce917b4fff7c11989546f185456b"},
+        {"path": "content/book/reader-edition/ch19.md", "sha256": "3267ae97433a81e68d1cbfb0008508acac3fde3d0fd7e762933153fcf5e7126b"}
+      ]
+    },
+    {
+      "id": "chapters-23-25",
+      "chapters": [23, 24, 25],
+      "reader_actor": "reader_witness",
+      "writer_actor": "reader_witness",
+      "continuity_actor": "reader_edge",
+      "sources": [
+        {"path": "content/book/reader-edition/ch23.md", "sha256": "46993b692c2c0a9f85fa369179008bfc5306c66b9dc0f6e575d21e6583c4c726"},
+        {"path": "content/book/reader-edition/ch24.md", "sha256": "06c602f8e1173c4de08eb578f0eb742178d74fb690361db25e4def106075b5a7"},
+        {"path": "content/book/reader-edition/ch25.md", "sha256": "ec15e209695e05b030fe12a5ab26ed99cb94c0f40aa6df7c3e9754422e58a991"}
+      ]
+    }
+  ]
+}
