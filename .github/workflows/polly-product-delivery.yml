@@ -95,7 +95,6 @@ jobs:
           SMTP_FROM: ${{ secrets.POLLY_LEAD_SMTP_FROM }}
           SMTP_OPERATOR: ${{ secrets.POLLY_LEAD_SMTP_TO }}
           SCBE_DELIVERY_BASE_URL: ${{ secrets.SCBE_DELIVERY_BASE_URL }}
-          SCBE_DELIVERY_TOKEN: ${{ secrets.SCBE_DELIVERY_TOKEN }}
           PAYLOAD: ${{ toJSON(github.event.client_payload.record) }}
         run: |
           set -euo pipefail
@@ -125,12 +124,12 @@ jobs:
           product_name = record.get("product_name") or "SCBE product"
           package_name = record.get("package_name") or "SCBE package"
           manual_url = record.get("manual_url") or "https://aethermoore.com/SCBE-AETHERMOORE/product-manual/delivery-and-access.html"
+          session_id = record.get("session_id") or ""
 
           delivery_base = (os.environ.get("SCBE_DELIVERY_BASE_URL") or "https://scbe-agent-bridge-vercel.vercel.app/api/agent/download").rstrip()
-          delivery_token = os.environ.get("SCBE_DELIVERY_TOKEN") or ""
           download_line = "Download link: reply to this email if your package link is missing."
-          if delivery_token:
-              query = urlencode({"product": product_key, "token": delivery_token})
+          if session_id:
+              query = urlencode({"product": product_key, "session_id": session_id})
               sep = "&" if "?" in delivery_base else "?"
               download_line = f"Download link: {delivery_base}{sep}{query}"
 

@@ -28,6 +28,8 @@ const SNAPSHOT_AMOUNT_CENTS = 50000;
 const HEARTBEAT_AMOUNT_CENTS = 9900;
 const LIVE_WORKFLOW_SNAPSHOT_PAYMENT_LINK_ID = 'plink_1TW71yJTF2SuUODIqYFRU9JY';
 const LIVE_HEARTBEAT_PAYMENT_LINK_ID = 'plink_1TW71zJTF2SuUODICZLQCCS3';
+const LIVE_TOOLKIT_PAYMENT_LINK_ID = 'plink_1T5t5MJTF2SuUODITNiC7v43';
+const LIVE_VAULT_PAYMENT_LINK_ID = 'plink_1TG7QuJTF2SuUODIpeN0DUVw';
 const LIVE_MAKING_OF_PAYMENT_LINK_ID = 'plink_1TXo24JTF2SuUODIoRc6T3DD';
 const DIGITAL_PRODUCT_AMOUNT_CENTS = 2900;
 const MAKING_OF_AMOUNT_CENTS = 700;
@@ -143,11 +145,11 @@ function snapshotConfig() {
     toolkitPaymentLinkId:
       process.env.STRIPE_TOOLKIT_PAYMENT_LINK_ID ||
       process.env.SCBE_PAYMENT_LINK_TOOLKIT ||
-      '',
+      LIVE_TOOLKIT_PAYMENT_LINK_ID,
     vaultPaymentLinkId:
       process.env.STRIPE_VAULT_PAYMENT_LINK_ID ||
       process.env.SCBE_PAYMENT_LINK_VAULT ||
-      '',
+      LIVE_VAULT_PAYMENT_LINK_ID,
     makingOfPaymentLinkId:
       process.env.STRIPE_MAKING_OF_PAYMENT_LINK_ID ||
       process.env.SCBE_PAYMENT_LINK_MAKING_OF ||
@@ -187,6 +189,10 @@ function sessionProductMetadata(session) {
   );
 }
 
+function isPaidSession(session) {
+  return !!(session && session.status === 'complete' && session.payment_status === 'paid');
+}
+
 function isSnapshotSession(session, cfg) {
   if (!session || typeof session !== 'object') return false;
   if (cfg.paymentLinkId && session.payment_link === cfg.paymentLinkId) return true;
@@ -204,7 +210,10 @@ function isSnapshotSession(session, cfg) {
 
 function isWorkflowSnapshotSession(session, cfg) {
   if (!session || typeof session !== 'object') return false;
-  if (cfg.workflowSnapshotPaymentLinkId && session.payment_link === cfg.workflowSnapshotPaymentLinkId) {
+  if (
+    cfg.workflowSnapshotPaymentLinkId &&
+    session.payment_link === cfg.workflowSnapshotPaymentLinkId
+  ) {
     return true;
   }
   return false;
@@ -352,7 +361,9 @@ function buildProductDeliveryRecord(session, productKey) {
 }
 
 async function dispatchSnapshotPaid(session, cfg) {
-  const source = isWorkflowSnapshotSession(session, cfg) ? 'workflow-snapshot' : 'governance-snapshot';
+  const source = isWorkflowSnapshotSession(session, cfg)
+    ? 'workflow-snapshot'
+    : 'governance-snapshot';
   const record = buildSessionRecord(session, 'snapshot_paid', source);
   return dispatchEvent('polly_snapshot_paid', record, cfg);
 }
@@ -420,9 +431,23 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  // Only act on the one event we care about; everything else is a 200 ack.
-  if (event && event.type === 'checkout.session.completed') {
+  // Synchronous methods are paid when checkout.session.completed arrives.
+  // Delayed methods complete checkout first and become fulfillable only when
+  // checkout.session.async_payment_succeeded arrives. Never dispatch delivery
+  // for an unpaid Checkout Session.
+  const fulfillmentEvents = new Set([
+    'checkout.session.completed',
+    'checkout.session.async_payment_succeeded',
+  ]);
+  if (event && fulfillmentEvents.has(event.type)) {
     const session = event.data && event.data.object;
+    if (!isPaidSession(session)) {
+      return sendJson(res, 200, {
+        ok: true,
+        handled: 'checkout_unpaid',
+        session_id: session && session.id,
+      });
+    }
     if (isWorkflowSnapshotSession(session, cfg) || isSnapshotSession(session, cfg)) {
       const dispatch = await dispatchSnapshotPaid(session, cfg);
       return sendJson(res, 200, {
@@ -478,6 +503,15 @@ module.exports = async function handler(req, res) {
     });
   }
 
+  if (event && event.type === 'checkout.session.async_payment_failed') {
+    const session = event.data && event.data.object;
+    return sendJson(res, 200, {
+      ok: true,
+      handled: 'payment_failed',
+      session_id: session && session.id,
+    });
+  }
+
   return sendJson(res, 200, { ok: true, handled: 'ignored', event_type: event && event.type });
 };
 
@@ -491,11 +525,14 @@ module.exports._private = {
   isVaultSession,
   isMakingOfSession,
   isDigitalProductSession,
+  isPaidSession,
   snapshotConfig,
   buildSessionRecord,
   buildProductDeliveryRecord,
   SNAPSHOT_AMOUNT_CENTS,
   LIVE_WORKFLOW_SNAPSHOT_PAYMENT_LINK_ID,
+  LIVE_TOOLKIT_PAYMENT_LINK_ID,
+  LIVE_VAULT_PAYMENT_LINK_ID,
   HEARTBEAT_AMOUNT_CENTS,
   DIGITAL_PRODUCT_AMOUNT_CENTS,
   MAKING_OF_AMOUNT_CENTS,
