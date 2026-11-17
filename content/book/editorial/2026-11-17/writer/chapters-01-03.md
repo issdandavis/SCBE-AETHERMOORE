@@ -19,7 +19,7 @@ The discrete reader-edition chapter files are the exact passage sources availabl
 | Chapter 2 | `C:\dev\_wt_six_tongues_editorial_20261117\content\book\reader-edition\ch02.md` | `78668C5B109BA925A83B1E3158035E1881D0AD26A94C24A7FA737A86254E55F0` |
 | Chapter 3 | `C:\dev\_wt_six_tongues_editorial_20261117\content\book\reader-edition\ch03.md` | `240256F5A7B0F3C54B1E13B7A1371EF76B210EEA6E8784A74C1CB7DD6D2CDA28` |
 | Compiled reader manuscript, reference container | `C:\dev\_wt_six_tongues_editorial_20261117\content\book\reader-edition\the-six-tongues-protocol-full.md` | `2DEAC4193F5B4916CBD3B7D77E96FC3BE631AB85D9785B1AC800DB9DE0335728` |
-| Fresh-reader receipt | `C:\dev\_wt_six_tongues_editorial_20261117\content\book\editorial\2026-11-17\fresh-reader\chapters-01-03.md` | `FC13715423447006C15A51DBA3B4164471B8DF46BDC4A0F9A4A8240E526EBC5F` |
+| Fresh-reader receipt | `C:\dev\_wt_six_tongues_editorial_20261117\content\book\editorial\2026-11-17\fresh-reader\chapters-01-03.md` | `F64C55210B1B8CA7BBFCAAA8CD6CEF44041D3D016A7FAD2130F146C9C30C5A48` |
 
 Line references below are local to the discrete file named in each proposal. Snippets are intentionally short and are **not applied text**.
 
@@ -261,4 +261,3 @@ W13 protects the later voluntary-home arc, but the original may deliberately let
 - Issac Davis is the final authority for wording, canon, chronology, the scope of Marcus’s intent, website presentation, pricing, and publication.
 - A separate continuity keeper must review any candidate patch against the exact hashes above before author review.
 - Acceptance should be granular by proposal ID (`W01`-`W13`); rejecting one proposal must not silently accept or reject the others.
-

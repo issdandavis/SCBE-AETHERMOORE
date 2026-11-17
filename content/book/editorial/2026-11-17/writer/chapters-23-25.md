@@ -1,8 +1,8 @@
 # Writer proposal receipt — Chapters 23–25
 
-**Pass date:** 2026-11-17  
-**Role:** `WRITER`  
-**Scope:** Chapter 23, “The Underroot”; Chapter 24, “The Time Tax”; Chapter 25, “Ordered Witness”  
+**Pass date:** 2026-11-17
+**Role:** `WRITER`
+**Scope:** Chapter 23, “The Underroot”; Chapter 24, “The Time Tax”; Chapter 25, “Ordered Witness”
 **Status:** proposals only; no manuscript edits applied
 
 ## Inputs and authority
@@ -13,7 +13,7 @@
 | `C:\dev\_wt_six_tongues_editorial_20261117\content\book\reader-edition\ch23.md` | `46993B692C2C0A9F85FA369179008BFC5306C66B9DC0F6E575D21E6583C4C726` | Standalone body for “The Underroot” |
 | `C:\dev\_wt_six_tongues_editorial_20261117\content\book\reader-edition\ch24.md` | `06C602F8E1173C4DE08EB578F0EB742178D74FB690361DB25E4DEF106075B5A7` | Standalone body for “The Time Tax” |
 | `C:\dev\_wt_six_tongues_editorial_20261117\content\book\reader-edition\ch25.md` | `EC15E209695E05B030FE12A5AB26ED99CB94C0F40AA6DF7C3E9754422E58A991` | Standalone body for “Ordered Witness” |
-| `C:\dev\_wt_six_tongues_editorial_20261117\content\book\editorial\2026-11-17\fresh-reader\chapters-23-25.md` | `4F7C03B301E6C802F24ABDDB00923156C04A3030D4D898A7281E6B9B8F8FE7B0` | Fresh-reader evidence for attention, confusion, emotional anchors, and page experience |
+| `C:\dev\_wt_six_tongues_editorial_20261117\content\book\editorial\2026-11-17\fresh-reader\chapters-23-25.md` | `5879C1CF2A59CE72FBB6EE7C2DB1A5F404D05F5410C1D345322442FFF9CA8AC8` | Fresh-reader evidence for attention, confusion, emotional anchors, and page experience |
 | `C:\dev\_wt_six_tongues_editorial_20261117\content\book\HOUSE_STYLE.md` | `CB38FC300C4AE088542D4CF9E17BC674183E433E35D72EF15DB085F46AD4213E` | Voice, POV, character, and thematic constraints |
 
 Line numbers below refer to the hashed combined manuscript. “After” text is proposed language, not accepted language.
@@ -35,7 +35,7 @@ Priority order:
 
 #### W23.1 — Keep Sera Voss’s office consistent
 
-**Location:** line 10291  
+**Location:** line 10291
 **Priority:** high; canon continuity
 
 **Before**
@@ -52,7 +52,7 @@ Priority order:
 
 #### W23.2 — Honor Senna’s pass/warrant distinction
 
-**Locations:** lines 10209, 10251, 10273  
+**Locations:** lines 10209, 10251, 10273
 **Priority:** medium; terminology consistency
 
 Senna explicitly corrects “corridor pass” to “corridor warrant” at line 10087 because a pass implies possession. Later narration and dialogue return to “pass.”
@@ -79,7 +79,7 @@ Senna explicitly corrects “corridor pass” to “corridor warrant” at line 
 
 #### W23.3 — Preserve humane quarantine without erasing its teeth
 
-**Location:** line 10227  
+**Location:** line 10227
 **Priority:** medium; moral and physical precision
 
 **Before**
@@ -96,7 +96,7 @@ Senna explicitly corrects “corridor pass” to “corridor warrant” at line 
 
 #### W23.4 — Optional compression after Voss’s emotional peak
 
-**Location:** line 10263  
+**Location:** line 10263
 **Priority:** low; pacing only
 
 **Before**
@@ -115,7 +115,7 @@ Senna explicitly corrects “corridor pass” to “corridor warrant” at line 
 
 #### W24.1 — Keep the singing ice sensory before mathematical
 
-**Location:** line 10445  
+**Location:** line 10445
 **Priority:** low; cognitive-density trim
 
 **Before**
@@ -132,7 +132,7 @@ Senna explicitly corrects “corridor pass” to “corridor warrant” at line 
 
 #### W24.2 — Make comprehension observable as readiness
 
-**Location:** line 10545  
+**Location:** line 10545
 **Priority:** medium; trust-model precision
 
 **Before**
@@ -149,7 +149,7 @@ Senna explicitly corrects “corridor pass” to “corridor warrant” at line 
 
 #### W24.3 — Author choice: close the forty-second hand loop
 
-**Location:** lines 10573–10575  
+**Location:** lines 10573–10575
 **Priority:** high question; one of the options or an explicit no-change decision
 
 **Before**
@@ -178,7 +178,7 @@ Senna explicitly corrects “corridor pass” to “corridor warrant” at line 
 
 #### W25.1 — Correct the occupied-seat count
 
-**Location:** line 10770  
+**Location:** line 10770
 **Priority:** high; blocking scene geometry
 
 **Before**
@@ -195,7 +195,7 @@ Senna explicitly corrects “corridor pass” to “corridor warrant” at line 
 
 #### W25.2 — Keep the Dominion attribution at its evidenced confidence
 
-**Location:** line 10828  
+**Location:** line 10828
 **Priority:** high; evidentiary continuity
 
 **Before**
@@ -212,7 +212,7 @@ Senna explicitly corrects “corridor pass” to “corridor warrant” at line 
 
 #### W25.3 — Compress repeated handler history, not its emotional verdict
 
-**Location:** lines 10844–10846  
+**Location:** lines 10844–10846
 **Priority:** low; optional recap compression
 
 **Before**
@@ -231,7 +231,7 @@ Senna explicitly corrects “corridor pass” to “corridor warrant” at line 
 
 #### W25.4 — Remove the authoring-document frame break
 
-**Location:** line 10870  
+**Location:** line 10870
 **Priority:** high; reader-edition integrity
 
 **Before**
@@ -248,7 +248,7 @@ Senna explicitly corrects “corridor pass” to “corridor warrant” at line 
 
 #### W25.5 — Tie HYDRA to the topology Marcus already knows
 
-**Location:** line 10910  
+**Location:** line 10910
 **Priority:** medium; continuity and voice
 
 **Before**
@@ -265,7 +265,7 @@ Senna explicitly corrects “corridor pass” to “corridor warrant” at line 
 
 #### W25.6 — Do not call ordered witness a vote one paragraph before denying it
 
-**Location:** line 10950  
+**Location:** line 10950
 **Priority:** high; title and governance precision
 
 **Before**

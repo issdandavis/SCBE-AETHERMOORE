@@ -1,8 +1,8 @@
 # Continuity-keeper receipt — Chapters 23–25
 
-**Pass date:** 2026-11-17  
-**Role:** `CONTINUITY_KEEPER`  
-**Scope:** Chapter 23, “The Underroot”; Chapter 24, “The Time Tax”; Chapter 25, “Ordered Witness,” checked against Chapter 22, both intervening interludes, and Chapter 26  
+**Pass date:** 2026-11-17
+**Role:** `CONTINUITY_KEEPER`
+**Scope:** Chapter 23, “The Underroot”; Chapter 24, “The Time Tax”; Chapter 25, “Ordered Witness,” checked against Chapter 22, both intervening interludes, and Chapter 26
 **Status:** continuity verdicts only; no manuscript or writer-receipt edits applied
 
 ## Authority and provenance
@@ -13,7 +13,7 @@
 | --- | --- |
 | Source manuscript: `C:\dev\_wt_six_tongues_editorial_20261117\content\book\reader-edition\the-six-tongues-protocol-full.md` | `2deac4193f5b4916cbd3b7d77e96fc3be631ab85d9785b1ac800db9de0335728` |
 | Fresh-reader receipt: `C:\dev\_wt_six_tongues_editorial_20261117\content\book\editorial\2026-11-17\fresh-reader\chapters-23-25.md` | `4f7c03b301e6c802f24abddb00923156c04a3030d4d898a7281e6b9b8f8fe7b0` |
-| **Writer receipt reviewed:** `C:\dev\_wt_six_tongues_editorial_20261117\content\book\editorial\2026-11-17\writer\chapters-23-25.md` | **`38e54e6b6087733199abcc1ad3d0a7098ed5821aaf36eac7eaed0deb1015596d`** |
+| **Writer receipt reviewed:** `C:\dev\_wt_six_tongues_editorial_20261117\content\book\editorial\2026-11-17\writer\chapters-23-25.md` | **`31D011DD7FD29E503E261A58E294226770C5D945DD8753A798695026507FDF85`** |
 | House style: `C:\dev\_wt_six_tongues_editorial_20261117\content\book\HOUSE_STYLE.md` | `cb38fc300c4ae088542d4cf9e17bc674183e433e35d72ef15db085f46ad4213e` |
 | Website/editorial context: `C:\Users\issda\research\profile-website-commerce-20261117\SIX_TONGUES_WEBSITE_CONTEXT.md` | `b6b7ba143283a6038f55416da87d3c800d90d6e74f8bfba8a5c1fc90ebce8c49` |
 

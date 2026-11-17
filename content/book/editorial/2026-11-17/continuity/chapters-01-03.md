@@ -5,7 +5,7 @@
 - **Pass date:** 2026-11-17
 - **Scope:** Chapter 1, Interlude 1, Chapter 2, Chapter 3, and immediate Chapter 4 state
 - **Status:** independent verdicts only; no manuscript or writer-receipt edits
-- **Required writer receipt SHA-256:** `496D013D5D126421843A38DC65E5EA6B9B0D6FF6468A0CAA560832167FCCDA6D`
+- **Required writer receipt SHA-256:** `7C517C6AD855E9A4ED6B7169757B1843B92D28C06C742D777ABF4787DAFF9DDD`
 
 ## Provenance
 
@@ -13,7 +13,7 @@ Hashes were calculated from the files reviewed in this worktree.
 
 | Source | SHA-256 | Continuity use |
 | --- | --- | --- |
-| `content/book/editorial/2026-11-17/writer/chapters-01-03.md` | `496D013D5D126421843A38DC65E5EA6B9B0D6FF6468A0CAA560832167FCCDA6D` | Proposals under verdict |
+| `content/book/editorial/2026-11-17/writer/chapters-01-03.md` | `7C517C6AD855E9A4ED6B7169757B1843B92D28C06C742D777ABF4787DAFF9DDD` | Proposals under verdict |
 | `content/book/editorial/2026-11-17/fresh-reader/chapters-01-03.md` | `FC13715423447006C15A51DBA3B4164471B8DF46BDC4A0F9A4A8240E526EBC5F` | Reader attention, confusion, and candy evidence |
 | `content/book/reader-edition/ch01.md` | `E94355604666D47353F99C94B813DD2585AF573DCF706BCD52D44ADB8892FE2E` | “Protocol Handshake” source body |
 | `content/book/reader-edition/interlude-01-pollys-vigil.md` | `E840B0F70AB25EB9CC9B62AFAF7D52E70B572286FECC3148660A89981156C3D1` | Polly POV and first-vigil bridge |

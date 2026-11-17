@@ -1,8 +1,8 @@
 # Writer proposal receipt — Chapters 17–19
 
-**Pass date:** 2026-11-17  
-**Role:** `WRITER`  
-**Scope:** Chapter 17, “The Outer Ring”; Chapter 18, “The Industrial Hum”; Chapter 19, “The Memory Tithe”  
+**Pass date:** 2026-11-17
+**Role:** `WRITER`
+**Scope:** Chapter 17, “The Outer Ring”; Chapter 18, “The Industrial Hum”; Chapter 19, “The Memory Tithe”
 **Status:** proposals only; no manuscript edits applied
 
 ## Inputs and authority
@@ -10,7 +10,7 @@
 | Input | SHA-256 | Role in this pass |
 |---|---|---|
 | `C:\dev\_wt_six_tongues_editorial_20261117\content\book\reader-edition\the-six-tongues-protocol-full.md` | `2deac4193f5b4916cbd3b7d77e96fc3be631ab85d9785b1ac800db9de0335728` | Source manuscript and line-number authority; Ch. 17 = lines 7439–7664, Ch. 18 = 7665–7909, Ch. 19 = 7910–8449 |
-| `C:\dev\_wt_six_tongues_editorial_20261117\content\book\editorial\2026-11-17\fresh-reader\chapters-17-19.md` | `06f43de7a88fc52ae582ff31e57475ec62878c744c9ddcf21e855067b7041c2e` | Reader-attention, confusion, and page-experience evidence |
+| `C:\dev\_wt_six_tongues_editorial_20261117\content\book\editorial\2026-11-17\fresh-reader\chapters-17-19.md` | `A4DC2B5441BDB438FCBACBC06257E00E88C60EF31327F4A37B7025C5C80C6307` | Reader-attention, confusion, and page-experience evidence |
 | `C:\dev\_wt_six_tongues_editorial_20261117\content\book\HOUSE_STYLE.md` | `cb38fc300c4ae088542d4cf9e17bc674183e433e35d72ef15db085f46ad4213e` | Voice and canon constraints |
 
 Line numbers and snippets below refer to the hashed combined manuscript. “After”
@@ -38,7 +38,7 @@ Priority order:
 
 #### W17.1 — Attach the First Incursion pronoun to Kael’s copies
 
-**Location:** line 7449  
+**Location:** line 7449
 **Priority:** low; clarity micro-edit
 
 **Before**
@@ -60,7 +60,7 @@ meaning as he speaks. Accept only if directness is worth losing that cadence.
 
 #### W17.2 — Name the network after the paradox-front action
 
-**Location:** line 7641  
+**Location:** line 7641
 **Priority:** medium; antecedent and thematic precision
 
 **Before**
@@ -85,7 +85,7 @@ is purposeful but should be read aloud before acceptance.
 
 #### W18.1 — Correct Kael’s status and make maintenance—not flawless origin—the contrast
 
-**Location:** line 7771  
+**Location:** line 7771
 **Priority:** high; canon and chapter-thesis alignment
 
 **Before**
@@ -111,7 +111,7 @@ the current wording should not survive by accident.
 
 #### W18.2 — Preserve wonder while denying it an exemption from maintenance
 
-**Location:** line 7883  
+**Location:** line 7883
 **Priority:** medium; thematic precision
 
 **Before**
@@ -131,7 +131,7 @@ must continue making clear that the target is neglected reverence, not wonder.
 
 #### W18.3 — Make love and maintenance cumulative, not opponents
 
-**Location:** line 7887  
+**Location:** line 7887
 **Priority:** optional companion to W18.2
 
 **Before**
@@ -153,7 +153,7 @@ W18.2 alone if that echo matters more than eliminating the apparent opposition.
 
 #### W18.4 — Optional compression of the variance explanation
 
-**Location:** line 7815  
+**Location:** line 7815
 **Priority:** low; pacing only
 
 **Before**
@@ -178,7 +178,7 @@ energy.
 
 #### W19.1 — Tighten the exit reflection without touching the emotional resolution
 
-**Location:** line 8436  
+**Location:** line 8436
 **Priority:** low; optional precision edit
 
 **Before**
@@ -200,7 +200,7 @@ the cleaner replacement.
 
 #### W19.2 — Preserve the long middle unless a later pacing test fails
 
-**Location:** lines 8185–8332  
+**Location:** lines 8185–8332
 **Priority:** lock, not a prose change
 
 The fresh-reader pass noticed that the Elisse example, attachment-graph diagnosis,
@@ -245,14 +245,14 @@ Then align the departure:
 
 **Before**
 
-> Marcus stepped into the transit circle.  
-> ...  
+> Marcus stepped into the transit circle.
+> ...
 > He was heading northwest, toward Ravencrest Citadel...
 
 **After**
 
-> Marcus stepped into the transit circle. Lyra stepped in beside him.  
-> ...  
+> Marcus stepped into the transit circle. Lyra stepped in beside him.
+> ...
 > They were heading toward the Verdant Tithe, where the road would decide how much
 > of their stated purpose it believed.
 
@@ -271,8 +271,8 @@ the Verdant Tithe.” Do not invent a compass direction until geography is check
 
 **After**
 
-> Ravencrest was next on the slate. Then Lyra’s hands stopped.  
-> “Verdant Tithe first,” Marcus said.  
+> Ravencrest was next on the slate. Then Lyra’s hands stopped.
+> “Verdant Tithe first,” Marcus said.
 > Lyra stepped into the circle beside him.
 
 **Value:** Retains Ravencrest as part of the stated audit plan while making the

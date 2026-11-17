@@ -1,9 +1,9 @@
 # Fresh-reader receipt: chapters 23–25
 
-**Work:** *The Six Tongues Protocol*  
-**Assigned span:** Chapter 23, “The Underroot”; Chapter 24, “The Time Tax”; Chapter 25, “Ordered Witness”  
-**Role:** `FRESH_READER`  
-**Pass date:** 2026-11-17  
+**Work:** *The Six Tongues Protocol*
+**Assigned span:** Chapter 23, “The Underroot”; Chapter 24, “The Time Tax”; Chapter 25, “Ordered Witness”
+**Role:** `FRESH_READER`
+**Pass date:** 2026-11-17
 **Manuscript mutation:** none
 
 ## Reading boundary and labels

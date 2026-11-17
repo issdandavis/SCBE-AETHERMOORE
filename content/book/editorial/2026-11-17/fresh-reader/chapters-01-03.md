@@ -209,4 +209,3 @@ These are observations, not revision instructions.
 - **[OBSERVATION]** Canon facts in this receipt are descriptions of the supplied chapters, not promotions of new canon.
 - **[INFERENCE]** All page concepts, visitor reactions, interpretations, visual choreography, and suggested gifts are provisional design proposals.
 - **Authority boundary:** Issac Davis remains the final authority for canon, manuscript wording, accepted revisions, public pricing, and deployment. A writer may propose changes against these exact hashes; a separate continuity keeper must review them; neither role may silently change or promote the source manuscript.
-

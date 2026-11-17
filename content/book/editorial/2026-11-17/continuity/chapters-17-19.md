@@ -5,7 +5,7 @@
 - **Pass date:** 2026-11-17
 - **Scope by stable identity:** `ch17.md` “The Outer Ring,” `ch18.md` “The Industrial Hum,” and `ch19.md` “The Memory Tithe,” checked against `ch16.md`, the intervening `ch16b-the-fizzlecress-incident.md`, and `ch20.md`
 - **Status:** independent verdicts only; no manuscript or writer-receipt edits
-- **Required writer receipt SHA-256:** `CD35B2CD9EF829551C072BDE044737EB283E949ECF9E3691CA5E4EF102350B02`
+- **Required writer receipt SHA-256:** `28D78DB945F1EBDE6CA9A6D4C8C28A0CC49361FAF397FF107D1EF38C07F151D5`
 
 ## Provenance
 
@@ -13,7 +13,7 @@ Hashes were calculated from the files reviewed in this worktree.
 
 | Source | SHA-256 | Continuity use |
 |---|---|---|
-| `content/book/editorial/2026-11-17/writer/chapters-17-19.md` | `CD35B2CD9EF829551C072BDE044737EB283E949ECF9E3691CA5E4EF102350B02` | Proposals under verdict |
+| `content/book/editorial/2026-11-17/writer/chapters-17-19.md` | `28D78DB945F1EBDE6CA9A6D4C8C28A0CC49361FAF397FF107D1EF38C07F151D5` | Proposals under verdict |
 | `content/book/editorial/2026-11-17/fresh-reader/chapters-17-19.md` | `06F43DE7A88FC52AE582FF31E57475EC62878C744C9DDCF21E855067B7041C2E` | Reader evidence and contradiction discovery |
 | `content/book/reader-edition/ch16.md` | `0D7969DB7B6D26F63BD6D61B94546DA423145498A4D15778F089331A373909BA` | Preceding long-watch state |
 | `content/book/reader-edition/ch16b-the-fizzlecress-incident.md` | `AC6B38822E9D41DB1BED9DDE9CFDE2A7BA918130F59AD891782C440FE736B319` | Actual immediate predecessor in final/KDP topology |
@@ -229,4 +229,3 @@ Required boundaries:
 - `REJECT` preserves the current text unless Issac explicitly chooses another option.
 - Only Issac Davis may approve prose changes, chronology, elapsed-year authority, character-state terminology, displayed chapter numbering, website publication, pricing, or regeneration/deployment.
 - Any accepted manuscript patch must be made in the actual source-of-truth lane, followed by an independent hash-aware check of standalone files, assembled manuscript, TOC, and KDP build order.
-

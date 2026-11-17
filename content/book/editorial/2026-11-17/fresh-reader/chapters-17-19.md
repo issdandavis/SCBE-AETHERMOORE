@@ -1,9 +1,9 @@
 # Fresh-reader receipt — Chapters 17–19
 
-**Pass date:** 2026-11-17  
-**Role:** `FRESH_READER`  
-**Assigned span:** Chapter 17, “The Outer Ring”; Chapter 18, “The Industrial Hum”; Chapter 19, “The Memory Tithe”  
-**Manuscript authority used for chapter numbers and evidence:** combined Reader Edition  
+**Pass date:** 2026-11-17
+**Role:** `FRESH_READER`
+**Assigned span:** Chapter 17, “The Outer Ring”; Chapter 18, “The Industrial Hum”; Chapter 19, “The Memory Tithe”
+**Manuscript authority used for chapter numbers and evidence:** combined Reader Edition
 **Manuscript changes made:** none
 
 ## Reading posture and labels
