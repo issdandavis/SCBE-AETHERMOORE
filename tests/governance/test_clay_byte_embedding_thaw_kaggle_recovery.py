@@ -21,6 +21,8 @@ from scripts.research.run_clay_byte_embedding_thaw_kaggle_recovery import (
     aggregate_terminal_results,
     extract_and_verify_packet,
     materialize_run_view,
+    parse_args,
+    publish_exact_file,
     qualify_recovery_replay,
     sha256_file,
     stable_hash,
@@ -170,6 +172,29 @@ def test_materialized_view_preserves_input_bytes(tmp_path: Path) -> None:
     assert receipt["files"] == 1
     assert (tmp_path / "view" / "horses" / "a" / "MODEL.pt").read_bytes() == b"immutable-model"
     assert original.read_bytes() == b"immutable-model"
+
+
+def test_publish_surface_contains_only_exact_result_bytes(tmp_path: Path) -> None:
+    staged = tmp_path / "runtime" / "writable-run" / "RESULT.json"
+    staged.parent.mkdir(parents=True)
+    staged.write_bytes(b'{"status":"COMPLETE"}\n')
+    published = tmp_path / "working" / "run" / "RESULT.json"
+
+    publish_exact_file(staged, published)
+
+    assert published.read_bytes() == staged.read_bytes()
+    assert [
+        path.relative_to(tmp_path / "working").as_posix()
+        for path in (tmp_path / "working").rglob("*")
+        if path.is_file()
+    ] == ["run/RESULT.json"]
+
+
+def test_default_runtime_is_outside_kaggle_published_working_tree() -> None:
+    args = parse_args([])
+
+    assert "/kaggle/working" not in args.runtime_root.as_posix()
+    assert args.output_root == Path("/kaggle/working/clay-byte-thaw-aggregation-replay")
 
 
 def test_recovery_qualification_keeps_inference_fail_closed(tmp_path: Path) -> None:

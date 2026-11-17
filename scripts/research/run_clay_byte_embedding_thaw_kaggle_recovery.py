@@ -19,6 +19,7 @@ from pathlib import Path, PurePosixPath
 import platform
 import shutil
 import sys
+import tempfile
 from typing import Any, Iterable, Iterator, Mapping
 import zipfile
 
@@ -196,6 +197,18 @@ def materialize_run_view(source: Path, destination: Path) -> dict[str, Any]:
         "files": sum(counts.values()),
         **counts,
     }
+
+
+def publish_exact_file(source: Path, destination: Path) -> None:
+    """Atomically publish one verified result without exposing staged inputs."""
+
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    pending = destination.with_suffix(destination.suffix + ".pending")
+    shutil.copyfile(source, pending)
+    if pending.stat().st_size != source.stat().st_size or sha256_file(pending) != sha256_file(source):
+        pending.unlink(missing_ok=True)
+        raise RuntimeError(f"published result bytes differ: {destination}")
+    os.replace(pending, destination)
 
 
 def _packet_records_by_prefix(manifest: Mapping[str, Any], prefix: str) -> dict[str, Mapping[str, Any]]:
@@ -426,15 +439,18 @@ def run_recovery(args: argparse.Namespace) -> dict[str, Any]:
     if sha256_file(runtime_root / "PATH_MAP.json") != manifest["path_map_sha256"]:
         raise RuntimeError("path map hash differs")
 
-    staged_run = output_root / "run"
+    # Kaggle persists /kaggle/working.  Keep checkpoints and the writable view
+    # under the temporary runtime root, then publish only atomic evidence.
+    staged_run = runtime_root / "writable-run"
     view_receipt = materialize_run_view(runtime_root / "payload" / "run", staged_run)
     aggregation = aggregate_terminal_results(runtime_root, staged_run)
-    aggregation_path = staged_run / "RESULT.json"
+    aggregation_path = output_root / "run" / "RESULT.json"
+    publish_exact_file(staged_run / "RESULT.json", aggregation_path)
     if args.mode == "aggregate":
         replay_result: dict[str, Any] | None = None
     else:
         _, replay_module, atomic_json = _import_runtime(runtime_root)
-        with mapped_authority_context(runtime_root, manifest, output_root / "path_aliases") as alias_receipt:
+        with mapped_authority_context(runtime_root, manifest, runtime_root / "path_aliases") as alias_receipt:
             replay_result = replay_module.verify_run(
                 staged_run,
                 tolerance=args.tolerance,
@@ -522,7 +538,7 @@ def parse_args(arguments: Iterable[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--runtime-root",
         type=Path,
-        default=Path("/kaggle/working/clay-byte-thaw-recovery-packet"),
+        default=Path(tempfile.gettempdir()) / "clay-byte-thaw-recovery-packet",
     )
     parser.add_argument("--mode", choices=("aggregate", "all"), default="all")
     parser.add_argument("--threads", type=int, default=2)
