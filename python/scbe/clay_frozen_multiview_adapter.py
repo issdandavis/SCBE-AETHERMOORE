@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
+from fractions import Fraction
 import hashlib
 import json
 import math
@@ -614,7 +615,8 @@ def paired_exact_p(wins: int, losses: int) -> float:
     if not discordant:
         return 1.0
     tail = sum(math.comb(discordant, index) for index in range(min(wins, losses) + 1))
-    return min(1.0, 2.0 * tail / (2**discordant))
+    exact = min(Fraction(1, 1), Fraction(2 * tail, 1 << discordant))
+    return float(exact)
 
 
 def paired_prediction_comparison(

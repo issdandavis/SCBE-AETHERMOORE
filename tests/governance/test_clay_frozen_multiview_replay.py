@@ -12,6 +12,7 @@ from python.scbe.clay_frozen_multiview_adapter import FrozenActionModel
 from python.scbe.clay_frozen_multiview_data import build_frozen_multiview_dataset
 from python.scbe.clay_frozen_multiview_replay import (
     ReplayFrozenActionModel,
+    _paired_exact_p,
     byte_token_identity_receipt,
     build_replay_dataset,
     compare_producer_weight_effect,
@@ -39,6 +40,11 @@ class FakeReplayProvider:
         sector = (state // 5) % 8
         feature = torch.arange(37, dtype=torch.float32) * 0.03125 + state * 1e-5 + sandbox * 0.125
         return feature, label, sector
+
+
+def test_replay_paired_exact_p_stays_finite_beyond_float_integer_range() -> None:
+    assert _paired_exact_p(750, 750) == 1.0
+    assert _paired_exact_p(900, 600) == 9.509594050178438e-15
 
 
 def test_byte_token_identity_receipt_requires_the_complete_256_plane() -> None:

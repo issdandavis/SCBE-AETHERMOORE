@@ -11,6 +11,7 @@ from python.scbe.clay_frozen_multiview_adapter import (
     counting_rows,
     frozen_state,
     frozen_state_identical,
+    paired_exact_p,
     train_steps,
     vocab_of,
 )
@@ -33,6 +34,12 @@ class FakeProvider:
     def materialize(self, sandbox: int, state: int) -> tuple[torch.Tensor, int, int]:
         feature = torch.arange(37, dtype=torch.float32) * 0.0625 + state * 1e-6 + sandbox * 0.25
         return feature, state % 5, (state // 5) % 8
+
+
+def test_paired_exact_p_stays_finite_beyond_float_integer_range() -> None:
+    assert paired_exact_p(750, 750) == 1.0
+    value = paired_exact_p(900, 600)
+    assert value == 9.509594050178438e-15
 
 
 def _config(dataset_hash: str) -> RunConfig:
