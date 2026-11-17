@@ -268,17 +268,22 @@ def test_launch_page_links_to_public_docs_and_bridge_endpoints() -> None:
     assert "support.html" not in source
 
 
-def test_download_bridge_serves_private_blob_with_delivery_token() -> None:
+def test_download_bridge_verifies_paid_checkout_before_private_blob_delivery() -> None:
     source = (REPO_ROOT / "api" / "agent" / "download.js").read_text(encoding="utf-8")
 
-    assert "SCBE_DELIVERY_TOKEN" in source
+    assert "SCBE_DELIVERY_TOKEN" not in source
+    assert "STRIPE_DELIVERY_RESTRICTED_KEY" in source
+    assert "/checkout/sessions/" in source
+    assert "session.payment_status === 'paid'" in source
+    assert "session.status === 'complete'" in source
+    assert "checkout does not match requested product" in source
     assert "BLOB_READ_WRITE_TOKEN" in source
     assert "SCBE_TOOLKIT_BLOB_URL" in source
     assert "SCBE_VAULT_BLOB_URL" in source
     assert "SCBE_MAKING_OF_BLOB_URL" in source
-    assert "product must be toolkit, vault, or making_of" in source
     assert "Content-Disposition" in source
-    assert 'Cache-Control", "private, no-store"' in source
+    assert "'Cache-Control', 'private, no-store'" in source
+    assert "'Referrer-Policy', 'no-referrer'" in source
 
 
 def test_public_offer_catalog_has_live_revenue_links() -> None:

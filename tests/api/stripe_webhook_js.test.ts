@@ -136,6 +136,8 @@ function snapshotEvent(overrides: Record<string, unknown> = {}): string {
         id: 'cs_test_session_42',
         object: 'checkout.session',
         mode: 'payment',
+        status: 'complete',
+        payment_status: 'paid',
         amount_total: 50000,
         currency: 'usd',
         payment_link: SNAPSHOT_LINK_ID,
@@ -164,6 +166,8 @@ function heartbeatEvent(overrides: Record<string, unknown> = {}): string {
         id: 'cs_test_heartbeat_99',
         object: 'checkout.session',
         mode: 'subscription',
+        status: 'complete',
+        payment_status: 'paid',
         amount_total: 9900,
         currency: 'usd',
         payment_link: HEARTBEAT_LINK_ID,
@@ -203,6 +207,8 @@ function productEvent(
         id: `cs_test_${productKey}_29`,
         object: 'checkout.session',
         mode: 'payment',
+        status: 'complete',
+        payment_status: 'paid',
         amount_total: amount,
         currency: 'usd',
         payment_link: linkId,
@@ -567,6 +573,55 @@ describe('stripe webhook — event routing', () => {
     await stripeWebhook(req as never, res as never);
     expect(res.statusCode).toBe(200);
     expect((res.body as { handled: string }).handled).toBe('checkout_other');
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it('completed but unpaid checkout → acknowledged without dispatch', async () => {
+    const fetchSpy = vi
+      .spyOn(global, 'fetch')
+      .mockResolvedValue(new Response('{}', { status: 200 }));
+    const raw = productEvent('toolkit', { payment_status: 'unpaid' });
+    const sig = signPayload(raw, TEST_SECRET);
+    const req = makeReq({ rawBody: raw, headers: { 'stripe-signature': sig } });
+    const res = makeRes();
+    await stripeWebhook(req as never, res as never);
+    expect(res.statusCode).toBe(200);
+    expect((res.body as { handled: string }).handled).toBe('checkout_unpaid');
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it('async payment success → paid product delivery dispatch', async () => {
+    let capturedBody: string | undefined;
+    vi.spyOn(global, 'fetch').mockImplementation(async (_url, init) => {
+      capturedBody = (init as { body: string }).body;
+      return new Response('{}', { status: 200 });
+    });
+    const event = JSON.parse(productEvent('vault'));
+    event.type = 'checkout.session.async_payment_succeeded';
+    const raw = JSON.stringify(event);
+    const sig = signPayload(raw, TEST_SECRET);
+    const req = makeReq({ rawBody: raw, headers: { 'stripe-signature': sig } });
+    const res = makeRes();
+    await stripeWebhook(req as never, res as never);
+    expect(res.statusCode).toBe(200);
+    expect((res.body as { handled: string; product_key: string }).handled).toBe('product_delivery');
+    expect((res.body as { product_key: string }).product_key).toBe('vault');
+    expect(capturedBody).toBeDefined();
+  });
+
+  it('async payment failure → acknowledged without dispatch', async () => {
+    const fetchSpy = vi
+      .spyOn(global, 'fetch')
+      .mockResolvedValue(new Response('{}', { status: 200 }));
+    const event = JSON.parse(productEvent('vault', { payment_status: 'unpaid' }));
+    event.type = 'checkout.session.async_payment_failed';
+    const raw = JSON.stringify(event);
+    const sig = signPayload(raw, TEST_SECRET);
+    const req = makeReq({ rawBody: raw, headers: { 'stripe-signature': sig } });
+    const res = makeRes();
+    await stripeWebhook(req as never, res as never);
+    expect(res.statusCode).toBe(200);
+    expect((res.body as { handled: string }).handled).toBe('payment_failed');
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
