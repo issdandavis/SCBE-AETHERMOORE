@@ -1,9 +1,9 @@
 {
   "schema": "clay.byte-embedding-thaw-kaggle-recovery-result.v1",
-  "recorded_at_utc": "2026-11-17T10:37:16.1755677Z",
+  "recorded_at_utc": "2026-11-17T10:56:18.8320847Z",
   "status": "PASS_PRIVATE_OFFLINE_PACKET_AND_LOCAL_REPLAY_NOT_UPLOADED",
-  "implementation_commit": "0bed01697d74c2a9057eabc8e9396d359d574fac",
-  "system_map_lf_sha256": "6894e52471f32111dde78db7c04c03cae778f952bd3efa83c38025d6eaa552e4",
+  "implementation_commit": "c6a6658ec9ac3a0eddbda4cd5d918267286219b4",
+  "system_map_lf_sha256": "cf2277bc0f40241bef95c687b2a2c45809831ffcea61334e2c35ed9302366485",
   "system_map_hash_rule": "sha256 after CRLF and CR line endings are normalized to LF",
   "source_run": {
     "path": "C:\\dev\\clay-training-runs\\byte-embedding-thaw-20261115-v1",
@@ -18,37 +18,37 @@
   },
   "implementation": {
     "builder_sha256": "73e23e005b42faab9618fa0279d85898cbdf564606ede6ca302f44617f52bc7d",
-    "entrypoint_sha256": "210cc9285885491642b87b589a5aa387da63c660e04150e0e43286b1293a239c",
-    "recovery_test_sha256": "2f5f0a68773fc63a43ca4a8ed1b7b850a4a82683971258103434a2fc5141920b",
+    "entrypoint_sha256": "27096f7d6ea64fcbe37e3572795142e7f890759268b9e400afdd0a015f4004a7",
+    "recovery_test_sha256": "b99dedaeef2ae3f5177b199e14c4682040a4cbea5285fb937871455c17f876fb",
     "campaign_runner_sha256": "41ae605fe8a72df2bc24c6a55a43eb30a7a93e324838dd3b731cf1f8b5a4d956",
     "thaw_module_sha256": "1404b980af543e1a9dcb032f1807dca225eee57e80cb776c34f39831917c0577",
     "independent_replay_sha256": "9b3bc0310e1d011d68a87f2bc3101a9bddc0dd7121822e38809f1f7d24585de8",
     "preregistration_sha256": "86ae011264baec865f9391aa123a4a5535bf345bb1a512168befd38015ab7f1b"
   },
   "packet": {
-    "packet_id": "5888339705e328e2250db2f076732d10480121814ef3ef4aeb03360177d9bc91",
-    "packet_manifest_sha256": "68bf2fcddf9cb6487385862f6a65d9a3b17a2cd7594b75b3f46cd5fa14e46706",
+    "packet_id": "f20ea9183bdef402abe8f317e3cf9eb6fc981b98f953714597e412dd05681a99",
+    "packet_manifest_sha256": "87c825524b3ab7e0e1e641d403cdb4187427c8a57067745fd163cd9f170dc948",
     "path_map_sha256": "a3e3800e131818305f8541cc7b90785bb35d08293e3bb860f6727abd823cce00",
     "archive": {
-      "name": "clay-byte-thaw-aggregation-replay-5888339705e328e2.packet",
-      "bytes": 128987463,
-      "sha256": "2a3448a6baa0d6077c6049bd578d014b8e30698e5369d78a7d8f3635a9692484"
+      "name": "clay-byte-thaw-aggregation-replay-f20ea9183bdef402.packet",
+      "bytes": 128987702,
+      "sha256": "a95ce3768c5ecac5dae57385fd69551e2d3a4145dc56a5f02f2839c34e6236c8"
     },
     "payload_files": 126,
-    "payload_bytes": 162345592,
+    "payload_bytes": 162346430,
     "terminal_pointers": 9,
     "parent_pointers": 3,
     "both_checkpoint_slots_included": true,
     "all_input_bytes_hash_listed": true,
-    "build_receipt_sha256": "b2dde7cc78465090d06365ed85091cbb0049ac6a8fbd546e93ff6ad42d2f009c"
+    "build_receipt_sha256": "41f9c8de6dab7314d8ec0cbb2f8f3f33550820df4d561faf0d2dd6a4e080f688"
   },
   "local_replay": {
     "recovery_status": "PASS_AGGREGATION_AND_INDEPENDENT_REPLAY_NO_TRAINING",
     "independent_status": "PASS_RECOVERY_INDEPENDENT_INFERENCE_REPLAY_NO_PROMOTION",
-    "recovery_receipt_sha256": "4dea22d3426f8bbb517c02d46e691a57f4707c176ccd9f08be2844517b54c61d",
-    "recovery_receipt_body_sha256": "eae0b6ffc7e0f0f4469db85214068e8064d08cbcd7717d4f8a6699206571b652",
-    "aggregation_result_sha256": "8b81c2542d4fee11b7c798962b67085bc6b778056972cc414292eaba30bd920d",
-    "independent_replay_sha256": "091bb123b3f30ab246a4a78891c88618b47fe91571c0c516a82d69b8d05c4713",
+    "recovery_receipt_sha256": "c87b6e0db5bc6fb3c1cc3226d5f3ef497301232772ac78b2c35590aecb090b51",
+    "recovery_receipt_body_sha256": "5ed7029685edb3e637d33fe39285099b4e7954e595713fbb9f7b47cafa67e38c",
+    "aggregation_result_sha256": "bc807f0dd82dcdf68dc2ba8cc76cef95fee2dc8cb302c72589656b8965062339",
+    "independent_replay_sha256": "6961dc3508f3a0d7011ca11470720fe534512461893d00e54dfed02f15a860cd",
     "prediction_ledger_sha256": "9dc6fc82d36040ad6de7d97d241f44048ff470d1a750b60446c5dce92ae7a705",
     "prediction_ledger_rows": 22500,
     "prediction_ledger_unique_keys": 22500,
@@ -60,13 +60,17 @@
     "errors": [],
     "recovery_adjustments": 4,
     "recovery_adjustment_boundary": "historical verifier hash and no-intervention schema projection only; no inference, metric, aggregate, or ledger mismatch is waived",
-    "producer_gate": "NOT_MET"
+    "producer_gate": "NOT_MET",
+    "published_file_count": 4,
+    "published_bytes": 22192247,
+    "published_checkpoint_files": 0,
+    "temporary_runtime_outside_publish_tree": true
   },
   "verification": {
     "focused_tests": {
-      "passed": 29,
+      "passed": 31,
       "failed": 0,
-      "seconds": 13.93
+      "seconds": 14.79
     },
     "ruff": "PASS",
     "flake8": "PASS"
@@ -79,9 +83,9 @@
     "gpu": false,
     "internet": false,
     "training": "NONE",
-    "dataset_metadata_sha256": "192c73e8eb692b47667f423d0163450149aebefeef70209c4be45ad3352f3b97",
-    "kernel_metadata_sha256": "70d05500720359c0d22d793bd81b4ec6fd478612fa7c956dcf494a6fee0ac331",
-    "launch_plan_sha256": "4a607a06152cb6b1d9099b52de06926e2419702baa0a50fd05acba355cf08765",
+    "dataset_metadata_sha256": "d95d3ca10d48930eb68f810b29be9f3e2fdc0363e1a6ec489ede89b3531e1ed9",
+    "kernel_metadata_sha256": "3274be72f239490bddecaa1bf167b9706adcebc42c166a8a6735399feb291bd1",
+    "launch_plan_sha256": "bdd7268bcaf234a2d92dae10cbef9792f189686c530f342cdbee6f554f9a3c73",
     "expected_outputs": [
       "/kaggle/working/clay-byte-thaw-aggregation-replay/run/RESULT.json",
       "/kaggle/working/clay-byte-thaw-aggregation-replay/INDEPENDENT_REPLAY.json",
@@ -98,5 +102,5 @@
     "kaggle_run": "NONE"
   },
   "self_hash_rule": "sha256 of canonical JSON with receipt_body_sha256 omitted",
-  "receipt_body_sha256": "142045a6f92f7a64e728cddb6d84c274bd83fae90851141e5497f941d7e37d21"
+  "receipt_body_sha256": "0b107adeae8a60e6109222957f2f39d6b1dce887ef4a67962ce33d022fda2738"
 }

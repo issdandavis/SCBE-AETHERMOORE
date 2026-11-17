@@ -65,24 +65,25 @@ before aggregation.
 
 Packet identity:
 
-`5888339705e328e2250db2f076732d10480121814ef3ef4aeb03360177d9bc91`
+`f20ea9183bdef402abe8f317e3cf9eb6fc981b98f953714597e412dd05681a99`
 
 Release root:
 
-`C:\dev\clay-training-runs\byte-embedding-thaw-kaggle-recovery-20261117\clay-byte-thaw-aggregation-replay-5888339705e328e2`
+`C:\dev\clay-training-runs\byte-embedding-thaw-kaggle-recovery-20261117\clay-byte-thaw-aggregation-replay-f20ea9183bdef402`
 
-The private offline archive is `128,987,463` bytes with SHA-256
-`2a3448a6baa0d6077c6049bd578d014b8e30698e5369d78a7d8f3635a9692484`.
-Its uncompressed, hash-listed payload is `162,345,592` bytes across `126`
-files.  This is `1,896,541` bytes below the previously documented
+The private offline archive is `128,987,702` bytes with SHA-256
+`a95ce3768c5ecac5dae57385fd69551e2d3a4145dc56a5f02f2839c34e6236c8`.
+Its uncompressed, hash-listed payload is `162,346,430` bytes across `126`
+files.  This is `1,896,302` bytes below the previously documented
 `130,884,004`-byte Clay Kaggle compatibility archive.  Kaggle metadata declares
 CPU, internet off, GPU off, and private visibility.  Nothing was uploaded or
 launched remotely.
 
 The packet has no machine-specific absolute path in its entry point.  The
 local release directory is only the build output location.  Inside Kaggle the
-script discovers the single `.packet` below the mounted input root and writes
-only below `/kaggle/working/clay-byte-thaw-aggregation-replay`.
+script discovers the single `.packet` below the mounted input root, extracts
+and stages under `/tmp`, and publishes only the four evidence files below
+`/kaggle/working/clay-byte-thaw-aggregation-replay`.
 
 ## Path neutrality
 
@@ -131,7 +132,7 @@ records upload and Kaggle-run authority as `NONE`.
 Focused recovery, thaw, adapter, exact-p, and independent-replay fixtures:
 
 ```text
-29 passed in 13.93s
+31 passed in 14.79s
 Ruff: passed
 Flake8: passed
 ```
@@ -155,9 +156,11 @@ and kernel bytes, with two CPU threads and `--mode all`:
 | aggregate paired delta | `0.0` |
 | prediction-ledger rows / unique keys | `22,500 / 22,500` |
 | recovered producer gate | `NOT_MET` |
-| aggregate `RESULT.json` SHA-256 | `8b81c2542d4fee11b7c798962b67085bc6b778056972cc414292eaba30bd920d` |
-| independent replay SHA-256 | `091bb123b3f30ab246a4a78891c88618b47fe91571c0c516a82d69b8d05c4713` |
+| aggregate `RESULT.json` SHA-256 | `bc807f0dd82dcdf68dc2ba8cc76cef95fee2dc8cb302c72589656b8965062339` |
+| independent replay SHA-256 | `6961dc3508f3a0d7011ca11470720fe534512461893d00e54dfed02f15a860cd` |
 | ledger SHA-256 | `9dc6fc82d36040ad6de7d97d241f44048ff470d1a750b60446c5dce92ae7a705` |
+| published files | `4` |
+| published checkpoint/model files | `0` |
 
 The unqualified historical verifier reports four provenance errors, and the
 recovery receipt preserves those raw errors.  One is the expected verifier
