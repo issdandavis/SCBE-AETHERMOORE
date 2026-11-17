@@ -190,7 +190,12 @@ def materialize_run_view(source: Path, destination: Path) -> dict[str, Any]:
     for path in sorted(item for item in source.rglob("*") if item.is_file()):
         method = _copy_or_link(path, destination / path.relative_to(source))
         counts[method] += 1
-    return {"source": str(source), "destination": str(destination), "files": sum(counts.values()), **counts}
+    return {
+        "source": str(source),
+        "destination": str(destination),
+        "files": sum(counts.values()),
+        **counts,
+    }
 
 
 def _packet_records_by_prefix(manifest: Mapping[str, Any], prefix: str) -> dict[str, Mapping[str, Any]]:
@@ -303,6 +308,101 @@ def aggregate_terminal_results(packet_root: Path, staged_run: Path) -> dict[str,
     return serialized
 
 
+def _no_intervention_semantic_match(packet_root: Path, seed: int) -> bool:
+    baseline_root = packet_root / "payload" / "baseline"
+    baseline = load_json(baseline_root / "RESULT.json")
+    aggregate_rows = [row for row in baseline["per_arm"]["no_intervention_adapter"] if int(row["seed"]) == seed]
+    if len(aggregate_rows) != 1:
+        return False
+    aggregate = aggregate_rows[0]
+    parent = load_json(baseline_root / "parents" / f"seed-{seed}" / "RESULT.json")
+    return (
+        int(parent["seed"]) == int(aggregate["seed"])
+        and parent["metrics"] == aggregate["metrics"]
+        and parent["predictions"] == aggregate["predictions"]
+        and float(parent["counting_accuracy"])
+        == float(aggregate["counting_accuracy"])
+        == float(aggregate["parent_counting_accuracy"])
+        and int(aggregate["trainable_parameters"]) == 0
+    )
+
+
+def qualify_recovery_replay(
+    packet_root: Path,
+    raw_replay: Mapping[str, Any],
+    *,
+    tolerance: float,
+) -> dict[str, Any]:
+    """Resolve two known metadata mismatches without waiving inference errors."""
+
+    remaining = [str(error) for error in raw_replay.get("errors", [])]
+    adjustments: list[dict[str, Any]] = []
+    stale_error = "baseline independent replay verifier binding is stale"
+    if stale_error in remaining:
+        baseline_replay = load_json(packet_root / "payload" / "baseline" / "INDEPENDENT_REPLAY.json")
+        historical = packet_root / "authorities" / "baseline_verifier" / "clay_frozen_multiview_replay.py"
+        expected = str(baseline_replay["independent_dataset_builder_sha256"])
+        actual = sha256_file(historical)
+        if actual == expected:
+            remaining.remove(stale_error)
+            adjustments.append(
+                {
+                    "kind": "historical_baseline_verifier_binding",
+                    "raw_error": stale_error,
+                    "historical_verifier_sha256": actual,
+                    "reason": (
+                        "The current verifier contains the later exact-Fraction "
+                        "overflow fix; the packet retains the exact verifier bytes "
+                        "bound by the already-closed baseline replay."
+                    ),
+                }
+            )
+
+    for seed in (20261134, 20261135, 20261136):
+        error = f"no_intervention_adapter seed {seed}: terminal baseline result differs"
+        if error in remaining and _no_intervention_semantic_match(packet_root, seed):
+            remaining.remove(error)
+            adjustments.append(
+                {
+                    "kind": "no_intervention_semantic_projection",
+                    "seed": seed,
+                    "raw_error": error,
+                    "reason": (
+                        "The parent RESULT and imported aggregate row use different "
+                        "schemas, but seed, predictions, metrics, counting accuracy, "
+                        "and explicit zero-new-parameter semantics match exactly."
+                    ),
+                }
+            )
+
+    receipts = raw_replay.get("model_receipts")
+    if not isinstance(receipts, list):
+        receipts = []
+    mismatch_total = sum(int(row.get("prediction_mismatches", -1)) for row in receipts if isinstance(row, Mapping))
+    inference_pass = (
+        len(receipts) == 15
+        and mismatch_total == 0
+        and float(raw_replay.get("max_metric_delta", float("inf"))) <= tolerance
+        and float(raw_replay.get("aggregate_comparison_delta", float("inf"))) <= tolerance
+        and float(raw_replay.get("aggregate_paired_delta", float("inf"))) <= tolerance
+        and int(raw_replay.get("ledger", {}).get("rows", -1)) == 22_500
+    )
+    result = dict(raw_replay)
+    result["raw_replay_status"] = raw_replay.get("status")
+    result["raw_replay_errors"] = list(raw_replay.get("errors", []))
+    result["raw_replay_sha256"] = stable_hash(raw_replay)
+    result["recovery_adjustments"] = adjustments
+    result["prediction_mismatch_total"] = mismatch_total
+    result["errors"] = remaining
+    result["status"] = (
+        "PASS_RECOVERY_INDEPENDENT_INFERENCE_REPLAY_NO_PROMOTION"
+        if inference_pass and not remaining
+        else "FAIL_RECOVERY_INDEPENDENT_INFERENCE_REPLAY"
+    )
+    result["recovery_replay_sha256"] = stable_hash(result)
+    return result
+
+
 def _receipt_body_hash(receipt: Mapping[str, Any]) -> str:
     body = dict(receipt)
     body.pop("receipt_body_sha256", None)
@@ -340,8 +440,13 @@ def run_recovery(args: argparse.Namespace) -> dict[str, Any]:
                 tolerance=args.tolerance,
                 ledger_output=output_root / "INDEPENDENT_REPLAY_LEDGER.jsonl",
             )
+            replay_result = qualify_recovery_replay(
+                runtime_root,
+                replay_result,
+                tolerance=args.tolerance,
+            )
         atomic_json(output_root / "INDEPENDENT_REPLAY.json", replay_result)
-        if replay_result.get("status") != "PASS_INDEPENDENT_INFERENCE_REPLAY_NO_PROMOTION":
+        if replay_result.get("status") != "PASS_RECOVERY_INDEPENDENT_INFERENCE_REPLAY_NO_PROMOTION":
             failure = {
                 "schema": f"{RECEIPT_SCHEMA}.failure",
                 "status": "FAIL_CLOSED",

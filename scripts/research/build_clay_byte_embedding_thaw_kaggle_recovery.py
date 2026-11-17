@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from hashlib import sha256
 from pathlib import Path
+import subprocess
 import sys
 import tempfile
 from typing import Any, Iterable
@@ -37,6 +38,7 @@ RUN_SCHEMA = "clay.byte-embedding-thaw-campaign.v1.manifest"
 EXPECTED_RUN_MANIFEST_SHA256 = "6bb0fd276c1d2d9c309dc9e04ea9fb4d9aaf84aab62b2060c166059c1da492cc"
 EXPECTED_CONFIG_HASH = "583f4362158068a056e52ea8894163989fe810378d60b858e60c4e9a70c0e0d6"
 EXPECTED_DATASET_MANIFEST_SHA256 = "7460665cbb718097438227c452f1915e88bdc5a10ac643122b17908b505d0041"
+BASELINE_VERIFIER_COMMIT = "4b3483e1f821470fbd3cfee3ad4187dec74c69de"
 
 RUNTIME_MODULES = (
     "python/__init__.py",
@@ -214,7 +216,12 @@ def _source_specs(
                 ("checkpoints/slot-a.pt", "terminal_checkpoint_slot"),
                 ("checkpoints/slot-b.pt", "terminal_checkpoint_slot"),
             ):
-                _add(specs, horse / relative, f"payload/run/horses/{name}/{relative}", role)
+                _add(
+                    specs,
+                    horse / relative,
+                    f"payload/run/horses/{name}/{relative}",
+                    role,
+                )
 
     for name in BASELINE_AUTHORITY_FILES:
         _add(specs, baseline_dir / name, f"payload/baseline/{name}", "baseline_authority")
@@ -226,7 +233,11 @@ def _source_specs(
         parent = baseline_dir / "parents" / f"seed-{seed}"
         parent_result = load_json(parent / "RESULT.json")
         recorded = parent_rows.get(seed, parent_result)
-        _require_hash(parent / "PARENT.pt", str(recorded["parent_sha256"]), label="parent checkpoint")
+        _require_hash(
+            parent / "PARENT.pt",
+            str(recorded["parent_sha256"]),
+            label="parent checkpoint",
+        )
         pointer = _validate_pointer(parent, expected_step=int(recorded["steps"]))
         parent_pointers.append({"seed": seed, **pointer})
         for relative, role in (
@@ -236,12 +247,21 @@ def _source_specs(
             ("checkpoints/slot-a.pt", "parent_checkpoint_slot"),
             ("checkpoints/slot-b.pt", "parent_checkpoint_slot"),
         ):
-            _add(specs, parent / relative, f"payload/baseline/parents/seed-{seed}/{relative}", role)
+            _add(
+                specs,
+                parent / relative,
+                f"payload/baseline/parents/seed-{seed}/{relative}",
+                role,
+            )
 
         control_name = f"frozen_adapter_multiview-seed-{seed}"
         control = baseline_dir / "horses" / control_name
         control_result = load_json(control / "RESULT.json")
-        _require_hash(control / "MODEL.pt", str(control_result["model_sha256"]), label="baseline control model")
+        _require_hash(
+            control / "MODEL.pt",
+            str(control_result["model_sha256"]),
+            label="baseline control model",
+        )
         _add(
             specs,
             control / "MODEL.pt",
@@ -256,7 +276,12 @@ def _source_specs(
         )
 
     for relative in RUNTIME_MODULES:
-        _add(specs, worktree / relative, f"runtime/scbe_repo/{relative}", "runtime_source")
+        _add(
+            specs,
+            worktree / relative,
+            f"runtime/scbe_repo/{relative}",
+            "runtime_source",
+        )
     _add(
         specs,
         kernel_entry_source,
@@ -367,6 +392,26 @@ def _write_generated_authorities(packet_root: Path, run_manifest: dict[str, Any]
         },
     )
     write_json(packet_root / "PATH_MAP.json", facts["path_map"])
+    baseline_replay = load_json(Path(facts["baseline_dir"]) / "INDEPENDENT_REPLAY.json")
+    historical_bytes = subprocess.check_output(
+        [
+            "git",
+            "-C",
+            facts["worktree"],
+            "show",
+            (f"{BASELINE_VERIFIER_COMMIT}:" "python/scbe/clay_frozen_multiview_replay.py"),
+        ]
+    )
+    expected_verifier_hash = str(baseline_replay["independent_dataset_builder_sha256"])
+    actual_verifier_hash = sha256(historical_bytes).hexdigest()
+    if actual_verifier_hash != expected_verifier_hash:
+        raise RuntimeError(
+            "historical baseline verifier does not match its replay receipt: "
+            f"expected {expected_verifier_hash}, got {actual_verifier_hash}"
+        )
+    historical_path = packet_root / "authorities" / "baseline_verifier" / "clay_frozen_multiview_replay.py"
+    historical_path.parent.mkdir(parents=True, exist_ok=True)
+    historical_path.write_bytes(historical_bytes)
 
 
 def _packet_files(packet_root: Path, roles: dict[str, str]) -> list[dict[str, Any]]:

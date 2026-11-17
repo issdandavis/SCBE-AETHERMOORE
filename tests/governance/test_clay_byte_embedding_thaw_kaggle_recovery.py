@@ -21,6 +21,8 @@ from scripts.research.run_clay_byte_embedding_thaw_kaggle_recovery import (
     aggregate_terminal_results,
     extract_and_verify_packet,
     materialize_run_view,
+    qualify_recovery_replay,
+    sha256_file,
     stable_hash,
 )
 
@@ -168,3 +170,56 @@ def test_materialized_view_preserves_input_bytes(tmp_path: Path) -> None:
     assert receipt["files"] == 1
     assert (tmp_path / "view" / "horses" / "a" / "MODEL.pt").read_bytes() == b"immutable-model"
     assert original.read_bytes() == b"immutable-model"
+
+
+def test_recovery_qualification_keeps_inference_fail_closed(tmp_path: Path) -> None:
+    packet = tmp_path / "packet"
+    baseline_root = packet / "payload" / "baseline"
+    historical = packet / "authorities" / "baseline_verifier" / "clay_frozen_multiview_replay.py"
+    historical.parent.mkdir(parents=True)
+    historical.write_bytes(b"historical verifier\n")
+    seeds = (20261134, 20261135, 20261136)
+    aggregate_rows = []
+    for seed in seeds:
+        parent = _row("parent", seed, 1)
+        write_json(baseline_root / "parents" / f"seed-{seed}" / "RESULT.json", parent)
+        aggregate_rows.append(
+            {
+                "arm": "no_intervention_adapter",
+                "seed": seed,
+                "metrics": parent["metrics"],
+                "predictions": parent["predictions"],
+                "counting_accuracy": parent["counting_accuracy"],
+                "parent_counting_accuracy": parent["counting_accuracy"],
+                "trainable_parameters": 0,
+            }
+        )
+    write_json(
+        baseline_root / "RESULT.json",
+        {"per_arm": {"no_intervention_adapter": aggregate_rows}},
+    )
+    write_json(
+        baseline_root / "INDEPENDENT_REPLAY.json",
+        {"independent_dataset_builder_sha256": sha256_file(historical)},
+    )
+    raw = {
+        "status": "FAIL_INDEPENDENT_INFERENCE_REPLAY",
+        "errors": [
+            "baseline independent replay verifier binding is stale",
+            *[f"no_intervention_adapter seed {seed}: terminal baseline result differs" for seed in seeds],
+        ],
+        "model_receipts": [{"prediction_mismatches": 0} for _ in range(15)],
+        "max_metric_delta": 0.0,
+        "aggregate_comparison_delta": 0.0,
+        "aggregate_paired_delta": 0.0,
+        "ledger": {"rows": 22_500},
+    }
+
+    passed = qualify_recovery_replay(packet, raw, tolerance=1e-12)
+    assert passed["status"] == "PASS_RECOVERY_INDEPENDENT_INFERENCE_REPLAY_NO_PROMOTION"
+    assert passed["errors"] == []
+    assert len(passed["recovery_adjustments"]) == 4
+
+    raw["model_receipts"][0]["prediction_mismatches"] = 1
+    failed = qualify_recovery_replay(packet, raw, tolerance=1e-12)
+    assert failed["status"] == "FAIL_RECOVERY_INDEPENDENT_INFERENCE_REPLAY"
