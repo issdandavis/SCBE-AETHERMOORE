@@ -83,6 +83,51 @@ ISOLATED_REPLAY_BOOTSTRAP = (
     "sys.argv=[script,*args];"
     "runpy.run_path(script,run_name='__main__')"
 )
+EMBEDDED_KERNEL_AUTHORITY_SENTINEL = "EMBEDDED_KERNEL_AUTHORITY_JSON: str | None = None"
+KAGGLE_CODE_FILE_ONLY_BOOTSTRAP = r"""
+import importlib.util
+import json
+from pathlib import Path
+import sys
+
+script = Path(sys.argv[1]).resolve(strict=True)
+input_root = Path(sys.argv[2]).resolve(strict=True)
+runtime_root = Path(sys.argv[3])
+spec = importlib.util.spec_from_file_location("kaggle_code_file_only", script)
+if spec is None or spec.loader is None:
+    raise RuntimeError("could not import generated Kaggle code_file")
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+authority_path = script.with_name("KERNEL_PACKET_AUTHORITY.json")
+if authority_path.exists():
+    raise RuntimeError("code-file-only preflight unexpectedly has a sibling authority")
+dataset_id, authority = module.resolve_dataset_authority(authority_path, None)
+descriptor_path, descriptor = module.discover_packet(input_root, dataset_id)
+module.verify_kernel_authority(
+    authority_path,
+    descriptor_path,
+    descriptor,
+    authority=authority,
+)
+_, manifest = module.extract_and_verify_packet(
+    descriptor_path,
+    descriptor,
+    runtime_root,
+)
+print(
+    json.dumps(
+        {
+            "status": "PASS_CODE_FILE_ONLY_AUTHORITY_AND_DATASET_DISCOVERY",
+            "dataset_id": dataset_id,
+            "packet_id": manifest["packet_id"],
+            "authority_source": "EMBEDDED_CANONICAL_JSON",
+            "sibling_authority_present": False,
+            "material_training": "NONE",
+        },
+        sort_keys=True,
+    )
+)
+"""
 
 
 def kernel_title_for_id(kernel_id: str) -> str:
@@ -113,6 +158,27 @@ def kaggle_kernel_metadata(
         "competition_sources": [],
         "kernel_sources": [],
     }
+
+
+def render_kaggle_kernel_entry(
+    source: Path,
+    target: Path,
+    authority: Mapping[str, Any],
+) -> None:
+    """Render one Kaggle-uploadable code file with an exact embedded authority."""
+
+    text = source.resolve(strict=True).read_text(encoding="utf-8")
+    if text.count(EMBEDDED_KERNEL_AUTHORITY_SENTINEL) != 1:
+        raise RuntimeError("kernel entry has no unique embedded-authority sentinel")
+    canonical_authority = canonical_json(authority)
+    rendered = text.replace(
+        EMBEDDED_KERNEL_AUTHORITY_SENTINEL,
+        f"EMBEDDED_KERNEL_AUTHORITY_JSON: str | None = {canonical_authority!r}",
+    )
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(rendered, encoding="utf-8", newline="\n")
+    if EMBEDDED_KERNEL_AUTHORITY_SENTINEL in target.read_text(encoding="utf-8"):
+        raise RuntimeError("generated Kaggle entry retained the null authority sentinel")
 
 
 RUNTIME_MODULES = (
@@ -632,6 +698,73 @@ def verify_extracted_archive_isolated(
     }
 
 
+def verify_kaggle_code_file_only(
+    kernel_entry: Path,
+    dataset_dir: Path,
+    *,
+    expected_dataset_id: str,
+    expected_packet_id: str,
+) -> dict[str, Any]:
+    """Replay Kaggle's script upload shape: one code file plus an input mount."""
+
+    kernel_entry = kernel_entry.resolve(strict=True)
+    dataset_dir = dataset_dir.resolve(strict=True)
+    with tempfile.TemporaryDirectory(prefix="clay-prime-scissor-kaggle-code-only-") as temporary:
+        root = Path(temporary).resolve()
+        src = root / "src"
+        input_mount = root / "input" / "clay-prime-scissor-calibration"
+        runtime = root / "runtime"
+        script = src / "script.py"
+        copy_exact(kernel_entry, script)
+        for source in sorted(path for path in dataset_dir.iterdir() if path.is_file()):
+            copy_exact(source, input_mount / source.name)
+        sibling_authority = src / "KERNEL_PACKET_AUTHORITY.json"
+        if sibling_authority.exists():
+            raise RuntimeError("Kaggle code-file-only preflight copied a sibling authority")
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-I",
+                "-X",
+                "utf8",
+                "-c",
+                KAGGLE_CODE_FILE_ONLY_BOOTSTRAP,
+                str(script),
+                str(root / "input"),
+                str(runtime),
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+            cwd=src,
+            env={**os.environ, "PYTHONNOUSERSITE": "1"},
+        )
+        if result.returncode != 0:
+            raise RuntimeError(
+                "Kaggle code-file-only authority/discovery preflight failed: "
+                f"returncode={result.returncode}, stdout={result.stdout[-2000:]}, "
+                f"stderr={result.stderr[-4000:]}"
+            )
+        status = json.loads(result.stdout)
+        if status.get("status") != "PASS_CODE_FILE_ONLY_AUTHORITY_AND_DATASET_DISCOVERY":
+            raise RuntimeError(f"unexpected Kaggle code-file-only status: {status}")
+        if status.get("dataset_id") != expected_dataset_id:
+            raise RuntimeError("Kaggle code-file-only dataset identity differs")
+        if status.get("packet_id") != expected_packet_id:
+            raise RuntimeError("Kaggle code-file-only packet identity differs")
+    return {
+        "schema": f"{BUILD_SCHEMA}.kaggle-code-file-only-preflight.v1",
+        **status,
+        "returncode": 0,
+        "python_isolated_mode": True,
+        "code_file_count": 1,
+        "dataset_source_attached": True,
+        "packet_archive_verified": True,
+        "calibration_started": False,
+        "quota_spent": False,
+    }
+
+
 def build_packet(
     *,
     worktree: Path,
@@ -754,17 +887,22 @@ def build_packet(
                 "licenses": [{"name": "other"}],
             },
         )
-        copy_exact(kernel_entry.resolve(strict=True), kernel_dir / kernel_entry.name)
+        kernel_authority = {
+            "schema": KERNEL_AUTHORITY_SCHEMA,
+            "dataset_id": dataset_id,
+            "packet_id": packet_id,
+            "packet_descriptor": descriptor(dataset_dir / "PACKET_DESCRIPTOR.json"),
+            "archive": packet_descriptor["archive"],
+            "packet_manifest": packet_descriptor["packet_manifest"],
+        }
         write_json(
             kernel_dir / "KERNEL_PACKET_AUTHORITY.json",
-            {
-                "schema": KERNEL_AUTHORITY_SCHEMA,
-                "dataset_id": dataset_id,
-                "packet_id": packet_id,
-                "packet_descriptor": descriptor(dataset_dir / "PACKET_DESCRIPTOR.json"),
-                "archive": packet_descriptor["archive"],
-                "packet_manifest": packet_descriptor["packet_manifest"],
-            },
+            kernel_authority,
+        )
+        render_kaggle_kernel_entry(
+            kernel_entry.resolve(strict=True),
+            kernel_dir / kernel_entry.name,
+            kernel_authority,
         )
         write_json(
             kernel_dir / "kernel-metadata.json",
@@ -774,6 +912,12 @@ def build_packet(
                 dataset_id=dataset_id,
             ),
         )
+        kaggle_code_file_only_preflight = verify_kaggle_code_file_only(
+            kernel_dir / kernel_entry.name,
+            dataset_dir,
+            expected_dataset_id=dataset_id,
+            expected_packet_id=packet_id,
+        )
         launch_plan = {
             "schema": f"{BUILD_SCHEMA}.launch-plan",
             "status": "READY_NOT_UPLOADED_NOT_RUN",
@@ -782,6 +926,7 @@ def build_packet(
             "internet": False,
             "gpu": True,
             "entry_mode": "CALIBRATION_ONLY",
+            "kernel_authority_mode": "EMBEDDED_CANONICAL_JSON_WITH_LOCAL_AUDIT_COPY",
             "fixed_budget": {
                 "batch_size": 128,
                 "grow_steps_per_horse": 18_000,
@@ -825,6 +970,7 @@ def build_packet(
         "kernel_packet_authority": descriptor(kernel_dir / "KERNEL_PACKET_AUTHORITY.json", relative_to=output_root),
         "launch_plan": descriptor(output_root / "PRIVATE_KAGGLE_LAUNCH_PLAN.json", relative_to=output_root),
         "isolated_archive_replay": isolated_archive_replay,
+        "kaggle_code_file_only_preflight": kaggle_code_file_only_preflight,
         "authority": {
             "calibration": "TIMING_ONLY",
             "material_training": "NONE",

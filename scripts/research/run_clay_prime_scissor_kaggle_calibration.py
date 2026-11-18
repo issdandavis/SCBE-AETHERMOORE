@@ -30,6 +30,10 @@ MANIFEST_NAME = "PACKET_MANIFEST.json"
 FIXED_BATCH_SIZE = 128
 FIXED_GROW_STEPS = 18_000
 FIXED_MINIMUM_FREE_GIB = 25.0
+# The packet builder replaces this exact sentinel in the generated Kaggle
+# code_file.  Keeping the source value null prevents a source checkout from
+# silently acquiring launch authority.
+EMBEDDED_KERNEL_AUTHORITY_JSON: str | None = None
 
 
 def utc_now() -> str:
@@ -114,7 +118,21 @@ def discover_packet(input_root: Path, dataset_id: str) -> tuple[Path, dict[str, 
 
 
 def load_kernel_authority(authority_path: Path) -> dict[str, Any]:
-    authority = load_json(authority_path.resolve(strict=True))
+    default_path = Path(__file__).with_name("KERNEL_PACKET_AUTHORITY.json")
+    requested = authority_path.resolve(strict=False)
+    if authority_path.is_file():
+        authority = load_json(authority_path.resolve(strict=True))
+    elif requested == default_path.resolve(strict=False) and EMBEDDED_KERNEL_AUTHORITY_JSON is not None:
+        value = json.loads(EMBEDDED_KERNEL_AUTHORITY_JSON)
+        if not isinstance(value, dict):
+            raise TypeError("embedded kernel packet authority is not one JSON object")
+        if canonical_json(value) != EMBEDDED_KERNEL_AUTHORITY_JSON:
+            raise RuntimeError("embedded kernel packet authority is not canonical JSON")
+        authority = value
+    else:
+        # Preserve the strict missing-file failure for an explicit override or
+        # an unrendered source entrypoint.
+        authority = load_json(authority_path.resolve(strict=True))
     if authority.get("schema") != KERNEL_AUTHORITY_SCHEMA:
         raise RuntimeError("independent kernel packet authority schema differs")
     dataset_id = authority.get("dataset_id")

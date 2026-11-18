@@ -255,6 +255,84 @@ def test_dataset_discovery_identity_comes_from_suffixed_authority(
     assert authority["dataset_id"] == dataset_id
 
 
+def test_embedded_kernel_authority_is_default_only_and_canonical(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    dataset_id = "fixture/clay-prime-scissor-calibration-20261118-dd2623de"
+    authority = {
+        "schema": runner.KERNEL_AUTHORITY_SCHEMA,
+        "dataset_id": dataset_id,
+    }
+    generated_entry = tmp_path / "script.py"
+    monkeypatch.setattr(runner, "__file__", str(generated_entry))
+    monkeypatch.setattr(
+        runner,
+        "EMBEDDED_KERNEL_AUTHORITY_JSON",
+        runner.canonical_json(authority),
+    )
+
+    resolved, loaded = runner.resolve_dataset_authority(
+        generated_entry.with_name("KERNEL_PACKET_AUTHORITY.json"),
+        None,
+    )
+    assert resolved == dataset_id
+    assert loaded == authority
+
+    with pytest.raises(FileNotFoundError):
+        runner.resolve_dataset_authority(tmp_path / "explicit-missing.json", None)
+
+    monkeypatch.setattr(
+        runner,
+        "EMBEDDED_KERNEL_AUTHORITY_JSON",
+        json.dumps(authority, indent=2),
+    )
+    with pytest.raises(RuntimeError, match="not canonical JSON"):
+        runner.resolve_dataset_authority(
+            generated_entry.with_name("KERNEL_PACKET_AUTHORITY.json"),
+            None,
+        )
+
+
+def test_generated_code_file_alone_discovers_and_verifies_attached_dataset(
+    tmp_path: Path,
+) -> None:
+    descriptor_path, _, manifest = _sealed_packet(tmp_path)
+    packet_descriptor = runner.load_json(descriptor_path)
+    authority = {
+        "schema": runner.KERNEL_AUTHORITY_SCHEMA,
+        "dataset_id": packet_descriptor["dataset_id"],
+        "packet_id": manifest["packet_id"],
+        "packet_descriptor": descriptor(descriptor_path),
+        "archive": packet_descriptor["archive"],
+        "packet_manifest": packet_descriptor["packet_manifest"],
+    }
+    generated_entry = tmp_path / "generated" / "script.py"
+    builder.render_kaggle_kernel_entry(
+        Path(runner.__file__),
+        generated_entry,
+        authority,
+    )
+
+    rendered = generated_entry.read_text(encoding="utf-8")
+    assert builder.EMBEDDED_KERNEL_AUTHORITY_SENTINEL not in rendered
+    assert runner.canonical_json(authority) in rendered
+    receipt = builder.verify_kaggle_code_file_only(
+        generated_entry,
+        descriptor_path.parent,
+        expected_dataset_id=packet_descriptor["dataset_id"],
+        expected_packet_id=manifest["packet_id"],
+    )
+    assert receipt["status"] == "PASS_CODE_FILE_ONLY_AUTHORITY_AND_DATASET_DISCOVERY"
+    assert receipt["code_file_count"] == 1
+    assert receipt["sibling_authority_present"] is False
+    assert receipt["dataset_source_attached"] is True
+    assert receipt["packet_archive_verified"] is True
+    assert receipt["material_training"] == "NONE"
+    assert receipt["calibration_started"] is False
+    assert receipt["quota_spent"] is False
+
+
 def test_explicit_dataset_identity_must_match_authority(tmp_path: Path) -> None:
     authority_path = tmp_path / "KERNEL_PACKET_AUTHORITY.json"
     dataset_id = "fixture/clay-prime-scissor-calibration-20261118-dd2623de"
