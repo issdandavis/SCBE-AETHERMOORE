@@ -27,7 +27,6 @@ RECEIPT_SCHEMA = "clay.prime-scissor-input-kaggle-calibration.v1"
 KERNEL_AUTHORITY_SCHEMA = "clay.prime-scissor-input-kaggle-calibration-kernel-authority.v1"
 DESCRIPTOR_NAME = "PACKET_DESCRIPTOR.json"
 MANIFEST_NAME = "PACKET_MANIFEST.json"
-DEFAULT_DATASET_ID = "issacizrealdavis/clay-prime-scissor-calibration-20261118"
 FIXED_BATCH_SIZE = 128
 FIXED_GROW_STEPS = 18_000
 FIXED_MINIMUM_FREE_GIB = 25.0
@@ -114,14 +113,37 @@ def discover_packet(input_root: Path, dataset_id: str) -> tuple[Path, dict[str, 
     return matches[0]
 
 
+def load_kernel_authority(authority_path: Path) -> dict[str, Any]:
+    authority = load_json(authority_path.resolve(strict=True))
+    if authority.get("schema") != KERNEL_AUTHORITY_SCHEMA:
+        raise RuntimeError("independent kernel packet authority schema differs")
+    dataset_id = authority.get("dataset_id")
+    if not isinstance(dataset_id, str) or "/" not in dataset_id:
+        raise RuntimeError("independent kernel packet authority dataset id differs")
+    return authority
+
+
+def resolve_dataset_authority(
+    authority_path: Path,
+    requested_dataset_id: str | None,
+) -> tuple[str, dict[str, Any]]:
+    """Resolve packet discovery identity from the independently pinned authority."""
+
+    authority = load_kernel_authority(authority_path)
+    authority_dataset_id = str(authority["dataset_id"])
+    if requested_dataset_id is not None and requested_dataset_id != authority_dataset_id:
+        raise RuntimeError("explicit dataset id differs from independent kernel packet authority")
+    return authority_dataset_id, authority
+
+
 def verify_kernel_authority(
     authority_path: Path,
     descriptor_path: Path,
     packet_descriptor: Mapping[str, Any],
+    *,
+    authority: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    authority = load_json(authority_path.resolve(strict=True))
-    if authority.get("schema") != KERNEL_AUTHORITY_SCHEMA:
-        raise RuntimeError("independent kernel packet authority schema differs")
+    authority = dict(authority or load_kernel_authority(authority_path))
     verify_descriptor(
         descriptor_path,
         authority["packet_descriptor"],
@@ -346,11 +368,16 @@ def _run_calibration_inner(args: argparse.Namespace) -> dict[str, Any]:
         raise FileExistsError(f"output is not empty: {output_root}")
     output_root.mkdir(parents=True, exist_ok=True)
     started_at = utc_now()
-    descriptor_path, packet_descriptor = discover_packet(input_root, args.dataset_id)
+    dataset_id, authority = resolve_dataset_authority(
+        args.kernel_authority,
+        args.dataset_id,
+    )
+    descriptor_path, packet_descriptor = discover_packet(input_root, dataset_id)
     verify_kernel_authority(
         args.kernel_authority,
         descriptor_path,
         packet_descriptor,
+        authority=authority,
     )
     _, manifest = extract_and_verify_packet(descriptor_path, packet_descriptor, runtime_root)
     packet_id = str(manifest["packet_id"])
@@ -555,7 +582,14 @@ def run_calibration(args: argparse.Namespace) -> dict[str, Any]:
 def parse_args(arguments: Iterable[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input-root", type=Path, default=Path("/kaggle/input"))
-    parser.add_argument("--dataset-id", default=DEFAULT_DATASET_ID)
+    parser.add_argument(
+        "--dataset-id",
+        default=None,
+        help=(
+            "Optional explicit dataset identity. When omitted, the identity is derived "
+            "from KERNEL_PACKET_AUTHORITY.json; an explicit value must match it."
+        ),
+    )
     parser.add_argument(
         "--kernel-authority",
         type=Path,

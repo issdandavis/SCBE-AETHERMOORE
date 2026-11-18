@@ -15,6 +15,7 @@ from hashlib import sha256
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 import tempfile
@@ -59,6 +60,37 @@ EXPECTED_FROZEN_ARTIFACT_SHA256 = "8cf629170554970ec6541d0a129c48d64e3e38925ae31
 EXPECTED_FROZEN_ARTIFACT_BYTES = 905_507
 EXPECTED_MATH_COMMIT = "0a5a06bed57e922f7e9ca04229664266aa8d215c"
 EXPECTED_SEEDS = (20261134, 20261135, 20261136)
+
+
+def kernel_title_for_id(kernel_id: str) -> str:
+    """Return a title whose provider-cleaned slug is exactly the pinned kernel slug."""
+
+    owner, separator, slug = kernel_id.partition("/")
+    if not separator or not owner or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", slug):
+        raise ValueError(f"kernel id must contain a clean lowercase provider slug: {kernel_id}")
+    return slug
+
+
+def kaggle_kernel_metadata(
+    *,
+    kernel_id: str,
+    kernel_entry_name: str,
+    dataset_id: str,
+) -> dict[str, object]:
+    return {
+        "id": kernel_id,
+        "title": kernel_title_for_id(kernel_id),
+        "code_file": kernel_entry_name,
+        "language": "python",
+        "kernel_type": "script",
+        "is_private": True,
+        "enable_gpu": True,
+        "enable_internet": False,
+        "dataset_sources": [dataset_id],
+        "competition_sources": [],
+        "kernel_sources": [],
+    }
+
 
 RUNTIME_MODULES = (
     "python/__init__.py",
@@ -525,7 +557,7 @@ def build_packet(
         write_json(
             dataset_dir / "dataset-metadata.json",
             {
-                "title": f"Clay Prime Scissor Calibration {packet_id[:16]}",
+                "title": kernel_title_for_id(dataset_id),
                 "id": dataset_id,
                 "licenses": [{"name": "other"}],
             },
@@ -544,19 +576,11 @@ def build_packet(
         )
         write_json(
             kernel_dir / "kernel-metadata.json",
-            {
-                "id": kernel_id,
-                "title": f"Clay Prime Scissor Calibration {packet_id[:16]}",
-                "code_file": kernel_entry.name,
-                "language": "python",
-                "kernel_type": "script",
-                "is_private": True,
-                "enable_gpu": True,
-                "enable_internet": False,
-                "dataset_sources": [dataset_id],
-                "competition_sources": [],
-                "kernel_sources": [],
-            },
+            kaggle_kernel_metadata(
+                kernel_id=kernel_id,
+                kernel_entry_name=kernel_entry.name,
+                dataset_id=dataset_id,
+            ),
         )
         launch_plan = {
             "schema": f"{BUILD_SCHEMA}.launch-plan",
@@ -573,7 +597,9 @@ def build_packet(
                 "projected_campaign_gate_hours_with_margin": 24.0,
             },
             "commands": {
-                "create_private_dataset": (f'kaggle datasets create -p "{dataset_dir}" --dir-mode zip'),
+                "version_private_dataset": (
+                    f'kaggle datasets version -p "{dataset_dir}" ' f'-m "Calibration packet {packet_id}" --dir-mode zip'
+                ),
                 "push_private_gpu_kernel": f'kaggle kernels push -p "{kernel_dir}"',
             },
             "expected_outputs": [

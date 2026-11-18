@@ -237,6 +237,39 @@ def test_independent_kernel_authority_rejects_replaced_descriptor(
         runner.verify_kernel_authority(authority_path, descriptor_path, packet_descriptor)
 
 
+def test_dataset_discovery_identity_comes_from_suffixed_authority(
+    tmp_path: Path,
+) -> None:
+    authority_path = tmp_path / "KERNEL_PACKET_AUTHORITY.json"
+    dataset_id = "fixture/clay-prime-scissor-calibration-20261118-dd2623de"
+    write_json(
+        authority_path,
+        {
+            "schema": runner.KERNEL_AUTHORITY_SCHEMA,
+            "dataset_id": dataset_id,
+        },
+    )
+
+    resolved, authority = runner.resolve_dataset_authority(authority_path, None)
+    assert resolved == dataset_id
+    assert authority["dataset_id"] == dataset_id
+
+
+def test_explicit_dataset_identity_must_match_authority(tmp_path: Path) -> None:
+    authority_path = tmp_path / "KERNEL_PACKET_AUTHORITY.json"
+    dataset_id = "fixture/clay-prime-scissor-calibration-20261118-dd2623de"
+    write_json(
+        authority_path,
+        {
+            "schema": runner.KERNEL_AUTHORITY_SCHEMA,
+            "dataset_id": dataset_id,
+        },
+    )
+
+    with pytest.raises(RuntimeError, match="explicit dataset id differs"):
+        runner.resolve_dataset_authority(authority_path, "fixture/unsuffixed")
+
+
 def _baseline_fixture(root: Path) -> tuple[Path, dict]:
     baseline = root / "baseline"
     source_root = root / "source"
@@ -421,10 +454,24 @@ def test_calibration_wrapper_emits_receipts_and_rejects_model_artifacts(
     packet.mkdir()
     manifest = {"packet_id": "a" * 64}
     descriptor_path = _write(tmp_path / runner.DESCRIPTOR_NAME, b"{}\n")
+    authority_path = tmp_path / "KERNEL_PACKET_AUTHORITY.json"
+    write_json(
+        authority_path,
+        {
+            "schema": runner.KERNEL_AUTHORITY_SCHEMA,
+            "dataset_id": "fixture/calibration",
+        },
+    )
+    discovered_dataset_ids: list[str] = []
+
+    def fake_discover(input_root: Path, dataset_id: str) -> tuple[Path, dict]:
+        discovered_dataset_ids.append(dataset_id)
+        return descriptor_path, {}
+
     monkeypatch.setattr(
         runner,
         "discover_packet",
-        lambda input_root, dataset_id: (descriptor_path, {}),
+        fake_discover,
     )
     monkeypatch.setattr(
         runner,
@@ -437,7 +484,7 @@ def test_calibration_wrapper_emits_receipts_and_rejects_model_artifacts(
     monkeypatch.setattr(
         runner,
         "verify_kernel_authority",
-        lambda authority_path, descriptor_path, packet_descriptor: {},
+        lambda authority_path, descriptor_path, packet_descriptor, **kwargs: {},
     )
     monkeypatch.setattr(
         runner,
@@ -473,8 +520,8 @@ def test_calibration_wrapper_emits_receipts_and_rejects_model_artifacts(
         [
             "--input-root",
             str(tmp_path),
-            "--dataset-id",
-            "fixture",
+            "--kernel-authority",
+            str(authority_path),
             "--output-root",
             str(tmp_path / "output"),
             "--runtime-root",
@@ -483,6 +530,7 @@ def test_calibration_wrapper_emits_receipts_and_rejects_model_artifacts(
     )
     receipt = runner.run_calibration(args)
     assert receipt["status"] == "PASS_CALIBRATION_ONLY_NO_HORSES_STARTED"
+    assert discovered_dataset_ids == ["fixture/calibration"]
     assert not runner._forbidden_artifacts(tmp_path / "output")
     assert (tmp_path / "output" / "ENVIRONMENT_RECEIPT.json").is_file()
     assert (tmp_path / "output" / "LAUNCH_RECEIPT.json").is_file()
@@ -506,9 +554,25 @@ def test_calibration_wrapper_emits_receipts_and_rejects_model_artifacts(
 
 def test_kernel_metadata_contract_is_private_gpu_offline() -> None:
     args = runner.parse_args([])
+    assert args.dataset_id is None
     assert args.device == "cuda"
     assert args.output_root == Path("/kaggle/working/clay-prime-scissor-calibration")
     assert args.runtime_root == Path("/kaggle/working/clay-prime-scissor-calibration-runtime")
+
+    kernel_id = "issacizrealdavis/clay-prime-scissor-calibration-20261118-dd2623de"
+    metadata = builder.kaggle_kernel_metadata(
+        kernel_id=kernel_id,
+        kernel_entry_name="run.py",
+        dataset_id=kernel_id,
+    )
+    assert metadata["id"] == kernel_id
+    assert metadata["title"] == kernel_id.rsplit("/", 1)[1]
+    assert metadata["is_private"] is True
+    assert metadata["enable_gpu"] is True
+    assert metadata["enable_internet"] is False
+
+    with pytest.raises(ValueError, match="clean lowercase provider slug"):
+        builder.kernel_title_for_id("issacizrealdavis/Clay Prime Scissor")
 
 
 def test_prelaunch_failure_still_emits_environment_launch_failure_and_recovery(
