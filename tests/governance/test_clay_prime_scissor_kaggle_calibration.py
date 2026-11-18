@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from hashlib import sha256
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import stat
 import subprocess
 from types import SimpleNamespace
@@ -66,6 +66,29 @@ def test_material_command_is_exact_full_campaign_without_selection_surface(
     assert "--seed" not in command
     assert "--max-horses" not in command
     assert "--aggregate-only" not in command
+
+
+def test_kaggle_material_command_clears_exact_timing_identity_and_rejects_old_path() -> None:
+    calibration_runtime = PurePosixPath("/kaggle/working/clay-prime-scissor-calibration-runtime")
+    material_output = PurePosixPath("/kaggle/working/clay-prime-scissor-material")
+    admission = {
+        "baseline_run": ("/kaggle/working/clay-prime-scissor-calibration-runtime/payload/baseline"),
+        "config_hash": runner.EXPECTED_CALIBRATION_CONFIG_HASH,
+    }
+
+    command = runner.material_command(calibration_runtime, material_output, "cuda")
+    receipt = runner._verify_material_timing_identity(command, admission)
+
+    assert receipt == {
+        "status": "PASS_EXACT_CALIBRATION_RUNTIME_IDENTITY",
+        "baseline_run": admission["baseline_run"],
+        "config_hash": runner.EXPECTED_CALIBRATION_CONFIG_HASH,
+    }
+
+    old_material_runtime = PurePosixPath("/kaggle/working/clay-prime-scissor-material-runtime")
+    old_command = runner.material_command(old_material_runtime, material_output, "cuda")
+    with pytest.raises(RuntimeError, match="differs from the timing calibration"):
+        runner._verify_material_timing_identity(old_command, admission)
 
 
 def test_deterministic_archive_is_byte_identical(tmp_path: Path) -> None:
@@ -405,8 +428,17 @@ def _sealed_receipt(path: Path, body: dict) -> Path:
     return path
 
 
-def _calibration_admission_fixture(root: Path) -> Path:
+def _calibration_admission_fixture(
+    root: Path,
+    *,
+    baseline_run: str = ("/kaggle/working/clay-prime-scissor-calibration-runtime/payload/baseline"),
+) -> tuple[Path, str]:
     packet_id = builder.SOURCE_CALIBRATION_PACKET_ID
+    calibration_config = {
+        "baseline_run": baseline_run,
+        "fixture": "exact-timing-identity",
+    }
+    config_hash = runner.stable_hash(calibration_config)
     _sealed_receipt(
         root / "ENVIRONMENT_RECEIPT.json",
         {
@@ -439,7 +471,14 @@ def _calibration_admission_fixture(root: Path) -> Path:
             "seconds_per_step": builder.EXPECTED_CALIBRATION_SECONDS_PER_STEP,
             "projected_15_horse_seconds_with_20_percent_margin": (builder.EXPECTED_CAMPAIGN_SECONDS_WITH_MARGIN),
             "maximum_admitted_seconds": 86_400,
-            "config_hash": builder.EXPECTED_CALIBRATION_CONFIG_HASH,
+            "config_hash": config_hash,
+        },
+    )
+    write_json(
+        root / "run" / "RUN_MANIFEST.json",
+        {
+            "config": calibration_config,
+            "config_hash": config_hash,
         },
     )
     _sealed_receipt(
@@ -454,29 +493,34 @@ def _calibration_admission_fixture(root: Path) -> Path:
             "timing_calibration_sha256": builder.sha256_file(timing_path),
         },
     )
-    return root
+    return root, config_hash
 
 
 def test_material_admission_seals_exact_dual_t4_receipts_and_rejects_drift(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    root = _calibration_admission_fixture(tmp_path / "calibration")
+    root, config_hash = _calibration_admission_fixture(tmp_path / "calibration")
+    monkeypatch.setattr(builder, "EXPECTED_CALIBRATION_CONFIG_HASH", config_hash)
 
     specs, facts = builder.collect_calibration_admission(root)
 
-    assert len(specs) == 4
+    assert len(specs) == 5
     assert {spec.target for spec in specs} == {
         f"authorities/calibration/{name}"
         for name in (
             "ENVIRONMENT_RECEIPT.json",
             "LAUNCH_RECEIPT.json",
             "RECOVERY_RECEIPT.json",
+            "RUN_MANIFEST.json",
             "TIMING_CALIBRATION.json",
         )
     }
     assert facts["source_calibration_packet_id"] == builder.SOURCE_CALIBRATION_PACKET_ID
     assert facts["seconds_per_step"] == builder.EXPECTED_CALIBRATION_SECONDS_PER_STEP
     assert facts["projected_15_horse_seconds_with_20_percent_margin"] == builder.EXPECTED_CAMPAIGN_SECONDS_WITH_MARGIN
+    assert facts["baseline_run"].endswith("clay-prime-scissor-calibration-runtime/payload/baseline")
+    assert facts["run_manifest_sha256"] == builder.sha256_file(root / "run" / "RUN_MANIFEST.json")
 
     timing_path = root / "TIMING_CALIBRATION.json"
     timing = runner.load_json(timing_path)
@@ -492,9 +536,17 @@ def test_material_admission_seals_exact_dual_t4_receipts_and_rejects_drift(
         builder.collect_calibration_admission(root)
 
 
-def test_material_runtime_replays_every_calibration_receipt_hash(tmp_path: Path) -> None:
+def test_material_runtime_replays_every_calibration_receipt_hash(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     packet_root = tmp_path / "packet"
-    authority_root = _calibration_admission_fixture(packet_root / "authorities" / "calibration")
+    authority_root, config_hash = _calibration_admission_fixture(packet_root / "authorities" / "calibration")
+    monkeypatch.setattr(runner, "EXPECTED_CALIBRATION_CONFIG_HASH", config_hash)
+    runner.shutil.copyfile(
+        authority_root / "run" / "RUN_MANIFEST.json",
+        authority_root / "RUN_MANIFEST.json",
+    )
     receipt_hashes = {path.name: runner.sha256_file(path) for path in sorted(authority_root.glob("*.json"))}
     manifest = {
         "facts": {
@@ -503,6 +555,8 @@ def test_material_runtime_replays_every_calibration_receipt_hash(tmp_path: Path)
                 "receipt_sha256": receipt_hashes,
                 "timing_calibration_sha256": receipt_hashes["TIMING_CALIBRATION.json"],
                 "recovery_receipt_sha256": receipt_hashes["RECOVERY_RECEIPT.json"],
+                "run_manifest_sha256": receipt_hashes["RUN_MANIFEST.json"],
+                "baseline_run": ("/kaggle/working/clay-prime-scissor-calibration-runtime/payload/baseline"),
                 "projected_15_horse_seconds_with_20_percent_margin": (runner.EXPECTED_CAMPAIGN_SECONDS_WITH_MARGIN),
             }
         }
@@ -513,6 +567,7 @@ def test_material_runtime_replays_every_calibration_receipt_hash(tmp_path: Path)
     assert admission["source_calibration_packet_id"] == runner.SOURCE_CALIBRATION_PACKET_ID
     assert admission["device_names"] == list(runner.EXPECTED_CALIBRATION_DEVICE_NAMES)
     assert admission["seconds_per_step"] == runner.EXPECTED_CALIBRATION_SECONDS_PER_STEP
+    assert admission["config_hash"] == config_hash
 
     launch_path = authority_root / "LAUNCH_RECEIPT.json"
     launch = runner.load_json(launch_path)
@@ -984,6 +1039,7 @@ def test_packet_dispatch_uses_authority_and_material_output_lane(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     args = runner.parse_args([])
+    args.runtime_root = Path("/tmp/ignored-material-runtime-override")
     monkeypatch.setattr(
         runner,
         "load_kernel_authority",
@@ -1003,7 +1059,7 @@ def test_packet_dispatch_uses_authority_and_material_output_lane(
     assert observed == [
         (
             Path("/kaggle/working/clay-prime-scissor-material"),
-            Path("/kaggle/working/clay-prime-scissor-material-runtime"),
+            Path("/kaggle/working/clay-prime-scissor-calibration-runtime"),
         )
     ]
 
@@ -1012,8 +1068,15 @@ def test_material_wrapper_persists_complete_campaign_and_aggregate_manifest(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    calibration = _calibration_admission_fixture(tmp_path / "calibration-authority")
+    runtime_root = tmp_path / "runtime"
+    baseline_run = str(runtime_root / "payload" / "baseline")
+    calibration, config_hash = _calibration_admission_fixture(
+        tmp_path / "calibration-authority",
+        baseline_run=baseline_run,
+    )
+    monkeypatch.setattr(runner, "EXPECTED_CALIBRATION_CONFIG_HASH", config_hash)
     receipt_hashes = {path.name: runner.sha256_file(path) for path in sorted(calibration.glob("*.json"))}
+    run_manifest_sha256 = runner.sha256_file(calibration / "run" / "RUN_MANIFEST.json")
     packet_id = "b" * 64
     manifest = {
         "packet_id": packet_id,
@@ -1024,6 +1087,8 @@ def test_material_wrapper_persists_complete_campaign_and_aggregate_manifest(
                 "receipt_sha256": receipt_hashes,
                 "timing_calibration_sha256": receipt_hashes["TIMING_CALIBRATION.json"],
                 "recovery_receipt_sha256": receipt_hashes["RECOVERY_RECEIPT.json"],
+                "run_manifest_sha256": run_manifest_sha256,
+                "baseline_run": baseline_run,
                 "projected_15_horse_seconds_with_20_percent_margin": (runner.EXPECTED_CAMPAIGN_SECONDS_WITH_MARGIN),
             }
         },
@@ -1059,6 +1124,10 @@ def test_material_wrapper_persists_complete_campaign_and_aggregate_manifest(
             calibration,
             runtime_root / "authorities" / "calibration",
         )
+        runner.shutil.copyfile(
+            calibration / "run" / "RUN_MANIFEST.json",
+            runtime_root / "authorities" / "calibration" / "RUN_MANIFEST.json",
+        )
         return runtime_root / runner.MANIFEST_NAME, manifest
 
     monkeypatch.setattr(runner, "extract_and_verify_packet", fake_extract)
@@ -1086,6 +1155,7 @@ def test_material_wrapper_persists_complete_campaign_and_aggregate_manifest(
     def fake_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
         observed_commands.append(command)
         assert kwargs["env"] is child_environment
+        assert command[command.index("--baseline-run") + 1] == baseline_run
         output = Path(command[command.index("--output-dir") + 1])
         for arm in runner.FIXED_ARMS:
             for seed in runner.FIXED_SEEDS:
@@ -1118,7 +1188,7 @@ def test_material_wrapper_persists_complete_campaign_and_aggregate_manifest(
             "--output-root",
             str(output_root),
             "--runtime-root",
-            str(tmp_path / "runtime"),
+            str(runtime_root),
         ]
     )
 
@@ -1131,6 +1201,12 @@ def test_material_wrapper_persists_complete_campaign_and_aggregate_manifest(
     assert "--calibration-only" not in observed_commands[0]
     assert "--arm" not in observed_commands[0]
     assert "--seed" not in observed_commands[0]
+    launch = runner.load_json(output_root / "LAUNCH_RECEIPT.json")
+    assert launch["timing_identity"] == {
+        "status": "PASS_EXACT_CALIBRATION_RUNTIME_IDENTITY",
+        "baseline_run": baseline_run,
+        "config_hash": config_hash,
+    }
     artifact_manifest = runner.load_json(output_root / "MATERIAL_ARTIFACT_MANIFEST.json")
     assert artifact_manifest["horse_count"] == 15
     assert len(artifact_manifest["horses"]) == 15

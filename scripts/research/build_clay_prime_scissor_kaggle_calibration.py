@@ -133,6 +133,17 @@ _, manifest = module.extract_and_verify_packet(
     runtime_root,
 )
 entry_mode = manifest["fixed_run_contract"].get("entry_mode", "CALIBRATION_ONLY")
+timing_identity = None
+if entry_mode == "MATERIAL_TRAINING":
+    admission = module._validate_material_admission(runtime_root, manifest)
+    kaggle_runtime_root = module.PurePosixPath(
+        "/kaggle/working/clay-prime-scissor-calibration-runtime"
+    )
+    kaggle_output_root = module.PurePosixPath(
+        "/kaggle/working/clay-prime-scissor-material"
+    )
+    command = module.material_command(kaggle_runtime_root, kaggle_output_root, "cuda")
+    timing_identity = module._verify_material_timing_identity(command, admission)
 scbe_root = runtime_root / "payload" / "scbe_repo"
 scbe_python = scbe_root / "python"
 module_paths = {}
@@ -187,6 +198,7 @@ print(
             },
             "host_source_path_absent": verify_clay_adapter,
             "entry_mode": entry_mode,
+            "timing_identity": timing_identity,
             "material_training": (
                 "AUTHORIZED_NOT_STARTED"
                 if entry_mode == "MATERIAL_TRAINING"
@@ -356,10 +368,12 @@ def collect_calibration_admission(root: Path) -> tuple[list[FileSpec], dict[str,
         "TIMING_CALIBRATION.json",
     )
     paths = {name: (root / name).resolve(strict=True) for name in names}
+    run_manifest_path = (root / "run" / "RUN_MANIFEST.json").resolve(strict=True)
     environment = load_json(paths["ENVIRONMENT_RECEIPT.json"])
     launch = load_json(paths["LAUNCH_RECEIPT.json"])
     recovery = load_json(paths["RECOVERY_RECEIPT.json"])
     timing = load_json(paths["TIMING_CALIBRATION.json"])
+    run_manifest = load_json(run_manifest_path)
     for name, receipt in (
         ("environment", environment),
         ("launch", launch),
@@ -403,17 +417,36 @@ def collect_calibration_admission(root: Path) -> tuple[list[FileSpec], dict[str,
         raise RuntimeError("calibration admission projection differs")
     if timing.get("config_hash") != EXPECTED_CALIBRATION_CONFIG_HASH:
         raise RuntimeError("calibration admission configuration identity differs")
+    calibration_config = run_manifest.get("config")
+    if not isinstance(calibration_config, Mapping):
+        raise RuntimeError("calibration admission run manifest has no config")
+    if stable_hash(calibration_config) != EXPECTED_CALIBRATION_CONFIG_HASH:
+        raise RuntimeError("calibration admission run-manifest config identity differs")
+    if run_manifest.get("config_hash") != EXPECTED_CALIBRATION_CONFIG_HASH:
+        raise RuntimeError("calibration admission run-manifest hash field differs")
+    expected_baseline_run = "/kaggle/working/clay-prime-scissor-calibration-runtime/payload/baseline"
+    if calibration_config.get("baseline_run") != expected_baseline_run:
+        raise RuntimeError("calibration admission baseline runtime identity differs")
     if recovery.get("timing_calibration_sha256") != sha256_file(paths["TIMING_CALIBRATION.json"]):
         raise RuntimeError("calibration admission timing receipt link differs")
     specs = [
         FileSpec(path, f"authorities/calibration/{name}", "material_training_calibration_admission")
         for name, path in paths.items()
     ]
+    specs.append(
+        FileSpec(
+            run_manifest_path,
+            "authorities/calibration/RUN_MANIFEST.json",
+            "material_training_calibration_config_authority",
+        )
+    )
     facts = {
         "source_calibration_packet_id": SOURCE_CALIBRATION_PACKET_ID,
         "receipt_sha256": {name: sha256_file(path) for name, path in sorted(paths.items())},
         "timing_calibration_sha256": sha256_file(paths["TIMING_CALIBRATION.json"]),
         "recovery_receipt_sha256": sha256_file(paths["RECOVERY_RECEIPT.json"]),
+        "run_manifest_sha256": sha256_file(run_manifest_path),
+        "baseline_run": expected_baseline_run,
         "config_hash": str(timing["config_hash"]),
         "seconds_per_step": float(timing["seconds_per_step"]),
         "projected_15_horse_seconds_with_20_percent_margin": projected,

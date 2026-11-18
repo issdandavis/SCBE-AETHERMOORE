@@ -38,6 +38,9 @@ EXPECTED_CALIBRATION_CONFIG_HASH = "4dedaf4dce4a4280aed5e796a02b345b4d77a14f20a4
 EXPECTED_CALIBRATION_SECONDS_PER_STEP = 0.10859733237199998
 EXPECTED_CAMPAIGN_SECONDS_WITH_MARGIN = 35368.56240005924
 EXPECTED_CALIBRATION_DEVICE_NAMES = ("Tesla T4", "Tesla T4")
+CALIBRATION_OUTPUT_ROOT = Path("/kaggle/working/clay-prime-scissor-calibration")
+CALIBRATION_RUNTIME_ROOT = Path("/kaggle/working/clay-prime-scissor-calibration-runtime")
+MATERIAL_OUTPUT_ROOT = Path("/kaggle/working/clay-prime-scissor-material")
 FIXED_SEEDS = (20261134, 20261135, 20261136)
 FIXED_ARMS = (
     "prime_scissor_input",
@@ -689,10 +692,12 @@ def _validate_material_admission(packet_root: Path, manifest: Mapping[str, Any])
     authority_root = packet_root / "authorities" / "calibration"
     environment_path = authority_root / "ENVIRONMENT_RECEIPT.json"
     launch_path = authority_root / "LAUNCH_RECEIPT.json"
+    run_manifest_path = authority_root / "RUN_MANIFEST.json"
     timing_path = authority_root / "TIMING_CALIBRATION.json"
     recovery_path = authority_root / "RECOVERY_RECEIPT.json"
     environment = load_json(environment_path)
     launch = load_json(launch_path)
+    run_manifest = load_json(run_manifest_path)
     timing = load_json(timing_path)
     recovery = load_json(recovery_path)
     receipts = {
@@ -712,6 +717,8 @@ def _validate_material_admission(packet_root: Path, manifest: Mapping[str, Any])
         raise RuntimeError("sealed calibration timing hash differs")
     if sha256_file(recovery_path) != admission.get("recovery_receipt_sha256"):
         raise RuntimeError("sealed calibration recovery hash differs")
+    if sha256_file(run_manifest_path) != admission.get("run_manifest_sha256"):
+        raise RuntimeError("sealed calibration run manifest hash differs")
     if recovery.get("status") != "PASS_CALIBRATION_ONLY_NO_HORSES_STARTED":
         raise RuntimeError("sealed calibration did not pass without horses")
     if admission.get("source_calibration_packet_id") != SOURCE_CALIBRATION_PACKET_ID:
@@ -745,6 +752,18 @@ def _validate_material_admission(packet_root: Path, manifest: Mapping[str, Any])
         raise RuntimeError("sealed calibration seconds-per-step differs")
     if timing.get("config_hash") != EXPECTED_CALIBRATION_CONFIG_HASH:
         raise RuntimeError("sealed calibration configuration identity differs")
+    calibration_config = run_manifest.get("config")
+    if not isinstance(calibration_config, Mapping):
+        raise RuntimeError("sealed calibration run manifest has no config")
+    if stable_hash(calibration_config) != EXPECTED_CALIBRATION_CONFIG_HASH:
+        raise RuntimeError("sealed calibration run-manifest config identity differs")
+    if run_manifest.get("config_hash") != EXPECTED_CALIBRATION_CONFIG_HASH:
+        raise RuntimeError("sealed calibration run-manifest hash field differs")
+    expected_baseline_run = admission.get("baseline_run")
+    if not isinstance(expected_baseline_run, str) or not expected_baseline_run:
+        raise RuntimeError("material packet lacks the calibrated baseline runtime identity")
+    if calibration_config.get("baseline_run") != expected_baseline_run:
+        raise RuntimeError("sealed calibration baseline runtime identity differs")
     projected = float(timing.get("projected_15_horse_seconds_with_20_percent_margin", float("inf")))
     maximum = float(timing.get("maximum_admitted_seconds", -1.0))
     if maximum != 24 * 60 * 60 or projected > maximum:
@@ -757,12 +776,35 @@ def _validate_material_admission(packet_root: Path, manifest: Mapping[str, Any])
         "source_calibration_packet_id": str(admission["source_calibration_packet_id"]),
         "timing_calibration_sha256": sha256_file(timing_path),
         "recovery_receipt_sha256": sha256_file(recovery_path),
+        "run_manifest_sha256": sha256_file(run_manifest_path),
+        "baseline_run": expected_baseline_run,
         "projected_15_horse_seconds_with_20_percent_margin": projected,
         "seconds_per_step": seconds_per_step,
         "maximum_admitted_seconds": maximum,
         "config_hash": str(timing["config_hash"]),
         "device_names": list(device_names),
         "device_count": len(device_names),
+    }
+
+
+def _verify_material_timing_identity(
+    command: list[str],
+    admission: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Prove the child will rebuild the exact config identity timed on Kaggle."""
+
+    try:
+        baseline_run = command[command.index("--baseline-run") + 1]
+    except (ValueError, IndexError) as error:
+        raise RuntimeError("material command has no baseline runtime identity") from error
+    if baseline_run != admission.get("baseline_run"):
+        raise RuntimeError("material baseline runtime differs from the timing calibration")
+    if admission.get("config_hash") != EXPECTED_CALIBRATION_CONFIG_HASH:
+        raise RuntimeError("material timing configuration identity differs")
+    return {
+        "status": "PASS_EXACT_CALIBRATION_RUNTIME_IDENTITY",
+        "baseline_run": baseline_run,
+        "config_hash": str(admission["config_hash"]),
     }
 
 
@@ -858,6 +900,7 @@ def _run_material_inner(args: argparse.Namespace) -> dict[str, Any]:
         run_root / "TIMING_CALIBRATION.json",
     )
     command = material_command(runtime_root, output_root, args.device)
+    timing_identity = _verify_material_timing_identity(command, admission)
     environment_variables = calibration_environment(runtime_root)
     launch_body = {
         "schema": f"{RECEIPT_SCHEMA}.material-launch",
@@ -875,6 +918,7 @@ def _run_material_inner(args: argparse.Namespace) -> dict[str, Any]:
         "minimum_free_gib": FIXED_MINIMUM_FREE_GIB,
         "internet": False,
         "calibration_admission": admission,
+        "timing_identity": timing_identity,
         "runtime_import_authority": {
             "scbe_root": environment_variables["SCBE_ROOT"],
             "scbe_python": environment_variables["SCBE_PYTHON"],
@@ -1034,12 +1078,12 @@ def run_packet(args: argparse.Namespace) -> dict[str, Any]:
     if mode == CALIBRATION_MODE:
         return run_calibration(args)
     if mode == MATERIAL_MODE:
-        default_output = Path("/kaggle/working/clay-prime-scissor-calibration")
-        default_runtime = Path("/kaggle/working/clay-prime-scissor-calibration-runtime")
-        if args.output_root == default_output:
-            args.output_root = Path("/kaggle/working/clay-prime-scissor-material")
-        if args.runtime_root == default_runtime:
-            args.runtime_root = Path("/kaggle/working/clay-prime-scissor-material-runtime")
+        if args.output_root == CALIBRATION_OUTPUT_ROOT:
+            args.output_root = MATERIAL_OUTPUT_ROOT
+        # The campaign config hash includes the absolute baseline path. Material
+        # extraction must therefore reuse the exact runtime identity measured by
+        # the calibration kernel; an alternate CLI path is intentionally ignored.
+        args.runtime_root = CALIBRATION_RUNTIME_ROOT
         return run_material(args)
     raise RuntimeError(f"unsupported embedded entry mode: {mode}")
 
@@ -1063,12 +1107,12 @@ def parse_args(arguments: Iterable[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--output-root",
         type=Path,
-        default=Path("/kaggle/working/clay-prime-scissor-calibration"),
+        default=CALIBRATION_OUTPUT_ROOT,
     )
     parser.add_argument(
         "--runtime-root",
         type=Path,
-        default=Path("/kaggle/working/clay-prime-scissor-calibration-runtime"),
+        default=CALIBRATION_RUNTIME_ROOT,
     )
     parser.add_argument("--device", choices=("auto", "cuda"), default="cuda")
     return parser.parse_args(arguments)
