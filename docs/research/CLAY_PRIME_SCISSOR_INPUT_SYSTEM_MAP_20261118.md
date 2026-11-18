@@ -64,7 +64,12 @@ shuffled-binding arm for 500 representative batch-128 updates plus held
 generation, projects all 15 horses with 20% margin, and refuses a projection
 above 24 hours. `--preflight-receipt` is mandatory, and all regenerated tensors,
 pivots, conditioning, and split-local bindings must match it bit-for-bit before
-calibration. A later invocation may select explicit `--seed`/`--arm` pairs or
+calibration. The private calibration packet additionally supplies a deterministic,
+hash-pinned frozen-artifact pack so Kaggle loads the exact local float32 tables
+and uint8 split bindings instead of rerunning platform-sensitive NumPy SVD or
+derangement construction. Sample IDs, tensor hashes, seals, conditioning, and
+the preflight authority are rechecked on load. A later invocation may select
+explicit `--seed`/`--arm` pairs or
 `--max-horses`. The aggregator accepts exactly 15 unique, config-identical horse
 receipts and rejects missing, duplicate, revision-mismatched, or model-hash-
 mismatched artifacts.

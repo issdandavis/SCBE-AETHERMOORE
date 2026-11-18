@@ -20,7 +20,11 @@ from functools import lru_cache
 import hashlib
 import json
 import math
+import os
+from pathlib import Path, PurePosixPath
+import stat
 from typing import Any, Mapping, Sequence
+import zipfile
 
 import numpy as np
 import torch
@@ -53,6 +57,7 @@ from python.scbe.clay_frozen_multiview_data import (
 
 SCHEMA = "clay.prime-scissor-input.v1"
 BINDING_SCHEMA = f"{SCHEMA}.occurrence-derangement"
+FROZEN_ARTIFACT_SCHEMA = f"{SCHEMA}.frozen-artifacts.v1"
 BYTE_COUNT = 256
 FEATURE_WIDTH = 206
 EMBEDDING_WIDTH = 64
@@ -863,6 +868,290 @@ def build_occurrence_derangement(
         association=association,
         seal_sha256=_sha256_json(metadata),
     )
+
+
+@dataclass(frozen=True, slots=True)
+class FrozenPrimeScissorArtifacts:
+    """Exact cross-platform input tensors loaded without SVD or reshuffling."""
+
+    tables: FeatureTables
+    train_binding: SealedOccurrenceDerangement
+    holdout_binding: SealedOccurrenceDerangement
+    conditioning_receipt: Mapping[str, Any]
+    metadata: Mapping[str, Any]
+
+
+def _artifact_member_bytes(value: Tensor) -> tuple[bytes, str]:
+    array = value.detach().cpu().contiguous().numpy()
+    if array.dtype == np.float32:
+        dtype = "<f4"
+    elif array.dtype == np.uint8:
+        dtype = "|u1"
+    else:
+        raise TypeError(f"unsupported frozen artifact dtype: {array.dtype}")
+    return array.astype(dtype, copy=False).tobytes(order="C"), dtype
+
+
+def _write_deterministic_artifact_zip(path: Path, members: Mapping[str, bytes]) -> None:
+    path = path.resolve()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    pending = path.with_suffix(path.suffix + ".pending")
+    with zipfile.ZipFile(
+        pending, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
+    ) as archive:
+        for name in sorted(members):
+            relative = PurePosixPath(name)
+            if relative.is_absolute() or ".." in relative.parts or not relative.parts:
+                raise ValueError(f"unsafe frozen artifact member: {name}")
+            info = zipfile.ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.external_attr = 0o100644 << 16
+            archive.writestr(info, members[name], compresslevel=9)
+    os.replace(pending, path)
+
+
+def export_frozen_artifact_pack(
+    path: str | Path,
+    *,
+    tables: FeatureTables,
+    train_binding: SealedOccurrenceDerangement,
+    holdout_binding: SealedOccurrenceDerangement,
+    conditioning_receipt: Mapping[str, Any],
+    dataset_manifest_sha256: str,
+    preflight_receipt_sha256: str,
+) -> dict[str, Any]:
+    """Write exact tensors and binding seals into one deterministic packet."""
+
+    members: dict[str, bytes] = {}
+    arrays: dict[str, dict[str, Any]] = {}
+    for name, tensor in sorted(tables.tables.items()):
+        member = f"tables/{name}.bin"
+        payload, dtype = _artifact_member_bytes(tensor)
+        members[member] = payload
+        arrays[name] = {
+            "member": member,
+            "dtype": dtype,
+            "shape": list(tensor.shape),
+            "bytes": len(payload),
+            "bytes_sha256": hashlib.sha256(payload).hexdigest(),
+            "tensor_sha256": tensor_sha256(tensor),
+        }
+    bindings: dict[str, dict[str, Any]] = {}
+    for name, binding in (
+        ("train", train_binding),
+        ("holdout", holdout_binding),
+    ):
+        member = f"bindings/{name}.u8"
+        payload, dtype = _artifact_member_bytes(binding.mapped_values)
+        members[member] = payload
+        bindings[name] = {
+            "member": member,
+            "dtype": dtype,
+            "shape": list(binding.mapped_values.shape),
+            "bytes": len(payload),
+            "bytes_sha256": hashlib.sha256(payload).hexdigest(),
+            "sample_ids": list(binding.sample_ids),
+            "metadata": binding.metadata(),
+            "seal_sha256": binding.seal_sha256,
+        }
+    body = {
+        "schema": FROZEN_ARTIFACT_SCHEMA,
+        "dataset_manifest_sha256": dataset_manifest_sha256,
+        "preflight_receipt_sha256": preflight_receipt_sha256,
+        "feature_receipt": dict(tables.receipt),
+        "feature_receipt_sha256": _sha256_json(tables.receipt),
+        "conditioning_receipt": dict(conditioning_receipt),
+        "conditioning_receipt_sha256": conditioning_receipt["receipt_sha256"],
+        "tables": arrays,
+        "bindings": bindings,
+        "generation": "LOCAL_EXACT_NO_CLOUD_REGENERATION",
+    }
+    metadata = {**body, "metadata_body_sha256": _sha256_json(body)}
+    members["metadata.json"] = json.dumps(
+        metadata,
+        ensure_ascii=True,
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
+    ).encode("utf-8")
+    _write_deterministic_artifact_zip(Path(path), members)
+    return metadata
+
+
+def _safe_artifact_members(
+    archive: zipfile.ZipFile,
+) -> dict[str, zipfile.ZipInfo]:
+    result: dict[str, zipfile.ZipInfo] = {}
+    for member in archive.infolist():
+        name = member.filename
+        relative = PurePosixPath(name)
+        mode = (member.external_attr >> 16) & 0xFFFF
+        if (
+            not name
+            or "\\" in name
+            or "\x00" in name
+            or relative.is_absolute()
+            or ".." in relative.parts
+            or not relative.parts
+            or stat.S_ISLNK(mode)
+            or member.flag_bits & 0x1
+        ):
+            raise ValueError(f"unsafe frozen artifact member: {name}")
+        if name in result:
+            raise RuntimeError(f"duplicate frozen artifact member: {name}")
+        result[name] = member
+    return result
+
+
+def _read_artifact_tensor(
+    archive: zipfile.ZipFile,
+    members: Mapping[str, zipfile.ZipInfo],
+    record: Mapping[str, Any],
+) -> Tensor:
+    member = str(record["member"])
+    if member not in members:
+        raise RuntimeError(f"frozen artifact member is missing: {member}")
+    payload = archive.read(members[member])
+    if len(payload) != int(record["bytes"]):
+        raise RuntimeError(f"frozen artifact byte count differs: {member}")
+    if hashlib.sha256(payload).hexdigest() != record["bytes_sha256"]:
+        raise RuntimeError(f"frozen artifact member hash differs: {member}")
+    dtype = str(record["dtype"])
+    if dtype not in {"<f4", "|u1"}:
+        raise RuntimeError(f"unsupported frozen artifact dtype: {dtype}")
+    array = np.frombuffer(payload, dtype=np.dtype(dtype)).copy()
+    expected_shape = tuple(int(value) for value in record["shape"])
+    if array.size != math.prod(expected_shape):
+        raise RuntimeError(f"frozen artifact shape differs: {member}")
+    tensor = torch.from_numpy(array.reshape(expected_shape))
+    expected_tensor_hash = record.get("tensor_sha256")
+    if expected_tensor_hash and tensor_sha256(tensor) != expected_tensor_hash:
+        raise RuntimeError(f"frozen artifact tensor hash differs: {member}")
+    return tensor
+
+
+def _binding_from_artifact(
+    archive: zipfile.ZipFile,
+    members: Mapping[str, zipfile.ZipInfo],
+    record: Mapping[str, Any],
+    expected_rows: Sequence[ActionTextRow],
+) -> SealedOccurrenceDerangement:
+    metadata = record.get("metadata")
+    if not isinstance(metadata, Mapping):
+        raise TypeError("frozen binding metadata is not an object")
+    sample_ids = tuple(str(value) for value in record["sample_ids"])
+    expected_ids = tuple(row.sample.sample_id for row in expected_rows)
+    if sample_ids != expected_ids:
+        raise RuntimeError("frozen binding sample IDs differ from regenerated dataset")
+    mapped = _read_artifact_tensor(archive, members, record)
+    binding = SealedOccurrenceDerangement(
+        sample_ids=sample_ids,
+        mapped_values=mapped,
+        occurrence_width=int(metadata["occurrence_width"]),
+        split_name=str(metadata["split_name"]),
+        seed=int(metadata["seed"]),
+        pool_sha256=str(metadata["pool_sha256"]),
+        permutation_sha256=str(metadata["permutation_sha256"]),
+        mapped_values_sha256=str(metadata["mapped_values_sha256"]),
+        association=dict(metadata["association"]),
+        seal_sha256=str(record["seal_sha256"]),
+    )
+    if binding.metadata() != dict(metadata):
+        raise RuntimeError("frozen binding metadata changed during reconstruction")
+    return binding
+
+
+def load_frozen_artifact_pack(
+    path: str | Path,
+    *,
+    train_rows: Sequence[ActionTextRow],
+    holdout_rows: Sequence[ActionTextRow],
+    dataset_manifest_sha256: str,
+    preflight_receipt_sha256: str,
+) -> FrozenPrimeScissorArtifacts:
+    """Load exact local tensors and reject every metadata/sample mismatch."""
+
+    with zipfile.ZipFile(Path(path).resolve(strict=True), "r") as archive:
+        members = _safe_artifact_members(archive)
+        if "metadata.json" not in members:
+            raise RuntimeError("frozen artifact metadata is missing")
+        metadata = json.loads(archive.read(members["metadata.json"]))
+        if (
+            not isinstance(metadata, dict)
+            or metadata.get("schema") != FROZEN_ARTIFACT_SCHEMA
+        ):
+            raise RuntimeError("frozen artifact metadata schema differs")
+        body = dict(metadata)
+        expected_body_hash = str(body.pop("metadata_body_sha256", ""))
+        if _sha256_json(body) != expected_body_hash:
+            raise RuntimeError("frozen artifact metadata self-hash differs")
+        if metadata.get("dataset_manifest_sha256") != dataset_manifest_sha256:
+            raise RuntimeError("frozen artifact dataset identity differs")
+        if metadata.get("preflight_receipt_sha256") != preflight_receipt_sha256:
+            raise RuntimeError("frozen artifact preflight authority differs")
+        table_records = metadata.get("tables")
+        if not isinstance(table_records, Mapping):
+            raise TypeError("frozen feature table records are missing")
+        expected_tables = {
+            "prime_scissor",
+            "canonical_onehot_matched",
+            "deterministic_random_matched",
+            "no_intervention",
+        }
+        if set(table_records) != expected_tables:
+            raise RuntimeError("frozen feature table names differ")
+        table_tensors = {
+            str(name): _read_artifact_tensor(archive, members, record)
+            for name, record in table_records.items()
+        }
+        if any(
+            tensor.dtype != torch.float32
+            or tuple(tensor.shape) != (BYTE_COUNT, FEATURE_WIDTH)
+            for tensor in table_tensors.values()
+        ):
+            raise RuntimeError("frozen feature table dtype or shape differs")
+        feature_receipt = metadata.get("feature_receipt")
+        if not isinstance(feature_receipt, Mapping):
+            raise TypeError("frozen feature receipt is missing")
+        if _sha256_json(feature_receipt) != metadata.get("feature_receipt_sha256"):
+            raise RuntimeError("frozen feature receipt hash differs")
+        for name, tensor in table_tensors.items():
+            if tensor_sha256(tensor) != feature_receipt["table_sha256"][name]:
+                raise RuntimeError(f"frozen feature authority differs: {name}")
+        tables = FeatureTables(tables=table_tensors, receipt=dict(feature_receipt))
+        binding_records = metadata.get("bindings")
+        if not isinstance(binding_records, Mapping) or set(binding_records) != {
+            "train",
+            "holdout",
+        }:
+            raise RuntimeError("frozen binding records differ")
+        train_binding = _binding_from_artifact(
+            archive, members, binding_records["train"], train_rows
+        )
+        holdout_binding = _binding_from_artifact(
+            archive, members, binding_records["holdout"], holdout_rows
+        )
+        expected_members = {
+            "metadata.json",
+            *(str(record["member"]) for record in table_records.values()),
+            *(str(record["member"]) for record in binding_records.values()),
+        }
+        if set(members) != expected_members:
+            raise RuntimeError("frozen artifact contains unmanifested members")
+        conditioning = metadata.get("conditioning_receipt")
+        if not isinstance(conditioning, Mapping):
+            raise TypeError("frozen conditioning receipt is missing")
+        if conditioning.get("receipt_sha256") != metadata.get(
+            "conditioning_receipt_sha256"
+        ):
+            raise RuntimeError("frozen conditioning receipt hash differs")
+        return FrozenPrimeScissorArtifacts(
+            tables=tables,
+            train_binding=train_binding,
+            holdout_binding=holdout_binding,
+            conditioning_receipt=dict(conditioning),
+            metadata=metadata,
+        )
 
 
 class ActionGatedPrimeScissorInput(FrozenActionModel):

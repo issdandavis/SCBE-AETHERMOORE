@@ -77,6 +77,8 @@ from python.scbe.clay_prime_scissor_input import (
     SealedOccurrenceDerangement,
     build_feature_tables,
     build_occurrence_derangement,
+    export_frozen_artifact_pack,
+    load_frozen_artifact_pack,
     tensor_sha256,
 )
 from python.scbe.concept_exposure_ledger import (
@@ -127,6 +129,7 @@ class PrimeScissorCampaignConfig:
     actual_device: str
     source_dir_authority: str
     source_hashes: Mapping[str, str]
+    frozen_artifact_pack_sha256: str = ""
     authority: str = AUTHORITY
     arms: tuple[str, ...] = ARMS
 
@@ -1052,7 +1055,6 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "the preregistered material budget is exactly 18,000 steps per horse"
         )
     output = args.output_dir.resolve()
-    admitted_free_gib = require_storage(output, args.minimum_free_gib)
     preregistration = args.preregistration.resolve(strict=True)
     preflight_receipt_path = args.preflight_receipt.resolve(strict=True)
     preflight_receipt = json.loads(preflight_receipt_path.read_text(encoding="utf-8"))
@@ -1084,20 +1086,37 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     dataset_hash = str(dataset.manifest["manifest_sha256"])
     if dataset_hash != baseline_manifest["dataset"]["manifest_sha256"]:
         raise RuntimeError("regenerated dataset differs from the sealed baseline")
-    train_binding = build_occurrence_derangement(
-        dataset.multiview_rows,
-        seed=TRAIN_BINDING_SEED,
-        split_name="train",
-    )
-    holdout_binding = build_occurrence_derangement(
-        dataset.holdout_rows,
-        seed=HOLDOUT_BINDING_SEED,
-        split_name="holdout",
-    )
+    preflight_file_hash = file_sha256(preflight_receipt_path)
+    frozen_artifact_pack_hash = ""
+    if args.frozen_artifact_pack is not None:
+        frozen_artifact_path = args.frozen_artifact_pack.resolve(strict=True)
+        frozen_artifact_pack_hash = file_sha256(frozen_artifact_path)
+        frozen = load_frozen_artifact_pack(
+            frozen_artifact_path,
+            train_rows=dataset.multiview_rows,
+            holdout_rows=dataset.holdout_rows,
+            dataset_manifest_sha256=dataset_hash,
+            preflight_receipt_sha256=preflight_file_hash,
+        )
+        train_binding = frozen.train_binding
+        holdout_binding = frozen.holdout_binding
+        tables = frozen.tables
+        conditioning = dict(frozen.conditioning_receipt)
+    else:
+        train_binding = build_occurrence_derangement(
+            dataset.multiview_rows,
+            seed=TRAIN_BINDING_SEED,
+            split_name="train",
+        )
+        holdout_binding = build_occurrence_derangement(
+            dataset.holdout_rows,
+            seed=HOLDOUT_BINDING_SEED,
+            split_name="holdout",
+        )
+        tables = build_feature_tables()
+        conditioning = empirical_conditioning_receipt(tables, dataset)
     if set(train_binding.sample_ids) & set(holdout_binding.sample_ids):
         raise RuntimeError("train and holdout occurrence seals overlap sample IDs")
-    tables = build_feature_tables()
-    conditioning = empirical_conditioning_receipt(tables, dataset)
     feature_receipt_hash = stable_hash(tables.receipt)
     verify_preflight_authority(
         preflight_receipt,
@@ -1114,6 +1133,28 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "holdout_binding_mapped_sha256": holdout_binding.mapped_values_sha256,
         },
     )
+    if args.export_frozen_artifact_pack is not None:
+        if args.frozen_artifact_pack is not None:
+            raise ValueError("cannot load and export a frozen artifact pack together")
+        export_path = args.export_frozen_artifact_pack.resolve()
+        metadata = export_frozen_artifact_pack(
+            export_path,
+            tables=tables,
+            train_binding=train_binding,
+            holdout_binding=holdout_binding,
+            conditioning_receipt=conditioning,
+            dataset_manifest_sha256=dataset_hash,
+            preflight_receipt_sha256=preflight_file_hash,
+        )
+        return {
+            "schema": f"{SCHEMA}.frozen-artifact-export",
+            "status": "FROZEN_ARTIFACT_EXPORTED_NO_CALIBRATION_NO_HORSES",
+            "artifact_path": str(export_path),
+            "artifact_sha256": file_sha256(export_path),
+            "metadata_body_sha256": metadata["metadata_body_sha256"],
+            "authority": AUTHORITY,
+        }
+    admitted_free_gib = require_storage(output, args.minimum_free_gib)
     runner_path = Path(__file__).resolve(strict=True)
     module_path = runner_path.with_name("clay_prime_scissor_input.py").resolve(
         strict=True
@@ -1142,6 +1183,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         actual_device=actual_device,
         source_dir_authority="cli-remap-verified-by-sealed-source-hashes",
         source_hashes=actual_source_hashes,
+        frozen_artifact_pack_sha256=frozen_artifact_pack_hash,
     )
     config_hash = stable_hash(asdict(campaign))
     manifest = {
@@ -1164,6 +1206,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "authority": "cli-remap-verified-by-sealed-source-hashes",
             "source_hashes": actual_source_hashes,
         },
+        "frozen_artifact_pack": (
+            None
+            if args.frozen_artifact_pack is None
+            else {
+                "path": str(args.frozen_artifact_pack.resolve(strict=True)),
+                "sha256": frozen_artifact_pack_hash,
+                "mode": "EXACT_VENDORED_NO_SVD_OR_DERANGEMENT_REGENERATION",
+            }
+        ),
         "train_occurrence_binding": train_binding.metadata(),
         "holdout_occurrence_binding": holdout_binding.metadata(),
         "admitted_free_gib": admitted_free_gib,
@@ -1459,6 +1510,14 @@ def parse_args() -> argparse.Namespace:
         required=True,
         help="Runtime Clay source remap; file hashes must match the sealed baseline.",
     )
+    parser.add_argument(
+        "--frozen-artifact-pack",
+        type=Path,
+        help=(
+            "Load exact hash-pinned feature/binding tensors instead of rerunning "
+            "platform-sensitive SVD and occurrence construction."
+        ),
+    )
     parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
     parser.add_argument("--arm", action="append", choices=ARMS)
     parser.add_argument("--seed", action="append", type=int)
@@ -1466,6 +1525,7 @@ def parse_args() -> argparse.Namespace:
     execution = parser.add_mutually_exclusive_group()
     execution.add_argument("--calibration-only", action="store_true")
     execution.add_argument("--aggregate-only", action="store_true")
+    execution.add_argument("--export-frozen-artifact-pack", type=Path)
     parser.add_argument("--grow-steps", type=int, default=18_000)
     parser.add_argument("--checkpoint-every", type=int, default=500)
     parser.add_argument("--batch-size", type=int, default=128)
