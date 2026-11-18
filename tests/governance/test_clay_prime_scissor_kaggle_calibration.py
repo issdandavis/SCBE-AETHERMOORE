@@ -473,13 +473,20 @@ def test_extracted_archive_replay_is_isolated_from_worktree(
 import json
 import os
 from pathlib import Path
+import subprocess
 import sys
 
 forbidden = os.environ["CLAY_FORBIDDEN_WORKTREE"].casefold()
 assert forbidden not in str(Path.cwd()).casefold()
 assert forbidden not in os.environ.get("PYTHONPATH", "").casefold()
 assert all(forbidden not in str(item).casefold() for item in sys.path)
-assert Path(os.environ["GIT_CEILING_DIRECTORIES"]) == Path.cwd()
+probe = subprocess.run(
+    ["git", "-C", str(Path.cwd()), "rev-parse", "--show-toplevel"],
+    check=False,
+    capture_output=True,
+    text=True,
+)
+assert probe.returncode != 0, probe.stdout
 print(json.dumps({"status": "FROZEN_ARTIFACT_VERIFIED_NO_CALIBRATION_NO_HORSES"}))
 """,
         encoding="utf-8",
@@ -487,18 +494,39 @@ print(json.dumps({"status": "FROZEN_ARTIFACT_VERIFIED_NO_CALIBRATION_NO_HORSES"}
     )
     archive = tmp_path / "isolated.packet"
     deterministic_zip(packet, archive)
+    outer_repository = tmp_path / "profile-repository"
+    outer_repository.mkdir()
+    subprocess.run(
+        ["git", "init", "--quiet", str(outer_repository)],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    isolation_parent = outer_repository / "Temp"
+    isolation_parent.mkdir()
+    attack_probe = subprocess.run(
+        ["git", "-C", str(isolation_parent), "rev-parse", "--show-toplevel"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert attack_probe.returncode == 0
+    assert Path(attack_probe.stdout.strip()).resolve() == outer_repository.resolve()
     monkeypatch.setenv("PYTHONPATH", str(worktree))
     monkeypatch.chdir(worktree)
 
     receipt = builder.verify_extracted_archive_isolated(
         archive,
         worktree=worktree,
+        isolation_parent=isolation_parent,
     )
 
     assert receipt["status"] == ("PASS_FROZEN_ARTIFACT_VERIFIED_NO_CALIBRATION_NO_HORSES")
     assert receipt["python_isolated_mode"] is True
     assert receipt["pythonpath_from_extracted_archive_only"] is True
     assert receipt["worktree_absent_from_subprocess_sys_path"] is True
+    assert receipt["git_parent_discovery_blocked"] is True
+    assert receipt["git_parent_probe_returncode"] != 0
     assert receipt["verification_output_created"] is False
 
 

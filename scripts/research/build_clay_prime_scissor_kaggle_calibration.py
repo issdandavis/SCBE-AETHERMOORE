@@ -528,12 +528,17 @@ def verify_extracted_archive_isolated(
     archive: Path,
     *,
     worktree: Path,
+    isolation_parent: Path | None = None,
 ) -> dict[str, Any]:
     """Run the no-training frozen-pack verifier from only the extracted archive."""
 
     archive = archive.resolve(strict=True)
     worktree = worktree.resolve(strict=True)
-    with tempfile.TemporaryDirectory(prefix="clay-prime-scissor-isolated-replay-") as temporary:
+    temporary_parent = None if isolation_parent is None else str(isolation_parent.resolve(strict=True))
+    with tempfile.TemporaryDirectory(
+        prefix="clay-prime-scissor-isolated-replay-",
+        dir=temporary_parent,
+    ) as temporary:
         extracted = Path(temporary).resolve()
         _extract_archive_for_isolated_replay(archive, extracted)
         repo = extracted / "payload" / "scbe_repo"
@@ -579,7 +584,19 @@ def verify_extracted_archive_isolated(
         environment["PYTHONPATH"] = os.pathsep.join(str(root) for root in roots)
         environment["PYTHONNOUSERSITE"] = "1"
         environment["CLAY_FORBIDDEN_WORKTREE"] = str(worktree)
-        environment["GIT_CEILING_DIRECTORIES"] = str(extracted)
+        environment["GIT_CEILING_DIRECTORIES"] = str(extracted.parent)
+        git_parent_probe = subprocess.run(
+            ["git", "-C", str(extracted), "rev-parse", "--show-toplevel"],
+            check=False,
+            capture_output=True,
+            text=True,
+            cwd=extracted,
+            env=environment,
+        )
+        if git_parent_probe.returncode == 0:
+            raise RuntimeError(
+                "isolated extracted archive discovered a host Git worktree: " f"{git_parent_probe.stdout.strip()}"
+            )
         result = subprocess.run(
             command,
             check=False,
@@ -608,6 +625,8 @@ def verify_extracted_archive_isolated(
         "cwd_from_extracted_archive": True,
         "pythonpath_from_extracted_archive_only": True,
         "worktree_absent_from_subprocess_sys_path": True,
+        "git_parent_discovery_blocked": True,
+        "git_parent_probe_returncode": int(git_parent_probe.returncode),
         "verification_output_created": False,
         "material_training": "NONE",
     }
