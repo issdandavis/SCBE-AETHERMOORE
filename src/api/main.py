@@ -1447,8 +1447,8 @@ async def register_mobile_connector(request: ConnectorRegisterRequest, user: str
                     "shop_domain required for shopify connector without endpoint_url",
                 )
             endpoint_url = _build_shopify_endpoint(shop_domain, request.shopify_api_version)
-            if payload_mode == ConnectorPayloadMode.scbe_step.value:
-                payload_mode = ConnectorPayloadMode.shopify_graphql_read.value
+        if request.kind == ConnectorKind.shopify and payload_mode == ConnectorPayloadMode.scbe_step.value:
+            payload_mode = ConnectorPayloadMode.shopify_graphql_read.value
         if request.kind == ConnectorKind.shopify and request.auth_token and request.auth_type == ConnectorAuthType.none:
             auth_type = ConnectorAuthType.header.value
             auth_header_name = "X-Shopify-Access-Token"

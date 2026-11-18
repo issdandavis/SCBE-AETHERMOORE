@@ -28,7 +28,7 @@ import socket
 import ssl
 import urllib.request
 from typing import Mapping
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import SplitResult, urlsplit, urlunsplit
 
 _SHOP_DOMAIN = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.myshopify\.com$")
 _API_VERSION = re.compile(r"^[0-9]{4}-[0-9]{2}$")
@@ -135,7 +135,10 @@ def _parse_ip_literal(host: str) -> ipaddress.IPv4Address | ipaddress.IPv6Addres
     if re.fullmatch(r"[0-9.]+", candidate):
         if not _CANONICAL_IPV4.fullmatch(candidate):
             _reject("connector endpoint is not allowed")
-        return ipaddress.ip_address(candidate)
+        try:
+            return ipaddress.ip_address(candidate)
+        except ValueError as exc:
+            raise ConnectorURLRejected("connector_destination_blocked", "connector endpoint is not allowed") from exc
     try:
         return ipaddress.ip_address(candidate)
     except ValueError:
@@ -181,6 +184,17 @@ def sanitize_connector_headers(headers: Mapping[str, str] | None) -> dict[str, s
     return clean
 
 
+def _split_connector_url(value: str) -> SplitResult:
+    """Translate malformed URL authorities and ports into a policy rejection."""
+    try:
+        parsed = urlsplit(value)
+        # urllib defers malformed/out-of-range port errors until this property is read.
+        _ = parsed.port
+        return parsed
+    except ValueError as exc:
+        raise ConnectorURLRejected("connector_destination_blocked", "connector endpoint is not allowed") from exc
+
+
 def normalize_shop_domain(raw: str) -> str:
     """Return a bare ``<shop>.myshopify.com`` hostname, or empty when unset."""
     value = (raw or "").strip().lower()
@@ -189,7 +203,7 @@ def normalize_shop_domain(raw: str) -> str:
     if any(char in value for char in "\r\n\x00\\@"):
         _reject("shop_domain must be a *.myshopify.com hostname")
     if "://" in value:
-        parsed = urlsplit(value)
+        parsed = _split_connector_url(value)
         if parsed.scheme not in {"https", "http"} or not parsed.hostname:
             _reject("shop_domain must be a *.myshopify.com hostname")
         if parsed.username or parsed.password or parsed.port or parsed.query or parsed.fragment:
@@ -236,7 +250,7 @@ def validate_connector_endpoint(url: str, *, resolve_dns: bool) -> str:
     raw = (url or "").strip()
     if not raw or len(raw) > _MAX_URL_LENGTH or any(char in raw for char in "\r\n\x00\\"):
         _reject("connector endpoint is not allowed")
-    parsed = urlsplit(raw)
+    parsed = _split_connector_url(raw)
     scheme = parsed.scheme.lower()
     if scheme == "http":
         if not allow_insecure_http():
@@ -329,7 +343,7 @@ class _PolicyHTTPSHandler(urllib.request.HTTPSHandler):
 
 
 def _authority(url: str) -> tuple[str, str, int | None]:
-    parsed = urlsplit(url)
+    parsed = _split_connector_url(url)
     host = (parsed.hostname or "").lower().rstrip(".")
     return parsed.scheme.lower(), host, parsed.port
 
