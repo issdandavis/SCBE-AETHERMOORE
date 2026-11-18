@@ -193,8 +193,33 @@ def verify_preflight_authority(
         ],
     }
     if dict(actual) != expected:
+
+        def flatten_hash_fields(
+            value: Mapping[str, Any], *, prefix: str = ""
+        ) -> dict[str, Any]:
+            fields: dict[str, Any] = {}
+            for key, item in value.items():
+                field = f"{prefix}.{key}" if prefix else str(key)
+                if isinstance(item, Mapping):
+                    fields.update(flatten_hash_fields(item, prefix=field))
+                else:
+                    fields[field] = item
+            return fields
+
+        expected_fields = flatten_hash_fields(expected)
+        actual_fields = flatten_hash_fields(dict(actual))
+        differences = {
+            field: {
+                "expected": expected_fields.get(field, "<MISSING>"),
+                "actual": actual_fields.get(field, "<MISSING>"),
+            }
+            for field in sorted(set(expected_fields) | set(actual_fields))
+            if expected_fields.get(field, "<MISSING>")
+            != actual_fields.get(field, "<MISSING>")
+        }
         raise RuntimeError(
-            "runtime-regenerated experiment surfaces differ from the preflight receipt"
+            "runtime-regenerated experiment surfaces differ from the preflight "
+            f"receipt; differing_fields={json.dumps(differences, sort_keys=True)}"
         )
 
 

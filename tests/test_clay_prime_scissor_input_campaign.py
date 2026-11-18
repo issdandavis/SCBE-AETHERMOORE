@@ -300,5 +300,8 @@ def test_preflight_authority_rejects_a_regenerated_table_mismatch() -> None:
         **actual["table_sha256"],
         "deterministic_random_matched": "0" * 64,
     }
-    with pytest.raises(RuntimeError, match="differ from the preflight receipt"):
+    with pytest.raises(RuntimeError, match="differ from the preflight receipt") as error:
         verify_preflight_authority(receipt, mismatched)
+    assert "table_sha256.deterministic_random_matched" in str(error.value)
+    assert receipt["feature_tables"]["deterministic_random_matched_sha256"] in str(error.value)
+    assert "0" * 64 in str(error.value)
