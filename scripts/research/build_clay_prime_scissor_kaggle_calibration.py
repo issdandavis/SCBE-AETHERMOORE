@@ -14,12 +14,14 @@ from datetime import datetime, timezone
 from hashlib import sha256
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import re
+import stat
 import subprocess
 import sys
 import tempfile
 from typing import Any, Iterable, Mapping
+import zipfile
 
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -60,6 +62,27 @@ EXPECTED_FROZEN_ARTIFACT_SHA256 = "8cf629170554970ec6541d0a129c48d64e3e38925ae31
 EXPECTED_FROZEN_ARTIFACT_BYTES = 905_507
 EXPECTED_MATH_COMMIT = "0a5a06bed57e922f7e9ca04229664266aa8d215c"
 EXPECTED_SEEDS = (20261134, 20261135, 20261136)
+FULL_SCBE_INIT_SOURCE = "python/scbe/__init__.py"
+GENERATED_SCBE_INIT_TARGET = "payload/scbe_repo/python/scbe/__init__.py"
+MINIMAL_SCBE_RUNTIME_INIT = '''"""Generated package marker for the sealed Clay calibration runtime.
+
+The full application initializer is retained as source authority outside the
+runtime import path.  Calibration modules import their dependencies directly.
+"""
+
+__all__ = ()
+'''
+ISOLATED_REPLAY_BOOTSTRAP = (
+    "import runpy,sys;"
+    "roots=sys.argv[1:5];"
+    "forbidden=sys.argv[5].casefold();"
+    "script=sys.argv[6];"
+    "args=sys.argv[7:];"
+    "sys.path[:0]=roots;"
+    "assert all(forbidden not in str(item).casefold() for item in sys.path);"
+    "sys.argv=[script,*args];"
+    "runpy.run_path(script,run_name='__main__')"
+)
 
 
 def kernel_title_for_id(kernel_id: str) -> str:
@@ -94,7 +117,6 @@ def kaggle_kernel_metadata(
 
 RUNTIME_MODULES = (
     "python/__init__.py",
-    "python/scbe/__init__.py",
     "python/scbe/clay_prime_scissor_input.py",
     "python/scbe/clay_prime_scissor_input_campaign.py",
     "python/scbe/clay_frozen_multiview_adapter.py",
@@ -323,6 +345,12 @@ def collect_specs(
             f"payload/scbe_repo/{relative}",
             "experiment_runtime",
         )
+    _add(
+        specs,
+        worktree / FULL_SCBE_INIT_SOURCE,
+        f"authorities/full_source/{FULL_SCBE_INIT_SOURCE}",
+        "full_source_package_authority_not_runtime",
+    )
     for relative in AUTHORITY_DOCS:
         _add(
             specs,
@@ -360,6 +388,10 @@ def collect_specs(
     targets = [spec.target for spec in specs]
     if len(targets) != len(set(targets)):
         raise RuntimeError("packet target paths are not unique")
+    runtime_source_authority_sha256 = {
+        relative: sha256_file(worktree / relative) for relative in sorted((FULL_SCBE_INIT_SOURCE, *RUNTIME_MODULES))
+    }
+    minimal_runtime_stub = MINIMAL_SCBE_RUNTIME_INIT.encode("utf-8")
     facts = {
         "implementation_commit": implementation_commit,
         "clay_math_commit": math_commit,
@@ -368,6 +400,14 @@ def collect_specs(
         "dataset_manifest_sha256": EXPECTED_DATASET_MANIFEST_SHA256,
         "seeds": list(EXPECTED_SEEDS),
         "source_hashes": dict(sorted(expected_source_hashes.items())),
+        "runtime_source_authority_sha256": runtime_source_authority_sha256,
+        "generated_runtime_stub": {
+            "path": GENERATED_SCBE_INIT_TARGET,
+            "bytes": len(minimal_runtime_stub),
+            "sha256": sha256(minimal_runtime_stub).hexdigest(),
+            "replaces_source_sha256": runtime_source_authority_sha256[FULL_SCBE_INIT_SOURCE],
+            "imports": [],
+        },
         "frozen_artifact_pack_sha256": EXPECTED_FROZEN_ARTIFACT_SHA256,
         "frozen_artifact_pack_bytes": EXPECTED_FROZEN_ARTIFACT_BYTES,
         "frozen_artifact_authority_mode": ("COMMITTED_RELEASE_COPY_AND_VERIFY_NO_REGENERATION"),
@@ -457,6 +497,121 @@ def _verify_frozen_artifacts(
     return artifact
 
 
+def _extract_archive_for_isolated_replay(archive: Path, destination: Path) -> None:
+    with zipfile.ZipFile(archive.resolve(strict=True)) as bundle:
+        members = tuple(bundle.infolist())
+        seen: set[str] = set()
+        for member in members:
+            name = member.filename
+            relative = PurePosixPath(name)
+            mode = (member.external_attr >> 16) & 0xFFFF
+            if (
+                not name
+                or "\\" in name
+                or "\x00" in name
+                or relative.is_absolute()
+                or ".." in relative.parts
+                or not relative.parts
+            ):
+                raise ValueError(f"unsafe isolated-replay archive member: {name}")
+            if name in seen:
+                raise RuntimeError(f"duplicate isolated-replay archive member: {name}")
+            seen.add(name)
+            if stat.S_ISLNK(mode):
+                raise ValueError(f"isolated-replay archive symlink is forbidden: {name}")
+            if member.flag_bits & 0x1:
+                raise ValueError(f"isolated-replay encrypted archive member is forbidden: {name}")
+        bundle.extractall(destination, members)
+
+
+def verify_extracted_archive_isolated(
+    archive: Path,
+    *,
+    worktree: Path,
+) -> dict[str, Any]:
+    """Run the no-training frozen-pack verifier from only the extracted archive."""
+
+    archive = archive.resolve(strict=True)
+    worktree = worktree.resolve(strict=True)
+    with tempfile.TemporaryDirectory(prefix="clay-prime-scissor-isolated-replay-") as temporary:
+        extracted = Path(temporary).resolve()
+        _extract_archive_for_isolated_replay(archive, extracted)
+        repo = extracted / "payload" / "scbe_repo"
+        roots = (
+            repo,
+            repo / "python",
+            extracted / "payload" / "clay_math_root",
+            extracted / "payload" / "loom_root",
+        )
+        script = repo / "python" / "scbe" / "clay_prime_scissor_input_campaign.py"
+        verification_output = extracted / "verification-output-must-stay-absent"
+        command = [
+            sys.executable,
+            "-I",
+            "-X",
+            "utf8",
+            "-c",
+            ISOLATED_REPLAY_BOOTSTRAP,
+            *(str(root) for root in roots),
+            str(worktree),
+            str(script),
+            "--baseline-run",
+            str(extracted / "payload" / "baseline"),
+            "--output-dir",
+            str(verification_output),
+            "--preregistration",
+            str(repo / "docs" / "research" / "CLAY_PRIME_SCISSOR_INPUT_PREREGISTRATION_20261118.md"),
+            "--preflight-receipt",
+            str(repo / "docs" / "research" / "CLAY_PRIME_SCISSOR_INPUT_PREFLIGHT_20261118.json"),
+            "--clay-math-root",
+            str(extracted / "payload" / "clay_math_root"),
+            "--source-dir",
+            str(extracted / "payload" / "loom_root" / "experiments" / "clay_action_compiler_20261109"),
+            "--device",
+            "cpu",
+            "--threads",
+            "2",
+            "--frozen-artifact-pack",
+            str(extracted / "payload" / "frozen_artifacts" / "prime_scissor_inputs.pack"),
+            "--verify-frozen-artifact-pack-only",
+        ]
+        environment = os.environ.copy()
+        environment["PYTHONPATH"] = os.pathsep.join(str(root) for root in roots)
+        environment["PYTHONNOUSERSITE"] = "1"
+        environment["CLAY_FORBIDDEN_WORKTREE"] = str(worktree)
+        result = subprocess.run(
+            command,
+            check=False,
+            capture_output=True,
+            text=True,
+            cwd=extracted,
+            env=environment,
+        )
+        if result.returncode != 0:
+            raise RuntimeError(
+                "isolated extracted-archive verification failed before calibration: "
+                f"returncode={result.returncode}, stdout={result.stdout[-2000:]}, "
+                f"stderr={result.stderr[-4000:]}"
+            )
+        status = json.loads(result.stdout)
+        if status.get("status") != "FROZEN_ARTIFACT_VERIFIED_NO_CALIBRATION_NO_HORSES":
+            raise RuntimeError(f"unexpected isolated archive status: {status}")
+        if verification_output.exists():
+            raise RuntimeError("isolated archive verification wrote run artifacts")
+    return {
+        "schema": f"{BUILD_SCHEMA}.isolated-archive-replay.v1",
+        "status": "PASS_FROZEN_ARTIFACT_VERIFIED_NO_CALIBRATION_NO_HORSES",
+        "archive_sha256": sha256_file(archive),
+        "returncode": 0,
+        "python_isolated_mode": True,
+        "cwd_from_extracted_archive": True,
+        "pythonpath_from_extracted_archive_only": True,
+        "worktree_absent_from_subprocess_sys_path": True,
+        "verification_output_created": False,
+        "material_training": "NONE",
+    }
+
+
 def build_packet(
     *,
     worktree: Path,
@@ -484,6 +639,19 @@ def build_packet(
             target = packet_root / Path(*spec.target.split("/"))
             copy_exact(spec.source, target)
             roles[spec.target] = spec.role
+        runtime_stub = packet_root / Path(*GENERATED_SCBE_INIT_TARGET.split("/"))
+        if runtime_stub.exists():
+            raise RuntimeError("generated runtime package stub target is already occupied")
+        runtime_stub.parent.mkdir(parents=True, exist_ok=True)
+        runtime_stub.write_text(
+            MINIMAL_SCBE_RUNTIME_INIT,
+            encoding="utf-8",
+            newline="\n",
+        )
+        roles[GENERATED_SCBE_INIT_TARGET] = "generated_minimal_runtime_package_stub"
+        stub_fact = facts["generated_runtime_stub"]
+        if runtime_stub.stat().st_size != int(stub_fact["bytes"]) or sha256_file(runtime_stub) != stub_fact["sha256"]:
+            raise RuntimeError("generated runtime package stub differs from sealed facts")
         artifact = _verify_frozen_artifacts(
             worktree=worktree.resolve(strict=True),
             baseline_run=baseline_run.resolve(strict=True),
@@ -545,6 +713,10 @@ def build_packet(
         kernel_dir.mkdir()
         archive = dataset_dir / f"clay-prime-scissor-calibration-{packet_id[:16]}.packet"
         deterministic_zip(packet_root, archive)
+        isolated_archive_replay = verify_extracted_archive_isolated(
+            archive,
+            worktree=worktree,
+        )
         packet_descriptor = {
             "schema": DESCRIPTOR_SCHEMA,
             "dataset_id": dataset_id,
@@ -632,6 +804,7 @@ def build_packet(
         "kernel_entry": descriptor(kernel_dir / kernel_entry.name, relative_to=output_root),
         "kernel_packet_authority": descriptor(kernel_dir / "KERNEL_PACKET_AUTHORITY.json", relative_to=output_root),
         "launch_plan": descriptor(output_root / "PRIVATE_KAGGLE_LAUNCH_PLAN.json", relative_to=output_root),
+        "isolated_archive_replay": isolated_archive_replay,
         "authority": {
             "calibration": "TIMING_ONLY",
             "material_training": "NONE",

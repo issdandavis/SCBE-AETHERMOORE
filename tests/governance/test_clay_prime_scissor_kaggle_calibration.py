@@ -329,6 +329,10 @@ def test_collect_specs_is_compact_and_parent_hash_pinned(tmp_path: Path, monkeyp
     math = ("__init__.py", "prime_lane_scissors.py")
     for relative in (*runtime, *docs):
         _write(worktree / relative)
+    full_scbe_init = _write(
+        worktree / builder.FULL_SCBE_INIT_SOURCE,
+        b"full application initializer authority\n",
+    )
     frozen_authority = _write(
         worktree / builder.FROZEN_ARTIFACT_AUTHORITY,
         b"sealed-frozen-authority",
@@ -407,9 +411,16 @@ def test_collect_specs_is_compact_and_parent_hash_pinned(tmp_path: Path, monkeyp
     assert sum(target.endswith("/PARENT.pt") for target in targets) == 3
     assert sum(target.endswith("/RESULT.json") for target in targets) == 4
     assert "payload/frozen_artifacts/prime_scissor_inputs.pack" in targets
+    assert builder.GENERATED_SCBE_INIT_TARGET not in targets
+    assert f"authorities/full_source/{builder.FULL_SCBE_INIT_SOURCE}" in targets
     assert not any("checkpoints" in target or "horses" in target for target in targets)
     assert facts["dataset_manifest_sha256"] == builder.EXPECTED_DATASET_MANIFEST_SHA256
     assert facts["frozen_artifact_authority_mode"] == ("COMMITTED_RELEASE_COPY_AND_VERIFY_NO_REGENERATION")
+    assert facts["runtime_source_authority_sha256"][builder.FULL_SCBE_INIT_SOURCE] == (
+        builder.sha256_file(full_scbe_init)
+    )
+    assert facts["generated_runtime_stub"]["path"] == builder.GENERATED_SCBE_INIT_TARGET
+    assert facts["generated_runtime_stub"]["imports"] == []
 
 
 def test_packet_builder_verifies_committed_pack_without_regenerating(
@@ -445,6 +456,49 @@ def test_packet_builder_verifies_committed_pack_without_regenerating(
     )
     assert verified == artifact
     assert not (artifact.parent / "verification-output-must-stay-absent").exists()
+
+
+def test_extracted_archive_replay_is_isolated_from_worktree(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    worktree = tmp_path / "worktree-that-must-not-leak"
+    worktree.mkdir()
+    packet = tmp_path / "packet"
+    script = packet / "payload" / "scbe_repo" / "python" / "scbe" / ("clay_prime_scissor_input_campaign.py")
+    script.parent.mkdir(parents=True)
+    script.write_text(
+        """from __future__ import annotations
+
+import json
+import os
+from pathlib import Path
+import sys
+
+forbidden = os.environ["CLAY_FORBIDDEN_WORKTREE"].casefold()
+assert forbidden not in str(Path.cwd()).casefold()
+assert forbidden not in os.environ.get("PYTHONPATH", "").casefold()
+assert all(forbidden not in str(item).casefold() for item in sys.path)
+print(json.dumps({"status": "FROZEN_ARTIFACT_VERIFIED_NO_CALIBRATION_NO_HORSES"}))
+""",
+        encoding="utf-8",
+        newline="\n",
+    )
+    archive = tmp_path / "isolated.packet"
+    deterministic_zip(packet, archive)
+    monkeypatch.setenv("PYTHONPATH", str(worktree))
+    monkeypatch.chdir(worktree)
+
+    receipt = builder.verify_extracted_archive_isolated(
+        archive,
+        worktree=worktree,
+    )
+
+    assert receipt["status"] == ("PASS_FROZEN_ARTIFACT_VERIFIED_NO_CALIBRATION_NO_HORSES")
+    assert receipt["python_isolated_mode"] is True
+    assert receipt["pythonpath_from_extracted_archive_only"] is True
+    assert receipt["worktree_absent_from_subprocess_sys_path"] is True
+    assert receipt["verification_output_created"] is False
 
 
 def test_calibration_wrapper_emits_receipts_and_rejects_model_artifacts(
