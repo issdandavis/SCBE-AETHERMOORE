@@ -479,6 +479,7 @@ forbidden = os.environ["CLAY_FORBIDDEN_WORKTREE"].casefold()
 assert forbidden not in str(Path.cwd()).casefold()
 assert forbidden not in os.environ.get("PYTHONPATH", "").casefold()
 assert all(forbidden not in str(item).casefold() for item in sys.path)
+assert Path(os.environ["GIT_CEILING_DIRECTORIES"]) == Path.cwd()
 print(json.dumps({"status": "FROZEN_ARTIFACT_VERIFIED_NO_CALIBRATION_NO_HORSES"}))
 """,
         encoding="utf-8",

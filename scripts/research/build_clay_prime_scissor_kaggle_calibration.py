@@ -579,6 +579,7 @@ def verify_extracted_archive_isolated(
         environment["PYTHONPATH"] = os.pathsep.join(str(root) for root in roots)
         environment["PYTHONNOUSERSITE"] = "1"
         environment["CLAY_FORBIDDEN_WORKTREE"] = str(worktree)
+        environment["GIT_CEILING_DIRECTORIES"] = str(extracted)
         result = subprocess.run(
             command,
             check=False,
