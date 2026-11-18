@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from hashlib import sha256
+import json
 from pathlib import Path
 import stat
 import subprocess
@@ -59,6 +60,46 @@ def test_deterministic_archive_is_byte_identical(tmp_path: Path) -> None:
     deterministic_zip(source, second)
 
     assert first.read_bytes() == second.read_bytes()
+
+
+def test_committed_frozen_authority_matches_preflight_and_every_member() -> None:
+    root = Path(__file__).parents[2]
+    artifact = root / builder.FROZEN_ARTIFACT_AUTHORITY
+    authority = runner.load_json(root / "docs" / "research" / "CLAY_PRIME_SCISSOR_FROZEN_AUTHORITY_20261118.json")
+    preflight = runner.load_json(root / "docs" / "research" / "CLAY_PRIME_SCISSOR_INPUT_PREFLIGHT_20261118.json")
+    assert builder.sha256_file(artifact) == builder.EXPECTED_FROZEN_ARTIFACT_SHA256
+    assert artifact.stat().st_size == builder.EXPECTED_FROZEN_ARTIFACT_BYTES
+    assert authority["frozen_artifact"]["sha256"] == builder.sha256_file(artifact)
+    assert authority["dataset_manifest_sha256"] == preflight["dataset_manifest_sha256"]
+    assert authority["preflight_receipt_sha256"] == builder.EXPECTED_PREFLIGHT_SHA256
+
+    with zipfile.ZipFile(artifact) as archive:
+        metadata = json.loads(archive.read("metadata.json"))
+        assert set(archive.namelist()) == set(authority["frozen_artifact"]["member_sha256"])
+        for member, expected in authority["frozen_artifact"]["member_sha256"].items():
+            assert sha256(archive.read(member)).hexdigest() == expected
+
+    assert metadata["dataset_manifest_sha256"] == preflight["dataset_manifest_sha256"]
+    assert metadata["preflight_receipt_sha256"] == builder.EXPECTED_PREFLIGHT_SHA256
+    assert metadata["feature_receipt_sha256"] == preflight["feature_tables"]["feature_receipt_sha256"]
+    assert metadata["conditioning_receipt_sha256"] == preflight["empirical_conditioning_receipt_sha256"]
+    assert metadata["bindings"]["train"]["seal_sha256"] == preflight["train_binding"]["seal_sha256"]
+    assert (
+        metadata["bindings"]["train"]["metadata"]["mapped_values_sha256"]
+        == preflight["train_binding"]["mapped_values_sha256"]
+    )
+    assert metadata["bindings"]["holdout"]["seal_sha256"] == preflight["holdout_binding"]["seal_sha256"]
+    assert (
+        metadata["bindings"]["holdout"]["metadata"]["mapped_values_sha256"]
+        == preflight["holdout_binding"]["mapped_values_sha256"]
+    )
+    for name, field in (
+        ("prime_scissor", "prime_scissor_sha256"),
+        ("canonical_onehot_matched", "canonical_onehot_matched_sha256"),
+        ("deterministic_random_matched", "deterministic_random_matched_sha256"),
+        ("no_intervention", "no_intervention_sha256"),
+    ):
+        assert metadata["tables"][name]["tensor_sha256"] == preflight["feature_tables"][field]
 
 
 def test_safe_members_reject_traversal_duplicates_and_symlinks(tmp_path: Path) -> None:
@@ -255,6 +296,10 @@ def test_collect_specs_is_compact_and_parent_hash_pinned(tmp_path: Path, monkeyp
     math = ("__init__.py", "prime_lane_scissors.py")
     for relative in (*runtime, *docs):
         _write(worktree / relative)
+    frozen_authority = _write(
+        worktree / builder.FROZEN_ARTIFACT_AUTHORITY,
+        b"sealed-frozen-authority",
+    )
     for filename in math:
         _write(math_root / "clay-math" / "clay_math" / filename)
     monkeypatch.setattr(builder, "RUNTIME_MODULES", runtime)
@@ -300,6 +345,16 @@ def test_collect_specs_is_compact_and_parent_hash_pinned(tmp_path: Path, monkeyp
     )
     monkeypatch.setattr(
         builder,
+        "EXPECTED_FROZEN_ARTIFACT_SHA256",
+        builder.sha256_file(frozen_authority),
+    )
+    monkeypatch.setattr(
+        builder,
+        "EXPECTED_FROZEN_ARTIFACT_BYTES",
+        frozen_authority.stat().st_size,
+    )
+    monkeypatch.setattr(
+        builder,
         "require_clean_commit",
         lambda root: (builder.EXPECTED_MATH_COMMIT if root == math_root.resolve() else "1" * 40),
     )
@@ -318,8 +373,45 @@ def test_collect_specs_is_compact_and_parent_hash_pinned(tmp_path: Path, monkeyp
     assert "payload/baseline/RESULT.json" in targets
     assert sum(target.endswith("/PARENT.pt") for target in targets) == 3
     assert sum(target.endswith("/RESULT.json") for target in targets) == 4
+    assert "payload/frozen_artifacts/prime_scissor_inputs.pack" in targets
     assert not any("checkpoints" in target or "horses" in target for target in targets)
     assert facts["dataset_manifest_sha256"] == builder.EXPECTED_DATASET_MANIFEST_SHA256
+    assert facts["frozen_artifact_authority_mode"] == ("COMMITTED_RELEASE_COPY_AND_VERIFY_NO_REGENERATION")
+
+
+def test_packet_builder_verifies_committed_pack_without_regenerating(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    artifact = _write(tmp_path / "prime_scissor_inputs.pack", b"sealed")
+    monkeypatch.setattr(
+        builder,
+        "EXPECTED_FROZEN_ARTIFACT_SHA256",
+        builder.sha256_file(artifact),
+    )
+
+    def fake_run(command: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        assert "--frozen-artifact-pack" in command
+        assert command[command.index("--frozen-artifact-pack") + 1] == str(artifact)
+        assert "--verify-frozen-artifact-pack-only" in command
+        assert "--export-frozen-artifact-pack" not in command
+        return subprocess.CompletedProcess(
+            command,
+            0,
+            '{"status":"FROZEN_ARTIFACT_VERIFIED_NO_CALIBRATION_NO_HORSES"}\n',
+            "",
+        )
+
+    monkeypatch.setattr(builder.subprocess, "run", fake_run)
+    verified = builder._verify_frozen_artifacts(
+        worktree=tmp_path,
+        baseline_run=tmp_path,
+        source_root=tmp_path,
+        math_root=tmp_path,
+        artifact=artifact,
+    )
+    assert verified == artifact
+    assert not (artifact.parent / "verification-output-must-stay-absent").exists()
 
 
 def test_calibration_wrapper_emits_receipts_and_rejects_model_artifacts(

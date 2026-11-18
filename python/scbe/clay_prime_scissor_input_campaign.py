@@ -1065,6 +1065,10 @@ def _collect_horse_results(
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
+    if args.verify_frozen_artifact_pack_only and args.frozen_artifact_pack is None:
+        raise ValueError(
+            "--verify-frozen-artifact-pack-only requires --frozen-artifact-pack"
+        )
     baseline_run = args.baseline_run.resolve(strict=True)
     baseline_manifest_path = baseline_run / "RUN_MANIFEST.json"
     baseline_result_path = baseline_run / "RESULT.json"
@@ -1158,6 +1162,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "holdout_binding_mapped_sha256": holdout_binding.mapped_values_sha256,
         },
     )
+    if args.verify_frozen_artifact_pack_only:
+        return {
+            "schema": f"{SCHEMA}.frozen-artifact-verification",
+            "status": "FROZEN_ARTIFACT_VERIFIED_NO_CALIBRATION_NO_HORSES",
+            "artifact_path": str(args.frozen_artifact_pack.resolve(strict=True)),
+            "artifact_sha256": frozen_artifact_pack_hash,
+            "dataset_manifest_sha256": dataset_hash,
+            "preflight_receipt_sha256": preflight_file_hash,
+            "authority": AUTHORITY,
+        }
     if args.export_frozen_artifact_pack is not None:
         if args.frozen_artifact_pack is not None:
             raise ValueError("cannot load and export a frozen artifact pack together")
@@ -1551,6 +1565,7 @@ def parse_args() -> argparse.Namespace:
     execution.add_argument("--calibration-only", action="store_true")
     execution.add_argument("--aggregate-only", action="store_true")
     execution.add_argument("--export-frozen-artifact-pack", type=Path)
+    execution.add_argument("--verify-frozen-artifact-pack-only", action="store_true")
     parser.add_argument("--grow-steps", type=int, default=18_000)
     parser.add_argument("--checkpoint-every", type=int, default=500)
     parser.add_argument("--batch-size", type=int, default=128)

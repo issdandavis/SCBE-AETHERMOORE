@@ -1,0 +1,26 @@
+**********************
+PowerShell transcript start
+Start time: 20261118073332
+Username: ISACLAPTOP\issda
+RunAs User: ISACLAPTOP\issda
+Configuration Name: 
+Machine: ISACLAPTOP (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Program Files\WindowsApps\Microsoft.PowerShell_7.6.4.0_x64__8wekyb3d8bbwe\pwsh.dll -Command try { [Console]::OutputEncoding=[System.Text.Encoding]::UTF8 } catch {}
+Start-Transcript -Path 'C:\dev\clay-training-packets\prime-scissor-authority-attempt-b8b8b8574\export.transcript.log' | Out-Null; $env:PYTHONPATH='C:\dev\_wt_clay_prime_scissor_input_20261118;C:\dev\_wt_clay_prime_scissor_input_20261118\python;C:\dev\_wt_clay_debruijn_shell_20261118\clay-math;C:\dev\_wt_clay_action_byte_confirm_20261110'; & python -X utf8 python\scbe\clay_prime_scissor_input_campaign.py --baseline-run 'C:\dev\clay-training-runs\frozen-multiview-adapter-replication-20261114-v1' --output-dir 'C:\dev\clay-training-packets\prime-scissor-export-unused-b8b8b8574' --preregistration 'C:\dev\_wt_clay_prime_scissor_input_20261118\docs\research\CLAY_PRIME_SCISSOR_INPUT_PREREGISTRATION_20261118.md' --preflight-receipt 'C:\dev\_wt_clay_prime_scissor_input_20261118\docs\research\CLAY_PRIME_SCISSOR_INPUT_PREFLIGHT_20261118.json' --clay-math-root 'C:\dev\_wt_clay_debruijn_shell_20261118' --source-dir 'C:\dev\_wt_clay_action_byte_confirm_20261110\experiments\clay_action_compiler_20261109' --device cpu --export-frozen-artifact-pack 'C:\dev\clay-training-packets\prime-scissor-frozen-authority-b8b8b8574.pack'; $code=$LASTEXITCODE; Write-Output "EXIT_CODE=$code"; Stop-Transcript | Out-Null; exit $code
+Process ID: 24084
+PSVersion: 7.6.4
+PSEdition: Core
+GitCommitId: 7.6.4
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.4
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+
+EXIT_CODE=1
+**********************
+PowerShell transcript end
+End time: 20261118073515
+**********************

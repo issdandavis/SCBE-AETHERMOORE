@@ -62,13 +62,17 @@ claim is made.
 The first Kaggle invocation must be `--calibration-only`. It times the slower
 shuffled-binding arm for 500 representative batch-128 updates plus held
 generation, projects all 15 horses with 20% margin, and refuses a projection
-above 24 hours. `--preflight-receipt` is mandatory, and all regenerated tensors,
-pivots, conditioning, and split-local bindings must match it bit-for-bit before
-calibration. The private calibration packet additionally supplies a deterministic,
-hash-pinned frozen-artifact pack so Kaggle loads the exact local float32 tables
-and uint8 split bindings instead of rerunning platform-sensitive NumPy SVD or
-derangement construction. Sample IDs, tensor hashes, seals, conditioning, and
-the preflight authority are rechecked on load. A later invocation may select
+above 24 hours. `--preflight-receipt` is mandatory. The private calibration
+packet supplies the committed, hash-pinned 905,507-byte frozen authority at
+`data/clay_prime_scissor_input_20261118/prime_scissor_inputs.pack`, so Kaggle
+loads the exact local float32 tables and uint8 split bindings instead of
+rerunning platform-sensitive NumPy SVD, derangement construction, or float64
+conditioning reductions. Packet builds copy this release artifact and invoke
+only its load/verify path; they never regenerate it. Sample IDs, tensor/member
+hashes, seals, conditioning, dataset identity, and the immutable preflight
+authority are rechecked on load. The causality/failure receipt is
+`docs/research/CLAY_PRIME_SCISSOR_FROZEN_AUTHORITY_20261118.json`. A later
+invocation may select
 explicit `--seed`/`--arm` pairs or
 `--max-horses`. The aggregator accepts exactly 15 unique, config-identical horse
 receipts and rejects missing, duplicate, revision-mismatched, or model-hash-

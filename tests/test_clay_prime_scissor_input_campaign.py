@@ -105,6 +105,37 @@ def test_calibration_only_is_an_explicit_mutually_exclusive_execution_mode(
     assert not args.aggregate_only
 
 
+def test_frozen_artifact_verification_is_an_explicit_execution_mode(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "runner",
+            "--baseline-run",
+            "baseline",
+            "--output-dir",
+            "output",
+            "--preregistration",
+            "prereg.md",
+            "--preflight-receipt",
+            "preflight.json",
+            "--clay-math-root",
+            "clay-math",
+            "--source-dir",
+            "source",
+            "--frozen-artifact-pack",
+            "authority.pack",
+            "--verify-frozen-artifact-pack-only",
+        ],
+    )
+    args = parse_args()
+    assert args.verify_frozen_artifact_pack_only
+    assert not args.calibration_only
+    assert not args.aggregate_only
+
+
 def test_clay_math_provenance_is_exact_clean_commit() -> None:
     root = Path(r"C:\dev\_wt_clay_debruijn_shell_20261118")
     receipt = clay_math_provenance(root)

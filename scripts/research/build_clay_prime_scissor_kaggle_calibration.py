@@ -54,6 +54,9 @@ EXPECTED_PARENT_RESULT_SHA256 = {
 }
 EXPECTED_PREREGISTRATION_SHA256 = "bd277d1c3218fca6a520e393b6ea99a5efc6e2d1d7c89a45b2b12563d66555ab"
 EXPECTED_PREFLIGHT_SHA256 = "7d1732045829534170d75923af14a9fde44c569be06980d54b0a5b3aecd5889a"
+FROZEN_ARTIFACT_AUTHORITY = "data/clay_prime_scissor_input_20261118/prime_scissor_inputs.pack"
+EXPECTED_FROZEN_ARTIFACT_SHA256 = "8cf629170554970ec6541d0a129c48d64e3e38925ae318eb0cd5e8a860492dd4"
+EXPECTED_FROZEN_ARTIFACT_BYTES = 905_507
 EXPECTED_MATH_COMMIT = "0a5a06bed57e922f7e9ca04229664266aa8d215c"
 EXPECTED_SEEDS = (20261134, 20261135, 20261136)
 
@@ -88,6 +91,9 @@ AUTHORITY_DOCS = (
     "docs/research/CLAY_PRIME_SCISSOR_INPUT_PREREGISTRATION_20261118.md",
     "docs/research/CLAY_PRIME_SCISSOR_INPUT_PREFLIGHT_20261118.json",
     "docs/research/CLAY_PRIME_SCISSOR_INPUT_SYSTEM_MAP_20261118.md",
+    "docs/research/CLAY_PRIME_SCISSOR_FROZEN_AUTHORITY_20261118.json",
+    "docs/research/evidence/clay_prime_scissor_authority_20261118/failed_threads2_export.transcript.txt",
+    "docs/research/evidence/clay_prime_scissor_authority_20261118/successful_threads6_export.transcript.txt",
 )
 
 
@@ -194,6 +200,18 @@ def collect_specs(
         EXPECTED_PREFLIGHT_SHA256,
         label="sealed preflight",
     )
+    frozen_authority = worktree / FROZEN_ARTIFACT_AUTHORITY
+    _require_hash(
+        frozen_authority,
+        EXPECTED_FROZEN_ARTIFACT_SHA256,
+        label="frozen feature/binding authority",
+    )
+    if frozen_authority.stat().st_size != EXPECTED_FROZEN_ARTIFACT_BYTES:
+        raise RuntimeError(
+            "frozen feature/binding authority size differs: "
+            f"expected {EXPECTED_FROZEN_ARTIFACT_BYTES}, "
+            f"got {frozen_authority.stat().st_size}"
+        )
     if baseline_manifest.get("schema") != EXPECTED_BASELINE_SCHEMA:
         raise RuntimeError("baseline manifest schema differs")
     config = baseline_manifest.get("config")
@@ -280,6 +298,12 @@ def collect_specs(
             f"payload/scbe_repo/{relative}",
             "sealed_authority",
         )
+    _add(
+        specs,
+        frozen_authority,
+        "payload/frozen_artifacts/prime_scissor_inputs.pack",
+        "exact_frozen_feature_and_binding_artifacts",
+    )
     for relative in LOOM_FILES:
         _add(
             specs,
@@ -312,6 +336,9 @@ def collect_specs(
         "dataset_manifest_sha256": EXPECTED_DATASET_MANIFEST_SHA256,
         "seeds": list(EXPECTED_SEEDS),
         "source_hashes": dict(sorted(expected_source_hashes.items())),
+        "frozen_artifact_pack_sha256": EXPECTED_FROZEN_ARTIFACT_SHA256,
+        "frozen_artifact_pack_bytes": EXPECTED_FROZEN_ARTIFACT_BYTES,
+        "frozen_artifact_authority_mode": ("COMMITTED_RELEASE_COPY_AND_VERIFY_NO_REGENERATION"),
     }
     return specs, facts
 
@@ -328,16 +355,21 @@ def _packet_files(packet_root: Path, roles: Mapping[str, str]) -> list[dict[str,
     return rows
 
 
-def _export_frozen_artifacts(
+def _verify_frozen_artifacts(
     *,
     worktree: Path,
     baseline_run: Path,
     source_root: Path,
     math_root: Path,
-    packet_root: Path,
+    artifact: Path,
 ) -> Path:
-    artifact = packet_root / "payload" / "frozen_artifacts" / "prime_scissor_inputs.pack"
-    export_output = packet_root / "authorities" / "artifact-export-no-run"
+    artifact = artifact.resolve(strict=True)
+    _require_hash(
+        artifact,
+        EXPECTED_FROZEN_ARTIFACT_SHA256,
+        label="packet frozen feature/binding authority",
+    )
+    verification_output = artifact.parent / "verification-output-must-stay-absent"
     command = [
         sys.executable,
         "-X",
@@ -346,7 +378,7 @@ def _export_frozen_artifacts(
         "--baseline-run",
         str(baseline_run),
         "--output-dir",
-        str(export_output),
+        str(verification_output),
         "--preregistration",
         str(worktree / "docs" / "research" / "CLAY_PRIME_SCISSOR_INPUT_PREREGISTRATION_20261118.md"),
         "--preflight-receipt",
@@ -357,8 +389,11 @@ def _export_frozen_artifacts(
         str(source_root / "experiments" / "clay_action_compiler_20261109"),
         "--device",
         "cpu",
-        "--export-frozen-artifact-pack",
+        "--threads",
+        "2",
+        "--frozen-artifact-pack",
         str(artifact),
+        "--verify-frozen-artifact-pack-only",
     ]
     environment = os.environ.copy()
     python_paths = [
@@ -379,16 +414,14 @@ def _export_frozen_artifacts(
     )
     if result.returncode != 0:
         raise RuntimeError(
-            "frozen artifact export failed without starting calibration: "
+            "committed frozen artifact verification failed without starting calibration: "
             f"returncode={result.returncode}, stderr={result.stderr[-4000:]}"
         )
-    if not artifact.is_file():
-        raise RuntimeError("frozen artifact exporter did not create its pack")
     status = json.loads(result.stdout)
-    if status.get("status") != "FROZEN_ARTIFACT_EXPORTED_NO_CALIBRATION_NO_HORSES":
-        raise RuntimeError(f"unexpected frozen artifact export status: {status}")
-    if export_output.exists() and any(export_output.rglob("*")):
-        raise RuntimeError("frozen artifact export unexpectedly wrote run artifacts")
+    if status.get("status") != "FROZEN_ARTIFACT_VERIFIED_NO_CALIBRATION_NO_HORSES":
+        raise RuntimeError(f"unexpected frozen artifact verification status: {status}")
+    if verification_output.exists():
+        raise RuntimeError("frozen artifact verification unexpectedly wrote run artifacts")
     return artifact
 
 
@@ -419,17 +452,13 @@ def build_packet(
             target = packet_root / Path(*spec.target.split("/"))
             copy_exact(spec.source, target)
             roles[spec.target] = spec.role
-        artifact = _export_frozen_artifacts(
+        artifact = _verify_frozen_artifacts(
             worktree=worktree.resolve(strict=True),
             baseline_run=baseline_run.resolve(strict=True),
             source_root=source_root.resolve(strict=True),
             math_root=math_root.resolve(strict=True),
-            packet_root=packet_root,
+            artifact=(packet_root / "payload" / "frozen_artifacts" / "prime_scissor_inputs.pack"),
         )
-        artifact_relative = artifact.relative_to(packet_root).as_posix()
-        roles[artifact_relative] = "exact_frozen_feature_and_binding_artifacts"
-        facts["frozen_artifact_pack_sha256"] = sha256_file(artifact)
-        facts["frozen_artifact_pack_bytes"] = artifact.stat().st_size
         files = _packet_files(packet_root, roles)
         body: dict[str, Any] = {
             "schema": PACKET_SCHEMA,

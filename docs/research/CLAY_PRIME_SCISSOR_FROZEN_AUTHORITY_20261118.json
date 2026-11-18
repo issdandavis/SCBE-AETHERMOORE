@@ -1,0 +1,59 @@
+{
+  "authority": "EXACT_FROZEN_FEATURE_AND_BINDING_RELEASE_NO_TRAINING",
+  "causal_isolation": {
+    "first_differing_surface": "empirical_conditioning_receipt_sha256",
+    "reason": "CPU float64 reduction width in empirical_conditioning_receipt depended on torch.set_num_threads",
+    "table_or_binding_drift": false,
+    "threads_2_observed_sha256": "b3103cae16e76d18496ccbbc4aac051f49469e376c48b2c54c79d77f924fb5dc",
+    "threads_6_preflight_sha256": "7f2dd386ddad0cd84a7a0b4edf10a7b60a67707f4029ae742e6e9b5c7f8fd530"
+  },
+  "creation_environment": {
+    "numpy": "2.4.6",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.12.10",
+    "torch": "2.13.0+cu126",
+    "torch_num_interop_threads": 6,
+    "torch_num_threads": 6
+  },
+  "creation_source_commit": "b8b8b8574b17e87b2a9825ef03677f67708494b7",
+  "dataset_manifest_sha256": "7460665cbb718097438227c452f1915e88bdc5a10ac643122b17908b505d0041",
+  "failed_attempt": {
+    "artifact_created": false,
+    "exit_code": 1,
+    "failure": {
+      "actual": "b3103cae16e76d18496ccbbc4aac051f49469e376c48b2c54c79d77f924fb5dc",
+      "expected": "7f2dd386ddad0cd84a7a0b4edf10a7b60a67707f4029ae742e6e9b5c7f8fd530",
+      "field": "empirical_conditioning_receipt_sha256"
+    },
+    "torch_num_threads": 2,
+    "transcript_bytes": 2037,
+    "transcript_path": "docs/research/evidence/clay_prime_scissor_authority_20261118/failed_threads2_export.transcript.txt",
+    "transcript_sha256": "ce998088f4299e2ed24426fb9ab8b5a959b3437fc884f9a5adf0a615ba5ef09b"
+  },
+  "frozen_artifact": {
+    "bytes": 905507,
+    "member_sha256": {
+      "bindings/holdout.u8": "5b387ff8a82116bc0cdc35779d13f163836e7d46be84bd63c86346536a6b973b",
+      "bindings/train.u8": "464b0907fd375bc99506bbe26ca7ead31e12f4ca3712356caeb05c652976ed5f",
+      "metadata.json": "91502d52c37623bc063553ccc576ec4f5891889c637310cafeccb009c2ed54a6",
+      "tables/canonical_onehot_matched.bin": "69bd6d92d8ffa00eb3102b459abc9da530ac20ab51248ade52607f8b6bd063ad",
+      "tables/deterministic_random_matched.bin": "9075b61a863b8dbc26fac57603975a0c4c09c880d7d918a4bc2e4b9962b3f18e",
+      "tables/no_intervention.bin": "74a09a23fd3124cbe7c7e5935975fcd07c7bfc4d02243ef4ef8df97f897180cd",
+      "tables/prime_scissor.bin": "7895f704119f1dd178d6601ea7ef45647fbcca2bb97b07937d6c478b3bb5aa29"
+    },
+    "metadata_body_sha256": "be19d6470c79ef43f57e09ec3634969d7e5a2a52170c9f8e92b22321a27eb05f",
+    "path": "data/clay_prime_scissor_input_20261118/prime_scissor_inputs.pack",
+    "sha256": "8cf629170554970ec6541d0a129c48d64e3e38925ae318eb0cd5e8a860492dd4"
+  },
+  "preflight_receipt_sha256": "7d1732045829534170d75923af14a9fde44c569be06980d54b0a5b3aecd5889a",
+  "schema": "clay.prime-scissor-input.frozen-authority.v1",
+  "status": "SEALED_PREFLIGHT_MATCHING_PACK_NO_CALIBRATION_NO_HORSES",
+  "successful_attempt": {
+    "artifact_created": true,
+    "exit_code": 0,
+    "torch_num_threads": 6,
+    "transcript_bytes": 2411,
+    "transcript_path": "docs/research/evidence/clay_prime_scissor_authority_20261118/successful_threads6_export.transcript.txt",
+    "transcript_sha256": "4a4f67ca0844fb604d71cb9729ae44aeccfca5326932403a491967ec04feafd8"
+  }
+}
