@@ -341,7 +341,8 @@ def _apply_joi_lock(root: Path, meta: dict[str, Any]) -> bool:
         return False
     text = path.read_text(encoding="utf-8")
     match = re.search(
-        r'("node_modules/joi": \{\n\s*"version": ")([^"]+)(",\n\s*"resolved": ")([^"]+)(",\n\s*"integrity": ")([^"]+)(")',
+        r'("node_modules/joi": \{\n\s*"version": ")([^"]+)'
+        r'(",\n\s*"resolved": ")([^"]+)(",\n\s*"integrity": ")([^"]+)(")',
         text,
     )
     if not match:
