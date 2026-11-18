@@ -1236,6 +1236,18 @@ def test_kernel_metadata_contract_is_private_gpu_offline() -> None:
         builder.kernel_title_for_id("issacizrealdavis/Clay Prime Scissor")
 
 
+def test_kernel_title_locks_kaggle_fifty_character_provider_limit() -> None:
+    accepted_slug = "a" * builder.KAGGLE_KERNEL_SLUG_MAX_CHARS
+    rejected_slug = accepted_slug + "a"
+    material_slug = "clay-prime-scissor-matfix-20261118-9d6263fd"
+
+    assert len(material_slug) == 43
+    assert builder.kernel_title_for_id(f"issacizrealdavis/{material_slug}") == material_slug
+    assert builder.kernel_title_for_id(f"issacizrealdavis/{accepted_slug}") == accepted_slug
+    with pytest.raises(ValueError, match="50-character provider limit"):
+        builder.kernel_title_for_id(f"issacizrealdavis/{rejected_slug}")
+
+
 def test_prelaunch_failure_still_emits_environment_launch_failure_and_recovery(
     tmp_path: Path,
 ) -> None:

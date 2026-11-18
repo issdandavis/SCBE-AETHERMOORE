@@ -77,6 +77,7 @@ EXPECTED_CALIBRATION_CONFIG_HASH = "4dedaf4dce4a4280aed5e796a02b345b4d77a14f20a4
 EXPECTED_CALIBRATION_SECONDS_PER_STEP = 0.10859733237199998
 EXPECTED_CAMPAIGN_SECONDS_WITH_MARGIN = 35368.56240005924
 EXPECTED_CALIBRATION_DEVICE_NAMES = ("Tesla T4", "Tesla T4")
+KAGGLE_KERNEL_SLUG_MAX_CHARS = 50
 FULL_SCBE_INIT_SOURCE = "python/scbe/__init__.py"
 GENERATED_SCBE_INIT_TARGET = "payload/scbe_repo/python/scbe/__init__.py"
 MINIMAL_SCBE_RUNTIME_INIT = '''"""Generated package marker for the sealed Clay calibration runtime.
@@ -217,6 +218,10 @@ def kernel_title_for_id(kernel_id: str) -> str:
     owner, separator, slug = kernel_id.partition("/")
     if not separator or not owner or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", slug):
         raise ValueError(f"kernel id must contain a clean lowercase provider slug: {kernel_id}")
+    if len(slug) > KAGGLE_KERNEL_SLUG_MAX_CHARS:
+        raise ValueError(
+            "kernel slug exceeds Kaggle's 50-character provider limit: " f"{len(slug)} > {KAGGLE_KERNEL_SLUG_MAX_CHARS}"
+        )
     return slug
 
 
