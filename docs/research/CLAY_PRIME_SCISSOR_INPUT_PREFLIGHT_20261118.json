@@ -1,0 +1,56 @@
+{
+  "authority": "MEASUREMENT_ONLY_NO_EXECUTION_NO_PROMOTION_NO_PARTIAL_UNFREEZE",
+  "dataset_manifest_sha256": "7460665cbb718097438227c452f1915e88bdc5a10ac643122b17908b505d0041",
+  "empirical_conditioning_receipt_sha256": "7f2dd386ddad0cd84a7a0b4edf10a7b60a67707f4029ae742e6e9b5c7f8fd530",
+  "feature_tables": {
+    "affine_rank": 205,
+    "canonical_onehot_matched_sha256": "f3b676e63de5a1988a88b9875f59101018eed5bc37748728cb6e141903b9fa03",
+    "combined_raw_sha256": "08db936c87db8545eabd31c311b1882d54d1e99c80d4d9ac3d9dbc1c9519e6d2",
+    "deterministic_random_matched_sha256": "16890c662ae851dfe287d4c2f76eda3838a6bf5b0c8fd330a7a929e412eddbfb",
+    "feature_receipt_sha256": "651e92e6a5c56e1c1ae2cec4424f3bd6193088be586f89c985ca18fe319603cc",
+    "feature_width": 206,
+    "fraw_sha256": "6ab3c5d49bca35cf18cbfbde4b6148ff0ab32fb1ffc29ef186ea1929810cf27f",
+    "linear_rank": 206,
+    "no_intervention_sha256": "89bdaf5664efd830f798848dc78db6b181ebe1f46c929b737c61483a2c0d7196",
+    "pivot_descriptors_sha256": "272c7b36084fb2669993990f85b869eda177641dbb6f222de2d77b1de9f1ee40",
+    "pivot_indices_sha256": "473071c9bba8bcfa81907de4dee2c4d782cf22e621c279a89e9d446594190d52",
+    "prime_scissor_sha256": "8c323f24afe233b494cae535977eb602a0430246fe28474049335defed79d3eb"
+  },
+  "holdout_binding": {
+    "clears_gate": true,
+    "mapped_values_sha256": "c8bb24d30b3d7836da8a00e4088e568558d2323f8015ea0a363251fd8950a3c9",
+    "maximum_conditional_share": 0.7055555555555556,
+    "median_diversity": 67.0,
+    "minimum_diversity": 33.0,
+    "normalized_mutual_information": 0.11005979021259218,
+    "occurrences": 222000,
+    "same_sample_source_share": 0.0007387387387387388,
+    "seal_sha256": "380531a3787bab503ea0f5a936a46627228cc00544ebf7526291a4866b4b05e3"
+  },
+  "mechanics_preflight": {
+    "arms": 5,
+    "evidence": "SYNTHETIC_MECHANICS_ONLY_NOT_CAPABILITY_EVIDENCE",
+    "horses": 15,
+    "non_null_projection_gradients_nonzero": true,
+    "null_projection_gradient_zero": true,
+    "parent_tensors_preserved": true,
+    "receipt_sha256": "bb912419dfa93e8a7e8b246d38db2b9dfcdd4642579a5573a04f9f7096e85671",
+    "seeds": 3,
+    "status": "PASS",
+    "trainable_parameters_per_horse": 152846
+  },
+  "schema": "clay.prime-scissor-input.preflight.v1",
+  "split_sample_id_overlap": 0,
+  "status": "PASS_NO_MATERIAL_RUN",
+  "train_binding": {
+    "clears_gate": true,
+    "mapped_values_sha256": "f2728fb04134a3a079fddb6d76ffef128381ec912fbee9705bc7a3c6439c0d25",
+    "maximum_conditional_share": 0.6882793017456359,
+    "median_diversity": 110.5,
+    "minimum_diversity": 65.0,
+    "normalized_mutual_information": 0.09875607034327545,
+    "occurrences": 444000,
+    "same_sample_source_share": 0.00032882882882882884,
+    "seal_sha256": "bcb281a737ebf69428519dae6dc4ebe9ea61dce033ba239c6931c1d0cf77dcbb"
+  }
+}
