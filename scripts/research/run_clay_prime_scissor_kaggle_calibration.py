@@ -337,6 +337,27 @@ def calibration_command(packet_root: Path, output_root: Path, device: str) -> li
     ]
 
 
+def calibration_environment(packet_root: Path) -> dict[str, str]:
+    """Pin every Clay import root to the extracted packet, never the host."""
+
+    packet_root = packet_root.resolve(strict=True)
+    repo = (packet_root / "payload" / "scbe_repo").resolve(strict=True)
+    scbe_python = (repo / "python").resolve(strict=True)
+    clay_math_root = (packet_root / "payload" / "clay_math_root").resolve(strict=True)
+    loom_root = (packet_root / "payload" / "loom_root").resolve(strict=True)
+    if not (scbe_python / "scbe" / "instrument.py").is_file():
+        raise FileNotFoundError("extracted SCBE runtime lacks python/scbe/instrument.py")
+    python_paths = (repo, scbe_python, clay_math_root, loom_root)
+    environment = os.environ.copy()
+    environment["PYTHONPATH"] = os.pathsep.join(str(path) for path in python_paths)
+    environment["SCBE_ROOT"] = str(repo)
+    environment["SCBE_PYTHON"] = str(scbe_python)
+    environment["PYTHONNOUSERSITE"] = "1"
+    environment["PYTHONHASHSEED"] = "0"
+    environment["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
+    return environment
+
+
 def _environment_receipt(output_root: Path, packet_id: str) -> dict[str, Any]:
     usage = shutil.disk_usage(output_root.anchor or "/")
     try:
@@ -408,20 +429,7 @@ def _run_calibration_inner(args: argparse.Namespace) -> dict[str, Any]:
         raise RuntimeError("private GPU kernel has no CUDA device")
 
     command = calibration_command(runtime_root, output_root, args.device)
-    repo = runtime_root / "payload" / "scbe_repo"
-    python_paths = [
-        repo,
-        repo / "python",
-        runtime_root / "payload" / "clay_math_root",
-        runtime_root / "payload" / "loom_root",
-    ]
-    environment_variables = os.environ.copy()
-    environment_variables["PYTHONPATH"] = os.pathsep.join(
-        [str(path) for path in python_paths]
-        + ([environment_variables["PYTHONPATH"]] if environment_variables.get("PYTHONPATH") else [])
-    )
-    environment_variables["PYTHONHASHSEED"] = "0"
-    environment_variables["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
+    environment_variables = calibration_environment(runtime_root)
     launch_body = {
         "schema": f"{RECEIPT_SCHEMA}.launch",
         "created_at_utc": utc_now(),
@@ -434,6 +442,12 @@ def _run_calibration_inner(args: argparse.Namespace) -> dict[str, Any]:
         "grow_steps_per_horse_for_projection": FIXED_GROW_STEPS,
         "minimum_free_gib": FIXED_MINIMUM_FREE_GIB,
         "internet": False,
+        "runtime_import_authority": {
+            "scbe_root": environment_variables["SCBE_ROOT"],
+            "scbe_python": environment_variables["SCBE_PYTHON"],
+            "pythonpath": environment_variables["PYTHONPATH"].split(os.pathsep),
+            "ambient_pythonpath_inherited": False,
+        },
         "material_training": "NONE",
     }
     launch = {**launch_body, "receipt_sha256": stable_hash(launch_body)}
@@ -449,6 +463,7 @@ def _run_calibration_inner(args: argparse.Namespace) -> dict[str, Any]:
             capture_output=True,
             text=True,
             env=environment_variables,
+            cwd=runtime_root,
         )
         stdout_path.write_text(result.stdout, encoding="utf-8", newline="\n")
         stderr_path.write_text(result.stderr, encoding="utf-8", newline="\n")

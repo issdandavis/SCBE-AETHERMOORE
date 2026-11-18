@@ -87,12 +87,15 @@ EMBEDDED_KERNEL_AUTHORITY_SENTINEL = "EMBEDDED_KERNEL_AUTHORITY_JSON: str | None
 KAGGLE_CODE_FILE_ONLY_BOOTSTRAP = r"""
 import importlib.util
 import json
+import os
 from pathlib import Path
 import sys
 
 script = Path(sys.argv[1]).resolve(strict=True)
 input_root = Path(sys.argv[2]).resolve(strict=True)
 runtime_root = Path(sys.argv[3])
+forbidden_host_root = Path(sys.argv[4]).resolve(strict=True)
+verify_clay_adapter = sys.argv[5] == "1"
 spec = importlib.util.spec_from_file_location("kaggle_code_file_only", script)
 if spec is None or spec.loader is None:
     raise RuntimeError("could not import generated Kaggle code_file")
@@ -114,6 +117,43 @@ _, manifest = module.extract_and_verify_packet(
     descriptor,
     runtime_root,
 )
+scbe_root = runtime_root / "payload" / "scbe_repo"
+scbe_python = scbe_root / "python"
+module_paths = {}
+if verify_clay_adapter:
+    scbe_root = scbe_root.resolve(strict=True)
+    scbe_python = scbe_python.resolve(strict=True)
+    clay_math_root = (runtime_root / "payload" / "clay_math_root").resolve(strict=True)
+    loom_root = (runtime_root / "payload" / "loom_root").resolve(strict=True)
+    source_dir = (
+        loom_root / "experiments" / "clay_action_compiler_20261109"
+    ).resolve(strict=True)
+    os.environ["SCBE_ROOT"] = str(scbe_root)
+    os.environ["SCBE_PYTHON"] = str(scbe_python)
+    os.environ["PYTHONPATH"] = os.pathsep.join(
+        str(path) for path in (scbe_root, scbe_python, clay_math_root, loom_root)
+    )
+    sys.path[:0] = [str(scbe_root), str(scbe_python), str(clay_math_root), str(loom_root)]
+    forbidden = str(forbidden_host_root).casefold()
+    if any(forbidden in str(path).casefold() for path in sys.path):
+        raise RuntimeError("host source worktree leaked into code-file-only sys.path")
+    from python.scbe.clay_paired_orbit_training import ClaySourceAdapter
+
+    adapter = ClaySourceAdapter(source_dir)
+    action_compiler = __import__("action_compiler")
+    if Path(action_compiler.SCBE_ROOT).resolve() != scbe_root:
+        raise RuntimeError("action compiler did not bind to extracted SCBE root")
+    if Path(action_compiler.SCBE_PYTHON).resolve() != scbe_python:
+        raise RuntimeError("action compiler did not bind to extracted SCBE python root")
+    module_paths = {
+        "policy": Path(adapter._policy.__file__).resolve(),
+        "topology": Path(adapter._topology.__file__).resolve(),
+        "action_compiler": Path(action_compiler.__file__).resolve(),
+    }
+    if any(not path.is_relative_to(runtime_root) for path in module_paths.values()):
+        raise RuntimeError(f"adapter imported host source: {module_paths}")
+    if any(forbidden in str(path).casefold() for path in module_paths.values()):
+        raise RuntimeError(f"adapter imported forbidden host worktree: {module_paths}")
 print(
     json.dumps(
         {
@@ -122,6 +162,14 @@ print(
             "packet_id": manifest["packet_id"],
             "authority_source": "EMBEDDED_CANONICAL_JSON",
             "sibling_authority_present": False,
+            "clay_source_adapter_instantiated": verify_clay_adapter,
+            "action_compiler_scbe_root": scbe_root.relative_to(runtime_root).as_posix(),
+            "action_compiler_scbe_python": scbe_python.relative_to(runtime_root).as_posix(),
+            "adapter_module_paths": {
+                key: value.relative_to(runtime_root).as_posix()
+                for key, value in sorted(module_paths.items())
+            },
+            "host_source_path_absent": verify_clay_adapter,
             "material_training": "NONE",
         },
         sort_keys=True,
@@ -704,6 +752,8 @@ def verify_kaggle_code_file_only(
     *,
     expected_dataset_id: str,
     expected_packet_id: str,
+    forbidden_host_root: Path,
+    verify_clay_adapter: bool = True,
 ) -> dict[str, Any]:
     """Replay Kaggle's script upload shape: one code file plus an input mount."""
 
@@ -732,6 +782,8 @@ def verify_kaggle_code_file_only(
                 str(script),
                 str(root / "input"),
                 str(runtime),
+                str(forbidden_host_root.resolve(strict=True)),
+                "1" if verify_clay_adapter else "0",
             ],
             check=False,
             capture_output=True,
@@ -752,6 +804,11 @@ def verify_kaggle_code_file_only(
             raise RuntimeError("Kaggle code-file-only dataset identity differs")
         if status.get("packet_id") != expected_packet_id:
             raise RuntimeError("Kaggle code-file-only packet identity differs")
+        if verify_clay_adapter and (
+            status.get("clay_source_adapter_instantiated") is not True
+            or status.get("host_source_path_absent") is not True
+        ):
+            raise RuntimeError("Kaggle code-file-only Clay adapter import was not verified")
     return {
         "schema": f"{BUILD_SCHEMA}.kaggle-code-file-only-preflight.v1",
         **status,
@@ -760,6 +817,8 @@ def verify_kaggle_code_file_only(
         "code_file_count": 1,
         "dataset_source_attached": True,
         "packet_archive_verified": True,
+        "clay_source_adapter_instantiated": bool(status["clay_source_adapter_instantiated"]),
+        "host_source_path_absent": bool(status["host_source_path_absent"]),
         "calibration_started": False,
         "quota_spent": False,
     }
@@ -917,6 +976,7 @@ def build_packet(
             dataset_dir,
             expected_dataset_id=dataset_id,
             expected_packet_id=packet_id,
+            forbidden_host_root=worktree,
         )
         launch_plan = {
             "schema": f"{BUILD_SCHEMA}.launch-plan",

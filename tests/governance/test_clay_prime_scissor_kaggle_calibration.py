@@ -317,20 +317,53 @@ def test_generated_code_file_alone_discovers_and_verifies_attached_dataset(
     rendered = generated_entry.read_text(encoding="utf-8")
     assert builder.EMBEDDED_KERNEL_AUTHORITY_SENTINEL not in rendered
     assert runner.canonical_json(authority) in rendered
+    forbidden_host_root = tmp_path / "forbidden-host-worktree"
+    forbidden_host_root.mkdir()
     receipt = builder.verify_kaggle_code_file_only(
         generated_entry,
         descriptor_path.parent,
         expected_dataset_id=packet_descriptor["dataset_id"],
         expected_packet_id=manifest["packet_id"],
+        forbidden_host_root=forbidden_host_root,
+        verify_clay_adapter=False,
     )
     assert receipt["status"] == "PASS_CODE_FILE_ONLY_AUTHORITY_AND_DATASET_DISCOVERY"
     assert receipt["code_file_count"] == 1
     assert receipt["sibling_authority_present"] is False
     assert receipt["dataset_source_attached"] is True
     assert receipt["packet_archive_verified"] is True
+    assert receipt["clay_source_adapter_instantiated"] is False
+    assert receipt["host_source_path_absent"] is False
     assert receipt["material_training"] == "NONE"
     assert receipt["calibration_started"] is False
     assert receipt["quota_spent"] is False
+
+
+def test_calibration_environment_pins_extracted_scbe_without_ambient_source(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    packet_root = tmp_path / "extracted"
+    repo = packet_root / "payload" / "scbe_repo"
+    scbe_python = repo / "python"
+    _write(scbe_python / "scbe" / "instrument.py")
+    clay_math_root = packet_root / "payload" / "clay_math_root"
+    loom_root = packet_root / "payload" / "loom_root"
+    clay_math_root.mkdir(parents=True)
+    loom_root.mkdir(parents=True)
+    monkeypatch.setenv("PYTHONPATH", r"C:\host\wrong-source")
+    monkeypatch.setenv("SCBE_ROOT", r"C:\host\wrong-scbe")
+    monkeypatch.setenv("SCBE_PYTHON", r"C:\host\wrong-scbe\python")
+
+    environment = runner.calibration_environment(packet_root)
+
+    expected_roots = [repo, scbe_python, clay_math_root, loom_root]
+    assert environment["PYTHONPATH"].split(runner.os.pathsep) == [str(path.resolve()) for path in expected_roots]
+    assert environment["SCBE_ROOT"] == str(repo.resolve())
+    assert environment["SCBE_PYTHON"] == str(scbe_python.resolve())
+    assert environment["PYTHONNOUSERSITE"] == "1"
+    assert "wrong-source" not in environment["PYTHONPATH"]
+    assert "wrong-scbe" not in environment["SCBE_ROOT"]
 
 
 def test_explicit_dataset_identity_must_match_authority(tmp_path: Path) -> None:
@@ -656,8 +689,25 @@ def test_calibration_wrapper_emits_receipts_and_rejects_model_artifacts(
             "torch": {"cuda_available": True},
         },
     )
+    sealed_child_environment = {
+        "PYTHONPATH": str(tmp_path / "runtime-only"),
+        "SCBE_ROOT": str(tmp_path / "runtime-scbe"),
+        "SCBE_PYTHON": str(tmp_path / "runtime-scbe" / "python"),
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONHASHSEED": "0",
+        "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+    }
+    monkeypatch.setattr(
+        runner,
+        "calibration_environment",
+        lambda packet_root: sealed_child_environment,
+    )
+    observed_child_launches: list[dict[str, object]] = []
 
-    def fake_run(command: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+    def fake_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        observed_child_launches.append(kwargs)
+        assert kwargs["env"] is sealed_child_environment
+        assert kwargs["cwd"] == tmp_path / "unused-runtime"
         output = Path(command[command.index("--output-dir") + 1])
         write_json(
             output / "TIMING_CALIBRATION.json",
@@ -691,6 +741,7 @@ def test_calibration_wrapper_emits_receipts_and_rejects_model_artifacts(
     )
     receipt = runner.run_calibration(args)
     assert receipt["status"] == "PASS_CALIBRATION_ONLY_NO_HORSES_STARTED"
+    assert len(observed_child_launches) == 1
     assert discovered_dataset_ids == ["fixture/calibration"]
     assert not runner._forbidden_artifacts(tmp_path / "output")
     assert (tmp_path / "output" / "ENVIRONMENT_RECEIPT.json").is_file()
