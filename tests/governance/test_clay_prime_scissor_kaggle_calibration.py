@@ -49,6 +49,25 @@ def test_calibration_command_is_fixed_and_has_no_material_surface(
         runner.calibration_command(tmp_path, tmp_path, "cpu")
 
 
+def test_material_command_is_exact_full_campaign_without_selection_surface(
+    tmp_path: Path,
+) -> None:
+    command = runner.material_command(tmp_path / "packet", tmp_path / "output", "cuda")
+
+    assert "--calibration-only" not in command
+    assert command[command.index("--batch-size") + 1] == "128"
+    assert command[command.index("--grow-steps") + 1] == "18000"
+    assert command[command.index("--checkpoint-every") + 1] == "500"
+    assert command[command.index("--learning-rate") + 1] == "0.002"
+    assert command[command.index("--threads") + 1] == "2"
+    assert command[command.index("--minimum-free-gib") + 1] == "25.0"
+    assert command[command.index("--device") + 1] == "cuda"
+    assert "--arm" not in command
+    assert "--seed" not in command
+    assert "--max-horses" not in command
+    assert "--aggregate-only" not in command
+
+
 def test_deterministic_archive_is_byte_identical(tmp_path: Path) -> None:
     source = tmp_path / "source"
     _write(source / "b.bin", b"b")
@@ -379,6 +398,131 @@ def test_explicit_dataset_identity_must_match_authority(tmp_path: Path) -> None:
 
     with pytest.raises(RuntimeError, match="explicit dataset id differs"):
         runner.resolve_dataset_authority(authority_path, "fixture/unsuffixed")
+
+
+def _sealed_receipt(path: Path, body: dict) -> Path:
+    write_json(path, {**body, "receipt_sha256": runner.stable_hash(body)})
+    return path
+
+
+def _calibration_admission_fixture(root: Path) -> Path:
+    packet_id = builder.SOURCE_CALIBRATION_PACKET_ID
+    _sealed_receipt(
+        root / "ENVIRONMENT_RECEIPT.json",
+        {
+            "schema": f"{runner.RECEIPT_SCHEMA}.environment",
+            "packet_id": packet_id,
+            "torch": {
+                "cuda_available": True,
+                "device_count": 2,
+                "device_names": list(builder.EXPECTED_CALIBRATION_DEVICE_NAMES),
+            },
+        },
+    )
+    _sealed_receipt(
+        root / "LAUNCH_RECEIPT.json",
+        {
+            "schema": f"{runner.RECEIPT_SCHEMA}.launch",
+            "packet_id": packet_id,
+            "mode": builder.CALIBRATION_MODE,
+            "material_training": "NONE",
+        },
+    )
+    timing_path = _sealed_receipt(
+        root / "TIMING_CALIBRATION.json",
+        {
+            "schema": "clay.prime-scissor-input-campaign.v1.device-timing-calibration",
+            "actual_device": "cuda",
+            "measured_steps": 500,
+            "representative_batch_size": 128,
+            "preregistered_steps_per_horse_unchanged": 18_000,
+            "seconds_per_step": builder.EXPECTED_CALIBRATION_SECONDS_PER_STEP,
+            "projected_15_horse_seconds_with_20_percent_margin": (builder.EXPECTED_CAMPAIGN_SECONDS_WITH_MARGIN),
+            "maximum_admitted_seconds": 86_400,
+            "config_hash": builder.EXPECTED_CALIBRATION_CONFIG_HASH,
+        },
+    )
+    _sealed_receipt(
+        root / "RECOVERY_RECEIPT.json",
+        {
+            "schema": f"{runner.RECEIPT_SCHEMA}.recovery",
+            "packet_id": packet_id,
+            "status": "PASS_CALIBRATION_ONLY_NO_HORSES_STARTED",
+            "returncode": 0,
+            "forbidden_artifacts": [],
+            "material_training": "NONE",
+            "timing_calibration_sha256": builder.sha256_file(timing_path),
+        },
+    )
+    return root
+
+
+def test_material_admission_seals_exact_dual_t4_receipts_and_rejects_drift(
+    tmp_path: Path,
+) -> None:
+    root = _calibration_admission_fixture(tmp_path / "calibration")
+
+    specs, facts = builder.collect_calibration_admission(root)
+
+    assert len(specs) == 4
+    assert {spec.target for spec in specs} == {
+        f"authorities/calibration/{name}"
+        for name in (
+            "ENVIRONMENT_RECEIPT.json",
+            "LAUNCH_RECEIPT.json",
+            "RECOVERY_RECEIPT.json",
+            "TIMING_CALIBRATION.json",
+        )
+    }
+    assert facts["source_calibration_packet_id"] == builder.SOURCE_CALIBRATION_PACKET_ID
+    assert facts["seconds_per_step"] == builder.EXPECTED_CALIBRATION_SECONDS_PER_STEP
+    assert facts["projected_15_horse_seconds_with_20_percent_margin"] == builder.EXPECTED_CAMPAIGN_SECONDS_WITH_MARGIN
+
+    timing_path = root / "TIMING_CALIBRATION.json"
+    timing = runner.load_json(timing_path)
+    timing.pop("receipt_sha256")
+    timing["seconds_per_step"] += 0.001
+    _sealed_receipt(timing_path, timing)
+    recovery_path = root / "RECOVERY_RECEIPT.json"
+    recovery = runner.load_json(recovery_path)
+    recovery.pop("receipt_sha256")
+    recovery["timing_calibration_sha256"] = builder.sha256_file(timing_path)
+    _sealed_receipt(recovery_path, recovery)
+    with pytest.raises(RuntimeError, match="seconds-per-step differs"):
+        builder.collect_calibration_admission(root)
+
+
+def test_material_runtime_replays_every_calibration_receipt_hash(tmp_path: Path) -> None:
+    packet_root = tmp_path / "packet"
+    authority_root = _calibration_admission_fixture(packet_root / "authorities" / "calibration")
+    receipt_hashes = {path.name: runner.sha256_file(path) for path in sorted(authority_root.glob("*.json"))}
+    manifest = {
+        "facts": {
+            "calibration_admission": {
+                "source_calibration_packet_id": runner.SOURCE_CALIBRATION_PACKET_ID,
+                "receipt_sha256": receipt_hashes,
+                "timing_calibration_sha256": receipt_hashes["TIMING_CALIBRATION.json"],
+                "recovery_receipt_sha256": receipt_hashes["RECOVERY_RECEIPT.json"],
+                "projected_15_horse_seconds_with_20_percent_margin": (runner.EXPECTED_CAMPAIGN_SECONDS_WITH_MARGIN),
+            }
+        }
+    }
+
+    admission = runner._validate_material_admission(packet_root, manifest)
+
+    assert admission["source_calibration_packet_id"] == runner.SOURCE_CALIBRATION_PACKET_ID
+    assert admission["device_names"] == list(runner.EXPECTED_CALIBRATION_DEVICE_NAMES)
+    assert admission["seconds_per_step"] == runner.EXPECTED_CALIBRATION_SECONDS_PER_STEP
+
+    launch_path = authority_root / "LAUNCH_RECEIPT.json"
+    launch = runner.load_json(launch_path)
+    launch["receipt_sha256"] = "0" * 64
+    write_json(launch_path, launch)
+    manifest["facts"]["calibration_admission"]["receipt_sha256"]["LAUNCH_RECEIPT.json"] = runner.sha256_file(
+        launch_path
+    )
+    with pytest.raises(RuntimeError, match="receipt self-hash differs"):
+        runner._validate_material_admission(packet_root, manifest)
 
 
 def _baseline_fixture(root: Path) -> tuple[Path, dict]:
@@ -762,6 +906,235 @@ def test_calibration_wrapper_emits_receipts_and_rejects_model_artifacts(
     failure = runner.load_json(second_output / "FAILURE_RECEIPT.json")
     assert failure["status"] == "FAIL_CLOSED_NO_MATERIAL_TRAINING"
     assert failure["forbidden_artifacts"]
+
+
+def test_material_artifact_manifest_requires_every_exact_horse(tmp_path: Path) -> None:
+    run_root = tmp_path / "run"
+    write_json(run_root / "RESULT.json", {"status": "COMPLETE"})
+    write_json(run_root / "STATUS.json", {"status": "COMPLETE"})
+    for arm in runner.FIXED_ARMS:
+        for seed in runner.FIXED_SEEDS:
+            horse = run_root / "horses" / f"{arm}-seed-{seed}"
+            write_json(
+                horse / "RESULT.json",
+                {"status": "COMPLETE", "arm": arm, "seed": seed},
+            )
+            _write(horse / "MODEL.pt", f"{arm}:{seed}".encode())
+
+    manifest = runner._material_artifact_manifest(run_root, "f" * 64)
+
+    assert manifest["horse_count"] == 15
+    assert {(row["arm"], row["seed"]) for row in manifest["horses"]} == {
+        (arm, seed) for arm in runner.FIXED_ARMS for seed in runner.FIXED_SEEDS
+    }
+    assert all(row["model"]["sha256"] for row in manifest["horses"])
+    assert all(row["result"]["sha256"] for row in manifest["horses"])
+    runner.verify_receipt_self_hash(manifest, label="material artifact manifest")
+
+    missing_model = run_root / "horses" / f"{runner.FIXED_ARMS[0]}-seed-{runner.FIXED_SEEDS[0]}" / "MODEL.pt"
+    missing_model.unlink()
+    with pytest.raises(RuntimeError, match="model is missing"):
+        runner._material_artifact_manifest(run_root, "f" * 64)
+
+
+def test_material_prelaunch_failure_is_receipted_and_auto_device_is_rejected(
+    tmp_path: Path,
+) -> None:
+    authority_path = tmp_path / "KERNEL_PACKET_AUTHORITY.json"
+    write_json(
+        authority_path,
+        {
+            "schema": runner.KERNEL_AUTHORITY_SCHEMA,
+            "dataset_id": "fixture/material",
+            "entry_mode": runner.MATERIAL_MODE,
+        },
+    )
+    output = tmp_path / "output"
+    args = runner.parse_args(
+        [
+            "--input-root",
+            str(tmp_path / "missing-input"),
+            "--kernel-authority",
+            str(authority_path),
+            "--output-root",
+            str(output),
+            "--runtime-root",
+            str(tmp_path / "runtime"),
+            "--device",
+            "auto",
+        ]
+    )
+
+    with pytest.raises(RuntimeError, match="calibrated cuda device"):
+        runner.run_material(args)
+
+    assert (output / "ENVIRONMENT_RECEIPT.json").is_file()
+    assert (output / "LAUNCH_RECEIPT.json").is_file()
+    assert (output / "FAILURE_RECEIPT.json").is_file()
+    assert (output / "RECOVERY_RECEIPT.json").is_file()
+    launch = runner.load_json(output / "LAUNCH_RECEIPT.json")
+    recovery = runner.load_json(output / "RECOVERY_RECEIPT.json")
+    assert launch["status"] == "NOT_LAUNCHED_FIXED_CAMPAIGN_GATE_FAILED"
+    assert launch["material_training"] == "NONE"
+    assert recovery["status"] == "FAIL_CLOSED_MATERIAL_ARTIFACTS_PRESERVED"
+    assert recovery["promotion"] == "NONE"
+
+
+def test_packet_dispatch_uses_authority_and_material_output_lane(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    args = runner.parse_args([])
+    monkeypatch.setattr(
+        runner,
+        "load_kernel_authority",
+        lambda path: {"entry_mode": runner.MATERIAL_MODE},
+    )
+    observed: list[tuple[Path, Path]] = []
+
+    def fake_material(namespace: SimpleNamespace) -> dict:
+        observed.append((namespace.output_root, namespace.runtime_root))
+        return {"status": "DISPATCHED"}
+
+    monkeypatch.setattr(runner, "run_material", fake_material)
+
+    result = runner.run_packet(args)
+
+    assert result == {"status": "DISPATCHED"}
+    assert observed == [
+        (
+            Path("/kaggle/working/clay-prime-scissor-material"),
+            Path("/kaggle/working/clay-prime-scissor-material-runtime"),
+        )
+    ]
+
+
+def test_material_wrapper_persists_complete_campaign_and_aggregate_manifest(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calibration = _calibration_admission_fixture(tmp_path / "calibration-authority")
+    receipt_hashes = {path.name: runner.sha256_file(path) for path in sorted(calibration.glob("*.json"))}
+    packet_id = "b" * 64
+    manifest = {
+        "packet_id": packet_id,
+        "fixed_run_contract": {"entry_mode": runner.MATERIAL_MODE},
+        "facts": {
+            "calibration_admission": {
+                "source_calibration_packet_id": runner.SOURCE_CALIBRATION_PACKET_ID,
+                "receipt_sha256": receipt_hashes,
+                "timing_calibration_sha256": receipt_hashes["TIMING_CALIBRATION.json"],
+                "recovery_receipt_sha256": receipt_hashes["RECOVERY_RECEIPT.json"],
+                "projected_15_horse_seconds_with_20_percent_margin": (runner.EXPECTED_CAMPAIGN_SECONDS_WITH_MARGIN),
+            }
+        },
+    }
+    authority_path = tmp_path / "KERNEL_PACKET_AUTHORITY.json"
+    write_json(
+        authority_path,
+        {
+            "schema": runner.KERNEL_AUTHORITY_SCHEMA,
+            "dataset_id": "fixture/material",
+            "entry_mode": runner.MATERIAL_MODE,
+        },
+    )
+    descriptor_path = _write(tmp_path / runner.DESCRIPTOR_NAME, b"{}\n")
+    monkeypatch.setattr(
+        runner,
+        "discover_packet",
+        lambda input_root, dataset_id: (descriptor_path, {}),
+    )
+    monkeypatch.setattr(
+        runner,
+        "verify_kernel_authority",
+        lambda authority_path, descriptor_path, packet_descriptor, **kwargs: {},
+    )
+
+    def fake_extract(
+        descriptor_path: Path,
+        packet_descriptor: dict,
+        runtime_root: Path,
+    ) -> tuple[Path, dict]:
+        runtime_root.mkdir()
+        runner.shutil.copytree(
+            calibration,
+            runtime_root / "authorities" / "calibration",
+        )
+        return runtime_root / runner.MANIFEST_NAME, manifest
+
+    monkeypatch.setattr(runner, "extract_and_verify_packet", fake_extract)
+    monkeypatch.setattr(
+        runner,
+        "_environment_receipt",
+        lambda output_root, requested_packet_id: {
+            "packet_id": requested_packet_id,
+            "disk_free_gib": 100.0,
+            "torch": {
+                "cuda_available": True,
+                "device_count": 2,
+                "device_names": list(runner.EXPECTED_CALIBRATION_DEVICE_NAMES),
+            },
+        },
+    )
+    child_environment = {
+        "PYTHONPATH": "sealed",
+        "SCBE_ROOT": "sealed-scbe",
+        "SCBE_PYTHON": "sealed-scbe/python",
+    }
+    monkeypatch.setattr(runner, "calibration_environment", lambda packet_root: child_environment)
+    observed_commands: list[list[str]] = []
+
+    def fake_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        observed_commands.append(command)
+        assert kwargs["env"] is child_environment
+        output = Path(command[command.index("--output-dir") + 1])
+        for arm in runner.FIXED_ARMS:
+            for seed in runner.FIXED_SEEDS:
+                horse = output / "horses" / f"{arm}-seed-{seed}"
+                write_json(
+                    horse / "RESULT.json",
+                    {"status": "COMPLETE", "arm": arm, "seed": seed},
+                )
+                _write(horse / "MODEL.pt", f"{arm}:{seed}".encode())
+        write_json(output / "RESULT.json", {"status": "COMPLETE", "horse_count": 15})
+        write_json(
+            output / "STATUS.json",
+            {
+                "status": "COMPLETE",
+                "result_sha256": runner.sha256_file(output / "RESULT.json"),
+            },
+        )
+        return subprocess.CompletedProcess(command, 0, "complete\n", "")
+
+    monkeypatch.setattr(runner.subprocess, "run", fake_run)
+    input_root = tmp_path / "input"
+    input_root.mkdir()
+    output_root = tmp_path / "output"
+    args = runner.parse_args(
+        [
+            "--input-root",
+            str(input_root),
+            "--kernel-authority",
+            str(authority_path),
+            "--output-root",
+            str(output_root),
+            "--runtime-root",
+            str(tmp_path / "runtime"),
+        ]
+    )
+
+    recovery = runner.run_material(args)
+
+    assert recovery["status"] == "PASS_MATERIAL_CAMPAIGN_COMPLETE_UNPROMOTED"
+    assert recovery["horse_count"] == 15
+    assert recovery["promotion"] == "NONE"
+    assert len(observed_commands) == 1
+    assert "--calibration-only" not in observed_commands[0]
+    assert "--arm" not in observed_commands[0]
+    assert "--seed" not in observed_commands[0]
+    artifact_manifest = runner.load_json(output_root / "MATERIAL_ARTIFACT_MANIFEST.json")
+    assert artifact_manifest["horse_count"] == 15
+    assert len(artifact_manifest["horses"]) == 15
+    assert recovery["artifact_manifest_sha256"] == runner.sha256_file(output_root / "MATERIAL_ARTIFACT_MANIFEST.json")
 
 
 def test_kernel_metadata_contract_is_private_gpu_offline() -> None:

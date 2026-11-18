@@ -1,8 +1,9 @@
-"""Verify a sealed prime-scissor packet and run GPU timing calibration only.
+"""Verify and execute one authority-selected sealed prime-scissor packet.
 
-This standalone Kaggle entry has no material-training option.  It always calls
-the experiment runner with ``--calibration-only``, fixed batch/step/storage
-arguments, and fails if a horse, checkpoint, or model artifact appears.
+The uploaded Kaggle code file has no CLI switch between calibration and
+training.  Its embedded, content-addressed packet authority selects exactly one
+mode: timing-only calibration or the complete preregistered 15-horse material
+campaign.  Both modes keep the fixed batch/step/storage contract.
 """
 
 from __future__ import annotations
@@ -30,6 +31,21 @@ MANIFEST_NAME = "PACKET_MANIFEST.json"
 FIXED_BATCH_SIZE = 128
 FIXED_GROW_STEPS = 18_000
 FIXED_MINIMUM_FREE_GIB = 25.0
+CALIBRATION_MODE = "CALIBRATION_ONLY"
+MATERIAL_MODE = "MATERIAL_TRAINING"
+SOURCE_CALIBRATION_PACKET_ID = "84cef6f8a51f70e9f23a72a0604b35f83c2f1e2ae345ec37b071e8b668ed28b1"
+EXPECTED_CALIBRATION_CONFIG_HASH = "4dedaf4dce4a4280aed5e796a02b345b4d77a14f20a46bdb3ec188986f810e30"
+EXPECTED_CALIBRATION_SECONDS_PER_STEP = 0.10859733237199998
+EXPECTED_CAMPAIGN_SECONDS_WITH_MARGIN = 35368.56240005924
+EXPECTED_CALIBRATION_DEVICE_NAMES = ("Tesla T4", "Tesla T4")
+FIXED_SEEDS = (20261134, 20261135, 20261136)
+FIXED_ARMS = (
+    "prime_scissor_input",
+    "canonical_onehot_matched",
+    "shuffled_binding_matched",
+    "deterministic_random_matched",
+    "no_intervention_matched",
+)
 # The packet builder replaces this exact sentinel in the generated Kaggle
 # code_file.  Keeping the source value null prevents a source checkout from
 # silently acquiring launch authority.
@@ -80,6 +96,24 @@ def write_json(path: Path, value: object) -> None:
     os.replace(pending, path)
 
 
+def verify_receipt_self_hash(value: Mapping[str, Any], *, label: str) -> None:
+    expected = value.get("receipt_sha256")
+    if not isinstance(expected, str) or len(expected) != 64:
+        raise RuntimeError(f"{label} has no receipt self-hash")
+    body = dict(value)
+    body.pop("receipt_sha256", None)
+    if stable_hash(body) != expected:
+        raise RuntimeError(f"{label} receipt self-hash differs")
+
+
+def file_record(path: Path, *, relative_to: Path) -> dict[str, Any]:
+    return {
+        "path": path.relative_to(relative_to).as_posix(),
+        "bytes": path.stat().st_size,
+        "sha256": sha256_file(path),
+    }
+
+
 def verify_descriptor(path: Path, expected: Mapping[str, Any], *, label: str) -> None:
     if path.stat().st_size != int(expected["bytes"]):
         raise RuntimeError(f"{label} byte count differs: {path}")
@@ -113,7 +147,7 @@ def discover_packet(input_root: Path, dataset_id: str) -> tuple[Path, dict[str, 
         if value.get("schema") == DESCRIPTOR_SCHEMA and value.get("dataset_id") == dataset_id:
             matches.append((path, value))
     if len(matches) != 1:
-        raise RuntimeError(f"expected one {dataset_id} calibration packet, found {len(matches)}")
+        raise RuntimeError(f"expected one {dataset_id} prime-scissor packet, found {len(matches)}")
     return matches[0]
 
 
@@ -228,7 +262,7 @@ def extract_and_verify_packet(
         archive_record["path"],
         label="archive descriptor",
     )
-    verify_descriptor(archive_path, archive_record, label="calibration archive")
+    verify_descriptor(archive_path, archive_record, label="prime-scissor archive")
     runtime_root.mkdir(parents=True)
     with zipfile.ZipFile(archive_path, "r") as archive:
         archive.extractall(runtime_root, members=_safe_members(archive))
@@ -242,8 +276,11 @@ def extract_and_verify_packet(
         raise RuntimeError("dataset descriptor packet identity differs")
     _verify_manifest_self_hash(manifest)
     contract = manifest.get("fixed_run_contract")
-    expected_contract = {
-        "calibration_only": True,
+    if not isinstance(contract, Mapping):
+        raise TypeError("packet fixed run contract is not an object")
+    mode = str(contract.get("entry_mode", CALIBRATION_MODE))
+    expected_contract: dict[str, Any] = {
+        "calibration_only": mode == CALIBRATION_MODE,
         "device": "cuda",
         "batch_size": FIXED_BATCH_SIZE,
         "grow_steps_per_horse": FIXED_GROW_STEPS,
@@ -255,8 +292,26 @@ def extract_and_verify_packet(
         "gpu": True,
         "frozen_artifact_pack_sha256": manifest["facts"]["frozen_artifact_pack_sha256"],
     }
+    if "entry_mode" in contract:
+        expected_contract["entry_mode"] = mode
+    if mode == MATERIAL_MODE:
+        expected_contract.update(
+            {
+                "seeds": list(FIXED_SEEDS),
+                "arms": list(FIXED_ARMS),
+                "horse_count": len(FIXED_SEEDS) * len(FIXED_ARMS),
+            }
+        )
+        authority = manifest.get("authority")
+        if (
+            not isinstance(authority, Mapping)
+            or authority.get("material_training") != "AUTHORIZED_FIXED_PREREGISTERED_CAMPAIGN"
+        ):
+            raise RuntimeError("material packet lacks fixed campaign authority")
+    elif mode != CALIBRATION_MODE:
+        raise RuntimeError(f"unsupported packet entry mode: {mode}")
     if contract != expected_contract:
-        raise RuntimeError("packet fixed calibration contract differs")
+        raise RuntimeError("packet fixed run contract differs")
     files = manifest.get("files")
     if not isinstance(files, list) or not files:
         raise ValueError("packet manifest has no files")
@@ -335,6 +390,16 @@ def calibration_command(packet_root: Path, output_root: Path, device: str) -> li
         str(FIXED_MINIMUM_FREE_GIB),
         "--calibration-only",
     ]
+
+
+def material_command(packet_root: Path, output_root: Path, device: str) -> list[str]:
+    """Return the one complete, preregistered 5-arm x 3-seed campaign command."""
+
+    command = calibration_command(packet_root, output_root, device)
+    if command[-1] != "--calibration-only":
+        raise RuntimeError("calibration command shape changed before material derivation")
+    command.pop()
+    return command
 
 
 def calibration_environment(packet_root: Path) -> dict[str, str]:
@@ -612,6 +677,373 @@ def run_calibration(args: argparse.Namespace) -> dict[str, Any]:
         raise
 
 
+def _validate_material_admission(packet_root: Path, manifest: Mapping[str, Any]) -> dict[str, Any]:
+    """Validate the completed exact-device calibration sealed into a material packet."""
+
+    facts = manifest.get("facts")
+    if not isinstance(facts, Mapping):
+        raise TypeError("material packet facts are not an object")
+    admission = facts.get("calibration_admission")
+    if not isinstance(admission, Mapping):
+        raise RuntimeError("material packet lacks calibration admission facts")
+    authority_root = packet_root / "authorities" / "calibration"
+    environment_path = authority_root / "ENVIRONMENT_RECEIPT.json"
+    launch_path = authority_root / "LAUNCH_RECEIPT.json"
+    timing_path = authority_root / "TIMING_CALIBRATION.json"
+    recovery_path = authority_root / "RECOVERY_RECEIPT.json"
+    environment = load_json(environment_path)
+    launch = load_json(launch_path)
+    timing = load_json(timing_path)
+    recovery = load_json(recovery_path)
+    receipts = {
+        "ENVIRONMENT_RECEIPT.json": (environment_path, environment),
+        "LAUNCH_RECEIPT.json": (launch_path, launch),
+        "RECOVERY_RECEIPT.json": (recovery_path, recovery),
+        "TIMING_CALIBRATION.json": (timing_path, timing),
+    }
+    expected_receipts = admission.get("receipt_sha256")
+    if not isinstance(expected_receipts, Mapping):
+        raise RuntimeError("material packet lacks the complete calibration receipt map")
+    for name, (path, value) in receipts.items():
+        verify_receipt_self_hash(value, label=f"sealed calibration {name}")
+        if sha256_file(path) != expected_receipts.get(name):
+            raise RuntimeError(f"sealed calibration {name} hash differs")
+    if sha256_file(timing_path) != admission.get("timing_calibration_sha256"):
+        raise RuntimeError("sealed calibration timing hash differs")
+    if sha256_file(recovery_path) != admission.get("recovery_receipt_sha256"):
+        raise RuntimeError("sealed calibration recovery hash differs")
+    if recovery.get("status") != "PASS_CALIBRATION_ONLY_NO_HORSES_STARTED":
+        raise RuntimeError("sealed calibration did not pass without horses")
+    if admission.get("source_calibration_packet_id") != SOURCE_CALIBRATION_PACKET_ID:
+        raise RuntimeError("sealed calibration authority packet identity differs")
+    if recovery.get("packet_id") != admission.get("source_calibration_packet_id"):
+        raise RuntimeError("sealed calibration source packet identity differs")
+    if recovery.get("returncode") != 0 or recovery.get("forbidden_artifacts") != []:
+        raise RuntimeError("sealed calibration recovery is not clean")
+    if recovery.get("material_training") != "NONE":
+        raise RuntimeError("sealed calibration unexpectedly performed material training")
+    if launch.get("mode") != CALIBRATION_MODE or launch.get("material_training") != "NONE":
+        raise RuntimeError("sealed calibration launch mode differs")
+    torch_info = environment.get("torch")
+    if not isinstance(torch_info, Mapping):
+        raise RuntimeError("sealed calibration environment has no torch facts")
+    device_names = tuple(str(name) for name in torch_info.get("device_names", ()))
+    if (
+        not bool(torch_info.get("cuda_available"))
+        or int(torch_info.get("device_count", -1)) != len(EXPECTED_CALIBRATION_DEVICE_NAMES)
+        or device_names != EXPECTED_CALIBRATION_DEVICE_NAMES
+    ):
+        raise RuntimeError("sealed calibration did not measure the required dual-T4 environment")
+    if int(timing.get("representative_batch_size", -1)) != FIXED_BATCH_SIZE:
+        raise RuntimeError("sealed calibration batch size differs")
+    if int(timing.get("preregistered_steps_per_horse_unchanged", -1)) != FIXED_GROW_STEPS:
+        raise RuntimeError("sealed calibration growth budget differs")
+    if int(timing.get("measured_steps", -1)) != 500 or timing.get("actual_device") != "cuda":
+        raise RuntimeError("sealed calibration is not the required 500-step CUDA measurement")
+    seconds_per_step = float(timing.get("seconds_per_step", float("nan")))
+    if seconds_per_step != EXPECTED_CALIBRATION_SECONDS_PER_STEP:
+        raise RuntimeError("sealed calibration seconds-per-step differs")
+    if timing.get("config_hash") != EXPECTED_CALIBRATION_CONFIG_HASH:
+        raise RuntimeError("sealed calibration configuration identity differs")
+    projected = float(timing.get("projected_15_horse_seconds_with_20_percent_margin", float("inf")))
+    maximum = float(timing.get("maximum_admitted_seconds", -1.0))
+    if maximum != 24 * 60 * 60 or projected > maximum:
+        raise RuntimeError("sealed calibration does not clear the fixed 24h gate")
+    if projected != float(admission.get("projected_15_horse_seconds_with_20_percent_margin", float("nan"))):
+        raise RuntimeError("sealed calibration projection differs from packet facts")
+    if projected != EXPECTED_CAMPAIGN_SECONDS_WITH_MARGIN:
+        raise RuntimeError("sealed calibration projection differs from the admitted measurement")
+    return {
+        "source_calibration_packet_id": str(admission["source_calibration_packet_id"]),
+        "timing_calibration_sha256": sha256_file(timing_path),
+        "recovery_receipt_sha256": sha256_file(recovery_path),
+        "projected_15_horse_seconds_with_20_percent_margin": projected,
+        "seconds_per_step": seconds_per_step,
+        "maximum_admitted_seconds": maximum,
+        "config_hash": str(timing["config_hash"]),
+        "device_names": list(device_names),
+        "device_count": len(device_names),
+    }
+
+
+def _material_artifact_manifest(run_root: Path, packet_id: str) -> dict[str, Any]:
+    """Inventory the complete 15-horse campaign without granting promotion."""
+
+    expected = {(arm, seed) for arm in FIXED_ARMS for seed in FIXED_SEEDS}
+    horses: list[dict[str, Any]] = []
+    identities: set[tuple[str, int]] = set()
+    for result_path in sorted((run_root / "horses").glob("*/RESULT.json")):
+        result = load_json(result_path)
+        if result.get("status") != "COMPLETE":
+            raise RuntimeError(f"horse result is incomplete: {result_path}")
+        identity = (str(result.get("arm")), int(result.get("seed", -1)))
+        if identity not in expected or identity in identities:
+            raise RuntimeError(f"horse identity is unexpected or duplicated: {identity}")
+        identities.add(identity)
+        model_path = result_path.with_name("MODEL.pt")
+        if not model_path.is_file():
+            raise RuntimeError(f"horse model is missing: {model_path}")
+        horses.append(
+            {
+                "arm": identity[0],
+                "seed": identity[1],
+                "result": file_record(result_path, relative_to=run_root),
+                "model": file_record(model_path, relative_to=run_root),
+            }
+        )
+    if identities != expected:
+        missing = sorted(expected - identities)
+        raise RuntimeError(f"material campaign did not persist all 15 horse identities: {missing}")
+    aggregate_path = run_root / "RESULT.json"
+    status_path = run_root / "STATUS.json"
+    body = {
+        "schema": f"{RECEIPT_SCHEMA}.material-artifact-manifest",
+        "packet_id": packet_id,
+        "horse_count": len(horses),
+        "arms": list(FIXED_ARMS),
+        "seeds": list(FIXED_SEEDS),
+        "aggregate_result": file_record(aggregate_path, relative_to=run_root),
+        "status": file_record(status_path, relative_to=run_root),
+        "horses": horses,
+        "material_training": "COMPLETE_UNPROMOTED",
+        "promotion": "NONE",
+    }
+    return {**body, "receipt_sha256": stable_hash(body)}
+
+
+def _run_material_inner(args: argparse.Namespace) -> dict[str, Any]:
+    if args.device != "cuda":
+        raise RuntimeError("material campaign requires the calibrated cuda device")
+    input_root = args.input_root.resolve(strict=True)
+    output_root = args.output_root.resolve()
+    runtime_root = args.runtime_root.resolve()
+    if output_root.exists() and any(output_root.iterdir()):
+        raise FileExistsError(f"output is not empty: {output_root}")
+    output_root.mkdir(parents=True, exist_ok=True)
+    started_at = utc_now()
+    dataset_id, authority = resolve_dataset_authority(args.kernel_authority, args.dataset_id)
+    if authority.get("entry_mode") != MATERIAL_MODE:
+        raise RuntimeError("kernel authority does not select material training")
+    descriptor_path, packet_descriptor = discover_packet(input_root, dataset_id)
+    verify_kernel_authority(
+        args.kernel_authority,
+        descriptor_path,
+        packet_descriptor,
+        authority=authority,
+    )
+    _, manifest = extract_and_verify_packet(descriptor_path, packet_descriptor, runtime_root)
+    if manifest["fixed_run_contract"].get("entry_mode") != MATERIAL_MODE:
+        raise RuntimeError("packet manifest does not select material training")
+    packet_id = str(manifest["packet_id"])
+    admission = _validate_material_admission(runtime_root, manifest)
+
+    environment = _environment_receipt(output_root, packet_id)
+    write_json(output_root / "ENVIRONMENT_RECEIPT.json", environment)
+    if environment.get("disk_free_gib", 0.0) < FIXED_MINIMUM_FREE_GIB:
+        raise RuntimeError("Kaggle working disk does not clear the fixed 25 GiB floor")
+    torch_info = environment.get("torch", {})
+    if not bool(torch_info.get("cuda_available")):
+        raise RuntimeError("private GPU kernel has no CUDA device")
+    material_device_names = [str(name) for name in torch_info.get("device_names", ())]
+    if (
+        int(torch_info.get("device_count", -1)) != int(admission["device_count"])
+        or material_device_names != admission["device_names"]
+    ):
+        raise RuntimeError("material runtime device topology differs from the calibrated dual-T4 authority")
+
+    run_root = output_root / "run"
+    run_root.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(
+        runtime_root / "authorities" / "calibration" / "TIMING_CALIBRATION.json",
+        run_root / "TIMING_CALIBRATION.json",
+    )
+    command = material_command(runtime_root, output_root, args.device)
+    environment_variables = calibration_environment(runtime_root)
+    launch_body = {
+        "schema": f"{RECEIPT_SCHEMA}.material-launch",
+        "created_at_utc": utc_now(),
+        "packet_id": packet_id,
+        "command": command,
+        "command_sha256": stable_hash(command),
+        "mode": MATERIAL_MODE,
+        "device": args.device,
+        "batch_size": FIXED_BATCH_SIZE,
+        "grow_steps_per_horse": FIXED_GROW_STEPS,
+        "seeds": list(FIXED_SEEDS),
+        "arms": list(FIXED_ARMS),
+        "horse_count": len(FIXED_SEEDS) * len(FIXED_ARMS),
+        "minimum_free_gib": FIXED_MINIMUM_FREE_GIB,
+        "internet": False,
+        "calibration_admission": admission,
+        "runtime_import_authority": {
+            "scbe_root": environment_variables["SCBE_ROOT"],
+            "scbe_python": environment_variables["SCBE_PYTHON"],
+            "pythonpath": environment_variables["PYTHONPATH"].split(os.pathsep),
+            "ambient_pythonpath_inherited": False,
+        },
+        "material_training": "AUTHORIZED_FIXED_PREREGISTERED_CAMPAIGN",
+    }
+    write_json(
+        output_root / "LAUNCH_RECEIPT.json",
+        {**launch_body, "receipt_sha256": stable_hash(launch_body)},
+    )
+    stdout_path = output_root / "MATERIAL_STDOUT.log"
+    stderr_path = output_root / "MATERIAL_STDERR.log"
+    result: subprocess.CompletedProcess[str] | None = None
+    try:
+        result = subprocess.run(
+            command,
+            check=False,
+            capture_output=True,
+            text=True,
+            env=environment_variables,
+            cwd=runtime_root,
+        )
+        stdout_path.write_text(result.stdout, encoding="utf-8", newline="\n")
+        stderr_path.write_text(result.stderr, encoding="utf-8", newline="\n")
+        if result.returncode != 0:
+            raise RuntimeError(f"material runner exited {result.returncode}")
+        status_path = run_root / "STATUS.json"
+        aggregate_path = run_root / "RESULT.json"
+        status = load_json(status_path)
+        if status.get("status") != "COMPLETE":
+            raise RuntimeError("material campaign did not reach COMPLETE")
+        if not aggregate_path.is_file() or status.get("result_sha256") != sha256_file(aggregate_path):
+            raise RuntimeError("material aggregate result identity differs")
+        expected_horses = len(FIXED_SEEDS) * len(FIXED_ARMS)
+        artifact_manifest = _material_artifact_manifest(run_root, packet_id)
+        artifact_manifest_path = output_root / "MATERIAL_ARTIFACT_MANIFEST.json"
+        write_json(artifact_manifest_path, artifact_manifest)
+        recovery_body = {
+            "schema": f"{RECEIPT_SCHEMA}.material-recovery",
+            "status": "PASS_MATERIAL_CAMPAIGN_COMPLETE_UNPROMOTED",
+            "started_at_utc": started_at,
+            "completed_at_utc": utc_now(),
+            "packet_id": packet_id,
+            "returncode": result.returncode,
+            "horse_count": expected_horses,
+            "aggregate_result_sha256": sha256_file(aggregate_path),
+            "status_sha256": sha256_file(status_path),
+            "artifact_manifest_sha256": sha256_file(artifact_manifest_path),
+            "stdout_sha256": sha256_file(stdout_path),
+            "stderr_sha256": sha256_file(stderr_path),
+            "calibration_admission": admission,
+            "material_training": "COMPLETE_UNPROMOTED",
+            "promotion": "NONE",
+            "internet": False,
+        }
+        recovery = {**recovery_body, "receipt_sha256": stable_hash(recovery_body)}
+        write_json(output_root / "RECOVERY_RECEIPT.json", recovery)
+        return recovery
+    except Exception as error:
+        complete_horses = len(list((run_root / "horses").glob("*/RESULT.json")))
+        failure_body = {
+            "schema": f"{RECEIPT_SCHEMA}.material-failure",
+            "status": "FAIL_CLOSED_PARTIAL_MATERIAL_ARTIFACTS_PRESERVED",
+            "failed_at_utc": utc_now(),
+            "packet_id": packet_id,
+            "error_type": type(error).__name__,
+            "error": str(error),
+            "returncode": None if result is None else result.returncode,
+            "complete_horses": complete_horses,
+            "expected_horses": len(FIXED_SEEDS) * len(FIXED_ARMS),
+            "stdout_sha256": sha256_file(stdout_path) if stdout_path.is_file() else None,
+            "stderr_sha256": sha256_file(stderr_path) if stderr_path.is_file() else None,
+            "material_training": "PARTIAL_OR_NONE_NOT_PROMOTED",
+            "promotion": "NONE",
+        }
+        write_json(
+            output_root / "FAILURE_RECEIPT.json",
+            {**failure_body, "receipt_sha256": stable_hash(failure_body)},
+        )
+        raise
+
+
+def run_material(args: argparse.Namespace) -> dict[str, Any]:
+    """Run the authority-fixed material campaign and preserve partial receipts on failure."""
+
+    try:
+        return _run_material_inner(args)
+    except Exception as error:
+        output_root = args.output_root.resolve()
+        output_root.mkdir(parents=True, exist_ok=True)
+        environment_path = output_root / "ENVIRONMENT_RECEIPT.json"
+        if not environment_path.is_file():
+            write_json(
+                environment_path,
+                _environment_receipt(output_root, "UNVERIFIED"),
+            )
+        launch_path = output_root / "LAUNCH_RECEIPT.json"
+        if not launch_path.is_file():
+            launch_body = {
+                "schema": f"{RECEIPT_SCHEMA}.material-launch",
+                "created_at_utc": utc_now(),
+                "packet_id": "UNVERIFIED",
+                "status": "NOT_LAUNCHED_FIXED_CAMPAIGN_GATE_FAILED",
+                "mode": MATERIAL_MODE,
+                "device": args.device,
+                "batch_size": FIXED_BATCH_SIZE,
+                "grow_steps_per_horse": FIXED_GROW_STEPS,
+                "seeds": list(FIXED_SEEDS),
+                "arms": list(FIXED_ARMS),
+                "horse_count": len(FIXED_SEEDS) * len(FIXED_ARMS),
+                "minimum_free_gib": FIXED_MINIMUM_FREE_GIB,
+                "internet": False,
+                "material_training": "NONE",
+                "promotion": "NONE",
+            }
+            write_json(launch_path, {**launch_body, "receipt_sha256": stable_hash(launch_body)})
+        failure_path = output_root / "FAILURE_RECEIPT.json"
+        if not failure_path.is_file():
+            body = {
+                "schema": f"{RECEIPT_SCHEMA}.material-failure",
+                "status": "NOT_LAUNCHED_MATERIAL_GATE_FAILED",
+                "failed_at_utc": utc_now(),
+                "error_type": type(error).__name__,
+                "error": str(error),
+                "material_training": "NONE",
+                "promotion": "NONE",
+            }
+            write_json(failure_path, {**body, "receipt_sha256": stable_hash(body)})
+        failure = load_json(failure_path)
+        recovery_path = output_root / "RECOVERY_RECEIPT.json"
+        if not recovery_path.is_file():
+            recovery_body = {
+                "schema": f"{RECEIPT_SCHEMA}.material-recovery",
+                "status": "FAIL_CLOSED_MATERIAL_ARTIFACTS_PRESERVED",
+                "completed_at_utc": utc_now(),
+                "packet_id": str(failure.get("packet_id", "UNVERIFIED")),
+                "failure_receipt_sha256": sha256_file(failure_path),
+                "complete_horses": int(failure.get("complete_horses", 0)),
+                "expected_horses": len(FIXED_SEEDS) * len(FIXED_ARMS),
+                "material_training": str(failure.get("material_training", "NONE")),
+                "promotion": "NONE",
+            }
+            write_json(
+                recovery_path,
+                {**recovery_body, "receipt_sha256": stable_hash(recovery_body)},
+            )
+        raise
+
+
+def run_packet(args: argparse.Namespace) -> dict[str, Any]:
+    """Dispatch only from the embedded authority; there is no user-selectable mode."""
+
+    authority = load_kernel_authority(args.kernel_authority)
+    mode = authority.get("entry_mode", CALIBRATION_MODE)
+    if mode == CALIBRATION_MODE:
+        return run_calibration(args)
+    if mode == MATERIAL_MODE:
+        default_output = Path("/kaggle/working/clay-prime-scissor-calibration")
+        default_runtime = Path("/kaggle/working/clay-prime-scissor-calibration-runtime")
+        if args.output_root == default_output:
+            args.output_root = Path("/kaggle/working/clay-prime-scissor-material")
+        if args.runtime_root == default_runtime:
+            args.runtime_root = Path("/kaggle/working/clay-prime-scissor-material-runtime")
+        return run_material(args)
+    raise RuntimeError(f"unsupported embedded entry mode: {mode}")
+
+
 def parse_args(arguments: Iterable[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input-root", type=Path, default=Path("/kaggle/input"))
@@ -644,7 +1076,7 @@ def parse_args(arguments: Iterable[str] | None = None) -> argparse.Namespace:
 
 def main(arguments: Iterable[str] | None = None) -> int:
     args = parse_args(arguments)
-    receipt = run_calibration(args)
+    receipt = run_packet(args)
     print(canonical_json(receipt), flush=True)
     return 0
 

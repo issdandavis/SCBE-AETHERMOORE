@@ -1,9 +1,10 @@
-"""Build the private, calibration-only Kaggle packet for prime-scissor input.
+"""Build a private authority-fixed Kaggle packet for prime-scissor input.
 
 The packet contains the three immutable frozen parents, exact source/runtime
-dependencies, and the sealed preregistration/preflight authorities.  It does
-not contain a material-training entry point.  Building this packet never
-uploads it and never starts Kaggle or a Clay horse.
+dependencies, and the sealed preregistration/preflight authorities.  The
+default remains calibration-only.  Material mode requires and seals a passing
+exact-device calibration receipt; it cannot be selected from inside Kaggle.
+Building either packet never uploads it and never starts Kaggle or a Clay horse.
 """
 
 from __future__ import annotations
@@ -62,6 +63,20 @@ EXPECTED_FROZEN_ARTIFACT_SHA256 = "8cf629170554970ec6541d0a129c48d64e3e38925ae31
 EXPECTED_FROZEN_ARTIFACT_BYTES = 905_507
 EXPECTED_MATH_COMMIT = "0a5a06bed57e922f7e9ca04229664266aa8d215c"
 EXPECTED_SEEDS = (20261134, 20261135, 20261136)
+EXPECTED_ARMS = (
+    "prime_scissor_input",
+    "canonical_onehot_matched",
+    "shuffled_binding_matched",
+    "deterministic_random_matched",
+    "no_intervention_matched",
+)
+CALIBRATION_MODE = "CALIBRATION_ONLY"
+MATERIAL_MODE = "MATERIAL_TRAINING"
+SOURCE_CALIBRATION_PACKET_ID = "84cef6f8a51f70e9f23a72a0604b35f83c2f1e2ae345ec37b071e8b668ed28b1"
+EXPECTED_CALIBRATION_CONFIG_HASH = "4dedaf4dce4a4280aed5e796a02b345b4d77a14f20a46bdb3ec188986f810e30"
+EXPECTED_CALIBRATION_SECONDS_PER_STEP = 0.10859733237199998
+EXPECTED_CAMPAIGN_SECONDS_WITH_MARGIN = 35368.56240005924
+EXPECTED_CALIBRATION_DEVICE_NAMES = ("Tesla T4", "Tesla T4")
 FULL_SCBE_INIT_SOURCE = "python/scbe/__init__.py"
 GENERATED_SCBE_INIT_TARGET = "payload/scbe_repo/python/scbe/__init__.py"
 MINIMAL_SCBE_RUNTIME_INIT = '''"""Generated package marker for the sealed Clay calibration runtime.
@@ -117,6 +132,7 @@ _, manifest = module.extract_and_verify_packet(
     descriptor,
     runtime_root,
 )
+entry_mode = manifest["fixed_run_contract"].get("entry_mode", "CALIBRATION_ONLY")
 scbe_root = runtime_root / "payload" / "scbe_repo"
 scbe_python = scbe_root / "python"
 module_paths = {}
@@ -170,7 +186,12 @@ print(
                 for key, value in sorted(module_paths.items())
             },
             "host_source_path_absent": verify_clay_adapter,
-            "material_training": "NONE",
+            "entry_mode": entry_mode,
+            "material_training": (
+                "AUTHORIZED_NOT_STARTED"
+                if entry_mode == "MATERIAL_TRAINING"
+                else "NONE"
+            ),
         },
         sort_keys=True,
     )
@@ -324,6 +345,84 @@ def _parent_rows(result: Mapping[str, Any]) -> dict[int, Mapping[str, Any]]:
     return by_seed
 
 
+def collect_calibration_admission(root: Path) -> tuple[list[FileSpec], dict[str, Any]]:
+    """Validate and seal the completed Kaggle timing calibration for material mode."""
+
+    root = root.resolve(strict=True)
+    names = (
+        "ENVIRONMENT_RECEIPT.json",
+        "LAUNCH_RECEIPT.json",
+        "RECOVERY_RECEIPT.json",
+        "TIMING_CALIBRATION.json",
+    )
+    paths = {name: (root / name).resolve(strict=True) for name in names}
+    environment = load_json(paths["ENVIRONMENT_RECEIPT.json"])
+    launch = load_json(paths["LAUNCH_RECEIPT.json"])
+    recovery = load_json(paths["RECOVERY_RECEIPT.json"])
+    timing = load_json(paths["TIMING_CALIBRATION.json"])
+    for name, receipt in (
+        ("environment", environment),
+        ("launch", launch),
+        ("recovery", recovery),
+        ("timing", timing),
+    ):
+        expected = receipt.get("receipt_sha256")
+        body = dict(receipt)
+        body.pop("receipt_sha256", None)
+        if not isinstance(expected, str) or stable_hash(body) != expected:
+            raise RuntimeError(f"calibration admission {name} receipt self-hash differs")
+    for receipt in (environment, launch, recovery):
+        if receipt.get("packet_id") != SOURCE_CALIBRATION_PACKET_ID:
+            raise RuntimeError("calibration admission packet identity differs")
+    if recovery.get("status") != "PASS_CALIBRATION_ONLY_NO_HORSES_STARTED":
+        raise RuntimeError("calibration admission did not pass cleanly")
+    if recovery.get("returncode") != 0 or recovery.get("forbidden_artifacts") != []:
+        raise RuntimeError("calibration admission recovery is not clean")
+    if launch.get("mode") != CALIBRATION_MODE or launch.get("material_training") != "NONE":
+        raise RuntimeError("calibration admission launch mode differs")
+    torch_info = environment.get("torch", {})
+    if (
+        not bool(torch_info.get("cuda_available"))
+        or int(torch_info.get("device_count", -1)) != len(EXPECTED_CALIBRATION_DEVICE_NAMES)
+        or tuple(torch_info.get("device_names", ())) != EXPECTED_CALIBRATION_DEVICE_NAMES
+    ):
+        raise RuntimeError("calibration admission did not observe the required dual-T4 environment")
+    if timing.get("actual_device") != "cuda" or int(timing.get("measured_steps", -1)) != 500:
+        raise RuntimeError("calibration admission lacks the required CUDA timing sample")
+    if int(timing.get("representative_batch_size", -1)) != 128:
+        raise RuntimeError("calibration admission batch size differs")
+    if int(timing.get("preregistered_steps_per_horse_unchanged", -1)) != 18_000:
+        raise RuntimeError("calibration admission step budget differs")
+    projected = float(timing.get("projected_15_horse_seconds_with_20_percent_margin", float("inf")))
+    maximum = float(timing.get("maximum_admitted_seconds", -1.0))
+    if maximum != 86_400 or projected > maximum:
+        raise RuntimeError("calibration admission does not clear the fixed 24h gate")
+    if float(timing.get("seconds_per_step", float("nan"))) != EXPECTED_CALIBRATION_SECONDS_PER_STEP:
+        raise RuntimeError("calibration admission seconds-per-step differs")
+    if projected != EXPECTED_CAMPAIGN_SECONDS_WITH_MARGIN:
+        raise RuntimeError("calibration admission projection differs")
+    if timing.get("config_hash") != EXPECTED_CALIBRATION_CONFIG_HASH:
+        raise RuntimeError("calibration admission configuration identity differs")
+    if recovery.get("timing_calibration_sha256") != sha256_file(paths["TIMING_CALIBRATION.json"]):
+        raise RuntimeError("calibration admission timing receipt link differs")
+    specs = [
+        FileSpec(path, f"authorities/calibration/{name}", "material_training_calibration_admission")
+        for name, path in paths.items()
+    ]
+    facts = {
+        "source_calibration_packet_id": SOURCE_CALIBRATION_PACKET_ID,
+        "receipt_sha256": {name: sha256_file(path) for name, path in sorted(paths.items())},
+        "timing_calibration_sha256": sha256_file(paths["TIMING_CALIBRATION.json"]),
+        "recovery_receipt_sha256": sha256_file(paths["RECOVERY_RECEIPT.json"]),
+        "config_hash": str(timing["config_hash"]),
+        "seconds_per_step": float(timing["seconds_per_step"]),
+        "projected_15_horse_seconds_with_20_percent_margin": projected,
+        "maximum_admitted_seconds": maximum,
+        "status": "PASS_FIXED_15_HORSE_CAMPAIGN_ADMITTED",
+    }
+    return specs, facts
+
+
 def collect_specs(
     *,
     worktree: Path,
@@ -331,14 +430,22 @@ def collect_specs(
     source_root: Path,
     math_root: Path,
     kernel_entry: Path,
+    entry_mode: str = CALIBRATION_MODE,
+    calibration_receipt_root: Path | None = None,
 ) -> tuple[list[FileSpec], dict[str, Any]]:
-    """Collect and validate the deliberately compact calibration authority."""
+    """Collect and validate the deliberately compact fixed-mode authority."""
 
     worktree = worktree.resolve(strict=True)
     baseline_run = baseline_run.resolve(strict=True)
     source_root = source_root.resolve(strict=True)
     math_root = math_root.resolve(strict=True)
     kernel_entry = kernel_entry.resolve(strict=True)
+    if entry_mode not in {CALIBRATION_MODE, MATERIAL_MODE}:
+        raise ValueError(f"unsupported entry mode: {entry_mode}")
+    if entry_mode == MATERIAL_MODE and calibration_receipt_root is None:
+        raise ValueError("material mode requires a calibration receipt root")
+    if entry_mode == CALIBRATION_MODE and calibration_receipt_root is not None:
+        raise ValueError("calibration mode does not accept a material admission root")
     implementation_commit = require_clean_commit(worktree)
     math_commit = require_clean_commit(math_root)
     if math_commit != EXPECTED_MATH_COMMIT:
@@ -497,8 +604,14 @@ def collect_specs(
         specs,
         kernel_entry,
         f"authorities/{kernel_entry.name}",
-        "calibration_only_entrypoint",
+        "authority_selected_kaggle_entrypoint",
     )
+    calibration_admission = None
+    if entry_mode == MATERIAL_MODE:
+        admission_specs, calibration_admission = collect_calibration_admission(
+            calibration_receipt_root.resolve(strict=True)
+        )
+        specs.extend(admission_specs)
     targets = [spec.target for spec in specs]
     if len(targets) != len(set(targets)):
         raise RuntimeError("packet target paths are not unique")
@@ -525,7 +638,10 @@ def collect_specs(
         "frozen_artifact_pack_sha256": EXPECTED_FROZEN_ARTIFACT_SHA256,
         "frozen_artifact_pack_bytes": EXPECTED_FROZEN_ARTIFACT_BYTES,
         "frozen_artifact_authority_mode": ("COMMITTED_RELEASE_COPY_AND_VERIFY_NO_REGENERATION"),
+        "entry_mode": entry_mode,
     }
+    if calibration_admission is not None:
+        facts["calibration_admission"] = calibration_admission
     return specs, facts
 
 
@@ -834,6 +950,8 @@ def build_packet(
     dataset_id: str,
     kernel_id: str,
     kernel_entry: Path,
+    entry_mode: str = CALIBRATION_MODE,
+    calibration_receipt_root: Path | None = None,
 ) -> dict[str, Any]:
     output_parent = output_parent.resolve()
     specs, facts = collect_specs(
@@ -842,6 +960,8 @@ def build_packet(
         source_root=source_root,
         math_root=math_root,
         kernel_entry=kernel_entry,
+        entry_mode=entry_mode,
+        calibration_receipt_root=calibration_receipt_root,
     )
     with tempfile.TemporaryDirectory(prefix="clay-prime-scissor-calibration-") as temporary:
         packet_root = Path(temporary) / "packet"
@@ -872,35 +992,63 @@ def build_packet(
             artifact=(packet_root / "payload" / "frozen_artifacts" / "prime_scissor_inputs.pack"),
         )
         files = _packet_files(packet_root, roles)
-        body: dict[str, Any] = {
-            "schema": PACKET_SCHEMA,
-            "authority": {
+        is_material = entry_mode == MATERIAL_MODE
+        authority = (
+            {
+                "calibration": "SEALED_PASS_RECEIPT",
+                "material_training": "AUTHORIZED_FIXED_PREREGISTERED_CAMPAIGN",
+                "horse_creation": "EXACTLY_15_PREREGISTERED",
+                "upload": "NONE",
+                "promotion": "NONE",
+            }
+            if is_material
+            else {
                 "calibration": "TIMING_ONLY",
                 "material_training": "NONE",
                 "horse_creation": "NONE",
                 "upload": "NONE",
                 "promotion": "NONE",
-            },
-            "claim_boundary": (
+            }
+        )
+        claim_boundary = (
+            "Fixed 5-arm x 3-seed material campaign only. Results remain unpromoted "
+            "until independent inference replay and preregistered gates close."
+            if is_material
+            else (
                 "Exact-device timing calibration only. No horse, checkpoint, "
                 "model, material-training, upload, or promotion authority."
-            ),
+            )
+        )
+        fixed_run_contract: dict[str, Any] = {
+            "entry_mode": entry_mode,
+            "calibration_only": not is_material,
+            "device": "cuda",
+            "batch_size": 128,
+            "grow_steps_per_horse": 18_000,
+            "checkpoint_every": 500,
+            "learning_rate": 0.002,
+            "threads": 2,
+            "minimum_free_gib": 25.0,
+            "internet": False,
+            "gpu": True,
+            "frozen_artifact_pack_sha256": sha256_file(artifact),
+        }
+        if is_material:
+            fixed_run_contract.update(
+                {
+                    "seeds": list(EXPECTED_SEEDS),
+                    "arms": list(EXPECTED_ARMS),
+                    "horse_count": len(EXPECTED_SEEDS) * len(EXPECTED_ARMS),
+                }
+            )
+        body: dict[str, Any] = {
+            "schema": PACKET_SCHEMA,
+            "authority": authority,
+            "claim_boundary": claim_boundary,
             "dataset_id": dataset_id,
             "kernel_id": kernel_id,
             "facts": facts,
-            "fixed_run_contract": {
-                "calibration_only": True,
-                "device": "cuda",
-                "batch_size": 128,
-                "grow_steps_per_horse": 18_000,
-                "checkpoint_every": 500,
-                "learning_rate": 0.002,
-                "threads": 2,
-                "minimum_free_gib": 25.0,
-                "internet": False,
-                "gpu": True,
-                "frozen_artifact_pack_sha256": sha256_file(artifact),
-            },
+            "fixed_run_contract": fixed_run_contract,
             "files": files,
             "file_count": len(files),
             "payload_bytes": sum(int(row["bytes"]) for row in files),
@@ -916,14 +1064,15 @@ def build_packet(
         }
         write_json(packet_root / "PACKET_MANIFEST.json", manifest)
 
-        output_root = output_parent / f"clay-prime-scissor-calibration-{packet_id[:16]}"
+        lane = "material" if is_material else "calibration"
+        output_root = output_parent / f"clay-prime-scissor-{lane}-{packet_id[:16]}"
         if output_root.exists():
             raise FileExistsError(f"content-addressed output already exists: {output_root}")
         dataset_dir = output_root / "dataset"
         kernel_dir = output_root / "kernel"
         dataset_dir.mkdir(parents=True)
         kernel_dir.mkdir()
-        archive = dataset_dir / f"clay-prime-scissor-calibration-{packet_id[:16]}.packet"
+        archive = dataset_dir / f"clay-prime-scissor-{lane}-{packet_id[:16]}.packet"
         deterministic_zip(packet_root, archive)
         isolated_archive_replay = verify_extracted_archive_isolated(
             archive,
@@ -953,6 +1102,7 @@ def build_packet(
             "packet_descriptor": descriptor(dataset_dir / "PACKET_DESCRIPTOR.json"),
             "archive": packet_descriptor["archive"],
             "packet_manifest": packet_descriptor["packet_manifest"],
+            "entry_mode": entry_mode,
         }
         write_json(
             kernel_dir / "KERNEL_PACKET_AUTHORITY.json",
@@ -985,7 +1135,7 @@ def build_packet(
             "kernel_id": kernel_id,
             "internet": False,
             "gpu": True,
-            "entry_mode": "CALIBRATION_ONLY",
+            "entry_mode": entry_mode,
             "kernel_authority_mode": "EMBEDDED_CANONICAL_JSON_WITH_LOCAL_AUDIT_COPY",
             "fixed_budget": {
                 "batch_size": 128,
@@ -995,21 +1145,34 @@ def build_packet(
             },
             "commands": {
                 "version_private_dataset": (
-                    f'kaggle datasets version -p "{dataset_dir}" ' f'-m "Calibration packet {packet_id}" --dir-mode zip'
+                    f'kaggle datasets version -p "{dataset_dir}" '
+                    f'-m "Prime-scissor {lane} packet {packet_id}" --dir-mode zip'
                 ),
                 "push_private_gpu_kernel": f'kaggle kernels push -p "{kernel_dir}"',
             },
-            "expected_outputs": [
-                "/kaggle/working/clay-prime-scissor-calibration/ENVIRONMENT_RECEIPT.json",
-                "/kaggle/working/clay-prime-scissor-calibration/LAUNCH_RECEIPT.json",
-                "/kaggle/working/clay-prime-scissor-calibration/TIMING_CALIBRATION.json",
-                "/kaggle/working/clay-prime-scissor-calibration/RECOVERY_RECEIPT.json",
-            ],
-            "forbidden_outputs": ["horses/", "checkpoints/", "*.pt", "*.pth"],
+            "expected_outputs": (
+                [
+                    "/kaggle/working/clay-prime-scissor-material/ENVIRONMENT_RECEIPT.json",
+                    "/kaggle/working/clay-prime-scissor-material/LAUNCH_RECEIPT.json",
+                    "/kaggle/working/clay-prime-scissor-material/run/RESULT.json",
+                    "/kaggle/working/clay-prime-scissor-material/run/STATUS.json",
+                    "/kaggle/working/clay-prime-scissor-material/MATERIAL_ARTIFACT_MANIFEST.json",
+                    "/kaggle/working/clay-prime-scissor-material/RECOVERY_RECEIPT.json",
+                ]
+                if is_material
+                else [
+                    "/kaggle/working/clay-prime-scissor-calibration/ENVIRONMENT_RECEIPT.json",
+                    "/kaggle/working/clay-prime-scissor-calibration/LAUNCH_RECEIPT.json",
+                    "/kaggle/working/clay-prime-scissor-calibration/TIMING_CALIBRATION.json",
+                    "/kaggle/working/clay-prime-scissor-calibration/RECOVERY_RECEIPT.json",
+                ]
+            ),
+            "forbidden_outputs": ([] if is_material else ["horses/", "checkpoints/", "*.pt", "*.pth"]),
             "authority": {
                 "upload": "REQUIRES_SEPARATE_USER_ACTION",
                 "run": "REQUIRES_SEPARATE_USER_ACTION",
-                "material_training": "NONE",
+                "material_training": ("AUTHORIZED_FIXED_PREREGISTERED_CAMPAIGN" if is_material else "NONE"),
+                "promotion": "NONE",
             },
         }
         write_json(output_root / "PRIVATE_KAGGLE_LAUNCH_PLAN.json", launch_plan)
@@ -1032,10 +1195,11 @@ def build_packet(
         "isolated_archive_replay": isolated_archive_replay,
         "kaggle_code_file_only_preflight": kaggle_code_file_only_preflight,
         "authority": {
-            "calibration": "TIMING_ONLY",
-            "material_training": "NONE",
+            "calibration": "SEALED_PASS_RECEIPT" if is_material else "TIMING_ONLY",
+            "material_training": ("AUTHORIZED_FIXED_PREREGISTERED_CAMPAIGN" if is_material else "NONE"),
             "upload": "NONE",
             "run": "NONE",
+            "promotion": "NONE",
         },
     }
     write_json(output_root / "BUILD_RECEIPT.json", receipt)
@@ -1051,6 +1215,16 @@ def parse_args(arguments: Iterable[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--output-parent", type=Path, required=True)
     parser.add_argument("--dataset-id", required=True)
     parser.add_argument("--kernel-id", required=True)
+    parser.add_argument(
+        "--entry-mode",
+        choices=(CALIBRATION_MODE, MATERIAL_MODE),
+        default=CALIBRATION_MODE,
+    )
+    parser.add_argument(
+        "--calibration-receipt-root",
+        type=Path,
+        help="Required only for MATERIAL_TRAINING; seals the passing Kaggle calibration.",
+    )
     parser.add_argument(
         "--kernel-entry",
         type=Path,
