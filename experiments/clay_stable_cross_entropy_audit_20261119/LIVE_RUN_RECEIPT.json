@@ -1,0 +1,52 @@
+{
+  "schema": "clay.stable-ce-efficacy.live-run.v1",
+  "status": "ACTIVE_CHECKPOINT_ADVANCE_VERIFIED",
+  "claim_boundary": "No efficacy or promotion claim until all three seeds and both trained arms complete and pass the preregistered controls.",
+  "source_commit": "dfc51da6f658038b3b383e76bec8cc96365fb369",
+  "stable_ce_base_commit": "4acc1e6ff1545662b7f1dc9803adf81e597a06e2",
+  "baseline_manifest_sha256": "7f2516af8ae5a122f357565afad60ab412fdf54e76a3018cd8f1ddbfdb702a97",
+  "baseline_result_sha256": "c5261ada862a2851db0b1dd7e53835b5ddef22299660921527a249a866361482",
+  "dataset_manifest_sha256": "7460665cbb718097438227c452f1915e88bdc5a10ac643122b17908b505d0041",
+  "packet_archive_sha256": "64dd23bacb92a162d34c1b48946f804e0a8579bfdaa13e6384876afd22b3d7af",
+  "packet_descriptor_sha256": "e1eca31313be90bda53fc77770df2ec02393bee0826c7d91822ad3c4300f3a47",
+  "packet_manifest_sha256": "9d2cd300d8508a888edf9f7b09171dd87829ece99768f79815a5f7cc9600e887",
+  "provider": {
+    "dataset": "issacizrealdavis/clay-stable-ce-efficacy-input-20261119",
+    "dataset_version": 2,
+    "kernel": "issacizrealdavis/clay-stable-ce-efficacy-20261119",
+    "kernel_version": 2,
+    "visibility": "PRIVATE",
+    "internet": "DISABLED",
+    "gpu": "DISABLED"
+  },
+  "local_admission": {
+    "status": "CLOSED",
+    "observed_free_gib": 11.93,
+    "minimum_free_gib": 25.0,
+    "gate_lowered": false
+  },
+  "observed_progress": [
+    {
+      "loss_mode": "standard",
+      "seed": 20261134,
+      "step": 250,
+      "generation": 0,
+      "checkpoint_sha256": "9d136016d120c68d343cba5a28bb380b3b92d39c69831680792e5f2160aa1381",
+      "updated_at_utc": "2026-11-19T10:59:34.049689+00:00"
+    },
+    {
+      "loss_mode": "standard",
+      "seed": 20261134,
+      "step": 500,
+      "generation": 1,
+      "checkpoint_sha256": "5d9866130973cc2e64a59e553a25d89744d9c754cb9046ed208f14fd94fcc9fd",
+      "updated_at_utc": "2026-11-19T11:01:42.091470+00:00"
+    }
+  ],
+  "failed_predecessor": {
+    "kernel_version": 1,
+    "status": "FAILED_CLOSED_BEFORE_TRAINING",
+    "cause": "ModuleNotFoundError from direct file execution; corrected to package module execution in version 2.",
+    "measurement_produced": false
+  }
+}
