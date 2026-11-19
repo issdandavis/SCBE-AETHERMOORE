@@ -1,0 +1,126 @@
+{
+  "schema": "clay.hybrid-input-access-efficacy-preregistration.v1",
+  "status": "PREREGISTERED_BEFORE_RESULTS",
+  "registered_at_utc": "2026-11-19T15:35:00Z",
+  "authority": "MEASUREMENT_ONLY_NO_EXECUTION_NO_PROMOTION_NO_WEIGHT_OVERWRITE",
+  "hypothesis": "A zero-gated hybrid that preserves a bounded downstream adapter and adds causal raw-input access will beat both an exact-size downstream-only adapter and the immutable no-intervention baseline on source-disjoint action accuracy and macro-F1.",
+  "lineage": {
+    "baseline_manifest_sha256": "7f2516af8ae5a122f357565afad60ab412fdf54e76a3018cd8f1ddbfdb702a97",
+    "baseline_result_sha256": "c5261ada862a2851db0b1dd7e53835b5ddef22299660921527a249a866361482",
+    "dataset_manifest_sha256": "7460665cbb718097438227c452f1915e88bdc5a10ac643122b17908b505d0041",
+    "diagnostic_parent_result_sha256": "a1c4c4361a5ef39c69c722eba1f4aef4fb9e71cc03b0922b6b5d36cebce1f688"
+  },
+  "architecture": {
+    "frozen_parent_tensors": ["e", "g", "count_head"],
+    "candidate": {
+      "name": "hybrid_input_access",
+      "downstream_adapter": {
+        "hidden_width": 192,
+        "bottleneck": 101,
+        "parameters": 49379,
+        "up_initialization": "zeros"
+      },
+      "compact_action_input": {
+        "full_vocab_size": 276,
+        "compact_rows": 269,
+        "embedding_width": 80,
+        "embedding_parameters": 21520,
+        "construction": "Sorted full-vocabulary IDs observed in actual multiview action-training inputs plus full-vocabulary ID zero as a causal anchor. Any unmapped action input fails closed."
+      },
+      "causal_gru": {
+        "input_width": 80,
+        "hidden_width": 31,
+        "parameters": 10509
+      },
+      "input_projection": {
+        "shape": "31_to_192",
+        "parameters": 6144,
+        "initialization": "zeros"
+      },
+      "action_head": {
+        "shape": "192_to_276",
+        "parameters": 53268
+      },
+      "fusion": "adapter_101(frozen_hidden) + input_projection(causal_raw_input_state)",
+      "total_trainable_parameters": 140820
+    },
+    "matched_control": {
+      "name": "downstream_only",
+      "shape": "Adapter(192,bottleneck=160)+Linear(192,276)",
+      "total_trainable_parameters": 140820
+    },
+    "initialization_gate": "Candidate and matched-control action logits must be bit-identical on the exact initial probes within the execution runtime."
+  },
+  "effective_capacity_gate": {
+    "selected_scalars_each_trained_arm": 140820,
+    "actual_action_training_compact_rows": 269,
+    "synthetic_all-vocabulary_witness_is_insufficient": true,
+    "requirements": [
+      "Every compact embedding row occurs in the actual action-training input tensors, including row zero through the causal anchor.",
+      "A deterministic witness over actual action-training rows gives every selected scalar in both arms a nonzero gradient path after opening the zero projections.",
+      "A deterministic two-step update over actual action-training rows changes all 140820 selected scalars in both arms.",
+      "A completed training arm with fewer than 140820 changed selected scalars fails the producer gate."
+    ]
+  },
+  "run": {
+    "loss": "standard_pytorch_cross_entropy",
+    "seeds": [20261134, 20261135, 20261136],
+    "steps": 2000,
+    "checkpoint_every": 250,
+    "batch_size": 128,
+    "threads": 2,
+    "device": "cpu",
+    "arms": ["no_intervention_adapter", "downstream_only", "hybrid_input_access"]
+  },
+  "storage": {
+    "training_scratch_floor_bytes": 26843545600,
+    "peak_write_reserve_bytes": 1073741824,
+    "minimum_training_scratch_launch_bytes": 27917287424,
+    "training_measurement": "Measure the exact existing filesystem containing live campaign checkpoints; Path.anchor or a different mount is invalid.",
+    "durable_output_minimum_free_bytes": 1073741824,
+    "durable_copy": "Atomically copy hash-verified checkpoint generations and terminal receipts from training scratch to a separately measured durable output filesystem.",
+    "prohibition": "The 25 GiB training floor cannot be lowered, substituted with the durable-output guard, or satisfied by another filesystem."
+  },
+  "controls": {
+    "primary": "downstream_only",
+    "secondary": "no_intervention_adapter",
+    "same_parent": true,
+    "same_data": true,
+    "same_optimizer_budget": true,
+    "same_loss": true
+  },
+  "evaluation": {
+    "split": "source-disjoint held-diagonal holdout, 1500 examples per seed",
+    "primary_metrics": ["accuracy", "macro_f1"],
+    "variance_gate": "Positive mean delta greater than two pooled standard deviations for both metrics against both controls.",
+    "finite_family_alpha": 0.05,
+    "finite_test_count": 4,
+    "finite_accuracy": "Two-sided exact McNemar with candidate wins greater than losses and p <= 0.0125 against each control.",
+    "finite_macro_f1": "Deterministic seed-and-target-stratified paired bootstrap with 10000 replicates and one-sided lower bound > 0 against each control.",
+    "retention": "Exact parent counting score plus byte-identical frozen and non-selected tensors for every trained arm.",
+    "independent_replay": "Rebuild held inputs and targets from pinned authorities, reload sealed models, and recompute predictions, metrics, effective-capacity gate, and decision gates."
+  },
+  "checkpointing": {
+    "format": "two-slot atomic checkpoints with hash-checked latest pointer",
+    "resume": "Completed arms are fully replayed before reuse; partial arms restore optimizer, sampler, ledger, RNG, step, and generation.",
+    "prior_cloud_output": "A new cloud version may import only an exact externally pinned recovery manifest from a private prior-output dataset."
+  },
+  "cloud": {
+    "visibility": "PRIVATE",
+    "internet": "DISABLED",
+    "gpu": false,
+    "headless": true,
+    "launch_authority": "CLOSED_UNTIL_INDEPENDENT_BREAKER_PASS",
+    "publication": "NONE"
+  },
+  "stop_conditions": [
+    "Any lineage, preregistration, packet, parent, dataset, or recovery hash differs.",
+    "The exact training scratch filesystem has fewer than 27917287424 free bytes at launch or falls below the 26843545600-byte floor before a segment.",
+    "The durable output filesystem has fewer than 1073741824 free bytes before a copy.",
+    "Selected or effective capacity differs from 140820 in either trained arm.",
+    "Initial logits differ, causality fails, an unmapped action token is admitted, or any frozen/non-selected tensor changes.",
+    "Loss is non-finite, checkpoint recovery fails, or independent replay differs."
+  ],
+  "promotion": "NONE_UNLESS_ALL_GATES_PASS_AND_FRESH_REPLICATION_IS_SEPARATELY_AUTHORIZED",
+  "claim_boundary": "This preregistration authorizes local mechanics, packet staging, and a later separately authorized private controlled discovery run. It does not authorize upload, launch, publication, merge, or weight promotion."
+}
