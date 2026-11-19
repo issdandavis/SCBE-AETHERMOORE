@@ -99,7 +99,8 @@ def test_durable_checkpoint_copy_is_hash_verified_and_pointer_committed_last(
     original = runner.atomic_copy
 
     def recording_copy(source: Path, destination: Path) -> None:
-        copied.append(source.name)
+        if destination.is_relative_to(durable):
+            copied.append(source.name)
         original(source, destination)
 
     monkeypatch.setattr(runner, "atomic_copy", recording_copy)
@@ -112,6 +113,104 @@ def test_durable_checkpoint_copy_is_hash_verified_and_pointer_committed_last(
         f"{runner.RECEIPT_SCHEMA}.durable-campaign",
     )
     assert (durable / "arms" / "arm-seed-1" / "checkpoints" / "slot-a.pt").read_bytes() == b"checkpoint-a"
+
+
+def test_snapshot_sync_retries_concurrent_mutation_then_commits_stable_bytes(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    scratch = tmp_path / "scratch"
+    durable = tmp_path / "durable"
+    scratch.mkdir()
+    source_file = scratch / "state.json"
+    source_file.write_bytes(b"v1")
+    monkeypatch.setattr(
+        runner,
+        "require_runtime_floor",
+        lambda path: {"free_bytes": 30 * runner.GIB},
+    )
+    monkeypatch.setattr(
+        runner,
+        "require_durable_copy_capacity",
+        lambda path: {"free_bytes": 2 * runner.GIB},
+    )
+    original = runner.atomic_copy
+    source_copies = 0
+
+    def mutate_once(source: Path, destination: Path) -> None:
+        nonlocal source_copies
+        original(source, destination)
+        if source == source_file:
+            source_copies += 1
+            if source_copies == 1:
+                source_file.write_bytes(b"v2")
+
+    monkeypatch.setattr(runner, "atomic_copy", mutate_once)
+    receipt = runner.sync_campaign_to_durable(
+        scratch,
+        durable,
+        max_snapshot_attempts=3,
+    )
+    assert source_copies == 2
+    assert (durable / "state.json").read_bytes() == b"v2"
+    assert receipt["files"] == 1
+    assert not list(tmp_path.glob("*.pending"))
+
+
+def test_snapshot_sync_fails_after_bounded_concurrent_mutations(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    scratch = tmp_path / "scratch"
+    durable = tmp_path / "durable"
+    scratch.mkdir()
+    source_file = scratch / "state.json"
+    source_file.write_bytes(b"v0")
+    monkeypatch.setattr(
+        runner,
+        "require_runtime_floor",
+        lambda path: {"free_bytes": 30 * runner.GIB},
+    )
+    monkeypatch.setattr(
+        runner,
+        "require_durable_copy_capacity",
+        lambda path: {"free_bytes": 2 * runner.GIB},
+    )
+    original = runner.atomic_copy
+    mutations = 0
+
+    def always_mutate(source: Path, destination: Path) -> None:
+        nonlocal mutations
+        original(source, destination)
+        if source == source_file:
+            mutations += 1
+            source_file.write_text(f"v{mutations}", encoding="utf-8")
+
+    monkeypatch.setattr(runner, "atomic_copy", always_mutate)
+    with pytest.raises(RuntimeError, match="bounded snapshot retries"):
+        runner.sync_campaign_to_durable(
+            scratch,
+            durable,
+            max_snapshot_attempts=2,
+        )
+    assert mutations == 2
+    assert not (durable / "state.json").exists()
+    assert not list(tmp_path.glob("*.pending"))
+
+
+def test_inventory_uses_platform_neutral_posix_relative_order(tmp_path: Path) -> None:
+    for relative in (
+        "campaign/z.json",
+        "campaign/A.json",
+        "TRAINING.log",
+        "CLOUD_ENVIRONMENT.json",
+    ):
+        path = tmp_path / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(relative, encoding="utf-8")
+
+    paths = [item["path"] for item in runner.inventory(tmp_path)]
+    assert paths == sorted(paths)
 
 
 def test_durable_restore_rejects_tampered_checkpoint(tmp_path: Path) -> None:
@@ -142,6 +241,59 @@ def test_recovery_manifest_excludes_terminal_receipt_without_losing_tamper_check
     (campaign / "RESULT.json").write_text('{"forged": true}', encoding="utf-8")
     with pytest.raises(RuntimeError, match="byte count differs|hash differs"):
         runner.verify_recovery_root(tmp_path, digest)
+
+
+def _stage_flat_recovery_blobs(source: Path, dataset: Path) -> str:
+    manifest_path = runner.write_recovery_manifest(source)
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    dataset.mkdir()
+    runner.atomic_copy(manifest_path, dataset / manifest_path.name)
+    for item in manifest["files"]:
+        blob = dataset / f"recovery-{item['sha256']}.blob"
+        if not blob.exists():
+            runner.atomic_copy(source / item["path"], blob)
+    return runner.sha256_file(manifest_path)
+
+
+def test_import_prior_output_materializes_flat_content_addressed_blobs(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = tmp_path / "prior"
+    campaign = source / "campaign"
+    campaign.mkdir(parents=True)
+    (campaign / "state.json").write_text('{"step": 2000}', encoding="utf-8")
+    dataset = tmp_path / "dataset"
+    recovery_sha256 = _stage_flat_recovery_blobs(source, dataset)
+    monkeypatch.setattr(runner, "EXPECTED_PRIOR_RECOVERY_SHA256", recovery_sha256)
+
+    durable = tmp_path / "durable"
+    assert runner.import_prior_output(dataset, durable) is True
+    assert (durable / "campaign" / "state.json").read_text(encoding="utf-8") == ('{"step": 2000}')
+    runner.verify_inventory_manifest(
+        durable / "campaign",
+        "DURABLE_CAMPAIGN_MANIFEST.json",
+        f"{runner.RECEIPT_SCHEMA}.durable-campaign",
+    )
+    assert not list(tmp_path.glob("*.pending"))
+
+
+def test_import_prior_output_rejects_tampered_content_addressed_blob(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = tmp_path / "prior"
+    campaign = source / "campaign"
+    campaign.mkdir(parents=True)
+    (campaign / "state.json").write_text('{"step": 2000}', encoding="utf-8")
+    dataset = tmp_path / "dataset"
+    recovery_sha256 = _stage_flat_recovery_blobs(source, dataset)
+    monkeypatch.setattr(runner, "EXPECTED_PRIOR_RECOVERY_SHA256", recovery_sha256)
+    next(dataset.glob("recovery-*.blob")).write_bytes(b"forged")
+
+    with pytest.raises(RuntimeError, match="byte count differs|hash differs"):
+        runner.import_prior_output(dataset, tmp_path / "durable")
+    assert not list(tmp_path.glob("*.pending"))
 
 
 def test_parse_args_separates_scratch_and_durable_defaults() -> None:

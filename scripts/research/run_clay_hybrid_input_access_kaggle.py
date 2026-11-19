@@ -18,6 +18,7 @@ import platform
 import shutil
 import subprocess
 import sys
+import tempfile
 from typing import Any, Iterable
 import zipfile
 
@@ -264,8 +265,12 @@ def inventory(root: Path, *, exclude: frozenset[str] = frozenset()) -> list[dict
     rows = []
     if not root.exists():
         return rows
-    for path in sorted(item for item in root.rglob("*") if item.is_file()):
-        relative = path.relative_to(root).as_posix()
+    files = [item for item in root.rglob("*") if item.is_file()]
+    for path in sorted(files, key=lambda item: item.relative_to(root).as_posix()):
+        relative_path = path.relative_to(root)
+        relative = relative_path.as_posix()
+        if any(part.endswith(".pending") for part in relative_path.parts):
+            continue
         if relative in exclude or path.name.endswith(".pending"):
             continue
         rows.append(
@@ -344,32 +349,64 @@ def atomic_copy(source: Path, destination: Path) -> None:
 def sync_campaign_to_durable(
     scratch_campaign: Path,
     durable_campaign: Path,
+    *,
+    max_snapshot_attempts: int = 3,
 ) -> dict[str, Any]:
     require_runtime_floor(scratch_campaign)
     durable_observation = require_durable_copy_capacity(durable_campaign)
     durable_campaign.mkdir(parents=True, exist_ok=True)
-    files = [path for path in scratch_campaign.rglob("*") if path.is_file()]
+    if max_snapshot_attempts < 1:
+        raise ValueError("snapshot attempts must be positive")
 
-    # Two-slot checkpoint pointers are committed only after their referenced
-    # slots.  Terminal status pointers are committed last for the same reason.
-    def priority(path: Path) -> tuple[int, str]:
-        relative = path.relative_to(scratch_campaign).as_posix()
-        if path.name == "latest.json":
-            return (1, relative)
-        if relative in {"STATUS.json", "RESULT.json", "PROGRESS.json"}:
-            return (2, relative)
-        return (0, relative)
+    stable_inventory: list[dict[str, Any]] | None = None
+    for _attempt in range(max_snapshot_attempts):
+        before = inventory(scratch_campaign)
+        pending = Path(
+            tempfile.mkdtemp(
+                prefix=".campaign-sync-",
+                suffix=".pending",
+                dir=durable_campaign.parent,
+            )
+        )
+        try:
+            for item in before:
+                atomic_copy(
+                    scratch_campaign / item["path"],
+                    pending / item["path"],
+                )
+            copied = inventory(pending)
+            after = inventory(scratch_campaign)
+            if before != after or copied != before:
+                continue
 
-    for source in sorted(files, key=priority):
-        relative = source.relative_to(scratch_campaign)
-        atomic_copy(source, durable_campaign / relative)
-    scratch_inventory = inventory(scratch_campaign)
-    durable_inventory = inventory(
-        durable_campaign,
-        exclude=frozenset({"DURABLE_CAMPAIGN_MANIFEST.json"}),
-    )
-    if scratch_inventory != durable_inventory:
-        raise RuntimeError("durable campaign inventory differs after copy")
+            # Commit only from a stable pending snapshot. Checkpoint pointers
+            # follow their slot bytes; terminal pointers follow model/results.
+            def priority(item: dict[str, Any]) -> tuple[int, str]:
+                relative = str(item["path"])
+                name = PurePosixPath(relative).name
+                if name == "latest.json":
+                    return (1, relative)
+                if relative in {"STATUS.json", "RESULT.json", "PROGRESS.json"}:
+                    return (2, relative)
+                return (0, relative)
+
+            for item in sorted(copied, key=priority):
+                atomic_copy(
+                    pending / item["path"],
+                    durable_campaign / item["path"],
+                )
+            durable_inventory = inventory(
+                durable_campaign,
+                exclude=frozenset({"DURABLE_CAMPAIGN_MANIFEST.json"}),
+            )
+            if durable_inventory != copied:
+                raise RuntimeError("durable campaign commit differs from stable snapshot")
+            stable_inventory = copied
+            break
+        finally:
+            shutil.rmtree(pending, ignore_errors=True)
+    if stable_inventory is None:
+        raise RuntimeError("scratch campaign did not stabilize within bounded snapshot retries")
     manifest = write_inventory_manifest(
         durable_campaign,
         "DURABLE_CAMPAIGN_MANIFEST.json",
@@ -381,8 +418,8 @@ def sync_campaign_to_durable(
         f"{RECEIPT_SCHEMA}.durable-campaign",
     )
     return {
-        "files": len(scratch_inventory),
-        "total_bytes": sum(int(row["bytes"]) for row in scratch_inventory),
+        "files": len(stable_inventory),
+        "total_bytes": sum(int(row["bytes"]) for row in stable_inventory),
         "manifest_sha256": sha256_file(manifest),
         "durable_storage": durable_observation,
     }
@@ -427,37 +464,70 @@ def import_prior_output(input_root: Path, durable_root: Path) -> bool:
     ]
     if len(matches) != 1:
         raise RuntimeError(f"expected one pinned prior recovery, found {len(matches)}")
-    prior_root = matches[0].parent.resolve(strict=True)
-    verify_inventory_manifest(
-        prior_root,
-        "RECOVERY_MANIFEST.json",
-        f"{RECEIPT_SCHEMA}.recovery",
-        expected_sha256=EXPECTED_PRIOR_RECOVERY_SHA256,
-        extra_exclude=frozenset({"CLOUD_RUN_RECEIPT.json"}),
-    )
-    prior_campaign = prior_root / "campaign"
-    if not prior_campaign.is_dir():
-        raise RuntimeError("pinned prior output has no durable campaign")
-    destination = durable_root / "campaign"
-    if destination.exists():
-        return False
-    destination.mkdir(parents=True)
-    for item in inventory(
-        prior_campaign,
-        exclude=frozenset({"DURABLE_CAMPAIGN_MANIFEST.json"}),
-    ):
-        atomic_copy(prior_campaign / item["path"], destination / item["path"])
-    manifest = write_inventory_manifest(
-        destination,
-        "DURABLE_CAMPAIGN_MANIFEST.json",
-        f"{RECEIPT_SCHEMA}.durable-campaign",
-    )
-    verify_inventory_manifest(
-        destination,
-        manifest.name,
-        f"{RECEIPT_SCHEMA}.durable-campaign",
-    )
-    return True
+    dataset_root = matches[0].parent.resolve(strict=True)
+    temporary: Path | None = None
+    try:
+        prior_root = dataset_root
+        if not (prior_root / "campaign").is_dir():
+            # Kaggle datasets do not preserve nested directories unless they
+            # are archived. Materialize the pinned recovery inventory from
+            # content-addressed, top-level blobs before trusting any bytes.
+            temporary = Path(
+                tempfile.mkdtemp(
+                    prefix=".prior-recovery-",
+                    suffix=".pending",
+                    dir=durable_root.parent,
+                )
+            )
+            atomic_copy(
+                matches[0],
+                temporary / "RECOVERY_MANIFEST.json",
+            )
+            manifest_value = load_json(matches[0])
+            if manifest_value.get("schema") != f"{RECEIPT_SCHEMA}.recovery":
+                raise RuntimeError("prior recovery manifest schema differs")
+            for item in manifest_value["files"]:
+                relative = PurePosixPath(item["path"])
+                if relative.is_absolute() or ".." in relative.parts:
+                    raise ValueError(f"unsafe prior recovery path: {relative}")
+                blob = dataset_root / f"recovery-{item['sha256']}.blob"
+                verify_descriptor(blob, item, label=f"prior recovery blob {relative}")
+                atomic_copy(blob, temporary / Path(*relative.parts))
+            prior_root = temporary
+
+        verify_inventory_manifest(
+            prior_root,
+            "RECOVERY_MANIFEST.json",
+            f"{RECEIPT_SCHEMA}.recovery",
+            expected_sha256=EXPECTED_PRIOR_RECOVERY_SHA256,
+            extra_exclude=frozenset({"CLOUD_RUN_RECEIPT.json"}),
+        )
+        prior_campaign = prior_root / "campaign"
+        if not prior_campaign.is_dir():
+            raise RuntimeError("pinned prior output has no durable campaign")
+        destination = durable_root / "campaign"
+        if destination.exists():
+            return False
+        destination.mkdir(parents=True)
+        for item in inventory(
+            prior_campaign,
+            exclude=frozenset({"DURABLE_CAMPAIGN_MANIFEST.json"}),
+        ):
+            atomic_copy(prior_campaign / item["path"], destination / item["path"])
+        manifest = write_inventory_manifest(
+            destination,
+            "DURABLE_CAMPAIGN_MANIFEST.json",
+            f"{RECEIPT_SCHEMA}.durable-campaign",
+        )
+        verify_inventory_manifest(
+            destination,
+            manifest.name,
+            f"{RECEIPT_SCHEMA}.durable-campaign",
+        )
+        return True
+    finally:
+        if temporary is not None:
+            shutil.rmtree(temporary, ignore_errors=True)
 
 
 def write_recovery_manifest(durable_root: Path) -> Path:

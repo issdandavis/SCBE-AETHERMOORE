@@ -6,6 +6,8 @@ import argparse
 from datetime import datetime, timezone
 import json
 from pathlib import Path
+from pathlib import PurePosixPath
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -36,6 +38,7 @@ from scripts.research.build_clay_stable_ce_kaggle_packet import (
 PACKET_SCHEMA = "clay.hybrid-input-access-kaggle-packet.v1"
 DESCRIPTOR_SCHEMA = "clay.hybrid-input-access-kaggle-dataset.v1"
 BUILD_SCHEMA = "clay.hybrid-input-access-kaggle-build.v1"
+RECOVERY_SCHEMA = "clay.hybrid-input-access-kaggle-run.v1.recovery"
 EXPECTED_PREREGISTRATION_SHA256 = "b5de5a9cb4c75585e616ae483f10e6495514eeb17516e659d4901993607c656b"
 HYBRID_PARENT_COMMIT = "317f4ae31"
 GIB = 1024**3
@@ -120,6 +123,83 @@ def _verify_lineage(
     return baseline_manifest, baseline_result
 
 
+def _stage_prior_recovery_dataset(
+    *,
+    recovery_manifest: Path,
+    destination: Path,
+    dataset_id: str,
+) -> dict[str, Any]:
+    recovery_manifest = recovery_manifest.resolve(strict=True)
+    source_root = recovery_manifest.parent
+    value = load_json(recovery_manifest)
+    if value.get("schema") != RECOVERY_SCHEMA:
+        raise RuntimeError("prior recovery manifest schema differs")
+    expected: list[dict[str, Any]] = []
+    for item in value["files"]:
+        relative = PurePosixPath(item["path"])
+        if relative.is_absolute() or ".." in relative.parts or not relative.parts:
+            raise ValueError(f"unsafe prior recovery path: {relative}")
+        source = (source_root / Path(*relative.parts)).resolve(strict=True)
+        if not source.is_relative_to(source_root):
+            raise ValueError(f"prior recovery path escapes source: {relative}")
+        if source.stat().st_size != int(item["bytes"]):
+            raise RuntimeError(f"prior recovery byte count differs: {relative}")
+        if file_sha256(source) != item["sha256"]:
+            raise RuntimeError(f"prior recovery hash differs: {relative}")
+        expected.append(dict(item))
+    expected.sort(key=lambda item: str(item["path"]))
+    actual = []
+    for source in source_root.rglob("*"):
+        if not source.is_file() or source.name in {
+            "RECOVERY_MANIFEST.json",
+            "CLOUD_RUN_RECEIPT.json",
+        }:
+            continue
+        actual.append(descriptor(source, relative_to=source_root))
+    actual.sort(key=lambda item: str(item["path"]))
+    if actual != expected:
+        raise RuntimeError("prior recovery source inventory differs")
+    if int(value["file_count"]) != len(expected):
+        raise RuntimeError("prior recovery source file count differs")
+    if int(value["total_bytes"]) != sum(int(item["bytes"]) for item in expected):
+        raise RuntimeError("prior recovery source total bytes differs")
+
+    destination.mkdir()
+    shutil.copy2(recovery_manifest, destination / recovery_manifest.name)
+    if file_sha256(destination / recovery_manifest.name) != file_sha256(recovery_manifest):
+        raise RuntimeError("staged prior recovery manifest differs")
+    blobs: dict[str, dict[str, Any]] = {}
+    for item in expected:
+        digest = str(item["sha256"])
+        blob = destination / f"recovery-{digest}.blob"
+        if digest not in blobs:
+            source = source_root / Path(*PurePosixPath(item["path"]).parts)
+            shutil.copy2(source, blob)
+            if blob.stat().st_size != int(item["bytes"]) or file_sha256(blob) != digest:
+                raise RuntimeError(f"staged prior recovery blob differs: {item['path']}")
+            blobs[digest] = descriptor(blob, relative_to=destination)
+        elif int(blobs[digest]["bytes"]) != int(item["bytes"]):
+            raise RuntimeError("duplicate prior recovery digest has different size")
+    write_json(
+        destination / "dataset-metadata.json",
+        {
+            "title": "Clay Hybrid Input Access Recovery 20261119 V1",
+            "id": dataset_id,
+            "licenses": [{"name": "other"}],
+            "isPrivate": True,
+        },
+    )
+    return {
+        "recovery_manifest_sha256": file_sha256(recovery_manifest),
+        "source_file_count": len(expected),
+        "source_total_bytes": sum(int(item["bytes"]) for item in expected),
+        "unique_blob_count": len(blobs),
+        "dataset": [
+            descriptor(path, relative_to=destination) for path in sorted(destination.iterdir()) if path.is_file()
+        ],
+    }
+
+
 def build_packet(
     *,
     scbe_root: Path,
@@ -157,6 +237,13 @@ def build_packet(
     kernel_dir = output_root / "kernel"
     dataset_dir.mkdir()
     kernel_dir.mkdir()
+    prior_recovery_inventory = None
+    if prior_recovery_manifest is not None and prior_dataset_id is not None:
+        prior_recovery_inventory = _stage_prior_recovery_dataset(
+            recovery_manifest=prior_recovery_manifest,
+            destination=output_root / "prior-recovery-dataset",
+            dataset_id=prior_dataset_id,
+        )
     remote_config = {
         "seeds": list(EXPECTED_SEEDS),
         "steps": 2000,
@@ -290,6 +377,7 @@ def build_packet(
             "kernel": [
                 descriptor(path, relative_to=output_root) for path in sorted(kernel_dir.iterdir()) if path.is_file()
             ],
+            "prior_recovery_dataset": prior_recovery_inventory,
         },
         "authority": {
             "upload": "CLOSED_UNTIL_INDEPENDENT_BREAKER_PASS",
