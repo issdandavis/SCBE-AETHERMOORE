@@ -157,6 +157,93 @@ def test_snapshot_sync_retries_concurrent_mutation_then_commits_stable_bytes(
     assert not list(tmp_path.glob("*.pending"))
 
 
+def test_snapshot_sync_retries_replacement_between_copy_and_source_rehash(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    scratch = tmp_path / "scratch"
+    durable = tmp_path / "durable"
+    scratch.mkdir()
+    source_file = scratch / "PROGRESS.json"
+    source_file.write_bytes(b"v1")
+    monkeypatch.setattr(
+        runner,
+        "require_runtime_floor",
+        lambda path: {"free_bytes": 30 * runner.GIB},
+    )
+    monkeypatch.setattr(
+        runner,
+        "require_durable_copy_capacity",
+        lambda path: {"free_bytes": 2 * runner.GIB},
+    )
+    original_copy2 = runner.shutil.copy2
+    live_copies = 0
+
+    def replace_after_copy(source: Path, destination: Path) -> str:
+        nonlocal live_copies
+        result = original_copy2(source, destination)
+        if Path(source) == source_file:
+            live_copies += 1
+            if live_copies == 1:
+                source_file.write_bytes(b"v2")
+        return result
+
+    monkeypatch.setattr(runner.shutil, "copy2", replace_after_copy)
+    receipt = runner.sync_campaign_to_durable(
+        scratch,
+        durable,
+        max_snapshot_attempts=3,
+    )
+    assert live_copies == 2
+    assert receipt["files"] == 1
+    assert (durable / "PROGRESS.json").read_bytes() == b"v2"
+    assert not list(tmp_path.glob("*.pending"))
+
+
+def test_snapshot_sync_retries_ephemeral_source_disappearance(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    scratch = tmp_path / "scratch"
+    durable = tmp_path / "durable"
+    scratch.mkdir()
+    source_file = scratch / "PROGRESS.json"
+    source_file.write_bytes(b"v1")
+    monkeypatch.setattr(
+        runner,
+        "require_runtime_floor",
+        lambda path: {"free_bytes": 30 * runner.GIB},
+    )
+    monkeypatch.setattr(
+        runner,
+        "require_durable_copy_capacity",
+        lambda path: {"free_bytes": 2 * runner.GIB},
+    )
+    original = runner.atomic_copy
+    live_copies = 0
+
+    def disappear_once(source: Path, destination: Path) -> None:
+        nonlocal live_copies
+        if source == source_file:
+            live_copies += 1
+            if live_copies == 1:
+                source.unlink()
+                source.write_bytes(b"v2")
+                raise FileNotFoundError(source)
+        original(source, destination)
+
+    monkeypatch.setattr(runner, "atomic_copy", disappear_once)
+    receipt = runner.sync_campaign_to_durable(
+        scratch,
+        durable,
+        max_snapshot_attempts=3,
+    )
+    assert live_copies == 2
+    assert receipt["files"] == 1
+    assert (durable / "PROGRESS.json").read_bytes() == b"v2"
+    assert not list(tmp_path.glob("*.pending"))
+
+
 def test_snapshot_sync_fails_after_bounded_concurrent_mutations(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

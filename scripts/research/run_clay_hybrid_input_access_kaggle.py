@@ -360,7 +360,10 @@ def sync_campaign_to_durable(
 
     stable_inventory: list[dict[str, Any]] | None = None
     for _attempt in range(max_snapshot_attempts):
-        before = inventory(scratch_campaign)
+        try:
+            before = inventory(scratch_campaign)
+        except FileNotFoundError:
+            continue
         pending = Path(
             tempfile.mkdtemp(
                 prefix=".campaign-sync-",
@@ -369,13 +372,28 @@ def sync_campaign_to_durable(
             )
         )
         try:
+            live_copy_unstable = False
             for item in before:
-                atomic_copy(
-                    scratch_campaign / item["path"],
-                    pending / item["path"],
-                )
-            copied = inventory(pending)
-            after = inventory(scratch_campaign)
+                try:
+                    atomic_copy(
+                        scratch_campaign / item["path"],
+                        pending / item["path"],
+                    )
+                except FileNotFoundError:
+                    live_copy_unstable = True
+                    break
+                except RuntimeError as error:
+                    if not str(error).startswith("durable copy hash differs:"):
+                        raise
+                    live_copy_unstable = True
+                    break
+            if live_copy_unstable:
+                continue
+            try:
+                copied = inventory(pending)
+                after = inventory(scratch_campaign)
+            except FileNotFoundError:
+                continue
             if before != after or copied != before:
                 continue
 
