@@ -1,0 +1,214 @@
+{
+  "checks": [
+    {
+      "arm": "candidate",
+      "metrics": {
+        "exact_accuracy": 0.0145791915175613,
+        "macro_operation_accuracy": 0.015770609318996414,
+        "per_operation": {
+          "add": {
+            "exact_accuracy": 0.0,
+            "support": 900
+          },
+          "multiply": {
+            "exact_accuracy": 0.0,
+            "support": 144
+          },
+          "subtract": {
+            "exact_accuracy": 0.047311827956989246,
+            "support": 465
+          }
+        }
+      },
+      "predictions": 1509,
+      "seed": 20261134
+    },
+    {
+      "arm": "target_shuffle",
+      "metrics": {
+        "exact_accuracy": 0.017229953611663355,
+        "macro_operation_accuracy": 0.01863799283154122,
+        "per_operation": {
+          "add": {
+            "exact_accuracy": 0.0,
+            "support": 900
+          },
+          "multiply": {
+            "exact_accuracy": 0.0,
+            "support": 144
+          },
+          "subtract": {
+            "exact_accuracy": 0.05591397849462366,
+            "support": 465
+          }
+        }
+      },
+      "predictions": 1509,
+      "seed": 20261134
+    },
+    {
+      "arm": "zero_update",
+      "metrics": {
+        "exact_accuracy": 0.0,
+        "macro_operation_accuracy": 0.0,
+        "per_operation": {
+          "add": {
+            "exact_accuracy": 0.0,
+            "support": 900
+          },
+          "multiply": {
+            "exact_accuracy": 0.0,
+            "support": 144
+          },
+          "subtract": {
+            "exact_accuracy": 0.0,
+            "support": 465
+          }
+        }
+      },
+      "predictions": 1509,
+      "seed": 20261134
+    },
+    {
+      "arm": "candidate",
+      "metrics": {
+        "exact_accuracy": 0.010603048376408217,
+        "macro_operation_accuracy": 0.011469534050179211,
+        "per_operation": {
+          "add": {
+            "exact_accuracy": 0.0,
+            "support": 900
+          },
+          "multiply": {
+            "exact_accuracy": 0.0,
+            "support": 144
+          },
+          "subtract": {
+            "exact_accuracy": 0.034408602150537634,
+            "support": 465
+          }
+        }
+      },
+      "predictions": 1509,
+      "seed": 20261135
+    },
+    {
+      "arm": "target_shuffle",
+      "metrics": {
+        "exact_accuracy": 0.013253810470510271,
+        "macro_operation_accuracy": 0.014336917562724016,
+        "per_operation": {
+          "add": {
+            "exact_accuracy": 0.0,
+            "support": 900
+          },
+          "multiply": {
+            "exact_accuracy": 0.0,
+            "support": 144
+          },
+          "subtract": {
+            "exact_accuracy": 0.043010752688172046,
+            "support": 465
+          }
+        }
+      },
+      "predictions": 1509,
+      "seed": 20261135
+    },
+    {
+      "arm": "zero_update",
+      "metrics": {
+        "exact_accuracy": 0.0,
+        "macro_operation_accuracy": 0.0,
+        "per_operation": {
+          "add": {
+            "exact_accuracy": 0.0,
+            "support": 900
+          },
+          "multiply": {
+            "exact_accuracy": 0.0,
+            "support": 144
+          },
+          "subtract": {
+            "exact_accuracy": 0.0,
+            "support": 465
+          }
+        }
+      },
+      "predictions": 1509,
+      "seed": 20261135
+    },
+    {
+      "arm": "candidate",
+      "metrics": {
+        "exact_accuracy": 0.01855533465871438,
+        "macro_operation_accuracy": 0.01937873357228196,
+        "per_operation": {
+          "add": {
+            "exact_accuracy": 0.0022222222222222222,
+            "support": 900
+          },
+          "multiply": {
+            "exact_accuracy": 0.0,
+            "support": 144
+          },
+          "subtract": {
+            "exact_accuracy": 0.05591397849462366,
+            "support": 465
+          }
+        }
+      },
+      "predictions": 1509,
+      "seed": 20261136
+    },
+    {
+      "arm": "target_shuffle",
+      "metrics": {
+        "exact_accuracy": 0.01126573889993373,
+        "macro_operation_accuracy": 0.012186379928315413,
+        "per_operation": {
+          "add": {
+            "exact_accuracy": 0.0,
+            "support": 900
+          },
+          "multiply": {
+            "exact_accuracy": 0.0,
+            "support": 144
+          },
+          "subtract": {
+            "exact_accuracy": 0.03655913978494624,
+            "support": 465
+          }
+        }
+      },
+      "predictions": 1509,
+      "seed": 20261136
+    },
+    {
+      "arm": "zero_update",
+      "metrics": {
+        "exact_accuracy": 0.0,
+        "macro_operation_accuracy": 0.0,
+        "per_operation": {
+          "add": {
+            "exact_accuracy": 0.0,
+            "support": 900
+          },
+          "multiply": {
+            "exact_accuracy": 0.0,
+            "support": 144
+          },
+          "subtract": {
+            "exact_accuracy": 0.0,
+            "support": 465
+          }
+        }
+      },
+      "predictions": 1509,
+      "seed": 20261136
+    }
+  ],
+  "dataset_identity_sha256": "c9945f6b8037557e72e167117a58adb2b4bb51bfdcb63da50e56150f49495ad0",
+  "schema": "clay.cap-then-grow-independent-replay.v1",
+  "status": "PASS"
+}

@@ -1,0 +1,34 @@
+{
+  "authority": "PROTOTYPE_AND_SMOKE_ONLY_NO_CLOUD_EXECUTION_NO_PROMOTION",
+  "campaign_trainable_parameters": 142164,
+  "context_assignment_sha256": {
+    "20261134": {
+      "held_out": "9d6bfbf009bf95d40899d2a5be8afdd3d481e7c27eab570590ea3e2bdac5b742",
+      "train": "cfbf744c792a767a8df837deb874cf54170dd328214d54e917134abed1e8a806"
+    },
+    "20261135": {
+      "held_out": "05b947769ab28759db250cb28b4fe33e2fc67e4af2c8dff13b28d354630753ed",
+      "train": "1e1e2daa29040cfe3859a563b750fd05d585a7ea35f28b9476535a815193a396"
+    },
+    "20261136": {
+      "held_out": "faf901d93bacd958a517a0169837e381550a4833569bcfe2f42a0520ea29044f",
+      "train": "92afa987f75c030dbc02d22633d8fcca84d9f9a50729dde763e4b9171e92b77e"
+    }
+  },
+  "context_projection_parameters": 1344,
+  "dataset_identity_sha256": "c9945f6b8037557e72e167117a58adb2b4bb51bfdcb63da50e56150f49495ad0",
+  "frozen_tensors_bit_identical_after_synthetic_update": true,
+  "held_out_rows": 1509,
+  "matched_initialization": true,
+  "promotion": "NONE",
+  "runner_sha256": "6693166b30d09ea8f14aa511c2a0e50f19d35aa7e5d08f03731c0960362ba2d4",
+  "schema": "clay.persistent-operand-context.v1.smoke",
+  "split_checks": {
+    "add_result_support_disjoint": true,
+    "multiply_result_support_disjoint": true,
+    "subtract_result_support_equal": true
+  },
+  "status": "PASS_NO_PARENT_LOAD_NO_CLOUD_EXECUTION",
+  "synthetic_loss": 3.4197802543640137,
+  "train_rows": 1534
+}

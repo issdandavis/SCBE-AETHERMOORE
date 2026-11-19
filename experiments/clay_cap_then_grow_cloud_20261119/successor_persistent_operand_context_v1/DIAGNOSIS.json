@@ -1,0 +1,96 @@
+{
+  "schema": "clay.persistent-operand-context-diagnosis.v1",
+  "created_at_utc": "2026-11-19T22:09:01.7227167Z",
+  "authority": "ANALYSIS_ONLY_NO_EXECUTION_NO_PROMOTION",
+  "source_run": {
+    "kernel": "issacizrealdavis/clay-cap-then-grow-codeout-20261119",
+    "version": 1,
+    "status": "COMPLETE",
+    "recovery_root": "../terminal-output-v1/clay-cap-then-grow-codeout-20261119-v1",
+    "provider_file_count": 9,
+    "provider_total_bytes": 18181194,
+    "recovered_json": {
+      "STATUS.json": {
+        "bytes": 258,
+        "sha256": "62c4abffb40a8fc1043be20a65069a24d114791f57c7b1e2c5223cd3fd1dda96"
+      },
+      "RESULT.json": {
+        "bytes": 4148968,
+        "sha256": "b48bb48859bcd7ac9cfc1f717f3f121ea18427bb5c4f1a048b504c24da2b1b79"
+      },
+      "INDEPENDENT_REPLAY.json": {
+        "bytes": 5183,
+        "sha256": "4383564d7e4bad74bbeb03d285995db0c9d1d9c70f36b7ba2aa66fa096d7398b"
+      }
+    },
+    "producer_consistency": "PASS",
+    "local_model_replay": "DEFERRED_BY_UNCHANGED_3_GIB_RAM_GATE",
+    "promotion": "NONE"
+  },
+  "observed_behavior": {
+    "final_checkpoint_loss": {
+      "20261134": {
+        "candidate": 0.000014301710507425014,
+        "target_shuffle": 0.00048183227772824466
+      },
+      "20261135": {
+        "candidate": 0.0010847894009202719,
+        "target_shuffle": 0.0015008827904239297
+      },
+      "20261136": {
+        "candidate": 0.00005137771222507581,
+        "target_shuffle": 0.0038371942937374115
+      }
+    },
+    "held_out_candidate_exact_accuracy": {
+      "20261134": 0.0145791915175613,
+      "20261135": 0.010603048376408217,
+      "20261136": 0.01855533465871438,
+      "mean": 0.0145791915175613
+    },
+    "held_out_target_shuffle_exact_accuracy": {
+      "20261134": 0.017229953611663355,
+      "20261135": 0.013253810470510271,
+      "20261136": 0.01126573889993373,
+      "mean": 0.013916500994035784
+    },
+    "candidate_vs_target_shuffle": {
+      "mean_delta": 0.0006626905235255151,
+      "two_pooled_sample_sd": 0.007075598576561507,
+      "matched_seed_wins": 1,
+      "matched_seed_losses": 2,
+      "passes": false
+    },
+    "candidate_per_operation_exact_accuracy": {
+      "20261134": {
+        "add": 0.0,
+        "subtract": 0.047311827956989246,
+        "multiply": 0.0
+      },
+      "20261135": {
+        "add": 0.0,
+        "subtract": 0.034408602150537634,
+        "multiply": 0.0
+      },
+      "20261136": {
+        "add": 0.0022222222222222222,
+        "subtract": 0.05591397849462366,
+        "multiply": 0.0
+      }
+    },
+    "retention_and_frozen_identity_producer_gate": true,
+    "candidate_per_operation_nonzero_gate": false,
+    "all_measurement_gates": false
+  },
+  "diagnosis": {
+    "name": "target-support memorization without arithmetic extrapolation",
+    "evidence": [
+      "Both correctly paired and target-shuffled arms reached near-zero checkpoint loss but only 1-2 percent held-out exact accuracy.",
+      "The correctly paired candidate lost two of three matched seeds to the target-shuffled control and its mean advantage was less than one tenth of the preregistered two-pooled-SD threshold.",
+      "Held-out subtraction results remain in the training result range 0 through 29 and subtraction was the only operation with repeatable nonzero accuracy.",
+      "Held-out add results 60 through 118 and multiply results 169 through 576 are outside their training result supports; add was zero on two seeds and multiply was zero on all seeds.",
+      "Exact counting retention shows that the failure is not explained by catastrophic forgetting."
+    ],
+    "claim_boundary": "The recovered JSON is enough to reject this downstream-only mechanism. Exact local tensor and prediction replay remains deferred until the unchanged RAM gate opens."
+  }
+}
