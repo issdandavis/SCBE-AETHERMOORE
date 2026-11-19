@@ -1,0 +1,11 @@
+{
+  "arm": "candidate",
+  "checkpoint_generation": 1,
+  "loss": 5.313023090362549,
+  "schema": "clay.cap-then-grow-arithmetic-codeout.v1.status",
+  "seed": 20261134,
+  "status": "TRAINING",
+  "step": 2,
+  "updated_at_utc": "2026-11-19T19:55:52.167152+00:00",
+  "updates": 2
+}
