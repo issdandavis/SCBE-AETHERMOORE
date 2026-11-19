@@ -1,0 +1,2 @@
+warning: in the working copy of 'experiments/clay_cap_then_grow_cloud_20261119/successor_persistent_operand_context_v1/PREREGISTRATION.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'experiments/clay_cap_then_grow_cloud_20261119/successor_persistent_operand_context_v1/REPORT.md', LF will be replaced by CRLF the next time Git touches it

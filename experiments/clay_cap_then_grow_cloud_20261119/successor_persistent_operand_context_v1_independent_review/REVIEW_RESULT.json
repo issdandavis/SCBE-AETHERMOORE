@@ -1,0 +1,95 @@
+{
+  "authority": "NO_CLOUD_NO_CHECKPOINT_LOAD_NO_PROMOTION_NO_PUSH",
+  "context_derangements": {
+    "20261134": {
+      "held_out": "9d6bfbf009bf95d40899d2a5be8afdd3d481e7c27eab570590ea3e2bdac5b742",
+      "train": "cfbf744c792a767a8df837deb874cf54170dd328214d54e917134abed1e8a806"
+    },
+    "20261135": {
+      "held_out": "05b947769ab28759db250cb28b4fe33e2fc67e4af2c8dff13b28d354630753ed",
+      "train": "1e1e2daa29040cfe3859a563b750fd05d585a7ea35f28b9476535a815193a396"
+    },
+    "20261136": {
+      "held_out": "faf901d93bacd958a517a0169837e381550a4833569bcfe2f42a0520ea29044f",
+      "train": "92afa987f75c030dbc02d22633d8fcca84d9f9a50729dde763e4b9171e92b77e"
+    }
+  },
+  "dataset": {
+    "add_support_disjoint": true,
+    "held_out_rows": 1509,
+    "multiply_support_disjoint": true,
+    "sha256": "c9945f6b8037557e72e167117a58adb2b4bb51bfdcb63da50e56150f49495ad0",
+    "subtract_support_equal": true,
+    "train_rows": 1534
+  },
+  "frozen_modules": [
+    "e",
+    "g",
+    "count_head"
+  ],
+  "gate_contract": {
+    "independent_replay": true,
+    "matched_seed_wins_3_of_3": true,
+    "out_of_support_add_multiply": true,
+    "paired_finite_evaluation": true,
+    "per_operation_nonzero": true,
+    "retention_and_frozen_identity": true,
+    "seeds": [
+      20261134,
+      20261135,
+      20261136
+    ],
+    "two_pooled_sd": true
+  },
+  "parameter_accounting": {
+    "base_adapter_and_head": 140820,
+    "context_projection": 1344,
+    "total_trainable": 142164,
+    "vocab_size": 276
+  },
+  "promotion": "NONE",
+  "remaining_boundary": "Full checkpoint-aware campaign replay and execution remain unrun and unauthorized.",
+  "reviewed_files": {
+    "experiments/clay_cap_then_grow_cloud_20261119/successor_persistent_operand_context_v1/PREREGISTRATION.json": {
+      "bytes": 8175,
+      "sha256": "b9e3283f1881b0846a5a5f35f93d0245067ac269b683fcf2c85a824737581ce6"
+    },
+    "experiments/clay_cap_then_grow_cloud_20261119/successor_persistent_operand_context_v1/REPORT.md": {
+      "bytes": 4198,
+      "sha256": "3762e82bd51f3b2e97f7b6287f409d7954a196c70280b50a0831c4e2d9edad0a"
+    },
+    "experiments/clay_cap_then_grow_cloud_20261119/successor_persistent_operand_context_v1/run_persistent_operand_context.py": {
+      "bytes": 29554,
+      "sha256": "13b3784d4c1de6cf57f6d9dc6046a5c04849a50a9aab5ab99445fd52b0bb6d09"
+    },
+    "experiments/clay_cap_then_grow_cloud_20261119/successor_persistent_operand_context_v1/test_successor.py": {
+      "bytes": 9967,
+      "sha256": "59e07e1933bc0e576ab68a1261778e27b2abc2fd7039be065839c9514e5464ca"
+    },
+    "experiments/clay_cap_then_grow_cloud_20261119/successor_persistent_operand_context_v1_independent_review/DIFF_CHECK.txt": {
+      "bytes": 389,
+      "sha256": "122e32db2584100e6f80bd6de93be5bd48e570a560b73776049d57849cc756a9"
+    },
+    "experiments/clay_cap_then_grow_cloud_20261119/successor_persistent_operand_context_v1_independent_review/INDEPENDENT_SMOKE.json": {
+      "bytes": 1433,
+      "sha256": "1aab2873ae840bd478319a715e925893eec13400f335462d8ab9992b97137652"
+    },
+    "experiments/clay_cap_then_grow_cloud_20261119/successor_persistent_operand_context_v1_independent_review/PYTEST.txt": {
+      "bytes": 993,
+      "sha256": "1bb767349fdaa9896ab1c86df947f86675f90518e9be7fca55d4631d4820a775"
+    },
+    "experiments/clay_cap_then_grow_cloud_20261119/successor_persistent_operand_context_v1_independent_review/RUFF.txt": {
+      "bytes": 20,
+      "sha256": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0"
+    }
+  },
+  "schema": "clay.persistent-operand-context.independent-review.v1",
+  "source_commit_reviewed": "d864f35d085a148a8e6f3171fd1ad9f0888b6bf4",
+  "status": "PASS_REPAIRED_PROTOTYPE_SCOPE",
+  "tests": {
+    "diff_check": "PASS",
+    "py_compile": "PASS",
+    "pytest": "10 passed",
+    "ruff": "PASS"
+  }
+}

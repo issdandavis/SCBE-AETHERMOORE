@@ -1,0 +1,1 @@
+{"promotion": "NONE", "status": "PASS_NO_PARENT_LOAD_NO_CLOUD_EXECUTION"}

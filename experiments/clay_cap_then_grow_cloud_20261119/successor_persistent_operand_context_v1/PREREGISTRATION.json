@@ -77,7 +77,7 @@
     },
     "target_shuffle_control": {
       "context": "correct five-byte record and correct decode position",
-      "targets": "deterministically deranged within operation and target-decimal-length strata",
+      "targets": "deterministically shuffled within operation and target-decimal-length strata using the unchanged original campaign control",
       "purpose": "retains the original semantic-pairing control",
       "updates": 18000,
       "trainable_parameters": 142164
@@ -128,7 +128,8 @@
       "target_shuffle_control",
       "zero_update_control"
     ],
-    "uncertainty": "candidate mean delta must exceed two times pooled sample standard deviation against every required control on both metrics",
+    "uncertainty": "candidate mean delta must exceed two times pooled sample standard deviation against every required control on both metrics, and the deterministic paired held-out bootstrap must have a strictly positive one-sided 95% lower bound for exact accuracy and the operation-stratified macro accuracy",
+    "finite_evaluation": "rebuild the per-example correctness ledgers independently; use at least 4096 paired bootstrap draws with a sealed seed, sampling held-out rows for exact accuracy and sampling within operation strata for the equal-weight macro metric",
     "matched_seed_wins": "3 of 3 against every required control",
     "zero_check": "every candidate seed must have nonzero exact accuracy for add, subtract, and multiply",
     "out_of_support_check": "every candidate seed must have nonzero add and multiply exact accuracy and must beat both trained controls for each operation",

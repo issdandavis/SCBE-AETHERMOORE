@@ -48,7 +48,9 @@ count but deranges contexts within operation and output-length strata. The
 original target-shuffle and zero-update controls remain. The same three seeds,
 18,000 updates, optimizer, loss, batching, held-out rows, two-pooled-SD rule,
 3-of-3 matched-seed rule, nonzero-per-operation rule, exact retention rule, and
-independent replay rule remain in force.
+independent replay rule remain in force. The finite-evaluation gate additionally
+requires a strictly positive one-sided 95% paired-bootstrap lower bound for
+both exact accuracy and operation-stratified macro accuracy.
 
 The experiment is falsified if the candidate fails any gate. No execution or
 promotion is authorized by these files.
@@ -71,3 +73,10 @@ accounting, and the three result-support invariants. Its receipt SHA-256 is
 Focused verification: six Pytest tests passed, Ruff passed, Python AST parsing
 passed, and `git diff --check` passed. Exact replay of the recovered terminal
 models remains deferred by the unchanged 3 GiB available-RAM gate.
+
+An independent review found and repaired a prototype-only evaluation defect:
+generation formerly derived the context from the prompt row unconditionally,
+which made held-out evaluation of the context-permuted arm impossible. The
+evaluation surface now accepts and receipts an explicit independent context
+row. The same review added the paired finite-evaluation bootstrap required by
+the Clay evidence standard; neither change authorizes a campaign launch.
