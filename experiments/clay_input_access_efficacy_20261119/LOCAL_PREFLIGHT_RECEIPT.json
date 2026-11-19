@@ -1,0 +1,47 @@
+{
+  "schema": "clay.input-access-local-preflight.v1",
+  "status": "PASS_NO_CLOUD_LAUNCH_YET",
+  "checked_at_utc": "2026-11-19T13:43:00Z",
+  "source_commit": "fbb3edf66f9b6accaf022339540bf731b5f708d9",
+  "preregistration_sha256": "f5613e79353dfcdaddb2935e8b087d66f50c025cb31ca75824e17e1bca0f4080",
+  "campaign_sha256": "e220c03a038a241bdd89d5bb9f7389dbb20bd26fb8f1a874d4ed3bc65ac08e31",
+  "launch_candidate": {
+    "archive_bytes": 8707005,
+    "archive_sha256": "dbda4db1bf3a7f54232d2e2198e493153dad3ef32f9b767dee8ca6d9724ba9dd",
+    "descriptor_sha256": "f2a22a36db1542838edf9f89d5f98ae2f5c23da87aba292ecab2e61abc19ab6a",
+    "packet_manifest_sha256": "7d78171e44fa2f364506123a7b7e3c47381d2bd1189ddc4eb1acd21121098e60",
+    "kernel_runner_sha256": "4a3eaea0b78b7a9df4666f40759a2babf147db0a586f6d20f0668ade384badac",
+    "packet_files": 326,
+    "neutral_suffix_extraction_passes": 2
+  },
+  "independent_mainlane_extracted_packet_smoke": {
+    "dataset_manifest_sha256": "7460665cbb718097438227c452f1915e88bdc5a10ac643122b17908b505d0041",
+    "vocab_size": 276,
+    "aggregate_parent_lineages_verified": 3,
+    "trained_arm_parameter_counts": {
+      "downstream_only": 140820,
+      "input_access": 140820
+    },
+    "bit_identical_initial_probe_seeds": 3,
+    "initial_logits_sha256_prefixes": ["b21f5ecc", "60f7d544", "aca6156c"],
+    "claim_boundary": "Independent structural smoke only; no efficacy result."
+  },
+  "tests": {
+    "focused_pytest": "34 passed",
+    "ruff": "PASS",
+    "checkpoint_resume": "advanced from step 1 to step 2; foreign config rejected",
+    "effective_gradient_reachability": "140820 of 140820 selected scalars reachable in both arms",
+    "packet_tamper_and_resume_breakers": "PASS"
+  },
+  "execution_contract": {
+    "seeds": [20261134, 20261135, 20261136],
+    "steps": 2000,
+    "checkpoint_every": 250,
+    "batch_size": 128,
+    "threads": 2,
+    "minimum_free_gib": 25.0,
+    "loss": "standard_pytorch_cross_entropy",
+    "cloud": "PRIVATE_OFFLINE_CPU_CONFIGURED_PENDING_API_VERIFICATION",
+    "promotion": "NONE"
+  }
+}
