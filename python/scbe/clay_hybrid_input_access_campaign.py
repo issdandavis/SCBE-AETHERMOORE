@@ -84,6 +84,12 @@ PREREGISTRATION_SHA256 = (
     "b5de5a9cb4c75585e616ae483f10e6495514eeb17516e659d4901993607c656b"
 )
 AUTHORITY = "MEASUREMENT_ONLY_NO_EXECUTION_NO_PROMOTION_NO_WEIGHT_OVERWRITE"
+AUTHENTICATED_PREVIOUS_RUNNER_SHA256 = (
+    "ed0d1f2921ae1647920014ad87bd4823f07ff3b34eafa9822c90b9710b014e4c"
+)
+AUTHENTICATED_PREVIOUS_RUN_MANIFEST_SHA256 = (
+    "35a4b3019dff8d02bffa40b06756dbacd024ccb8aed13a4f6facbb21171e3556"
+)
 HYBRID_INPUT_ACCESS = "hybrid_input_access"
 TRAINED_ARMS = (DOWNSTREAM_ONLY, HYBRID_INPUT_ACCESS)
 
@@ -815,6 +821,26 @@ def _train_one_arm(
     return result
 
 
+def resume_manifest_matches(
+    existing: Mapping[str, Any],
+    candidate: Mapping[str, Any],
+    *,
+    admitted_free_gib: float,
+    existing_manifest_sha256: str,
+) -> bool:
+    comparable = dict(existing)
+    comparable["admitted_free_gib"] = admitted_free_gib
+    candidate_runner = candidate.get("runner_sha256")
+    if (
+        comparable.get("runner_sha256") == AUTHENTICATED_PREVIOUS_RUNNER_SHA256
+        and candidate_runner != AUTHENTICATED_PREVIOUS_RUNNER_SHA256
+    ):
+        if existing_manifest_sha256 != AUTHENTICATED_PREVIOUS_RUN_MANIFEST_SHA256:
+            return False
+        comparable["runner_sha256"] = candidate_runner
+    return stable_hash(comparable) == stable_hash(candidate)
+
+
 def run_campaign(args: argparse.Namespace) -> dict[str, Any]:
     validate_preregistered_budget(args)
     baseline = args.baseline_run.resolve(strict=True)
@@ -914,9 +940,12 @@ def run_campaign(args: argparse.Namespace) -> dict[str, Any]:
     manifest_path = output / "RUN_MANIFEST.json"
     if manifest_path.is_file():
         existing = load_json(manifest_path)
-        comparable = dict(existing)
-        comparable["admitted_free_gib"] = admitted_free_gib
-        if comparable != manifest:
+        if not resume_manifest_matches(
+            existing,
+            manifest,
+            admitted_free_gib=admitted_free_gib,
+            existing_manifest_sha256=file_sha256(manifest_path),
+        ):
             raise RuntimeError("existing hybrid campaign manifest differs")
     else:
         atomic_json(manifest_path, manifest)

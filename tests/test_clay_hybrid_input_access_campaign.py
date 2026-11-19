@@ -13,6 +13,8 @@ from python.scbe.clay_frozen_multiview_adapter import (
     train_steps,
 )
 from python.scbe.clay_hybrid_input_access_campaign import (
+    AUTHENTICATED_PREVIOUS_RUN_MANIFEST_SHA256,
+    AUTHENTICATED_PREVIOUS_RUNNER_SHA256,
     COMPACT_EMBEDDING_WIDTH,
     COMPACT_INPUT_ROWS,
     COMPACT_RECURRENT_WIDTH,
@@ -31,6 +33,7 @@ from python.scbe.clay_hybrid_input_access_campaign import (
     effective_capacity_receipt,
     initial_pair_receipt,
     parse_args,
+    resume_manifest_matches,
     validate_preregistration,
 )
 
@@ -82,6 +85,52 @@ def test_preregistered_architecture_has_exact_matched_budget() -> None:
     head = 192 * EXPECTED_VOCAB_SIZE + EXPECTED_VOCAB_SIZE
     assert (adapter, input_path, head) == (49_379, 38_173, 53_268)
     assert adapter + input_path + head == EXPECTED_TRAINABLE_PARAMETERS
+
+
+def test_resume_manifest_canonicalizes_json_and_bridges_only_authenticated_runner() -> None:
+    existing = {
+        "config": {"seeds": [1, 2, 3], "arms": ["a", "b"]},
+        "admitted_free_gib": 999.0,
+        "runner": "/tmp/pinned/campaign.py",
+        "runner_sha256": AUTHENTICATED_PREVIOUS_RUNNER_SHA256,
+        "identity": "sealed",
+    }
+    candidate = {
+        "config": {"seeds": (1, 2, 3), "arms": ("a", "b")},
+        "admitted_free_gib": 30.0,
+        "runner": "/tmp/pinned/campaign.py",
+        "runner_sha256": "fixed-runner",
+        "identity": "sealed",
+    }
+    assert resume_manifest_matches(
+        existing,
+        candidate,
+        admitted_free_gib=30.0,
+        existing_manifest_sha256=AUTHENTICATED_PREVIOUS_RUN_MANIFEST_SHA256,
+    )
+
+    forged_identity = dict(existing)
+    forged_identity["identity"] = "forged"
+    assert not resume_manifest_matches(
+        forged_identity,
+        candidate,
+        admitted_free_gib=30.0,
+        existing_manifest_sha256=AUTHENTICATED_PREVIOUS_RUN_MANIFEST_SHA256,
+    )
+    unapproved_runner = dict(existing)
+    unapproved_runner["runner_sha256"] = "unapproved-runner"
+    assert not resume_manifest_matches(
+        unapproved_runner,
+        candidate,
+        admitted_free_gib=30.0,
+        existing_manifest_sha256=AUTHENTICATED_PREVIOUS_RUN_MANIFEST_SHA256,
+    )
+    assert not resume_manifest_matches(
+        existing,
+        candidate,
+        admitted_free_gib=30.0,
+        existing_manifest_sha256="unapproved-manifest",
+    )
 
 
 def test_parse_args_pins_three_seed_standard_ce_budget() -> None:
