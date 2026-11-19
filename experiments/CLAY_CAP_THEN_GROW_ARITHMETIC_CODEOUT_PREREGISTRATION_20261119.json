@@ -1,0 +1,130 @@
+{
+  "schema": "clay.cap-then-grow-arithmetic-codeout-preregistration.v1",
+  "created_at_utc": "2026-11-19T19:02:19.3091164Z",
+  "authority": "MEASUREMENT_ONLY_NO_EXECUTION_NO_PROMOTION_NO_PARTIAL_UNFREEZE",
+  "status": "PREREGISTERED_BLOCKED_NO_LAUNCH",
+  "selected_capability": "range-disjoint arithmetic code-out from exact binary records",
+  "hypothesis": "A downstream adapter and output head trained over a bit-identical frozen counting core can improve exact add, subtract, and multiply outputs on unseen operand ranges without changing counting behavior.",
+  "excluded_interventions": [
+    "stable cross entropy",
+    "hybrid or independent input access",
+    "byte-embedding thaw",
+    "any inherited-core update",
+    "promotion during this campaign"
+  ],
+  "prior_evidence": {
+    "cap_then_grow_receipt": {
+      "path": "C:/dev/loom/clay_banded_paired_20260722.json",
+      "sha256": "1d2f5f3724caeb9e8dae92a9958ffb49afbab4625eed0e1de10079efa79639b3",
+      "frozen_coding_mean": 0.506,
+      "frozen_coding_sd": 0.0347,
+      "retention_advantage_clears_zero": true
+    },
+    "byte_thaw_terminal_audit": {
+      "run": "C:/dev/clay-training-runs/byte-embedding-thaw-20261115-v1",
+      "nine_horses_complete": true,
+      "counting_preserved_exactly": true,
+      "per_action_zero_count": 0,
+      "primary_accuracy_mean": 0.21066666666666667,
+      "frozen_accuracy_mean": 0.20444444444444443,
+      "primary_vs_frozen_delta": 0.00622222222222224,
+      "primary_vs_frozen_two_pooled_sd": 0.04549318223239202,
+      "primary_vs_shuffled_delta": 0.005111111111111094,
+      "primary_vs_shuffled_two_pooled_sd": 0.03362979278798729,
+      "verdict": "NOT_MET",
+      "aggregation_failure": "paired_exact_p overflows while converting a very large integer denominator to float; this cannot rescue the already-failed effect-size gates"
+    }
+  },
+  "sealed_parents": {
+    "run_manifest": {
+      "path": "C:/dev/clay-training-runs/frozen-multiview-adapter-replication-20261114-v1/RUN_MANIFEST.json",
+      "sha256": "7f2516af8ae5a122f357565afad60ab412fdf54e76a3018cd8f1ddbfdb702a97"
+    },
+    "result": {
+      "path": "C:/dev/clay-training-runs/frozen-multiview-adapter-replication-20261114-v1/RESULT.json",
+      "sha256": "c5261ada862a2851db0b1dd7e53835b5ddef22299660921527a249a866361482"
+    },
+    "seeds": {
+      "20261134": "e719ca2398f0a96e4c80d2119897ad36202fb34bd8fbe37190655d581411b910",
+      "20261135": "bb4d912d413dd76174986a89b24f713268e90138808b69107aac01736c218438",
+      "20261136": "820f0ed122b27261eb91391d4b69efe987f2e8a8e5f79b27c9e2a7f431267929"
+    }
+  },
+  "data_contract": {
+    "prompt": "K :<five exact byte tokens> =>",
+    "record_layout": "opcode:u8 || x:u16be || y:u16be",
+    "byte_token_mapping": "token = chr(0xE100 + byte)",
+    "target": "space followed by reversed decimal result",
+    "train": {
+      "add": "0 <= x,y <= 29",
+      "subtract": "0 <= y <= x <= 29",
+      "multiply": "0 <= x,y <= 12"
+    },
+    "held_out": {
+      "add": "30 <= x,y <= 59",
+      "subtract": "30 <= y <= x <= 59",
+      "multiply": "13 <= x,y <= 24"
+    },
+    "split_rule": "held-out operands are disjoint from training operands for each operation; no held-out row may be used for stopping or tuning",
+    "identity_receipt": "SHA-256 over opcode, operands, target, and split for every row"
+  },
+  "arms": {
+    "candidate": "frozen parent plus trainable downstream Adapter(192,160) and adapter_head only",
+    "size_matched_control": "identical trainable parameters, optimizer, steps, and rows with targets permuted within operation and output-length strata",
+    "no_intervention_control": "identical initialized adapter and head with zero optimizer updates"
+  },
+  "training_contract": {
+    "seeds": [20261134, 20261135, 20261136],
+    "updates": 18000,
+    "checkpoint_every": 500,
+    "batch_size": 128,
+    "learning_rate": 0.002,
+    "loss": "ordinary torch cross entropy",
+    "expected_trainable_parameters_per_trained_arm": 140820,
+    "frozen_prefixes": ["e.", "g.", "count_head."],
+    "early_stopping": false
+  },
+  "gates": {
+    "required_controls": ["size_matched_control", "no_intervention_control"],
+    "primary_metric": "held-out exact numeric output accuracy",
+    "secondary_metric": "macro mean of per-operation exact accuracy",
+    "uncertainty": "candidate mean delta must exceed two times pooled sample standard deviation against each required control on both metrics",
+    "matched_seed_wins": "3 of 3 against each required control",
+    "zero_check": "every candidate seed must have nonzero exact accuracy for add, subtract, and multiply",
+    "retention": "counting accuracy must equal the sealed parent per seed and all frozen tensors must be bit-identical",
+    "independent_replay": "regenerate the dataset from the sealed contract, reload terminal checkpoints, replay every held-out row, and compare predictions and metrics exactly",
+    "promotion": "NONE"
+  },
+  "launch_gate": {
+    "satisfied": false,
+    "observed_c_free_bytes": 2040287232,
+    "required_local_campaign_free_bytes": 26843545600,
+    "new_worktree_or_model_download_minimum_bytes": 4294967296,
+    "sealed_runner_exists": false,
+    "sealed_data_manifest_exists": false,
+    "existing_parent_checkpoints_verified": true,
+    "cloud_environment_previously_verified": true,
+    "blockers": [
+      "C: is below both the 25 GiB campaign gate and the 4 GiB no-new-worktree/model threshold",
+      "the exact five-byte arithmetic dataset builder and three-arm runner do not yet exist as sealed artifacts",
+      "there is no independently hashed replay verifier for this target"
+    ],
+    "resume_order": [
+      "recover storage through the existing guarded storage lifecycle",
+      "implement and hash the dataset builder, runner, and independent replay without changing the preregistered contract",
+      "run a no-training manifest smoke and verify the three parent hashes",
+      "package the existing parent checkpoints and source for headless cloud execution",
+      "launch only after storage and cloud access checks pass"
+    ]
+  },
+  "source_bindings": {
+    "counting_and_coding_reference": {
+      "path": "C:/dev/loom/clay_count_deep.py",
+      "sha256": "dfbd475619195320173a3e916ad1a8e594ee3110a6557a4dd4b06dcf6604314e"
+    },
+    "cap_then_grow_reference": {
+      "path": "C:/dev/loom/clay_banded.py",
+      "sha256": "8d1809fbed1701b6b669fd6176b36196cdbf5329e88407baceffb51ff7910a92"
+    }
+  }
+}

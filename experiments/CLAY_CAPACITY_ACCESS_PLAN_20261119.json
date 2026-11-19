@@ -1,0 +1,139 @@
+{
+  "schema": "clay.capacity-access-plan.v1",
+  "observed_utc": "2026-11-19T19:12:44.7292752Z",
+  "scope": "Measured non-destructive capacity/access phase for the preregistered Clay cap-then-grow arithmetic code-out campaign.",
+  "hard_gate": {
+    "required_c_free_bytes": 26843545600,
+    "required_c_free_gib": 25.0,
+    "observed_c_free_bytes": 2350587904,
+    "observed_c_free_gib": 2.189,
+    "gap_bytes": 24492957696,
+    "satisfied": false,
+    "lowered": false
+  },
+  "active_owner": {
+    "pid": 23920,
+    "active": true,
+    "command": "python.exe -X utf8 C:\\dev\\pc-health\\offload.py --upload --delete",
+    "started_local": "2026-11-19T09:41:58.3096153-08:00",
+    "remaining_inventory_candidates": 7,
+    "remaining_resident_bytes": 3311863138,
+    "ownership": "The running offloader exclusively owns these seven >=100 MiB VQCC/DQI files. No second offloader may overlap it.",
+    "release_gate": "Fresh checksum verification in both gdrive_personal and onedrive before each local release.",
+    "projected_c_free_bytes_if_all_release": 5662451042,
+    "projected_gap_bytes": 21181094558
+  },
+  "receipt_audit": {
+    "controlled_archive_state_receipts": 262,
+    "families": {
+      "clay_lessons": {
+        "state_receipts": 118,
+        "historical_payload_bytes_released": 6329366237
+      },
+      "clay_speech_runs": {
+        "state_receipts": 65,
+        "historical_payload_bytes_released": 7555632267
+      },
+      "tongue_artifacts": {
+        "state_receipts": 9,
+        "historical_payload_bytes_released": 5169940742
+      },
+      "clay_training_cold": {
+        "state_receipts": 70,
+        "historical_payload_bytes_released": 7939232217
+      }
+    },
+    "historical_payload_bytes_released_total": 26994171463,
+    "pending_dual_verified_resident_payload_bytes": 0,
+    "note": "Every state receipt audited is already ARCHIVED_PAYLOAD_RELEASED. Historical released bytes cannot be counted again as current headroom."
+  },
+  "bounded_future_preservation_candidates": {
+    "unarchived_clay_training_trees": {
+      "count": 5,
+      "bytes": 45626876,
+      "dual_cloud_verified": false,
+      "items": [
+        {
+          "name": "e131-constant-input-parent-a-20261108",
+          "bytes": 9745622
+        },
+        {
+          "name": "e107-compact-parent-a-replication-20261108",
+          "bytes": 9312203
+        },
+        {
+          "name": "action-method-disjoint-ablation-20261110",
+          "bytes": 8884826
+        },
+        {
+          "name": "action-method-disjoint-20261110",
+          "bytes": 8855172
+        },
+        {
+          "name": "action-context-robustness-20261110",
+          "bytes": 8829053
+        }
+      ]
+    },
+    "existing_copyout_below_generic_offloader_threshold": {
+      "inventory_rows": 5,
+      "resident_bytes": 46788608,
+      "nonzero_resident_rows": 1,
+      "note": "The generic offloader intentionally ignores files below 100 MiB; four listed sparse/online rows have zero resident bytes."
+    },
+    "combined_bytes": 92415484,
+    "projected_c_free_bytes_after_active_and_future_small_candidates": 5754866526,
+    "projected_gap_bytes": 21088679074,
+    "note": "These small candidates are not currently release-authorized and do not close the campaign gate."
+  },
+  "protected_or_unavailable": {
+    "eligible_closed_codex_sessions": 0,
+    "active_or_open_codex_session_bytes": 395546565,
+    "pagefile_bytes": 31591456768,
+    "wsl_vhdx_bytes": 15958278144,
+    "local_file_catalog_bytes": 1579311104,
+    "excluded_from_recovery_math": [
+      "pagefile and swap",
+      "WSL distribution",
+      "active/open Codex sessions",
+      "active model weights and training runs",
+      "local storage index"
+    ]
+  },
+  "decision": {
+    "launch_second_recovery_process": false,
+    "launch_training": false,
+    "reason": "PID 23920 is active, the only immediately releasable >=100 MiB set is already owned by it, the remaining reviewed Clay payloads were already released, and this phase has no authority to delete local payloads.",
+    "campaign_gate": "BLOCKED_CAPACITY"
+  },
+  "executable_next_steps": [
+    {
+      "order": 1,
+      "when": "After PID 23920 exits",
+      "command": "Get-Process -Id 23920 -ErrorAction SilentlyContinue",
+      "success_condition": "No process is returned."
+    },
+    {
+      "order": 2,
+      "command": "C:\\Users\\issda\\storage.ps1 AgentStatus",
+      "success_condition": "Use the freshly reported C: free bytes; do not infer capacity from upload completion."
+    },
+    {
+      "order": 3,
+      "command": "python -X utf8 C:\\dev\\pc-health\\offload.py",
+      "success_condition": "Plan-only output shows the remaining generic COPY-OUT set; this command uploads and deletes nothing."
+    },
+    {
+      "order": 4,
+      "when": "If the 25 GiB gate is still closed",
+      "command": "python -X utf8 C:\\dev\\pc-health\\storage-management\\permanent-storage-control-20261108\\storage_lifecycle.py scan",
+      "success_condition": "Refresh STATUS.json and CANDIDATES.json through the installed controller; do not run a release operation."
+    },
+    {
+      "order": 5,
+      "when": "Only after a later explicit, path-bounded release authorization and only with PID 23920 absent",
+      "command_template": "python -X utf8 C:\\dev\\pc-health\\storage-management\\permanent-storage-control-20261108\\archive_clay_training_package.py --name <one-of-the-five-preregistered-tree-names> --run",
+      "success_condition": "The helper verifies both direct clouds and restore probes before releasing that exact tree. Run sequentially and headlessly; never overlap the generic offloader."
+    }
+  ]
+}
