@@ -1,91 +1,97 @@
 # Stripe Digital Delivery
 
-This is the one-time product fulfillment rail for AetherMoore digital products.
+This is the buyer-only fulfillment rail for AetherMoore digital products.
 
-## Required Stripe event
+## Security contract
 
-Configure the Stripe webhook to send:
+A download is available only when all of these checks pass:
+
+1. the request contains a Stripe Checkout Session ID;
+2. the Vercel function retrieves that session directly from Stripe with a restricted key;
+3. the session is a completed one-time payment with `payment_status=paid`;
+4. the Payment Link ID or merchant-controlled metadata maps to exactly one product;
+5. a requested product, when supplied, matches the product attached to the session;
+6. the corresponding private Vercel Blob URL is configured.
+
+The public endpoint must not use a shared bearer token. One leaked shared token
+would otherwise unlock every product for every visitor.
+
+## Runtime endpoints
+
+- Stripe webhook: `api/billing/stripe_webhook.js`
+- Verified download: `api/agent/download.js`
+
+The webhook accepts these fulfillment events:
 
 - `checkout.session.completed`
+- `checkout.session.async_payment_succeeded`
+- `checkout.session.async_payment_failed` (acknowledged; never fulfilled)
 
-The handler lives at:
+`checkout.session.completed` is not enough by itself. The handler dispatches
+delivery only when the embedded Checkout Session is already paid. Delayed
+payment methods are fulfilled from `checkout.session.async_payment_succeeded`.
 
-- `src/api/stripe_billing.py`
-- route: `POST /billing/webhook`
-
-Webhook signature verification must stay enabled in production with:
-
-- `STRIPE_WEBHOOK_SECRET`
-
-## Product routing
-
-Preferred setup: set product metadata on each Stripe Payment Link.
-
-- Toolkit Payment Link: `metadata[scbe_product]=toolkit`
-- Training Vault Payment Link: `metadata[scbe_product]=vault`
-- Behind-the-Scenes Writing Process Pack: `metadata[scbe_product]=making_of`
-
-Fallback setup for existing links: map Stripe Payment Link IDs in environment.
+## Environment
 
 ```text
-SCBE_PAYMENT_LINK_TOOLKIT=plink_...
-SCBE_PAYMENT_LINK_VAULT=plink_...
-SCBE_PAYMENT_LINK_MAKING_OF=plink_...
-```
+STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_DELIVERY_RESTRICTED_KEY=rk_live_...
 
-Do not route by price. Both current products are low-cost one-time offers and
-price-based routing can mis-deliver when products have the same price.
+STRIPE_TOOLKIT_PAYMENT_LINK_ID=plink_...
+STRIPE_VAULT_PAYMENT_LINK_ID=plink_...
+STRIPE_MAKING_OF_PAYMENT_LINK_ID=plink_...
 
-## Delivery links
-
-Set direct product download URLs in environment when the ZIPs are hosted.
-
-```text
-SCBE_TOOLKIT_DOWNLOAD_URL=https://...
-SCBE_VAULT_DOWNLOAD_URL=https://...
+SCBE_TOOLKIT_BLOB_URL=https://...
+SCBE_VAULT_BLOB_URL=https://...
 SCBE_MAKING_OF_BLOB_URL=https://...
+BLOB_READ_WRITE_TOKEN=vercel_blob_...
 ```
 
-If these are not set, the delivery email falls back to the latest GitHub release:
+Create the Stripe key as a restricted live key with read access to Checkout
+Sessions only. `STRIPE_SECRET_KEY` remains a compatibility fallback, but the
+restricted key is the intended production configuration.
+
+## Payment Link redirects
+
+After the verified endpoint is deployed, set each Payment Link's completion
+redirect to its product URL. Stripe replaces the literal session placeholder:
 
 ```text
-https://github.com/issdandavis/SCBE-AETHERMOORE/releases/latest
+https://scbe-agent-bridge-vercel.vercel.app/api/agent/download?product=toolkit&session_id={CHECKOUT_SESSION_ID}
+https://scbe-agent-bridge-vercel.vercel.app/api/agent/download?product=vault&session_id={CHECKOUT_SESSION_ID}
+https://scbe-agent-bridge-vercel.vercel.app/api/agent/download?product=making_of&session_id={CHECKOUT_SESSION_ID}
 ```
 
-`SCBE_TRAINING_VAULT_DOWNLOAD_URL` is also accepted as the clearer alias for
-the Training Vault buyer-only ZIP link. Keep `SCBE_VAULT_DOWNLOAD_URL` for
-backwards compatibility with the earlier billing patch.
+Do not change the live Payment Links before the new Vercel function and its
+restricted key are present. Doing so would send paid buyers to a closed door.
 
-The default package builder writes buyer ZIPs under `products/packaged/`, which
-is intentionally ignored by git. That lane is for staging paid packets, not for
-public GitHub Pages.
+## Buyer email
 
-## SMTP
+`.github/workflows/polly-product-delivery.yml` builds a recovery link from the
+Stripe session ID in the signed webhook payload. It does not email a shared
+delivery secret. The workflow also files a session-keyed operator issue so a
+retry does not create duplicate issue records.
 
-Buyer delivery email uses:
+## Deployment order
 
-```text
-SCBE_SMTP_HOST=smtp.porkbun.com
-SCBE_SMTP_PORT=587
-SCBE_SMTP_USER=ai@aethermoore.com
-SCBE_SMTP_PASS=...
-```
+1. Run the targeted tests below.
+2. Add the restricted Stripe key and private Blob variables to Vercel.
+3. Deploy the Vercel function.
+4. Verify one test-mode Checkout Session end to end.
+5. Update the three live Payment Link redirects with the session placeholder.
+6. Complete one low-cost live purchase and confirm the exact product downloads.
+7. Remove the legacy shared delivery token from Vercel and GitHub Actions.
 
-If SMTP is not configured, the webhook does not crash. It logs the delivery
-attempt and records the purchase as an audit trail item.
+Rollback is the reverse: restore the previous Payment Link redirects first,
+then roll back the function. Never remove the current delivery path before the
+redirects stop pointing at it.
 
-## Buyer email includes
-
-- product name
-- download URL
-- manual URL
-- expected ZIP filename
-- support URL
-
-## Smoke test
+## Tests
 
 ```powershell
-python -m pytest tests\api\test_stripe_billing_hardening.py tests\test_package_products.py -q
-python scripts\package_products.py --product all --output-dir artifacts\product_delivery_current_smoke
-python scripts\package_products.py --product making-of --output-dir artifacts\product_delivery_current_smoke
+npx vitest run tests/api/download_js.test.ts tests/api/stripe_webhook_js.test.ts
 ```
+
+The regression suite covers missing and forged sessions, unpaid sessions,
+wrong-product requests, unknown Payment Links, paid exact-product delivery,
+delayed-payment success, and delayed-payment failure.

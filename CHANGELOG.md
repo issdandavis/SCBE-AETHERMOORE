@@ -24,6 +24,10 @@
 
 ### Added
 
+- Documentation coverage: `docs/file-index/` gives a one-line explanation of every tracked
+  file, generated from the files themselves by `scripts/docs/build_file_index.py`
+  (`--check` reports staleness). Added a `README.md` to 54 top-level directories and 19
+  `src/` modules that had none, and a current-contents section to `docs/README.md`.
 - **Governed task-run contract** (`scbe-aethermoore/agentic`): canonical
   validation, deterministic SHA-256 sealing, Task Lab normalization, and
   fail-closed negative-example rules for asynchronous agent research output.
