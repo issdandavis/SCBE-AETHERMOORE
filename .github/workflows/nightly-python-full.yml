@@ -76,6 +76,13 @@ jobs:
           if-no-files-found: ignore
           retention-days: 30
 
+      - name: Classify the failure
+        if: failure()
+        run: |
+          if [ -f nightly-pytest.log ]; then
+            python scripts/ci/repair_plans.py nightly-pytest.log > fixer-plan.md || true
+          fi
+
       # A red X on a scheduled run is easy to miss — surface failures as a
       # labeled issue so they land in triage instead of rotting silently.
       - name: Reconcile failure issue
@@ -88,6 +95,9 @@ jobs:
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             const log = fs.existsSync('nightly-pytest.log')
               ? fs.readFileSync('nightly-pytest.log', 'utf8')
+              : '';
+            const plan = fs.existsSync('fixer-plan.md')
+              ? fs.readFileSync('fixer-plan.md', 'utf8').trim()
               : '';
             const findings = log
               .split(/\r?\n/)
@@ -103,6 +113,7 @@ jobs:
               ...(findings.length > 0
                 ? ['', '### Failure summary', '```text', ...findings, '```']
                 : ['', 'The run stopped before a pytest failure summary was produced.']),
+              ...(plan ? ['', plan] : []),
               '',
               'The complete log is attached to the workflow run as `nightly-pytest-log`.',
             ].join("\n");
