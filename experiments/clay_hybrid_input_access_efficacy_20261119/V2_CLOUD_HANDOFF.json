@@ -1,0 +1,83 @@
+{
+  "schema": "clay.hybrid-input-access-cloud-handoff.v1",
+  "status": "RUNNING_HEALTHY_TWO_ADVANCING_CHECKPOINTS",
+  "checked_at_utc": "2026-11-19T17:31:45.8893870Z",
+  "source": {
+    "branch": "experiment/clay-input-access-v1",
+    "packet_source_commit": "0222b431a5405bdadb1dbbb618aeb8389ad9265a",
+    "admission_receipt_commit": "8a66ea7eaa5f944c66653326977826e8d20744e3",
+    "sealed_packet_root": "C:/dev/_kaggle_stage/clay-hybrid-input-access-efficacy-20261119-v2-sealed-r3",
+    "independent_launch_gate_receipt": "C:/dev/_kaggle_review/hybrid-recovery-breaker-20261119T1703/LAUNCH_GATE_R3.json",
+    "independent_launch_gate_sha256": "152ec613c84a2a3bab485a34e390239c1741cd533759b0493d33e3c575f1ecc5"
+  },
+  "cloud_inputs": {
+    "packet_dataset": {
+      "ref": "issacizrealdavis/clay-hybrid-input-access-efficacy-input-20261119",
+      "roundtrip_files": 2,
+      "descriptor_sha256": "60cd8a8069f953614f8103b0b06137e0302c39a066a56912157347ca50cef711",
+      "archive_sha256": "ed5aa4c17e1e600571141983fb9b14efb1f2b0beafa7afa82ea25b84e24ae027",
+      "roundtrip": "PASS"
+    },
+    "recovery_dataset": {
+      "ref": "issacizrealdavis/clay-hybrid-input-access-recovery-20261119",
+      "roundtrip_files": 20,
+      "recovery_manifest_sha256": "0ddcc28db948d02bc7053610a6632c00d3dc5cd6d45e205b3bb8f63e5c0c261c",
+      "roundtrip": "PASS"
+    }
+  },
+  "kernel": {
+    "ref": "issacizrealdavis/clay-hybrid-input-access-efficacy-20261119",
+    "kernel_id": 146028176,
+    "version": 2,
+    "status": "RUNNING",
+    "is_private": true,
+    "internet": false,
+    "gpu": false,
+    "tpu": false,
+    "rendered_runner_sha256": "02860b156636aece52207aa4e500a3e5e17ea30c07e7512fc8729bf7812d4b59",
+    "cloud_code_normalized_sha256": "02860b156636aece52207aa4e500a3e5e17ea30c07e7512fc8729bf7812d4b59"
+  },
+  "recovery_boundary": {
+    "authenticated_completed_seed": 20261134,
+    "authenticated_completed_arms": [
+      "downstream_only",
+      "hybrid_input_access"
+    ],
+    "authenticated_step": 2000,
+    "cloud_reached_first_unfinished_work": {
+      "seed": 20261135,
+      "arm": "downstream_only"
+    },
+    "fresh_restart": false
+  },
+  "observed_checkpoints": [
+    {
+      "seed": 20261135,
+      "arm": "downstream_only",
+      "step": 250,
+      "generation": 0,
+      "sha256": "aae417437b4806701614181b788b3566bd48333ae664893214a1d2eeb91c6334",
+      "updated_at_utc": "2026-11-19T17:28:30.481587+00:00"
+    },
+    {
+      "seed": 20261135,
+      "arm": "downstream_only",
+      "step": 500,
+      "generation": 1,
+      "sha256": "644ac9cda797316d851433aed7acc42378d691be4d9021a76ae6ace004c92542",
+      "updated_at_utc": "2026-11-19T17:30:26.516335+00:00"
+    }
+  ],
+  "monitoring": {
+    "mode": "HEADLESS_KAGGLE_SESSION_PLUS_READ_ONLY_API_SSE",
+    "popup_processes": 0,
+    "next_status_command": "KaggleApi.kernels_status('issacizrealdavis/clay-hybrid-input-access-efficacy-20261119')",
+    "on_complete": "Download exact v2 output, preserve raw bytes, verify recovery and campaign manifests, replay all six arms and producer gates independently, and do not promote unless every preregistered gate passes.",
+    "on_failure": "Download and authenticate the newest recovery manifest; resume only through a newly pinned private packet after independent breaker approval. Never restart completed work or lower storage gates."
+  },
+  "claim_boundary": {
+    "metric_interpretation": "NONE_WHILE_RUNNING",
+    "promotion": "NOT_AUTHORIZED",
+    "weight_overwrite": "NONE"
+  }
+}
