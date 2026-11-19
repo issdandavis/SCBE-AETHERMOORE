@@ -1,0 +1,31 @@
+{
+  "claim_boundary": "Numerical fidelity only; this does not establish improved training efficacy.",
+  "classes": 257,
+  "examples": 4096,
+  "margin_range": [
+    0.0,
+    80.0
+  ],
+  "schema": "mainlane.stable-ce-fp32-vs-fp64-audit.v1",
+  "seed": 261031642,
+  "stable_log1p": {
+    "all_non_target_grad_max_abs_error": 8.772364348819117e-09,
+    "finite": true,
+    "loss_max_abs_error": 1.905334161556027e-07,
+    "loss_mean_abs_error": 2.3778488885537535e-09,
+    "target_grad_max_abs_error": 1.3879796356697227e-07,
+    "target_grad_mean_abs_error": 2.1939523622685648e-09,
+    "zero_loss_count": 0,
+    "zero_target_gradient_count": 0
+  },
+  "standard": {
+    "all_non_target_grad_max_abs_error": 1.2426261901399283e-08,
+    "finite": true,
+    "loss_max_abs_error": 6.151855929786279e-07,
+    "loss_mean_abs_error": 3.441374910521324e-08,
+    "target_grad_max_abs_error": 6.161006191884866e-07,
+    "target_grad_mean_abs_error": 3.130154372911432e-08,
+    "zero_loss_count": 3172,
+    "zero_target_gradient_count": 3172
+  }
+}

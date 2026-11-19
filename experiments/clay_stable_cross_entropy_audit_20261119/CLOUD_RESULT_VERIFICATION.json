@@ -1,0 +1,209 @@
+{
+  "arms": [
+    {
+      "accuracy": 0.214,
+      "checkpoint_steps": [
+        1750,
+        2000
+      ],
+      "counting_accuracy": 0.7037037037037037,
+      "final_loss": 0.7849979996681213,
+      "frozen_core_bit_identical": true,
+      "loss_mode": "standard",
+      "macro_f1": 0.19939021045190186,
+      "model_sha256": "210d00d6b6d3452ffb399d781fac249aa69239ccb3629b94065fe4fa6491dd65",
+      "parent_sha256": "e719ca2398f0a96e4c80d2119897ad36202fb34bd8fbe37190655d581411b910",
+      "seed": 20261134
+    },
+    {
+      "accuracy": 0.22,
+      "checkpoint_steps": [
+        1750,
+        2000
+      ],
+      "counting_accuracy": 0.37037037037037035,
+      "final_loss": 0.4004333019256592,
+      "frozen_core_bit_identical": true,
+      "loss_mode": "standard",
+      "macro_f1": 0.2191255159787721,
+      "model_sha256": "4dda9764d92e4fc98b500373314733db83612377077e30f3fc9d4535c5124924",
+      "parent_sha256": "bb4d912d413dd76174986a89b24f713268e90138808b69107aac01736c218438",
+      "seed": 20261135
+    },
+    {
+      "accuracy": 0.20466666666666666,
+      "checkpoint_steps": [
+        1750,
+        2000
+      ],
+      "counting_accuracy": 0.4074074074074074,
+      "final_loss": 0.5315747857093811,
+      "frozen_core_bit_identical": true,
+      "loss_mode": "standard",
+      "macro_f1": 0.19988428485920867,
+      "model_sha256": "84f42ec182fcf6e6a34c0c6ead0a391d81d6825fa3b217a00aea41c4f61b7da0",
+      "parent_sha256": "820f0ed122b27261eb91391d4b69efe987f2e8a8e5f79b27c9e2a7f431267929",
+      "seed": 20261136
+    },
+    {
+      "accuracy": 0.20933333333333334,
+      "checkpoint_steps": [
+        1750,
+        2000
+      ],
+      "counting_accuracy": 0.7037037037037037,
+      "final_loss": 0.7828361392021179,
+      "frozen_core_bit_identical": true,
+      "loss_mode": "stable_log1p",
+      "macro_f1": 0.20199064619525223,
+      "model_sha256": "c6aed6a451701e9e42791b0011598bcad0c2c7785f610b47af71818f347c3d07",
+      "parent_sha256": "e719ca2398f0a96e4c80d2119897ad36202fb34bd8fbe37190655d581411b910",
+      "seed": 20261134
+    },
+    {
+      "accuracy": 0.21533333333333332,
+      "checkpoint_steps": [
+        1750,
+        2000
+      ],
+      "counting_accuracy": 0.37037037037037035,
+      "final_loss": 0.4284436106681824,
+      "frozen_core_bit_identical": true,
+      "loss_mode": "stable_log1p",
+      "macro_f1": 0.21482878876173075,
+      "model_sha256": "4fe08fa7f2ba10496409d329019a46a34ef0a28062e633fae9b8ddfbf5625da2",
+      "parent_sha256": "bb4d912d413dd76174986a89b24f713268e90138808b69107aac01736c218438",
+      "seed": 20261135
+    },
+    {
+      "accuracy": 0.21,
+      "checkpoint_steps": [
+        1750,
+        2000
+      ],
+      "counting_accuracy": 0.4074074074074074,
+      "final_loss": 0.5197056531906128,
+      "frozen_core_bit_identical": true,
+      "loss_mode": "stable_log1p",
+      "macro_f1": 0.2072929909086152,
+      "model_sha256": "6a5471280d2adabddea1743cda145b2e07640935e817ff6d1642869fcb93ffb1",
+      "parent_sha256": "820f0ed122b27261eb91391d4b69efe987f2e8a8e5f79b27c9e2a7f431267929",
+      "seed": 20261136
+    }
+  ],
+  "campaign_result_sha256": "84f17c09c86b098203da01863350174586d2e29632a7bda190b30873c91e2da2",
+  "claim_boundary": "This receipt verifies the bounded training comparison only. Stable did not beat standard cross entropy by more than two pooled standard deviations on both primary metrics. Numerical-fidelity evidence is recorded separately.",
+  "comparisons": {
+    "stable_vs_no_intervention": {
+      "metrics": {
+        "accuracy": {
+          "clears_positive_gate": true,
+          "contender_mean": 0.21155555555555558,
+          "control_mean": 0.0,
+          "matched_seed_losses": 0,
+          "matched_seed_wins": 3,
+          "mean_delta": 0.21155555555555558,
+          "metric": "accuracy",
+          "pooled_sd": 0.002325383281828477,
+          "two_pooled_sd": 0.004650766563656954
+        },
+        "macro_f1": {
+          "clears_positive_gate": true,
+          "contender_mean": 0.2080374752885327,
+          "control_mean": 0.0,
+          "matched_seed_losses": 0,
+          "matched_seed_wins": 3,
+          "mean_delta": 0.2080374752885327,
+          "metric": "macro_f1",
+          "pooled_sd": 0.004561807146475115,
+          "two_pooled_sd": 0.00912361429295023
+        }
+      },
+      "paired": {
+        "clears_finite_uncertainty_gate": true,
+        "examples": 4500,
+        "losses": 0,
+        "ties": 3548,
+        "two_sided_exact_p": 5.253807105661922e-287,
+        "wins": 952
+      }
+    },
+    "stable_vs_standard": {
+      "metrics": {
+        "accuracy": {
+          "clears_positive_gate": false,
+          "contender_mean": 0.21155555555555558,
+          "control_mean": 0.2128888888888889,
+          "matched_seed_losses": 2,
+          "matched_seed_wins": 1,
+          "mean_delta": -0.0013333333333333253,
+          "metric": "accuracy",
+          "pooled_sd": 0.005937950762616616,
+          "two_pooled_sd": 0.011875901525233231
+        },
+        "macro_f1": {
+          "clears_positive_gate": false,
+          "contender_mean": 0.2080374752885327,
+          "control_mean": 0.20613333709662754,
+          "matched_seed_losses": 1,
+          "matched_seed_wins": 2,
+          "mean_delta": 0.001904138191905158,
+          "metric": "macro_f1",
+          "pooled_sd": 0.009172751232386174,
+          "two_pooled_sd": 0.01834550246477235
+        }
+      },
+      "paired": {
+        "clears_finite_uncertainty_gate": false,
+        "examples": 4500,
+        "losses": 310,
+        "ties": 3886,
+        "two_sided_exact_p": 0.8401065094137449,
+        "wins": 304
+      }
+    },
+    "standard_vs_no_intervention": {
+      "metrics": {
+        "accuracy": {
+          "clears_positive_gate": true,
+          "contender_mean": 0.2128888888888889,
+          "control_mean": 0.0,
+          "matched_seed_losses": 0,
+          "matched_seed_wins": 3,
+          "mean_delta": 0.2128888888888889,
+          "metric": "accuracy",
+          "pooled_sd": 0.005463684823619667,
+          "two_pooled_sd": 0.010927369647239334
+        },
+        "macro_f1": {
+          "clears_positive_gate": true,
+          "contender_mean": 0.20613333709662754,
+          "control_mean": 0.0,
+          "matched_seed_losses": 0,
+          "matched_seed_wins": 3,
+          "mean_delta": 0.20613333709662754,
+          "metric": "macro_f1",
+          "pooled_sd": 0.007957969636132739,
+          "two_pooled_sd": 0.015915939272265478
+        }
+      },
+      "paired": {
+        "clears_finite_uncertainty_gate": true,
+        "examples": 4500,
+        "losses": 0,
+        "ties": 3542,
+        "two_sided_exact_p": 8.209073602596753e-289,
+        "wins": 958
+      }
+    }
+  },
+  "kernel_status": "COMPLETE",
+  "packet_manifest_sha256": "9d2cd300d8508a888edf9f7b09171dd87829ece99768f79815a5f7cc9600e887",
+  "producer_gate": "NOT_MET",
+  "promotion": "NOT_AUTHORIZED",
+  "recovery_bytes": 68804044,
+  "recovery_file_count": 37,
+  "recovery_manifest_sha256": "e2e4053acaf337c097d38c3e1fa56ebe4582f101d4f4f70aa053c38d15e517a4",
+  "schema": "clay.stable-ce-efficacy.cloud-verification.v1",
+  "status": "VERIFIED_COMPLETE"
+}

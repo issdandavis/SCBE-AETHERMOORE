@@ -71,5 +71,56 @@ authenticated live-log stream:
 - `standard`, seed `20261134`, step 500, generation 1, checkpoint
   `5d9866130973cc2e64a59e553a25d89744d9c754cb9046ed208f14fd94fcc9fd`
 
-This proves that the controlled run is advancing. Three completed seeds and
-both controls are still required before any efficacy statement.
+This proved that the controlled run was advancing. The kernel subsequently
+completed all six trained arms and terminated with Kaggle status `COMPLETE`.
+
+## Independently verified result
+
+The downloaded output is preserved at
+`C:\dev\_kaggle_stage\clay-stable-ce-kernel-output-v2-verified`. Independent
+replay verified 37 recovery-listed files (68,804,044 bytes), all six model
+hashes, both retained checkpoint slots per arm, checkpoint loss-mode identity,
+all three pinned parent hashes, and bit-identical frozen cores.
+
+- Campaign result SHA-256:
+  `84f17c09c86b098203da01863350174586d2e29632a7bda190b30873c91e2da2`
+- Recovery manifest SHA-256:
+  `e2e4053acaf337c097d38c3e1fa56ebe4582f101d4f4f70aa053c38d15e517a4`
+- Independent verification receipt SHA-256:
+  `6e088608ba3af3840be8a5fa9ce7f32bdfb214ae46781d67989059be11cccf7d`
+
+| Loss | Seed | Accuracy | Macro F1 | Final loss | Model SHA-256 prefix |
+| --- | ---: | ---: | ---: | ---: | --- |
+| standard | 20261134 | 0.214000 | 0.199390 | 0.784998 | `210d00d6` |
+| standard | 20261135 | 0.220000 | 0.219126 | 0.400433 | `4dda9764` |
+| standard | 20261136 | 0.204667 | 0.199884 | 0.531575 | `84f42ec1` |
+| stable_log1p | 20261134 | 0.209333 | 0.201991 | 0.782836 | `c6aed6a4` |
+| stable_log1p | 20261135 | 0.215333 | 0.214829 | 0.428444 | `4fe08fa7` |
+| stable_log1p | 20261136 | 0.210000 | 0.207293 | 0.519706 | `6a547128` |
+
+Against unchanged standard cross entropy, `stable_log1p` had:
+
+- Accuracy mean 0.211556 versus 0.212889; delta -0.001333 versus a required
+  +0.011876 (two pooled SD). Gate: false.
+- Macro-F1 mean 0.208037 versus 0.206133; delta +0.001904 versus a required
+  +0.018346 (two pooled SD). Gate: false.
+- Paired held-out outcomes: 304 wins, 310 losses, 3,886 ties; exact two-sided
+  p = 0.840107. Finite-uncertainty gate: false.
+
+Both trained arms beat the immutable no-intervention parent, whose adapter
+accuracy and macro F1 were zero. That confirms learning occurred, but it does
+not distinguish the loss functions. The preregistered producer gate is
+`NOT_MET`; promotion remains `NOT_AUTHORIZED`.
+
+## Separate numerical-fidelity result
+
+The independent FP32-versus-FP64 audit used 4,096 examples, 257 classes, and
+margins from 0 through 80. Standard cross entropy rounded 3,172 losses and
+target gradients to zero; `stable_log1p` rounded none. Mean absolute target
+gradient error was `3.130154e-8` for standard and `2.193952e-9` for stable.
+This proves improved numerical fidelity only, not improved training efficacy.
+
+- Reproducer SHA-256:
+  `943f211b4d2a4f5047830511b22e763cd6a9c5d8ca6f3d14a372146bd85043c4`
+- Numerical receipt SHA-256:
+  `5edc10616cb38ac3c4f18c5ce273826559d6c70b68a21b78a2e9195ae906f87d`
