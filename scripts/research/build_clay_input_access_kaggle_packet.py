@@ -7,8 +7,12 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
 from typing import Any, Iterable
+
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from scripts.research.build_clay_stable_ce_kaggle_packet import (
     LOOM_FILES,

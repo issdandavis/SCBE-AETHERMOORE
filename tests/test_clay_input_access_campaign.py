@@ -1,11 +1,18 @@
 from __future__ import annotations
 
-import pytest
-import torch
 import json
 from pathlib import Path
 
-from python.scbe.clay_frozen_multiview_adapter import FrozenActionModel
+import pytest
+import torch
+
+from python.scbe.clay_frozen_multiview_adapter import (
+    FrozenActionModel,
+    RunConfig,
+    stable_hash,
+    train_steps,
+    vocab_of,
+)
 from python.scbe.clay_input_access_campaign import (
     DOWNSTREAM_ONLY,
     EXPECTED_SEEDS,
@@ -248,3 +255,91 @@ def test_producer_gate_requires_finite_uncertainty_for_both_metrics_and_controls
     assert producer_gate_met(comparisons, True) == (True, True, True)
     comparisons[names[0]]["finite_evaluation"]["macro_f1"]["clears_finite_uncertainty_gate"] = False
     assert producer_gate_met(comparisons, True) == (True, False, False)
+
+
+def test_input_access_checkpoint_advances_and_resume_is_identity_gated(tmp_path: Path) -> None:
+    parent = _parent()
+    rows = (("a", "0"), ("b", "1"), ("ab", "2"), ("ba", "3"))
+    _, stoi = vocab_of(rows)
+    config = RunConfig(
+        seeds=EXPECTED_SEEDS,
+        data_seed=1,
+        rows_per_view=1,
+        holdout_rows=1,
+        count_steps=1,
+        grow_steps=2,
+        checkpoint_every=1,
+        batch_size=2,
+        learning_rate=0.002,
+        threads=1,
+        device="cpu",
+        source_dir="source",
+        source_hashes={},
+        dataset_manifest_sha256="dataset",
+        authority="test-only",
+        arms=(INPUT_ACCESS,),
+    )
+    config_hash = stable_hash({"test": "input-access-resume"})
+    checkpoint_dir = tmp_path / "checkpoints"
+    first = construct_arm_model(
+        arm=INPUT_ACCESS,
+        parent=parent,
+        seed=EXPECTED_SEEDS[0],
+        device="cpu",
+    )
+    step, _, _ = train_steps(
+        model=first,
+        stage=TRAIN_STAGE,
+        seed=EXPECTED_SEEDS[0],
+        rows=rows,
+        samples=None,
+        ledger=None,
+        stoi=stoi,
+        config=config,
+        total_steps=1,
+        checkpoint_dir=checkpoint_dir,
+        config_hash=config_hash,
+    )
+    assert step == 1
+    second = construct_arm_model(
+        arm=INPUT_ACCESS,
+        parent=parent,
+        seed=EXPECTED_SEEDS[0],
+        device="cpu",
+    )
+    step, _, _ = train_steps(
+        model=second,
+        stage=TRAIN_STAGE,
+        seed=EXPECTED_SEEDS[0],
+        rows=rows,
+        samples=None,
+        ledger=None,
+        stoi=stoi,
+        config=config,
+        total_steps=2,
+        checkpoint_dir=checkpoint_dir,
+        config_hash=config_hash,
+    )
+    assert step == 2
+    pointer = json.loads((checkpoint_dir / "latest.json").read_text(encoding="utf-8"))
+    assert pointer["step"] == 2
+    foreign = construct_arm_model(
+        arm=INPUT_ACCESS,
+        parent=parent,
+        seed=EXPECTED_SEEDS[0],
+        device="cpu",
+    )
+    with pytest.raises(RuntimeError, match="checkpoint identity differs"):
+        train_steps(
+            model=foreign,
+            stage=TRAIN_STAGE,
+            seed=EXPECTED_SEEDS[0],
+            rows=rows,
+            samples=None,
+            ledger=None,
+            stoi=stoi,
+            config=config,
+            total_steps=2,
+            checkpoint_dir=checkpoint_dir,
+            config_hash="foreign-config",
+        )

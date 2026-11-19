@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 
@@ -54,3 +56,16 @@ def test_safe_archive_members_rejects_traversal(tmp_path: Path) -> None:
     with zipfile.ZipFile(archive, "r") as handle:
         with pytest.raises(ValueError, match="unsafe archive member"):
             runner.safe_archive_members(handle)
+
+
+def test_packet_builder_supports_direct_cli_help() -> None:
+    script = Path(__file__).parents[1] / "scripts" / "research" / "build_clay_input_access_kaggle_packet.py"
+    completed = subprocess.run(
+        [sys.executable, str(script), "--help"],
+        cwd=Path(__file__).parents[1],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert "--preregistration" in completed.stdout
