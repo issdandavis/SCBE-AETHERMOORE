@@ -169,7 +169,8 @@ def run_private_segment(args: argparse.Namespace) -> dict[str, Any]:
     write_json(output_root / "CLOUD_ENVIRONMENT.json", environment)
     command = [
         sys.executable,
-        str(campaign),
+        "-m",
+        "python.scbe.clay_stable_ce_efficacy_campaign",
         "--baseline-run",
         str(baseline_run),
         "--output-dir",

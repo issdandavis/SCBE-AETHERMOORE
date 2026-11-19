@@ -49,3 +49,8 @@ def test_discover_packet_requires_exact_private_dataset(tmp_path: Path) -> None:
     found_path, found = discover_packet(tmp_path)
     assert found_path == path
     assert found["dataset_id"] == EXPECTED_DATASET_ID
+
+
+def test_kernel_invokes_campaign_as_module() -> None:
+    source = Path("scripts/research/run_clay_stable_ce_kaggle.py").read_text(encoding="utf-8")
+    assert '"-m",\n        "python.scbe.clay_stable_ce_efficacy_campaign"' in source
