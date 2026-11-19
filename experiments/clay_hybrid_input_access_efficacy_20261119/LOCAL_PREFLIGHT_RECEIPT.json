@@ -1,0 +1,68 @@
+{
+  "schema": "clay.hybrid-input-access-local-preflight.v1",
+  "status": "READY_FOR_INDEPENDENT_BREAKER_NOT_UPLOADED_NOT_RUN",
+  "checked_at_utc": "2026-11-19T16:02:00Z",
+  "source_commit": "20e9d8f498c468f327ff38050e13094be674d973",
+  "preregistration_sha256": "b5de5a9cb4c75585e616ae483f10e6495514eeb17516e659d4901993607c656b",
+  "campaign_sha256": "ed0d1f2921ae1647920014ad87bd4823f07ff3b34eafa9822c90b9710b014e4c",
+  "packet": {
+    "root": "C:/dev/_kaggle_stage/clay-hybrid-input-access-efficacy-20261119-v1",
+    "build_receipt": "C:/dev/_kaggle_stage/clay-hybrid-input-access-efficacy-20261119-v1/BUILD_RECEIPT.json",
+    "archive_bytes": 8717346,
+    "archive_sha256": "69c0da6049c5e79743ffa78a80ed30f913727af748e46b05adee399befd09fc8",
+    "descriptor_sha256": "ed344dfece46d8d873fc69ea29299feb25aa6819b8f1d6a80c2a0a2c56108218",
+    "packet_manifest_sha256": "6c612a403786115fdba197956bf006bdf2b69c1d9e0ffa90a91cf30e64444b32",
+    "rendered_runner_sha256": "26133f4643a44cf0543c5efa4cc1207be399425b1284bde4b9cd9ebd7733838e",
+    "files": 327,
+    "neutral_suffix_extraction_passes": 2
+  },
+  "architecture": {
+    "candidate": {
+      "downstream_adapter_parameters": 49379,
+      "compact_input_parameters": 38173,
+      "action_head_parameters": 53268,
+      "selected_parameters": 140820,
+      "gradient_reachable_parameters": 140820,
+      "deterministically_changeable_parameters": 140820
+    },
+    "control": {
+      "selected_parameters": 140820,
+      "gradient_reachable_parameters": 140820,
+      "deterministically_changeable_parameters": 140820
+    },
+    "initial_logits": "BIT_IDENTICAL_ALL_THREE_SEEDS",
+    "compact_rows": 269,
+    "absent_full_vocabulary_ids": [3, 10, 11, 12, 13, 14, 18]
+  },
+  "extracted_packet_smoke": {
+    "dataset_manifest_sha256": "7460665cbb718097438227c452f1915e88bdc5a10ac643122b17908b505d0041",
+    "vocab_size": 276,
+    "parent_lineages_verified": 3,
+    "seeds": [20261134, 20261135, 20261136]
+  },
+  "storage_contract": {
+    "scratch_launch_bytes": 27917287424,
+    "runtime_floor_bytes": 26843545600,
+    "durable_copy_minimum_bytes": 1073741824,
+    "scratch_and_durable_measured_separately": true,
+    "checkpoint_slots_copied_before_latest_pointer": true,
+    "hash_inventory_restore": true
+  },
+  "tests": {
+    "focused_pytest": "26 passed",
+    "ruff": "PASS",
+    "checkpoint_resume": "PASS_FOREIGN_IDENTITY_REJECTED",
+    "packet_extract_reverify": "PASS_TWICE",
+    "effective_capacity_actual_rows": "PASS_ALL_THREE_SEEDS"
+  },
+  "cloud_contract": {
+    "visibility": "PRIVATE",
+    "internet": "DISABLED",
+    "gpu": false,
+    "headless": true,
+    "upload": "CLOSED_UNTIL_INDEPENDENT_BREAKER_PASS",
+    "run": "CLOSED_UNTIL_INDEPENDENT_BREAKER_PASS",
+    "publication": "NONE",
+    "promotion": "NONE"
+  }
+}
