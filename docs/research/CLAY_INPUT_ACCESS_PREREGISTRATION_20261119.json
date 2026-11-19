@@ -1,0 +1,67 @@
+{
+  "schema": "clay.input-access-efficacy-preregistration.v1",
+  "status": "PREREGISTERED_BEFORE_RESULTS",
+  "registered_at_utc": "2026-11-19T13:05:00Z",
+  "objective": "Test whether a trainable skill that reads raw recurrence inputs before the frozen-core bottleneck improves held-out action classification relative to an exactly parameter-matched downstream-only adapter.",
+  "authority": "MEASUREMENT_ONLY_NO_EXECUTION_NO_PROMOTION_NO_WEIGHT_OVERWRITE",
+  "lineage": {
+    "baseline_manifest_sha256": "7f2516af8ae5a122f357565afad60ab412fdf54e76a3018cd8f1ddbfdb702a97",
+    "baseline_result_sha256": "c5261ada862a2851db0b1dd7e53835b5ddef22299660921527a249a866361482",
+    "dataset_manifest_sha256": "7460665cbb718097438227c452f1915e88bdc5a10ac643122b17908b505d0041",
+    "seeds": [20261134, 20261135, 20261136]
+  },
+  "intervention": {
+    "candidate": "input_access",
+    "candidate_path": "sidecar-only token-0 start anchor plus raw token IDs -> trainable 271-wide embedding with no padding-suppressed row -> trainable 12-wide causal GRU -> discard anchor output -> trainable 12-to-192 projection -> residual add to frozen 192-wide recurrence output -> trainable output head",
+    "matched_control": "downstream_only",
+    "matched_control_path": "frozen 192-wide recurrence output -> trainable 192-160-160-192 residual MLP -> trainable output head",
+    "no_intervention_control": "immutable no_intervention_adapter rows from the pinned baseline result",
+    "trainable_parameters_per_trained_arm": 140820,
+    "parameter_formula_candidate": "276*271 + GRU(271,12)=10260 + Linear(12,192)=2496 + Linear(192,276)=53268 = 140820",
+    "parameter_formula_control": "Adapter(192,160)=87552 + Linear(192,276)=53268 = 140820",
+    "initial_function_contract": "The candidate projection and downstream adapter up-projection are zero initialized; both arms reuse the exact parent output-head tensors and must produce bit-identical initial probe logits.",
+    "causality_contract": "The candidate GRU is left-to-right. A token-0 anchor is prepended only when the sidecar recurrent state is empty, so embedding row 0 participates in every sequence without inserting anchors between incremental decoding chunks. Changing a future token must not change earlier logits. The downstream-only control receives no raw-token tensor outside the frozen recurrence."
+  },
+  "training": {
+    "loss": "standard_pytorch_cross_entropy",
+    "steps": 2000,
+    "checkpoint_every": 250,
+    "batch_size": 128,
+    "learning_rate": 0.002,
+    "threads": 2,
+    "device": "private_offline_kaggle_cpu",
+    "minimum_free_gib": 25.0,
+    "sampler": "identical deterministic per-seed batch order in both trained arms"
+  },
+  "evaluation": {
+    "heldout_rows": 1500,
+    "primary_metrics": ["accuracy", "macro_f1"],
+    "required_comparisons": ["input_access_vs_downstream_only", "input_access_vs_no_intervention"],
+    "positive_gate": "Candidate mean improvement must be positive and exceed two pooled across-seed standard deviations for both primary metrics against both controls. Finite-evaluation uncertainty is a four-test family: accuracy uses a two-sided exact paired McNemar test; macro-F1 uses a deterministic seed-and-target-stratified paired bootstrap with 10000 replicates and the same mean-of-three-seed macro-F1 estimand as the producer metric. Bonferroni alpha is 0.05/4=0.0125. Accuracy requires wins > losses and p <= 0.0125; macro-F1 requires a positive observed delta and a strictly positive 1.25% lower order-statistic bound. Both finite tests must pass against both controls, in addition to every across-seed gate.",
+    "finite_evaluation_protocol": {
+      "family_alpha": 0.05,
+      "tests": 4,
+      "per_test_alpha": 0.0125,
+      "accuracy": "two_sided_exact_paired_mcnemar",
+      "macro_f1": "seed_and_target_stratified_paired_bootstrap_10000_replicates_mean_of_seed_macro_f1",
+      "bootstrap_seeds": {
+        "input_access_vs_downstream_only": 20261119,
+        "input_access_vs_no_intervention": 20261120
+      },
+      "bootstrap_lower_bound": "sorted bootstrap delta at zero-based index ceil(0.0125*10000)-1=124; must be strictly greater than zero"
+    },
+    "retention": "Frozen parent tensors and counting accuracy must remain bit-identical/equal to the parent for every arm and seed.",
+    "independent_replay": "Required before any promotion decision; producer metrics alone are insufficient."
+  },
+  "stop_conditions": [
+    "Any pinned lineage, data, or seed hash differs.",
+    "The trained arms do not each expose exactly 140820 trainable parameters.",
+    "Initial probe logits differ between trained arms.",
+    "A checkpoint arm/config identity differs.",
+    "A completed arm result or model payload fails exact metadata, hash, frozen/nonselected-state, prediction, metric, counting, or weight-effect replay.",
+    "A frozen parent tensor changes.",
+    "Loss becomes non-finite.",
+    "The 25 GiB storage admission gate is not met on the execution target."
+  ],
+  "promotion": "NONE_FROM_THIS_DISCOVERY_SEGMENT; even a producer gate pass requires independent replay and a separately authorized full-budget replication."
+}
