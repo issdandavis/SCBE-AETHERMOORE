@@ -1,0 +1,93 @@
+{
+  "schema": "clay.hybrid-input-access-recovery-admission.v1",
+  "status": "INDEPENDENT_LAUNCH_GATE_PASS_EXACT_SEALED_R3_ONLY",
+  "created_at_utc": "2026-11-19T17:20:42.0545098Z",
+  "source_commit": "0222b431a5405bdadb1dbbb618aeb8389ad9265a",
+  "sealed_packet_root": "C:/dev/_kaggle_stage/clay-hybrid-input-access-efficacy-20261119-v2-sealed-r3",
+  "build_receipt_sha256": "a832bfc62467ce97bcb273b17a441bf61e63c6ec1183748b1f2ad3fc5a13a047",
+  "trust_anchors": {
+    "archive_sha256": "ed5aa4c17e1e600571141983fb9b14efb1f2b0beafa7afa82ea25b84e24ae027",
+    "descriptor_sha256": "60cd8a8069f953614f8103b0b06137e0302c39a066a56912157347ca50cef711",
+    "packet_manifest_sha256": "55eaa4afa116d49d5ab7d23cfb3b87efe2b44ae40db46307769628e034d8cfc6",
+    "rendered_runner_sha256": "02860b156636aece52207aa4e500a3e5e17ea30c07e7512fc8729bf7812d4b59",
+    "campaign_sha256": "2f8c833d5dd63c8de78cdf760a501e931ccb1906402f1aeaaf8657a0a09b270d",
+    "preregistration_sha256": "b5de5a9cb4c75585e616ae483f10e6495514eeb17516e659d4901993607c656b",
+    "prior_recovery_sha256": "0ddcc28db948d02bc7053610a6632c00d3dc5cd6d45e205b3bb8f63e5c0c261c"
+  },
+  "recovery": {
+    "source_file_count": 19,
+    "source_total_bytes": 20818227,
+    "resealed_campaign_file_count": 14,
+    "resealed_campaign_total_bytes": 20806631,
+    "last_safe_seed": 20261134,
+    "completed_arms": [
+      {
+        "arm": "downstream_only",
+        "step": 2000,
+        "model_sha256": "e86057a91e5987aa409286fff514b04d45982dbcfa7bfe7ac0a3b738560640c5",
+        "checkpoint_sha256": "883363f50abf09949c6bc4096c4a091da311677d729af644997c4f90abc5c61b",
+        "linux_initial_trainable_sha256": "0181d049ca081fc7200de0d1449464299e52919fad651ffa15bd1d639da260f7",
+        "final_trainable_sha256": "3dae35f802ecc9821cef73c5f5e611026b4e34047e101628f5252c6106264c6e"
+      },
+      {
+        "arm": "hybrid_input_access",
+        "step": 2000,
+        "model_sha256": "4c8a6a2946ee50663d8c2a04187534900d5bf94ea602227b337980bbf2dba34f",
+        "checkpoint_sha256": "2b2c0a045c2f3afa6ec3d1d1dcca7df0fc4291ded726314a563d1658b4a9f55d",
+        "linux_initial_trainable_sha256": "ba6fa954545feb508c5ca445e16552e06702a2b6fa1ae47f1a43566308cf5a4b",
+        "final_trainable_sha256": "3f19ac90b79454410a19dd637c938baf1505dc19c0c2c56fa5e9ab27f8ef0a43"
+      }
+    ],
+    "next_work": "seed 20261135 downstream_only; no seed-20261135 checkpoint was present"
+  },
+  "local_verification": {
+    "local_tests": "73 passed",
+    "independent_tests": "85 passed",
+    "ruff": "PASS",
+    "neutral_packet_extractions": 2,
+    "flat_recovery_import": "PASS",
+    "recovery_restore": "PASS",
+    "stage_file_count": 27,
+    "stage_unreceipted_cache_files": 0,
+    "windows_resume_replay": "ENVIRONMENT_BOUND_MISMATCH_EXPECTED",
+    "windows_resume_note": "Recovered final tensors, deltas, predictions, metrics, parent hashes, model hashes, checkpoint hashes, and frozen-state gates match. A freshly regenerated Windows Torch initial hybrid tensor hash is not treated as a cross-platform invariant."
+  },
+  "mandatory_linux_runtime_gate": {
+    "status": "INDEPENDENT_PREFLIGHT_PASS_AND_REQUIRED_AGAIN_IN_CLOUD",
+    "rule": "Before accepting either recovered arm or starting seed 20261135, the private offline Linux kernel must regenerate each seed-20261134 initial trainable tensor and match the authenticated Linux hashes in the recovered RESULT chain. Any mismatch aborts before new training.",
+    "enforcement": "python.scbe.clay_hybrid_input_access_campaign.validate_completed_arm_result",
+    "must_not_be_relaxed": true
+  },
+  "independent_breaker": {
+    "status": "LAUNCH_GATE_PASS",
+    "receipt": "C:/dev/_kaggle_review/hybrid-recovery-breaker-20261119T1703/LAUNCH_GATE_R3.json",
+    "receipt_sha256": "152ec613c84a2a3bab485a34e390239c1741cd533759b0493d33e3c575f1ecc5",
+    "linux_runtime": "Python 3.13.14; Torch 2.11.0+cpu",
+    "dispatch_proof": "Both recovered seed-20261134 arms validated and skipped at step 2000 with zero train_steps; first unfinished dispatch was downstream_only seed 20261135."
+  },
+  "snapshot_sync": {
+    "stable_source_rule": "before inventory == copied inventory == after inventory",
+    "bounded_attempts": 3,
+    "live_instability_retries": [
+      "source replaced between copy2 and source rehash",
+      "ephemeral source disappearance",
+      "before/after inventory change"
+    ],
+    "fatal_failures": [
+      "durable commit hash mismatch",
+      "slot/pointer ordering violation",
+      "durable inventory mismatch"
+    ]
+  },
+  "authority": {
+    "upload": "OPEN_EXACT_SEALED_R3_ONLY",
+    "run": "OPEN_EXACT_SEALED_R3_ONLY_PRIVATE_OFFLINE_CPU",
+    "promotion": "NONE",
+    "metric_interpretation": "NONE"
+  },
+  "excluded_packet_roots": [
+    "C:/dev/_kaggle_stage/clay-hybrid-input-access-efficacy-20261119-v2",
+    "C:/dev/_kaggle_stage/clay-hybrid-input-access-efficacy-20261119-v2-sealed",
+    "C:/dev/_kaggle_stage/clay-hybrid-input-access-efficacy-20261119-v2-sealed-r2"
+  ]
+}
