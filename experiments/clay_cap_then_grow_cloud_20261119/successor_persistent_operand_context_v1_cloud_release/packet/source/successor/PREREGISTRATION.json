@@ -1,0 +1,168 @@
+{
+  "schema": "clay.persistent-operand-context-preregistration.v1",
+  "created_at_utc": "2026-11-19T22:09:01.7227167Z",
+  "authority": "PREREGISTRATION_ONLY_NO_EXECUTION_NO_PROMOTION",
+  "status": "SEALED_NOT_LAUNCHED",
+  "source_diagnosis": {
+    "path": "DIAGNOSIS.json",
+    "source_result_sha256": "b48bb48859bcd7ac9cfc1f717f3f121ea18427bb5c4f1a048b504c24da2b1b79",
+    "source_replay_sha256": "4383564d7e4bad74bbeb03d285995db0c9d1d9c70f36b7ba2aa66fa096d7398b"
+  },
+  "hypothesis": "Giving the action head the exact five-byte arithmetic record at every decode step will enable range-disjoint arithmetic extrapolation that a downstream adapter behind the frozen recurrence could not learn.",
+  "mechanism_change": {
+    "name": "persistent exact operand-context bypass",
+    "frozen_modules": [
+      "e",
+      "g",
+      "count_head"
+    ],
+    "context_features": [
+      "opcode / 2",
+      "x_hi / 255",
+      "x_lo / 255",
+      "y_hi / 255",
+      "y_lo / 255",
+      "decode_position / 7"
+    ],
+    "feature_count": 6,
+    "decode_positions": "0 through 7; the same decoded record is retained and supplied at every autoregressive output step",
+    "context_module": "Linear(6, 192) followed by GELU",
+    "carrier_equation": "carrier_t = frozen_hidden_t + GELU(context_projection(context_record, t))",
+    "trainable_modules": [
+      "context_projection",
+      "adapter",
+      "adapter_head"
+    ],
+    "existing_adapter_and_head_parameters": 140820,
+    "context_projection_parameters": 1344,
+    "exact_trainable_parameters_per_trained_arm": 142164
+  },
+  "data_contract": {
+    "prompt": "K :<five exact byte tokens> =>",
+    "record_layout": "opcode:u8 || x:u16be || y:u16be",
+    "target": "space followed by reversed decimal result",
+    "train": {
+      "add": "0 <= x,y <= 29; result support 0 through 58",
+      "subtract": "0 <= y <= x <= 29; result support 0 through 29",
+      "multiply": "0 <= x,y <= 12; result support 0 through 144"
+    },
+    "held_out": {
+      "add": "30 <= x,y <= 59; result support 60 through 118, fully disjoint from training result support",
+      "subtract": "30 <= y <= x <= 59; result support 0 through 29, operand-disjoint but intentionally result-support-overlapping",
+      "multiply": "13 <= x,y <= 24; result support 169 through 576, fully disjoint from training result support"
+    },
+    "split_invariants": [
+      "held-out operand tuples are disjoint from training for every operation",
+      "held-out rows are excluded from training, checkpoint selection, and tuning",
+      "add and multiply are the primary out-of-result-support extrapolation probes",
+      "subtract is the prespecified operand-generalization/output-support-overlap diagnostic"
+    ],
+    "expected_identity_sha256": "c9945f6b8037557e72e167117a58adb2b4bb51bfdcb63da50e56150f49495ad0",
+    "train_rows": 1534,
+    "held_out_rows": 1509
+  },
+  "arms": {
+    "candidate": {
+      "context": "correct five-byte record and correct decode position",
+      "targets": "correct",
+      "updates": 18000,
+      "trainable_parameters": 142164
+    },
+    "context_permuted_control": {
+      "context": "deterministic derangement of five-byte contexts within operation, target-decimal-length, and split strata; a separate held-out derangement is sealed before training",
+      "prompt_and_targets": "unchanged and correct",
+      "purpose": "isolates the causal value of the new bypass while preserving context marginals",
+      "updates": 18000,
+      "trainable_parameters": 142164
+    },
+    "target_shuffle_control": {
+      "context": "correct five-byte record and correct decode position",
+      "targets": "deterministically shuffled within operation and target-decimal-length strata using the unchanged original campaign control",
+      "purpose": "retains the original semantic-pairing control",
+      "updates": 18000,
+      "trainable_parameters": 142164
+    },
+    "zero_update_control": {
+      "context": "correct five-byte record and correct decode position",
+      "targets": "correct",
+      "updates": 0,
+      "initialized_parameters": 142164
+    }
+  },
+  "parameter_match_contract": {
+    "required_equal_arms": [
+      "candidate",
+      "context_permuted_control",
+      "target_shuffle_control"
+    ],
+    "required_equalities": [
+      "identical parameter names, tensor shapes, and scalar count",
+      "bit-identical initialization per matched seed",
+      "identical optimizer, learning rate, batch size, update count, sampler order, and checkpoint schedule",
+      "identical training row identities before the single prespecified context or target derangement",
+      "identical evaluation rows and exact-output evaluator"
+    ],
+    "initial_state_receipt": "SHA-256 over every trainable tensor before the first update must match across all three trained arms per seed",
+    "derangement_receipt": "SHA-256 over source-row to control-row assignments must be written before the first update"
+  },
+  "training_contract": {
+    "seeds": [
+      20261134,
+      20261135,
+      20261136
+    ],
+    "updates_per_trained_arm": 18000,
+    "checkpoint_every": 500,
+    "batch_size": 128,
+    "learning_rate": 0.002,
+    "optimizer": "Adam",
+    "loss": "ordinary torch cross entropy",
+    "early_stopping": false,
+    "promotion": "NONE"
+  },
+  "gates": {
+    "primary_metric": "held-out exact numeric output accuracy",
+    "secondary_metric": "macro mean of per-operation exact accuracy",
+    "required_controls": [
+      "context_permuted_control",
+      "target_shuffle_control",
+      "zero_update_control"
+    ],
+    "uncertainty": "candidate mean delta must exceed two times pooled sample standard deviation against every required control on both metrics, and the deterministic paired held-out bootstrap must have a strictly positive one-sided 95% lower bound for exact accuracy and the operation-stratified macro accuracy",
+    "finite_evaluation": "rebuild the per-example correctness ledgers independently; use at least 4096 paired bootstrap draws with a sealed seed, sampling held-out rows for exact accuracy and sampling within operation strata for the equal-weight macro metric",
+    "matched_seed_wins": "3 of 3 against every required control",
+    "zero_check": "every candidate seed must have nonzero exact accuracy for add, subtract, and multiply",
+    "out_of_support_check": "every candidate seed must have nonzero add and multiply exact accuracy and must beat both trained controls for each operation",
+    "retention": "counting accuracy must equal the sealed parent per seed and every e., g., and count_head. tensor must remain bit-identical",
+    "independent_replay": "regenerate all rows and control assignments, verify all model and lineage hashes, and replay every candidate/control/zero held-out prediction",
+    "falsification": "reject the bypass hypothesis if any required gate fails",
+    "promotion": "NONE"
+  },
+  "launch_gate": {
+    "authorized": false,
+    "requirements_before_any_launch": [
+      "implement and hash the context module, sealed control assignments, runner, and independent verifier",
+      "prove exact 142164-parameter parity and bit-identical initialization across trained arms",
+      "pass focused unit tests for record decoding, persistent context across all decode steps, split invariants, and frozen tensor identity",
+      "satisfy the unchanged storage, RAM, commit, and cloud-access gates",
+      "obtain explicit execution authorization"
+    ]
+  },
+  "prototype_bindings": {
+    "status": "IMPLEMENTED_AND_BOUNDED_SMOKE_PASS_NO_PARENT_LOAD",
+    "runner": {
+      "path": "run_persistent_operand_context.py",
+      "sha256": "6693166b30d09ea8f14aa511c2a0e50f19d35aa7e5d08f03731c0960362ba2d4"
+    },
+    "tests": {
+      "path": "test_successor.py",
+      "sha256": "1dd06ececb5d38d45d39686970b4f67629173d9ef2e79087c3419ee7c28de7fe",
+      "result": "6 passed"
+    },
+    "smoke_receipt": {
+      "path": "SMOKE_RECEIPT.json",
+      "sha256": "742493e34af62a73727f2d1104df17725da4a341e5beb0fe3463fc091bfc90ee"
+    },
+    "scope": "Synthetic mechanism and control validation only; no sealed parent checkpoint was loaded and no cloud campaign was launched."
+  }
+}

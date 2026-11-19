@@ -1,0 +1,59 @@
+{
+  "schema": "clay.persistent-operand-context.release-receipt.v1",
+  "created_at_utc": "2026-11-19T22:58:00Z",
+  "status": "BUILT_VERIFIED_PRIVATE_OFFLINE_CPU_NOT_UPLOADED_NOT_RUN",
+  "packet_path": "packet",
+  "packet": {
+    "files_including_manifest": 9,
+    "content_files": 8,
+    "content_set_sha256": "80b3777457cf0734b09db99469fcda5f6dacdfbc0b9bb0a9e09cbddf1b4271a4",
+    "release_manifest_sha256": "79f38d1a5ceb1dcce63361eddb1167777858fa6a331e1088066d975afd348904",
+    "runner_sha256": "1502388907fffa5be9e14ce5ab42d53b8939fb976f570d4a87d1ee4bd5e7151e",
+    "independent_replay_sha256": "02e3edee3851303fa7fcdb022b34738af11557c91fc03acca3a0cee7ad40f07c",
+    "kernel_metadata_sha256": "30d44402a7e0286caeb40542d5c95b12e655500a520eb5cb747003bc95ec1b56",
+    "execution_admission_sha256": "c95b4cd6d3747bc5c1cd95bd7e78ffaf291c3b2aad5864d567ab3dc2ff5a5d7b"
+  },
+  "reviewed_sources": {
+    "prototype_commit": "d864f35d085a148a8e6f3171fd1ad9f0888b6bf4",
+    "review_repair_commit": "57519aa385b22330d249da724b52b265216c96e9",
+    "base_runner_sha256": "e1e8b916fe21da734c327c1d85db9dbf7b8de333cb4a57eace5f3640e3d5f63f",
+    "successor_runner_sha256": "13b3784d4c1de6cf57f6d9dc6046a5c04849a50a9aab5ab99445fd52b0bb6d09",
+    "preregistration_sha256": "b9e3283f1881b0846a5a5f35f93d0245067ac269b683fcf2c85a824737581ce6",
+    "review_receipt_sha256": "a7624b1e9f03ef4f68689c15a399d0f66010bae2026741043a1c4a7eb5b57df5"
+  },
+  "evidence": {
+    "packet_smoke_sha256": "26e714aa41d2f18dbd7fee45b69b0e266e4c557e3c9ac4706b1f2e6b01454457",
+    "test_receipt_sha256": "1c0ad76dd529c08c207efba1ac79a2a0f7828987597a9591e050f4bfc1d6168b",
+    "preflight_sha256": "00900f8c9d23fd1ce0134a689cd8e75d1ddfc5ff47563e03c2972688f7ec41ee",
+    "source_license_data_review_sha256": "030992ee5c94db6a4517a1125c23e783be7a4e70333d1ad59e279a4423e9bcd9",
+    "manifest_verifier": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "execution_admission": {
+    "state": "NOT_CONSUMED",
+    "execution_authorized": false,
+    "provider_version": null,
+    "provider_job_id": null,
+    "consumed_at_utc": null
+  },
+  "actions": {
+    "kaggle_save": false,
+    "kaggle_upload": false,
+    "kaggle_run": false,
+    "quota_spent": false,
+    "model_download": false,
+    "model_load": false,
+    "promotion": "NONE"
+  },
+  "local_constraints": {
+    "disk_pressure": "EMERGENCY",
+    "model_recovery": "BLOCKED_BY_DISK_AND_UNCHANGED_3_GIB_RAM_GATE",
+    "packet_scope": "CODE_ONLY"
+  },
+  "generated_cache_cleanup": {
+    "mode": "REVERSIBLE_STAGED_DELETION",
+    "batch_id": "20261119T225747716Z-d29b42be",
+    "receipt_sha256": "2cbbaa9bd364d2c1f0bd205b8170b0b019756088aa93d1e7c7f013ae025c8c14",
+    "packet_source_absent": true
+  }
+}

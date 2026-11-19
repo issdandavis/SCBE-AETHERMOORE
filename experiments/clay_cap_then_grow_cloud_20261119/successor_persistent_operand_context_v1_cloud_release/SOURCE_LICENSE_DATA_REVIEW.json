@@ -1,0 +1,86 @@
+{
+  "schema": "clay.persistent-operand-context.source-license-data-review.v1",
+  "status": "PASS_PRIVATE_INTERNAL_EXECUTION_ONLY",
+  "reviewed_at_utc": "2026-11-19T22:50:00Z",
+  "publication_authority": "NONE",
+  "source": {
+    "prototype_commit": "d864f35d085a148a8e6f3171fd1ad9f0888b6bf4",
+    "review_repair_commit": "57519aa385b22330d249da724b52b265216c96e9",
+    "repository_license": {
+      "name": "MIT",
+      "path": "LICENSE",
+      "sha256": "dee4ca2bfb7794fe6c5b396b30f5ffb8af0f12cb9578ea7096f6875ec65a94fa"
+    },
+    "additional_repository_notices": [
+      {
+        "path": "LICENSE-APACHE",
+        "sha256": "2eeddc8ba24b58d831e6c4e1904691b4d36ac856d11b90bd5878ce4c432bc27f"
+      },
+      {
+        "path": "LICENSE-NOTICE.md",
+        "sha256": "112c06ad06bb0b797d598314afa047b3cbff523074e3265113e3c7db2583a7c3"
+      }
+    ],
+    "reviewed_source_hashes": {
+      "base_runner": "e1e8b916fe21da734c327c1d85db9dbf7b8de333cb4a57eace5f3640e3d5f63f",
+      "successor_runner": "13b3784d4c1de6cf57f6d9dc6046a5c04849a50a9aab5ab99445fd52b0bb6d09",
+      "preregistration": "b9e3283f1881b0846a5a5f35f93d0245067ac269b683fcf2c85a824737581ce6",
+      "independent_review": "a7624b1e9f03ef4f68689c15a399d0f66010bae2026741043a1c4a7eb5b57df5"
+    }
+  },
+  "cloud_input": {
+    "dataset_ref": "issacizrealdavis/clay-input-access-efficacy-input-20261119",
+    "owner": "issacizrealdavis",
+    "private": true,
+    "provider_license_label": "other",
+    "current_read_access": "VERIFIED_METADATA_ONLY",
+    "provider_files": [
+      {
+        "path": "PACKET_DESCRIPTOR.json",
+        "bytes": 901
+      },
+      {
+        "path": "clay-input-access-efficacy.packet",
+        "bytes": 8707005
+      }
+    ],
+    "pinned_hashes": {
+      "archive": "21ee43590a07a8016757b23d7a9423ec7877146cdaf22b0808ed5de3ca660ef7",
+      "descriptor": "e52f6b4811520d350e5fd1bc1c29b20f672bb9b04aacada2915cc4efdc1a9613",
+      "packet_manifest": "f4ba71ee68dfea85a56d8665d844d9315c4eec7e0d44629a3cbcb66d3397622b",
+      "baseline_manifest": "7f2516af8ae5a122f357565afad60ab412fdf54e76a3018cd8f1ddbfdb702a97",
+      "baseline_result": "c5261ada862a2851db0b1dd7e53835b5ddef22299660921527a249a866361482"
+    },
+    "parent_hashes": {
+      "20261134": "e719ca2398f0a96e4c80d2119897ad36202fb34bd8fbe37190655d581411b910",
+      "20261135": "bb4d912d413dd76174986a89b24f713268e90138808b69107aac01736c218438",
+      "20261136": "820f0ed122b27261eb91391d4b69efe987f2e8a8e5f79b27c9e2a7f431267929"
+    },
+    "rights_boundary": "User-owned private input with provider label 'other'; reuse is confined to this private offline measurement. Public redistribution remains blocked pending a file-level rights review."
+  },
+  "material_data": {
+    "kind": "deterministically generated integer arithmetic",
+    "external_text_corpus": false,
+    "record_layout": "opcode:u8 || x:u16be || y:u16be",
+    "train_rows": 1534,
+    "held_out_rows": 1509,
+    "identity_sha256": "c9945f6b8037557e72e167117a58adb2b4bb51bfdcb63da50e56150f49495ad0",
+    "split_boundary": "operand ranges and output-support behavior are sealed in PREREGISTRATION.json",
+    "held_out_used_for_training_or_selection": false
+  },
+  "topology": [
+    "private Kaggle dataset descriptor -> hash-pinned archive",
+    "archive -> manifest-verified parent checkpoints and frozen-core source",
+    "deterministic row builder -> sealed train and held-out identities",
+    "one parent per seed -> identical initialization for candidate, context-permuted, target-shuffle, and zero-update",
+    "three matched trained arms -> two-slot checkpoint state with optimizer, sampler, and torch RNG",
+    "all four arms -> full held-out and counting evaluation",
+    "separate replay program -> independent row/control reconstruction and model replay",
+    "paired bootstrap plus seed/control/retention gates -> measurement only; promotion remains NONE"
+  ],
+  "secret_scan": {
+    "credentials_embedded": false,
+    "network_client_in_release_runner": false,
+    "provider_mutator_in_release_runner": false
+  }
+}

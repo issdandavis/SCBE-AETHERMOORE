@@ -1,0 +1,25 @@
+{
+  "schema": "clay.persistent-operand-context.release-tests.v1",
+  "tested_at_utc": "2026-11-19T22:50:00Z",
+  "status": "PASS",
+  "cloud_execution": false,
+  "parent_model_loaded": false,
+  "checks": {
+    "python_compile": "PASS",
+    "ruff": "PASS",
+    "pytest": "16 passed in 27.67s",
+    "bounded_smoke": "PASS_NO_PARENT_LOAD_NO_CLOUD_EXECUTION",
+    "default_execution_path": "FAIL_CLOSED_STAGED_BUT_NOT_AUTHORIZED",
+    "reviewed_source_hashes": "PASS",
+    "private_offline_cpu_metadata": "PASS",
+    "two_slot_checkpoint_state_fields": "PASS",
+    "no_network_or_kaggle_mutator_in_release_code": "PASS"
+  },
+  "commands": [
+    "python -m py_compile run_operand_context_kaggle.py independent_replay.py source/successor/run_persistent_operand_context.py source/kernel/run_cap_then_grow_kaggle.py",
+    "python -m ruff check run_operand_context_kaggle.py independent_replay.py test_release.py",
+    "python -m pytest -q test_release.py ../successor_persistent_operand_context_v1/test_successor.py",
+    "python run_operand_context_kaggle.py --smoke-output LOCAL_SMOKE.json",
+    "python run_operand_context_kaggle.py"
+  ]
+}

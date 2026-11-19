@@ -1,0 +1,73 @@
+{
+  "schema": "clay.persistent-operand-context.release-preflight.v1",
+  "status": "READY_FOR_LATER_EXACT_AUTHORIZATION_NOT_READY_FOR_LOCAL_MODEL_LOAD",
+  "checked_at_utc": "2026-11-19T22:50:00Z",
+  "execution_started": false,
+  "quota_consumed": false,
+  "cloud_mutation": false,
+  "kaggle": {
+    "cli_version": "2.2.5",
+    "authentication": "READ_ONLY_ENDPOINTS_VERIFIED",
+    "owner": "issacizrealdavis",
+    "kernel": {
+      "private": true,
+      "internet": false,
+      "gpu": false,
+      "cpu_only": true
+    },
+    "accelerator_quota": {
+      "gpu_used_hours": 8.57,
+      "gpu_remaining_hours": 21.43,
+      "gpu_total_hours": 30.0,
+      "tpu_used_hours": 0.01,
+      "tpu_remaining_hours": 19.99,
+      "tpu_total_hours": 20.0,
+      "refresh_at_utc": "2026-11-21T00:00:00Z",
+      "planned_consumption": "NONE_CPU_ONLY"
+    },
+    "dataset_access": {
+      "ref": "issacizrealdavis/clay-input-access-efficacy-input-20261119",
+      "read_only_listing": "PASS",
+      "download_performed": false
+    },
+    "capacity": {
+      "required_free_bytes": 26843545600,
+      "gate_lowered": false,
+      "prior_checked_at_utc": "2026-11-19T19:45:04.193321Z",
+      "prior_selected_target": "/tmp",
+      "prior_selected_target_free_bytes": 2700013604864,
+      "prior_passed": true,
+      "fresh_for_later_launch": false,
+      "runtime_behavior": "runner remeasures the unchanged 25 GiB gate before extracting the dataset or loading a parent"
+    },
+    "runtime_estimate": {
+      "prior_trained_arms": 6,
+      "prior_observed_wall_hours": 2.03,
+      "successor_trained_arms": 9,
+      "linear_projection_hours": 3.05,
+      "session_limit_hours": 12,
+      "basis": "same seeds, steps, batch, CPU topology, and checkpoint cadence; estimate is not a guarantee"
+    },
+    "saved_output_estimate_bytes_upper_bound": 67108864,
+    "saved_output_limit_bytes": 21474836480
+  },
+  "local": {
+    "c_free_bytes_live": 1787916288,
+    "c_free_bytes_cached_receipt": 1980088320,
+    "storage_pressure": "EMERGENCY",
+    "free_physical_memory_bytes": 1180282880,
+    "model_load_gate_bytes": 3221225472,
+    "model_load_allowed": false,
+    "models_downloaded": false,
+    "packet_is_code_only_and_small": true,
+    "claim_boundary": "Local pressure blocks checkpoint/model recovery and full local replay. It does not justify lowering the gate. The staged code-only packet was tested without a parent load."
+  },
+  "later_launch_requirements": [
+    "obtain explicit execution authorization",
+    "set the one-use admission's execution_authorized field true and regenerate its hash-bound release manifest",
+    "recheck current Kaggle owner, privacy, offline, and CPU metadata",
+    "allow the runner to remeasure the unchanged 25 GiB target gate before data/model loading",
+    "record provider version/job identity, then atomically mark the local admission consumed",
+    "verify two advancing checkpoints before calling training active"
+  ]
+}

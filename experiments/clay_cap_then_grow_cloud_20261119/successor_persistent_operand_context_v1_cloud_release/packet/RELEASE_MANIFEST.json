@@ -1,0 +1,55 @@
+{
+  "schema": "clay.persistent-operand-context.release-manifest.v1",
+  "status": "BUILT_PRIVATE_OFFLINE_CPU_NOT_UPLOADED_NOT_RUN",
+  "content_set_sha256": "80b3777457cf0734b09db99469fcda5f6dacdfbc0b9bb0a9e09cbddf1b4271a4",
+  "manifest_excludes_self": true,
+  "files": [
+    {
+      "path": "EXECUTION_ADMISSION.json",
+      "bytes": 1389,
+      "sha256": "c95b4cd6d3747bc5c1cd95bd7e78ffaf291c3b2aad5864d567ab3dc2ff5a5d7b"
+    },
+    {
+      "path": "independent_replay.py",
+      "bytes": 14143,
+      "sha256": "02e3edee3851303fa7fcdb022b34738af11557c91fc03acca3a0cee7ad40f07c"
+    },
+    {
+      "path": "kernel-metadata.json",
+      "bytes": 445,
+      "sha256": "30d44402a7e0286caeb40542d5c95b12e655500a520eb5cb747003bc95ec1b56"
+    },
+    {
+      "path": "run_operand_context_kaggle.py",
+      "bytes": 21984,
+      "sha256": "1502388907fffa5be9e14ce5ab42d53b8939fb976f570d4a87d1ee4bd5e7151e"
+    },
+    {
+      "path": "source/kernel/run_cap_then_grow_kaggle.py",
+      "bytes": 36239,
+      "sha256": "e1e8b916fe21da734c327c1d85db9dbf7b8de333cb4a57eace5f3640e3d5f63f"
+    },
+    {
+      "path": "source/successor/PREREGISTRATION.json",
+      "bytes": 8175,
+      "sha256": "b9e3283f1881b0846a5a5f35f93d0245067ac269b683fcf2c85a824737581ce6"
+    },
+    {
+      "path": "source/successor/REVIEW_RESULT.json",
+      "bytes": 3925,
+      "sha256": "a7624b1e9f03ef4f68689c15a399d0f66010bae2026741043a1c4a7eb5b57df5"
+    },
+    {
+      "path": "source/successor/run_persistent_operand_context.py",
+      "bytes": 29554,
+      "sha256": "13b3784d4c1de6cf57f6d9dc6046a5c04849a50a9aab5ab99445fd52b0bb6d09"
+    }
+  ],
+  "authority": {
+    "execution_admission": "NOT_CONSUMED",
+    "execution_authorized": false,
+    "upload": "NONE",
+    "promotion": "NONE",
+    "publication": "NONE"
+  }
+}

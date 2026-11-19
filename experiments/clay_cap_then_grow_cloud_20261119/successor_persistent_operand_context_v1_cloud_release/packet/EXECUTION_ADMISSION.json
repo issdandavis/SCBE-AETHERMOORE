@@ -1,0 +1,37 @@
+{
+  "schema": "clay.execution-admission.v1",
+  "admission_id": "clay-persistent-operand-context-20261119-v1",
+  "state": "NOT_CONSUMED",
+  "execution_authorized": false,
+  "authorization_boundary": "PREPARED_ONLY_REQUIRES_SEPARATE_EXPLICIT_EXECUTION_AUTHORIZATION",
+  "provider": "kaggle",
+  "visibility": "private",
+  "internet": false,
+  "accelerator": "cpu",
+  "source_commits": {
+    "prototype": "d864f35d085a148a8e6f3171fd1ad9f0888b6bf4",
+    "review_repair": "57519aa385b22330d249da724b52b265216c96e9"
+  },
+  "source_hashes": {
+    "base": "e1e8b916fe21da734c327c1d85db9dbf7b8de333cb4a57eace5f3640e3d5f63f",
+    "successor": "13b3784d4c1de6cf57f6d9dc6046a5c04849a50a9aab5ab99445fd52b0bb6d09",
+    "preregistration": "b9e3283f1881b0846a5a5f35f93d0245067ac269b683fcf2c85a824737581ce6",
+    "review": "a7624b1e9f03ef4f68689c15a399d0f66010bae2026741043a1c4a7eb5b57df5"
+  },
+  "contract": {
+    "seeds": [20261134, 20261135, 20261136],
+    "trained_arms": ["candidate", "context_permuted", "target_shuffle"],
+    "zero_update_arm": "zero_update",
+    "updates_per_trained_arm": 18000,
+    "checkpoint_every": 500,
+    "batch_size": 128,
+    "learning_rate": 0.002,
+    "trainable_parameters": 142164,
+    "storage_gate_bytes": 26843545600,
+    "storage_gate_lowered": false,
+    "promotion": "NONE"
+  },
+  "consumed_at_utc": null,
+  "provider_version": null,
+  "provider_job_id": null
+}
