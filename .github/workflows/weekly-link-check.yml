@@ -106,7 +106,7 @@ jobs:
 
       - name: Create issue if broken links found
         if: steps.links.outputs.broken > 0
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           CHECKED: ${{ steps.links.outputs.checked }}
           BROKEN: ${{ steps.links.outputs.broken }}
