@@ -3,7 +3,7 @@ schema: clay.training-context-packet.v1
 campaign_id: "clay-hybrid-input-access-efficacy-20261119"
 status: "PREFLIGHT"
 updated_at: "2026-11-19T16:02:00Z"
-source_sha256: 42542ef0b54165aa0b202df1d1db17652eae77470a38c1e70f3c8d4ae619cc24
+source_sha256: 7a7d1155951359f4fef2cf1795daf5dee2d7ceae72dadbca3b31989aa53d0c74
 ---
 
 # Training context: clay-hybrid-input-access-efficacy-20261119
@@ -80,7 +80,7 @@ Measure a parameter-matched hybrid downstream-plus-raw-input action learner agai
   {
     "path": "experiments/clay_hybrid_input_access_efficacy_20261119/LOCAL_PREFLIGHT_RECEIPT.json",
     "role": "preflight",
-    "sha256": "edf9ac8dde32ebf8c6e65864e9c9dd498e0194a4aa03b6e6c38049eadc30a045"
+    "sha256": "e3961b250d94ebcd9fa4926ed81ffb8d147fd34040bfc96928c8a489bd7d3c21"
   }
 ]
 ```
@@ -121,5 +121,5 @@ Measure a parameter-matched hybrid downstream-plus-raw-input action learner agai
 ## Packet receipt
 
 - Source schema: `clay.training-context-source.v1`
-- Canonical source SHA-256: `42542ef0b54165aa0b202df1d1db17652eae77470a38c1e70f3c8d4ae619cc24`
+- Canonical source SHA-256: `7a7d1155951359f4fef2cf1795daf5dee2d7ceae72dadbca3b31989aa53d0c74`
 - This packet is an operational index. Linked evidence remains authoritative.

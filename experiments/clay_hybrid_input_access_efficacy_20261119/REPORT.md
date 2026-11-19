@@ -48,7 +48,7 @@ Two independent neutral-suffix extractions reverified the same manifest and all
 276, compact alphabet 269, all parent lineages, all parameter/effective-capacity
 counts, and the bit-identical initial probes across all three seeds.
 
-Focused evidence: 26 pytest cases passed and Ruff passed. The exact external
+Focused and prior-campaign regression evidence: 63 pytest cases passed and Ruff passed. The exact external
 packet is at
 `C:\dev\_kaggle_stage\clay-hybrid-input-access-efficacy-20261119-v1`.
 

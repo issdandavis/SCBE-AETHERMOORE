@@ -49,7 +49,7 @@
     "hash_inventory_restore": true
   },
   "tests": {
-    "focused_pytest": "26 passed",
+    "focused_and_regression_pytest": "63 passed",
     "ruff": "PASS",
     "checkpoint_resume": "PASS_FOREIGN_IDENTITY_REJECTED",
     "packet_extract_reverify": "PASS_TWICE",

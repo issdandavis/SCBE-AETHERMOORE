@@ -38,7 +38,7 @@
     {
       "role": "preflight",
       "path": "experiments/clay_hybrid_input_access_efficacy_20261119/LOCAL_PREFLIGHT_RECEIPT.json",
-      "sha256": "edf9ac8dde32ebf8c6e65864e9c9dd498e0194a4aa03b6e6c38049eadc30a045"
+      "sha256": "e3961b250d94ebcd9fa4926ed81ffb8d147fd34040bfc96928c8a489bd7d3c21"
     }
   ],
   "invariants": [
