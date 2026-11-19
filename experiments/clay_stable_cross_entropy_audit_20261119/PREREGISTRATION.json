@@ -1,0 +1,31 @@
+{
+  "schema": "clay.stable-cross-entropy-audit.preregistration.v1",
+  "paper": "arXiv:2610.31642v3",
+  "question": "Does Clay's pinned three-seed frozen-multiview training path encounter float32 hard-target softmax collapse on real supervised tokens?",
+  "authority": "READ_ONLY_MEASUREMENT_NO_TRAINING_NO_PROMOTION",
+  "baseline_run": "C:/dev/clay-training-runs/frozen-multiview-adapter-replication-20261114-v1",
+  "arms": [
+    "standard_torch_cross_entropy",
+    "paper_stable_hard_target_cross_entropy"
+  ],
+  "seeds": [20261134, 20261135, 20261136],
+  "splits": ["multiview_train", "source_disjoint_holdout"],
+  "primary_measurements": [
+    "target-margin distribution",
+    "standard target-gradient zero while fixed target-gradient nonzero",
+    "per-token forward loss rounded to zero only in the standard arm",
+    "absolute gradient-sum conservation error"
+  ],
+  "controls": [
+    "paper float32 logits [9,-9,-9], target 0",
+    "ordinary-margin logits where standard and fixed losses must agree",
+    "pinned dataset-manifest equality",
+    "three independently trained model seeds"
+  ],
+  "stop_conditions": [
+    "do not mutate any checkpoint or active runner",
+    "do not start or stop training",
+    "do not claim training improvement from arithmetic diagnostics alone",
+    "if no real token crosses the precision cliff, do not patch the pinned campaign"
+  ]
+}

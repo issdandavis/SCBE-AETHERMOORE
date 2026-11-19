@@ -1,0 +1,166 @@
+{
+  "schema": "clay.stable-cross-entropy-audit.result.v1",
+  "paper": "arXiv:2610.31642v3",
+  "authority": "READ_ONLY_MEASUREMENT_NO_TRAINING_NO_PROMOTION",
+  "torch_version": "2.13.0+cu126",
+  "baseline_manifest": "C:\\dev\\clay-training-runs\\frozen-multiview-adapter-replication-20261114-v1\\RUN_MANIFEST.json",
+  "baseline_manifest_sha256": "7f2516af8ae5a122f357565afad60ab412fdf54e76a3018cd8f1ddbfdb702a97",
+  "dataset_manifest_sha256": "7460665cbb718097438227c452f1915e88bdc5a10ac643122b17908b505d0041",
+  "dataset_manifest_matches": true,
+  "synthetic_control": {
+    "standard": {
+      "loss": -0.0,
+      "gradient": [
+        0.0,
+        1.5229979055675358e-08,
+        1.5229979055675358e-08
+      ],
+      "gradient_sum": 3.0459958111350716e-08
+    },
+    "fixed": {
+      "loss": 3.0459958111350716e-08,
+      "gradient": [
+        -3.0459958111350716e-08,
+        1.5229979055675358e-08,
+        1.5229979055675358e-08
+      ],
+      "gradient_sum": 0.0
+    }
+  },
+  "per_seed": [
+    {
+      "seed": 20261134,
+      "model_path": "C:\\dev\\clay-training-runs\\frozen-multiview-adapter-replication-20261114-v1\\horses\\frozen_adapter_multiview-seed-20261134\\MODEL.pt",
+      "model_sha256": "83f583a89170432efc6edc570b6039429540f2659cbaa9c9d231e25b9730c420",
+      "splits": {
+        "multiview_train": {
+          "rows": 3000,
+          "supervised_tokens": 6000,
+          "target_margin": {
+            "q0.5": 149.8099136352539,
+            "q0.9": 694.9969848632812,
+            "q0.99": 826.5346844482425,
+            "q0.999": 926.4706932983407,
+            "q1": 954.7971801757812
+          },
+          "margin_above_fp32_cliff_16_6": 3497,
+          "standard_zero_loss_tokens": 3497,
+          "fixed_zero_loss_tokens": 3018,
+          "collapsed_target_gradients": 480,
+          "maximum_standard_gradient_sum_error": 6.398186087608337e-07,
+          "maximum_fixed_gradient_sum_error": 1.9371509552001953e-07,
+          "maximum_absolute_loss_delta": 6.258487701416016e-07
+        },
+        "source_disjoint_holdout": {
+          "rows": 1500,
+          "supervised_tokens": 3000,
+          "target_margin": {
+            "q0.5": 74.79649353027344,
+            "q0.9": 690.7677734375,
+            "q0.99": 819.5472241210937,
+            "q0.999": 889.2342694091803,
+            "q1": 933.0985107421875
+          },
+          "margin_above_fp32_cliff_16_6": 1518,
+          "standard_zero_loss_tokens": 1518,
+          "fixed_zero_loss_tokens": 1499,
+          "collapsed_target_gradients": 19,
+          "maximum_standard_gradient_sum_error": 6.547197699546814e-07,
+          "maximum_fixed_gradient_sum_error": 1.6391277313232422e-07,
+          "maximum_absolute_loss_delta": 1.9073486328125e-06
+        }
+      }
+    },
+    {
+      "seed": 20261135,
+      "model_path": "C:\\dev\\clay-training-runs\\frozen-multiview-adapter-replication-20261114-v1\\horses\\frozen_adapter_multiview-seed-20261135\\MODEL.pt",
+      "model_sha256": "0bbf25b21a61468fee810383d3ad1f8d8f344415ff2ed17a4e263f1d7d8e2f71",
+      "splits": {
+        "multiview_train": {
+          "rows": 3000,
+          "supervised_tokens": 6000,
+          "target_margin": {
+            "q0.5": 39.606571197509766,
+            "q0.9": 119.50174255371094,
+            "q0.99": 160.44947784423832,
+            "q0.999": 180.90709060669028,
+            "q1": 221.49986267089844
+          },
+          "margin_above_fp32_cliff_16_6": 4390,
+          "standard_zero_loss_tokens": 4403,
+          "fixed_zero_loss_tokens": 1097,
+          "collapsed_target_gradients": 3336,
+          "maximum_standard_gradient_sum_error": 1.6634591304409696e-07,
+          "maximum_fixed_gradient_sum_error": 4.547473508864641e-13,
+          "maximum_absolute_loss_delta": 1.6634589883324225e-07
+        },
+        "source_disjoint_holdout": {
+          "rows": 1500,
+          "supervised_tokens": 3000,
+          "target_margin": {
+            "q0.5": 27.60857391357422,
+            "q0.9": 122.8543991088867,
+            "q0.99": 165.34113937377924,
+            "q0.999": 186.92367697143686,
+            "q1": 204.97268676757812
+          },
+          "margin_above_fp32_cliff_16_6": 1592,
+          "standard_zero_loss_tokens": 1592,
+          "fixed_zero_loss_tokens": 574,
+          "collapsed_target_gradients": 1034,
+          "maximum_standard_gradient_sum_error": 6.436894182115793e-07,
+          "maximum_fixed_gradient_sum_error": 1.553635229356587e-07,
+          "maximum_absolute_loss_delta": 3.814697265625e-06
+        }
+      }
+    },
+    {
+      "seed": 20261136,
+      "model_path": "C:\\dev\\clay-training-runs\\frozen-multiview-adapter-replication-20261114-v1\\horses\\frozen_adapter_multiview-seed-20261136\\MODEL.pt",
+      "model_sha256": "a1289e8cac0cb3be2d5a67794727ade39b9136df1130543b8979854e1903d7d6",
+      "splits": {
+        "multiview_train": {
+          "rows": 3000,
+          "supervised_tokens": 6000,
+          "target_margin": {
+            "q0.5": 366.6746826171875,
+            "q0.9": 1139.5167358398437,
+            "q0.99": 1242.6307519531251,
+            "q0.999": 1306.4511657714856,
+            "q1": 1350.7591552734375
+          },
+          "margin_above_fp32_cliff_16_6": 3903,
+          "standard_zero_loss_tokens": 3903,
+          "fixed_zero_loss_tokens": 3014,
+          "collapsed_target_gradients": 891,
+          "maximum_standard_gradient_sum_error": 1.1925585567951202e-06,
+          "maximum_fixed_gradient_sum_error": 2.1606683731079102e-07,
+          "maximum_absolute_loss_delta": 1.2043165042996407e-06
+        },
+        "source_disjoint_holdout": {
+          "rows": 1500,
+          "supervised_tokens": 3000,
+          "target_margin": {
+            "q0.5": 348.6230411529541,
+            "q0.9": 1136.2276977539063,
+            "q0.99": 1241.8085241699216,
+            "q0.999": 1297.1040754394535,
+            "q1": 1391.0435791015625
+          },
+          "margin_above_fp32_cliff_16_6": 1523,
+          "standard_zero_loss_tokens": 1524,
+          "fixed_zero_loss_tokens": 1500,
+          "collapsed_target_gradients": 24,
+          "maximum_standard_gradient_sum_error": 1.1920928955078125e-06,
+          "maximum_fixed_gradient_sum_error": 2.384185791015625e-07,
+          "maximum_absolute_loss_delta": 1.9073486328125e-06
+        }
+      }
+    }
+  ],
+  "real_collapsed_target_gradients": 5784,
+  "active_path_susceptible": true,
+  "interpretation": "The pinned trained model exhibits standard-CE target-gradient collapse.",
+  "scope": "Arithmetic audit only. It does not establish a training-quality gain; the active successor remains storage-gated and untouched.",
+  "elapsed_seconds": 73.21900000004098
+}

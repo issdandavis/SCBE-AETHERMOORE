@@ -33,6 +33,11 @@ from python.scbe.clay_frozen_multiview_data import (
     build_frozen_multiview_dataset,
 )
 from python.scbe.clay_paired_orbit_training import ClaySourceAdapter
+from python.scbe.clay_stable_cross_entropy import (
+    LOSS_MODES,
+    STANDARD,
+    hard_target_cross_entropy,
+)
 from python.scbe.concept_exposure_ledger import (
     ConceptExposureLedger,
     weight_effect_receipt,
@@ -360,12 +365,14 @@ def _checkpoint_payload(
     stage: str,
     seed: int,
     config_hash: str,
+    loss_mode: str,
 ) -> dict[str, Any]:
     return {
         "schema": f"{SCHEMA}.checkpoint",
         "stage": stage,
         "seed": seed,
         "config_hash": config_hash,
+        "loss_mode": loss_mode,
         "step": step,
         "generation": generation,
         "loss": loss,
@@ -390,11 +397,14 @@ def train_steps(
     total_steps: int,
     checkpoint_dir: Path,
     config_hash: str,
+    loss_mode: str = STANDARD,
 ) -> tuple[int, float, int]:
     if (samples is None) != (ledger is None):
         raise ValueError("samples and exposure ledger must be supplied together")
     if samples is not None and len(samples) != len(rows):
         raise ValueError("exposure sample order differs from training rows")
+    if loss_mode not in LOSS_MODES:
+        raise ValueError(f"unsupported hard-target cross-entropy mode: {loss_mode}")
     model.set_path(path_for_arm(stage))
     trainable = set_trainable(model, stage)
     optimizer = torch.optim.Adam(trainable, lr=config.learning_rate)
@@ -416,6 +426,8 @@ def train_steps(
         }
         if any(payload.get(key) != value for key, value in expected.items()):
             raise RuntimeError("checkpoint identity differs")
+        if payload.get("loss_mode", STANDARD) != loss_mode:
+            raise RuntimeError("checkpoint loss mode differs")
         model.load_state_dict(payload["model_state"])
         optimizer.load_state_dict(payload["optimizer_state"])
         sampler.load_state_dict(payload["sampler_state"])
@@ -426,14 +438,16 @@ def train_steps(
         generation = int(pointer["generation"]) + 1
         last_loss = float(payload["loss"])
 
-    loss_function = nn.CrossEntropyLoss(reduction="none")
     while step < total_steps:
         model.train()
         indices = sampler.next_indices()
         inputs, labels, masks = make_batch(rows, indices, stoi, config.device)
         logits, _ = model(inputs, "count" if stage == "count_parent" else "action")
-        token_loss = loss_function(
-            logits.reshape(-1, logits.size(-1)), labels.reshape(-1)
+        token_loss = hard_target_cross_entropy(
+            logits.reshape(-1, logits.size(-1)),
+            labels.reshape(-1),
+            reduction="none",
+            mode=loss_mode,
         ).reshape(labels.shape)
         denominators = masks.sum(dim=1).clamp(min=1)
         sample_loss = (token_loss * masks).sum(dim=1) / denominators
@@ -462,6 +476,7 @@ def train_steps(
                     stage=stage,
                     seed=seed,
                     config_hash=config_hash,
+                    loss_mode=loss_mode,
                 ),
                 generation,
             )

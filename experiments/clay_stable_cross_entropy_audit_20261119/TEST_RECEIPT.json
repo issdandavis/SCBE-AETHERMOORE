@@ -1,0 +1,49 @@
+{
+  "schema": "clay.stable-cross-entropy-audit.test-receipt.v1",
+  "date": "2026-11-19",
+  "branch": "experiment/clay-stable-ce-audit-v1",
+  "base_commit": "12dde4d50fcbc700bc88bc6706c7473476104691",
+  "authority": "ISOLATED_DEFAULT_OFF_NO_TRAINING_NO_PROMOTION",
+  "paper": "https://arxiv.org/html/2610.31642v3",
+  "audit": {
+    "command": "python -u -B experiments/clay_stable_cross_entropy_audit_20261119/audit_stable_ce.py --source-root C:\\dev\\_wt_clay_stable_ce_audit_20261119 --baseline-run C:\\dev\\clay-training-runs\\frozen-multiview-adapter-replication-20261114-v1 --output experiments\\clay_stable_cross_entropy_audit_20261119\\RESULT.json --batch-size 64",
+    "exit_code": 0,
+    "elapsed_seconds": 73.219000000041,
+    "seeds": [20261134, 20261135, 20261136],
+    "supervised_tokens": 27000,
+    "real_collapsed_target_gradients": 5784,
+    "active_path_susceptible": true,
+    "result_sha256": "82d0e6b7660b8f4b14dd2aa1b6d769fdb4d70e85bedc098fb027ffb55a36968d"
+  },
+  "tests": {
+    "command": "python -m pytest -q tests/test_clay_stable_cross_entropy.py experiments/clay_stable_cross_entropy_audit_20261119/test_audit_stable_ce.py tests/governance/test_clay_frozen_multiview_adapter.py",
+    "exit_code": 0,
+    "passed": 10,
+    "failed": 0
+  },
+  "static_checks": [
+    {
+      "command": "python -m ruff check --isolated python/scbe/clay_stable_cross_entropy.py python/scbe/clay_frozen_multiview_adapter.py tests/test_clay_stable_cross_entropy.py experiments/clay_stable_cross_entropy_audit_20261119/audit_stable_ce.py experiments/clay_stable_cross_entropy_audit_20261119/test_audit_stable_ce.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "python -m py_compile python/scbe/clay_stable_cross_entropy.py python/scbe/clay_frozen_multiview_adapter.py experiments/clay_stable_cross_entropy_audit_20261119/audit_stable_ce.py",
+      "exit_code": 0
+    }
+  ],
+  "files": {
+    "python/scbe/clay_stable_cross_entropy.py": "1190f757c9c1df691d19ddc637f081e41393c3123d20881d598358711145d53d",
+    "python/scbe/clay_frozen_multiview_adapter.py": "2cb6b396b4e5bec4427dfb033ba0dbc0bcd4d4aec06e2f5bb5864483dcf22eb8",
+    "tests/test_clay_stable_cross_entropy.py": "12225a4de0e8a59f6a36748a2b5294ba35f8f0fca0e83eb97ee5489a1db57667",
+    "experiments/clay_stable_cross_entropy_audit_20261119/PREREGISTRATION.json": "71cb9945cf8807270981a713a5c477fd6fa2332d3efd0c5b2009939caf351c07",
+    "experiments/clay_stable_cross_entropy_audit_20261119/audit_stable_ce.py": "a324cc1c4bd9a0e376480abd9edb9ba0825688888a5fa97c8819a0e3750a607e",
+    "experiments/clay_stable_cross_entropy_audit_20261119/RESULT.json": "82d0e6b7660b8f4b14dd2aa1b6d769fdb4d70e85bedc098fb027ffb55a36968d",
+    "experiments/clay_stable_cross_entropy_audit_20261119/REPORT.md": "caa154558ae7857fa0eeb5bab421f56552474e8b9c32ee48138c470e8064e1d4"
+  },
+  "training_effectiveness": {
+    "status": "UNDERPOWERED_NOT_RUN",
+    "reason": "The active successor is waiting for its 25 GiB storage gate. No gate was lowered and no training was started or stopped.",
+    "required_next_test": "Three stable-loss seeds versus same-size standard-loss and no-intervention controls; require effect greater than twice pooled standard deviation."
+  }
+}
