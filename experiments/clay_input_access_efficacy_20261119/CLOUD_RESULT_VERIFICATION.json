@@ -1,0 +1,468 @@
+{
+  "actual_output_free_bytes_at_launch": 20916408320,
+  "actual_output_free_gib_at_launch": 19.479923248291016,
+  "archive_sha256": "21ee43590a07a8016757b23d7a9423ec7877146cdaf22b0808ed5de3ca660ef7",
+  "arms": [
+    {
+      "accuracy": 0.21733333333333332,
+      "all_nonselected_tensors_bit_identical": true,
+      "arm": "downstream_only",
+      "checkpoint_steps": [
+        1750,
+        2000
+      ],
+      "counting_accuracy": 0.7037037037037037,
+      "final_loss": 0.8061147928237915,
+      "frozen_core_bit_identical": true,
+      "macro_f1": 0.2002673540949512,
+      "model_sha256": "7477969b37347736e5d2ace2efac08ac4991197d56253a56855c1db5c7933c49",
+      "reported_changed_scalars": 140820,
+      "seed": 20261134,
+      "trainable_parameters": 140820,
+      "weight_effect_replay": "EXACT"
+    },
+    {
+      "accuracy": 0.18066666666666667,
+      "all_nonselected_tensors_bit_identical": true,
+      "arm": "input_access",
+      "checkpoint_steps": [
+        1750,
+        2000
+      ],
+      "counting_accuracy": 0.7037037037037037,
+      "final_loss": 0.36405402421951294,
+      "frozen_core_bit_identical": true,
+      "macro_f1": 0.18023211218673188,
+      "model_sha256": "18c7964961eca674a92c38f4957ee41dcab501b76a72f24cffc9dab0542e738d",
+      "reported_changed_scalars": 138923,
+      "seed": 20261134,
+      "trainable_parameters": 140820,
+      "weight_effect_replay": "FINAL_HASH_ONLY_CROSS_TORCH_INITIALIZATION_DIFFERS"
+    },
+    {
+      "accuracy": 0.226,
+      "all_nonselected_tensors_bit_identical": true,
+      "arm": "downstream_only",
+      "checkpoint_steps": [
+        1750,
+        2000
+      ],
+      "counting_accuracy": 0.37037037037037035,
+      "final_loss": 0.407126247882843,
+      "frozen_core_bit_identical": true,
+      "macro_f1": 0.22483098541358987,
+      "model_sha256": "4def758b8cefa0dd1b7b4c566b810f1f8e69f1bdeece8a28efb1f9cdea76c734",
+      "reported_changed_scalars": 140820,
+      "seed": 20261135,
+      "trainable_parameters": 140820,
+      "weight_effect_replay": "EXACT"
+    },
+    {
+      "accuracy": 0.20933333333333334,
+      "all_nonselected_tensors_bit_identical": true,
+      "arm": "input_access",
+      "checkpoint_steps": [
+        1750,
+        2000
+      ],
+      "counting_accuracy": 0.37037037037037035,
+      "final_loss": 0.4913787841796875,
+      "frozen_core_bit_identical": true,
+      "macro_f1": 0.20478734811050864,
+      "model_sha256": "f4ec51431625e98927e4151fe784c74696d89e6e7fc53c84df8cf09d7fd1ed81",
+      "reported_changed_scalars": 138923,
+      "seed": 20261135,
+      "trainable_parameters": 140820,
+      "weight_effect_replay": "FINAL_HASH_ONLY_CROSS_TORCH_INITIALIZATION_DIFFERS"
+    },
+    {
+      "accuracy": 0.21266666666666667,
+      "all_nonselected_tensors_bit_identical": true,
+      "arm": "downstream_only",
+      "checkpoint_steps": [
+        1750,
+        2000
+      ],
+      "counting_accuracy": 0.4074074074074074,
+      "final_loss": 0.4987088739871979,
+      "frozen_core_bit_identical": true,
+      "macro_f1": 0.2094509356851913,
+      "model_sha256": "8622bbbf9856c327e0edc3dccadadd1c46488e9c57c19d52cf9804bf24a42662",
+      "reported_changed_scalars": 140820,
+      "seed": 20261136,
+      "trainable_parameters": 140820,
+      "weight_effect_replay": "EXACT"
+    },
+    {
+      "accuracy": 0.19333333333333333,
+      "all_nonselected_tensors_bit_identical": true,
+      "arm": "input_access",
+      "checkpoint_steps": [
+        1750,
+        2000
+      ],
+      "counting_accuracy": 0.4074074074074074,
+      "final_loss": 0.4628397226333618,
+      "frozen_core_bit_identical": true,
+      "macro_f1": 0.18331294300005144,
+      "model_sha256": "43b854178eb6654a58c28e7fcd395c9ed8d12f8ec87442d2552d536a116bdf86",
+      "reported_changed_scalars": 138923,
+      "seed": 20261136,
+      "trainable_parameters": 140820,
+      "weight_effect_replay": "FINAL_HASH_ONLY_CROSS_TORCH_INITIALIZATION_DIFFERS"
+    }
+  ],
+  "campaign_result_sha256": "a1c4c4361a5ef39c69c722eba1f4aef4fb9e71cc03b0922b6b5d36cebce1f688",
+  "claim_boundary": "Model bytes, parent lineage, predictions, metrics, retention, and decision gates replayed exactly. The cloud segment is not a preregistration-compliant promotion trial because the 25 GiB storage gate inspected the wrong filesystem and actual output-mount free space was below threshold.",
+  "comparisons": {
+    "downstream_only_vs_no_intervention": {
+      "finite_evaluation": {
+        "accuracy": {
+          "clears_finite_uncertainty_gate": true,
+          "examples": 4500,
+          "family_alpha": 0.05,
+          "losses": 0,
+          "method": "two_sided_exact_mcnemar",
+          "per_test_alpha": 0.0125,
+          "test_count": 4,
+          "ties": 3516,
+          "two_sided_exact_p": 1.223247290044539e-296,
+          "wins": 984
+        },
+        "macro_f1": {
+          "clears_finite_uncertainty_gate": true,
+          "family_alpha": 0.05,
+          "lower_order_statistic_index": 124,
+          "method": "deterministic_seed_target_stratified_paired_bootstrap",
+          "observed_mean_macro_f1_delta": 0.21151642506457746,
+          "one_sided_lower_bound": 0.1981974840069154,
+          "per_test_alpha": 0.0125,
+          "replicates": 10000,
+          "seed": 20261121,
+          "test_count": 4
+        }
+      },
+      "metrics": {
+        "accuracy": {
+          "clears_positive_gate": true,
+          "contender_mean": 0.21866666666666668,
+          "control_mean": 0.0,
+          "matched_seed_losses": 0,
+          "matched_seed_wins": 3,
+          "mean_delta": 0.21866666666666668,
+          "metric": "accuracy",
+          "pooled_sd": 0.004784233364802443,
+          "two_pooled_sd": 0.009568466729604886
+        },
+        "macro_f1": {
+          "clears_positive_gate": true,
+          "contender_mean": 0.21151642506457746,
+          "control_mean": 0.0,
+          "matched_seed_losses": 0,
+          "matched_seed_wins": 3,
+          "mean_delta": 0.21151642506457746,
+          "metric": "macro_f1",
+          "pooled_sd": 0.008776180281642164,
+          "two_pooled_sd": 0.01755236056328433
+        }
+      },
+      "paired": {
+        "clears_finite_uncertainty_gate": true,
+        "examples": 4500,
+        "family_alpha": 0.05,
+        "losses": 0,
+        "method": "two_sided_exact_mcnemar",
+        "per_test_alpha": 0.0125,
+        "test_count": 4,
+        "ties": 3516,
+        "two_sided_exact_p": 1.223247290044539e-296,
+        "wins": 984
+      }
+    },
+    "input_access_vs_downstream_only": {
+      "finite_evaluation": {
+        "accuracy": {
+          "clears_finite_uncertainty_gate": false,
+          "examples": 4500,
+          "family_alpha": 0.05,
+          "losses": 748,
+          "method": "two_sided_exact_mcnemar",
+          "per_test_alpha": 0.0125,
+          "test_count": 4,
+          "ties": 3113,
+          "two_sided_exact_p": 0.0037172413377040995,
+          "wins": 639
+        },
+        "macro_f1": {
+          "clears_finite_uncertainty_gate": false,
+          "family_alpha": 0.05,
+          "lower_order_statistic_index": 124,
+          "method": "deterministic_seed_target_stratified_paired_bootstrap",
+          "observed_mean_macro_f1_delta": -0.0220722906321468,
+          "one_sided_lower_bound": -0.04016492522065529,
+          "per_test_alpha": 0.0125,
+          "replicates": 10000,
+          "seed": 20261119,
+          "test_count": 4
+        }
+      },
+      "metrics": {
+        "accuracy": {
+          "clears_positive_gate": false,
+          "contender_mean": 0.19444444444444445,
+          "control_mean": 0.21866666666666668,
+          "matched_seed_losses": 3,
+          "matched_seed_wins": 0,
+          "mean_delta": -0.02422222222222223,
+          "metric": "accuracy",
+          "pooled_sd": 0.011228271197030919,
+          "two_pooled_sd": 0.022456542394061838
+        },
+        "macro_f1": {
+          "clears_positive_gate": false,
+          "contender_mean": 0.18944413443243066,
+          "control_mean": 0.21151642506457746,
+          "matched_seed_losses": 3,
+          "matched_seed_wins": 0,
+          "mean_delta": -0.0220722906321468,
+          "metric": "macro_f1",
+          "pooled_sd": 0.012903027062964988,
+          "two_pooled_sd": 0.025806054125929977
+        }
+      },
+      "paired": {
+        "clears_finite_uncertainty_gate": false,
+        "examples": 4500,
+        "family_alpha": 0.05,
+        "losses": 748,
+        "method": "two_sided_exact_mcnemar",
+        "per_test_alpha": 0.0125,
+        "test_count": 4,
+        "ties": 3113,
+        "two_sided_exact_p": 0.0037172413377040995,
+        "wins": 639
+      }
+    },
+    "input_access_vs_no_intervention": {
+      "finite_evaluation": {
+        "accuracy": {
+          "clears_finite_uncertainty_gate": true,
+          "examples": 4500,
+          "family_alpha": 0.05,
+          "losses": 0,
+          "method": "two_sided_exact_mcnemar",
+          "per_test_alpha": 0.0125,
+          "test_count": 4,
+          "ties": 3625,
+          "two_sided_exact_p": 7.939328826636877e-264,
+          "wins": 875
+        },
+        "macro_f1": {
+          "clears_finite_uncertainty_gate": true,
+          "family_alpha": 0.05,
+          "lower_order_statistic_index": 124,
+          "method": "deterministic_seed_target_stratified_paired_bootstrap",
+          "observed_mean_macro_f1_delta": 0.18944413443243066,
+          "one_sided_lower_bound": 0.17624426094821274,
+          "per_test_alpha": 0.0125,
+          "replicates": 10000,
+          "seed": 20261120,
+          "test_count": 4
+        }
+      },
+      "metrics": {
+        "accuracy": {
+          "clears_positive_gate": true,
+          "contender_mean": 0.19444444444444445,
+          "control_mean": 0.0,
+          "matched_seed_losses": 0,
+          "matched_seed_wins": 3,
+          "mean_delta": 0.19444444444444445,
+          "metric": "accuracy",
+          "pooled_sd": 0.010158010887235022,
+          "two_pooled_sd": 0.020316021774470044
+        },
+        "macro_f1": {
+          "clears_positive_gate": true,
+          "contender_mean": 0.18944413443243066,
+          "control_mean": 0.0,
+          "matched_seed_losses": 0,
+          "matched_seed_wins": 3,
+          "mean_delta": 0.18944413443243066,
+          "metric": "macro_f1",
+          "pooled_sd": 0.009458687385241263,
+          "two_pooled_sd": 0.018917374770482526
+        }
+      },
+      "paired": {
+        "clears_finite_uncertainty_gate": true,
+        "examples": 4500,
+        "family_alpha": 0.05,
+        "losses": 0,
+        "method": "two_sided_exact_mcnemar",
+        "per_test_alpha": 0.0125,
+        "test_count": 4,
+        "ties": 3625,
+        "two_sided_exact_p": 7.939328826636877e-264,
+        "wins": 875
+      }
+    }
+  },
+  "descriptor_sha256": "e52f6b4811520d350e5fd1bc1c29b20f672bb9b04aacada2915cc4efdc1a9613",
+  "effective_parameter_parity": {
+    "downstream_changed_scalars_each_seed": [
+      140820
+    ],
+    "inactive_candidate_scalars": 1897,
+    "inactive_input_embedding_ids": [
+      3,
+      10,
+      11,
+      12,
+      13,
+      14,
+      18
+    ],
+    "inactive_input_embedding_rows": 7,
+    "inactive_input_embedding_tokens": [
+      "\u0003",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "C"
+    ],
+    "input_access_changed_scalars_each_seed": [
+      138923
+    ],
+    "selected_scalars_each_arm": 140820,
+    "status": "NOT_MET_ON_ACTUAL_ACTION_TRAINING_ROWS"
+  },
+  "finite_evaluation_gate": "NOT_MET",
+  "initial_pair_replay": [
+    {
+      "cloud_torch_2_11_logits_sha256": "c3cbb7b685c8f1466fa251909cffc31e9af2bef238c023fa6cff13c3fdf402dd",
+      "local_replay_logits_sha256": "b21f5ecc299e49465518c8d55bd4088349c07d025dd4cb6ecd105bf7fc00c79b",
+      "note": "Cross-version GRU floating-point bytes differ; equality is required within each environment.",
+      "seed": 20261134,
+      "within_environment_arm_logits_bit_identical": true
+    },
+    {
+      "cloud_torch_2_11_logits_sha256": "7192d07b6d8cc2f7daadd5e8f9def980fc20881f048d1e734cffd8096db2605a",
+      "local_replay_logits_sha256": "60f7d544fafd19d9df867a0dcfe6ccfc24b8b7472aa8e6795dc99879ea8a7f5b",
+      "note": "Cross-version GRU floating-point bytes differ; equality is required within each environment.",
+      "seed": 20261135,
+      "within_environment_arm_logits_bit_identical": true
+    },
+    {
+      "cloud_torch_2_11_logits_sha256": "6370741b4dbd43c0119e1739a3a0caaf9bacd904a68667dc840f77c1f0531425",
+      "local_replay_logits_sha256": "aca6156c84c4c3f37f45ee3c780d0ef4a2f65cef8f53ef28325071b7a6426b5a",
+      "note": "Cross-version GRU floating-point bytes differ; equality is required within each environment.",
+      "seed": 20261136,
+      "within_environment_arm_logits_bit_identical": true
+    }
+  ],
+  "kernel_status": "COMPLETE",
+  "packet_manifest_sha256": "f4ba71ee68dfea85a56d8665d844d9315c4eec7e0d44629a3cbcb66d3397622b",
+  "per_target_error_analysis": [
+    {
+      "contender_seed_accuracies": [
+        0.18333333333333332,
+        0.32666666666666666,
+        0.18333333333333332
+      ],
+      "control_seed_accuracies": [
+        0.17,
+        0.20333333333333334,
+        0.21333333333333335
+      ],
+      "mean_accuracy_delta": 0.03555555555555556,
+      "paired_losses": 125,
+      "paired_ties": 618,
+      "paired_wins": 157,
+      "target": 0
+    },
+    {
+      "contender_seed_accuracies": [
+        0.13666666666666666,
+        0.18,
+        0.34
+      ],
+      "control_seed_accuracies": [
+        0.15333333333333332,
+        0.3,
+        0.23
+      ],
+      "mean_accuracy_delta": -0.008888888888888863,
+      "paired_losses": 146,
+      "paired_ties": 616,
+      "paired_wins": 138,
+      "target": 1
+    },
+    {
+      "contender_seed_accuracies": [
+        0.18333333333333332,
+        0.21666666666666667,
+        0.19
+      ],
+      "control_seed_accuracies": [
+        0.08,
+        0.21,
+        0.2866666666666667
+      ],
+      "mean_accuracy_delta": 0.004444444444444445,
+      "paired_losses": 139,
+      "paired_ties": 618,
+      "paired_wins": 143,
+      "target": 2
+    },
+    {
+      "contender_seed_accuracies": [
+        0.18666666666666668,
+        0.12666666666666668,
+        0.06666666666666667
+      ],
+      "control_seed_accuracies": [
+        0.22,
+        0.23,
+        0.12
+      ],
+      "mean_accuracy_delta": -0.06333333333333335,
+      "paired_losses": 139,
+      "paired_ties": 679,
+      "paired_wins": 82,
+      "target": 3
+    },
+    {
+      "contender_seed_accuracies": [
+        0.21333333333333335,
+        0.19666666666666666,
+        0.18666666666666668
+      ],
+      "control_seed_accuracies": [
+        0.4633333333333333,
+        0.18666666666666668,
+        0.21333333333333335
+      ],
+      "mean_accuracy_delta": -0.08888888888888885,
+      "paired_losses": 199,
+      "paired_ties": 582,
+      "paired_wins": 119,
+      "target": 4
+    }
+  ],
+  "producer_gate": "NOT_MET",
+  "promotion": "NOT_AUTHORIZED",
+  "recovery_bytes": 71995115,
+  "recovery_file_count": 40,
+  "recovery_manifest_sha256": "bfdcc771e4cd2d308e4020e8f3c4f37ee12d888455a008eb6e148b3a0c74f440",
+  "required_free_bytes": 26843545600,
+  "required_free_gib": 25.0,
+  "retention_gate": "MET",
+  "schema": "clay.input-access-efficacy.cloud-verification.v1",
+  "status": "VERIFIED_RESULT_REPLAY_WITH_STORAGE_GATE_VIOLATION",
+  "storage_admission_gate": "VIOLATED",
+  "storage_gate_bug": "producer measured filesystem root instead of the output mount",
+  "variance_gate": "NOT_MET"
+}

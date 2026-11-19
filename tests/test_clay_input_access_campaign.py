@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 import torch
@@ -25,6 +26,7 @@ from python.scbe.clay_input_access_campaign import (
     nonselected_state,
     parse_args,
     producer_gate_met,
+    require_storage,
     state_identical,
     trainable_parameter_names,
     validate_parent_lineage,
@@ -58,6 +60,57 @@ def test_parse_args_pins_three_seed_discovery_budget() -> None:
     assert args.steps == 2000
     assert args.checkpoint_every == 250
     assert args.minimum_free_gib == 25.0
+
+
+def test_next_hybrid_draft_has_exact_matched_parameter_budget() -> None:
+    draft_path = (
+        Path(__file__).parents[1]
+        / "experiments"
+        / "clay_input_access_efficacy_20261119"
+        / "NEXT_HYBRID_PREREGISTRATION_DRAFT.json"
+    )
+    draft = json.loads(draft_path.read_text(encoding="utf-8"))
+    candidate = draft["candidate"]
+    bottleneck = candidate["downstream_adapter"]["bottleneck"]
+    embedding_rows = candidate["action_input_alphabet"]["rows"]
+    embedding_width = candidate["action_input_alphabet"]["embedding_width"]
+    recurrent_width = candidate["causal_gru"]["hidden_width"]
+    downstream = 192 * bottleneck + bottleneck + bottleneck * bottleneck + bottleneck + bottleneck * 192 + 192
+    input_access = (
+        embedding_rows * embedding_width
+        + 3 * recurrent_width * (embedding_width + recurrent_width + 2)
+        + recurrent_width * 192
+        + 192
+    )
+    head = 192 * 276 + 276
+    assert downstream == 49_379
+    assert input_access == 38_173
+    assert head == 53_268
+    assert downstream + input_access + head == 140_820
+    assert candidate["total_trainable_parameters"] == 140_820
+    assert draft["status"] == "DRAFT_NOT_PREREGISTERED_NOT_LAUNCHED"
+
+
+def test_storage_gate_checks_closest_existing_output_filesystem(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    existing = tmp_path / "output-mount"
+    existing.mkdir()
+    pending_output = existing / "new-run" / "campaign"
+    observed: list[Path] = []
+
+    def fake_disk_usage(path: Path) -> SimpleNamespace:
+        observed.append(Path(path))
+        return SimpleNamespace(free=24 * 1024**3)
+
+    monkeypatch.setattr(
+        "python.scbe.clay_input_access_campaign.shutil.disk_usage",
+        fake_disk_usage,
+    )
+    with pytest.raises(RuntimeError, match="storage admission closed"):
+        require_storage(pending_output, 25.0)
+    assert observed == [existing.resolve()]
 
 
 @pytest.mark.parametrize(

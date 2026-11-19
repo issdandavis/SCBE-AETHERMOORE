@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+from types import SimpleNamespace
 
 import pytest
 
@@ -56,6 +57,22 @@ def test_safe_archive_members_rejects_traversal(tmp_path: Path) -> None:
     with zipfile.ZipFile(archive, "r") as handle:
         with pytest.raises(ValueError, match="unsafe archive member"):
             runner.safe_archive_members(handle)
+
+
+def test_output_storage_gate_uses_output_filesystem(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    observed: list[Path] = []
+
+    def fake_disk_usage(path: Path) -> SimpleNamespace:
+        observed.append(Path(path))
+        return SimpleNamespace(free=24 * 1024**3)
+
+    monkeypatch.setattr(runner.shutil, "disk_usage", fake_disk_usage)
+    with pytest.raises(RuntimeError, match="storage admission closed on output filesystem"):
+        runner.require_output_storage(tmp_path, 25.0)
+    assert observed == [tmp_path]
 
 
 def test_packet_builder_supports_direct_cli_help() -> None:

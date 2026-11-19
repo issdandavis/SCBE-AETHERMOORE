@@ -107,7 +107,12 @@ def load_json(path: Path) -> dict[str, Any]:
 
 
 def require_storage(output: Path, minimum_free_gib: float) -> float:
-    anchor = Path(output.anchor or "/")
+    anchor = output.resolve()
+    while not anchor.exists():
+        parent = anchor.parent
+        if parent == anchor:
+            raise RuntimeError(f"cannot locate storage filesystem for {output}")
+        anchor = parent
     free = shutil.disk_usage(anchor).free / (1024**3)
     if free < minimum_free_gib:
         raise RuntimeError(

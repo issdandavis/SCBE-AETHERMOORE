@@ -1,0 +1,99 @@
+{
+  "schema": "clay.input-access-efficacy.final-manifest.v1",
+  "status": "SEALED_NEGATIVE_RESULT_STORAGE_NONCOMPLIANT_NO_PROMOTION",
+  "launch_source_commit": "183f4b915e5f3d5e69c238c6137358c9b8562acc",
+  "cloud": {
+    "kernel_ref": "issacizrealdavis/clay-input-access-efficacy-20261119",
+    "kernel_status": "KernelWorkerStatus.COMPLETE",
+    "dataset_ref": "issacizrealdavis/clay-input-access-efficacy-input-20261119",
+    "dataset_status": "ready",
+    "private": true,
+    "internet": false,
+    "gpu": false,
+    "cpu": true
+  },
+  "launch_packet": {
+    "archive_bytes": 8707005,
+    "archive_sha256": "21ee43590a07a8016757b23d7a9423ec7877146cdaf22b0808ed5de3ca660ef7",
+    "descriptor_sha256": "e52f6b4811520d350e5fd1bc1c29b20f672bb9b04aacada2915cc4efdc1a9613",
+    "packet_manifest_sha256": "f4ba71ee68dfea85a56d8665d844d9315c4eec7e0d44629a3cbcb66d3397622b",
+    "rendered_runner_sha256": "00605f372c9c9cc5a6d682b20080cd48f03ab098349325ed44373a088a75a6f0",
+    "campaign_sha256": "e220c03a038a241bdd89d5bb9f7389dbb20bd26fb8f1a874d4ed3bc65ac08e31",
+    "preregistration_sha256": "f5613e79353dfcdaddb2935e8b087d66f50c025cb31ca75824e17e1bca0f4080",
+    "files": 326
+  },
+  "cloud_result": {
+    "campaign_result_sha256": "a1c4c4361a5ef39c69c722eba1f4aef4fb9e71cc03b0922b6b5d36cebce1f688",
+    "recovery_manifest_sha256": "bfdcc771e4cd2d308e4020e8f3c4f37ee12d888455a008eb6e148b3a0c74f440",
+    "recovery_file_count": 40,
+    "recovery_bytes": 71995115,
+    "promotion": "NOT_AUTHORIZED"
+  },
+  "decision": {
+    "input_access_accuracy_mean": 0.19444444444444445,
+    "downstream_accuracy_mean": 0.21866666666666668,
+    "accuracy_delta": -0.02422222222222223,
+    "accuracy_two_pooled_sd": 0.022456542394061838,
+    "input_access_macro_f1_mean": 0.18944413443243066,
+    "downstream_macro_f1_mean": 0.21151642506457746,
+    "macro_f1_delta": -0.0220722906321468,
+    "macro_f1_two_pooled_sd": 0.025806054125929977,
+    "candidate_seed_wins": 0,
+    "candidate_seed_losses": 3,
+    "paired_accuracy_wins": 639,
+    "paired_accuracy_losses": 748,
+    "paired_accuracy_p": 0.0037172413377040995,
+    "retention_gate": "MET",
+    "variance_gate": "NOT_MET",
+    "finite_evaluation_gate": "NOT_MET",
+    "producer_gate": "NOT_MET",
+    "promotion": "NOT_AUTHORIZED"
+  },
+  "invalidating_admission_finding": {
+    "storage_gate": "VIOLATED",
+    "actual_output_free_bytes": 20916408320,
+    "required_free_bytes": 26843545600,
+    "actual_output_free_gib": 19.479923248291016,
+    "required_free_gib": 25.0,
+    "cause": "campaign inspected the root filesystem instead of the filesystem containing the live output path"
+  },
+  "effective_parameter_finding": {
+    "status": "NOT_MET_ON_ACTUAL_ACTION_TRAINING_ROWS",
+    "selected_scalars_each_arm": 140820,
+    "downstream_changed_scalars_each_seed": 140820,
+    "input_access_changed_scalars_each_seed": 138923,
+    "inactive_input_embedding_rows": 7,
+    "inactive_candidate_scalars": 1897
+  },
+  "local_evidence": {
+    "report": {
+      "path": "REPORT.md",
+      "bytes": 5971,
+      "sha256": "4c4cc8b17d9a6f1b3500f020696f4f2b55d4ec45fc7dcb3c7a4ebebf1eb9f1d2"
+    },
+    "verification_receipt": {
+      "path": "CLOUD_RESULT_VERIFICATION.json",
+      "bytes": 15429,
+      "sha256": "71365ffecc872368c999191d0498e75d286b72decd99239712797c35cb08f86d"
+    },
+    "verification_program": {
+      "path": "verify_cloud_result.py",
+      "bytes": 24638,
+      "sha256": "79b8b147789cfc39decf434047925da05c165fdf1527ee0b0befa59890c80ad0"
+    },
+    "next_hybrid_draft": {
+      "path": "NEXT_HYBRID_PREREGISTRATION_DRAFT.json",
+      "bytes": 4684,
+      "sha256": "6432bc463d877bf1a33f07fc14e7ff9a5d28580e091a7aa3325ec93fd30ae767",
+      "status": "DRAFT_NOT_PREREGISTERED_NOT_LAUNCHED"
+    }
+  },
+  "post_run_repairs": {
+    "campaign_source_sha256": "832d9d1a164a77f8b43934193e53f9d34fad98c55fd694c8c46bebc143dad792",
+    "cloud_runner_source_sha256": "1b2042a30eb30835ae0da70147d50f8a0f1a14e3a90efc2bfd9510f982223c57",
+    "focused_tests": "37 passed",
+    "ruff": "PASS",
+    "scope": "Fail-closed closest-existing-path and exact output-filesystem storage checks; no weights changed."
+  },
+  "claim_boundary": "The negative efficacy result and all model metrics replayed. This cloud segment cannot be treated as a preregistration-compliant promotion trial because its 25 GiB storage admission gate measured the wrong filesystem. No weights were promoted."
+}

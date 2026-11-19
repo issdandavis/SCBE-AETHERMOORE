@@ -287,6 +287,17 @@ def validate_existing_output(
     return None
 
 
+def require_output_storage(output_root: Path, minimum_free_gib: float) -> int:
+    free_bytes = int(shutil.disk_usage(output_root).free)
+    required_bytes = int(minimum_free_gib * 1024**3)
+    if free_bytes < required_bytes:
+        raise RuntimeError(
+            "storage admission closed on output filesystem: "
+            f"{free_bytes / 1024**3:.3f} GiB < {minimum_free_gib:.3f} GiB"
+        )
+    return free_bytes
+
+
 def run_private_segment(args: argparse.Namespace) -> dict[str, Any]:
     input_root = args.input_root.resolve(strict=True)
     output_root = args.output_root.resolve()
@@ -341,6 +352,11 @@ def run_private_segment(args: argparse.Namespace) -> dict[str, Any]:
     if completed is not None:
         return completed
 
+    free_bytes = require_output_storage(
+        output_root,
+        float(config["minimum_free_gib"]),
+    )
+
     environment = {
         "schema": f"{RECEIPT_SCHEMA}.environment",
         "checked_at_utc": utc_now(),
@@ -348,7 +364,7 @@ def run_private_segment(args: argparse.Namespace) -> dict[str, Any]:
         "python": sys.version,
         "torch": torch.__version__,
         "cuda_available": torch.cuda.is_available(),
-        "free_bytes": shutil.disk_usage(output_root).free,
+        "free_bytes": free_bytes,
         "dataset_descriptor_sha256": sha256_file(descriptor_path),
         "packet_manifest_sha256": sha256_file(runtime_root / PACKET_MANIFEST_NAME),
         "config": config,

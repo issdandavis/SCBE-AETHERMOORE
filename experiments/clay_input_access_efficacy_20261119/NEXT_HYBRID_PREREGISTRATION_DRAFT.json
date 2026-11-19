@@ -1,0 +1,96 @@
+{
+  "schema": "clay.hybrid-input-access-efficacy-preregistration-draft.v1",
+  "status": "DRAFT_NOT_PREREGISTERED_NOT_LAUNCHED",
+  "created_from_result_sha256": "a1c4c4361a5ef39c69c722eba1f4aef4fb9e71cc03b0922b6b5d36cebce1f688",
+  "hypothesis": "A zero-gated hybrid that retains downstream nonlinear capacity and adds bounded causal raw-input access beats both the exact-size downstream-only control and the immutable no-intervention baseline.",
+  "evidence_basis": {
+    "candidate_minus_control_mean_accuracy": -0.02422222222222223,
+    "candidate_minus_control_mean_macro_f1": -0.0220722906321468,
+    "per_target_accuracy_delta": {
+      "0": 0.03555555555555556,
+      "1": -0.008888888888888863,
+      "2": 0.004444444444444473,
+      "3": -0.06333333333333335,
+      "4": -0.0888888888888889
+    },
+    "interpretation": "Raw input carried limited target-0/2 signal, but replacing the full downstream adapter damaged target-3/4 performance. The next candidate preserves both paths."
+  },
+  "candidate": {
+    "name": "hybrid_downstream101_compact_input269x80_gru31",
+    "frozen_parent": ["e", "g", "count_head"],
+    "fusion": "adapter_bottleneck_101(frozen_hidden) + zero_initialized_input_up(causal_raw_input_state)",
+    "action_input_alphabet": {
+      "rows": 269,
+      "rule": "Static action-contract alphabet containing every ID present in actual action-training inputs plus the token-zero causal anchor; fail closed on any unmapped action input.",
+      "embedding_width": 80,
+      "embedding_parameters": 21520
+    },
+    "causal_gru": {
+      "input_width": 80,
+      "hidden_width": 31,
+      "parameters": 10509
+    },
+    "input_up": {
+      "shape": "31_to_192",
+      "parameters": 6144,
+      "initialization": "zeros"
+    },
+    "downstream_adapter": {
+      "hidden_width": 192,
+      "bottleneck": 101,
+      "parameters": 49379,
+      "up_initialization": "zeros"
+    },
+    "action_head": {
+      "shape": "192_to_276",
+      "parameters": 53268
+    },
+    "total_trainable_parameters": 140820,
+    "initial_logits_requirement": "bit-identical to downstream-only control within the same runtime"
+  },
+  "controls": [
+    {
+      "name": "downstream_only",
+      "architecture": "Adapter(192,bottleneck=160)+Linear(192,276)",
+      "total_trainable_parameters": 140820
+    },
+    {
+      "name": "no_intervention_adapter",
+      "source": "immutable pinned parent baseline"
+    }
+  ],
+  "run_contract": {
+    "loss": "standard_pytorch_cross_entropy",
+    "seeds": [20261144, 20261145, 20261146],
+    "steps": 2000,
+    "checkpoint_every": 250,
+    "batch_size": 128,
+    "threads": 2,
+    "device": "cpu",
+    "cloud": "PRIVATE_OFFLINE_HEADLESS",
+    "promotion": "NONE_WITHOUT_INDEPENDENT_REPLAY"
+  },
+  "mandatory_preflight": {
+    "actual_training_row_coverage": "Every compact embedding row must occur in the real action-training inputs, including row zero through the causal anchor.",
+    "effective_dof": "After a deterministic two-step witness on actual training rows, every one of 140820 selected scalars in both arms must be gradient-reachable; final changed-scalar count must also be 140820 in every trained arm.",
+    "causality": "Changing a future input token cannot alter earlier sidecar outputs.",
+    "initialization": "Candidate and control action logits must be bit-identical for all preregistered initial probes within the execution runtime.",
+    "frozen_state": "All non-selected tensors, including e, g, count_head, and unused modules, remain byte-identical.",
+    "breaker": "Independent mutation suite and LAUNCH_GATE_PASS required before upload."
+  },
+  "storage_contract": {
+    "training_scratch_minimum_free_gib": 25.0,
+    "training_scratch_measurement": "Measure the exact existing filesystem that will contain live models and checkpoints; never Path.anchor or a different mount.",
+    "durable_output": "Separately preflight bounded durable-copy capacity, hash-copy each checkpoint/result from scratch, and prove hash-gated restore before launch.",
+    "prohibition": "Do not lower or reinterpret the 25 GiB training gate."
+  },
+  "decision_gate": {
+    "seeds": 3,
+    "metrics": ["accuracy", "macro_f1"],
+    "controls": ["downstream_only", "no_intervention_adapter"],
+    "variance": "positive mean delta greater than two pooled standard deviations for both metrics against both controls",
+    "finite_evaluation": "Bonferroni family alpha 0.05 across paired exact accuracy and seed-target-stratified paired bootstrap macro-F1 against both controls",
+    "retention": "exact parent counting score and frozen/non-selected tensor hashes",
+    "promotion": "Only after every gate passes and independent replay agrees"
+  }
+}
