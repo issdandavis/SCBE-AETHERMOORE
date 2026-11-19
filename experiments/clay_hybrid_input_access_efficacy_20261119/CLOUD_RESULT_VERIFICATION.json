@@ -1,0 +1,312 @@
+{
+  "archive_sha256": "ed5aa4c17e1e600571141983fb9b14efb1f2b0beafa7afa82ea25b84e24ae027",
+  "arms": [
+    {
+      "accuracy": 0.214,
+      "arm": "downstream_only",
+      "checkpoint_steps": [
+        1750,
+        2000
+      ],
+      "counting_accuracy": 0.7037037037037037,
+      "effective_changed_scalars": 140820,
+      "final_loss": 0.7849979996681213,
+      "frozen_core_bit_identical": true,
+      "macro_f1": 0.19939021045190186,
+      "model_sha256": "e86057a91e5987aa409286fff514b04d45982dbcfa7bfe7ac0a3b738560640c5",
+      "seed": 20261134
+    },
+    {
+      "accuracy": 0.22,
+      "arm": "downstream_only",
+      "checkpoint_steps": [
+        1750,
+        2000
+      ],
+      "counting_accuracy": 0.37037037037037035,
+      "effective_changed_scalars": 140820,
+      "final_loss": 0.4004333019256592,
+      "frozen_core_bit_identical": true,
+      "macro_f1": 0.2191255159787721,
+      "model_sha256": "0bf8178b0034d980e188109f082a115a8607f7de8e8015a6e8ee9f1b163b8e80",
+      "seed": 20261135
+    },
+    {
+      "accuracy": 0.20466666666666666,
+      "arm": "downstream_only",
+      "checkpoint_steps": [
+        1750,
+        2000
+      ],
+      "counting_accuracy": 0.4074074074074074,
+      "effective_changed_scalars": 140820,
+      "final_loss": 0.5315747857093811,
+      "frozen_core_bit_identical": true,
+      "macro_f1": 0.19988428485920867,
+      "model_sha256": "9f9f2fd22a56f3ae11557cd4fb68a1f0349740bf07ce5163c82a8e95cbfaed6a",
+      "seed": 20261136
+    },
+    {
+      "accuracy": 0.202,
+      "arm": "hybrid_input_access",
+      "checkpoint_steps": [
+        1750,
+        2000
+      ],
+      "counting_accuracy": 0.7037037037037037,
+      "effective_changed_scalars": 140820,
+      "final_loss": 0.04002123698592186,
+      "frozen_core_bit_identical": true,
+      "macro_f1": 0.20098711816024664,
+      "model_sha256": "4c8a6a2946ee50663d8c2a04187534900d5bf94ea602227b337980bbf2dba34f",
+      "seed": 20261134
+    },
+    {
+      "accuracy": 0.20866666666666667,
+      "arm": "hybrid_input_access",
+      "checkpoint_steps": [
+        1750,
+        2000
+      ],
+      "counting_accuracy": 0.37037037037037035,
+      "effective_changed_scalars": 140820,
+      "final_loss": 0.0006585377268493176,
+      "frozen_core_bit_identical": true,
+      "macro_f1": 0.2081064158010566,
+      "model_sha256": "3d744b785a19b09b1059ac078a64a4e1dc81d13ef0d60e236e92b650f81d5837",
+      "seed": 20261135
+    },
+    {
+      "accuracy": 0.202,
+      "arm": "hybrid_input_access",
+      "checkpoint_steps": [
+        1750,
+        2000
+      ],
+      "counting_accuracy": 0.4074074074074074,
+      "effective_changed_scalars": 140820,
+      "final_loss": 0.0004082819214090705,
+      "frozen_core_bit_identical": true,
+      "macro_f1": 0.20103211990346667,
+      "model_sha256": "93c30d5e61196d64ded6cab73101914ce1cf9f78f4d2558d3d5de344dd48638f",
+      "seed": 20261136
+    }
+  ],
+  "campaign_result_sha256": "dca45900347bb9573b6448fbd21964de4c4292f6f93f3b47f7b4dbb86576b9a1",
+  "claim_boundary": "This receipt verifies the bounded discovery campaign. A producer-gate pass would require fresh replication and still cannot promote or overwrite weights. This hybrid architecture comparison is not evidence about stable cross entropy.",
+  "comparisons": {
+    "downstream_only_vs_no_intervention": {
+      "finite_evaluation": {
+        "accuracy": {
+          "clears_finite_uncertainty_gate": true,
+          "examples": 4500,
+          "family_alpha": 0.05,
+          "losses": 0,
+          "method": "two_sided_exact_mcnemar",
+          "per_test_alpha": 0.0125,
+          "test_count": 4,
+          "ties": 3542,
+          "two_sided_exact_p": 8.209073602596753e-289,
+          "wins": 958
+        },
+        "macro_f1": {
+          "clears_finite_uncertainty_gate": true,
+          "family_alpha": 0.05,
+          "lower_order_statistic_index": 124,
+          "method": "deterministic_seed_target_stratified_paired_bootstrap",
+          "observed_mean_macro_f1_delta": 0.20613333709662754,
+          "one_sided_lower_bound": 0.1927043382835254,
+          "per_test_alpha": 0.0125,
+          "replicates": 10000,
+          "seed": 20261221,
+          "test_count": 4
+        }
+      },
+      "metrics": {
+        "accuracy": {
+          "clears_positive_gate": true,
+          "contender_mean": 0.2128888888888889,
+          "control_mean": 0.0,
+          "matched_seed_losses": 0,
+          "matched_seed_wins": 3,
+          "mean_delta": 0.2128888888888889,
+          "metric": "accuracy",
+          "pooled_sd": 0.005463684823619667,
+          "two_pooled_sd": 0.010927369647239334
+        },
+        "macro_f1": {
+          "clears_positive_gate": true,
+          "contender_mean": 0.20613333709662754,
+          "control_mean": 0.0,
+          "matched_seed_losses": 0,
+          "matched_seed_wins": 3,
+          "mean_delta": 0.20613333709662754,
+          "metric": "macro_f1",
+          "pooled_sd": 0.007957969636132739,
+          "two_pooled_sd": 0.015915939272265478
+        }
+      },
+      "paired": {
+        "clears_finite_uncertainty_gate": true,
+        "examples": 4500,
+        "family_alpha": 0.05,
+        "losses": 0,
+        "method": "two_sided_exact_mcnemar",
+        "per_test_alpha": 0.0125,
+        "test_count": 4,
+        "ties": 3542,
+        "two_sided_exact_p": 8.209073602596753e-289,
+        "wins": 958
+      }
+    },
+    "hybrid_vs_downstream_only": {
+      "finite_evaluation": {
+        "accuracy": {
+          "clears_finite_uncertainty_gate": false,
+          "examples": 4500,
+          "family_alpha": 0.05,
+          "losses": 748,
+          "method": "two_sided_exact_mcnemar",
+          "per_test_alpha": 0.0125,
+          "test_count": 4,
+          "ties": 3043,
+          "two_sided_exact_p": 0.31947942453804906,
+          "wins": 709
+        },
+        "macro_f1": {
+          "clears_finite_uncertainty_gate": false,
+          "family_alpha": 0.05,
+          "lower_order_statistic_index": 124,
+          "method": "deterministic_seed_target_stratified_paired_bootstrap",
+          "observed_mean_macro_f1_delta": -0.002758119141704235,
+          "one_sided_lower_bound": -0.021674605742740966,
+          "per_test_alpha": 0.0125,
+          "replicates": 10000,
+          "seed": 20261219,
+          "test_count": 4
+        }
+      },
+      "metrics": {
+        "accuracy": {
+          "clears_positive_gate": false,
+          "contender_mean": 0.20422222222222222,
+          "control_mean": 0.2128888888888889,
+          "matched_seed_losses": 3,
+          "matched_seed_wins": 0,
+          "mean_delta": -0.008666666666666684,
+          "metric": "accuracy",
+          "pooled_sd": 0.006104036308809053,
+          "two_pooled_sd": 0.012208072617618106
+        },
+        "macro_f1": {
+          "clears_positive_gate": false,
+          "contender_mean": 0.2033752179549233,
+          "control_mean": 0.20613333709662754,
+          "matched_seed_losses": 1,
+          "matched_seed_wins": 2,
+          "mean_delta": -0.002758119141704235,
+          "metric": "macro_f1",
+          "pooled_sd": 0.008468979942793782,
+          "two_pooled_sd": 0.016937959885587564
+        }
+      },
+      "paired": {
+        "clears_finite_uncertainty_gate": false,
+        "examples": 4500,
+        "family_alpha": 0.05,
+        "losses": 748,
+        "method": "two_sided_exact_mcnemar",
+        "per_test_alpha": 0.0125,
+        "test_count": 4,
+        "ties": 3043,
+        "two_sided_exact_p": 0.31947942453804906,
+        "wins": 709
+      }
+    },
+    "hybrid_vs_no_intervention": {
+      "finite_evaluation": {
+        "accuracy": {
+          "clears_finite_uncertainty_gate": true,
+          "examples": 4500,
+          "family_alpha": 0.05,
+          "losses": 0,
+          "method": "two_sided_exact_mcnemar",
+          "per_test_alpha": 0.0125,
+          "test_count": 4,
+          "ties": 3581,
+          "two_sided_exact_p": 4.512985939662074e-277,
+          "wins": 919
+        },
+        "macro_f1": {
+          "clears_finite_uncertainty_gate": true,
+          "family_alpha": 0.05,
+          "lower_order_statistic_index": 124,
+          "method": "deterministic_seed_target_stratified_paired_bootstrap",
+          "observed_mean_macro_f1_delta": 0.2033752179549233,
+          "one_sided_lower_bound": 0.19005556310533786,
+          "per_test_alpha": 0.0125,
+          "replicates": 10000,
+          "seed": 20261220,
+          "test_count": 4
+        }
+      },
+      "metrics": {
+        "accuracy": {
+          "clears_positive_gate": true,
+          "contender_mean": 0.20422222222222222,
+          "control_mean": 0.0,
+          "matched_seed_losses": 0,
+          "matched_seed_wins": 3,
+          "mean_delta": 0.20422222222222222,
+          "metric": "accuracy",
+          "pooled_sd": 0.0027216552697590817,
+          "two_pooled_sd": 0.0054433105395181635
+        },
+        "macro_f1": {
+          "clears_positive_gate": true,
+          "contender_mean": 0.2033752179549233,
+          "control_mean": 0.0,
+          "matched_seed_losses": 0,
+          "matched_seed_wins": 3,
+          "mean_delta": 0.2033752179549233,
+          "metric": "macro_f1",
+          "pooled_sd": 0.0028972988354384033,
+          "two_pooled_sd": 0.005794597670876807
+        }
+      },
+      "paired": {
+        "clears_finite_uncertainty_gate": true,
+        "examples": 4500,
+        "family_alpha": 0.05,
+        "losses": 0,
+        "method": "two_sided_exact_mcnemar",
+        "per_test_alpha": 0.0125,
+        "test_count": 4,
+        "ties": 3581,
+        "two_sided_exact_p": 4.512985939662074e-277,
+        "wins": 919
+      }
+    }
+  },
+  "datasets": {
+    "packet": "issacizrealdavis/clay-hybrid-input-access-efficacy-input-20261119",
+    "prior_recovery": "issacizrealdavis/clay-hybrid-input-access-recovery-20261119"
+  },
+  "descriptor_sha256": "60cd8a8069f953614f8103b0b06137e0302c39a066a56912157347ca50cef711",
+  "finite_evaluation_gate": "NOT_MET",
+  "kernel": {
+    "ref": "issacizrealdavis/clay-hybrid-input-access-efficacy-20261119",
+    "status": "COMPLETE",
+    "version": 2
+  },
+  "packet_manifest_sha256": "55eaa4afa116d49d5ab7d23cfb3b87efe2b44ae40db46307769628e034d8cfc6",
+  "producer_gate": "NOT_MET",
+  "promotion": "NOT_AUTHORIZED",
+  "recovery_bytes": 68970633,
+  "recovery_file_count": 44,
+  "recovery_manifest_sha256": "b706776f1b9fd9fa68fbfb53b3850a2f577ef0b2ac4c3c3d1588f0479dc1ed6a",
+  "retention_and_effective_capacity_gate": "MET",
+  "schema": "clay.hybrid-input-access-efficacy.cloud-verification.v1",
+  "status": "VERIFIED_COMPLETE",
+  "variance_gate": "NOT_MET"
+}

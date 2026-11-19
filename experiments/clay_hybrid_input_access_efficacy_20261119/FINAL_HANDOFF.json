@@ -1,0 +1,95 @@
+{
+  "schema": "clay.hybrid-input-access-efficacy.final-handoff.v1",
+  "status": "VERIFIED_COMPLETE_NO_PROMOTION",
+  "date": "2026-11-19",
+  "hybrid_campaign": {
+    "kernel": {
+      "ref": "issacizrealdavis/clay-hybrid-input-access-efficacy-20261119",
+      "kernel_id": 146028176,
+      "version": 2,
+      "status": "COMPLETE",
+      "private": true,
+      "internet": false,
+      "gpu": false,
+      "tpu": false
+    },
+    "datasets": {
+      "packet": "issacizrealdavis/clay-hybrid-input-access-efficacy-input-20261119",
+      "prior_recovery": "issacizrealdavis/clay-hybrid-input-access-recovery-20261119"
+    },
+    "anchors": {
+      "archive_sha256": "ed5aa4c17e1e600571141983fb9b14efb1f2b0beafa7afa82ea25b84e24ae027",
+      "descriptor_sha256": "60cd8a8069f953614f8103b0b06137e0302c39a066a56912157347ca50cef711",
+      "packet_manifest_sha256": "55eaa4afa116d49d5ab7d23cfb3b87efe2b44ae40db46307769628e034d8cfc6",
+      "campaign_result_sha256": "dca45900347bb9573b6448fbd21964de4c4292f6f93f3b47f7b4dbb86576b9a1",
+      "recovery_manifest_sha256": "b706776f1b9fd9fa68fbfb53b3850a2f577ef0b2ac4c3c3d1588f0479dc1ed6a",
+      "replay_receipt_sha256": "26c5b5ac43c3795cbe81f7ed9fca4321ff9f6eeefc8082991a3480e3d6cbfba8"
+    },
+    "recovery_inventory": {
+      "file_count": 44,
+      "total_bytes": 68970633
+    },
+    "hybrid_vs_downstream_only": {
+      "accuracy": {
+        "hybrid_mean": 0.20422222222222222,
+        "control_mean": 0.2128888888888889,
+        "mean_delta": -0.008666666666666684,
+        "two_pooled_sd": 0.012208072617618106,
+        "clears_positive_gate": false
+      },
+      "macro_f1": {
+        "hybrid_mean": 0.2033752179549233,
+        "control_mean": 0.20613333709662754,
+        "mean_delta": -0.002758119141704235,
+        "two_pooled_sd": 0.016937959885587564,
+        "bootstrap_one_sided_lower_bound": -0.021674605742740966,
+        "clears_positive_gate": false
+      },
+      "paired_accuracy": {
+        "wins": 709,
+        "losses": 748,
+        "ties": 3043,
+        "two_sided_exact_p": 0.31947942453804906,
+        "clears_finite_uncertainty_gate": false
+      }
+    },
+    "gates": {
+      "variance_gate": "NOT_MET",
+      "finite_evaluation_gate": "NOT_MET",
+      "retention_and_effective_capacity_gate": "MET",
+      "producer_gate": "NOT_MET",
+      "promotion": "NOT_AUTHORIZED"
+    }
+  },
+  "stable_cross_entropy_campaign": {
+    "status": "ALREADY_VERIFIED_COMPLETE_NOT_RELAUNCHED",
+    "kernel": {
+      "ref": "issacizrealdavis/clay-stable-ce-efficacy-20261119",
+      "version": 2,
+      "status": "COMPLETE",
+      "private": true,
+      "internet": false,
+      "gpu": false,
+      "tpu": false
+    },
+    "packet_dataset": "issacizrealdavis/clay-stable-ce-efficacy-input-20261119",
+    "verification_receipt_sha256": "6e088608ba3af3840be8a5fa9ce7f32bdfb214ae46781d67989059be11cccf7d",
+    "campaign_result_sha256": "84f17c09c86b098203da01863350174586d2e29632a7bda190b30873c91e2da2",
+    "recovery_manifest_sha256": "e2e4053acaf337c097d38c3e1fa56ebe4582f101d4f4f70aa053c38d15e517a4",
+    "stable_vs_standard": {
+      "accuracy_delta": -0.0013333333333333253,
+      "accuracy_two_pooled_sd": 0.011875901525233231,
+      "macro_f1_delta": 0.001904138191905158,
+      "macro_f1_two_pooled_sd": 0.01834550246477235,
+      "paired_accuracy_wins": 304,
+      "paired_accuracy_losses": 310,
+      "paired_accuracy_ties": 3886,
+      "paired_accuracy_p": 0.8401065094137449
+    },
+    "producer_gate": "NOT_MET",
+    "promotion": "NOT_AUTHORIZED",
+    "claim_boundary": "Numerical-fidelity improvement is separate from controlled task efficacy."
+  },
+  "weights_promoted": false,
+  "training_relaunched": false
+}

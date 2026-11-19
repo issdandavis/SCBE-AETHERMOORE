@@ -1,61 +1,115 @@
-# Clay hybrid input-access packet
+# Clay hybrid input-access efficacy campaign
 
 Date: 2026-11-19
 
-Status: staged locally for independent breaker review. Nothing was uploaded,
-launched, published, merged, or promoted.
+Status: `VERIFIED_COMPLETE`; producer gate `NOT_MET`; promotion `NOT_AUTHORIZED`.
 
-## Executable architecture
+## Outcome
 
-The candidate keeps a 49,379-scalar downstream adapter and adds a 38,173-scalar
-causal reader over the 269 action-input IDs that actually occur. The unchanged
-53,268-scalar action head makes the total exactly 140,820, matching the ordinary
-downstream-only control.
+The bounded hybrid input-access candidate did not beat its exact-size downstream-only
+control. Independent local replay reopened every recovered model and checkpoint,
+recomputed all 9,000 trained-arm held-out predictions, reran counting retention, and
+recomputed the preregistered variance and finite-evaluation gates.
 
-The raw residual projection and downstream adapter projection start at zero.
-All three pinned parents therefore produced bit-identical candidate/control
-action logits at initialization. On regenerated, hash-pinned training rows,
-both arms had 140,820/140,820 gradient-reachable and 140,820/140,820
-deterministically changeable scalars for every seed. Action IDs 3, 10-14, and 18
-are absent from the training alphabet and fail closed in the candidate action
-path; the frozen counting path bypasses this remap.
+| Arm | Seed | Accuracy | Macro-F1 | Counting | Final loss | Model SHA-256 |
+|---|---:|---:|---:|---:|---:|---|
+| downstream-only | 20261134 | 0.214000 | 0.199390 | 0.703704 | 0.784998 | `e86057a9...40c5` |
+| downstream-only | 20261135 | 0.220000 | 0.219126 | 0.370370 | 0.400433 | `0bf8178b...8e80` |
+| downstream-only | 20261136 | 0.204667 | 0.199884 | 0.407407 | 0.531575 | `9f9f2fd2...ed6a` |
+| hybrid input access | 20261134 | 0.202000 | 0.200987 | 0.703704 | 0.040021 | `4c8a6a29...a34f` |
+| hybrid input access | 20261135 | 0.208667 | 0.208106 | 0.370370 | 0.000659 | `3d744b78...5837` |
+| hybrid input access | 20261136 | 0.202000 | 0.201032 | 0.407407 | 0.000408 | `93c30d5e...638f` |
 
-## Storage and recovery
+Hybrid versus downstream-only:
 
-Training is staged for a scratch root whose exact filesystem must have at least
-26 GiB free at launch. The wrapper checks a hard 25 GiB runtime floor at every
-checkpoint event. Durable output is measured separately and must have at least
-1 GiB free before a copy. Checkpoint slots are hash-copied before `latest.json`,
-and recovery validates exact byte counts, hashes, file counts, and inventories.
+- Accuracy: `0.2042222` versus `0.2128889`; delta `-0.0086667`, while a
+  positive delta greater than `0.0122081` was required by the 2-pooled-SD gate.
+- Macro-F1: `0.2033752` versus `0.2061333`; delta `-0.0027581`, while a
+  positive delta greater than `0.0169380` was required.
+- Paired accuracy: 709 wins, 748 losses, 3,043 ties; exact two-sided
+  McNemar `p = 0.3194794`.
+- The deterministic seed/target-stratified paired-bootstrap lower bound for
+  macro-F1 was `-0.0216746`.
 
-The wrapper defaults to scratch under `/tmp` and durable output under
-`/kaggle/working`, but neither path is trusted by name: their actual existing
-filesystem anchors and free bytes are measured before execution.
+The candidate and the downstream control both beat the immutable no-intervention
+baseline, whose action accuracy and macro-F1 were zero. That does not rescue the
+candidate: the preregistration required beating both controls. Counting accuracy was
+bit-identical to each seed's immutable parent for both trained arms. All frozen-core
+and nonselected tensors were unchanged, each arm changed exactly 140,820 effective
+scalars, and both checkpoint slots were finite and authenticated at steps 1,750 and
+2,000.
 
-## Sealed packet
+Final gates:
 
-- Source commit: `20e9d8f498c468f327ff38050e13094be674d973`
-- Archive: `69c0da60...9fc8` (8,717,346 bytes)
-- Descriptor: `ed344dfe...8218`
-- Packet manifest: `6c612a40...4b32`
-- Campaign: `ed0d1f29...e4c`
-- Preregistration: `b5de5a9c...656b`
-- Rendered runner: `26133f46...838e`
-- Inventory: 327 files
+- variance gate: `NOT_MET`
+- finite-evaluation gate: `NOT_MET`
+- retention and effective-capacity gate: `MET`
+- producer gate: `NOT_MET`
+- promotion: `NOT_AUTHORIZED`
 
-Two independent neutral-suffix extractions reverified the same manifest and all
-327 files. Extracted-packet code regenerated dataset `7460665c...0041`, vocab
-276, compact alphabet 269, all parent lineages, all parameter/effective-capacity
-counts, and the bit-identical initial probes across all three seeds.
+## Exact cloud lineage
 
-Focused and prior-campaign regression evidence: 63 pytest cases passed and Ruff passed. The exact external
-packet is at
-`C:\dev\_kaggle_stage\clay-hybrid-input-access-efficacy-20261119-v1`.
+- Kernel: `issacizrealdavis/clay-hybrid-input-access-efficacy-20261119`,
+  kernel ID 146028176, version 2, private/offline/CPU, terminal `COMPLETE`.
+- Packet dataset:
+  `issacizrealdavis/clay-hybrid-input-access-efficacy-input-20261119`.
+- Prior-recovery dataset:
+  `issacizrealdavis/clay-hybrid-input-access-recovery-20261119`.
+- Archive SHA-256: `ed5aa4c17e1e600571141983fb9b14efb1f2b0beafa7afa82ea25b84e24ae027`.
+- Descriptor SHA-256: `60cd8a8069f953614f8103b0b06137e0302c39a066a56912157347ca50cef711`.
+- Packet manifest SHA-256: `55eaa4afa116d49d5ab7d23cfb3b87efe2b44ae40db46307769628e034d8cfc6`.
+- Campaign result SHA-256: `dca45900347bb9573b6448fbd21964de4c4292f6f93f3b47f7b4dbb86576b9a1`.
+- Recovery manifest SHA-256: `b706776f1b9fd9fa68fbfb53b3850a2f577ef0b2ac4c3c3d1588f0479dc1ed6a`.
+- Recovery inventory: 44 files, 68,970,633 bytes.
+- Generated and tracked replay receipt SHA-256:
+  `26c5b5ac43c3795cbe81f7ed9fca4321ff9f6eeefc8082991a3480e3d6cbfba8`.
 
-## Gate
+Version 2 resumed the authenticated version-1 campaign in place. Its durable run
+manifest therefore names the authenticated v1 campaign source, while the sealed v2
+packet names the recovery-aware source. The verifier validates both links. Treating
+the durable v1 manifest as though it were freshly generated by v2 was the only local
+verifier discrepancy found; it did not affect cloud bytes, predictions, metrics, or
+the decision gate.
 
-Upload and execution remain closed until MainLane independently audits the exact
-packet bytes and reports a breaker pass. Even a completed cloud result would be
-measurement-only: promotion still requires both preregistered controls, both
-metrics over 2 pooled standard deviations, all four finite paired gates,
-retention, exact-capacity checks, and independent replay.
+## Executable architecture and controls
+
+The candidate combined a 49,379-scalar downstream adapter, a 38,173-scalar causal
+reader over the 269 observed action-input IDs, and the unchanged 53,268-scalar action
+head. Total selected, reachable, and changed capacity was exactly 140,820 scalars,
+matching the ordinary downstream-only control. Zero-gated residuals made all three
+candidate/control action probes bit-identical at initialization. Action IDs 3,
+10-14, and 18 were absent from the training alphabet and failed closed in the
+candidate action path; counting bypassed the compact remap.
+
+Training used the measured `/tmp` scratch filesystem with the hard 25 GiB runtime
+floor and a separate 1 GiB durable-output guard. The terminal storage receipt showed
+about 2.699 TB free on scratch and 20.87 GB free on durable output. No storage gate
+was lowered.
+
+## Separate stable-cross-entropy control
+
+This hybrid result is not evidence for or against stable cross entropy. The already
+completed controlled stable-CE version-2 campaign was audited separately and was not
+relaunched:
+
+- Stable versus standard accuracy: `0.2115556` versus `0.2128889`; delta
+  `-0.0013333`, required `+0.0118759`.
+- Stable versus standard macro-F1: `0.2080375` versus `0.2061333`; delta
+  `+0.0019041`, required `+0.0183455`.
+- Paired accuracy: 304 wins, 310 losses, 3,886 ties; `p = 0.8401065`.
+- Producer gate: `NOT_MET`; promotion: `NOT_AUTHORIZED`.
+
+Stable CE did improve float32 numerical fidelity versus float64 reference, including
+eliminating 3,172 rounded-zero losses/target gradients in the independent stress
+audit. That is a numerical result only; it did not produce a controlled efficacy win.
+
+## Evidence
+
+- `CLOUD_RESULT_VERIFICATION.json`: exact hybrid cloud recovery and replay receipt.
+- `verify_cloud_result.py`: read-only replay verifier.
+- `V2_CLOUD_HANDOFF.json`: authenticated recovery launch and early checkpoint handoff.
+- `V2_RECOVERY_ADMISSION_RECEIPT.json`: sealed v2 recovery admission.
+- `../clay_stable_cross_entropy_audit_20261119/CLOUD_RESULT_VERIFICATION.json`:
+  separate stable-CE cloud replay receipt.
+
+No model weights were promoted, overwritten, published, or merged.
