@@ -180,6 +180,50 @@ def test_same_run_incomplete_output_is_resume_eligible(tmp_path) -> None:
     )
 
 
+def test_pinned_prior_import_is_idempotent_for_same_run_resume(
+    tmp_path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    input_root = tmp_path / "input"
+    prior = input_root / "prior-output"
+    prior_checkpoint = prior / "campaign" / "checkpoints" / "slot-0.pt"
+    prior_checkpoint.parent.mkdir(parents=True)
+    prior_checkpoint.write_bytes(b"pinned-prior")
+    recovery = write_recovery_manifest(prior)
+    monkeypatch.setattr(
+        runner,
+        "EXPECTED_PRIOR_RECOVERY_SHA256",
+        sha256_file(recovery),
+    )
+    output = tmp_path / "working"
+    output.mkdir()
+    assert runner.import_prior_campaign(input_root, output)
+    assert (output / "campaign" / "checkpoints" / "slot-0.pt").read_bytes() == b"pinned-prior"
+    assert not runner.import_prior_campaign(input_root, output)
+
+
+def test_pinned_prior_import_rejects_forged_checkpoint(
+    tmp_path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    input_root = tmp_path / "input"
+    prior = input_root / "prior-output"
+    checkpoint = prior / "campaign" / "checkpoints" / "slot-0.pt"
+    checkpoint.parent.mkdir(parents=True)
+    checkpoint.write_bytes(b"trusted")
+    recovery = write_recovery_manifest(prior)
+    monkeypatch.setattr(
+        runner,
+        "EXPECTED_PRIOR_RECOVERY_SHA256",
+        sha256_file(recovery),
+    )
+    checkpoint.write_bytes(b"forged")
+    output = tmp_path / "working"
+    output.mkdir()
+    with pytest.raises(RuntimeError):
+        runner.import_prior_campaign(input_root, output)
+
+
 def test_packet_exact_trust_anchors_accept_only_pinned_bytes(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
