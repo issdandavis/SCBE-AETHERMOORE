@@ -1,0 +1,39 @@
+{
+  "schema": "clay.stable-ce-efficacy.preregistration.v1",
+  "date": "2026-11-19",
+  "authority": "PRIVATE_CONTROLLED_TRAINING_MEASUREMENT_ONLY_NO_PROMOTION",
+  "question": "Does stable_log1p improve matched frozen-multiview adapter learning over unchanged standard cross entropy?",
+  "baseline_run_manifest_sha256": "7f2516af8ae5a122f357565afad60ab412fdf54e76a3018cd8f1ddbfdb702a97",
+  "baseline_result_sha256": "c5261ada862a2851db0b1dd7e53835b5ddef22299660921527a249a866361482",
+  "dataset_manifest_sha256": "7460665cbb718097438227c452f1915e88bdc5a10ac643122b17908b505d0041",
+  "seeds": [20261134, 20261135, 20261136],
+  "arms": [
+    "no_intervention_adapter",
+    "standard",
+    "stable_log1p"
+  ],
+  "matched_training": {
+    "stage": "frozen_adapter_multiview",
+    "steps": 2000,
+    "batch_size": 128,
+    "checkpoint_every": 250,
+    "learning_rate": 0.002,
+    "parent_initialization": "same immutable parent bytes per seed",
+    "sampler_schedule": "same deterministic seed and row order across loss arms",
+    "only_intervention": "hard-target cross-entropy mode"
+  },
+  "primary_metrics": [
+    "source-disjoint holdout accuracy",
+    "source-disjoint holdout macro_f1"
+  ],
+  "decision_rule": "stable_log1p must beat both standard and no-intervention by more than two times pooled standard deviation on both primary metrics",
+  "claim_boundary": "This bounded segment measures direction and variance. It does not replace a full-budget replication and cannot authorize promotion.",
+  "stop_conditions": [
+    "baseline, parent, source, dataset, or preregistration hash mismatch",
+    "checkpoint identity or loss mode mismatch",
+    "frozen core mutation",
+    "non-finite loss",
+    "less than 25 GiB free in the selected runtime",
+    "private or offline cloud contract not satisfied"
+  ]
+}
