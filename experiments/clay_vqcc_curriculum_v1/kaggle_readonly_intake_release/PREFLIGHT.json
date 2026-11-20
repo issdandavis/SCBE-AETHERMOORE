@@ -1,0 +1,56 @@
+{
+  "schema": "clay.vqcc-readonly-intake.release-preflight.v1",
+  "status": "READY_FOR_EXACT_ONE_USE_AUTHORIZATION_NOT_AUTHORIZED",
+  "checked_at_utc": "2026-11-20T01:44:22Z",
+  "execution_started": false,
+  "cloud_mutation": false,
+  "training_started": false,
+  "competition_submission": false,
+  "kaggle": {
+    "authentication": "READ_ONLY_ENDPOINTS_VERIFIED",
+    "owner": "issacizrealdavis",
+    "dataset": {
+      "id": 13498974,
+      "source": "issacizrealdavis/clay-vqcc-research-corpus/2",
+      "privacy": "PRIVATE",
+      "status": "READY",
+      "files": 52,
+      "bytes": 755972498,
+      "manifest_sha256": "e4a9e7e9911fd8cdd8f858595a57b047402eb32a51571a54db580f4be87597c5"
+    },
+    "kernel": {
+      "private": true,
+      "internet": false,
+      "gpu": false,
+      "cpu_only": true,
+      "single_code_file": true,
+      "code_file": "clay_vqcc_readonly_intake.py",
+      "code_file_sha256": "5553ffc97323448b5fd7da9636cdf001430baa1348939575fc80c2c240c75d25"
+    },
+    "quota": {
+      "gpu_remaining_hours": 21.43,
+      "tpu_remaining_hours": 19.99,
+      "planned_consumption": "NONE_CPU_ONLY"
+    }
+  },
+  "runtime_gates": {
+    "minimum_tmp_free_bytes": 26843545600,
+    "maximum_persisted_bytes": 134217728,
+    "corpus_mount_selected_by_manifest_hash": true,
+    "admission_state": "NOT_CONSUMED",
+    "execution_authorized": false
+  },
+  "release": {
+    "content_set_sha256": "bc4de083da4e9b9ca985246850fa5b977a4edeb3b80d0c4e0e115c474cfa0ad4",
+    "release_manifest_sha256": "fd2213620f9ecd8cf4521a8bf1ec78f812e0ae7682bedeb282f8ffb1b1b1efd3",
+    "self_contained_isolated_smoke": "PASS",
+    "source_sibling_dependency": false
+  },
+  "remaining_before_execution": [
+    "receive explicit one-use execution authorization",
+    "change only the one-use admission to READY_FOR_ONE_USE / true",
+    "regenerate the monolith and release manifest",
+    "recheck live owner/private/offline/CPU metadata",
+    "let the runner remeasure the unchanged 25 GiB /tmp gate before reading the corpus"
+  ]
+}

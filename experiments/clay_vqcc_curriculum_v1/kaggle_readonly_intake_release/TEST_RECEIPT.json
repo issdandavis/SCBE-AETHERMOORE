@@ -1,0 +1,49 @@
+{
+  "schema": "clay.vqcc-readonly-intake.test-receipt.v1",
+  "status": "PASS_PREPARED_ONLY",
+  "checked_at_utc": "2026-11-20T01:44:22Z",
+  "tests": {
+    "full_curriculum_pytest": {
+      "command": "python -m pytest -q experiments\\clay_vqcc_curriculum_v1",
+      "passed": 56,
+      "failed": 0
+    },
+    "release_pytest": {
+      "command": "python -m pytest -q test_release.py",
+      "passed": 6,
+      "failed": 0
+    },
+    "byte_codec_pytest": {
+      "command": "python -m pytest -q test_clay_vqcc_byte_codec.py",
+      "passed": 5,
+      "failed": 0
+    },
+    "ruff": "PASS",
+    "compileall": "PASS",
+    "release_verifier": "PASS_PREPARED_ONLY",
+    "isolated_single_file_smoke": "PASS_NO_CORPUS_READ_NO_CLOUD_EXECUTION"
+  },
+  "artifacts": {
+    "code_file": {
+      "path": "packet/clay_vqcc_readonly_intake.py",
+      "bytes": 55003,
+      "sha256": "5553ffc97323448b5fd7da9636cdf001430baa1348939575fc80c2c240c75d25"
+    },
+    "release_manifest": {
+      "path": "packet/RELEASE_MANIFEST.json",
+      "bytes": 1764,
+      "sha256": "fd2213620f9ecd8cf4521a8bf1ec78f812e0ae7682bedeb282f8ffb1b1b1efd3"
+    },
+    "byte_codec": {
+      "path": "../clay_vqcc_byte_codec.py",
+      "bytes": 5869,
+      "sha256": "58325367f7ee379c4279ff412686f503350cb360bde7a2330e92080d676bc793"
+    }
+  },
+  "nonclaims": [
+    "full mounted-corpus intake has not executed",
+    "no Clay training has executed",
+    "no model checkpoint or weight was promoted",
+    "no VQCC circuit was generated or submitted"
+  ]
+}

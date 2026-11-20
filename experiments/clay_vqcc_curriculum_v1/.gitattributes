@@ -1,0 +1,3 @@
+CAMPAIGN_SPEC.json text eol=lf
+kaggle_readonly_intake_release/*.json text eol=lf
+kaggle_readonly_intake_release/packet/*.json text eol=lf

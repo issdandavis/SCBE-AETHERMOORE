@@ -1,0 +1,57 @@
+{
+  "content_set_sha256": "bc4de083da4e9b9ca985246850fa5b977a4edeb3b80d0c4e0e115c474cfa0ad4",
+  "files": [
+    {
+      "bytes": 3966,
+      "path": "CAMPAIGN_SPEC.json",
+      "sha256": "aa1267701d485b4dd5df197bbc31add3ad6da12739106772db69bcea627ad083"
+    },
+    {
+      "bytes": 589,
+      "path": "EXECUTION_ADMISSION.json",
+      "sha256": "5e69cde1d4f5853dab96e49c1f5cbc4e43b166f6509240aa8d7a9ef5dc7c4b7f"
+    },
+    {
+      "bytes": 27698,
+      "path": "build_vqcc_split.py",
+      "sha256": "4db41f97786c3336262d784e2d20d8a94ec824944fbe4dc04ac8b433ec978728"
+    },
+    {
+      "bytes": 55003,
+      "path": "clay_vqcc_readonly_intake.py",
+      "sha256": "5553ffc97323448b5fd7da9636cdf001430baa1348939575fc80c2c240c75d25"
+    },
+    {
+      "bytes": 16862,
+      "path": "findings_task.py",
+      "sha256": "033047da305060388365854c84bb6e5e4a1b293b6d0ddc157f87e0867f09e365"
+    },
+    {
+      "bytes": 419,
+      "path": "kernel-metadata.json",
+      "sha256": "5d34a96e3226236e9892e5b39377345c4aa9fb1b3dafa7c103e2c164102ffa10"
+    },
+    {
+      "bytes": 23245,
+      "path": "load_vqcc_corpus.py",
+      "sha256": "9ff2a53f8ed7bf1cfe55554dcaf76578b76fc5a2af1357156679cf7bd437061a"
+    },
+    {
+      "bytes": 11141,
+      "path": "run_kaggle_readonly_intake.py",
+      "sha256": "76d1908773f36124e1ba4dc58d0f530af0df85ca9d633bf3804efce3396d98e5"
+    },
+    {
+      "bytes": 22994,
+      "path": "run_readonly_intake.py",
+      "sha256": "ef3bd3f0494465ca130925cb9fd4dae27110837d236c92b3f58f339f4fc8cccc"
+    },
+    {
+      "bytes": 24258,
+      "path": "vqcc_task.py",
+      "sha256": "67d46ae1fbd379c4e7793d1121e45d4b19b3b1af9f2766ce7640b13afd0e90d5"
+    }
+  ],
+  "schema": "clay.vqcc-readonly-intake.release-manifest.v1",
+  "status": "PREPARED_ONLY"
+}

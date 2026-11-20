@@ -1,0 +1,15 @@
+{
+  "id": "issacizrealdavis/clay-vqcc-readonly-intake-20261119",
+  "title": "Clay VQCC Read-Only Intake 20261119",
+  "code_file": "clay_vqcc_readonly_intake.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": false,
+  "enable_internet": false,
+  "dataset_sources": [
+    "issacizrealdavis/clay-vqcc-research-corpus/2"
+  ],
+  "competition_sources": [],
+  "kernel_sources": []
+}

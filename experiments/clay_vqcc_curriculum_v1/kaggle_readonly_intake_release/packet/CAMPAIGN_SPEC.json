@@ -1,0 +1,130 @@
+{
+  "schema": "clay.vqcc-curriculum.campaign-spec.v1",
+  "status": "PREPARED_ONLY",
+  "execution_authorized": false,
+  "training_authorized": false,
+  "cloud_mutation_authorized": false,
+  "checkpoint_promotion_authorized": false,
+  "competition_submission_authorized": false,
+  "dataset": {
+    "id": "issacizrealdavis/clay-vqcc-research-corpus",
+    "version": 2,
+    "manifest_sha256": "e4a9e7e9911fd8cdd8f858595a57b047402eb32a51571a54db580f4be87597c5",
+    "counts": {
+      "train": 621731,
+      "holdout": 48,
+      "ordinary": 48,
+      "retention": 48
+    }
+  },
+  "campaign_split": {
+    "seed": "clay-vqcc-family-split-v1-20261119",
+    "holdout_fraction": 0.2,
+    "unit": "transitive_source_family",
+    "finding_family_edges": ["link", "family_target", "supersedes"],
+    "related_cards_policy": "cross-reference metadata, not source-family identity",
+    "required_roles": [
+      "train",
+      "holdout"
+    ]
+  },
+  "sampling": {
+    "train": {
+      "seed": 739011,
+      "lane_caps": {
+        "public.experimental_findings": 200,
+        "public.gate_count": 4800
+      },
+      "max_chars_per_record": 16384,
+      "max_tokens_per_record": 16387,
+      "total_token_budget": 4000000
+    },
+    "holdout": {
+      "seed": 739012,
+      "lane_caps": {
+        "public.experimental_findings": 200,
+        "public.gate_count": 2000
+      },
+      "max_chars_per_record": 16384,
+      "max_tokens_per_record": 16387,
+      "total_token_budget": 2000000
+    },
+    "token_proxy": "utf8_bytes_plus_3_special_tokens"
+  },
+  "task_builders": {
+    "gate_count": {
+      "train_seed": 810101,
+      "holdout_seed": 810102,
+      "gap_strata": [1],
+      "balanced_labels": ["A", "B", "T"],
+      "natural_prevalence_evaluation": true
+    },
+    "finding_binding": {
+      "train_seed": 820101,
+      "holdout_seed": 820102,
+      "length_bucket_width": 32,
+      "balanced_labels": ["A", "B"],
+      "aligned_training_helper": "findings_task.aligned_findings_training_arms",
+      "required_evaluation_tasks": ["all", "chemistry", "dqi", "invsqrt"]
+    }
+  },
+  "training": {
+    "parent_dataset": "issacizrealdavis/clay-input-access-efficacy-input-20261119",
+    "seeds": [1618033, 2718281, 3141592],
+    "arms": [
+      "candidate",
+      "no_intervention",
+      "equal_parameter",
+      "shuffled_binding",
+      "zero_update"
+    ],
+    "runner": null,
+    "steps": null,
+    "runtime_cap_seconds": null,
+    "reason_unsealed": "Fixed-step runtime smoke and explicit one-use execution authorization are still required."
+  },
+  "promotion": {
+    "primary_metric": "finding_binding.task_macro_accuracy",
+    "adjudicator": "findings_task.judge_finding_campaign",
+    "adjudicator_status": "IMPLEMENTED_NOT_EXECUTED",
+    "minimum_absolute_gain_over_each_control": 0.02,
+    "minimum_pooled_standard_deviations_over_each_control": 2.0,
+    "must_beat_controls": [
+      "no_intervention",
+      "equal_parameter",
+      "shuffled_binding",
+      "zero_update"
+    ],
+    "prerequisites": {
+      "finding_binding.coverage": 1.0,
+      "gate_count.coverage": 1.0,
+      "gate_count.macro_balanced_accuracy_minimum": 0.9,
+      "source_family_overlap": 0,
+      "record_id_overlap": 0,
+      "dyadic_retention_regression_beyond_two_pooled_sd": false,
+      "all_scores_finite": true
+    },
+    "failure_label": "UNDERPOWERED_OR_REJECT"
+  },
+  "storage_gate": {
+    "minimum_writable_bytes": 26843545600,
+    "lowered": false
+  },
+  "open_gates": [
+    "full mounted-corpus split and sampling receipt",
+    "tokenizer coverage",
+    "loader-only benchmark",
+    "fixed-step runtime smoke",
+    "actual tensor count and initialization hash equality",
+    "independent replay",
+    "fresh storage and provider metadata",
+    "explicit one-use execution authorization"
+  ],
+  "nonclaims": [
+    "valid circuit synthesis",
+    "semantic equivalence",
+    "verifier acceptance",
+    "Kaggle score improvement",
+    "gold-medal progress caused by Clay"
+  ]
+}

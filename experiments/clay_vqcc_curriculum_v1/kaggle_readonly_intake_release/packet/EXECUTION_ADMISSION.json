@@ -1,0 +1,15 @@
+{
+  "schema": "clay.vqcc-readonly-intake.execution-admission.v1",
+  "state": "NOT_CONSUMED",
+  "execution_authorized": false,
+  "execution_id": null,
+  "consumed_at_utc": null,
+  "dataset_ref": "issacizrealdavis/clay-vqcc-research-corpus/2",
+  "dataset_version": 2,
+  "manifest_sha256": "e4a9e7e9911fd8cdd8f858595a57b047402eb32a51571a54db580f4be87597c5",
+  "allowed_action": "one private offline CPU read-only corpus intake",
+  "training_authorized": false,
+  "dataset_mutation_authorized": false,
+  "checkpoint_promotion_authorized": false,
+  "competition_submission_authorized": false
+}
