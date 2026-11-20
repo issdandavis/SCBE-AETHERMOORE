@@ -1,0 +1,47 @@
+{
+  "schema": "clay.vqcc-curriculum.prebuild-gate.v1",
+  "status": "PREPARED_ONLY",
+  "training_authorized": false,
+  "cloud_mutation_authorized": false,
+  "promotion_authorized": false,
+  "capability": {
+    "primary": "source-family-generalized exact VQCC resource question answering",
+    "secondary": "correct public experiment-result binding against task- and length-matched distractors",
+    "not_claimed": "valid cheaper circuit synthesis"
+  },
+  "reused": {
+    "parent_dataset": "issacizrealdavis/clay-input-access-efficacy-input-20261119",
+    "corpus_dataset": "issacizrealdavis/clay-vqcc-research-corpus/2",
+    "corpus_manifest_sha256": "e4a9e7e9911fd8cdd8f858595a57b047402eb32a51571a54db580f4be87597c5",
+    "public_circuit_dataset": "manwithacat/vqcc-apache-public-circuits/145"
+  },
+  "new_components": [
+    "streaming hash-pinned loader",
+    "fine-grained source-family split",
+    "bounded deterministic sample manifest",
+    "fail-closed prepared-only intake runner",
+    "VQCC gate-count task and evaluator",
+    "public-finding binding task and evaluator",
+    "separately preregistered training runner"
+  ],
+  "required_arms": [
+    "candidate",
+    "shuffled_binding",
+    "equal_parameter",
+    "no_intervention",
+    "zero_update"
+  ],
+  "required_seeds": 3,
+  "promotion_rule": "findings_task.judge_finding_campaign requires candidate to beat no_intervention, equal_parameter, shuffled_binding, and zero_update by more than 0.02 absolute and two pooled standard deviations while retention and frozen-core gates pass",
+  "storage_gate_bytes": 26843545600,
+  "storage_gate_lowered": false,
+  "open_gates": [
+    "full mounted-corpus split and sampling receipt",
+    "tokenizer coverage",
+    "loader-only benchmark",
+    "fixed-step runtime smoke",
+    "independent replay",
+    "fresh storage and provider metadata",
+    "explicit one-use execution authorization"
+  ]
+}

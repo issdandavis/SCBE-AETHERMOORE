@@ -1,0 +1,82 @@
+{
+  "schema": "clay.vqcc-curriculum.test-receipt.v1",
+  "created_at": "2026-11-19T17:11:50.3537921-08:00",
+  "status": "PASS_PREPARED_ONLY",
+  "execution_authorized": false,
+  "training_run_performed": false,
+  "cloud_mutation_performed": false,
+  "competition_submission_performed": false,
+  "checks": {
+    "pytest": {
+      "result": "45 passed",
+      "seconds": 1.79,
+      "scope": "experiments/clay_vqcc_curriculum_v1",
+      "files": [
+        "test_load_vqcc_corpus.py",
+        "test_build_vqcc_split.py",
+        "test_vqcc_task.py",
+        "test_findings_task.py",
+        "test_pipeline_integration.py",
+        "test_campaign_spec.py",
+        "test_run_readonly_intake.py"
+      ]
+    },
+    "ruff": {
+      "result": "PASS",
+      "scope": "12 explicit experiment Python files"
+    },
+    "py_compile": {
+      "result": "PASS",
+      "scope": "five executable modules"
+    },
+    "json_parse": {
+      "result": "PASS",
+      "files": 5
+    }
+  },
+  "integration_scope": {
+    "manifest_to_family_split": true,
+    "family_split_to_streaming_roles": true,
+    "streaming_rows_to_independent_opcode_recount": true,
+    "opcode_recount_to_balanced_comparisons": true,
+    "experimental_findings_to_matched_binding_comparisons": true,
+    "train_holdout_family_and_record_disjoint": true,
+    "all_four_finding_tasks_required": true,
+    "prepared_intake_failure_atomic": true,
+    "prepared_intake_rejects_authority": true,
+    "fixture": "hermetic synthetic corpus",
+    "full_private_kaggle_mount_executed": false
+  },
+  "pinned_findings_audit": {
+    "status": "PASS_READ_ONLY_RECOMPUTATION",
+    "eligible_rows": 145,
+    "provenance_components": 107,
+    "train_rows": 117,
+    "holdout_rows": 28,
+    "train_comparisons": 96,
+    "holdout_comparisons": 14,
+    "all_four_task_classes_present": true,
+    "audit_sha256": "b1daa8a84c02a1aa3b91b3825fe19f886d4439a94a00949485069eefa02bb372"
+  },
+  "sha256": {
+    "load_vqcc_corpus.py": "9ff2a53f8ed7bf1cfe55554dcaf76578b76fc5a2af1357156679cf7bd437061a",
+    "build_vqcc_split.py": "4db41f97786c3336262d784e2d20d8a94ec824944fbe4dc04ac8b433ec978728",
+    "vqcc_task.py": "67d46ae1fbd379c4e7793d1121e45d4b19b3b1af9f2766ce7640b13afd0e90d5",
+    "findings_task.py": "033047da305060388365854c84bb6e5e4a1b293b6d0ddc157f87e0867f09e365",
+    "run_readonly_intake.py": "ef3bd3f0494465ca130925cb9fd4dae27110837d236c92b3f58f339f4fc8cccc",
+    "test_pipeline_integration.py": "39ac499a9f37f7c9a60b056ce15167b5ba23f988a058335998c935263076b9a4",
+    "test_campaign_spec.py": "b1c4d04af44491b19ea9483b5a76305f932901aceb837eecae6f5c067c708ea6",
+    "test_run_readonly_intake.py": "93637162b276d124baad140c321d77c355afec6ced2c55593583bd26aa1b6208",
+    "CAMPAIGN_SPEC.json": "aa1267701d485b4dd5df197bbc31add3ad6da12739106772db69bcea627ad083"
+  },
+  "remaining_gates": [
+    "full mounted-corpus split and sampling receipt",
+    "tokenizer coverage",
+    "loader-only benchmark",
+    "fixed-step runtime smoke",
+    "actual tensor count and initialization hash equality",
+    "independent replay",
+    "fresh storage and provider metadata",
+    "explicit one-use execution authorization"
+  ]
+}

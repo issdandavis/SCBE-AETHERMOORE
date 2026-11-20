@@ -1,0 +1,86 @@
+{
+  "schema": "clay.vqcc-findings-provenance-audit.v1",
+  "status": "PASS_READ_ONLY_RECOMPUTATION",
+  "created_at": "2026-11-19T17:09:00-08:00",
+  "source": {
+    "dataset": "manwithacat/vqcc-chemistry-negative-results",
+    "version": 28,
+    "file": "ledger.csv",
+    "local_read_only_path": "C:\\dev\\_kaggle_review\\vqcc-negative-results-manwithacat-20261119\\ledger.csv",
+    "sha256": "8f2ff6980a8de0321e861dde67f54cb1e9b5cc3ab59511088ee28634fd6fa490",
+    "rows_total": 309
+  },
+  "eligibility": {
+    "rows": 145,
+    "method": "licence lowercased is apache-2.0 or cc0-1.0, and mechanism and why_it_failed are nonempty",
+    "computed_after_provenance_components": true
+  },
+  "provenance_graph": {
+    "nodes": "negative-result item IDs plus stable provenance-value nodes",
+    "allowed_undirected_edges": [
+      "exact nonempty link equality",
+      "exact nonempty family_target equality",
+      "direct supersedes item-ID reference"
+    ],
+    "excluded_edges": {
+      "related_cards": "Related cards are cross-reference citations, not source identity. Treating shared cards as identity collapsed 90 of 145 eligible findings into one component and made the sealed four-task holdout unpairable."
+    },
+    "family_identity": "sha256 of canonical sorted component nodes",
+    "eligible_components": 107,
+    "eligible_component_size_histogram": {
+      "1": 94,
+      "2": 8,
+      "3": 2,
+      "6": 1,
+      "7": 1,
+      "16": 1
+    }
+  },
+  "split": {
+    "seed": "clay-vqcc-family-split-v1-20261119",
+    "holdout_fraction": 0.2,
+    "unit": "whole provenance component",
+    "train": {
+      "rows": 117,
+      "by_task": {
+        "all": {"rows": 7, "families": 7},
+        "chemistry": {"rows": 62, "families": 39},
+        "dqi": {"rows": 34, "families": 27},
+        "invsqrt": {"rows": 14, "families": 14}
+      }
+    },
+    "holdout": {
+      "rows": 28,
+      "by_task": {
+        "all": {"rows": 2, "families": 2},
+        "chemistry": {"rows": 14, "families": 10},
+        "dqi": {"rows": 7, "families": 7},
+        "invsqrt": {"rows": 5, "families": 4}
+      }
+    }
+  },
+  "comparison_replay": {
+    "length_bucket_width": 32,
+    "train_seed": 820101,
+    "holdout_seed": 820102,
+    "different_family_partner_required": true,
+    "train": {
+      "comparisons": 96,
+      "by_task": {"all": 4, "chemistry": 56, "dqi": 26, "invsqrt": 10},
+      "observed_tasks": ["all", "chemistry", "dqi", "invsqrt"],
+      "perfect_prediction_score_gate": "PASS"
+    },
+    "holdout": {
+      "comparisons": 14,
+      "by_task": {"all": 2, "chemistry": 4, "dqi": 6, "invsqrt": 2},
+      "observed_tasks": ["all", "chemistry", "dqi", "invsqrt"],
+      "perfect_prediction_score_gate": "PASS"
+    }
+  },
+  "nonclaims": [
+    "No model training was run.",
+    "No checkpoint was promoted.",
+    "No cloud object or Kaggle submission was changed.",
+    "This audit proves split feasibility and provenance separation mechanics, not learning or circuit improvement."
+  ]
+}
