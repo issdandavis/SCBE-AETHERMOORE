@@ -18,10 +18,13 @@ SOURCE_ROOT = HERE.parent
 DEFAULT_OUTPUT = HERE / "packet"
 SOURCE_FILES = (
     "CAMPAIGN_SPEC.json",
+    "PARENT_VOCAB_AUDIT.json",
     "build_vqcc_split.py",
+    "clay_vqcc_byte_codec.py",
     "findings_task.py",
     "load_vqcc_corpus.py",
     "run_readonly_intake.py",
+    "task_manifest.py",
     "vqcc_task.py",
 )
 RELEASE_FILES = (

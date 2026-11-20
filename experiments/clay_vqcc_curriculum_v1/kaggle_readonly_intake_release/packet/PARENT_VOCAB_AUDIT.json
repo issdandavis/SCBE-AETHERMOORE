@@ -1,0 +1,51 @@
+{
+  "schema": "clay.vqcc-parent-vocab-audit.v1",
+  "status": "PASS_SAFE_OPCODE_SCAN",
+  "method": "zipfile-plus-pickletools-no-unpickle-v1",
+  "checkpoints": [
+    {
+      "seed": "20261134",
+      "checkpoint_bytes": 2341020,
+      "checkpoint_sha256": "e719ca2398f0a96e4c80d2119897ad36202fb34bd8fbe37190655d581411b910",
+      "vocab_sha256": "bb0541789d0cfac2e02f7c3321d93ce1b9dc5513e2852499d81122a1e600e5b1",
+      "vocab_size": 276
+    },
+    {
+      "seed": "20261135",
+      "checkpoint_bytes": 2341020,
+      "checkpoint_sha256": "bb4d912d413dd76174986a89b24f713268e90138808b69107aac01736c218438",
+      "vocab_sha256": "bb0541789d0cfac2e02f7c3321d93ce1b9dc5513e2852499d81122a1e600e5b1",
+      "vocab_size": 276
+    },
+    {
+      "seed": "20261136",
+      "checkpoint_bytes": 2341020,
+      "checkpoint_sha256": "820f0ed122b27261eb91391d4b69efe987f2e8a8e5f79b27c9e2a7f431267929",
+      "vocab_sha256": "bb0541789d0cfac2e02f7c3321d93ce1b9dc5513e2852499d81122a1e600e5b1",
+      "vocab_size": 276
+    }
+  ],
+  "vocab": {
+    "schema": "clay.vqcc-utf8-pua-byte-codec.v1",
+    "vocab_size": 276,
+    "vocab_sha256": "bb0541789d0cfac2e02f7c3321d93ce1b9dc5513e2852499d81122a1e600e5b1",
+    "vocab_hash_algorithm": "sha256-json-utf8-ensure-ascii-sort-keys-compact-v1",
+    "byte_token_base": 57600,
+    "byte_token_count": 256,
+    "all_byte_tokens_present": true,
+    "label_token_ids": {
+      "finding_binding": {"A": 85, "B": 86},
+      "gate_count": {"A": 85, "B": 86, "T": 104}
+    },
+    "literal_labels_used": false
+  },
+  "exact_fixture_match": true,
+  "torch_imported": false,
+  "pickle_executed": false,
+  "model_loaded": false,
+  "authorities": {
+    "audit_source_sha256": "0414f00d1e149f2c918c3781b9d1980aa58ad2f7201758ebd37a19122b99477f",
+    "codec_source_sha256": "693fa47109b00688249f15ea09e0155d0647db7f17ac11768bef70653406ee87",
+    "parent_run_manifest_sha256": "7f2516af8ae5a122f357565afad60ab412fdf54e76a3018cd8f1ddbfdb702a97"
+  }
+}

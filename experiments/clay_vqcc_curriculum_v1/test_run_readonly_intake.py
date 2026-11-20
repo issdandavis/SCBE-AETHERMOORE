@@ -3,10 +3,12 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import shutil
 
 import pytest
 
 import run_readonly_intake as intake
+import task_manifest
 from test_pipeline_integration import _make_corpus
 
 
@@ -19,6 +21,7 @@ def _sha256(path: Path) -> str:
 
 def _write_test_spec(path: Path, *, manifest_sha256: str, counts: dict[str, int]) -> str:
     spec = json.loads((ROOT / "CAMPAIGN_SPEC.json").read_text(encoding="utf-8"))
+    shutil.copyfile(ROOT / "PARENT_VOCAB_AUDIT.json", path.with_name("PARENT_VOCAB_AUDIT.json"))
     spec["dataset"]["manifest_sha256"] = manifest_sha256
     spec["dataset"]["counts"] = counts
     spec["campaign_split"]["holdout_fraction"] = 0.5
@@ -88,22 +91,30 @@ def test_readonly_intake_builds_sealed_tasks_without_mutating_corpus(tmp_path: P
     for role in intake.ROLES:
         assert (output / "samples" / f"{role}.jsonl").is_file()
         assert (output / "samples" / f"{role}.receipt.json").is_file()
-        assert receipt["tasks"][role]["gate_count"]["balanced"]["label_counts"] == {
+        assert receipt["tasks"]["reports"][role]["gate_count"]["balanced"]["label_counts"] == {
             "A": 2,
             "B": 2,
             "T": 2,
         }
         assert set(
-            receipt["tasks"][role]["finding_binding"]["comparisons"]["task_counts"]
+            receipt["tasks"]["reports"][role]["finding_binding"]["comparisons"]["task_counts"]
         ) == {"all", "chemistry", "dqi", "invsqrt"}
-    assert receipt["tasks"]["train"]["finding_binding"]["aligned_training_arms"][
-        "retained_records"
-    ] == 8
+    assert receipt["tasks"]["reports"]["train"]["finding_binding"][
+        "aligned_training_arms"
+    ]["candidate"]["rows"] == 8
+    assert receipt["tasks"]["reports"]["train"]["finding_binding"][
+        "aligned_training_arms"
+    ]["shuffled_binding"]["fixed_points"] == 0
+    assert len(receipt["tasks"]["artifacts"]) == 9
+    assert task_manifest.verify_task_manifest(output / "tasks") == json.loads(
+        (output / "tasks" / "TASK_MANIFEST.json").read_text(encoding="utf-8")
+    )
     assert json.loads((output / "INTAKE_RECEIPT.json").read_text(encoding="utf-8")) == receipt
     assert sorted(path.name for path in output.iterdir()) == [
         "INTAKE_RECEIPT.json",
         "campaign-split",
         "samples",
+        "tasks",
     ]
 
 

@@ -17,6 +17,18 @@
       "retention": 48
     }
   },
+  "parent_vocab": {
+    "audit_file": "PARENT_VOCAB_AUDIT.json",
+    "audit_sha256": "8f620583963cfffc05b0553186b4a6a6c8f1054979cb0a4ca32d4a3bd96834f0",
+    "vocab_size": 276,
+    "vocab_sha256": "bb0541789d0cfac2e02f7c3321d93ce1b9dc5513e2852499d81122a1e600e5b1",
+    "hash_algorithm": "sha256-json-utf8-ensure-ascii-sort-keys-compact-v1",
+    "label_token_ids": {
+      "A": 85,
+      "B": 86,
+      "T": 104
+    }
+  },
   "campaign_split": {
     "seed": "clay-vqcc-family-split-v1-20261119",
     "holdout_fraction": 0.2,
@@ -55,6 +67,7 @@
     "gate_count": {
       "train_seed": 810101,
       "holdout_seed": 810102,
+      "shuffled_binding_seed": 810151,
       "gap_strata": [1],
       "balanced_labels": ["A", "B", "T"],
       "natural_prevalence_evaluation": true
@@ -62,9 +75,10 @@
     "finding_binding": {
       "train_seed": 820101,
       "holdout_seed": 820102,
+      "shuffled_binding_seed": 820151,
       "length_bucket_width": 32,
       "balanced_labels": ["A", "B"],
-      "aligned_training_helper": "findings_task.aligned_findings_training_arms",
+      "aligned_training_helper": "findings_task.build_finding_training_occurrences",
       "required_evaluation_tasks": ["all", "chemistry", "dqi", "invsqrt"]
     }
   },
@@ -112,7 +126,6 @@
   },
   "open_gates": [
     "full mounted-corpus split and sampling receipt",
-    "tokenizer coverage",
     "loader-only benchmark",
     "fixed-step runtime smoke",
     "actual tensor count and initialization hash equality",

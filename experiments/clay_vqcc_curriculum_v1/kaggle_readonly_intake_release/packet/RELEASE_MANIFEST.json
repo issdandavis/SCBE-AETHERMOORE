@@ -1,10 +1,10 @@
 {
-  "content_set_sha256": "bc4de083da4e9b9ca985246850fa5b977a4edeb3b80d0c4e0e115c474cfa0ad4",
+  "content_set_sha256": "a9de77b6a1676f785d2b2f753776a5f045b8b1266e4b266937251eb371065bc3",
   "files": [
     {
-      "bytes": 3966,
+      "bytes": 4443,
       "path": "CAMPAIGN_SPEC.json",
-      "sha256": "aa1267701d485b4dd5df197bbc31add3ad6da12739106772db69bcea627ad083"
+      "sha256": "eb8e658fcc166e4ce15828096ac0fded56d97ce43135933d553465cbee640de2"
     },
     {
       "bytes": 589,
@@ -12,19 +12,29 @@
       "sha256": "5e69cde1d4f5853dab96e49c1f5cbc4e43b166f6509240aa8d7a9ef5dc7c4b7f"
     },
     {
+      "bytes": 1956,
+      "path": "PARENT_VOCAB_AUDIT.json",
+      "sha256": "8f620583963cfffc05b0553186b4a6a6c8f1054979cb0a4ca32d4a3bd96834f0"
+    },
+    {
       "bytes": 27698,
       "path": "build_vqcc_split.py",
       "sha256": "4db41f97786c3336262d784e2d20d8a94ec824944fbe4dc04ac8b433ec978728"
     },
     {
-      "bytes": 55003,
-      "path": "clay_vqcc_readonly_intake.py",
-      "sha256": "5553ffc97323448b5fd7da9636cdf001430baa1348939575fc80c2c240c75d25"
+      "bytes": 6136,
+      "path": "clay_vqcc_byte_codec.py",
+      "sha256": "693fa47109b00688249f15ea09e0155d0647db7f17ac11768bef70653406ee87"
     },
     {
-      "bytes": 16862,
+      "bytes": 73349,
+      "path": "clay_vqcc_readonly_intake.py",
+      "sha256": "132eb7c21dfaf4769678343297e4f1f51a8e91da08d0673f84a70514fb70ceb7"
+    },
+    {
+      "bytes": 31490,
       "path": "findings_task.py",
-      "sha256": "033047da305060388365854c84bb6e5e4a1b293b6d0ddc157f87e0867f09e365"
+      "sha256": "1068f77846e296a2380715f3bf48a58e89eec49292ab24350248cd7067e5d8c7"
     },
     {
       "bytes": 419,
@@ -37,14 +47,19 @@
       "sha256": "9ff2a53f8ed7bf1cfe55554dcaf76578b76fc5a2af1357156679cf7bd437061a"
     },
     {
-      "bytes": 11141,
+      "bytes": 11431,
       "path": "run_kaggle_readonly_intake.py",
-      "sha256": "76d1908773f36124e1ba4dc58d0f530af0df85ca9d633bf3804efce3396d98e5"
+      "sha256": "772ab365229e074e22e4550004087f7431e55383418f376db74886ad44ad8ffb"
     },
     {
-      "bytes": 22994,
+      "bytes": 31244,
       "path": "run_readonly_intake.py",
-      "sha256": "ef3bd3f0494465ca130925cb9fd4dae27110837d236c92b3f58f339f4fc8cccc"
+      "sha256": "3c3d55cc8228738c31331c3e0ea2ca8725fb33cef0b7d4d81a14e9b136cc832c"
+    },
+    {
+      "bytes": 26697,
+      "path": "task_manifest.py",
+      "sha256": "35dbb40ce8847ba3bee80ca3128009729bd137cb0f5fc677316a763abd1270d0"
     },
     {
       "bytes": 24258,

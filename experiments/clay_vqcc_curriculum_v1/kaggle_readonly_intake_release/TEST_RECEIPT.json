@@ -1,21 +1,11 @@
 {
-  "schema": "clay.vqcc-readonly-intake.test-receipt.v1",
+  "schema": "clay.vqcc-readonly-intake.test-receipt.v2",
   "status": "PASS_PREPARED_ONLY",
-  "checked_at_utc": "2026-11-20T01:44:22Z",
+  "checked_at_utc": "2026-11-20T02:12:38Z",
   "tests": {
     "full_curriculum_pytest": {
-      "command": "python -m pytest -q experiments\\clay_vqcc_curriculum_v1",
-      "passed": 56,
-      "failed": 0
-    },
-    "release_pytest": {
-      "command": "python -m pytest -q test_release.py",
-      "passed": 6,
-      "failed": 0
-    },
-    "byte_codec_pytest": {
-      "command": "python -m pytest -q test_clay_vqcc_byte_codec.py",
-      "passed": 5,
+      "command": "python -m pytest -q experiments/clay_vqcc_curriculum_v1",
+      "passed": 62,
       "failed": 0
     },
     "ruff": "PASS",
@@ -26,24 +16,21 @@
   "artifacts": {
     "code_file": {
       "path": "packet/clay_vqcc_readonly_intake.py",
-      "bytes": 55003,
-      "sha256": "5553ffc97323448b5fd7da9636cdf001430baa1348939575fc80c2c240c75d25"
+      "bytes": 73349,
+      "sha256": "132eb7c21dfaf4769678343297e4f1f51a8e91da08d0673f84a70514fb70ceb7"
     },
     "release_manifest": {
       "path": "packet/RELEASE_MANIFEST.json",
-      "bytes": 1764,
-      "sha256": "fd2213620f9ecd8cf4521a8bf1ec78f812e0ae7682bedeb282f8ffb1b1b1efd3"
+      "bytes": 2232,
+      "sha256": "6bb017ac883cc9393f326c58734bafa8678381662ebb79d89d83341a68dda6c0"
     },
-    "byte_codec": {
-      "path": "../clay_vqcc_byte_codec.py",
-      "bytes": 5869,
-      "sha256": "58325367f7ee379c4279ff412686f503350cb360bde7a2330e92080d676bc793"
-    }
+    "content_set_sha256": "a9de77b6a1676f785d2b2f753776a5f045b8b1266e4b266937251eb371065bc3"
   },
-  "nonclaims": [
-    "full mounted-corpus intake has not executed",
-    "no Clay training has executed",
-    "no model checkpoint or weight was promoted",
-    "no VQCC circuit was generated or submitted"
-  ]
+  "authority": {
+    "admission_state": "NOT_CONSUMED",
+    "execution_authorized": false,
+    "training": false,
+    "competition_submission": false,
+    "checkpoint_promotion": false
+  }
 }

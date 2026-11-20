@@ -18,7 +18,9 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 import build_vqcc_split
+import clay_vqcc_byte_codec
 import findings_task
+import task_manifest
 import vqcc_task
 from load_vqcc_corpus import (
     DATASET_ID,
@@ -30,7 +32,7 @@ from load_vqcc_corpus import (
 
 
 SPEC_SCHEMA = "clay.vqcc-curriculum.campaign-spec.v1"
-RECEIPT_SCHEMA = "clay.vqcc-curriculum.readonly-intake.v1"
+RECEIPT_SCHEMA = "clay.vqcc-curriculum.readonly-intake.v2"
 SHA256_HEX_LENGTH = 64
 ROLES = ("train", "holdout")
 CAMPAIGN_LANES = frozenset(("public.experimental_findings", "public.gate_count"))
@@ -116,6 +118,41 @@ def _load_and_validate_spec(spec_path: Path, expected_spec_sha256: str) -> tuple
     if counts["train"] <= 0:
         raise ValueError("dataset.counts.train must be positive")
 
+    parent_vocab = _require_mapping(spec.get("parent_vocab"), "parent_vocab")
+    if set(parent_vocab) != {
+        "audit_file",
+        "audit_sha256",
+        "vocab_size",
+        "vocab_sha256",
+        "hash_algorithm",
+        "label_token_ids",
+    }:
+        raise ValueError("parent_vocab contains missing or unknown fields")
+    if parent_vocab.get("audit_file") != "PARENT_VOCAB_AUDIT.json":
+        raise ValueError("parent_vocab.audit_file differs from the sealed audit")
+    if not _is_sha256(parent_vocab.get("audit_sha256")):
+        raise ValueError("parent_vocab.audit_sha256 must be a lowercase SHA-256")
+    audit_path = spec_path.with_name(str(parent_vocab["audit_file"])).resolve(strict=True)
+    if audit_path.parent != spec_path.parent or _sha256_file(audit_path) != parent_vocab["audit_sha256"]:
+        raise ValueError("parent vocabulary audit file or hash differs")
+    audit = json.loads(audit_path.read_text(encoding="utf-8"))
+    if (
+        audit.get("status") != "PASS_SAFE_OPCODE_SCAN"
+        or audit.get("exact_fixture_match") is not True
+        or audit.get("torch_imported") is not False
+        or audit.get("pickle_executed") is not False
+        or audit.get("model_loaded") is not False
+    ):
+        raise ValueError("parent vocabulary audit did not close the safe readback gate")
+    if parent_vocab.get("vocab_size") != clay_vqcc_byte_codec.EXPECTED_PARENT_VOCAB_SIZE:
+        raise ValueError("parent vocabulary size differs from the codec")
+    if parent_vocab.get("vocab_sha256") != clay_vqcc_byte_codec.PARENT_VOCAB_SHA256:
+        raise ValueError("parent vocabulary hash differs from the codec")
+    if parent_vocab.get("hash_algorithm") != clay_vqcc_byte_codec.VOCAB_HASH_ALGORITHM:
+        raise ValueError("parent vocabulary hash algorithm differs from the codec")
+    if parent_vocab.get("label_token_ids") != {"A": 85, "B": 86, "T": 104}:
+        raise ValueError("parent vocabulary label token IDs differ")
+
     split = _require_mapping(spec.get("campaign_split"), "campaign_split")
     if not isinstance(split.get("seed"), str) or not split["seed"]:
         raise ValueError("campaign_split.seed must be a nonempty string")
@@ -159,6 +196,14 @@ def _load_and_validate_spec(spec_path: Path, expected_spec_sha256: str) -> tuple
     for role in ROLES:
         _require_int(gate.get(f"{role}_seed"), f"task_builders.gate_count.{role}_seed")
         _require_int(finding.get(f"{role}_seed"), f"task_builders.finding_binding.{role}_seed")
+    _require_int(
+        gate.get("shuffled_binding_seed"),
+        "task_builders.gate_count.shuffled_binding_seed",
+    )
+    _require_int(
+        finding.get("shuffled_binding_seed"),
+        "task_builders.finding_binding.shuffled_binding_seed",
+    )
     gaps = gate.get("gap_strata")
     if (
         not isinstance(gaps, list)
@@ -173,7 +218,7 @@ def _load_and_validate_spec(spec_path: Path, expected_spec_sha256: str) -> tuple
         raise ValueError("natural-prevalence gate-count evaluation must remain enabled")
     if finding.get("balanced_labels") != list(findings_task.LABELS):
         raise ValueError("finding balanced labels differ from the implemented task")
-    if finding.get("aligned_training_helper") != "findings_task.aligned_findings_training_arms":
+    if finding.get("aligned_training_helper") != "findings_task.build_finding_training_occurrences":
         raise ValueError("finding aligned-training helper differs from the implemented helper")
     _require_int(
         finding.get("length_bucket_width"),
@@ -366,13 +411,6 @@ def run_readonly_intake(
         gate_balanced: dict[str, list[vqcc_task.CostComparison]] = {}
         gate_natural: dict[str, list[vqcc_task.CostComparison]] = {}
         finding_comparisons: dict[str, list[findings_task.FindingComparison]] = {}
-        aligned_train, shuffled_train = findings_task.aligned_findings_training_arms(
-            finding_examples["train"],
-            seed=finding_spec["train_seed"],
-            length_bucket_width=finding_spec["length_bucket_width"],
-        )
-        if [row.record_id for row in aligned_train] != [row.record_id for row in shuffled_train]:
-            raise AssertionError("aligned finding training arms differ in retained record order")
         for role in ROLES:
             gate_balanced[role] = vqcc_task.build_balanced_comparisons(
                 gate_examples[role],
@@ -399,6 +437,17 @@ def run_readonly_intake(
         findings_task.validate_family_disjoint(
             finding_comparisons["train"], finding_comparisons["holdout"]
         )
+        gate_shuffled_train = vqcc_task.shuffled_binding(
+            gate_balanced["train"], seed=gate_spec["shuffled_binding_seed"]
+        )
+        finding_candidate_train, finding_shuffled_train = (
+            findings_task.build_finding_training_occurrences(
+                finding_examples["train"],
+                finding_comparisons["train"],
+                seed=finding_spec["shuffled_binding_seed"],
+                length_bucket_width=finding_spec["length_bucket_width"],
+            )
+        )
 
         sample_receipts = {
             role: {
@@ -411,6 +460,135 @@ def run_readonly_intake(
             }
             for role in ROLES
         }
+        tasks_dir = staging / "tasks"
+        artifact_receipts: list[dict[str, Any]] = []
+        for role in ROLES:
+            role_dir = tasks_dir / role
+            for filename, rows, population in (
+                ("gate-balanced-intact.jsonl", gate_balanced[role], "balanced"),
+                ("gate-natural-intact.jsonl", gate_natural[role], "natural_prevalence"),
+            ):
+                relative = f"{role}/{filename}"
+                path = role_dir / filename
+                artifact_receipts.append(
+                    task_manifest.write_cost_artifact(
+                        path,
+                        rows,
+                        relative_path=relative,
+                        dataset_role=role,
+                        population=population,
+                        binding="intact",
+                    )
+                )
+                loaded = task_manifest.load_cost_artifact(
+                    path,
+                    dataset_role=role,
+                    population=population,
+                    binding="intact",
+                )
+                if set(loaded) != set(rows):
+                    raise AssertionError(f"materialized cost rows differ: {relative}")
+            finding_relative = f"{role}/findings-intact.jsonl"
+            finding_path = role_dir / "findings-intact.jsonl"
+            artifact_receipts.append(
+                task_manifest.write_finding_artifact(
+                    finding_path,
+                    finding_comparisons[role],
+                    relative_path=finding_relative,
+                    dataset_role=role,
+                )
+            )
+            loaded_findings = task_manifest.load_finding_artifact(
+                finding_path, dataset_role=role
+            )
+            if set(loaded_findings) != set(finding_comparisons[role]):
+                raise AssertionError(f"materialized finding rows differ: {finding_relative}")
+
+        gate_shuffled_relative = "train/gate-balanced-shuffled.jsonl"
+        gate_shuffled_path = tasks_dir / gate_shuffled_relative
+        artifact_receipts.append(
+            task_manifest.write_cost_artifact(
+                gate_shuffled_path,
+                gate_shuffled_train,
+                relative_path=gate_shuffled_relative,
+                dataset_role="train",
+                population="balanced",
+                binding="shuffled_binding",
+            )
+        )
+        loaded_gate_shuffled = task_manifest.load_cost_artifact(
+            gate_shuffled_path,
+            dataset_role="train",
+            population="balanced",
+            binding="shuffled_binding",
+        )
+        if set(loaded_gate_shuffled) != set(gate_shuffled_train):
+            raise AssertionError("materialized shuffled cost rows differ")
+        if {row.pair_id for row in loaded_gate_shuffled} != {
+            row.pair_id for row in gate_balanced["train"]
+        }:
+            raise AssertionError("shuffled cost source pool differs from intact source pool")
+
+        for filename, binding, rows in (
+            ("findings-training-candidate.jsonl", "intact", finding_candidate_train),
+            (
+                "findings-training-shuffled.jsonl",
+                "shuffled_binding",
+                finding_shuffled_train,
+            ),
+        ):
+            relative = f"train/{filename}"
+            path = tasks_dir / relative
+            artifact_receipts.append(
+                task_manifest.write_finding_training_artifact(
+                    path,
+                    rows,
+                    relative_path=relative,
+                    dataset_role="train",
+                    binding=binding,
+                )
+            )
+            loaded = task_manifest.load_finding_training_artifact(
+                path,
+                dataset_role="train",
+                binding=binding,
+                comparisons=finding_comparisons["train"],
+                examples=finding_examples["train"],
+                length_bucket_width=finding_spec["length_bucket_width"],
+            )
+            if set(loaded) != set(rows):
+                raise AssertionError(f"materialized finding training rows differ: {relative}")
+
+        task_manifest_value = task_manifest.write_task_manifest(
+            tasks_dir,
+            artifact_receipts,
+            authorities={
+                "dataset_manifest_sha256": manifest_sha256,
+                "campaign_spec_sha256": spec_sha256,
+                "row_assignments_sha256": assignments_sha256,
+                "sample_rows_sha256": {
+                    role: sample_receipts[role]["rows_sha256"] for role in ROLES
+                },
+                "source_sha256": {
+                    "findings_task.py": _sha256_file(Path(findings_task.__file__)),
+                    "task_manifest.py": _sha256_file(Path(task_manifest.__file__)),
+                    "vqcc_task.py": _sha256_file(Path(vqcc_task.__file__)),
+                },
+            },
+        )
+        task_manifest_sha256 = _sha256_file(tasks_dir / "TASK_MANIFEST.json")
+        finding_candidate_report = findings_task.validate_finding_training_occurrences(
+            finding_candidate_train,
+            comparisons=finding_comparisons["train"],
+            examples=finding_examples["train"],
+            length_bucket_width=finding_spec["length_bucket_width"],
+        )
+        finding_shuffled_report = findings_task.validate_finding_training_occurrences(
+            finding_shuffled_train,
+            comparisons=finding_comparisons["train"],
+            examples=finding_examples["train"],
+            length_bucket_width=finding_spec["length_bucket_width"],
+        )
         task_receipts = {
             role: {
                 "gate_count": {
@@ -436,13 +614,10 @@ def run_readonly_intake(
             for role in ROLES
         }
         task_receipts["train"]["finding_binding"]["aligned_training_arms"] = {
-            "retained_records": len(aligned_train),
-            "record_ids_sha256": _sha256_lines([row.record_id for row in aligned_train]),
-            "shuffled_binding_sha256": _sha256_lines(
-                [
-                    f"{row.record_id}\t{row.answer_source_id}"
-                    for row in shuffled_train
-                ]
+            "candidate": finding_candidate_report,
+            "shuffled_binding": finding_shuffled_report,
+            "shared_base_comparison_ids_sha256": _sha256_lines(
+                [row.base_comparison_id for row in finding_candidate_train]
             ),
         }
 
@@ -475,7 +650,14 @@ def run_readonly_intake(
                 "counts": split_receipt["counts"],
             },
             "samples": sample_receipts,
-            "tasks": task_receipts,
+            "tasks": {
+                "directory": "tasks",
+                "manifest_file": "tasks/TASK_MANIFEST.json",
+                "manifest_sha256": task_manifest_sha256,
+                "content_set_sha256": task_manifest_value["content_set_sha256"],
+                "artifacts": task_manifest_value["artifacts"],
+                "reports": task_receipts,
+            },
             "invariants": {
                 **sample_invariants,
                 "gate_task_family_and_record_overlap": 0,

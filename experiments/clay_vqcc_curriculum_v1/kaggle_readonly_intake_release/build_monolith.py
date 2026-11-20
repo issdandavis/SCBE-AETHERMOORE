@@ -17,11 +17,14 @@ MONOLITH_NAME = "clay_vqcc_readonly_intake.py"
 RUNTIME_SOURCES = {
     "CAMPAIGN_SPEC.json": SOURCE_ROOT / "CAMPAIGN_SPEC.json",
     "EXECUTION_ADMISSION.json": HERE / "EXECUTION_ADMISSION.json",
+    "PARENT_VOCAB_AUDIT.json": SOURCE_ROOT / "PARENT_VOCAB_AUDIT.json",
     "build_vqcc_split.py": SOURCE_ROOT / "build_vqcc_split.py",
+    "clay_vqcc_byte_codec.py": SOURCE_ROOT / "clay_vqcc_byte_codec.py",
     "findings_task.py": SOURCE_ROOT / "findings_task.py",
     "kernel-metadata.json": HERE / "kernel-metadata.json",
     "load_vqcc_corpus.py": SOURCE_ROOT / "load_vqcc_corpus.py",
     "run_readonly_intake.py": SOURCE_ROOT / "run_readonly_intake.py",
+    "task_manifest.py": SOURCE_ROOT / "task_manifest.py",
     "runtime_main.py": HERE / "run_kaggle_readonly_intake.py",
     "vqcc_task.py": SOURCE_ROOT / "vqcc_task.py",
 }

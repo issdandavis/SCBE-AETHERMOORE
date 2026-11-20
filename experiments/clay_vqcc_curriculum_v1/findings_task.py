@@ -21,6 +21,7 @@ from typing import Any, Iterable, Mapping, Sequence
 
 TASKS = frozenset(("invsqrt", "dqi", "chemistry", "all"))
 LABELS = ("A", "B")
+TRAINING_BINDING_MODES = ("authoritative_truth", "synthetic_derangement")
 REQUIRED_ARMS = (
     "candidate",
     "no_intervention",
@@ -67,6 +68,45 @@ class FindingComparison:
     a_source_id: str
     b_source_id: str
     target: str
+
+    @property
+    def prompt(self) -> str:
+        return (
+            "TASK=FINDING_BINDING_V1\n"
+            f"QUESTION={self.question}\n"
+            f"A={self.a_answer}\n"
+            f"B={self.b_answer}\n"
+            "ANSWER="
+        )
+
+
+@dataclass(frozen=True)
+class FindingTrainingOccurrence:
+    """One comparison occurrence with truth and synthetic binding kept separate.
+
+    The answer source fields remain factual provenance.  The bound-record fields
+    describe the association supervised by a training arm.  Synthetic rows are
+    never valid evaluation truth and therefore use their own schema/type.
+    """
+
+    occurrence_id: str
+    arm: str
+    base_comparison_id: str
+    question_record_id: str
+    family_ids: tuple[str, ...]
+    task: str
+    question: str
+    a_answer: str
+    b_answer: str
+    a_source_id: str
+    b_source_id: str
+    a_source_family_id: str
+    b_source_family_id: str
+    a_bound_record_id: str
+    b_bound_record_id: str
+    supervision_target: str
+    binding_mode: str
+    evaluation_eligible: bool
 
     @property
     def prompt(self) -> str:
@@ -261,6 +301,291 @@ def validate_finding_comparisons(rows: Sequence[FindingComparison]) -> None:
     sources = {source for source, _role in answer_roles}
     if any(answer_roles[(source, "correct")] != answer_roles[(source, "distractor")] for source in sources):
         raise ValueError("answer-source correct/distractor marginals differ")
+
+
+def _ordered_derangement(
+    examples: Sequence[FindingExample],
+    *,
+    seed: int,
+    length_bucket_width: int,
+) -> dict[str, FindingExample]:
+    """Find a deterministic, stratum-preserving perfect answer derangement.
+
+    Candidate edges exclude identity, same-family, and same-answer mappings.
+    A deterministic augmenting-path matcher is used instead of a minibatch or
+    random shuffle so the exact permutation is independently reconstructible.
+    """
+
+    grouped: dict[tuple[str, int], list[FindingExample]] = defaultdict(list)
+    for example in examples:
+        grouped[(example.task, _length_bucket(example.answer, length_bucket_width))].append(example)
+    result: dict[str, FindingExample] = {}
+    for key in sorted(grouped):
+        group = sorted(grouped[key], key=lambda item: item.record_id)
+        if len(group) < 2:
+            raise ValueError(f"finding derangement stratum is a singleton: {key!r}")
+        destinations = sorted(
+            group,
+            key=lambda item: _digest(
+                ["finding-derangement-destination-v1", seed, list(key), item.record_id]
+            ),
+        )
+        candidates: dict[str, list[FindingExample]] = {}
+        for destination in destinations:
+            allowed = [
+                source
+                for source in group
+                if source.record_id != destination.record_id
+                and source.family_id != destination.family_id
+                and source.answer != destination.answer
+            ]
+            allowed.sort(
+                key=lambda source: _digest(
+                    [
+                        "finding-derangement-edge-v1",
+                        seed,
+                        list(key),
+                        destination.record_id,
+                        source.record_id,
+                    ]
+                )
+            )
+            if not allowed:
+                raise ValueError(
+                    f"finding derangement has no candidate for {destination.record_id} in {key!r}"
+                )
+            candidates[destination.record_id] = allowed
+
+        source_to_destination: dict[str, str] = {}
+        destination_to_source: dict[str, FindingExample] = {}
+
+        def assign(destination_id: str, seen_sources: set[str]) -> bool:
+            for source in candidates[destination_id]:
+                if source.record_id in seen_sources:
+                    continue
+                seen_sources.add(source.record_id)
+                previous = source_to_destination.get(source.record_id)
+                if previous is None or assign(previous, seen_sources):
+                    source_to_destination[source.record_id] = destination_id
+                    destination_to_source[destination_id] = source
+                    return True
+            return False
+
+        for destination in destinations:
+            if not assign(destination.record_id, set()):
+                raise ValueError(f"finding derangement has no perfect matching in {key!r}")
+        if len(destination_to_source) != len(group):
+            raise AssertionError("finding derangement did not cover every destination")
+        result.update(destination_to_source)
+    if len(result) != len(examples) or len({row.record_id for row in result.values()}) != len(examples):
+        raise AssertionError("finding derangement is not one-to-one")
+    return result
+
+
+def _training_occurrence_id(values: Mapping[str, Any]) -> str:
+    payload = {key: value for key, value in values.items() if key != "occurrence_id"}
+    return _digest(["finding-training-occurrence-v1", payload])
+
+
+def build_finding_training_occurrences(
+    examples: Sequence[FindingExample],
+    comparisons: Sequence[FindingComparison],
+    *,
+    seed: int,
+    length_bucket_width: int = 32,
+) -> tuple[list[FindingTrainingOccurrence], list[FindingTrainingOccurrence]]:
+    """Build aligned truth and dataset-wide synthetic training occurrences.
+
+    The authoritative comparison rows are never modified.  The synthetic arm
+    changes which answer occurrence is bound to each retained destination while
+    preserving the same questions, pair plan, label counts, source multiset,
+    task, and answer-length stratum.
+    """
+
+    if length_bucket_width <= 0:
+        raise ValueError("length_bucket_width must be positive")
+    validate_finding_comparisons(comparisons)
+    by_id = {example.record_id: example for example in examples}
+    if len(by_id) != len(examples):
+        raise ValueError("finding record IDs must be unique")
+    retained_ids = {
+        record_id
+        for row in comparisons
+        for record_id in (row.question_record_id, row.a_source_id, row.b_source_id)
+    }
+    missing = sorted(retained_ids - set(by_id))
+    if missing:
+        raise ValueError(f"finding comparisons reference missing examples: {missing[:5]}")
+    retained = [by_id[record_id] for record_id in sorted(retained_ids)]
+    for row in comparisons:
+        a_example, b_example = by_id[row.a_source_id], by_id[row.b_source_id]
+        question_example = by_id[row.question_record_id]
+        if (
+            row.a_answer != a_example.answer
+            or row.b_answer != b_example.answer
+            or row.question != question_example.question
+            or row.task != question_example.task
+        ):
+            raise ValueError(f"finding comparison content differs from source examples: {row.comparison_id}")
+    shuffled_sources = _ordered_derangement(
+        retained,
+        seed=seed,
+        length_bucket_width=length_bucket_width,
+    )
+    identity_sources = {example.record_id: example for example in retained}
+
+    def render(
+        *, arm: str, binding_mode: str, source_map: Mapping[str, FindingExample]
+    ) -> list[FindingTrainingOccurrence]:
+        rendered: list[FindingTrainingOccurrence] = []
+        for base in sorted(comparisons, key=lambda item: item.comparison_id):
+            a_bound, b_bound = base.a_source_id, base.b_source_id
+            a_source, b_source = source_map[a_bound], source_map[b_bound]
+            raw: dict[str, Any] = {
+                "arm": arm,
+                "base_comparison_id": base.comparison_id,
+                "question_record_id": base.question_record_id,
+                "family_ids": base.family_ids,
+                "task": base.task,
+                "question": base.question,
+                "a_answer": a_source.answer,
+                "b_answer": b_source.answer,
+                "a_source_id": a_source.record_id,
+                "b_source_id": b_source.record_id,
+                "a_source_family_id": a_source.family_id,
+                "b_source_family_id": b_source.family_id,
+                "a_bound_record_id": a_bound,
+                "b_bound_record_id": b_bound,
+                "supervision_target": base.target,
+                "binding_mode": binding_mode,
+                "evaluation_eligible": binding_mode == "authoritative_truth",
+            }
+            occurrence_id = _training_occurrence_id(raw)
+            rendered.append(FindingTrainingOccurrence(occurrence_id=occurrence_id, **raw))
+        return sorted(rendered, key=lambda item: item.occurrence_id)
+
+    candidate = render(
+        arm="candidate",
+        binding_mode="authoritative_truth",
+        source_map=identity_sources,
+    )
+    shuffled = render(
+        arm="shuffled_binding",
+        binding_mode="synthetic_derangement",
+        source_map=shuffled_sources,
+    )
+    validate_finding_training_occurrences(
+        candidate,
+        comparisons=comparisons,
+        examples=retained,
+        length_bucket_width=length_bucket_width,
+    )
+    validate_finding_training_occurrences(
+        shuffled,
+        comparisons=comparisons,
+        examples=retained,
+        length_bucket_width=length_bucket_width,
+    )
+    if [row.base_comparison_id for row in sorted(candidate, key=lambda row: row.base_comparison_id)] != [
+        row.base_comparison_id for row in sorted(shuffled, key=lambda row: row.base_comparison_id)
+    ]:
+        raise AssertionError("finding training arms differ in base occurrence pool")
+    if Counter(row.supervision_target for row in candidate) != Counter(
+        row.supervision_target for row in shuffled
+    ):
+        raise AssertionError("finding training arms differ in target marginals")
+    return candidate, shuffled
+
+
+def validate_finding_training_occurrences(
+    rows: Sequence[FindingTrainingOccurrence],
+    *,
+    comparisons: Sequence[FindingComparison],
+    examples: Sequence[FindingExample],
+    length_bucket_width: int = 32,
+) -> dict[str, Any]:
+    """Validate one training arm without accepting it as evaluation truth."""
+
+    if not rows:
+        raise ValueError("finding training occurrence set is empty")
+    if length_bucket_width <= 0:
+        raise ValueError("length_bucket_width must be positive")
+    validate_finding_comparisons(comparisons)
+    base_by_id = {row.comparison_id: row for row in comparisons}
+    example_by_id = {row.record_id: row for row in examples}
+    if len(base_by_id) != len(comparisons) or len(example_by_id) != len(examples):
+        raise ValueError("finding training validation inputs contain duplicate IDs")
+    if len({row.occurrence_id for row in rows}) != len(rows):
+        raise ValueError("finding training occurrence IDs must be unique")
+    if {row.base_comparison_id for row in rows} != set(base_by_id):
+        raise ValueError("finding training occurrences differ from the base comparison pool")
+    modes = {row.binding_mode for row in rows}
+    arms = {row.arm for row in rows}
+    if len(modes) != 1 or not modes.issubset(TRAINING_BINDING_MODES) or len(arms) != 1:
+        raise ValueError("finding training rows must contain one valid arm and binding mode")
+    mode = next(iter(modes))
+    expected_arm = "candidate" if mode == "authoritative_truth" else "shuffled_binding"
+    if arms != {expected_arm}:
+        raise ValueError("finding training arm differs from its binding mode")
+    destination_to_source: dict[str, str] = {}
+    for row in rows:
+        if row.occurrence_id != _training_occurrence_id(row.__dict__):
+            raise ValueError(f"finding training occurrence identity differs: {row.occurrence_id}")
+        base = base_by_id[row.base_comparison_id]
+        if (
+            row.question_record_id != base.question_record_id
+            or row.family_ids != base.family_ids
+            or row.task != base.task
+            or row.question != base.question
+            or row.a_bound_record_id != base.a_source_id
+            or row.b_bound_record_id != base.b_source_id
+            or row.supervision_target != base.target
+        ):
+            raise ValueError(f"finding training row differs from its base: {row.occurrence_id}")
+        for side in ("a", "b"):
+            source_id = getattr(row, f"{side}_source_id")
+            source = example_by_id.get(source_id)
+            bound_id = getattr(row, f"{side}_bound_record_id")
+            bound = example_by_id.get(bound_id)
+            if source is None or bound is None:
+                raise ValueError("finding training row references an unknown source or destination")
+            if (
+                getattr(row, f"{side}_answer") != source.answer
+                or getattr(row, f"{side}_source_family_id") != source.family_id
+            ):
+                raise ValueError("finding training answer differs from source provenance")
+            previous = destination_to_source.setdefault(bound_id, source_id)
+            if previous != source_id:
+                raise ValueError("finding training mapping changes between paired occurrences")
+            if mode == "authoritative_truth":
+                if source_id != bound_id or row.evaluation_eligible is not True:
+                    raise ValueError("authoritative finding binding is not identity truth")
+            else:
+                if row.evaluation_eligible is not False:
+                    raise ValueError("synthetic finding binding cannot be evaluation eligible")
+                if source_id == bound_id or source.family_id == bound.family_id or source.answer == bound.answer:
+                    raise ValueError("synthetic finding binding violates derangement constraints")
+                if source.task != bound.task or _length_bucket(
+                    source.answer, length_bucket_width
+                ) != _length_bucket(bound.answer, length_bucket_width):
+                    raise ValueError("synthetic finding binding changed task or length stratum")
+    if len(set(destination_to_source.values())) != len(destination_to_source):
+        raise ValueError("finding training mapping is not one-to-one")
+    if set(destination_to_source) != set(destination_to_source.values()):
+        raise ValueError("finding training source and destination marginals differ")
+    if Counter(row.supervision_target for row in rows) != Counter(row.target for row in comparisons):
+        raise ValueError("finding training target marginals differ from truth")
+    return {
+        "rows": len(rows),
+        "binding_mode": mode,
+        "label_counts": dict(sorted(Counter(row.supervision_target for row in rows).items())),
+        "task_counts": dict(sorted(Counter(row.task for row in rows).items())),
+        "destinations": len(destination_to_source),
+        "fixed_points": sum(
+            destination == source for destination, source in destination_to_source.items()
+        ),
+        "mapping_sha256": _digest(sorted(destination_to_source.items())),
+    }
 
 
 def validate_family_disjoint(

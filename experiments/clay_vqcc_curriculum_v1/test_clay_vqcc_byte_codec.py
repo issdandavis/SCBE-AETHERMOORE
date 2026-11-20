@@ -52,10 +52,15 @@ def test_task_specific_label_grammar_is_strict() -> None:
 
 def test_parent_vocab_coverage_and_label_ids_use_byte_tokens() -> None:
     vocab = parent_vocab_fixture()
-    receipt = codec.validate_parent_vocab(vocab)
+    receipt = codec.validate_parent_vocab(
+        vocab,
+        expected_sha256=codec.PARENT_VOCAB_SHA256,
+    )
     assert receipt["vocab_size"] == 276
     assert receipt["all_byte_tokens_present"] is True
     assert receipt["literal_labels_used"] is False
+    assert receipt["vocab_sha256"] == codec.PARENT_VOCAB_SHA256
+    assert receipt["vocab_hash_algorithm"] == codec.VOCAB_HASH_ALGORITHM
     stoi = {token: index for index, token in enumerate(vocab)}
     assert receipt["label_token_ids"]["finding_binding"] == {
         "A": stoi[codec.byte_token(ord("A"))],
@@ -64,6 +69,8 @@ def test_parent_vocab_coverage_and_label_ids_use_byte_tokens() -> None:
     assert receipt["label_token_ids"]["gate_count"]["T"] == stoi[
         codec.byte_token(ord("T"))
     ]
+    assert receipt["label_token_ids"]["finding_binding"] == {"A": 85, "B": 86}
+    assert receipt["label_token_ids"]["gate_count"]["T"] == 104
 
 
 def test_vocab_validation_fails_on_missing_byte_or_hash_drift() -> None:

@@ -20,6 +20,8 @@ CODEC_SCHEMA = "clay.vqcc-utf8-pua-byte-codec.v1"
 BYTE_TOKEN_BASE = 0xE100
 BYTE_TOKEN_COUNT = 256
 EXPECTED_PARENT_VOCAB_SIZE = 276
+PARENT_VOCAB_SHA256 = "bb0541789d0cfac2e02f7c3321d93ce1b9dc5513e2852499d81122a1e600e5b1"
+VOCAB_HASH_ALGORITHM = "sha256-json-utf8-ensure-ascii-sort-keys-compact-v1"
 TASK_LABELS = {
     "finding_binding": ("A", "B"),
     "gate_count": ("A", "B", "T"),
@@ -114,7 +116,11 @@ def _normalise_vocab(vocab: Sequence[str] | Mapping[str, int]) -> tuple[list[str
 def canonical_vocab_sha256(vocab: Sequence[str] | Mapping[str, int]) -> str:
     ordered, _stoi = _normalise_vocab(vocab)
     payload = json.dumps(
-        ordered, ensure_ascii=False, sort_keys=False, separators=(",", ":")
+        ordered,
+        ensure_ascii=True,
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
     ).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()
 
@@ -145,6 +151,7 @@ def validate_parent_vocab(
         "schema": CODEC_SCHEMA,
         "vocab_size": len(ordered),
         "vocab_sha256": actual_sha256,
+        "vocab_hash_algorithm": VOCAB_HASH_ALGORITHM,
         "byte_token_base": BYTE_TOKEN_BASE,
         "byte_token_count": BYTE_TOKEN_COUNT,
         "all_byte_tokens_present": True,

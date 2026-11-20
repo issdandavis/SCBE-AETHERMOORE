@@ -42,24 +42,24 @@ block at `U+E100..U+E1FF`. It does not contain literal VQCC prose or literal
 into that existing block without expanding the embedding table. Findings allow
 only `A/B`; gate count allows `A/B/T`. Literal labels are rejected.
 
-Actual checkpoint vocabulary readback and hash equality remain a release gate;
-the local model-load gate is closed by RAM pressure, so this was not faked with
-a local checkpoint load.
+Checkpoint vocabulary equality is now closed by `PARENT_VOCAB_AUDIT.json`.
+The audit reads bounded ZIP metadata with `pickletools`, never executes pickle,
+imports Torch, or loads a model. All three parents contain the exact 276-token
+fixture and share hash `bb054178...e5b1`.
 
 ## Still required before training
 
 1. Execute and independently verify the full mounted-corpus intake.
-2. Persist or deterministically reconstruct the exact task comparisons, not
-   only their ID hashes.
-3. Build the comparison-level findings shuffle and matched ordinary control.
-4. Seal task mixing, batch size, learning rate, fixed steps, checkpoint cadence,
+2. Build the token/length/task-mixture-matched ordinary control. Exact task rows
+   and comparison-level shuffled bindings are now materialized and hash-bound.
+3. Seal task mixing, batch size, learning rate, fixed steps, checkpoint cadence,
    thread/device settings, runtime cap, and all 15 identities after a loader and
    fixed-step runtime smoke.
-5. Prove actual trainable name/shape/dtype/byte equality and initial-logit
+4. Prove actual trainable name/shape/dtype/byte equality and initial-logit
    equality on real byte-compiled VQCC rows.
-6. Add interrupted-vs-continuous bit-exact checkpoint replay.
-7. Add strict one-byte generation coverage, task-restricted log-score metrics,
+5. Add interrupted-vs-continuous bit-exact checkpoint replay.
+6. Add strict one-byte generation coverage, task-restricted log-score metrics,
    retention, finite-evaluation bounds, and an independent replay that does not
    trust producer predictions.
-8. Obtain separate one-use training authorization. Promotion stays separately
+7. Obtain separate one-use training authorization. Promotion stays separately
    gated.

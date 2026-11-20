@@ -1,82 +1,63 @@
 {
-  "schema": "clay.vqcc-curriculum.test-receipt.v1",
-  "created_at": "2026-11-19T17:11:50.3537921-08:00",
+  "schema": "clay.vqcc-curriculum.test-receipt.v2",
+  "checked_at_utc": "2026-11-20T02:12:38Z",
   "status": "PASS_PREPARED_ONLY",
-  "execution_authorized": false,
-  "training_run_performed": false,
-  "cloud_mutation_performed": false,
-  "competition_submission_performed": false,
+  "authority": {
+    "execution_authorized": false,
+    "training_run_performed": false,
+    "cloud_mutation_performed": false,
+    "competition_submission_performed": false,
+    "checkpoint_promotion_performed": false
+  },
   "checks": {
     "pytest": {
-      "result": "45 passed",
-      "seconds": 1.79,
-      "scope": "experiments/clay_vqcc_curriculum_v1",
-      "files": [
-        "test_load_vqcc_corpus.py",
-        "test_build_vqcc_split.py",
-        "test_vqcc_task.py",
-        "test_findings_task.py",
-        "test_pipeline_integration.py",
-        "test_campaign_spec.py",
-        "test_run_readonly_intake.py"
-      ]
+      "command": "python -m pytest -q experiments/clay_vqcc_curriculum_v1",
+      "result": "62 passed",
+      "failed": 0
     },
     "ruff": {
       "result": "PASS",
-      "scope": "12 explicit experiment Python files"
+      "scope": "all experiment Python files"
     },
-    "py_compile": {
+    "compileall": {
       "result": "PASS",
-      "scope": "five executable modules"
+      "scope": "experiments/clay_vqcc_curriculum_v1"
     },
-    "json_parse": {
-      "result": "PASS",
-      "files": 5
+    "release_verifier": {
+      "result": "PASS_PREPARED_ONLY",
+      "admission_state": "NOT_CONSUMED",
+      "execution_authorized": false,
+      "files": 14,
+      "content_set_sha256": "a9de77b6a1676f785d2b2f753776a5f045b8b1266e4b266937251eb371065bc3"
     }
   },
-  "integration_scope": {
-    "manifest_to_family_split": true,
-    "family_split_to_streaming_roles": true,
-    "streaming_rows_to_independent_opcode_recount": true,
-    "opcode_recount_to_balanced_comparisons": true,
-    "experimental_findings_to_matched_binding_comparisons": true,
-    "train_holdout_family_and_record_disjoint": true,
-    "all_four_finding_tasks_required": true,
-    "prepared_intake_failure_atomic": true,
-    "prepared_intake_rejects_authority": true,
-    "fixture": "hermetic synthetic corpus",
-    "full_private_kaggle_mount_executed": false
-  },
-  "pinned_findings_audit": {
-    "status": "PASS_READ_ONLY_RECOMPUTATION",
-    "eligible_rows": 145,
-    "provenance_components": 107,
-    "train_rows": 117,
-    "holdout_rows": 28,
-    "train_comparisons": 96,
-    "holdout_comparisons": 14,
-    "all_four_task_classes_present": true,
-    "audit_sha256": "b1daa8a84c02a1aa3b91b3825fe19f886d4439a94a00949485069eefa02bb372"
+  "closed_gates": {
+    "exact_task_rows_materialized": true,
+    "dataset_wide_finding_derangement_materialized": true,
+    "task_manifest_hash_bound": true,
+    "parent_vocab_safe_readback": true,
+    "all_three_parent_vocabs_identical": true,
+    "all_256_byte_tokens_present": true,
+    "parent_vocab_sha256": "bb0541789d0cfac2e02f7c3321d93ce1b9dc5513e2852499d81122a1e600e5b1"
   },
   "sha256": {
-    "load_vqcc_corpus.py": "9ff2a53f8ed7bf1cfe55554dcaf76578b76fc5a2af1357156679cf7bd437061a",
-    "build_vqcc_split.py": "4db41f97786c3336262d784e2d20d8a94ec824944fbe4dc04ac8b433ec978728",
-    "vqcc_task.py": "67d46ae1fbd379c4e7793d1121e45d4b19b3b1af9f2766ce7640b13afd0e90d5",
-    "findings_task.py": "033047da305060388365854c84bb6e5e4a1b293b6d0ddc157f87e0867f09e365",
-    "run_readonly_intake.py": "ef3bd3f0494465ca130925cb9fd4dae27110837d236c92b3f58f339f4fc8cccc",
-    "test_pipeline_integration.py": "39ac499a9f37f7c9a60b056ce15167b5ba23f988a058335998c935263076b9a4",
-    "test_campaign_spec.py": "b1c4d04af44491b19ea9483b5a76305f932901aceb837eecae6f5c067c708ea6",
-    "test_run_readonly_intake.py": "93637162b276d124baad140c321d77c355afec6ced2c55593583bd26aa1b6208",
-    "CAMPAIGN_SPEC.json": "aa1267701d485b4dd5df197bbc31add3ad6da12739106772db69bcea627ad083"
+    "CAMPAIGN_SPEC.json": "eb8e658fcc166e4ce15828096ac0fded56d97ce43135933d553465cbee640de2",
+    "PARENT_VOCAB_AUDIT.json": "8f620583963cfffc05b0553186b4a6a6c8f1054979cb0a4ca32d4a3bd96834f0",
+    "audit_parent_vocab.py": "0414f00d1e149f2c918c3781b9d1980aa58ad2f7201758ebd37a19122b99477f",
+    "clay_vqcc_byte_codec.py": "693fa47109b00688249f15ea09e0155d0647db7f17ac11768bef70653406ee87",
+    "findings_task.py": "1068f77846e296a2380715f3bf48a58e89eec49292ab24350248cd7067e5d8c7",
+    "run_readonly_intake.py": "3c3d55cc8228738c31331c3e0ea2ca8725fb33cef0b7d4d81a14e9b136cc832c",
+    "task_manifest.py": "35dbb40ce8847ba3bee80ca3128009729bd137cb0f5fc677316a763abd1270d0"
   },
   "remaining_gates": [
-    "full mounted-corpus split and sampling receipt",
-    "tokenizer coverage",
+    "full mounted-corpus split and task-materialization receipt",
+    "matched ordinary control",
     "loader-only benchmark",
     "fixed-step runtime smoke",
     "actual tensor count and initialization hash equality",
-    "independent replay",
-    "fresh storage and provider metadata",
-    "explicit one-use execution authorization"
+    "interrupted-versus-continuous exact-resume test",
+    "independent inference replay",
+    "explicit one-use execution authorization",
+    "separate training authorization"
   ]
 }

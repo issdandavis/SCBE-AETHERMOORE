@@ -5,9 +5,11 @@ from dataclasses import replace
 
 import pytest
 
+import findings_task
 from findings_task import (
     aligned_findings_training_arms,
     build_finding_comparisons,
+    build_finding_training_occurrences,
     derange_findings_bindings,
     judge_finding_campaign,
     parse_finding_row,
@@ -15,6 +17,7 @@ from findings_task import (
     score_finding_predictions,
     validate_family_disjoint,
     validate_finding_comparisons,
+    validate_finding_training_occurrences,
 )
 
 
@@ -63,6 +66,79 @@ def test_aligned_training_arms_drop_ineligible_strata_symmetrically() -> None:
     assert singleton.record_id not in {row.record_id for row in candidate}
     assert all(left.answer_source_id == left.record_id for left in candidate)
     assert all(right.answer_source_id != right.record_id for right in shuffled)
+
+
+def test_comparison_training_control_is_dataset_wide_and_provenance_typed() -> None:
+    examples = [_example(i) for i in range(12)]
+    comparisons = build_finding_comparisons(examples, seed=13, length_bucket_width=64)
+    candidate, shuffled = build_finding_training_occurrences(
+        examples,
+        comparisons,
+        seed=17,
+        length_bucket_width=64,
+    )
+    candidate_report = validate_finding_training_occurrences(
+        candidate,
+        comparisons=comparisons,
+        examples=examples,
+        length_bucket_width=64,
+    )
+    shuffled_report = validate_finding_training_occurrences(
+        shuffled,
+        comparisons=comparisons,
+        examples=examples,
+        length_bucket_width=64,
+    )
+    assert candidate_report["binding_mode"] == "authoritative_truth"
+    assert shuffled_report["binding_mode"] == "synthetic_derangement"
+    assert shuffled_report["fixed_points"] == 0
+    assert Counter(row.supervision_target for row in candidate) == Counter(
+        row.supervision_target for row in shuffled
+    )
+    assert {row.base_comparison_id for row in candidate} == {
+        row.base_comparison_id for row in shuffled
+    }
+    assert all(row.a_source_id == row.a_bound_record_id for row in candidate)
+    assert all(row.b_source_id == row.b_bound_record_id for row in candidate)
+    assert all(row.evaluation_eligible is False for row in shuffled)
+    destination_sources = {
+        bound: source
+        for row in shuffled
+        for bound, source in (
+            (row.a_bound_record_id, row.a_source_id),
+            (row.b_bound_record_id, row.b_source_id),
+        )
+    }
+    assert set(destination_sources) == set(destination_sources.values())
+    assert all(destination != source for destination, source in destination_sources.items())
+
+
+def test_training_control_tampering_and_impossible_strata_fail_closed() -> None:
+    examples = [_example(i) for i in range(8)]
+    comparisons = build_finding_comparisons(examples, seed=23, length_bucket_width=64)
+    _candidate, shuffled = build_finding_training_occurrences(
+        examples,
+        comparisons,
+        seed=29,
+        length_bucket_width=64,
+    )
+    with pytest.raises(ValueError, match="identity differs"):
+        validate_finding_training_occurrences(
+            [replace(shuffled[0], a_answer="tampered"), *shuffled[1:]],
+            comparisons=comparisons,
+            examples=examples,
+            length_bucket_width=64,
+        )
+
+    singleton_examples = [_example(100, task="all")]
+    with pytest.raises(ValueError, match="singleton"):
+        # The private matcher is exercised through a valid comparison pool in
+        # production; this direct call covers its explicit Hall/singleton gate.
+        findings_task._ordered_derangement(
+            singleton_examples,
+            seed=31,
+            length_bucket_width=64,
+        )
 
 
 def test_scoring_and_log_score_margin() -> None:
