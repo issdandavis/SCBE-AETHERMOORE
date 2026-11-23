@@ -1191,15 +1191,14 @@ class RuntimeGate:
         # warm-up. Those actions must go through the full evaluation path.
         #
         # Calibration poisoning guard: an attacker who speaks first must not be
-        # able to define the trusted baseline. Overt override language, intent-spike
-        # keywords, and encoding-tamper / identifier-canonicality signals are routed
-        # through full evaluation (where they are quarantined/denied and therefore
-        # never admitted to the session centroid) rather than silently seeding it.
-        calibration_suspect = (
-            _is_high_confidence_override_attempt(full_text)
-            or any(keyword in full_text.lower() for keyword in self._INTENT_SPIKE_KEYWORDS)
-            or tamper_data is not None
-            or canonicality_data is not None
+        # able to define the trusted baseline. Overt override language and
+        # intent-spike keywords are routed through full evaluation (where they are
+        # quarantined/denied and therefore never admitted to the session centroid)
+        # rather than silently seeding it. Encoding-tamper / identifier-canonicality
+        # signals are intentionally left to the calibration branch below, which
+        # already escalates them to QUARANTINE without admitting them to the centroid.
+        calibration_suspect = _is_high_confidence_override_attempt(full_text) or any(
+            keyword in full_text.lower() for keyword in self._INTENT_SPIKE_KEYWORDS
         )
         if (
             self._query_count <= 5
