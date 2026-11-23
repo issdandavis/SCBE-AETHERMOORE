@@ -1189,11 +1189,24 @@ class RuntimeGate:
         # This is the "incubation" period — the system learns what normal looks like
         # Never let an explicit reroute match get learned as "normal" during
         # warm-up. Those actions must go through the full evaluation path.
+        #
+        # Calibration poisoning guard: an attacker who speaks first must not be
+        # able to define the trusted baseline. Overt override language, intent-spike
+        # keywords, and encoding-tamper / identifier-canonicality signals are routed
+        # through full evaluation (where they are quarantined/denied and therefore
+        # never admitted to the session centroid) rather than silently seeding it.
+        calibration_suspect = (
+            _is_high_confidence_override_attempt(full_text)
+            or any(keyword in full_text.lower() for keyword in self._INTENT_SPIKE_KEYWORDS)
+            or tamper_data is not None
+            or canonicality_data is not None
+        )
         if (
             self._query_count <= 5
             and action_hash not in self._immune
             and reroute_rule is None
             and not classifier_quarantine
+            and not calibration_suspect
         ):
             coords = self._validated_coords(self._text_to_coords(full_text)).tolist()
             if self._trichromatic_engine is not None:
