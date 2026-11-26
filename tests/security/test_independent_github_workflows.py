@@ -41,6 +41,11 @@ def test_nightly_ops_is_parseable_and_keeps_job_env_outside_steps() -> None:
 
     assert workflow["permissions"] == {"contents": "read"}
     assert job["env"] == {"SCBE_MODE": "ci"}
+    assert [step["uses"] for step in job["steps"] if "uses" in step] == [
+        "actions/checkout@v6",
+        "actions/setup-node@v6",
+        "actions/setup-python@v6",
+    ]
     assert [step["id"] for step in job["steps"] if "id" in step] == [
         "step_01_smoke",
         "step_02_plan",

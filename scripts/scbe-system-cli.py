@@ -1199,13 +1199,13 @@ def _render_workflow_yaml(
         [
             "    steps:",
             "      - name: Checkout",
-            "        uses: actions/checkout@v4",
+            "        uses: actions/checkout@v6",
             "      - name: Setup Node",
-            "        uses: actions/setup-node@v4",
+            "        uses: actions/setup-node@v6",
             "        with:",
             f"          node-version: {_yaml_quote(node_version)}",
             "      - name: Setup Python",
-            "        uses: actions/setup-python@v5",
+            "        uses: actions/setup-python@v6",
             "        with:",
             f"          python-version: {_yaml_quote(python_version)}",
         ]
