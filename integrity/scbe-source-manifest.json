@@ -9,13 +9,13 @@
     "integrity/scbe-source-manifest.sig.json"
   ],
   "summary": {
-    "entryCount": 6975,
-    "totalBytes": 94854905,
-    "blobCount": 6963,
+    "entryCount": 6978,
+    "totalBytes": 94855031,
+    "blobCount": 6966,
     "symlinkCount": 1,
     "gitlinkCount": 11
   },
-  "merkleRoot": "d73f5161a0d14bdcc1f42c0398e64c7e735416b54aab4417747af20106304629",
+  "merkleRoot": "3b988c43f4cd243c1ba53e8ecbd03a379e81d7768288a288cae30c6c104887f7",
   "entries": [
     {
       "path": ".agents/plugins/marketplace.json",
@@ -29002,6 +29002,14 @@
       "gitObject": "4e9571845a373cb14785eacf74e7fb8e12fb65ea"
     },
     {
+      "path": "scripts/integrity/package.json",
+      "mode": "100644",
+      "kind": "blob",
+      "bytes": 42,
+      "sha256": "609158e6c5fbc237939fa3ddf7faab80ab690bdc0c8d584414a885130103c4e8",
+      "gitObject": "e986b24bbae58b2e6d308a8186e3347e92314fe4"
+    },
+    {
       "path": "scripts/integrity/repository-integrity.ts",
       "mode": "100644",
       "kind": "blob",
@@ -39578,6 +39586,14 @@
       "gitObject": "aa0f4d6eea35f671919820c640d7e8f501c1ab13"
     },
     {
+      "path": "src/integrity/package.json",
+      "mode": "100644",
+      "kind": "blob",
+      "bytes": 42,
+      "sha256": "609158e6c5fbc237939fa3ddf7faab80ab690bdc0c8d584414a885130103c4e8",
+      "gitObject": "e986b24bbae58b2e6d308a8186e3347e92314fe4"
+    },
+    {
       "path": "src/integrity/repositoryManifest.ts",
       "mode": "100644",
       "kind": "blob",
@@ -48760,6 +48776,14 @@
       "bytes": 18736,
       "sha256": "346784394a3a0796bc9e522008c31902e5690147ba5031beb5269d54eb525db6",
       "gitObject": "241e0f86fadf46840a9317e2d7c78daebb3bcb2f"
+    },
+    {
+      "path": "tests/integrity/package.json",
+      "mode": "100644",
+      "kind": "blob",
+      "bytes": 42,
+      "sha256": "609158e6c5fbc237939fa3ddf7faab80ab690bdc0c8d584414a885130103c4e8",
+      "gitObject": "e986b24bbae58b2e6d308a8186e3347e92314fe4"
     },
     {
       "path": "tests/integrity/repositoryManifest.test.ts",
