@@ -35,6 +35,7 @@ export * from './swarm-geometry';
 export * from './oscillator-bus';
 export * from './governed-drift';
 export * from './node-kernel';
+export * from './policy-epoch-store';
 
 // Export types (canonical source for shared types)
 export * from './types';

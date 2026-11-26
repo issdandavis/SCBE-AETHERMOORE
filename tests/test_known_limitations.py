@@ -251,9 +251,10 @@ class TestProtocolLimitations:
     @pytest.mark.xfail(reason="No multi-party computation")
     def test_L13_multi_party_decryption(self):
         """L13: Cannot do threshold/multi-party decryption."""
-        # Single key holder only
-        # No secret sharing or threshold schemes
-        assert False, "No MPC support"
+        # Shamir key recovery exists in crypto.shamir_tongue_shares, but the
+        # recovered key is assembled in one process. There is still no MPC or
+        # distributed threshold-decryption primitive.
+        assert False, "No distributed threshold decryption or MPC support"
 
     @pytest.mark.xfail(reason="No homomorphic operations")
     def test_L14_homomorphic_encryption(self):

@@ -20,7 +20,8 @@ Ritual Ceremonies:
 - Solitary Incubation: Derives keys in isolation (multiple cycles)
 - Triadic Binding: Cryptographically binds 3 eggs into a triad
 - Ring Descent: Privilege escalation (OUTER → INNER)
-- Fail-to-Noise: On auth failure, regenerate shell (old → random new)
+- Fail-to-Noise: On auth failure, rotate a public routing handle without
+  mutating the authentication commitment or stable egg identity
 
 Integration:
 - Uses HKDF-SHA256 for all key derivation (consistent with SCBE envelope.ts)
@@ -157,7 +158,8 @@ class SacredEgg:
 
     Attributes:
         egg_id: Unique identifier (first 8 bytes of shell_hash, hex)
-        shell_hash: SHA-256 derived from yolk + context (public-safe)
+        shell_hash: Stable SHA-256 commitment derived from yolk + context
+        routing_handle: Rotatable public handle used for fail-to-noise decoys
         ring: Current access ring
         context: Purpose/domain label bound into key derivation
         created_at: Unix timestamp of creation
@@ -172,9 +174,25 @@ class SacredEgg:
     created_at: float
     lineage: List[str] = field(default_factory=list)
     albumen: Dict[str, bytes] = field(default_factory=dict)
+    routing_handle: bytes = field(default=b"", repr=False)
 
     # Private: yolk is only accessible at CORE ring
     _yolk: bytes = field(default=b"", repr=False)
+
+    def __post_init__(self) -> None:
+        """Validate stable identity and initialize legacy routing handles.
+
+        ``shell_hash`` is an authentication commitment and must never be used as
+        mutable routing state.  Older serialized/directly-constructed eggs do
+        not have ``routing_handle``; derive a domain-separated initial handle
+        so they remain usable without changing their stable identity.
+        """
+        if len(self.shell_hash) != SHELL_SIZE:
+            raise ValueError(f"Shell must be {SHELL_SIZE} bytes, got {len(self.shell_hash)}")
+        if not self.routing_handle:
+            self.routing_handle = hashlib.sha256(b"sacred-egg:routing:v1|" + self.shell_hash).digest()
+        elif len(self.routing_handle) != SHELL_SIZE:
+            raise ValueError(f"Routing handle must be {SHELL_SIZE} bytes, got {len(self.routing_handle)}")
 
     @staticmethod
     def create(
@@ -211,6 +229,7 @@ class SacredEgg:
             created_at=time.time(),
             lineage=list(parent_ids) if parent_ids else [],
             albumen={},
+            routing_handle=secrets.token_bytes(SHELL_SIZE),
             _yolk=yolk,
         )
 
@@ -275,8 +294,12 @@ class SacredEgg:
         return self.albumen[label]
 
     def get_shell(self) -> bytes:
-        """Get the shell hash (available at any ring)."""
+        """Get the stable authentication commitment (available at any ring)."""
         return self.shell_hash
+
+    def get_routing_handle(self) -> bytes:
+        """Get the current public routing handle (available at any ring)."""
+        return self.routing_handle
 
     def strip_to_ring(self, target_ring: EggRing) -> "SacredEgg":
         """Create a copy of this egg stripped to a lower privilege ring.
@@ -300,6 +323,7 @@ class SacredEgg:
                 created_at=self.created_at,
                 lineage=list(self.lineage),
                 albumen=dict(self.albumen),
+                routing_handle=self.routing_handle,
                 _yolk=self._yolk,
             )
         elif target_ring == EggRing.INNER:
@@ -311,6 +335,7 @@ class SacredEgg:
                 created_at=self.created_at,
                 lineage=list(self.lineage),
                 albumen=dict(self.albumen),
+                routing_handle=self.routing_handle,
                 _yolk=b"",  # yolk stripped
             )
         else:  # OUTER or CA
@@ -322,6 +347,7 @@ class SacredEgg:
                 created_at=self.created_at,
                 lineage=list(self.lineage),
                 albumen={},  # albumen stripped
+                routing_handle=self.routing_handle,
                 _yolk=b"",  # yolk stripped
             )
 
@@ -441,9 +467,21 @@ class FailToNoiseResult:
     """Result of fail-to-noise ritual."""
 
     egg_id: str
+    # Retain the v1 field names for constructor/asdict compatibility.  These
+    # values now describe routing handles; shell_hash is never mutated.
     old_shell: str
     new_shell: str
     noise_generated: bool
+
+    @property
+    def old_routing_handle(self) -> str:
+        """Accurate name for the legacy ``old_shell`` result field."""
+        return self.old_shell
+
+    @property
+    def new_routing_handle(self) -> str:
+        """Accurate name for the legacy ``new_shell`` result field."""
+        return self.new_shell
 
 
 class SacredRituals:
@@ -591,9 +629,10 @@ class SacredRituals:
         # The check is factored into the module-level `possesses_yolk` so the same
         # gate is shared verbatim by every consumer (e.g. the repulsor's intent).
         if not possesses_yolk(auth_secret, egg.shell_hash, egg.context):
-            # Documented ritual (Fail-to-Noise): a rejected attempt burns the
-            # shell handle to random noise so it cannot be replayed or
-            # correlated, then the descent is denied.
+            # Fail-to-Noise rotates only the public routing handle.  The stable
+            # authentication commitment and carton identity must survive an
+            # unauthenticated request or any caller could permanently lock out
+            # the owner with one wrong guess.
             SacredRituals.fail_to_noise(egg)
             raise PermissionError(
                 f"Ring descent denied: auth_secret does not authorize " f"{egg.ring.value} -> {target_ring.value}"
@@ -619,34 +658,33 @@ class SacredRituals:
 
     @staticmethod
     def fail_to_noise(egg: SacredEgg) -> FailToNoiseResult:
-        """Fail-to-Noise — regenerate shell on failure.
+        """Fail-to-Noise — rotate the public routing handle on failure.
 
         When an operation fails (auth error, tampered data, etc.),
-        the egg's shell hash is replaced with a new random hash.
-        This makes the old shell handle useless, preventing replay
-        or correlation attacks.
+        the egg's routing handle is replaced with fresh random noise.  This
+        makes the old public route useless without mutating ``shell_hash``
+        (the proof-of-yolk commitment) or ``egg_id`` (the carton's stable key).
 
-        The yolk is NOT changed — the egg retains its secret identity
-        but becomes unrecognizable from the outside.
+        The caller is responsible for publishing the new routing handle through
+        an authenticated directory update.  Authentication and lineage remain
+        valid even if an attacker can trigger this ritual.
 
         Args:
             egg: The egg to regenerate
 
         Returns:
-            FailToNoiseResult with old and new shell hashes
+            FailToNoiseResult with old and new routing handles
         """
-        old_shell = egg.shell_hash.hex()[:16]
+        old_routing_handle = egg.routing_handle.hex()[:16]
 
-        # Generate new random shell
+        # Generate a detached routing value.  Never replace shell_hash here:
+        # possesses_yolk() depends on that stable commitment.
         noise = secrets.token_bytes(SHELL_SIZE)
-        egg.shell_hash = noise
-
-        # Update egg_id to match new shell
-        egg.egg_id = noise[:8].hex()
+        egg.routing_handle = noise
 
         return FailToNoiseResult(
             egg_id=egg.egg_id,
-            old_shell=old_shell,
+            old_shell=old_routing_handle,
             new_shell=noise.hex()[:16],
             noise_generated=True,
         )

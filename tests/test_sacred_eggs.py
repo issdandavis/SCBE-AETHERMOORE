@@ -86,6 +86,7 @@ class TestSacredEgg:
         egg = SacredEgg.create(context="test")
         assert len(egg._yolk) == YOLK_SIZE
         assert len(egg.shell_hash) == SHELL_SIZE
+        assert len(egg.routing_handle) == SHELL_SIZE
         assert len(egg.egg_id) == 16  # 8 bytes hex
 
     def test_create_with_known_yolk(self, known_yolk):
@@ -582,13 +583,26 @@ class TestRingDescent:
         # The ring must NOT have changed on a denied descent.
         assert outer_egg.ring == EggRing.OUTER
 
-    def test_wrong_secret_burns_shell_to_noise(self, outer_egg):
-        """A denied descent triggers the documented Fail-to-Noise ritual."""
+    def test_wrong_secret_rotates_route_without_burning_commitment(self, outer_egg):
+        """A denied descent rotates routing noise, not owner authentication."""
         old_shell = outer_egg.shell_hash
+        old_id = outer_egg.egg_id
+        old_route = outer_egg.routing_handle
         with pytest.raises(PermissionError):
             SacredRituals.ring_descent(outer_egg, EggRing.INNER, secrets.token_bytes(32))
-        # Shell handle was burned, so a rejected attempt can't be replayed.
-        assert outer_egg.shell_hash != old_shell
+        assert outer_egg.routing_handle != old_route
+        assert outer_egg.shell_hash == old_shell
+        assert outer_egg.egg_id == old_id
+
+    def test_owner_can_descend_after_wrong_attempt(self, outer_egg):
+        """An attacker cannot lock out the owner with one wrong guess."""
+        yolk = outer_egg._yolk
+        with pytest.raises(PermissionError):
+            SacredRituals.ring_descent(outer_egg, EggRing.CORE, secrets.token_bytes(32))
+
+        result = SacredRituals.ring_descent(outer_egg, EggRing.CORE, yolk)
+        assert result.new_ring == "CORE"
+        assert outer_egg.ring == EggRing.CORE
 
     def test_valid_secret_authorizes_but_wrong_one_does_not(self, outer_egg):
         """The yolk authorizes; a single bit-flip of it does not."""
@@ -611,15 +625,28 @@ class TestRingDescent:
 class TestFailToNoise:
     """Tests for the Fail-to-Noise ritual."""
 
-    def test_regenerates_shell(self, core_egg):
-        """Should replace shell hash with new random value."""
-        old_shell = core_egg.shell_hash
+    def test_rotates_routing_handle(self, core_egg):
+        """Should replace the public routing handle with new random value."""
+        old_route = core_egg.routing_handle
         result = SacredRituals.fail_to_noise(core_egg)
 
         assert isinstance(result, FailToNoiseResult)
         assert result.noise_generated is True
-        assert core_egg.shell_hash != old_shell
+        assert core_egg.routing_handle != old_route
         assert result.old_shell != result.new_shell
+        assert result.old_routing_handle == result.old_shell
+        assert result.new_routing_handle == result.new_shell
+
+    def test_result_retains_legacy_constructor_fields(self):
+        """Existing callers using old_shell/new_shell do not break."""
+        result = FailToNoiseResult(
+            egg_id="egg",
+            old_shell="old-route",
+            new_shell="new-route",
+            noise_generated=True,
+        )
+        assert result.old_routing_handle == "old-route"
+        assert result.new_routing_handle == "new-route"
 
     def test_preserves_yolk(self, core_egg):
         """Yolk should survive fail-to-noise (identity preserved)."""
@@ -627,36 +654,30 @@ class TestFailToNoise:
         SacredRituals.fail_to_noise(core_egg)
         assert core_egg._yolk == original_yolk
 
-    def test_updates_egg_id(self, core_egg):
-        """Egg ID should change to match new shell."""
+    def test_preserves_stable_identity_and_commitment(self, core_egg):
+        """Routing noise must not corrupt authentication or carton identity."""
         old_id = core_egg.egg_id
+        old_shell = core_egg.shell_hash
         SacredRituals.fail_to_noise(core_egg)
-        assert core_egg.egg_id != old_id
-        # New ID should be derived from new shell
-        assert core_egg.egg_id == core_egg.shell_hash[:8].hex()
+        assert core_egg.egg_id == old_id
+        assert core_egg.shell_hash == old_shell
 
-    def test_old_shell_is_useless(self, core_egg):
-        """After fail-to-noise, old shell hash should not match."""
-        old_shell = core_egg.shell_hash.hex()
+    def test_old_routing_handle_is_replaced(self, core_egg):
+        """After fail-to-noise, the old public route should not match."""
+        old_route = core_egg.routing_handle
         SacredRituals.fail_to_noise(core_egg)
 
-        # Old and new shells should be completely unrelated
-        # XOR comparison — old vs new shell should be high entropy (many differing bits)
-        old_bytes = bytes.fromhex(old_shell)
-        new_bytes = core_egg.shell_hash
-        xor = bytes(a ^ b for a, b in zip(old_bytes, new_bytes))
-        # At least half the bits should differ (random expectation)
-        differing_bits = bin(int.from_bytes(xor, "big")).count("1")
-        assert differing_bits > 64  # 256-bit hash, expect ~128 differing
+        assert core_egg.routing_handle != old_route
+        assert len(core_egg.routing_handle) == SHELL_SIZE
 
     def test_repeated_noise(self, core_egg):
         """Multiple fail-to-noise should produce different results each time."""
-        shells = set()
+        routes = set()
         for _ in range(10):
             SacredRituals.fail_to_noise(core_egg)
-            shells.add(core_egg.shell_hash.hex())
+            routes.add(core_egg.routing_handle.hex())
 
-        assert len(shells) == 10  # All unique
+        assert len(routes) == 10  # All unique
 
 
 # =============================================================================
@@ -727,7 +748,7 @@ class TestIntegration:
         assert len(result.binding_hash) == 64
 
     def test_carton_lineage_after_noise(self):
-        """Lineage should survive fail-to-noise (IDs change but chain persists)."""
+        """Fail-to-noise must preserve carton and lineage index invariants."""
         carton = EggCarton.create()
         parent = SacredEgg.create(context="parent")
         carton.add(parent)
@@ -737,5 +758,12 @@ class TestIntegration:
         child = SacredEgg.create(context="child", parent_ids=[old_parent_id])
         carton.add(child)
 
-        # Child still references old parent ID in lineage
+        old_route = parent.routing_handle
+        SacredRituals.fail_to_noise(parent)
+
+        assert parent.routing_handle != old_route
+        assert parent.egg_id == old_parent_id
+        assert carton.get(parent.egg_id) is parent
+        assert parent.egg_id in carton.list_ids()
+        assert child.egg_id in carton.get_children(parent.egg_id)
         assert old_parent_id in child.lineage

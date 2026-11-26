@@ -12,6 +12,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
+import { createHash, createHmac } from 'crypto';
 import {
   HyperbolicTrustBrowser,
   type NavigationIntent,
@@ -205,11 +206,14 @@ describe('SpiralSealSessionBrowser', () => {
       expect(result.tongueVerification.length).toBeGreaterThan(0);
     });
 
-    it('rotates keys after each action (forward secrecy)', () => {
+    it('ratchets keys and overwrites the prior key after each action', () => {
       const session = sssb.createSession('agent-001');
       const info1 = sssb.getSessionInfo(session.sessionId);
+      const internals = sssb as unknown as { sessionKeys: Map<string, Buffer> };
+      const priorKey = internals.sessionKeys.get(session.sessionId)!;
+      const priorSnapshot = Buffer.from(priorKey);
 
-      sssb.executeAction(session.sessionId, {
+      const result = sssb.executeAction(session.sessionId, {
         type: 'navigate',
         payload: { url: 'https://example.com' },
         nonce: `nonce-${Date.now()}-1`,
@@ -217,7 +221,26 @@ describe('SpiralSealSessionBrowser', () => {
       });
 
       const info2 = sssb.getSessionInfo(session.sessionId);
+      const currentKey = internals.sessionKeys.get(session.sessionId)!;
+      expect(result.success).toBe(true);
       expect(info2!.keyVersion).toBe(info1!.keyVersion + 1);
+      expect(priorKey.equals(Buffer.alloc(32))).toBe(true);
+      expect(currentKey.equals(priorSnapshot)).toBe(false);
+    });
+
+    it('does not derive the session root from the retained master alone', () => {
+      const session = sssb.createSession('agent-001');
+      const internals = sssb as unknown as { sessionKeys: Map<string, Buffer> };
+      const actualRoot = internals.sessionKeys.get(session.sessionId)!;
+
+      // Regression model for the old implementation: anyone with the retained
+      // master and public metadata could reproduce every versioned key.
+      const master = createHash('sha256').update('test-master-key-256').digest();
+      const oldDeterministicRoot = createHmac('sha256', master)
+        .update(`sssb|${session.sessionId}|${session.agentId}|v0`)
+        .digest();
+
+      expect(actualRoot.equals(oldDeterministicRoot)).toBe(false);
     });
 
     it('detects replay attacks', () => {
@@ -246,8 +269,12 @@ describe('SpiralSealSessionBrowser', () => {
   describe('Session Lifecycle', () => {
     it('terminates a session', () => {
       const session = sssb.createSession('agent-001');
+      const internals = sssb as unknown as { sessionKeys: Map<string, Buffer> };
+      const liveKey = internals.sessionKeys.get(session.sessionId)!;
       expect(sssb.terminateSession(session.sessionId)).toBe(true);
       expect(sssb.getSessionInfo(session.sessionId)).toBeNull();
+      expect(internals.sessionKeys.has(session.sessionId)).toBe(false);
+      expect(liveKey.equals(Buffer.alloc(32))).toBe(true);
     });
 
     it('tracks active session count', () => {

@@ -19,6 +19,7 @@
  * Policy updates:
  *   - Signed (HMAC-SHA256)
  *   - Versioned (monotonic epoch counter)
+ *   - Restart-safe (durable epoch high-water mark)
  *   - Epoch-bound (old policies expire)
  *   - Deterministic (same inputs → same decisions)
  *
@@ -28,9 +29,10 @@
  * @axiom Causality — Policy epochs enforce temporal ordering
  */
 
-import { createHmac } from 'crypto';
+import { createHmac, timingSafeEqual } from 'crypto';
 import type { Vec } from './swarm-geometry.js';
 import type { SwarmMode } from './oscillator-bus.js';
+import type { PolicyEpochStore } from './policy-epoch-store.js';
 
 // ──────────────── Types ────────────────
 
@@ -142,6 +144,10 @@ export interface NodeKernelConfig {
   energyRechargeRate: number;
   /** Maximum neighbors tracked */
   maxNeighbors: number;
+  /** Durable high-water store. Required unless volatile mode is explicit. */
+  policyEpochStore?: PolicyEpochStore;
+  /** Explicit development/test opt-out; never enable for restart-safe policy. */
+  allowVolatilePolicyEpoch: boolean;
 }
 
 export const DEFAULT_KERNEL_CONFIG: Readonly<NodeKernelConfig> = {
@@ -150,6 +156,8 @@ export const DEFAULT_KERNEL_CONFIG: Readonly<NodeKernelConfig> = {
   energyPerStep: 0.001,
   energyRechargeRate: 0.002,
   maxNeighbors: 50,
+  policyEpochStore: undefined,
+  allowVolatilePolicyEpoch: false,
 };
 
 export const DEFAULT_POLICY_PARAMS: Readonly<PolicyParams> = {
@@ -179,6 +187,8 @@ export class NodeKernel {
   private state: NodeState;
   private activePolicy: PolicyManifest | null = null;
   private policyHistory: PolicyManifest[] = [];
+  private readonly policyEpochStore?: PolicyEpochStore;
+  private maxAcceptedPolicyEpoch: number;
   /** Audit log — append-only record of decisions */
   private auditLog: Array<{
     decision: KernelDecision;
@@ -195,6 +205,19 @@ export class NodeKernel {
         'NodeKernel requires a signingKey in config. ' +
           'Generate one with: crypto.randomBytes(32).toString("hex")'
       );
+    }
+
+    this.policyEpochStore = this.config.policyEpochStore;
+    if (!this.policyEpochStore && !this.config.allowVolatilePolicyEpoch) {
+      throw new Error(
+        'NodeKernel requires policyEpochStore for restart-safe policy ordering. ' +
+          'Set allowVolatilePolicyEpoch=true only for isolated tests or ephemeral development.'
+      );
+    }
+    try {
+      this.maxAcceptedPolicyEpoch = this.policyEpochStore?.loadMaxEpoch(nodeId) ?? 0;
+    } catch {
+      throw new Error('NodeKernel could not load the durable policy epoch state');
     }
 
     this.state = {
@@ -308,7 +331,7 @@ export class NodeKernel {
     params: Partial<PolicyParams> = {},
     ttlMs: number = 3_600_000
   ): PolicyManifest {
-    const nextEpoch = this.activePolicy ? this.activePolicy.epoch + 1 : 1;
+    const nextEpoch = Math.max(this.activePolicy?.epoch ?? 0, this.maxAcceptedPolicyEpoch) + 1;
     const now = Date.now();
 
     const fullParams: PolicyParams = {
@@ -341,15 +364,25 @@ export class NodeKernel {
   public applyPolicy(manifest: PolicyManifest): { applied: boolean; reason?: string } {
     // Verify signature
     const expected = this.signPolicy(manifest);
-    if (manifest.signature !== expected) {
+    const expectedBytes = Buffer.from(expected, 'hex');
+    const suppliedBytes = Buffer.from(manifest.signature, 'hex');
+    if (
+      suppliedBytes.length !== expectedBytes.length ||
+      !timingSafeEqual(suppliedBytes, expectedBytes)
+    ) {
       return { applied: false, reason: 'invalid_signature' };
     }
 
-    // Verify epoch monotonicity
-    if (this.activePolicy && manifest.epoch <= this.activePolicy.epoch) {
+    if (!Number.isSafeInteger(manifest.epoch) || manifest.epoch < 1) {
+      return { applied: false, reason: 'invalid_epoch' };
+    }
+
+    // Verify epoch monotonicity against the durable high-water mark, not just
+    // the active in-memory policy.
+    if (manifest.epoch <= this.maxAcceptedPolicyEpoch) {
       return {
         applied: false,
-        reason: `epoch_not_monotonic:${manifest.epoch}<=${this.activePolicy.epoch}`,
+        reason: `epoch_not_monotonic:${manifest.epoch}<=${this.maxAcceptedPolicyEpoch}`,
       };
     }
 
@@ -359,13 +392,27 @@ export class NodeKernel {
       return { applied: false, reason: 'policy_expired' };
     }
 
+    // Persist before activation. A failed or torn durable update must not make
+    // a policy active only in memory and then disappear on restart.
+    try {
+      this.policyEpochStore?.advanceMaxEpoch(this.state.id, manifest.epoch);
+    } catch {
+      return { applied: false, reason: 'epoch_store_error' };
+    }
+
     // Store old policy in history
     if (this.activePolicy) {
       this.policyHistory.push(this.activePolicy);
     }
 
+    this.maxAcceptedPolicyEpoch = manifest.epoch;
     this.activePolicy = manifest;
     return { applied: true };
+  }
+
+  /** Durable/volatile maximum epoch accepted by this kernel. */
+  public getMaxAcceptedPolicyEpoch(): number {
+    return this.maxAcceptedPolicyEpoch;
   }
 
   /**

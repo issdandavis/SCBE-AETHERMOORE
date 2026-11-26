@@ -38,6 +38,17 @@ from .sacred_eggs import (  # noqa: F401
     ring_allows,
 )
 
+# Shamir recovery with one typed Sacred Tongue carrier per share (no numpy)
+from .shamir_tongue_shares import (  # noqa: F401
+    DEFAULT_TONGUE_CODES,
+    MAX_SECRET_BYTES,
+    SacredTongueShare,
+    ShareMetadata,
+    inspect_share,
+    recover_secret,
+    split_secret,
+)
+
 # ═══════════════════════════════════════════════════════════
 # Lazy imports — heavy modules (scipy, matplotlib)
 # These are loaded on first access, not at import time.

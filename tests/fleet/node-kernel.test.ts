@@ -11,11 +11,17 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
+import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
+import { createHash } from 'crypto';
 import {
   NodeKernel,
   DEFAULT_KERNEL_CONFIG,
   DEFAULT_POLICY_PARAMS,
 } from '../../src/fleet/node-kernel.js';
+import { HmacFilePolicyEpochStore } from '../../src/fleet/policy-epoch-store.js';
+import type { PolicyEpochStore } from '../../src/fleet/policy-epoch-store.js';
 import type {
   NodeState,
   PolicyManifest,
@@ -28,6 +34,10 @@ import type {
 
 const ORIGIN = { x: 0, y: 0, z: 0 };
 const TEST_SIGNING_KEY = 'test-signing-key-for-node-kernel-tests';
+const TEST_KERNEL_CONFIG = {
+  signingKey: TEST_SIGNING_KEY,
+  allowVolatilePolicyEpoch: true,
+} as const;
 
 /**
  * Creates and applies a valid policy to the given kernel.
@@ -49,7 +59,13 @@ describe('NodeKernel', () => {
   let kernel: NodeKernel;
 
   beforeEach(() => {
-    kernel = new NodeKernel('test-node-1', ORIGIN, { signingKey: TEST_SIGNING_KEY });
+    kernel = new NodeKernel('test-node-1', ORIGIN, TEST_KERNEL_CONFIG);
+  });
+
+  it('requires durable epoch storage unless volatile mode is explicit', () => {
+    expect(() => new NodeKernel('unsafe-node', ORIGIN, { signingKey: TEST_SIGNING_KEY })).toThrow(
+      /policyEpochStore/
+    );
   });
 
   // ── State Management ──
@@ -518,8 +534,8 @@ describe('NodeKernel', () => {
   describe('policy signing', () => {
     it('Same policy content produces same signature', () => {
       // Create two kernels with the same signing key
-      const k1 = new NodeKernel('node-a', ORIGIN, { signingKey: TEST_SIGNING_KEY });
-      const k2 = new NodeKernel('node-b', ORIGIN, { signingKey: TEST_SIGNING_KEY });
+      const k1 = new NodeKernel('node-a', ORIGIN, TEST_KERNEL_CONFIG);
+      const k2 = new NodeKernel('node-b', ORIGIN, TEST_KERNEL_CONFIG);
 
       const m1 = k1.createPolicy();
       const m2 = k2.createPolicy();
@@ -555,16 +571,102 @@ describe('NodeKernel', () => {
 
       // Best deterministic approach: create policy, note the signature,
       // then verify applyPolicy validates that exact signature.
-      const kernel1 = new NodeKernel('det-1', ORIGIN, { signingKey: TEST_SIGNING_KEY });
+      const kernel1 = new NodeKernel('det-1', ORIGIN, TEST_KERNEL_CONFIG);
       const policy = kernel1.createPolicy();
       // Applying the same policy should work (signature matches)
       const applyResult = kernel1.applyPolicy(policy);
       expect(applyResult.applied).toBe(true);
 
-      // Apply same manifest again to a fresh kernel with same key => signature should validate
-      const kernel2 = new NodeKernel('det-2', ORIGIN, { signingKey: TEST_SIGNING_KEY });
+      // Signature validity is independent of local state. This explicit
+      // volatile test does not make a restart-safety claim.
+      const kernel2 = new NodeKernel('det-2', ORIGIN, TEST_KERNEL_CONFIG);
       const applyResult2 = kernel2.applyPolicy(policy);
       expect(applyResult2.applied).toBe(true);
+    });
+
+    it('rejects an older signed policy after a durable-store restart', () => {
+      const dir = mkdtempSync(join(tmpdir(), 'scbe-policy-epoch-'));
+      const integrityKey = 'policy-epoch-integrity-key-at-least-32-bytes';
+      try {
+        const first = new NodeKernel('restart-safe-node', ORIGIN, {
+          signingKey: TEST_SIGNING_KEY,
+          policyEpochStore: new HmacFilePolicyEpochStore(dir, integrityKey),
+        });
+        const epoch1 = first.createPolicy();
+        expect(first.applyPolicy(epoch1).applied).toBe(true);
+        const epoch2 = first.createPolicy();
+        expect(first.applyPolicy(epoch2).applied).toBe(true);
+
+        const restarted = new NodeKernel('restart-safe-node', ORIGIN, {
+          signingKey: TEST_SIGNING_KEY,
+          policyEpochStore: new HmacFilePolicyEpochStore(dir, integrityKey),
+        });
+        expect(restarted.getMaxAcceptedPolicyEpoch()).toBe(2);
+        const replay = restarted.applyPolicy(epoch1);
+        expect(replay.applied).toBe(false);
+        expect(replay.reason).toBe('epoch_not_monotonic:1<=2');
+        expect(restarted.createPolicy().epoch).toBe(3);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it('fails closed when the durable epoch commit fails', () => {
+      const failingStore: PolicyEpochStore = {
+        loadMaxEpoch: () => 0,
+        advanceMaxEpoch: () => {
+          throw new Error('simulated storage failure');
+        },
+      };
+      const guarded = new NodeKernel('store-failure-node', ORIGIN, {
+        signingKey: TEST_SIGNING_KEY,
+        policyEpochStore: failingStore,
+      });
+      const policy = guarded.createPolicy();
+      expect(guarded.applyPolicy(policy)).toEqual({
+        applied: false,
+        reason: 'epoch_store_error',
+      });
+      expect(guarded.getActivePolicy()).toBeNull();
+      expect(guarded.getMaxAcceptedPolicyEpoch()).toBe(0);
+    });
+
+    it('fails closed instead of racing a concurrent epoch writer', () => {
+      const dir = mkdtempSync(join(tmpdir(), 'scbe-policy-lock-'));
+      const nodeId = 'concurrent-node';
+      const integrityKey = 'policy-epoch-integrity-key-at-least-32-bytes';
+      const digest = createHash('sha256').update(nodeId, 'utf8').digest('hex');
+      try {
+        writeFileSync(join(dir, `${digest}.json.lock`), 'writer-active\n', { flag: 'wx' });
+        const store = new HmacFilePolicyEpochStore(dir, integrityKey);
+        expect(() => store.advanceMaxEpoch(nodeId, 1)).toThrow(/locked/);
+        expect(store.loadMaxEpoch(nodeId)).toBe(0);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it('rejects a tampered durable epoch record on restart', () => {
+      const dir = mkdtempSync(join(tmpdir(), 'scbe-policy-tamper-'));
+      const integrityKey = 'policy-epoch-integrity-key-at-least-32-bytes';
+      try {
+        const store = new HmacFilePolicyEpochStore(dir, integrityKey);
+        store.advanceMaxEpoch('tamper-node', 4);
+        const recordPath = join(dir, readdirSync(dir)[0]);
+        const record = JSON.parse(readFileSync(recordPath, 'utf8')) as { maxEpoch: number };
+        record.maxEpoch = 1;
+        writeFileSync(recordPath, `${JSON.stringify(record)}\n`, 'utf8');
+
+        expect(
+          () =>
+            new NodeKernel('tamper-node', ORIGIN, {
+              signingKey: TEST_SIGNING_KEY,
+              policyEpochStore: new HmacFilePolicyEpochStore(dir, integrityKey),
+            })
+        ).toThrow(/could not load/);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
     });
 
     it('Different epoch produces different signature', () => {
@@ -579,9 +681,11 @@ describe('NodeKernel', () => {
     it('Custom signing key produces different signatures', () => {
       const kernelA = new NodeKernel('node-key-a', ORIGIN, {
         signingKey: 'key-alpha',
+        allowVolatilePolicyEpoch: true,
       });
       const kernelB = new NodeKernel('node-key-b', ORIGIN, {
         signingKey: 'key-beta',
+        allowVolatilePolicyEpoch: true,
       });
 
       const mA = kernelA.createPolicy();
