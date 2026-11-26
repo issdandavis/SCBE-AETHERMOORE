@@ -1,0 +1,77 @@
+{
+  "authority": "READ_ONLY_DIAGNOSTIC_NO_TRAINING_NO_PROMOTION",
+  "campaign_manifest_sha256": "7f2516af8ae5a122f357565afad60ab412fdf54e76a3018cd8f1ddbfdb702a97",
+  "dataset_manifest_sha256": "7460665cbb718097438227c452f1915e88bdc5a10ac643122b17908b505d0041",
+  "frozen_gru_hidden_probes": [
+    {
+      "banks": {
+        "multiview": {
+          "nearest_centroid_accuracy": 0.20533333333333334,
+          "ridge_alpha_1_accuracy": 0.21533333333333332,
+          "shuffled_label_ridge_accuracy": 0.198,
+          "test_rows": 1500,
+          "train_rows": 3000,
+          "width": 192
+        },
+        "static": {
+          "nearest_centroid_accuracy": 0.186,
+          "ridge_alpha_1_accuracy": 0.20866666666666667,
+          "shuffled_label_ridge_accuracy": 0.20266666666666666,
+          "test_rows": 1500,
+          "train_rows": 3000,
+          "width": 192
+        }
+      },
+      "counting_accuracy": 0.7037037037037037,
+      "parent_sha256": "e719ca2398f0a96e4c80d2119897ad36202fb34bd8fbe37190655d581411b910",
+      "seed": 20261134
+    },
+    {
+      "banks": {
+        "multiview": {
+          "nearest_centroid_accuracy": 0.22333333333333333,
+          "ridge_alpha_1_accuracy": 0.21066666666666667,
+          "shuffled_label_ridge_accuracy": 0.20266666666666666,
+          "test_rows": 1500,
+          "train_rows": 3000,
+          "width": 192
+        },
+        "static": {
+          "nearest_centroid_accuracy": 0.21066666666666667,
+          "ridge_alpha_1_accuracy": 0.224,
+          "shuffled_label_ridge_accuracy": 0.206,
+          "test_rows": 1500,
+          "train_rows": 3000,
+          "width": 192
+        }
+      },
+      "counting_accuracy": 0.37037037037037035,
+      "parent_sha256": "bb4d912d413dd76174986a89b24f713268e90138808b69107aac01736c218438",
+      "seed": 20261135
+    }
+  ],
+  "interpretation_rule": "Strong raw geometry with weak hidden geometry nominates an action-gated byte-embedding or first-input thaw; it does not authorize promotion.",
+  "raw_feature_probes": {
+    "multiview": {
+      "nearest_centroid_accuracy": 0.8573333333333333,
+      "ridge_alpha_1_accuracy": 0.8366666666666667,
+      "shuffled_label_ridge_accuracy": 0.22533333333333333,
+      "test_rows": 1500,
+      "train_rows": 3000,
+      "width": 37
+    },
+    "static": {
+      "nearest_centroid_accuracy": 0.8606666666666667,
+      "ridge_alpha_1_accuracy": 0.6333333333333333,
+      "shuffled_label_ridge_accuracy": 0.204,
+      "test_rows": 1500,
+      "train_rows": 3000,
+      "width": 37
+    }
+  },
+  "schema": "clay.frozen-byte-transport-probe.v1",
+  "selected_parent_seeds": [
+    20261134,
+    20261135
+  ]
+}
