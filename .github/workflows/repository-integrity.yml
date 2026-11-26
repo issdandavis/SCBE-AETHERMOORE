@@ -1,1 +1,33 @@
-# Version-hop placeholder. Implementation continues in the isolated worktree.
+name: Repository integrity
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-source-manifest:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out exact source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          submodules: false
+
+      - name: Use Node 24
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24.16.0
+          cache: false
+
+      - name: Run integrity unit tests
+        run: node --test tests/integrity/repositoryManifest.test.ts
+
+      - name: Verify every tracked path and submodule pointer
+        run: node scripts/integrity/repository-integrity.ts verify --source git-index
