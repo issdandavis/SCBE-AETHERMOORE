@@ -225,12 +225,29 @@ jobs:
             gh pr create --base main --head "$BRANCH" \
               --title "chore(agent): publish ${{ steps.task.outputs.task }} results" \
               --body "Automated agent router output. Auto-merge enabled."
+
+            BASE_BRANCH="main"
+            ENCODED_BASE="$(jq -rn --arg value "$BASE_BRANCH" '$value | @uri')"
+            if ! PROTECTION="$(
+              gh api "repos/$GITHUB_REPOSITORY/branches/$ENCODED_BASE/protection" 2>/dev/null
+            )"; then
+              echo "::notice::Base branch $BASE_BRANCH is not protected; leaving $BRANCH open."
+              exit 0
+            fi
+            if ! jq -e '
+              [
+                .required_status_checks.contexts[]?,
+                .required_status_checks.checks[]?.context
+              ] | index("verify-source-manifest") != null
+            ' <<< "$PROTECTION" >/dev/null; then
+              echo "::notice::Base branch $BASE_BRANCH does not require verify-source-manifest; leaving $BRANCH open."
+              exit 0
+            fi
+
             if gh pr merge "$BRANCH" --squash --auto; then
               echo "Auto-merge enabled for $BRANCH"
-            elif gh pr merge "$BRANCH" --squash --admin; then
-              echo "Admin-merged $BRANCH"
             else
-              echo "::error::Failed to merge agent data PR for $BRANCH"
+              echo "::error::Failed to enable protected auto-merge for $BRANCH"
               exit 1
             fi
           fi

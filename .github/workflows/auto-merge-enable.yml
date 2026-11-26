@@ -18,7 +18,37 @@ jobs:
       github.actor == 'copilot-swe-agent' ||
       github.actor == 'issdandavis')
     steps:
+      - name: Require an integrity-protected base branch
+        id: protection
+        shell: bash
+        env:
+          BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          encoded_base="$(jq -rn --arg value "$BASE_BRANCH" '$value | @uri')"
+          if ! protection="$(
+            gh api "repos/$GITHUB_REPOSITORY/branches/$encoded_base/protection" 2>/dev/null
+          )"; then
+            echo "safe_to_merge=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Base branch $BASE_BRANCH is not protected; leaving the PR open."
+            exit 0
+          fi
+
+          if jq -e '
+            [
+              .required_status_checks.contexts[]?,
+              .required_status_checks.checks[]?.context
+            ] | index("verify-source-manifest") != null
+          ' <<< "$protection" >/dev/null; then
+            echo "safe_to_merge=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "safe_to_merge=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Base branch $BASE_BRANCH does not require verify-source-manifest; leaving the PR open."
+          fi
+
       - name: Enable auto-merge (squash)
+        if: steps.protection.outputs.safe_to_merge == 'true'
         shell: bash
         run: |
           set -euo pipefail
