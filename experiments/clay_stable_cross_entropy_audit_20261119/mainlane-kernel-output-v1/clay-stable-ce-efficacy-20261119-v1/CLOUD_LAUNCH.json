@@ -1,0 +1,35 @@
+{
+  "authority": {
+    "execution": "NONE",
+    "internet": "DISABLED",
+    "merge": "NONE",
+    "promotion": "NONE",
+    "tool_dispatch": "DISABLED",
+    "visibility": "PRIVATE"
+  },
+  "command": [
+    "/usr/bin/python3",
+    "/kaggle/working/clay-stable-ce-runtime-packet/scbe_repo/python/scbe/clay_stable_ce_efficacy_campaign.py",
+    "--baseline-run",
+    "/kaggle/working/clay-stable-ce-runtime-packet/baseline_run",
+    "--output-dir",
+    "/kaggle/working/clay-stable-ce-efficacy-20261119-v1/campaign",
+    "--source-dir",
+    "/kaggle/working/clay-stable-ce-runtime-packet/loom_root/experiments/clay_action_compiler_20261109",
+    "--preregistration",
+    "/kaggle/working/clay-stable-ce-runtime-packet/scbe_repo/experiments/clay_stable_cross_entropy_audit_20261119/EFFICACY_PREREGISTRATION.json",
+    "--steps",
+    "2000",
+    "--checkpoint-every",
+    "250",
+    "--batch-size",
+    "128",
+    "--threads",
+    "2",
+    "--minimum-free-gib",
+    "25.0"
+  ],
+  "cwd": "/kaggle/working/clay-stable-ce-runtime-packet/scbe_repo",
+  "launched_at_utc": "2026-11-19T10:52:34.392507+00:00",
+  "schema": "clay.stable-ce-kaggle-run.v1.launch"
+}

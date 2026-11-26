@@ -1,0 +1,2980 @@
+"""Streaming six-view token catalog with prime topology and goal surfing.
+
+Canonical source bytes and word spans remain the identity.  BPE IDs, 5W/color,
+speech-function candidates, atomic state, prime lanes, and source provenance are
+typed views of that identity.  The module builds an external SQLite lookup and
+never writes model weights.
+"""
+
+from __future__ import annotations
+
+from collections import Counter, defaultdict
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from hashlib import sha256
+from html import escape
+import json
+import math
+from pathlib import Path
+import re
+import shutil
+import sqlite3
+from typing import Any, Iterable, Iterator, Mapping, Sequence
+
+from python.scbe.atomic_tokenization import map_token_to_atomic_state
+from python.scbe.chemistry_sieve_spectrum import primes_through
+from python.scbe.function_lexicon import FunctionLexicon
+
+SCHEMA = "scbe.prime-token-catalog.v1"
+SOURCE_MANIFEST_SCHEMA = "scbe.prime-token-source-manifest.v1"
+CATALOG_AUDIT_SCHEMA = "scbe.prime-token-catalog-audit.v1"
+VIEW_STRUCTURE_AUDIT_SCHEMA = "scbe.prime-token-view-structure-audit.v1"
+RELATIONAL_INTEGRITY_AUDIT_SCHEMA = "scbe.prime-token-relational-integrity-audit.v1"
+SUCCESSOR_PLAN_SCHEMA = "scbe.prime-token-catalog-successor-plan.v1"
+SEARCH_SCHEMA = "scbe.prime-token-goal-search.v1"
+PROBABILITY_SCHEMA = "scbe.prime-token-probability.v1"
+ALGORITHM_REVISION = "six-view-topology-v3"
+LEXICAL_FIRST_REVISION = "six-view-lexical-first-v1"
+LEXICAL_BAND_REVISION = "six-view-lexical-band-v1"
+EXPLICIT_ROUTE_REVISION = "six-view-explicit-route-v1"
+LATE_OUTPUT_FUSION_REVISION = "six-view-late-output-fusion-v1"
+LATE_OUTPUT_FUSION_K = 60.0
+DEFAULT_TOKENIZER = Path(
+    r"C:\dev\clay_home\tokenizers\clay_open_core_bpe_v1\tokenizer.json"
+)
+DEFAULT_TOKENIZER_SHA256 = (
+    "6c14a5cd26188678f920273cff49483f535e340caa98e3a7eb4d3285286c37c6"
+)
+WORD_RE = re.compile(r"[^\W_]+(?:['’-][^\W_]+)*", re.UNICODE)
+SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+MAX_RELATIONSHIPS_PER_OCCURRENCE = 12
+VIEW_NAMES = ("lexical", "five_w", "speech", "atomic", "prime", "source")
+EXPLICIT_ROUTE_VIEWS = ("five_w", "speech", "atomic", "prime", "source")
+EXPLICIT_ROUTE_MARKERS = {
+    "five_w": ("who", "what", "when", "where", "why", "how", "5w", "five w"),
+    "speech": (
+        "grammar",
+        "syntax",
+        "noun",
+        "verb",
+        "pronoun",
+        "tense",
+        "speech function",
+    ),
+    "atomic": (
+        "atomic",
+        "tongue",
+        "braid",
+        "trit",
+        "semantic element",
+        "sacred tongue",
+    ),
+    "prime": (
+        "prime",
+        "sieve",
+        "factor",
+        "composite",
+        "eratosthenes",
+        "modulus",
+        "residue",
+    ),
+    "source": (
+        "source",
+        "file",
+        "code",
+        "paper",
+        "research",
+        "documentation",
+        "publish",
+        "book",
+    ),
+}
+VIEW_WEIGHTS = {
+    "lexical": 2.0,
+    "five_w": 1.0,
+    "speech": 0.5,
+    "atomic": 0.5,
+    "prime": 0.75,
+    "source": 0.75,
+}
+ROLE_ORDER = ("who", "what", "when", "where", "why", "unknown")
+ROLE_PRIMES = {"who": 2, "what": 3, "when": 5, "where": 7, "why": 11, "unknown": 13}
+ROLE_COLORS = {
+    "who": "#2563EB",
+    "what": "#16A34A",
+    "when": "#F59E0B",
+    "where": "#7C3AED",
+    "why": "#DC2626",
+    "unknown": "#64748B",
+}
+COLOR_MAPPING_ID = sha256(
+    json.dumps(ROLE_COLORS, sort_keys=True, separators=(",", ":")).encode("utf-8")
+).hexdigest()
+WHEN_WORDS = {
+    "after",
+    "already",
+    "before",
+    "during",
+    "eventually",
+    "later",
+    "meanwhile",
+    "next",
+    "now",
+    "recently",
+    "since",
+    "soon",
+    "then",
+    "today",
+    "tomorrow",
+    "until",
+    "when",
+    "whenever",
+    "yesterday",
+}
+WHERE_WORDS = {
+    "above",
+    "across",
+    "at",
+    "behind",
+    "below",
+    "beside",
+    "between",
+    "inside",
+    "near",
+    "outside",
+    "over",
+    "through",
+    "under",
+    "where",
+    "within",
+}
+WHY_WORDS = {
+    "because",
+    "consequently",
+    "due",
+    "hence",
+    "reason",
+    "so",
+    "therefore",
+    "why",
+}
+WHO_WORDS = {
+    "he",
+    "her",
+    "hers",
+    "him",
+    "his",
+    "i",
+    "me",
+    "mine",
+    "our",
+    "ours",
+    "she",
+    "their",
+    "theirs",
+    "them",
+    "they",
+    "we",
+    "who",
+    "whom",
+    "whose",
+    "you",
+    "your",
+    "yours",
+}
+CODE_SUFFIXES = {
+    ".c",
+    ".cc",
+    ".cpp",
+    ".cs",
+    ".go",
+    ".java",
+    ".js",
+    ".jsx",
+    ".mjs",
+    ".py",
+    ".rs",
+    ".ts",
+    ".tsx",
+}
+
+
+def canonical_json(value: Any) -> bytes:
+    return json.dumps(
+        value,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
+    ).encode("utf-8")
+
+
+def stable_id(namespace: str, *parts: object) -> str:
+    payload = "\x1f".join([namespace, *(str(part) for part in parts)])
+    return sha256(payload.encode("utf-8")).hexdigest()
+
+
+def sha256_file(path: Path) -> str:
+    digest = sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def normalize_word(surface: str) -> str:
+    return surface.casefold().replace("’", "'")
+
+
+def infer_source_kind(path: Path) -> str:
+    lower = str(path).casefold()
+    if path.suffix.casefold() in CODE_SUFFIXES:
+        return "code"
+    if any(
+        marker in lower
+        for marker in ("conversation", "transcript", "session", "chat", "dialog")
+    ):
+        return "conversation"
+    if any(
+        marker in lower
+        for marker in ("paper", "academic", "arxiv", "research", "citation")
+    ):
+        return "academic"
+    if path.suffix.casefold() in {".md", ".rst"}:
+        return "documentation"
+    if path.suffix.casefold() in {".jsonl", ".ndjson"}:
+        return "records"
+    return "local_text"
+
+
+@dataclass(frozen=True, slots=True)
+class InputRecord:
+    text: str
+    source_uri: str
+    source_kind: str
+    source_id_hint: str = ""
+    license_name: str = "unknown"
+
+
+class FrozenTokenizerView:
+    """Pinned BPE view. It never replaces the canonical UTF-8 byte identity."""
+
+    def __init__(
+        self,
+        path: Path = DEFAULT_TOKENIZER,
+        expected_sha256: str = DEFAULT_TOKENIZER_SHA256,
+    ):
+        self.path = Path(path).resolve()
+        if not self.path.is_file():
+            raise FileNotFoundError(f"frozen tokenizer not found: {self.path}")
+        self.sha256 = sha256_file(self.path)
+        if self.sha256 != expected_sha256.casefold():
+            raise ValueError(
+                f"tokenizer hash mismatch: expected {expected_sha256}, found {self.sha256}"
+            )
+        try:
+            from tokenizers import Tokenizer
+        except (
+            ImportError
+        ) as exc:  # pragma: no cover - dependency is present in the supported environment
+            raise RuntimeError(
+                "the pinned tokenizer requires the tokenizers package"
+            ) from exc
+        self.tokenizer = Tokenizer.from_file(str(self.path))
+        self.vocab_size = int(self.tokenizer.get_vocab_size())
+
+    def encode(self, text: str) -> tuple[list[int], list[tuple[int, int]]]:
+        encoded = self.tokenizer.encode(text, add_special_tokens=False)
+        return [int(value) for value in encoded.ids], [
+            (int(a), int(b)) for a, b in encoded.offsets
+        ]
+
+
+class PrimeOracle:
+    """Amortized prime lookup backed by Loom's Eratosthenes implementation."""
+
+    def __init__(self) -> None:
+        self.limit = 1
+        self.primes: tuple[int, ...] = ()
+        self.prime_set: set[int] = set()
+
+    def _grow(self, value: int) -> None:
+        if value <= self.limit:
+            return
+        limit = max(1024, self.limit)
+        while limit < value:
+            limit *= 2
+        self.primes = primes_through(limit)
+        self.prime_set = set(self.primes)
+        self.limit = limit
+
+    def describe(self, value: int) -> dict[str, Any]:
+        number = int(value)
+        if number < 2:
+            return {"kind": "edge", "prime": False, "factors": []}
+        self._grow(number)
+        if number in self.prime_set:
+            return {"kind": "prime", "prime": True, "factors": [number]}
+        rest = number
+        factors: list[int] = []
+        for prime in self.primes:
+            if prime * prime > rest:
+                break
+            while rest % prime == 0:
+                factors.append(prime)
+                rest //= prime
+        if rest > 1:
+            factors.append(rest)
+        return {"kind": "composite", "prime": False, "factors": factors}
+
+
+def iter_sections(
+    stream: Iterable[str], max_chars: int = 8192
+) -> Iterator[tuple[int, int, str]]:
+    """Yield bounded paragraph-like sections while retaining exact character offsets."""
+    if max_chars < 256:
+        raise ValueError("max_chars must be at least 256")
+    pieces: list[str] = []
+    start = 0
+    cursor = 0
+    length = 0
+
+    def flush() -> tuple[int, int, str] | None:
+        nonlocal pieces, length
+        if not pieces:
+            return None
+        text = "".join(pieces)
+        row = (start, start + len(text), text)
+        pieces = []
+        length = 0
+        return row
+
+    for raw in stream:
+        line = str(raw)
+        if pieces and length + len(line) > max_chars:
+            row = flush()
+            if row is not None:
+                yield row
+            start = cursor
+        while len(line) > max_chars:
+            chunk = line[:max_chars]
+            line = line[max_chars:]
+            if pieces:
+                row = flush()
+                if row is not None:
+                    yield row
+            yield cursor, cursor + len(chunk), chunk
+            cursor += len(chunk)
+            start = cursor
+        if not pieces:
+            start = cursor
+        pieces.append(line)
+        length += len(line)
+        cursor += len(line)
+        if not line.strip():
+            row = flush()
+            if row is not None:
+                yield row
+            start = cursor
+    row = flush()
+    if row is not None:
+        yield row
+
+
+def _atomic_payload(surface: str) -> tuple[dict[str, Any], list[tuple[str, str]]]:
+    state = map_token_to_atomic_state(surface, language="en")
+    payload = {
+        "semantic_class": state.semantic_class,
+        "resolved": bool(state.semantic_resolved),
+        "source": state.semantic_source,
+        "lexical_domains": list(state.lexical_domains),
+        "element": state.element.symbol,
+        "tau": state.tau.as_dict(),
+    }
+    features = [
+        ("atomic", f"semantic:{state.semantic_class}"),
+        ("atomic", f"resolved:{int(state.semantic_resolved)}"),
+        ("atomic", f"element:{state.element.symbol}"),
+    ]
+    features.extend(
+        ("atomic", f"tau:{tongue}:{value}")
+        for tongue, value in state.tau.as_dict().items()
+    )
+    return payload, features
+
+
+def _speech_payload(
+    lexicon: FunctionLexicon, surface: str
+) -> tuple[list[dict[str, Any]], list[tuple[str, str]]]:
+    candidates = lexicon.lookup(surface)[:16]
+    compact = [
+        {
+            "id": row["id"],
+            "kind": row["kind"],
+            "family": row["family"],
+            "upos": row["upos"],
+        }
+        for row in candidates
+    ]
+    features: list[tuple[str, str]] = []
+    for row in compact:
+        features.extend(
+            (
+                ("speech", f"primitive:{row['id']}"),
+                ("speech", f"kind:{row['kind']}"),
+                ("speech", f"family:{row['family']}"),
+                ("speech", f"upos:{row['upos']}"),
+            )
+        )
+    if not compact:
+        features.append(("speech", "candidate:ABSENT"))
+    return compact, features
+
+
+def _five_w(words: Sequence[dict[str, Any]]) -> dict[str, Any]:
+    scores = Counter({role: 0.0 for role in ROLE_ORDER})
+    evidence: dict[str, list[str]] = {role: [] for role in ROLE_ORDER}
+    for word in words:
+        normalized = word["normalized"]
+        surface = word["surface"]
+        atomic = word["atomic"]
+        speech = word["speech"]
+
+        def mark(role: str, amount: float = 1.0) -> None:
+            scores[role] += amount
+            if surface not in evidence[role] and len(evidence[role]) < 12:
+                evidence[role].append(surface)
+
+        upos = {row["upos"] for row in speech}
+        families = {row["family"] for row in speech}
+        if (
+            normalized in WHO_WORDS
+            or "PRON" in upos
+            or (surface[:1].isupper() and surface[1:].islower())
+        ):
+            mark("who", 1.25)
+        if atomic["semantic_class"] in {"ACTION", "ENTITY", "MODIFIER"} or upos & {
+            "NOUN",
+            "VERB",
+            "ADJ",
+            "ADV",
+        }:
+            mark(
+                "what",
+                (
+                    0.65
+                    if speech and all(row["kind"] == "function" for row in speech)
+                    else 1.0
+                ),
+            )
+        if normalized in WHEN_WORDS or atomic["semantic_class"] == "TEMPORAL":
+            mark("when", 1.5)
+        if normalized in WHERE_WORDS or (
+            "preposition" in families and normalized not in WHEN_WORDS
+        ):
+            mark("where", 1.1)
+        if normalized in WHY_WORDS or normalized in {"cause", "causes", "caused"}:
+            mark("why", 1.6)
+    nonzero = [role for role in ROLE_ORDER[:-1] if scores[role] > 0]
+    primary = (
+        max(
+            nonzero,
+            key=lambda role: (
+                scores[role] / max(1, len(evidence[role])),
+                scores[role],
+                -ROLE_ORDER.index(role),
+            ),
+        )
+        if nonzero
+        else "unknown"
+    )
+    total = sum(scores[role] for role in ROLE_ORDER[:-1])
+    normalized_scores = {
+        role: (scores[role] / total if total else (1.0 if role == "unknown" else 0.0))
+        for role in ROLE_ORDER
+    }
+    return {
+        "scores": normalized_scores,
+        "raw_scores": {role: scores[role] for role in ROLE_ORDER},
+        "evidence": evidence,
+        "primary": primary,
+        "color": ROLE_COLORS[primary],
+        "mapping_id": COLOR_MAPPING_ID,
+    }
+
+
+def _schema(connection: sqlite3.Connection) -> None:
+    connection.executescript("""
+        PRAGMA journal_mode=WAL;
+        PRAGMA synchronous=NORMAL;
+        PRAGMA foreign_keys=ON;
+        CREATE TABLE sources (
+          source_id TEXT PRIMARY KEY, source_uri TEXT NOT NULL, source_kind TEXT NOT NULL,
+          license_name TEXT NOT NULL, content_sha256 TEXT NOT NULL, byte_count INTEGER NOT NULL
+        );
+        CREATE TABLE sections (
+          section_id TEXT PRIMARY KEY, source_id TEXT NOT NULL REFERENCES sources(source_id),
+          ordinal INTEGER NOT NULL, start_char INTEGER NOT NULL, end_char INTEGER NOT NULL,
+          text_sha256 TEXT NOT NULL, text_preview TEXT NOT NULL, primary_role TEXT NOT NULL,
+          color TEXT NOT NULL, five_w_json TEXT NOT NULL, bpe_ids_json TEXT NOT NULL
+        );
+        CREATE TABLE tokens (
+          token_id TEXT PRIMARY KEY, normalized TEXT NOT NULL UNIQUE, utf8_hex TEXT NOT NULL,
+          atomic_json TEXT NOT NULL, speech_json TEXT NOT NULL, is_function INTEGER NOT NULL
+        );
+        CREATE TABLE occurrences (
+          occurrence_id TEXT PRIMARY KEY, token_id TEXT NOT NULL REFERENCES tokens(token_id),
+          source_id TEXT NOT NULL REFERENCES sources(source_id),
+          section_id TEXT NOT NULL REFERENCES sections(section_id), global_ordinal INTEGER NOT NULL UNIQUE,
+          section_ordinal INTEGER NOT NULL, start_char INTEGER NOT NULL, end_char INTEGER NOT NULL,
+          surface TEXT NOT NULL, bpe_ids_json TEXT NOT NULL, prime_kind TEXT NOT NULL,
+          prime_factors_json TEXT NOT NULL, route_prime INTEGER NOT NULL, route_residue INTEGER NOT NULL,
+          range_bucket INTEGER NOT NULL
+        );
+        CREATE TABLE section_features (
+          section_id TEXT NOT NULL REFERENCES sections(section_id), view_name TEXT NOT NULL,
+          feature_key TEXT NOT NULL, feature_value REAL NOT NULL,
+          PRIMARY KEY(section_id, view_name, feature_key)
+        );
+        CREATE TABLE relation_members (
+          relation_type TEXT NOT NULL, relation_key TEXT NOT NULL,
+          token_id TEXT NOT NULL REFERENCES tokens(token_id),
+          PRIMARY KEY(relation_type, relation_key, token_id)
+        );
+        CREATE TABLE feature_catalog (
+          view_name TEXT NOT NULL, feature_key TEXT NOT NULL, section_frequency INTEGER NOT NULL,
+          PRIMARY KEY(view_name, feature_key)
+        );
+        CREATE TABLE token_rank (
+          token_id TEXT PRIMARY KEY REFERENCES tokens(token_id), frequency INTEGER NOT NULL,
+          document_frequency INTEGER NOT NULL, source_kind_count INTEGER NOT NULL,
+          role_count INTEGER NOT NULL, resolved_rate REAL NOT NULL, function_rate REAL NOT NULL,
+          baseline_score REAL NOT NULL, secondary_score REAL NOT NULL,
+          baseline_rank INTEGER NOT NULL, secondary_rank INTEGER NOT NULL
+        );
+        """)
+
+
+class PrimeTokenCatalogBuilder:
+    def __init__(
+        self,
+        output_dir: str | Path,
+        *,
+        tokenizer_path: str | Path = DEFAULT_TOKENIZER,
+        tokenizer_sha256: str = DEFAULT_TOKENIZER_SHA256,
+        section_chars: int = 8192,
+        range_size: int = 4096,
+    ) -> None:
+        self.output_dir = Path(output_dir).resolve()
+        if self.output_dir.exists() and any(self.output_dir.iterdir()):
+            raise FileExistsError(f"output directory is not empty: {self.output_dir}")
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.section_chars = int(section_chars)
+        self.range_size = int(range_size)
+        if self.range_size < 128:
+            raise ValueError("range_size must be at least 128")
+        self.tokenizer = FrozenTokenizerView(Path(tokenizer_path), tokenizer_sha256)
+        self.lexicon = FunctionLexicon()
+        self.primes = PrimeOracle()
+        self.db_path = self.output_dir / "catalog.sqlite3"
+        self.connection = sqlite3.connect(self.db_path)
+        _schema(self.connection)
+        self.sections_out = (self.output_dir / "sections.jsonl").open(
+            "x", encoding="utf-8", newline="\n"
+        )
+        self.tokens_out = (self.output_dir / "tokens.jsonl").open(
+            "x", encoding="utf-8", newline="\n"
+        )
+        self.occurrences_out = (self.output_dir / "occurrences.jsonl").open(
+            "x", encoding="utf-8", newline="\n"
+        )
+        self.preview_rows: list[dict[str, Any]] = []
+        self.source_count = 0
+        self.section_count = 0
+        self.occurrence_count = 0
+        self.relationship_count = 0
+        self.source_manifests: list[dict[str, Any]] = []
+        self._closed = False
+
+    def _write_jsonl(self, handle, value: Mapping[str, Any]) -> None:
+        handle.write(canonical_json(value).decode("utf-8") + "\n")
+
+    def _source_row(self, record: InputRecord) -> tuple[str, str, int]:
+        raw = record.text.encode("utf-8")
+        content_hash = sha256(raw).hexdigest()
+        source_id = stable_id(
+            "source", record.source_id_hint or record.source_uri, content_hash
+        )
+        self.connection.execute(
+            "INSERT INTO sources VALUES (?, ?, ?, ?, ?, ?)",
+            (
+                source_id,
+                record.source_uri,
+                record.source_kind,
+                record.license_name,
+                content_hash,
+                len(raw),
+            ),
+        )
+        self.source_count += 1
+        return source_id, content_hash, len(raw)
+
+    def ingest_record(self, record: InputRecord) -> None:
+        if not isinstance(record.text, str) or not record.text:
+            raise ValueError("source text must be a nonempty string")
+        source_id, _content_hash, _byte_count = self._source_row(record)
+        self._ingest_sections(
+            source_id,
+            record.source_kind,
+            iter_sections(record.text.splitlines(keepends=True), self.section_chars),
+        )
+        self.connection.commit()
+
+    def ingest_file(
+        self,
+        path: str | Path,
+        *,
+        source_kind: str = "auto",
+        license_name: str = "unknown",
+    ) -> None:
+        source_path = Path(path).resolve()
+        if not source_path.is_file():
+            raise FileNotFoundError(source_path)
+        if source_path.suffix.casefold() in {".jsonl", ".ndjson"}:
+            self._ingest_jsonl(
+                source_path, source_kind=source_kind, license_name=license_name
+            )
+            return
+        kind = infer_source_kind(source_path) if source_kind == "auto" else source_kind
+        content_hash = sha256_file(source_path)
+        source_id = stable_id("source", str(source_path), content_hash)
+        byte_count = source_path.stat().st_size
+        self.connection.execute(
+            "INSERT INTO sources VALUES (?, ?, ?, ?, ?, ?)",
+            (source_id, str(source_path), kind, license_name, content_hash, byte_count),
+        )
+        self.source_count += 1
+        with source_path.open(
+            "r", encoding="utf-8", errors="replace", newline=""
+        ) as handle:
+            self._ingest_sections(
+                source_id, kind, iter_sections(handle, self.section_chars)
+            )
+        self.connection.commit()
+
+    def _ingest_jsonl(self, path: Path, *, source_kind: str, license_name: str) -> None:
+        with path.open("r", encoding="utf-8", errors="strict") as handle:
+            for line_no, line in enumerate(handle, 1):
+                if not line.strip():
+                    continue
+                row = json.loads(line)
+                if not isinstance(row, dict) or not isinstance(row.get("text"), str):
+                    raise ValueError(f"{path}:{line_no}: JSONL row needs a text string")
+                kind = str(
+                    row.get("source_kind")
+                    or (
+                        infer_source_kind(path)
+                        if source_kind == "auto"
+                        else source_kind
+                    )
+                )
+                uri = str(row.get("source_uri") or f"{path}#L{line_no}")
+                license_value = str(row.get("license") or license_name)
+                self.ingest_record(
+                    InputRecord(
+                        text=row["text"],
+                        source_uri=uri,
+                        source_kind=kind,
+                        source_id_hint=str(row.get("source_id") or uri),
+                        license_name=license_value,
+                    )
+                )
+
+    def ingest_paths(
+        self,
+        paths: Sequence[str | Path],
+        *,
+        source_kind: str = "auto",
+        license_name: str = "unknown",
+    ) -> None:
+        files: list[Path] = []
+        for raw in paths:
+            path = Path(raw).resolve()
+            if path.is_dir():
+                files.extend(
+                    candidate
+                    for candidate in path.rglob("*")
+                    if candidate.is_file()
+                    and candidate.suffix.casefold()
+                    in {
+                        ".c",
+                        ".cpp",
+                        ".go",
+                        ".java",
+                        ".js",
+                        ".jsonl",
+                        ".md",
+                        ".py",
+                        ".rs",
+                        ".rst",
+                        ".txt",
+                        ".ts",
+                    }
+                )
+            elif path.is_file():
+                files.append(path)
+            else:
+                raise FileNotFoundError(path)
+        for path in sorted(set(files), key=lambda item: str(item).casefold()):
+            self.ingest_file(path, source_kind=source_kind, license_name=license_name)
+
+    def ingest_source_manifest(self, manifest_path: str | Path) -> None:
+        """Ingest exact, hash-bound files with per-source attribution metadata."""
+        path = Path(manifest_path).resolve()
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if (
+            not isinstance(payload, dict)
+            or payload.get("schema") != SOURCE_MANIFEST_SCHEMA
+        ):
+            raise ValueError(f"source manifest schema must be {SOURCE_MANIFEST_SCHEMA}")
+        sources = payload.get("sources")
+        if not isinstance(sources, list) or not sources:
+            raise ValueError("source manifest needs a nonempty sources list")
+
+        validated: list[tuple[Path, str, str]] = []
+        seen: set[Path] = set()
+        for index, row in enumerate(sources):
+            label = f"source manifest row {index}"
+            if not isinstance(row, dict):
+                raise ValueError(f"{label} must be an object")
+            raw_source = row.get("path")
+            if not isinstance(raw_source, str) or not raw_source.strip():
+                raise ValueError(f"{label} needs a path")
+            source_path = Path(raw_source)
+            if not source_path.is_absolute():
+                source_path = path.parent / source_path
+            source_path = source_path.resolve()
+            if source_path in seen:
+                raise ValueError(f"{label} duplicates {source_path}")
+            seen.add(source_path)
+            if not source_path.is_file():
+                raise FileNotFoundError(source_path)
+
+            expected_hash = str(row.get("sha256") or "").casefold()
+            if not SHA256_RE.fullmatch(expected_hash):
+                raise ValueError(f"{label} needs a lowercase SHA-256")
+            actual_hash = sha256_file(source_path)
+            if actual_hash != expected_hash:
+                raise ValueError(
+                    f"{label} hash mismatch for {source_path}: "
+                    f"expected {expected_hash}, got {actual_hash}"
+                )
+
+            source_kind = str(row.get("source_kind") or "").strip()
+            license_name = str(row.get("license") or "").strip()
+            rights_basis = str(row.get("rights_basis") or "").strip()
+            if not source_kind or source_kind.casefold() == "auto":
+                raise ValueError(f"{label} needs an explicit source_kind")
+            if not license_name or license_name.casefold() == "unknown":
+                raise ValueError(f"{label} needs an explicit license")
+            if not rights_basis or rights_basis.casefold() == "unknown":
+                raise ValueError(f"{label} needs an explicit rights_basis")
+            validated.append((source_path, source_kind, license_name))
+
+        for source_path, source_kind, license_name in validated:
+            self.ingest_file(
+                source_path,
+                source_kind=source_kind,
+                license_name=license_name,
+            )
+        self.source_manifests.append(
+            {
+                "path": str(path),
+                "sha256": sha256_file(path),
+                "declared_sources": len(validated),
+                "rights_metadata": "explicit_per_source",
+            }
+        )
+
+    def _ingest_sections(
+        self,
+        source_id: str,
+        source_kind: str,
+        sections: Iterable[tuple[int, int, str]],
+    ) -> None:
+        section_ordinal = 0
+        for start_char, end_char, text in sections:
+            if not text.strip():
+                continue
+            section_ordinal += 1
+            self._ingest_section(
+                source_id, source_kind, section_ordinal, start_char, end_char, text
+            )
+            if self.section_count % 128 == 0:
+                self.connection.commit()
+
+    def _ingest_section(
+        self,
+        source_id: str,
+        source_kind: str,
+        section_ordinal: int,
+        start_char: int,
+        end_char: int,
+        text: str,
+    ) -> None:
+        text_hash = sha256(text.encode("utf-8")).hexdigest()
+        section_id = stable_id("section", source_id, section_ordinal, text_hash)
+        bpe_ids, bpe_offsets = self.tokenizer.encode(text)
+        words: list[dict[str, Any]] = []
+        for match in WORD_RE.finditer(text):
+            surface = match.group(0)
+            normalized = normalize_word(surface)
+            atomic, atomic_features = _atomic_payload(normalized)
+            speech, speech_features = _speech_payload(self.lexicon, normalized)
+            overlapping = [
+                token_id
+                for token_id, (left, right) in zip(bpe_ids, bpe_offsets, strict=True)
+                if right > match.start() and left < match.end()
+            ]
+            words.append(
+                {
+                    "surface": surface,
+                    "normalized": normalized,
+                    "start": match.start(),
+                    "end": match.end(),
+                    "bpe_ids": overlapping,
+                    "atomic": atomic,
+                    "atomic_features": atomic_features,
+                    "speech": speech,
+                    "speech_features": speech_features,
+                }
+            )
+        if not words:
+            return
+        five_w = _five_w(words)
+        primary_role = five_w["primary"]
+        self.connection.execute(
+            "INSERT INTO sections VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                section_id,
+                source_id,
+                section_ordinal,
+                start_char,
+                end_char,
+                text_hash,
+                text[:500],
+                primary_role,
+                five_w["color"],
+                canonical_json(five_w).decode("utf-8"),
+                canonical_json(bpe_ids).decode("utf-8"),
+            ),
+        )
+        section_features: Counter[tuple[str, str]] = Counter()
+        section_features[("five_w", f"role:{primary_role}")] += 1
+        section_features[("five_w", f"color:{five_w['color']}")] += 1
+        section_features[("source", f"kind:{source_kind}")] += 1
+        section_features[("source", f"source:{source_id}")] += 1
+        route_prime = ROLE_PRIMES[primary_role]
+        for word_ordinal, word in enumerate(words, 1):
+            self.occurrence_count += 1
+            global_ordinal = self.occurrence_count
+            prime = self.primes.describe(global_ordinal)
+            token_id = stable_id("word", word["normalized"])
+            occurrence_id = stable_id(
+                "occurrence",
+                section_id,
+                word_ordinal,
+                word["start"],
+                word["end"],
+                word["surface"],
+            )
+            utf8_hex = word["normalized"].encode("utf-8").hex()
+            is_function = bool(word["speech"]) and all(
+                row["kind"] == "function" for row in word["speech"]
+            )
+            inserted_token = self.connection.execute(
+                "INSERT OR IGNORE INTO tokens VALUES (?, ?, ?, ?, ?, ?)",
+                (
+                    token_id,
+                    word["normalized"],
+                    utf8_hex,
+                    canonical_json(word["atomic"]).decode("utf-8"),
+                    canonical_json(word["speech"]).decode("utf-8"),
+                    int(is_function),
+                ),
+            )
+            if inserted_token.rowcount:
+                self._write_jsonl(
+                    self.tokens_out,
+                    {
+                        "schema": SCHEMA,
+                        "token_id": token_id,
+                        "normalized": word["normalized"],
+                        "utf8_hex": utf8_hex,
+                        "atomic": word["atomic"],
+                        "speech_candidates": word["speech"],
+                    },
+                )
+            range_bucket = (global_ordinal - 1) // self.range_size
+            self.connection.execute(
+                "INSERT INTO occurrences VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    occurrence_id,
+                    token_id,
+                    source_id,
+                    section_id,
+                    global_ordinal,
+                    word_ordinal,
+                    word["start"],
+                    word["end"],
+                    word["surface"],
+                    canonical_json(word["bpe_ids"]).decode("utf-8"),
+                    prime["kind"],
+                    canonical_json(prime["factors"]).decode("utf-8"),
+                    route_prime,
+                    global_ordinal % route_prime,
+                    range_bucket,
+                ),
+            )
+            features: list[tuple[str, str]] = [
+                ("lexical", f"word:{word['normalized']}"),
+                ("five_w", f"role:{primary_role}"),
+                ("five_w", f"color:{five_w['color']}"),
+                ("prime", f"kind:{prime['kind']}"),
+                (
+                    "prime",
+                    f"route:{route_prime}:residue:{global_ordinal % route_prime}",
+                ),
+                ("prime", f"range:{range_bucket}"),
+                ("source", f"kind:{source_kind}"),
+                ("source", f"source:{source_id}"),
+            ]
+            features.extend(
+                ("lexical", f"bpe:{token_id_value}")
+                for token_id_value in word["bpe_ids"][:16]
+            )
+            features.extend(word["atomic_features"])
+            features.extend(word["speech_features"])
+            features.extend(
+                ("prime", f"factor:{factor}")
+                for factor in sorted(set(prime["factors"]))
+            )
+            for view_name, feature_key in dict.fromkeys(features):
+                section_features[(view_name, feature_key)] += 1
+            relationship_features = [
+                ("lexical", f"word:{word['normalized']}"),
+                ("five_w", f"role:{primary_role}"),
+                ("atomic", f"semantic:{word['atomic']['semantic_class']}"),
+                ("prime", f"kind:{prime['kind']}"),
+                (
+                    "prime",
+                    f"route:{route_prime}:residue:{global_ordinal % route_prime}",
+                ),
+                ("source", f"kind:{source_kind}"),
+            ]
+            if word["speech"]:
+                relationship_features.extend(
+                    [
+                        ("speech", f"primitive:{word['speech'][0]['id']}"),
+                        ("speech", f"upos:{word['speech'][0]['upos']}"),
+                    ]
+                )
+            if prime["factors"]:
+                relationship_features.append(("prime", f"factor:{prime['factors'][0]}"))
+            unique_relationships = list(dict.fromkeys(relationship_features))[
+                :MAX_RELATIONSHIPS_PER_OCCURRENCE
+            ]
+            for view_name, feature_key in unique_relationships:
+                inserted = self.connection.execute(
+                    "INSERT OR IGNORE INTO relation_members VALUES (?, ?, ?)",
+                    (view_name, feature_key, token_id),
+                )
+                self.relationship_count += max(0, inserted.rowcount)
+            occurrence_row = {
+                "schema": SCHEMA,
+                "occurrence_id": occurrence_id,
+                "token_id": token_id,
+                "source_id": source_id,
+                "section_id": section_id,
+                "surface": word["surface"],
+                "normalized": word["normalized"],
+                "utf8_hex": word["surface"].encode("utf-8").hex(),
+                "global_ordinal": global_ordinal,
+                "bpe_ids": word["bpe_ids"],
+                "five_w_role": primary_role,
+                "color": five_w["color"],
+                "token_analysis_ref": token_id,
+                "prime": {
+                    **prime,
+                    "route_prime": route_prime,
+                    "residue": global_ordinal % route_prime,
+                    "range_bucket": range_bucket,
+                },
+            }
+            self._write_jsonl(self.occurrences_out, occurrence_row)
+        for (view_name, feature_key), count in section_features.items():
+            self.connection.execute(
+                "INSERT INTO section_features VALUES (?, ?, ?, ?)",
+                (section_id, view_name, feature_key, 1.0 + math.log(count)),
+            )
+        section_row = {
+            "schema": SCHEMA,
+            "section_id": section_id,
+            "source_id": source_id,
+            "ordinal": section_ordinal,
+            "sha256": text_hash,
+            "five_w": five_w,
+            "bpe_ids": bpe_ids,
+            "word_count": len(words),
+        }
+        self._write_jsonl(self.sections_out, section_row)
+        if len(self.preview_rows) < 500:
+            self.preview_rows.append({**section_row, "preview": text[:500]})
+        self.section_count += 1
+
+    def _finalize_feature_catalog(self) -> None:
+        self.connection.execute("DELETE FROM feature_catalog")
+        self.connection.execute("""
+            INSERT INTO feature_catalog(view_name, feature_key, section_frequency)
+            SELECT view_name, feature_key, COUNT(*) FROM section_features GROUP BY view_name, feature_key
+            """)
+        self.connection.executescript("""
+            CREATE INDEX idx_occurrence_section ON occurrences(section_id);
+            CREATE INDEX idx_occurrence_token ON occurrences(token_id);
+            CREATE INDEX idx_feature_lookup ON section_features(view_name, feature_key);
+            CREATE INDEX idx_relation_lookup ON relation_members(relation_type, relation_key);
+            """)
+
+    def _finalize_ranks(self) -> None:
+        self.connection.execute("DELETE FROM token_rank")
+        rows = self.connection.execute("""
+            SELECT o.token_id, COUNT(*) AS frequency, COUNT(DISTINCT o.source_id) AS document_frequency,
+                   COUNT(DISTINCT s.source_kind) AS source_kind_count,
+                   COUNT(DISTINCT sec.primary_role) AS role_count,
+                   AVG(CAST(json_extract(t.atomic_json, '$.resolved') AS REAL)) AS resolved_rate,
+                   AVG(CASE WHEN t.speech_json != '[]' THEN 1.0 ELSE 0.0 END) AS function_rate
+            FROM occurrences o JOIN tokens t ON t.token_id=o.token_id
+            JOIN sources s ON s.source_id=o.source_id
+            JOIN sections sec ON sec.section_id=o.section_id GROUP BY o.token_id
+            """).fetchall()
+        scored: list[dict[str, Any]] = []
+        for (
+            token_id,
+            frequency,
+            documents,
+            source_kinds,
+            roles,
+            resolved_rate,
+            function_rate,
+        ) in rows:
+            baseline = math.log1p(frequency)
+            secondary = (
+                baseline
+                + 0.75 * math.log1p(documents)
+                + 0.35 * source_kinds
+                + 0.20 * roles
+                + 0.25 * float(resolved_rate or 0.0)
+                + 0.15 * float(function_rate or 0.0)
+            )
+            scored.append(
+                {
+                    "token_id": token_id,
+                    "frequency": frequency,
+                    "documents": documents,
+                    "source_kinds": source_kinds,
+                    "roles": roles,
+                    "resolved_rate": float(resolved_rate or 0.0),
+                    "function_rate": float(function_rate or 0.0),
+                    "baseline": baseline,
+                    "secondary": secondary,
+                }
+            )
+        baseline_order = {
+            row["token_id"]: rank
+            for rank, row in enumerate(
+                sorted(scored, key=lambda x: (-x["baseline"], x["token_id"])), 1
+            )
+        }
+        secondary_order = {
+            row["token_id"]: rank
+            for rank, row in enumerate(
+                sorted(scored, key=lambda x: (-x["secondary"], x["token_id"])), 1
+            )
+        }
+        self.connection.executemany(
+            "INSERT INTO token_rank VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            [
+                (
+                    row["token_id"],
+                    row["frequency"],
+                    row["documents"],
+                    row["source_kinds"],
+                    row["roles"],
+                    row["resolved_rate"],
+                    row["function_rate"],
+                    row["baseline"],
+                    row["secondary"],
+                    baseline_order[row["token_id"]],
+                    secondary_order[row["token_id"]],
+                )
+                for row in scored
+            ],
+        )
+
+    def _write_html(self) -> Path:
+        path = self.output_dir / "sections.html"
+        cards = []
+        for row in self.preview_rows:
+            role = row["five_w"]["primary"]
+            color = row["five_w"]["color"]
+            cards.append(
+                f'<article style="border-left:8px solid {color};padding:12px;margin:10px;background:#f8fafc">'
+                f"<b>{escape(role.upper())}</b> · {escape(row['section_id'][:12])}"
+                f"<pre style=\"white-space:pre-wrap\">{escape(row['preview'])}</pre></article>"
+            )
+        path.write_text(
+            "<!doctype html><meta charset=utf-8><title>Prime Token Catalog</title>"
+            "<h1>Prime Token Catalog — bounded preview</h1>" + "".join(cards),
+            encoding="utf-8",
+        )
+        return path
+
+    def finalize(self) -> dict[str, Any]:
+        if self._closed:
+            raise RuntimeError("catalog builder is already closed")
+        self._finalize_feature_catalog()
+        self._finalize_ranks()
+        self.connection.commit()
+        self.sections_out.close()
+        self.tokens_out.close()
+        self.occurrences_out.close()
+        html_path = self._write_html()
+        self.connection.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+        self.connection.close()
+        self._closed = True
+        outputs = [
+            self.db_path,
+            self.output_dir / "sections.jsonl",
+            self.output_dir / "tokens.jsonl",
+            self.output_dir / "occurrences.jsonl",
+            html_path,
+        ]
+        manifest = {
+            "schema": SCHEMA,
+            "status": "MECHANICS_ONLY_NO_PROMOTION",
+            "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+            "algorithm_revision": ALGORITHM_REVISION,
+            "views": list(VIEW_NAMES),
+            "source_count": self.source_count,
+            "source_manifests": list(self.source_manifests),
+            "section_count": self.section_count,
+            "occurrence_count": self.occurrence_count,
+            "relationship_memberships": self.relationship_count,
+            "relationship_cap_per_occurrence": MAX_RELATIONSHIPS_PER_OCCURRENCE,
+            "tokenizer": {
+                "path": str(self.tokenizer.path),
+                "sha256": self.tokenizer.sha256,
+                "vocab_size": self.tokenizer.vocab_size,
+                "role": "typed_bpe_view_not_active_byte_model_identity",
+            },
+            "canonical_identity": "utf8_bytes_and_source_word_span",
+            "color_mapping_id": COLOR_MAPPING_ID,
+            "function_registry_sha256": self.lexicon.registry_hash,
+            "sieve": "clay_sieve.sieve_of_eratosthenes",
+            "outputs": [
+                {
+                    "path": str(path),
+                    "bytes": path.stat().st_size,
+                    "sha256": sha256_file(path),
+                }
+                for path in outputs
+            ],
+            "boundary": (
+                "Deterministic retrieval metadata only. Six views of one occurrence are correlated. "
+                "No model weight, serving pointer, or promotion state changed."
+            ),
+        }
+        manifest_path = self.output_dir / "MANIFEST.json"
+        manifest_path.write_bytes(
+            json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True).encode(
+                "utf-8"
+            )
+        )
+        return manifest
+
+
+def audit_catalog_sources(database: str | Path) -> dict[str, Any]:
+    """Verify source diversity, rights metadata, view coverage, and catalog binding."""
+    catalog_path = Path(database).resolve()
+    if not catalog_path.is_file():
+        raise FileNotFoundError(catalog_path)
+    catalog_hash = sha256_file(catalog_path)
+    manifest_path = catalog_path.with_name("MANIFEST.json")
+    manifest: dict[str, Any] | None = None
+    expected_catalog_hash = ""
+    if manifest_path.is_file():
+        loaded = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if not isinstance(loaded, dict):
+            raise ValueError("catalog manifest must be an object")
+        manifest = loaded
+        for output in manifest.get("outputs", []):
+            if (
+                isinstance(output, dict)
+                and Path(str(output.get("path", ""))).name == catalog_path.name
+            ):
+                expected_catalog_hash = str(output.get("sha256") or "").casefold()
+                break
+
+    connection = sqlite3.connect(catalog_path)
+    connection.row_factory = sqlite3.Row
+    source_rows = [dict(row) for row in connection.execute("""
+            SELECT src.source_id, src.source_uri, src.source_kind, src.license_name,
+                   COUNT(DISTINCT sec.section_id) AS sections,
+                   COUNT(DISTINCT CASE WHEN sf.view_name='lexical' THEN sec.section_id END) AS lexical,
+                   COUNT(DISTINCT CASE WHEN sf.view_name='five_w' THEN sec.section_id END) AS five_w,
+                   COUNT(DISTINCT CASE WHEN sf.view_name='speech' THEN sec.section_id END) AS speech,
+                   COUNT(DISTINCT CASE WHEN sf.view_name='atomic' THEN sec.section_id END) AS atomic,
+                   COUNT(DISTINCT CASE WHEN sf.view_name='prime' THEN sec.section_id END) AS prime,
+                   COUNT(DISTINCT CASE WHEN sf.view_name='source' THEN sec.section_id END) AS source
+            FROM sources src
+            LEFT JOIN sections sec ON sec.source_id=src.source_id
+            LEFT JOIN section_features sf ON sf.section_id=sec.section_id
+            GROUP BY src.source_id
+            ORDER BY sections DESC, src.source_id
+            """)]
+    connection.close()
+
+    source_kind_counts = Counter(str(row["source_kind"]) for row in source_rows)
+    license_counts = Counter(str(row["license_name"]) for row in source_rows)
+    missing_by_view = {
+        view: [str(row["source_id"]) for row in source_rows if int(row[view]) == 0]
+        for view in VIEW_NAMES
+    }
+    total_sections = sum(int(row["sections"]) for row in source_rows)
+    largest = source_rows[0] if source_rows else None
+    largest_share = (
+        int(largest["sections"]) / total_sections
+        if largest is not None and total_sections
+        else 0.0
+    )
+    unknown_licenses = sum(
+        count
+        for license_name, count in license_counts.items()
+        if not license_name.strip() or license_name.casefold() == "unknown"
+    )
+    checks = {
+        "manifest_present": manifest is not None,
+        "catalog_hash_matches_manifest": bool(expected_catalog_hash)
+        and expected_catalog_hash == catalog_hash,
+        "at_least_six_sources": len(source_rows) >= 6,
+        "at_least_three_source_kinds": len(source_kind_counts) >= 3,
+        "all_sources_have_explicit_license": unknown_licenses == 0,
+        "all_sources_cover_all_views": all(not ids for ids in missing_by_view.values()),
+        "largest_source_section_share_at_most_0_40": largest_share <= 0.40,
+    }
+    passed = all(checks.values())
+    return {
+        "schema": CATALOG_AUDIT_SCHEMA,
+        "status": "STRUCTURAL_GATE_PASS" if passed else "STRUCTURAL_GATE_FAIL",
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "database": str(catalog_path),
+        "catalog_sha256": catalog_hash,
+        "manifest": str(manifest_path) if manifest is not None else None,
+        "manifest_sha256": sha256_file(manifest_path) if manifest is not None else None,
+        "expected_catalog_sha256": expected_catalog_hash or None,
+        "source_count": len(source_rows),
+        "section_count": total_sections,
+        "source_kind_counts": dict(sorted(source_kind_counts.items())),
+        "license_counts": dict(sorted(license_counts.items())),
+        "unknown_license_sources": unknown_licenses,
+        "missing_source_ids_by_view": missing_by_view,
+        "largest_source": (
+            {
+                "source_id": largest["source_id"],
+                "source_uri": largest["source_uri"],
+                "sections": largest["sections"],
+                "section_share": largest_share,
+            }
+            if largest is not None
+            else None
+        ),
+        "checks": checks,
+        "sources": source_rows,
+        "boundary": (
+            "Structural source audit only. This is not a retrieval score, capability result, "
+            "probability update, tokenizer change, serving change, or weight promotion."
+        ),
+    }
+
+
+def audit_catalog_view_structure(database: str | Path) -> dict[str, Any]:
+    """Measure six-view coverage and collisions without claiming independence.
+
+    A signature is the exact sorted feature-key/value set for one section and
+    view. Signature collisions describe how coarsely a view partitions this
+    catalog; they are not semantic accuracy or statistical independence tests.
+    """
+    catalog_path = Path(database).resolve()
+    if not catalog_path.is_file():
+        raise FileNotFoundError(catalog_path)
+    catalog_hash_before = sha256_file(catalog_path)
+    connection = sqlite3.connect(f"{catalog_path.as_uri()}?mode=ro", uri=True)
+    section_count = int(
+        connection.execute("SELECT COUNT(*) FROM sections").fetchone()[0]
+    )
+    observed_views = tuple(
+        str(row[0])
+        for row in connection.execute(
+            "SELECT DISTINCT view_name FROM section_features ORDER BY view_name"
+        )
+    )
+    signature_counts: dict[str, Counter[str]] = {view: Counter() for view in VIEW_NAMES}
+    section_feature_counts: dict[str, list[int]] = {view: [] for view in VIEW_NAMES}
+    unknown_view_rows = 0
+    current_pair: tuple[str, str] | None = None
+    current_digest = sha256()
+    current_count = 0
+
+    def finish_pair() -> None:
+        nonlocal current_pair, current_digest, current_count
+        if current_pair is None:
+            return
+        _section_id, view_name = current_pair
+        if view_name in signature_counts:
+            signature_counts[view_name][current_digest.hexdigest()] += 1
+            section_feature_counts[view_name].append(current_count)
+
+    rows = connection.execute("""
+        SELECT section_id, view_name, feature_key, feature_value
+        FROM section_features
+        ORDER BY section_id, view_name, feature_key
+        """)
+    for section_id, view_name, feature_key, feature_value in rows:
+        pair = (str(section_id), str(view_name))
+        if pair != current_pair:
+            finish_pair()
+            current_pair = pair
+            current_digest = sha256()
+            current_count = 0
+        if pair[1] not in signature_counts:
+            unknown_view_rows += 1
+        current_digest.update(str(feature_key).encode("utf-8"))
+        current_digest.update(b"\x1f")
+        current_digest.update(format(float(feature_value), ".17g").encode("ascii"))
+        current_digest.update(b"\x1e")
+        current_count += 1
+    finish_pair()
+    feature_rows = {
+        str(view): int(count)
+        for view, count in connection.execute(
+            "SELECT view_name, COUNT(*) FROM section_features GROUP BY view_name"
+        )
+    }
+    distinct_feature_keys = {
+        str(view): int(count)
+        for view, count in connection.execute(
+            "SELECT view_name, COUNT(DISTINCT feature_key) FROM section_features GROUP BY view_name"
+        )
+    }
+    orphan_feature_rows = int(connection.execute("""
+            SELECT COUNT(*) FROM section_features sf
+            LEFT JOIN sections sec ON sec.section_id=sf.section_id
+            WHERE sec.section_id IS NULL
+            """).fetchone()[0])
+    connection.close()
+    catalog_hash_after = sha256_file(catalog_path)
+
+    views: dict[str, dict[str, Any]] = {}
+    for view in VIEW_NAMES:
+        collisions = signature_counts[view]
+        counts = section_feature_counts[view]
+        covered = len(counts)
+        entropy_bits = (
+            -sum(
+                (frequency / covered) * math.log2(frequency / covered)
+                for frequency in collisions.values()
+            )
+            if covered
+            else 0.0
+        )
+        views[view] = {
+            "sections_with_view": covered,
+            "missing_section_count": max(0, section_count - covered),
+            "coverage_ratio": covered / section_count if section_count else 0.0,
+            "feature_row_count": feature_rows.get(view, 0),
+            "distinct_feature_key_count": distinct_feature_keys.get(view, 0),
+            "distinct_section_signature_count": len(collisions),
+            "singleton_signature_count": sum(
+                1 for frequency in collisions.values() if frequency == 1
+            ),
+            "largest_signature_group": max(collisions.values(), default=0),
+            "signature_entropy_bits": entropy_bits,
+            "min_features_per_covered_section": min(counts, default=0),
+            "max_features_per_covered_section": max(counts, default=0),
+            "mean_features_per_covered_section": (
+                sum(counts) / covered if covered else 0.0
+            ),
+        }
+
+    provenance = {
+        "lexical": {
+            "class": "canonical_anchor",
+            "derived_from": ["source_bytes", "word_spans", "frozen_bpe_view"],
+        },
+        "speech": {"class": "deterministic_derived", "derived_from": ["lexical"]},
+        "atomic": {"class": "deterministic_derived", "derived_from": ["lexical"]},
+        "five_w": {
+            "class": "deterministic_derived",
+            "derived_from": ["lexical", "speech", "atomic"],
+        },
+        "prime": {
+            "class": "deterministic_derived",
+            "derived_from": ["occurrence_ordinal", "five_w.primary_role"],
+        },
+        "source": {
+            "class": "external_metadata",
+            "derived_from": ["source_manifest", "source_identity"],
+        },
+    }
+    checks = {
+        "exact_declared_view_set": set(observed_views) == set(VIEW_NAMES),
+        "all_sections_cover_all_views": all(
+            views[view]["missing_section_count"] == 0 for view in VIEW_NAMES
+        ),
+        "no_unknown_view_rows": unknown_view_rows == 0,
+        "no_orphan_feature_rows": orphan_feature_rows == 0,
+        "catalog_hash_unchanged": catalog_hash_before == catalog_hash_after,
+    }
+    passed = all(checks.values())
+    return {
+        "schema": VIEW_STRUCTURE_AUDIT_SCHEMA,
+        "status": (
+            "STRUCTURAL_VIEW_AUDIT_PASS" if passed else "STRUCTURAL_VIEW_AUDIT_FAIL"
+        ),
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "database": str(catalog_path),
+        "catalog_sha256_before": catalog_hash_before,
+        "catalog_sha256_after": catalog_hash_after,
+        "section_count": section_count,
+        "declared_views": list(VIEW_NAMES),
+        "observed_views": list(observed_views),
+        "views": views,
+        "provenance_classes": provenance,
+        "independent_semantic_observation_count": 0,
+        "external_metadata_views": ["source"],
+        "unknown_view_rows": unknown_view_rows,
+        "orphan_feature_rows": orphan_feature_rows,
+        "checks": checks,
+        "interpretation": (
+            "The six columns are typed correlated views, not six independent votes. "
+            "Coverage and signature diversity describe structure only; retrieval gain "
+            "still requires source-disjoint controls."
+        ),
+        "boundary": (
+            "Read-only structural audit. No query scoring, probability update, tokenizer "
+            "change, model training, serving change, or weight promotion occurred."
+        ),
+    }
+
+
+def audit_catalog_relational_integrity(database: str | Path) -> dict[str, Any]:
+    """Verify immutable catalog identities, relations, counts, and SQLite links.
+
+    This audit reconstructs only deterministic catalog mechanics. It does not
+    retrieve, label, score, train, update probabilities, or claim that correlated
+    views are independent evidence.
+    """
+    catalog_path = Path(database).resolve()
+    if not catalog_path.is_file():
+        raise FileNotFoundError(catalog_path)
+    manifest_path = catalog_path.with_name("MANIFEST.json")
+    manifest: dict[str, Any] | None = None
+    if manifest_path.is_file():
+        loaded = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if not isinstance(loaded, dict):
+            raise ValueError("catalog manifest must be an object")
+        manifest = loaded
+
+    expected_catalog_hash = ""
+    if manifest is not None:
+        for output in manifest.get("outputs", []):
+            if (
+                isinstance(output, dict)
+                and Path(str(output.get("path", ""))).name == catalog_path.name
+            ):
+                expected_catalog_hash = str(output.get("sha256") or "").casefold()
+                break
+
+    catalog_hash_before = sha256_file(catalog_path)
+    connection = sqlite3.connect(f"{catalog_path.as_uri()}?mode=ro", uri=True)
+    quick_check_rows = [str(row[0]) for row in connection.execute("PRAGMA quick_check")]
+    foreign_key_violations = sum(
+        1 for _row in connection.execute("PRAGMA foreign_key_check")
+    )
+
+    table_names = (
+        "sources",
+        "sections",
+        "tokens",
+        "occurrences",
+        "section_features",
+        "relation_members",
+        "feature_catalog",
+        "token_rank",
+    )
+    counts = {
+        table: int(connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0])
+        for table in table_names
+    }
+
+    invalid_section_spans = int(
+        connection.execute(
+            "SELECT COUNT(*) FROM sections WHERE start_char < 0 OR end_char <= start_char"
+        ).fetchone()[0]
+    )
+    invalid_occurrence_spans = int(connection.execute("""
+            SELECT COUNT(*) FROM occurrences o
+            JOIN sections sec ON sec.section_id=o.section_id
+            WHERE o.start_char < 0 OR o.end_char <= o.start_char
+               OR o.end_char > (sec.end_char - sec.start_char)
+            """).fetchone()[0])
+    occurrence_source_mismatches = int(connection.execute("""
+            SELECT COUNT(*) FROM occurrences o
+            JOIN sections sec ON sec.section_id=o.section_id
+            WHERE o.source_id != sec.source_id
+            """).fetchone()[0])
+    source_section_ordinal_violations = int(connection.execute("""
+            SELECT COUNT(*) FROM (
+              SELECT source_id, COUNT(*) AS n, COUNT(DISTINCT ordinal) AS distinct_n,
+                     MIN(ordinal) AS minimum, MAX(ordinal) AS maximum
+              FROM sections GROUP BY source_id
+              HAVING minimum < 1 OR distinct_n != n
+            )
+            """).fetchone()[0])
+    source_section_ordinal_gap_sources = int(connection.execute("""
+            SELECT COUNT(*) FROM (
+              SELECT source_id, COUNT(*) AS n, MAX(ordinal) AS maximum
+              FROM sections GROUP BY source_id HAVING maximum != n
+            )
+            """).fetchone()[0])
+    section_occurrence_ordinal_violations = int(connection.execute("""
+            SELECT COUNT(*) FROM (
+              SELECT section_id, COUNT(*) AS n,
+                     COUNT(DISTINCT section_ordinal) AS distinct_n,
+                     MIN(section_ordinal) AS minimum, MAX(section_ordinal) AS maximum
+              FROM occurrences GROUP BY section_id
+              HAVING minimum != 1 OR maximum != n OR distinct_n != n
+            )
+            """).fetchone()[0])
+    global_ordinal = connection.execute("""
+        SELECT COUNT(*), COUNT(DISTINCT global_ordinal),
+               COALESCE(MIN(global_ordinal), 0), COALESCE(MAX(global_ordinal), 0)
+        FROM occurrences
+        """).fetchone()
+
+    invalid_json_rows = {
+        "sections": int(
+            connection.execute(
+                "SELECT COUNT(*) FROM sections WHERE NOT json_valid(five_w_json) OR NOT json_valid(bpe_ids_json)"
+            ).fetchone()[0]
+        ),
+        "tokens": int(
+            connection.execute(
+                "SELECT COUNT(*) FROM tokens WHERE NOT json_valid(atomic_json) OR NOT json_valid(speech_json)"
+            ).fetchone()[0]
+        ),
+        "occurrences": int(connection.execute("""
+                SELECT COUNT(*) FROM occurrences
+                WHERE NOT json_valid(bpe_ids_json) OR NOT json_valid(prime_factors_json)
+                """).fetchone()[0]),
+    }
+
+    token_id_mismatches = 0
+    token_utf8_mismatches = 0
+    for token_id, normalized, utf8_hex in connection.execute(
+        "SELECT token_id, normalized, utf8_hex FROM tokens"
+    ):
+        normalized_text = str(normalized)
+        token_id_mismatches += int(str(token_id) != stable_id("word", normalized_text))
+        token_utf8_mismatches += int(
+            str(utf8_hex) != normalized_text.encode("utf-8").hex()
+        )
+
+    occurrence_id_mismatches = 0
+    for row in connection.execute("""
+        SELECT occurrence_id, section_id, section_ordinal, start_char, end_char, surface
+        FROM occurrences
+        """):
+        occurrence_id, section_id, ordinal, start_char, end_char, surface = row
+        expected_id = stable_id(
+            "occurrence",
+            str(section_id),
+            int(ordinal),
+            int(start_char),
+            int(end_char),
+            str(surface),
+        )
+        occurrence_id_mismatches += int(str(occurrence_id) != expected_id)
+
+    expected_relation_sql = """
+        SELECT o.token_id AS token_id, 'lexical' AS relation_type,
+               'word:' || t.normalized AS relation_key
+        FROM occurrences o JOIN tokens t ON t.token_id=o.token_id
+        UNION
+        SELECT o.token_id, 'five_w', 'role:' || sec.primary_role
+        FROM occurrences o JOIN sections sec ON sec.section_id=o.section_id
+        UNION
+        SELECT o.token_id, 'atomic', 'semantic:' || json_extract(t.atomic_json, '$.semantic_class')
+        FROM occurrences o JOIN tokens t ON t.token_id=o.token_id
+        UNION
+        SELECT o.token_id, 'prime', 'kind:' || o.prime_kind FROM occurrences o
+        UNION
+        SELECT o.token_id, 'prime',
+               'route:' || o.route_prime || ':residue:' || o.route_residue
+        FROM occurrences o
+        UNION
+        SELECT o.token_id, 'source', 'kind:' || src.source_kind
+        FROM occurrences o JOIN sources src ON src.source_id=o.source_id
+        UNION
+        SELECT o.token_id, 'speech', 'primitive:' || json_extract(t.speech_json, '$[0].id')
+        FROM occurrences o JOIN tokens t ON t.token_id=o.token_id
+        WHERE json_array_length(t.speech_json) > 0
+        UNION
+        SELECT o.token_id, 'speech', 'upos:' || json_extract(t.speech_json, '$[0].upos')
+        FROM occurrences o JOIN tokens t ON t.token_id=o.token_id
+        WHERE json_array_length(t.speech_json) > 0
+        UNION
+        SELECT o.token_id, 'prime', 'factor:' || json_extract(o.prime_factors_json, '$[0]')
+        FROM occurrences o WHERE json_array_length(o.prime_factors_json) > 0
+    """
+    relationship_row = connection.execute(f"""
+        WITH expected AS ({expected_relation_sql}),
+        missing AS (
+          SELECT token_id, relation_type, relation_key FROM expected
+          EXCEPT
+          SELECT token_id, relation_type, relation_key FROM relation_members
+        ),
+        extra AS (
+          SELECT token_id, relation_type, relation_key FROM relation_members
+          EXCEPT
+          SELECT token_id, relation_type, relation_key FROM expected
+        )
+        SELECT (SELECT COUNT(*) FROM expected),
+               (SELECT COUNT(*) FROM missing),
+               (SELECT COUNT(*) FROM extra)
+        """).fetchone()
+    expected_relationship_memberships = int(relationship_row[0])
+    missing_relationship_memberships = int(relationship_row[1])
+    extra_relationship_memberships = int(relationship_row[2])
+    max_relationships_per_occurrence = int(connection.execute("""
+            SELECT COALESCE(MAX(
+                6
+                + CASE WHEN json_array_length(t.speech_json) > 0 THEN 2 ELSE 0 END
+                + CASE WHEN json_array_length(o.prime_factors_json) > 0 THEN 1 ELSE 0 END
+            ), 0)
+            FROM occurrences o JOIN tokens t ON t.token_id=o.token_id
+            """).fetchone()[0])
+
+    missing_token_rank_rows = int(connection.execute("""
+            SELECT COUNT(*) FROM tokens t
+            LEFT JOIN token_rank tr ON tr.token_id=t.token_id
+            WHERE tr.token_id IS NULL
+            """).fetchone()[0])
+    feature_catalog_difference_rows = int(connection.execute("""
+            WITH expected AS (
+              SELECT view_name, feature_key, COUNT(*) AS section_frequency
+              FROM section_features GROUP BY view_name, feature_key
+            ),
+            missing AS (
+              SELECT view_name, feature_key, section_frequency FROM expected
+              EXCEPT
+              SELECT view_name, feature_key, section_frequency FROM feature_catalog
+            ),
+            extra AS (
+              SELECT view_name, feature_key, section_frequency FROM feature_catalog
+              EXCEPT
+              SELECT view_name, feature_key, section_frequency FROM expected
+            )
+            SELECT (SELECT COUNT(*) FROM missing) + (SELECT COUNT(*) FROM extra)
+            """).fetchone()[0])
+    connection.close()
+    catalog_hash_after = sha256_file(catalog_path)
+
+    manifest_counts = {
+        "source_count": int(manifest.get("source_count", -1)) if manifest else -1,
+        "section_count": int(manifest.get("section_count", -1)) if manifest else -1,
+        "occurrence_count": (
+            int(manifest.get("occurrence_count", -1)) if manifest else -1
+        ),
+        "relationship_memberships": (
+            int(manifest.get("relationship_memberships", -1)) if manifest else -1
+        ),
+        "relationship_cap_per_occurrence": (
+            int(manifest.get("relationship_cap_per_occurrence", -1)) if manifest else -1
+        ),
+    }
+    checks = {
+        "manifest_present": manifest is not None,
+        "catalog_hash_matches_manifest": bool(expected_catalog_hash)
+        and expected_catalog_hash == catalog_hash_before,
+        "catalog_hash_unchanged": catalog_hash_before == catalog_hash_after,
+        "sqlite_quick_check_ok": quick_check_rows == ["ok"],
+        "no_foreign_key_violations": foreign_key_violations == 0,
+        "manifest_counts_match": bool(manifest)
+        and manifest_counts["source_count"] == counts["sources"]
+        and manifest_counts["section_count"] == counts["sections"]
+        and manifest_counts["occurrence_count"] == counts["occurrences"]
+        and manifest_counts["relationship_memberships"] == counts["relation_members"],
+        "canonical_identity_contract_declared": bool(manifest)
+        and manifest.get("canonical_identity") == "utf8_bytes_and_source_word_span",
+        "exact_declared_view_set": bool(manifest)
+        and tuple(manifest.get("views", [])) == VIEW_NAMES,
+        "valid_section_spans": invalid_section_spans == 0,
+        "valid_occurrence_spans": invalid_occurrence_spans == 0,
+        "occurrence_source_matches_section": occurrence_source_mismatches == 0,
+        "source_section_ordinals_unique_positive": source_section_ordinal_violations
+        == 0,
+        "section_occurrence_ordinals_contiguous": section_occurrence_ordinal_violations
+        == 0,
+        "global_ordinals_contiguous": (
+            int(global_ordinal[0]) == int(global_ordinal[1])
+            and int(global_ordinal[2]) == (1 if int(global_ordinal[0]) else 0)
+            and int(global_ordinal[3]) == int(global_ordinal[0])
+        ),
+        "all_typed_json_valid": sum(invalid_json_rows.values()) == 0,
+        "token_ids_match_normalized_values": token_id_mismatches == 0,
+        "token_utf8_hex_matches_normalized_values": token_utf8_mismatches == 0,
+        "occurrence_ids_match_source_word_spans": occurrence_id_mismatches == 0,
+        "relationship_memberships_exactly_reconstruct": (
+            expected_relationship_memberships == counts["relation_members"]
+            and missing_relationship_memberships == 0
+            and extra_relationship_memberships == 0
+        ),
+        "relationship_cap_declared_and_respected": bool(manifest)
+        and manifest_counts["relationship_cap_per_occurrence"]
+        == MAX_RELATIONSHIPS_PER_OCCURRENCE
+        and max_relationships_per_occurrence <= MAX_RELATIONSHIPS_PER_OCCURRENCE,
+        "all_tokens_have_rank_rows": missing_token_rank_rows == 0
+        and counts["token_rank"] == counts["tokens"],
+        "feature_catalog_exactly_reconstructs": feature_catalog_difference_rows == 0,
+    }
+    passed = all(checks.values())
+    return {
+        "schema": RELATIONAL_INTEGRITY_AUDIT_SCHEMA,
+        "status": (
+            "RELATIONAL_INTEGRITY_PASS" if passed else "RELATIONAL_INTEGRITY_FAIL"
+        ),
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "database": str(catalog_path),
+        "manifest": str(manifest_path) if manifest is not None else None,
+        "catalog_sha256_before": catalog_hash_before,
+        "catalog_sha256_after": catalog_hash_after,
+        "expected_catalog_sha256": expected_catalog_hash or None,
+        "counts": counts,
+        "manifest_counts": manifest_counts,
+        "quick_check_rows": quick_check_rows,
+        "foreign_key_violations": foreign_key_violations,
+        "invalid_section_spans": invalid_section_spans,
+        "invalid_occurrence_spans": invalid_occurrence_spans,
+        "occurrence_source_mismatches": occurrence_source_mismatches,
+        "source_section_ordinal_violations": source_section_ordinal_violations,
+        "source_section_ordinal_gap_sources": source_section_ordinal_gap_sources,
+        "section_occurrence_ordinal_violations": section_occurrence_ordinal_violations,
+        "global_ordinal": {
+            "count": int(global_ordinal[0]),
+            "distinct_count": int(global_ordinal[1]),
+            "minimum": int(global_ordinal[2]),
+            "maximum": int(global_ordinal[3]),
+        },
+        "invalid_json_rows": invalid_json_rows,
+        "token_id_mismatches": token_id_mismatches,
+        "token_utf8_mismatches": token_utf8_mismatches,
+        "occurrence_id_mismatches": occurrence_id_mismatches,
+        "relationships": {
+            "expected_memberships": expected_relationship_memberships,
+            "stored_memberships": counts["relation_members"],
+            "missing_memberships": missing_relationship_memberships,
+            "extra_memberships": extra_relationship_memberships,
+            "max_reconstructed_per_occurrence": max_relationships_per_occurrence,
+            "declared_cap": manifest_counts["relationship_cap_per_occurrence"],
+        },
+        "missing_token_rank_rows": missing_token_rank_rows,
+        "feature_catalog_difference_rows": feature_catalog_difference_rows,
+        "checks": checks,
+        "independent_semantic_observation_count": 0,
+        "boundary": (
+            "Read-only deterministic integrity audit. External source bytes are governed by the separate "
+            "source audit. No retrieval scoring, label access, probability update, model training, serving "
+            "change, merge, partial unfreeze, or weight promotion occurred."
+        ),
+    }
+
+
+def plan_catalog_successor(
+    predecessor_database: str | Path,
+    integrity_receipt: str | Path,
+    successor_output_dir: str | Path,
+    *,
+    expected_failed_checks: Sequence[str] = (),
+    reserve_bytes: int = 25 * 2**30,
+    expansion_factor: float = 1.5,
+    minimum_prospective_candidates: int = 30,
+    available_bytes: int | None = None,
+) -> dict[str, Any]:
+    """Verify a predecessor and decide whether a fresh successor build fits.
+
+    This is a read-only admission plan. It does not build a catalog, create a
+    prospective freeze, reuse predecessor candidates, score retrieval, or alter
+    model weights. ``available_bytes`` exists for deterministic tests; normal
+    callers use the live free-space measurement for the successor volume.
+    """
+
+    database = Path(predecessor_database).resolve(strict=True)
+    receipt_path = Path(integrity_receipt).resolve(strict=True)
+    successor = Path(successor_output_dir).resolve()
+    if successor.exists():
+        if not successor.is_dir() or any(successor.iterdir()):
+            raise FileExistsError(
+                f"successor output path is not an empty directory: {successor}"
+            )
+    if reserve_bytes < 0:
+        raise ValueError("reserve_bytes must be nonnegative")
+    if not math.isfinite(expansion_factor) or expansion_factor < 1.0:
+        raise ValueError("expansion_factor must be finite and at least 1.0")
+    if minimum_prospective_candidates < 1:
+        raise ValueError("minimum_prospective_candidates must be positive")
+
+    manifest_path = database.with_name("MANIFEST.json")
+    if not manifest_path.is_file():
+        raise FileNotFoundError(manifest_path)
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if not isinstance(manifest, dict) or manifest.get("schema") != SCHEMA:
+        raise ValueError("predecessor manifest schema mismatch")
+
+    output_rows = manifest.get("outputs")
+    if not isinstance(output_rows, list) or not output_rows:
+        raise ValueError("predecessor manifest has no outputs")
+    verified_outputs: list[dict[str, Any]] = []
+    database_rows = 0
+    database_hash = ""
+    for index, raw in enumerate(output_rows):
+        if not isinstance(raw, Mapping):
+            raise ValueError(f"predecessor output row {index} is not an object")
+        output_path = Path(str(raw.get("path") or "")).resolve(strict=True)
+        declared_hash = str(raw.get("sha256") or "").casefold()
+        declared_bytes = int(raw.get("bytes", -1))
+        if not SHA256_RE.fullmatch(declared_hash):
+            raise ValueError(f"predecessor output row {index} has an invalid SHA-256")
+        if output_path.stat().st_size != declared_bytes:
+            raise ValueError(f"predecessor output size drift: {output_path}")
+        actual_hash = sha256_file(output_path)
+        if actual_hash != declared_hash:
+            raise ValueError(f"predecessor output hash drift: {output_path}")
+        if output_path == database:
+            database_rows += 1
+            database_hash = actual_hash
+        verified_outputs.append(
+            {"path": str(output_path), "bytes": declared_bytes, "sha256": actual_hash}
+        )
+    if database_rows != 1:
+        raise ValueError(
+            "predecessor database must appear exactly once in manifest outputs"
+        )
+
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    if not isinstance(receipt, dict):
+        raise ValueError("integrity receipt must be an object")
+    fresh_audit = audit_catalog_relational_integrity(database)
+    audit_fields = (
+        "schema",
+        "status",
+        "database",
+        "catalog_sha256_before",
+        "catalog_sha256_after",
+        "expected_catalog_sha256",
+        "checks",
+        "counts",
+        "relationships",
+    )
+    for field in audit_fields:
+        if receipt.get(field) != fresh_audit.get(field):
+            raise ValueError(
+                f"integrity receipt does not match fresh audit field: {field}"
+            )
+    actual_failed_checks = sorted(
+        str(name) for name, passed in fresh_audit["checks"].items() if not passed
+    )
+    declared_failed_checks = sorted(set(expected_failed_checks))
+    if actual_failed_checks != declared_failed_checks:
+        raise ValueError(
+            "integrity failure set differs from the preregistered successor reason: "
+            f"expected {declared_failed_checks}, observed {actual_failed_checks}"
+        )
+
+    source_manifest_rows = manifest.get("source_manifests")
+    if not isinstance(source_manifest_rows, list) or not source_manifest_rows:
+        raise ValueError("successor planning requires hash-bound source manifests")
+    verified_source_manifests: list[dict[str, Any]] = []
+    for index, raw in enumerate(source_manifest_rows):
+        if not isinstance(raw, Mapping):
+            raise ValueError(f"source manifest row {index} is not an object")
+        source_manifest = Path(str(raw.get("path") or "")).resolve(strict=True)
+        declared_hash = str(raw.get("sha256") or "").casefold()
+        if not SHA256_RE.fullmatch(declared_hash):
+            raise ValueError(f"source manifest row {index} has an invalid SHA-256")
+        actual_hash = sha256_file(source_manifest)
+        if actual_hash != declared_hash:
+            raise ValueError(f"source manifest hash drift: {source_manifest}")
+        verified_source_manifests.append(
+            {
+                "path": str(source_manifest),
+                "sha256": actual_hash,
+                "declared_sources": int(raw.get("declared_sources", -1)),
+                "rights_metadata": raw.get("rights_metadata"),
+            }
+        )
+
+    predecessor_output_bytes = sum(row["bytes"] for row in verified_outputs)
+    estimated_peak_build_bytes = math.ceil(predecessor_output_bytes * expansion_factor)
+    if available_bytes is None:
+        disk_probe = successor.parent
+        while not disk_probe.exists() and disk_probe != disk_probe.parent:
+            disk_probe = disk_probe.parent
+        available = shutil.disk_usage(disk_probe).free
+    else:
+        available = int(available_bytes)
+        if available < 0:
+            raise ValueError("available_bytes must be nonnegative")
+    required_free_bytes = reserve_bytes + estimated_peak_build_bytes
+    admitted = available >= required_free_bytes
+
+    return {
+        "schema": SUCCESSOR_PLAN_SCHEMA,
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "status": "READY_TO_BUILD" if admitted else "WAITING_FOR_STORAGE_RESERVE",
+        "build_admitted": admitted,
+        "predecessor": {
+            "database": str(database),
+            "catalog_sha256": database_hash,
+            "manifest": str(manifest_path),
+            "manifest_sha256": sha256_file(manifest_path),
+            "integrity_receipt": str(receipt_path),
+            "integrity_receipt_sha256": sha256_file(receipt_path),
+            "integrity_status": fresh_audit["status"],
+            "failed_checks": actual_failed_checks,
+            "outputs": verified_outputs,
+            "source_manifests": verified_source_manifests,
+        },
+        "successor": {
+            "output_dir": str(successor),
+            "must_have_new_catalog_sha256": True,
+            "must_pass_relational_integrity": True,
+            "must_preserve_predecessor": True,
+        },
+        "capacity": {
+            "available_bytes": available,
+            "reserve_bytes": reserve_bytes,
+            "predecessor_output_bytes": predecessor_output_bytes,
+            "expansion_factor": expansion_factor,
+            "estimated_peak_build_bytes": estimated_peak_build_bytes,
+            "required_free_bytes": required_free_bytes,
+            "shortfall_bytes": max(0, required_free_bytes - available),
+        },
+        "prospective_boundary": {
+            "freeze_after_successor_build": True,
+            "source_session_disjoint": True,
+            "minimum_candidates": minimum_prospective_candidates,
+            "predecessor_candidates_reusable": False,
+            "deterministic_views_are_independent_observations": False,
+        },
+        "authorization": {
+            "catalog_build": admitted,
+            "retrieval_scoring": False,
+            "training": False,
+            "serving_change": False,
+            "merge": False,
+            "partial_unfreeze": False,
+            "promotion": False,
+        },
+        "boundary": (
+            "Read-only successor admission plan. No catalog output, prospective candidate, "
+            "score, model state, serving route, or weight was changed."
+        ),
+    }
+
+
+def _query_features(
+    goal: str, lexicon: FunctionLexicon
+) -> tuple[dict[str, set[str]], dict[str, Any]]:
+    words: list[dict[str, Any]] = []
+    features: dict[str, set[str]] = {view: set() for view in VIEW_NAMES}
+    for match in WORD_RE.finditer(goal):
+        surface = match.group(0)
+        normalized = normalize_word(surface)
+        atomic, atomic_features = _atomic_payload(surface)
+        speech, speech_features = _speech_payload(lexicon, surface)
+        words.append(
+            {
+                "surface": surface,
+                "normalized": normalized,
+                "atomic": atomic,
+                "speech": speech,
+            }
+        )
+        features["lexical"].add(f"word:{normalized}")
+        for view, key in atomic_features + speech_features:
+            features[view].add(key)
+    five_w = _five_w(words)
+    features["five_w"].add(f"role:{five_w['primary']}")
+    features["five_w"].add(f"color:{five_w['color']}")
+    oracle = PrimeOracle()
+    route_prime = ROLE_PRIMES[five_w["primary"]]
+    for ordinal in range(1, len(words) + 1):
+        prime = oracle.describe(ordinal)
+        features["prime"].add(f"kind:{prime['kind']}")
+        features["prime"].add(f"route:{route_prime}:residue:{ordinal % route_prime}")
+        features["prime"].update(f"factor:{factor}" for factor in prime["factors"][:2])
+    return features, {"words": words, "five_w": five_w}
+
+
+def _softmax(values: Mapping[str, float]) -> dict[str, float]:
+    if not values:
+        return {}
+    peak = max(values.values())
+    exp = {
+        key: math.exp(max(-60.0, min(60.0, value - peak)))
+        for key, value in values.items()
+    }
+    total = sum(exp.values()) or 1.0
+    return {key: value / total for key, value in exp.items()}
+
+
+def search_goal(
+    database: str | Path,
+    goal: str,
+    *,
+    limit: int = 20,
+    topology_steps: int = 2,
+    damping: float = 0.35,
+    ablate_views: Sequence[str] = (),
+    control: str = "aligned",
+    control_seed: int = 0,
+    source_kinds: Sequence[str] = (),
+    expected_catalog_sha256: str | None = None,
+) -> dict[str, Any]:
+    """Search ideas/evidence, then use grammar only as returned constraints.
+
+    ``control='shuffled'`` rotates all non-lexical memberships one section while
+    preserving feature counts. It is a size-matched binding control.
+    """
+    if not goal.strip():
+        raise ValueError("goal must be nonempty")
+    if control not in {"aligned", "shuffled"}:
+        raise ValueError("control must be aligned or shuffled")
+    ablated = set(ablate_views)
+    if ablated - set(VIEW_NAMES):
+        raise ValueError("unknown ablation view")
+    catalog_path = Path(database).resolve()
+    if expected_catalog_sha256 is None:
+        catalog_hash = sha256_file(catalog_path)
+    else:
+        catalog_hash = expected_catalog_sha256.strip().casefold()
+        if not SHA256_RE.fullmatch(catalog_hash):
+            raise ValueError("expected_catalog_sha256 must be a lowercase SHA-256")
+    search_id = stable_id(
+        "search",
+        catalog_hash,
+        goal,
+        control,
+        control_seed,
+        sorted(ablated),
+        sorted(
+            source_kind.strip() for source_kind in source_kinds if source_kind.strip()
+        ),
+        topology_steps,
+        damping,
+        ALGORITHM_REVISION,
+    )
+    connection = sqlite3.connect(catalog_path)
+    connection.row_factory = sqlite3.Row
+    lexicon = FunctionLexicon()
+    query, query_analysis = _query_features(goal, lexicon)
+    query["source"].update(
+        f"kind:{source_kind.strip()}"
+        for source_kind in source_kinds
+        if source_kind.strip()
+    )
+    section_ids = [
+        row[0]
+        for row in connection.execute(
+            "SELECT section_id FROM sections ORDER BY section_id"
+        )
+    ]
+    if len(section_ids) > 1:
+        offset = 1
+        if control_seed:
+            offset = 1 + int(
+                stable_id("control-offset", control_seed, ALGORITHM_REVISION), 16
+            ) % (len(section_ids) - 1)
+        rotate = {
+            section_id: section_ids[(index + offset) % len(section_ids)]
+            for index, section_id in enumerate(section_ids)
+        }
+    else:
+        offset = 0
+        rotate = {}
+    scores: dict[str, dict[str, float]] = defaultdict(lambda: defaultdict(float))
+    evidence: dict[str, dict[str, list[str]]] = defaultdict(lambda: defaultdict(list))
+    for view_name in VIEW_NAMES:
+        if view_name in ablated or not query[view_name]:
+            continue
+        placeholders = ",".join("?" for _ in query[view_name])
+        params = [view_name, *sorted(query[view_name])]
+        rows = connection.execute(
+            f"""
+            SELECT sf.section_id, sf.feature_key, sf.feature_value, fc.section_frequency
+            FROM section_features sf JOIN feature_catalog fc
+              ON fc.view_name=sf.view_name AND fc.feature_key=sf.feature_key
+            WHERE sf.view_name=? AND sf.feature_key IN ({placeholders})
+            """,
+            params,
+        )
+        for row in rows:
+            target = row["section_id"]
+            if control == "shuffled" and view_name != "lexical":
+                target = rotate[target]
+            idf = 1.0 + math.log(
+                (len(section_ids) + 1) / (int(row["section_frequency"]) + 1)
+            )
+            scores[target][view_name] += float(row["feature_value"]) * idf
+            evidence[target][view_name].append(row["feature_key"])
+    maxima = {
+        view_name: max(
+            (view_scores.get(view_name, 0.0) for view_scores in scores.values()),
+            default=0.0,
+        )
+        for view_name in VIEW_NAMES
+    }
+    base: dict[str, float] = {}
+    for section_id, view_scores in scores.items():
+        weighted = []
+        for view_name, value in view_scores.items():
+            if view_name in ablated or maxima[view_name] <= 0:
+                continue
+            weighted.append(
+                (
+                    VIEW_WEIGHTS[view_name],
+                    min(1.0, max(0.0, value / maxima[view_name])),
+                )
+            )
+        total_weight = sum(weight for weight, _value in weighted) or 1.0
+        base[section_id] = (
+            sum(weight * value for weight, value in weighted) / total_weight
+        )
+    if base and topology_steps > 0:
+        frontier = sorted(base, key=base.get, reverse=True)[: max(100, limit * 10)]
+        placeholders = ",".join("?" for _ in frontier)
+        rows = connection.execute(
+            f"SELECT section_id, view_name, feature_key FROM section_features WHERE section_id IN ({placeholders})",
+            frontier,
+        ).fetchall()
+        groups: dict[tuple[str, str], list[str]] = defaultdict(list)
+        for row in rows:
+            if row["view_name"] not in ablated:
+                groups[(row["view_name"], row["feature_key"])].append(row["section_id"])
+        current = dict(base)
+        center = sum(current.values()) / len(current)
+        for _ in range(topology_steps):
+            deltas: dict[str, list[float]] = defaultdict(list)
+            for members in groups.values():
+                active = [member for member in members if member in current]
+                if len(active) < 2:
+                    continue
+                group_mean = sum(current[member] for member in active) / len(active)
+                for member in active:
+                    deltas[member].append(group_mean - center)
+            current = {
+                section_id: (1.0 - damping) * base[section_id]
+                + damping
+                * (score + (sum(deltas[section_id]) / max(1, len(deltas[section_id]))))
+                for section_id, score in current.items()
+            }
+        final_scores = current
+    else:
+        final_scores = base
+    probabilities = _softmax(final_scores)
+    ranked = sorted(
+        final_scores, key=lambda section_id: (-final_scores[section_id], section_id)
+    )[:limit]
+    results: list[dict[str, Any]] = []
+    for section_id in ranked:
+        section = connection.execute(
+            """
+            SELECT sec.*, src.source_kind, src.source_uri FROM sections sec
+            JOIN sources src ON src.source_id=sec.source_id WHERE sec.section_id=?
+            """,
+            (section_id,),
+        ).fetchone()
+        occurrence_rows = connection.execute(
+            """
+            SELECT o.surface, t.is_function, t.speech_json, t.normalized, tr.secondary_rank
+            FROM occurrences o JOIN tokens t ON t.token_id=o.token_id
+            LEFT JOIN token_rank tr ON tr.token_id=o.token_id
+            WHERE o.section_id=? ORDER BY o.section_ordinal LIMIT 80
+            """,
+            (section_id,),
+        ).fetchall()
+        content_tokens = []
+        grammar_constraints = []
+        for row in occurrence_rows:
+            speech = json.loads(row["speech_json"])
+            if row["is_function"]:
+                grammar_constraints.append(
+                    {
+                        "surface": row["surface"],
+                        "candidates": speech,
+                        "role": "constraint_not_idea_evidence",
+                    }
+                )
+            else:
+                content_tokens.append(
+                    {
+                        "surface": row["surface"],
+                        "normalized": row["normalized"],
+                        "catalog_rank": row["secondary_rank"],
+                    }
+                )
+        results.append(
+            {
+                "section_id": section_id,
+                "score": final_scores[section_id],
+                "probability": probabilities[section_id],
+                "source_kind": section["source_kind"],
+                "source_uri": section["source_uri"],
+                "primary_role": section["primary_role"],
+                "color": section["color"],
+                "preview": section["text_preview"],
+                "view_scores": dict(scores[section_id]),
+                "evidence_path": {
+                    view: sorted(set(keys))
+                    for view, keys in evidence[section_id].items()
+                },
+                "content_tokens": content_tokens[:24],
+                "grammar_constraints": grammar_constraints[:24],
+            }
+        )
+    connection.close()
+    return {
+        "schema": SEARCH_SCHEMA,
+        "algorithm_revision": ALGORITHM_REVISION,
+        "search_id": search_id,
+        "catalog_sha256": catalog_hash,
+        "goal": goal,
+        "control": control,
+        "control_seed": control_seed,
+        "control_offset": offset if control == "shuffled" else 0,
+        "ablated_views": sorted(ablated),
+        "query_analysis": query_analysis,
+        "query_view_status": {
+            view_name: ("PRESENT" if query[view_name] else "ABSENT")
+            for view_name in VIEW_NAMES
+        },
+        "views": list(VIEW_NAMES),
+        "view_weights": dict(VIEW_WEIGHTS),
+        "topology": {
+            "steps": topology_steps,
+            "damping": damping,
+            "rise_fall": "competitive_centered_propagation",
+        },
+        "results": results,
+        "boundary": "Grammar is returned as a constraint layer; content ideas and evidence drive retrieval.",
+    }
+
+
+def search_lexical_first(
+    database: str | Path,
+    goal: str,
+    *,
+    limit: int = 20,
+    topology_steps: int = 2,
+    damping: float = 0.35,
+    control: str = "aligned",
+    control_seed: int = 0,
+    source_kinds: Sequence[str] = (),
+) -> dict[str, Any]:
+    """Keep lexical retrieval authoritative and use other views only for ties.
+
+    The ranking is lexicographic, not a weighted scalar: the lexical-only score
+    is the primary key and the full six-view score is the secondary key. A
+    candidate with any higher lexical score can never be displaced by auxiliary
+    evidence. Full-field ranking therefore acts only on exact lexical ties or
+    the all-zero lexical fallback set.
+    """
+    if limit < 1:
+        raise ValueError("limit must be positive")
+    catalog_path = Path(database).resolve()
+    connection = sqlite3.connect(catalog_path)
+    try:
+        section_count = int(
+            connection.execute("SELECT COUNT(*) FROM sections").fetchone()[0]
+        )
+    finally:
+        connection.close()
+    candidate_limit = max(limit, section_count)
+    lexical = search_goal(
+        catalog_path,
+        goal,
+        limit=candidate_limit,
+        topology_steps=topology_steps,
+        damping=damping,
+        ablate_views=[view for view in VIEW_NAMES if view != "lexical"],
+        control="aligned",
+        source_kinds=source_kinds,
+    )
+    auxiliary = search_goal(
+        catalog_path,
+        goal,
+        limit=candidate_limit,
+        topology_steps=topology_steps,
+        damping=damping,
+        control=control,
+        control_seed=control_seed,
+        source_kinds=source_kinds,
+    )
+    lexical_by_section = {row["section_id"]: row for row in lexical["results"]}
+    auxiliary_by_section = {row["section_id"]: row for row in auxiliary["results"]}
+    section_ids = set(lexical_by_section) | set(auxiliary_by_section)
+    ranked = sorted(
+        section_ids,
+        key=lambda section_id: (
+            -float(lexical_by_section.get(section_id, {}).get("score", 0.0)),
+            -float(auxiliary_by_section.get(section_id, {}).get("score", 0.0)),
+            section_id,
+        ),
+    )
+    results = []
+    for section_id in ranked[:limit]:
+        lexical_row = lexical_by_section.get(section_id)
+        auxiliary_row = auxiliary_by_section.get(section_id)
+        row = dict(auxiliary_row or lexical_row or {})
+        lexical_score = float((lexical_row or {}).get("score", 0.0))
+        auxiliary_score = float((auxiliary_row or {}).get("score", 0.0))
+        row["score"] = lexical_score
+        row["probability"] = None
+        row["cascade_scores"] = {
+            "lexical_primary": lexical_score,
+            "auxiliary_tiebreak": auxiliary_score,
+        }
+        results.append(row)
+    search_id = stable_id(
+        "lexical-first-search",
+        lexical["search_id"],
+        auxiliary["search_id"],
+        LEXICAL_FIRST_REVISION,
+    )
+    return {
+        "schema": SEARCH_SCHEMA,
+        "algorithm_revision": LEXICAL_FIRST_REVISION,
+        "search_id": search_id,
+        "catalog_sha256": lexical["catalog_sha256"],
+        "goal": goal,
+        "control": control,
+        "control_seed": control_seed,
+        "control_offset": auxiliary["control_offset"],
+        "query_analysis": auxiliary["query_analysis"],
+        "query_view_status": auxiliary["query_view_status"],
+        "views": list(VIEW_NAMES),
+        "ranking_rule": [
+            "lexical_only_score_descending",
+            "full_six_view_score_descending_on_exact_lexical_ties",
+            "section_id_ascending",
+        ],
+        "child_search_ids": {
+            "lexical": lexical["search_id"],
+            "auxiliary": auxiliary["search_id"],
+        },
+        "results": results,
+        "boundary": (
+            "Auxiliary views can only break an exact lexical-score tie or order lexical-zero fallbacks; "
+            "they cannot displace stronger lexical evidence."
+        ),
+    }
+
+
+def search_lexical_banded(
+    database: str | Path,
+    goal: str,
+    *,
+    lexical_band_width: float,
+    limit: int = 20,
+    topology_steps: int = 2,
+    damping: float = 0.35,
+    control: str = "aligned",
+    control_seed: int = 0,
+    source_kinds: Sequence[str] = (),
+    auxiliary_views: Sequence[str] | None = None,
+    expected_catalog_sha256: str | None = None,
+) -> dict[str, Any]:
+    """Use auxiliary evidence only within anchored lexical-score bands.
+
+    Bands are contiguous in descending lexical order and anchored to their
+    strongest lexical score. This prevents pairwise-near candidates from
+    chaining across a wider lexical interval. Width zero is exactly the
+    lexical-first ranking rule.
+    """
+    if limit < 1:
+        raise ValueError("limit must be positive")
+    if not 0.0 <= lexical_band_width <= 1.0:
+        raise ValueError("lexical_band_width must be between 0 and 1")
+    selected_auxiliary = (
+        tuple(view for view in VIEW_NAMES if view != "lexical")
+        if auxiliary_views is None
+        else tuple(dict.fromkeys(auxiliary_views))
+    )
+    if set(selected_auxiliary) - set(EXPLICIT_ROUTE_VIEWS):
+        raise ValueError("auxiliary_views must contain only non-lexical views")
+    auxiliary_ablations = [
+        view for view in EXPLICIT_ROUTE_VIEWS if view not in set(selected_auxiliary)
+    ]
+    catalog_path = Path(database).resolve()
+    connection = sqlite3.connect(catalog_path)
+    try:
+        section_count = int(
+            connection.execute("SELECT COUNT(*) FROM sections").fetchone()[0]
+        )
+    finally:
+        connection.close()
+    candidate_limit = max(limit, section_count)
+    lexical = search_goal(
+        catalog_path,
+        goal,
+        limit=candidate_limit,
+        topology_steps=topology_steps,
+        damping=damping,
+        ablate_views=[view for view in VIEW_NAMES if view != "lexical"],
+        control="aligned",
+        source_kinds=source_kinds,
+        expected_catalog_sha256=expected_catalog_sha256,
+    )
+    auxiliary = search_goal(
+        catalog_path,
+        goal,
+        limit=candidate_limit,
+        topology_steps=topology_steps,
+        damping=damping,
+        control=control,
+        control_seed=control_seed,
+        source_kinds=source_kinds,
+        ablate_views=auxiliary_ablations,
+        expected_catalog_sha256=expected_catalog_sha256,
+    )
+    lexical_by_section = {row["section_id"]: row for row in lexical["results"]}
+    auxiliary_by_section = {row["section_id"]: row for row in auxiliary["results"]}
+    section_ids = set(lexical_by_section) | set(auxiliary_by_section)
+
+    def lexical_score(section_id: str) -> float:
+        return float(lexical_by_section.get(section_id, {}).get("score", 0.0))
+
+    def auxiliary_score(section_id: str) -> float:
+        return float(auxiliary_by_section.get(section_id, {}).get("score", 0.0))
+
+    lexical_order = sorted(section_ids, key=lambda item: (-lexical_score(item), item))
+    bands: list[tuple[float, list[str]]] = []
+    for section_id in lexical_order:
+        score = lexical_score(section_id)
+        if not bands or bands[-1][0] - score > lexical_band_width:
+            bands.append((score, [section_id]))
+        else:
+            bands[-1][1].append(section_id)
+
+    ranked: list[tuple[str, int, float]] = []
+    for band_index, (anchor_score, members) in enumerate(bands):
+        ordered_members = sorted(
+            members,
+            key=lambda item: (-auxiliary_score(item), item),
+        )
+        ranked.extend(
+            (section_id, band_index, anchor_score) for section_id in ordered_members
+        )
+
+    results = []
+    for section_id, band_index, anchor_score in ranked[:limit]:
+        lexical_row = lexical_by_section.get(section_id)
+        auxiliary_row = auxiliary_by_section.get(section_id)
+        row = dict(auxiliary_row or lexical_row or {})
+        primary_score = lexical_score(section_id)
+        secondary_score = auxiliary_score(section_id)
+        row["score"] = primary_score
+        row["probability"] = None
+        row["cascade_scores"] = {
+            "lexical_primary": primary_score,
+            "auxiliary_within_band": secondary_score,
+            "lexical_band_width": lexical_band_width,
+            "lexical_band_index": band_index,
+            "lexical_band_anchor": anchor_score,
+        }
+        results.append(row)
+    search_id = stable_id(
+        "lexical-band-search",
+        lexical["search_id"],
+        auxiliary["search_id"],
+        lexical_band_width,
+        LEXICAL_BAND_REVISION,
+    )
+    return {
+        "schema": SEARCH_SCHEMA,
+        "algorithm_revision": LEXICAL_BAND_REVISION,
+        "search_id": search_id,
+        "catalog_sha256": lexical["catalog_sha256"],
+        "goal": goal,
+        "control": control,
+        "control_seed": control_seed,
+        "control_offset": auxiliary["control_offset"],
+        "query_analysis": auxiliary["query_analysis"],
+        "query_view_status": auxiliary["query_view_status"],
+        "views": list(VIEW_NAMES),
+        "auxiliary_views": list(selected_auxiliary),
+        "lexical_band_width": lexical_band_width,
+        "ranking_rule": [
+            "lexical_score_band_descending",
+            "full_six_view_score_descending_inside_anchored_band",
+            "section_id_ascending",
+        ],
+        "child_search_ids": {
+            "lexical": lexical["search_id"],
+            "auxiliary": auxiliary["search_id"],
+        },
+        "results": results,
+        "boundary": (
+            "Auxiliary views reorder only candidates inside a fixed anchored lexical-score band; "
+            "the emitted score remains lexical and no probability or neural weight is changed."
+        ),
+    }
+
+
+def explicit_route(goal: str, *, null_control: bool = False) -> dict[str, Any]:
+    """Select at most two auxiliary views from explicit query intent markers."""
+    normalized_words = [
+        normalize_word(match.group(0)) for match in WORD_RE.finditer(goal)
+    ]
+    word_set = set(normalized_words)
+    normalized_text = " ".join(normalized_words)
+    marker_hits: dict[str, list[str]] = {}
+    for view_name in EXPLICIT_ROUTE_VIEWS:
+        hits = []
+        for marker in EXPLICIT_ROUTE_MARKERS[view_name]:
+            normalized_marker = " ".join(
+                normalize_word(match.group(0)) for match in WORD_RE.finditer(marker)
+            )
+            if not normalized_marker:
+                continue
+            present = (
+                normalized_marker in word_set
+                if " " not in normalized_marker
+                else re.search(
+                    rf"(?<!\w){re.escape(normalized_marker)}(?!\w)",
+                    normalized_text,
+                )
+                is not None
+            )
+            if present:
+                hits.append(marker)
+        marker_hits[view_name] = hits
+    ordered = sorted(
+        (view for view in EXPLICIT_ROUTE_VIEWS if marker_hits[view]),
+        key=lambda view: (-len(marker_hits[view]), EXPLICIT_ROUTE_VIEWS.index(view)),
+    )[:2]
+    selected = list(ordered)
+    if null_control:
+        selected = [
+            EXPLICIT_ROUTE_VIEWS[
+                (EXPLICIT_ROUTE_VIEWS.index(view) + 1) % len(EXPLICIT_ROUTE_VIEWS)
+            ]
+            for view in selected
+        ]
+    source_kinds = []
+    source_words = set(marker_hits["source"])
+    if "code" in source_words:
+        source_kinds.append("code")
+    if source_words & {"paper", "research"}:
+        source_kinds.append("academic")
+    if source_words & {"documentation", "publish", "book"}:
+        source_kinds.append("documentation")
+    return {
+        "selected_views": selected,
+        "matched_views": list(ordered),
+        "route_width": len(selected),
+        "matched_route_width": len(ordered),
+        "width_matched": len(selected) == len(ordered),
+        "marker_hits": marker_hits,
+        "source_kinds": source_kinds,
+        "null_control": null_control,
+    }
+
+
+def search_explicit_routed(
+    database: str | Path,
+    goal: str,
+    *,
+    lexical_band_width: float = 0.005,
+    limit: int = 20,
+    topology_steps: int = 2,
+    damping: float = 0.35,
+    control: str = "aligned",
+    control_seed: int = 0,
+    null_control: bool = False,
+    expected_catalog_sha256: str | None = None,
+) -> dict[str, Any]:
+    """Route explicit query intents through a thin lexical-band sidecar."""
+    route = explicit_route(goal, null_control=null_control)
+    child = search_lexical_banded(
+        database,
+        goal,
+        lexical_band_width=lexical_band_width,
+        limit=limit,
+        topology_steps=topology_steps,
+        damping=damping,
+        control=control,
+        control_seed=control_seed,
+        source_kinds=route["source_kinds"],
+        auxiliary_views=route["selected_views"],
+        expected_catalog_sha256=expected_catalog_sha256,
+    )
+    child_search_id = child["search_id"]
+    child["algorithm_revision"] = EXPLICIT_ROUTE_REVISION
+    child["search_id"] = stable_id(
+        "explicit-route-search",
+        child_search_id,
+        route,
+        EXPLICIT_ROUTE_REVISION,
+    )
+    child["explicit_route"] = route
+    child["child_search_ids"] = {
+        "lexical_band": child_search_id,
+        **child["child_search_ids"],
+    }
+    child["ranking_rule"][1] = "explicit_routed_score_descending_inside_anchored_band"
+    child["boundary"] = (
+        "Lexical scores and anchored bands remain authoritative; at most two "
+        "explicitly routed auxiliary views may reorder only within a band."
+    )
+    return child
+
+
+def search_late_output_fused(
+    database: str | Path,
+    goal: str,
+    *,
+    limit: int = 20,
+    topology_steps: int = 2,
+    damping: float = 0.35,
+    control: str = "aligned",
+    control_seed: int = 0,
+    null_control: bool = False,
+    expected_catalog_sha256: str | None = None,
+) -> dict[str, Any]:
+    """Fuse independent lexical and eligible auxiliary ranks at output only.
+
+    The fixed reciprocal-rank constant is intentionally not configurable.  A
+    query with no explicit auxiliary eligibility reproduces lexical ordering
+    exactly; unlike lane scores are never averaged or treated as calibrated
+    probabilities.
+    """
+    if limit < 1:
+        raise ValueError("limit must be positive")
+    if control not in {"aligned", "shuffled"}:
+        raise ValueError("control must be aligned or shuffled")
+    catalog_path = Path(database).resolve()
+    connection = sqlite3.connect(catalog_path)
+    try:
+        section_count = int(
+            connection.execute("SELECT COUNT(*) FROM sections").fetchone()[0]
+        )
+    finally:
+        connection.close()
+    candidate_limit = max(limit, section_count)
+    route = explicit_route(goal, null_control=null_control)
+    lexical = search_goal(
+        catalog_path,
+        goal,
+        limit=candidate_limit,
+        topology_steps=topology_steps,
+        damping=damping,
+        ablate_views=[view for view in VIEW_NAMES if view != "lexical"],
+        control="aligned",
+        source_kinds=route["source_kinds"],
+        expected_catalog_sha256=expected_catalog_sha256,
+    )
+    selected_views = tuple(route["selected_views"])
+    auxiliary = None
+    if selected_views:
+        auxiliary = search_goal(
+            catalog_path,
+            goal,
+            limit=candidate_limit,
+            topology_steps=topology_steps,
+            damping=damping,
+            ablate_views=[view for view in VIEW_NAMES if view not in selected_views],
+            control=control,
+            control_seed=control_seed,
+            source_kinds=route["source_kinds"],
+            expected_catalog_sha256=expected_catalog_sha256,
+        )
+
+    lexical_rows = list(lexical["results"])
+    auxiliary_rows = list(auxiliary["results"]) if auxiliary is not None else []
+    lexical_by_section = {row["section_id"]: row for row in lexical_rows}
+    auxiliary_by_section = {row["section_id"]: row for row in auxiliary_rows}
+    lexical_rank = {
+        row["section_id"]: rank for rank, row in enumerate(lexical_rows, start=1)
+    }
+    auxiliary_rank = {
+        row["section_id"]: rank for rank, row in enumerate(auxiliary_rows, start=1)
+    }
+    section_ids = set(lexical_by_section) | set(auxiliary_by_section)
+
+    def contribution(rank: int | None) -> float:
+        return 0.0 if rank is None else 1.0 / (LATE_OUTPUT_FUSION_K + rank)
+
+    if selected_views:
+        ranked = sorted(
+            section_ids,
+            key=lambda section_id: (
+                -(
+                    contribution(lexical_rank.get(section_id))
+                    + contribution(auxiliary_rank.get(section_id))
+                ),
+                lexical_rank.get(section_id, math.inf),
+                auxiliary_rank.get(section_id, math.inf),
+                section_id,
+            ),
+        )
+    else:
+        ranked = [row["section_id"] for row in lexical_rows]
+
+    results = []
+    for section_id in ranked[:limit]:
+        lexical_row = lexical_by_section.get(section_id)
+        auxiliary_row = auxiliary_by_section.get(section_id)
+        row = dict(lexical_row or auxiliary_row or {})
+        lexical_position = lexical_rank.get(section_id)
+        auxiliary_position = auxiliary_rank.get(section_id)
+        lexical_contribution = contribution(lexical_position)
+        auxiliary_contribution = contribution(auxiliary_position)
+        fusion_score = lexical_contribution + auxiliary_contribution
+        if selected_views:
+            row["score"] = fusion_score
+        row["probability"] = None
+        row["late_output_fusion"] = {
+            "active": bool(selected_views),
+            "rrf_k": LATE_OUTPUT_FUSION_K,
+            "lexical_rank": lexical_position,
+            "auxiliary_rank": auxiliary_position,
+            "lexical_contribution": lexical_contribution,
+            "auxiliary_contribution": auxiliary_contribution,
+            "fusion_score": fusion_score,
+        }
+        results.append(row)
+
+    auxiliary_search_id = None if auxiliary is None else auxiliary["search_id"]
+    search_id = stable_id(
+        "late-output-fusion-search",
+        lexical["search_id"],
+        auxiliary_search_id,
+        route,
+        control,
+        control_seed,
+        LATE_OUTPUT_FUSION_K,
+        LATE_OUTPUT_FUSION_REVISION,
+    )
+    analysis_authority = lexical if auxiliary is None else auxiliary
+    return {
+        "schema": SEARCH_SCHEMA,
+        "algorithm_revision": LATE_OUTPUT_FUSION_REVISION,
+        "search_id": search_id,
+        "catalog_sha256": lexical["catalog_sha256"],
+        "goal": goal,
+        "control": control,
+        "control_seed": control_seed,
+        "control_offset": 0 if auxiliary is None else auxiliary["control_offset"],
+        "query_analysis": analysis_authority["query_analysis"],
+        "query_view_status": analysis_authority["query_view_status"],
+        "views": list(VIEW_NAMES),
+        "auxiliary_views": list(selected_views),
+        "explicit_route": route,
+        "route_action": "SPECIALIST" if selected_views else "CORE_PASS",
+        "fusion_active": bool(selected_views),
+        "rrf_k": LATE_OUTPUT_FUSION_K,
+        "ranking_rule": [
+            (
+                "fixed_reciprocal_rank_fusion_descending"
+                if selected_views
+                else "lexical_only_score_descending"
+            ),
+            "lexical_rank_ascending",
+            "auxiliary_rank_ascending",
+            "section_id_ascending",
+        ],
+        "child_search_ids": {
+            "lexical": lexical["search_id"],
+            "auxiliary": auxiliary_search_id,
+        },
+        "results": results,
+        "boundary": (
+            "Eligible auxiliary evidence is fused only after independent ranked outputs exist; "
+            "no hidden state, raw unlike score, probability table, tokenizer, or neural weight is changed."
+        ),
+    }
+
+
+def _probability_schema(connection: sqlite3.Connection) -> None:
+    connection.executescript("""
+        PRAGMA journal_mode=WAL;
+        PRAGMA synchronous=FULL;
+        CREATE TABLE IF NOT EXISTS goals (
+          goal_id TEXT PRIMARY KEY, goal_text TEXT NOT NULL, created_at_utc TEXT NOT NULL,
+          model_anchor_sha256 TEXT NOT NULL, catalog_sha256 TEXT NOT NULL,
+          algorithm_revision TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS token_probability_current (
+          goal_id TEXT NOT NULL REFERENCES goals(goal_id), token_id TEXT NOT NULL,
+          probability REAL NOT NULL, updated_at_utc TEXT NOT NULL,
+          PRIMARY KEY(goal_id, token_id)
+        );
+        CREATE TABLE IF NOT EXISTS probability_events (
+          event_id TEXT PRIMARY KEY, goal_id TEXT NOT NULL REFERENCES goals(goal_id),
+          token_id TEXT NOT NULL, old_probability REAL NOT NULL,
+          new_probability REAL NOT NULL, delta REAL NOT NULL,
+          model_anchor_sha256 TEXT NOT NULL, catalog_sha256 TEXT NOT NULL,
+          evidence_json TEXT NOT NULL, created_at_utc TEXT NOT NULL,
+          algorithm_revision TEXT NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_probability_goal ON probability_events(goal_id);
+        """)
+
+
+def update_probability_lookup(
+    database: str | Path,
+    search_receipt: Mapping[str, Any],
+    *,
+    model_anchor_sha256: str,
+    token_limit: int = 256,
+    probability_database: str | Path | None = None,
+) -> dict[str, Any]:
+    """Append probabilities to a sidecar anchored to catalog and weights."""
+    anchor = model_anchor_sha256.casefold()
+    if not SHA256_RE.fullmatch(anchor):
+        raise ValueError("model_anchor_sha256 must be a 64-character lowercase SHA-256")
+    if search_receipt.get("schema") != SEARCH_SCHEMA:
+        raise ValueError("unknown search receipt")
+    catalog_path = Path(database).resolve()
+    lookup_path = (
+        Path(probability_database).resolve()
+        if probability_database is not None
+        else catalog_path.with_name("probability_lookup.sqlite3")
+    )
+    if lookup_path == catalog_path:
+        raise ValueError("probability sidecar must not overwrite the immutable catalog")
+    lookup_path.parent.mkdir(parents=True, exist_ok=True)
+    catalog_hash = sha256_file(catalog_path)
+    goal = str(search_receipt.get("goal") or "")
+    goal_id = stable_id("goal", goal, anchor, catalog_hash, ALGORITHM_REVISION)
+    now = datetime.now(timezone.utc).isoformat()
+    catalog = sqlite3.connect(catalog_path)
+    lookup = sqlite3.connect(lookup_path)
+    _probability_schema(lookup)
+    lookup.execute(
+        "INSERT OR IGNORE INTO goals VALUES (?, ?, ?, ?, ?, ?)",
+        (goal_id, goal, now, anchor, catalog_hash, ALGORITHM_REVISION),
+    )
+    token_scores: Counter[str] = Counter()
+    token_evidence: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for result in search_receipt.get("results", []):
+        section_weight = float(result["probability"])
+        rows = catalog.execute(
+            """
+            SELECT DISTINCT o.token_id, t.is_function, t.normalized, tr.secondary_score
+            FROM occurrences o JOIN tokens t ON t.token_id=o.token_id
+            LEFT JOIN token_rank tr ON tr.token_id=o.token_id WHERE o.section_id=?
+            """,
+            (result["section_id"],),
+        ).fetchall()
+        for token_id, is_function, normalized, secondary_score in rows:
+            grammar_discount = 0.25 if is_function else 1.0
+            score = (
+                section_weight
+                * grammar_discount
+                * (1.0 + math.log1p(float(secondary_score or 0.0)))
+            )
+            token_scores[token_id] += score
+            if len(token_evidence[token_id]) < 8:
+                token_evidence[token_id].append(
+                    {
+                        "section_id": result["section_id"],
+                        "token": normalized,
+                        "section_probability": section_weight,
+                        "grammar_discount": grammar_discount,
+                    }
+                )
+    top = dict(token_scores.most_common(token_limit))
+    probabilities = _softmax(top)
+    events = []
+    for token_id, probability in probabilities.items():
+        old_row = lookup.execute(
+            "SELECT probability FROM token_probability_current WHERE goal_id=? AND token_id=?",
+            (goal_id, token_id),
+        ).fetchone()
+        old = float(old_row[0]) if old_row else 0.0
+        evidence_json = canonical_json(token_evidence[token_id]).decode("utf-8")
+        event_id = stable_id(
+            "probability-event", goal_id, token_id, now, probability, evidence_json
+        )
+        lookup.execute(
+            "INSERT INTO probability_events VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                event_id,
+                goal_id,
+                token_id,
+                old,
+                probability,
+                probability - old,
+                anchor,
+                catalog_hash,
+                evidence_json,
+                now,
+                ALGORITHM_REVISION,
+            ),
+        )
+        lookup.execute(
+            """
+            INSERT INTO token_probability_current VALUES (?, ?, ?, ?)
+            ON CONFLICT(goal_id, token_id) DO UPDATE SET
+              probability=excluded.probability,
+              updated_at_utc=excluded.updated_at_utc
+            """,
+            (goal_id, token_id, probability, now),
+        )
+        events.append(
+            {
+                "event_id": event_id,
+                "token_id": token_id,
+                "old_probability": old,
+                "new_probability": probability,
+                "delta": probability - old,
+            }
+        )
+    lookup.commit()
+    lookup.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+    lookup.close()
+    catalog.close()
+    return {
+        "schema": PROBABILITY_SCHEMA,
+        "goal_id": goal_id,
+        "model_anchor_sha256": anchor,
+        "catalog_sha256": catalog_hash,
+        "probability_database": str(lookup_path),
+        "algorithm_revision": ALGORITHM_REVISION,
+        "events": events,
+        "probability_sum": sum(probabilities.values()),
+        "boundary": "External lookup update only; no neural tensor or serving pointer was changed.",
+    }

@@ -1,0 +1,108 @@
+{
+  "admitted_free_gib": 25.338172912597656,
+  "config": {
+    "arms": [
+      "no_intervention_adapter",
+      "frozen_adapter_static",
+      "frozen_adapter_multiview",
+      "frozen_adapter_null"
+    ],
+    "authority": "MEASUREMENT_ONLY_NO_EXECUTION_NO_PROMOTION_NO_PARTIAL_UNFREEZE",
+    "batch_size": 128,
+    "checkpoint_every": 500,
+    "count_steps": 28000,
+    "data_seed": 20261113,
+    "dataset_manifest_sha256": "7460665cbb718097438227c452f1915e88bdc5a10ac643122b17908b505d0041",
+    "device": "cpu",
+    "grow_steps": 18000,
+    "holdout_rows": 1500,
+    "learning_rate": 0.002,
+    "rows_per_view": 1000,
+    "seeds": [
+      20261134,
+      20261135,
+      20261136
+    ],
+    "source_dir": "C:\\dev\\_wt_clay_action_byte_confirm_20261110\\experiments\\clay_action_compiler_20261109",
+    "source_hashes": {
+      "policy": "cc55d3c2c282cd447f6852bb5518419c9afae3c00ef9f22e73df913e00cefc9b",
+      "regional": "734e2a2fb5b17bc620d3693b4fae152e5752e3a1daab679e020871d554bab346",
+      "sandbox": "3b9ecb15853ce022fd352c2b053e33657b3df85af772ad6f7b77e4492713c663",
+      "topology": "417257b2bb8d9ab7a8b2b8a376a0a5d3bc382f367a870533d13c251560af985c"
+    },
+    "threads": 2
+  },
+  "config_hash": "b47f44ed2e64ff3ccac415eb6dc2cb1f09c0cbb5fcaf71843dc8eb30efe4abd6",
+  "data_builder": "C:\\dev\\_wt_scbe_atomic_stitch_20261113\\python\\scbe\\clay_frozen_multiview_data.py",
+  "data_builder_sha256": "12c5407bce43097d2d75fe18ef5801a5c8dd41322ea5398cdd4429551a432eec",
+  "dataset": {
+    "authority": {
+      "compiler": "DETERMINISTIC_LABEL_AUTHORITY_ONLY",
+      "execution": "NONE",
+      "promotion": "NOT_AUTHORIZED"
+    },
+    "byte_token_base": 57600,
+    "byte_token_count": 256,
+    "feature_bytes_per_row": 148,
+    "feature_width": 37,
+    "holdout_action_counts": {
+      "action-0": 300,
+      "action-1": 300,
+      "action-2": 300,
+      "action-3": 300,
+      "action-4": 300
+    },
+    "holdout_rows": 1500,
+    "holdout_sha256": "60a94d443e8119ab17a030dbbc86bb96f8775507f8c9cc92b7cf1c204be8e689",
+    "manifest_sha256": "7460665cbb718097438227c452f1915e88bdc5a10ac643122b17908b505d0041",
+    "multiview_action_counts": {
+      "action-0": 600,
+      "action-1": 600,
+      "action-2": 600,
+      "action-3": 600,
+      "action-4": 600
+    },
+    "multiview_rows": 3000,
+    "multiview_sha256": "258ea731fbd5c785802018539fbf12855a614fb5431f74de70eb32b3ddc98298",
+    "rows_per_view": 1000,
+    "schema": "clay.frozen-multiview-action-data.v1",
+    "seed": 20261113,
+    "source_disjoint": true,
+    "source_families": {
+      "holdout": [
+        "clay-action-held-diagonal-v1"
+      ],
+      "multiview": [
+        "clay-action-train-view-0-v1",
+        "clay-action-train-view-1-v1",
+        "clay-action-train-view-2-v1"
+      ],
+      "static": [
+        "clay-action-train-static-v1"
+      ]
+    },
+    "source_hashes": {
+      "policy": "cc55d3c2c282cd447f6852bb5518419c9afae3c00ef9f22e73df913e00cefc9b",
+      "regional": "734e2a2fb5b17bc620d3693b4fae152e5752e3a1daab679e020871d554bab346",
+      "sandbox": "3b9ecb15853ce022fd352c2b053e33657b3df85af772ad6f7b77e4492713c663",
+      "topology": "417257b2bb8d9ab7a8b2b8a376a0a5d3bc382f367a870533d13c251560af985c"
+    },
+    "static_action_counts": {
+      "action-0": 600,
+      "action-1": 600,
+      "action-2": 600,
+      "action-3": 600,
+      "action-4": 600
+    },
+    "static_rows": 3000,
+    "static_sha256": "71bd0635b0954f992822193e1aa4b271319974b5ee68156938f3039d55ae2aa1"
+  },
+  "minimum_free_gib": 25.0,
+  "preregistration": "C:\\dev\\_wt_scbe_atomic_stitch_20261113\\docs\\research\\CLAY_FROZEN_MULTIVIEW_ADAPTER_REPLICATION_PREREGISTRATION_20261114.md",
+  "preregistration_sha256": "953b8a1567cfd52d82cbe77988376ff9b88f698749214ebdfd850d6e1b3edb3e",
+  "runner": "C:\\dev\\_wt_scbe_atomic_stitch_20261113\\python\\scbe\\clay_frozen_multiview_adapter.py",
+  "runner_sha256": "0a2462e3a8bb865d17f20de7c1de29fd38378ad0ea04ae61f8f44b95bbd6e625",
+  "schema": "clay.frozen-multiview-adapter-campaign.v1.manifest",
+  "vocab_sha256": "bb0541789d0cfac2e02f7c3321d93ce1b9dc5513e2852499d81122a1e600e5b1",
+  "vocab_size": 276
+}

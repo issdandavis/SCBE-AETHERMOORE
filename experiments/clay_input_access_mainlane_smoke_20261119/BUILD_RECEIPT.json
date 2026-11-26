@@ -1,0 +1,57 @@
+{
+  "authority": {
+    "promotion": "NONE",
+    "publication": "NONE",
+    "run": "SEPARATELY_AUTHORIZED_PRIVATE_ONLY",
+    "upload": "SEPARATELY_AUTHORIZED_PRIVATE_ONLY"
+  },
+  "baseline_manifest_sha256": "7f2516af8ae5a122f357565afad60ab412fdf54e76a3018cd8f1ddbfdb702a97",
+  "baseline_result_sha256": "c5261ada862a2851db0b1dd7e53835b5ddef22299660921527a249a866361482",
+  "created_at_utc": "2026-11-19T13:40:35.433095+00:00",
+  "dataset_id": "issacizrealdavis/clay-input-access-efficacy-input-20261119",
+  "input_access_parent_commit": "fdb2f77ab16082f1ba80406c23139d7afd30905d",
+  "inventory": {
+    "dataset": [
+      {
+        "bytes": 8707005,
+        "path": "dataset/clay-input-access-efficacy.packet",
+        "sha256": "cd2e95bee1537d2f0c7a84cc82077667d40394b8b1e93c62c08985b6a6105ff4"
+      },
+      {
+        "bytes": 205,
+        "path": "dataset/dataset-metadata.json",
+        "sha256": "7835c46a98aad15720a9da6dc240e329843c5a4aa2b07bed5a7a7d6eb98a05f7"
+      },
+      {
+        "bytes": 901,
+        "path": "dataset/PACKET_DESCRIPTOR.json",
+        "sha256": "48fc5451c2f32f93a4765e6fd3bf7a6f2c2d2a492562dd0144bc1579dbe8a19d"
+      }
+    ],
+    "kernel": [
+      {
+        "bytes": 437,
+        "path": "kernel/kernel-metadata.json",
+        "sha256": "f0bdccf7775104ecd206cc86076c8478692b391696771de8edd72c61ce1fdcaf"
+      },
+      {
+        "bytes": 17682,
+        "path": "kernel/run_clay_input_access_kaggle.py",
+        "sha256": "cf5a21b2254b00ce54f964b7339d8294cd0b0df81403b48b3c0116dafe455100"
+      }
+    ],
+    "packet_file_count": 326
+  },
+  "kernel_id": "issacizrealdavis/clay-input-access-efficacy-20261119",
+  "schema": "clay.input-access-kaggle-build.v1",
+  "source_commit": "90926dd770dfc57cd2ba1dc06a2c97817f4cb2d5",
+  "status": "BUILT_PRIVATE_OFFLINE_NOT_UPLOADED_NOT_RUN",
+  "trust_anchors": {
+    "archive_sha256": "cd2e95bee1537d2f0c7a84cc82077667d40394b8b1e93c62c08985b6a6105ff4",
+    "campaign_sha256": "e220c03a038a241bdd89d5bb9f7389dbb20bd26fb8f1a874d4ed3bc65ac08e31",
+    "descriptor_sha256": "48fc5451c2f32f93a4765e6fd3bf7a6f2c2d2a492562dd0144bc1579dbe8a19d",
+    "packet_manifest_sha256": "ff55e3a2a36619f271d6bef22ae9b1986c32f90871fd2cb006a6f2e4f7476aa3",
+    "preregistration_sha256": "f5613e79353dfcdaddb2935e8b087d66f50c025cb31ca75824e17e1bca0f4080",
+    "prior_recovery_sha256": "NONE"
+  }
+}

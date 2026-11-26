@@ -1,0 +1,32 @@
+{
+  "authority": {
+    "execution": "NONE",
+    "internet": "DISABLED",
+    "merge": "NONE",
+    "promotion": "NONE",
+    "tool_dispatch": "DISABLED",
+    "visibility": "PRIVATE"
+  },
+  "checked_at_utc": "2026-11-19T10:52:34.386645+00:00",
+  "config": {
+    "batch_size": 128,
+    "checkpoint_every": 250,
+    "device": "cpu",
+    "minimum_free_gib": 25.0,
+    "seeds": [
+      20261134,
+      20261135,
+      20261136
+    ],
+    "steps": 2000,
+    "threads": 2
+  },
+  "cuda_available": false,
+  "dataset_descriptor_sha256": "98a99bb418afd3f63de9a9fcc89632ff0f7c09db2c25418e95ca6faa89baf9a9",
+  "free_bytes": 20916473856,
+  "packet_manifest_sha256": "dab92f07b8be7b7c49b50f50d060213dd5ef4e4d3ac781548f271d1f6c8b418f",
+  "platform": "Linux-6.18.55+-x86_64-with-glibc2.39",
+  "python": "3.13.18 (main, Oct 26 2026, 15:28:15) [GCC 13.3.0]",
+  "schema": "clay.stable-ce-kaggle-run.v1.environment",
+  "torch": "2.11.0+cpu"
+}

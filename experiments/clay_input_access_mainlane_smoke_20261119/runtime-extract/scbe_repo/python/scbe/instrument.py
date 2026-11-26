@@ -1,0 +1,327 @@
+"""The Instrument: play a token-song; it manifests verified code in any language face.
+
+A song is a sequence of keys. A mode maps keys to CA opcodes: "coding" ships with
+Western note names, and "ca" ships with the canonical Cassisivadan byte words from
+the root ``scbe.py`` encoder. Chemistry, movement, or flight can plug in later as
+different scales over the same opcode body. The chain is:
+
+    notes -> mode/scale -> op names -> CA opcode bytes -> target-language source
+
+The emitted source carries opcode trace comments, so ``tongue_isa.disassemble`` can
+read the song back out of the code. The Python face is also executed, so that face is
+verified by running rather than just emitted.
+"""
+
+from __future__ import annotations
+
+from typing import Dict, List, Sequence
+
+from .ca_opcode_table import OP_TABLE
+from .ca_semantics import coverage_report, template_choices
+from .chemistry_dimensions import analyze_formula
+from .tongue_isa import (
+    SUPPORTED_TARGETS,
+    compile_ca_tokens,
+    disassemble,
+    runtime_prelude,
+)
+
+_NAME_TO_BYTE: Dict[str, int] = {entry.name: op_id for op_id, entry in OP_TABLE.items()}
+
+# Canonical CA byte words. Keep this table aligned with root scbe.py's
+# _CANONICAL_TONGUES["ca"] encoder so the instrument's native keys are the real
+# Cassisivadan spellings, not local placeholders.
+_CA_PREFIXES = [
+    "bip",
+    "bop",
+    "klik",
+    "loopa",
+    "ifta",
+    "thena",
+    "elsa",
+    "spira",
+    "rythm",
+    "quirk",
+    "fizz",
+    "gear",
+    "pop",
+    "zip",
+    "mix",
+    "chass",
+]
+_CA_SUFFIXES = [
+    "a",
+    "e",
+    "i",
+    "o",
+    "u",
+    "y",
+    "ta",
+    "na",
+    "sa",
+    "ra",
+    "lo",
+    "mi",
+    "ki",
+    "zi",
+    "qwa",
+    "sh",
+]
+
+_CODING_SCALE: Dict[str, str] = {
+    "C": "add",
+    "D": "sub",
+    "E": "mul",
+    "F": "div",
+    "G": "inc",
+    "A": "dec",
+    "B": "neg",
+    "C#": "mod",
+    "D#": "abs",
+    "F#": "eq",
+    "G#": "lt",
+    "A#": "gt",
+}
+
+
+def ca_word_for_opcode(op_id: int) -> str:
+    """Return the canonical Cassisivadan word for a CA opcode byte."""
+
+    return f"{_CA_PREFIXES[(op_id >> 4) & 0xF]}'{_CA_SUFFIXES[op_id & 0xF]}"
+
+
+def _ca_scale_for_ops(op_names: Sequence[str]) -> Dict[str, str]:
+    return {ca_word_for_opcode(_NAME_TO_BYTE[op]): op for op in op_names}
+
+
+_NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+_INSTRUMENTS = ["piano", "strings", "brass", "woodwinds", "mallets", "synth"]
+
+
+def _nm_to_hex(nm: float) -> str:
+    """Approximate a visible wavelength, in nanometers, as an RGB hex color."""
+
+    if nm < 380 or nm > 750:
+        r = g = b = 0.0
+    elif nm < 440:
+        r, g, b = -(nm - 440) / 60, 0.0, 1.0
+    elif nm < 490:
+        r, g, b = 0.0, (nm - 440) / 50, 1.0
+    elif nm < 510:
+        r, g, b = 0.0, 1.0, -(nm - 510) / 20
+    elif nm < 580:
+        r, g, b = (nm - 510) / 70, 1.0, 0.0
+    elif nm < 645:
+        r, g, b = 1.0, -(nm - 645) / 65, 0.0
+    else:
+        r, g, b = 1.0, 0.0, 0.0
+    return "#" + "".join(
+        f"{int(max(0.0, min(1.0, channel)) * 255):02X}" for channel in (r, g, b)
+    )
+
+
+def keyspace(op_id: int) -> dict:
+    """Return the multisensory key for an op: pitch, instrument, and color wavelength."""
+
+    op_id = int(op_id) % 64
+    midi = 48 + op_id
+    hz = 440.0 * 2 ** ((midi - 69) / 12)
+    light_nm = round(380.0 + (op_id / 63.0) * 370.0, 1)
+    return {
+        "op_id": op_id,
+        "note": _NOTE_NAMES[midi % 12] + str(midi // 12 - 1),
+        "midi": midi,
+        "hz": round(hz, 2),
+        "sound_wavelength_cm": round(34300.0 / hz, 2),
+        "instrument": _INSTRUMENTS[(op_id // 12) % len(_INSTRUMENTS)],
+        "light_nm": light_nm,
+        "color": _nm_to_hex(light_nm),
+    }
+
+
+def melody_for_ops(op_names: Sequence[str]) -> List[dict]:
+    """Return the pitch/timbre/color key sequence for a list of CA op names."""
+
+    return [keyspace(_NAME_TO_BYTE[op]) for op in op_names]
+
+
+def semantic_choices(op_name: str) -> List[dict]:
+    """Return the available semantic template choices for an op as plain data."""
+
+    return [
+        {
+            "name": choice.name,
+            "family": choice.family,
+            "arity": choice.arity,
+            "result_shape": choice.result_shape,
+            "portable": choice.portable,
+            "description": choice.description,
+        }
+        for choice in template_choices(op_name)
+    ]
+
+
+def semantic_coverage() -> dict:
+    """Return coverage for the CA semantic-template registry."""
+
+    return coverage_report()
+
+
+def chemistry(formula: str) -> dict:
+    """Run the first-class chemistry action for formula dimensional analysis."""
+
+    return analyze_formula(formula)
+
+
+MODES: Dict[str, Dict[str, str]] = {
+    "ca": _ca_scale_for_ops(_CODING_SCALE.values()),
+    "coding": _CODING_SCALE,
+}
+
+
+def modes() -> List[str]:
+    """Return available instrument modes."""
+
+    return sorted(MODES)
+
+
+def scale(mode: str = "coding") -> Dict[str, str]:
+    """Return the note-to-op scale for a mode."""
+
+    return dict(MODES[mode])
+
+
+def _op_to_note(mode: str) -> Dict[str, str]:
+    return {op: note for note, op in MODES[mode].items()}
+
+
+def notes_to_ops(song: str, mode: str = "coding") -> List[str]:
+    """Map a note song like ``"C E"`` to CA op names like ``["add", "mul"]``."""
+
+    sc = MODES[mode]
+    ops: List[str] = []
+    for tok in song.replace(",", " ").split():
+        if tok not in sc:
+            raise ValueError(f"note {tok!r} not in {mode} scale {sorted(sc)}")
+        ops.append(sc[tok])
+    return ops
+
+
+def _assemble(prog, face: str) -> str:
+    """Wrap the compiled body into a runnable/readable module for the face."""
+
+    if face == "python":
+        header = f"def {prog.fn_name}({', '.join(prog.arg_names)}):"
+        body = "\n".join("    " + line for line in prog.body_lines)
+        return runtime_prelude("python") + "\n\n" + header + "\n" + body + "\n"
+    return runtime_prelude(face) + "\n\n" + "\n".join(prog.body_lines) + "\n"
+
+
+def _run_python(code: str, args: Sequence[float]):
+    ns: Dict[str, object] = {}
+    exec(
+        code, ns
+    )  # noqa: S102 - executing emitted code from this module to verify it runs.
+    return ns["play"](*args)
+
+
+def play(
+    song: str, mode: str = "coding", face: str = "python", args: Sequence[float] = ()
+) -> dict:
+    """Play a song in a mode and manifest it in a language face."""
+
+    ops = notes_to_ops(song, mode)
+    tokens = [_NAME_TO_BYTE[op] for op in ops]
+    arg_names = [f"x{i}" for i in range(len(args))]
+    prog = compile_ca_tokens(tokens, target=face, fn_name="play", arg_names=arg_names)
+    code = _assemble(prog, face)
+
+    value = _run_python(code, args) if face == "python" else None
+
+    o2n = _op_to_note(mode)
+    song_back = " ".join(o2n.get(name, f"?{name}") for _, name in disassemble(code))
+    normalized = " ".join(song.replace(",", " ").split())
+
+    return {
+        "song": song,
+        "mode": mode,
+        "face": face,
+        "ops": ops,
+        "value": value,
+        "code": code,
+        "song_back": song_back,
+        "bijective": song_back == normalized,
+        "melody": melody_for_ops(ops),
+    }
+
+
+def faces() -> List[str]:
+    """Return every source face the instrument can emit to.
+
+    ``tongue_isa`` is the verified stack-machine path for eight targets. ``polyglot``
+    adds broader scalar-source emission for the rest. The union is the honest face set.
+    """
+
+    langs = set(SUPPORTED_TARGETS)
+    try:
+        from . import polyglot
+
+        langs.update(polyglot.languages())
+    except Exception:
+        pass
+    return sorted(langs)
+
+
+def emit_all(song: str, mode: str = "coding") -> Dict[str, str]:
+    """Emit one scalar song into every registered language face.
+
+    The broad 18-face path uses ``polyglot.emit`` and therefore supports the scalar
+    op subset that polyglot declares. The eight ``tongue_isa`` targets stay available
+    through ``play(..., face=...)`` for the executable/disassemblable stack-machine path.
+    """
+
+    ops = notes_to_ops(song, mode)
+    tokens = [_NAME_TO_BYTE[op] for op in ops]
+    out: Dict[str, str] = {}
+    try:
+        from . import polyglot
+    except Exception as exc:
+        for face in SUPPORTED_TARGETS:
+            try:
+                out[face] = _assemble(
+                    compile_ca_tokens(tokens, target=face, fn_name="play"), face
+                )
+            except Exception as face_exc:
+                out[face] = f"ERROR: {type(face_exc).__name__}: {face_exc}"
+        out["_polyglot"] = f"ERROR: {type(exc).__name__}: {exc}"
+        return out
+
+    for face in faces():
+        try:
+            if face in polyglot.languages():
+                out[face] = polyglot.emit(tokens, face, fn_name="play", safe=True)
+            else:
+                out[face] = _assemble(
+                    compile_ca_tokens(tokens, target=face, fn_name="play"), face
+                )
+        except Exception as exc:
+            out[face] = f"ERROR: {type(exc).__name__}: {exc}"
+    return out
+
+
+def main() -> int:
+    r = play("C E", face="python", args=(10, 3, 2))
+    print(
+        f"play('C E') ops={r['ops']} value={r['value']} song_back={r['song_back']!r} bijective={r['bijective']}"
+    )
+    ca = play("bip'a bip'i", mode="ca", face="python", args=(10, 3, 2))
+    print(
+        f"play(\"bip'a bip'i\", mode='ca') ops={ca['ops']} value={ca['value']} "
+        f"song_back={ca['song_back']!r} bijective={ca['bijective']}"
+    )
+    print(f"faces={len(faces())} melody={ca['melody']}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

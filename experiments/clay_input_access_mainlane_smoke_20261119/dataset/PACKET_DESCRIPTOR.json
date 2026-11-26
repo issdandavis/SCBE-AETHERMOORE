@@ -1,0 +1,35 @@
+{
+  "archive": {
+    "bytes": 8707005,
+    "path": "clay-input-access-efficacy.packet",
+    "sha256": "cd2e95bee1537d2f0c7a84cc82077667d40394b8b1e93c62c08985b6a6105ff4"
+  },
+  "authority": {
+    "execution": "NONE",
+    "internet": "DISABLED",
+    "merge": "NONE",
+    "promotion": "NONE",
+    "tool_dispatch": "DISABLED",
+    "visibility": "PRIVATE"
+  },
+  "dataset_id": "issacizrealdavis/clay-input-access-efficacy-input-20261119",
+  "packet_manifest": {
+    "bytes": 59000,
+    "path": "CLAY_INPUT_ACCESS_KAGGLE_PACKET.json",
+    "sha256": "ff55e3a2a36619f271d6bef22ae9b1986c32f90871fd2cb006a6f2e4f7476aa3"
+  },
+  "remote_config": {
+    "batch_size": 128,
+    "checkpoint_every": 250,
+    "device": "cpu",
+    "minimum_free_gib": 25.0,
+    "seeds": [
+      20261134,
+      20261135,
+      20261136
+    ],
+    "steps": 2000,
+    "threads": 2
+  },
+  "schema": "clay.input-access-kaggle-dataset.v1"
+}

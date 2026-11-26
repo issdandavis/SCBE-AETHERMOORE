@@ -1,0 +1,7 @@
+{
+  "failed_at_utc": "2026-11-19T10:52:36.222307+00:00",
+  "log_sha256": "8a6b40c08d459fa355d416f45aab1479db339c851f83c80281cb4eea969164d5",
+  "return_code": 1,
+  "schema": "clay.stable-ce-kaggle-run.v1.failure",
+  "status": "FAILED"
+}
