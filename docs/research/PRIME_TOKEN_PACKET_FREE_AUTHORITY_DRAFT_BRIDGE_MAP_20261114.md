@@ -219,3 +219,75 @@ must verify and honor v3's `supersedes` entries.
 `partial_unfreeze = NONE`, and `tool_dispatch = DISABLED`. No model weights,
 training labels, watcher gates, or promotion state changed.
 
+## Mapped next edge: four-lane provenance-bound staging manifest
+
+The next edge reuses the existing frozen-action candidate bundle and the v3
+packet-free admission instead of regenerating any source rows. It will compile
+one replayable, four-lane staging bundle:
+
+```text
+candidate train + holdout rows and source receipts
+  + v3 admitted ordinary + retention identities and source authorities
+  -> recheck every candidate descriptor and authority receipt
+  -> retain only admitted ordinary/retention rows
+  -> prove record-ID, prompt, excerpt-hash, locator and artifact agreement
+  -> prove four-way source-ID, source-family and exact-prompt disjointness
+  -> write immutable staged lanes + replayable source-authority ledger
+```
+
+### Inputs and schemas
+
+- Candidate root:
+  `C:\dev\clay-training-runs\source-audits\frozen-action-material-candidate-v2-20261114`
+  with manifest schema `clay.full-system-action-dataset-candidate.v1` and build
+  status `COMPLETE_NOT_ADMITTED`.
+- Provenance admission root:
+  `C:\dev\clay-training-runs\source-audits\prime-token-packet-free-authority-admitted-v3-20261114`
+  with build schema
+  `scbe.prime-token-packet-free-authority-admission-build.v1` and status
+  `PROVENANCE_ADMITTED_TRAINING_NOT_AUTHORIZED`.
+- The staged manifest will use a schema distinct from
+  `clay.full-system-action-dataset.v1`. The existing campaign loader must reject
+  it until a later, separately reviewed action-mapping admission changes both
+  schema and authority.
+- The source ledger will use the campaign's replayable authority fields, while
+  hash-binding both producer receipts and retaining all per-source receipts.
+
+### Outputs and authority boundary
+
+The output contains `train.jsonl`, `holdout.jsonl`, `ordinary.jsonl`,
+`retention.jsonl`, `SOURCE_AUTHORITIES.json`, `MANIFEST.json`, and one build
+receipt. Train and holdout remain action-mapping candidates. Ordinary and
+retention carry admitted source provenance but no action target. Every row keeps
+`training_eligible = false`; the manifest keeps material evidence, training,
+execution, optimization, promotion, partial unfreeze and tool dispatch disabled.
+
+The staging manifest is deliberately non-launchable. It is not substituted into
+the active frozen-multiview campaign, the prime-token prospective watcher, or an
+independent replay. A later action-mapping review must consume this immutable
+receipt and emit a different manifest rather than editing these files in place.
+
+### Controls, budget and stop conditions
+
+Controls cover stale candidate/admission descriptors, missing or extra admitted
+identities, excerpt/prompt/locator mismatch, authority-receipt replay, duplicate
+record/source IDs, cross-lane source-family or prompt overlap, operational
+authority escalation, destination overwrite, and confirmation that the campaign
+schema rejects the staged manifest. The expected output is under 12 MiB and the
+build is CPU-only. Stop before publication on any mismatch or if the existing
+25 GiB training floor would be crossed. Rollback is deletion of only the new
+isolated staging directory; no active checkpoint, watcher, or source artifact is
+modified.
+
+### Deferred chemistry hypothesis
+
+The proposed chemistry cross-vector is recorded as a later controlled model
+experiment, not folded into this provenance compiler. For a regional state
+`z`, a bounded selector `p(z) = sigmoid(w^T z)` may choose or blend two
+opposite-gauge routes `F+` and `F-` that must solve the same task. The quantum
+circuit emitted after search remains deterministic and reversible; probability
+belongs to architecture search, not to an unverifiable final circuit. Promotion
+requires the selector to beat a vanilla route, a parameter-matched random route,
+and a shuffled-region route across multiple seeds while preserving endpoint
+equivalence and reducing the actual task cost.
+
