@@ -28,6 +28,20 @@ test('repository integrity workflow does not name false as a cache package manag
   assert.doesNotMatch(workflow, /^\s*cache:\s*(?:false|["']false["'])\s*$/m);
 });
 
+test('automation cannot merge around the repository integrity check', async () => {
+  const [trustedAutoMerge, agentRouter] = await Promise.all([
+    fs.readFile(new URL('../../.github/workflows/auto-merge-enable.yml', import.meta.url), 'utf8'),
+    fs.readFile(new URL('../../.github/workflows/agent-router.yml', import.meta.url), 'utf8'),
+  ]);
+
+  for (const workflow of [trustedAutoMerge, agentRouter]) {
+    assert.match(workflow, /required_status_checks/);
+    assert.match(workflow, /verify-source-manifest/);
+    assert.doesNotMatch(workflow, /gh pr merge[^\n]*--admin/);
+  }
+  assert.match(trustedAutoMerge, /steps\.protection\.outputs\.safe_to_merge == 'true'/);
+});
+
 function git(repo: string, ...args: string[]): string {
   return execFileSync('git', args, { cwd: repo, encoding: 'utf8', windowsHide: true }).trim();
 }

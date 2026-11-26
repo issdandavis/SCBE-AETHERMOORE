@@ -10,12 +10,12 @@
   ],
   "summary": {
     "entryCount": 6978,
-    "totalBytes": 94855031,
+    "totalBytes": 94857659,
     "blobCount": 6966,
     "symlinkCount": 1,
     "gitlinkCount": 11
   },
-  "merkleRoot": "3b988c43f4cd243c1ba53e8ecbd03a379e81d7768288a288cae30c6c104887f7",
+  "merkleRoot": "e4770586c9022ab493b526fa139d7e4ad5e2afb4f8319496d8c40960d3ae21fe",
   "entries": [
     {
       "path": ".agents/plugins/marketplace.json",
@@ -1269,9 +1269,9 @@
       "path": ".github/workflows/agent-router.yml",
       "mode": "100644",
       "kind": "blob",
-      "bytes": 12395,
-      "sha256": "ae7a49ab965805c0bb2b46e27a8af98bccac2729c40a62ac7a0ae39b9769926c",
-      "gitObject": "f483f7f06b0288bedb834416b6653d60feab7e23"
+      "bytes": 13105,
+      "sha256": "ff6c9d69d5da7ce9802d3b16288ea39c15a7dd8aad223c576d5fa0596841dd05",
+      "gitObject": "332fd983adb9b1fd54095ccc455336e4fb971061"
     },
     {
       "path": ".github/workflows/ai-issue-summary.yml",
@@ -1309,9 +1309,9 @@
       "path": ".github/workflows/auto-merge-enable.yml",
       "mode": "100644",
       "kind": "blob",
-      "bytes": 1226,
-      "sha256": "fddf764439b39683c8728fc8c2182fd6fdfa2fe83b6a78e579b8c4e257803769",
-      "gitObject": "58c37c5cbcb6ba7059b514babd40bcfaa11493e9"
+      "bytes": 2467,
+      "sha256": "753ffe5d0c46c317f13e4e9bcb8c80390f64e3679052b64bb19820ce6476f064",
+      "gitObject": "6d170b066584eac4334bfcb76e668fa5e08c6510"
     },
     {
       "path": ".github/workflows/auto-merge.yml",
@@ -48789,9 +48789,9 @@
       "path": "tests/integrity/repositoryManifest.test.ts",
       "mode": "100644",
       "kind": "blob",
-      "bytes": 7245,
-      "sha256": "24fa88288b0ed2054d0cf73353de25983b2a5637170fc457424e18b0a585ddf0",
-      "gitObject": "2a1789d61b76830645eb5721e8d06ceff13c5dba"
+      "bytes": 7922,
+      "sha256": "8e318c043e4050e417ed798965628042ede1193ba8d0e38f9cc84ddd966ceaf0",
+      "gitObject": "562c579c2c892ce8a0d5cf829826066999aeccfd"
     },
     {
       "path": "tests/interop/generate_vectors.py",
