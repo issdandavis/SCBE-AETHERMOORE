@@ -115,6 +115,11 @@ from green checks that omit a component.
 
 ## Release blockers and next work
 
+The [agent functionality and integration roadmap](AGENT_FUNCTIONAL_READINESS_2026-09-18.md)
+maps the shared tokenizer/tool boundary, distinct quarantine profiles, system
+connections and the functional checks needed alongside these security gates.
+Its local workcell evidence does not close the deployment blockers below.
+
 1. **Deployment authorization coverage.** Trace principal, resource, operation,
    context, expiry and replay state from each ingress to execution. Freeze and
    authenticate policy inputs. In particular, `api/main.py:generate_token` remains
