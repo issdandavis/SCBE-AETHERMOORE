@@ -10,12 +10,12 @@
   ],
   "summary": {
     "entryCount": 6978,
-    "totalBytes": 94859152,
+    "totalBytes": 94859488,
     "blobCount": 6966,
     "symlinkCount": 1,
     "gitlinkCount": 11
   },
-  "merkleRoot": "2c0bbd218d90b716e7dd1140d86d713a7795dcff7602a651923ad9a86adbb1b5",
+  "merkleRoot": "fa93403d8af9567811dfb57f4215557e4e000baec366ab33a3d715eda9d30302",
   "entries": [
     {
       "path": ".agents/plugins/marketplace.json",
@@ -1590,8 +1590,8 @@
       "mode": "100644",
       "kind": "blob",
       "bytes": 1003,
-      "sha256": "9046b8dd6fcecbc62a70c6bac9523912c5a4b489ee21f09ca12ca093f007ef3e",
-      "gitObject": "2b15b1d31541dbf61356b228e7c13805fa44dd4a"
+      "sha256": "76f540f9b530e6ca0bf2d8cd3f570332e2cb86d8d1c4a1dbaa66806a898c96be",
+      "gitObject": "7d69fdb4aa70dd7a843528634a341a15362b12e7"
     },
     {
       "path": ".github/workflows/nightly-python-full.yml",
@@ -30598,8 +30598,8 @@
       "mode": "100644",
       "kind": "blob",
       "bytes": 249090,
-      "sha256": "c081b7ab5e0883f32fa0a615558d59643a87de1018c5079cd1c60f56af6600ba",
-      "gitObject": "6ed09c5e8a9bbb3211224f7f90f0b52b95ed2c18"
+      "sha256": "22086d5106f265b95cc797cb857f200e188de9e31530cdfe696b6bf0cb3b1311",
+      "gitObject": "0b2b4e5facbebfb7cc816e1605c40ffc700f6843"
     },
     {
       "path": "scripts/scbe.py",
@@ -49245,9 +49245,9 @@
       "path": "tests/security/test_independent_github_workflows.py",
       "mode": "100644",
       "kind": "blob",
-      "bytes": 1555,
-      "sha256": "602d23fc8828b4138efc1c6e2c7dacf591a1101a9f05b09c4a2ada48a72406b9",
-      "gitObject": "af15e5962a4dda66bfe1baf17d29fc42f78679f6"
+      "bytes": 1734,
+      "sha256": "4c6dd4615833e4c253d0bb6ce7a6694788c4260598cdd0464ddf00887d9c950f",
+      "gitObject": "171c1fbae902ec37bb4429bdb0f46fa4d5480451"
     },
     {
       "path": "tests/security/test_pangram_content_gate.py",
@@ -53701,9 +53701,9 @@
       "path": "tests/test_scbe_system_cli_operator.py",
       "mode": "100644",
       "kind": "blob",
-      "bytes": 5219,
-      "sha256": "1c45e630b283fd8e80084df34033aee5ef7a7307dc12f2614903fd2a350df1e6",
-      "gitObject": "3d116f656d3b5709ebf58347a3056d9f3bececad"
+      "bytes": 5376,
+      "sha256": "c0a10f33c6f67fc3387eba727ae47c08d9fef15125b1054e6784cf6aa08efcb8",
+      "gitObject": "d91a40000fab230707af31ccfde4274feab7117d"
     },
     {
       "path": "tests/test_scbe_system_cli_runtime.py",

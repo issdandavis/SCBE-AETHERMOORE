@@ -117,8 +117,14 @@ def test_workflow_styleize_writes_github_and_n8n_assets(tmp_path: Path) -> None:
     assert "workflow_dispatch:" in workflow_text
     assert "python scbe.py selftest" in workflow_text
     assert workflow_payload["permissions"] == {"contents": "read"}
-    assert workflow_payload["jobs"]["orchestrate"]["env"] == {"SCBE_MODE": "ci"}
-    assert [step["id"] for step in workflow_payload["jobs"]["orchestrate"]["steps"] if "id" in step] == [
+    job = workflow_payload["jobs"]["orchestrate"]
+    assert job["env"] == {"SCBE_MODE": "ci"}
+    assert [step["uses"] for step in job["steps"] if "uses" in step] == [
+        "actions/checkout@v6",
+        "actions/setup-node@v6",
+        "actions/setup-python@v6",
+    ]
+    assert [step["id"] for step in job["steps"] if "id" in step] == [
         "step_01_smoke",
         "step_02_packetize",
     ]
