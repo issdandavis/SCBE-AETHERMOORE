@@ -5,6 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import yaml
+
 ROOT = Path(__file__).resolve().parents[1]
 CLI = ROOT / "scripts" / "scbe-system-cli.py"
 
@@ -103,14 +105,23 @@ def test_workflow_styleize_writes_github_and_n8n_assets(tmp_path: Path) -> None:
 
     workflow_path = ROOT / payload["workflow_path"]
     queue_path = ROOT / payload["queue_path"]
+    assert workflow_path.parent == workflow_dir
+    assert queue_path.parent == queue_dir
     assert workflow_path.exists()
     assert queue_path.exists()
 
     workflow_text = workflow_path.read_text(encoding="utf-8")
+    workflow_payload = yaml.safe_load(workflow_text)
     queue_payload = json.loads(queue_path.read_text(encoding="utf-8"))
 
     assert "workflow_dispatch:" in workflow_text
     assert "python scbe.py selftest" in workflow_text
+    assert workflow_payload["permissions"] == {"contents": "read"}
+    assert workflow_payload["jobs"]["orchestrate"]["env"] == {"SCBE_MODE": "ci"}
+    assert [step["id"] for step in workflow_payload["jobs"]["orchestrate"]["steps"] if "id" in step] == [
+        "step_01_smoke",
+        "step_02_packetize",
+    ]
     assert queue_payload["schema_version"] == "scbe_n8_style_queue_v1"
     assert len(queue_payload["items"]) == 2
     assert queue_payload["items"][1]["depends_on"] == [queue_payload["items"][0]["id"]]

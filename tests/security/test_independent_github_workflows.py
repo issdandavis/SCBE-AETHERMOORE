@@ -33,3 +33,16 @@ def test_daily_dependency_audit_uses_one_rolling_issue_not_daily_issue_spam() ->
     assert "Dependency Vulnerabilities - ${today}" not in text
     assert "issues.update" in text
     assert "updates one rolling issue" in text
+
+
+def test_nightly_ops_is_parseable_and_keeps_job_env_outside_steps() -> None:
+    workflow = yaml.safe_load(_workflow_text("nightly-ops.yml"))
+    job = workflow["jobs"]["orchestrate"]
+
+    assert workflow["permissions"] == {"contents": "read"}
+    assert job["env"] == {"SCBE_MODE": "ci"}
+    assert [step["id"] for step in job["steps"] if "id" in step] == [
+        "step_01_smoke",
+        "step_02_plan",
+        "step_03_packetize",
+    ]

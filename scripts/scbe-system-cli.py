@@ -1126,8 +1126,14 @@ def _workflow_output_paths(
     repo_root: Path, config: dict[str, object], workflow_name: str, workflow_path: str, queue_path: str
 ) -> tuple[Path, Path]:
     defaults = dict(config.get("defaults") or {})
-    workflow_dir = workflow_path or str(defaults.get("workflow_dir") or ".github/workflows")
-    queue_dir = queue_path or str(defaults.get("n8n_dir") or "workflows/n8n")
+    active_context = safe_text(config.get("active_context"))
+    context = dict((config.get("contexts") or {}).get(active_context) or {}) if active_context else {}
+    workflow_dir = (
+        workflow_path
+        or safe_text(context.get("workflow_dir"))
+        or str(defaults.get("workflow_dir") or ".github/workflows")
+    )
+    queue_dir = queue_path or safe_text(context.get("n8n_dir")) or str(defaults.get("n8n_dir") or "workflows/n8n")
     slug = _flow_slug(workflow_name)
     workflow_file = _repo_path(repo_root, workflow_dir)
     if workflow_file.suffix.lower() != ".yml":
@@ -1184,11 +1190,13 @@ def _render_workflow_yaml(
         elif trigger == "schedule":
             lines.append("  schedule:")
             lines.append(f"    - cron: {_yaml_quote(cron or '0 9 * * *')}")
+    lines.extend(["permissions:", "  contents: read", "", "jobs:", "  orchestrate:", f"    runs-on: {runs_on}"])
+    if env_vars:
+        lines.append("    env:")
+        for key in sorted(env_vars):
+            lines.append(f"      {key}: {_yaml_quote(env_vars[key])}")
     lines.extend(
         [
-            "jobs:",
-            "  orchestrate:",
-            f"    runs-on: {runs_on}",
             "    steps:",
             "      - name: Checkout",
             "        uses: actions/checkout@v4",
@@ -1202,10 +1210,6 @@ def _render_workflow_yaml(
             f"          python-version: {_yaml_quote(python_version)}",
         ]
     )
-    if env_vars:
-        lines.append("    env:")
-        for key in sorted(env_vars):
-            lines.append(f"      {key}: {_yaml_quote(env_vars[key])}")
     for step in steps:
         lines.extend(
             [
