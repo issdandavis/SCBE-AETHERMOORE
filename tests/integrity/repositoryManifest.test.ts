@@ -20,6 +20,14 @@ import {
 
 const scratch: string[] = [];
 
+test('repository integrity workflow does not name false as a cache package manager', async () => {
+  const workflow = await fs.readFile(
+    new URL('../../.github/workflows/repository-integrity.yml', import.meta.url),
+    'utf8'
+  );
+  assert.doesNotMatch(workflow, /^\s*cache:\s*(?:false|["']false["'])\s*$/m);
+});
+
 function git(repo: string, ...args: string[]): string {
   return execFileSync('git', args, { cwd: repo, encoding: 'utf8', windowsHide: true }).trim();
 }

@@ -9,13 +9,13 @@
     "integrity/scbe-source-manifest.sig.json"
   ],
   "summary": {
-    "entryCount": 6972,
-    "totalBytes": 94825690,
-    "blobCount": 6960,
+    "entryCount": 6975,
+    "totalBytes": 94854905,
+    "blobCount": 6963,
     "symlinkCount": 1,
     "gitlinkCount": 11
   },
-  "merkleRoot": "6419a57ecf75f452d5917b51564304ce5cfbf17045cd190cc471a802ab6e84ee",
+  "merkleRoot": "d73f5161a0d14bdcc1f42c0398e64c7e735416b54aab4417747af20106304629",
   "entries": [
     {
       "path": ".agents/plugins/marketplace.json",
@@ -1757,9 +1757,9 @@
       "path": ".github/workflows/repository-integrity.yml",
       "mode": "100644",
       "kind": "blob",
-      "bytes": 860,
-      "sha256": "44675cd539ff9603211f6fb1c6f7c52e04af7e52a48e0e0ec14c990d9681a1c9",
-      "gitObject": "e77f1625967ebf17819f33754d13be5db2b8b946"
+      "bytes": 837,
+      "sha256": "a01e0cf31d47c3e3ded12872e3794aae160ca249d6c730b4bdc2127d64e5911e",
+      "gitObject": "9fa414da0fc881b16b685d4ab22d414fef4d9950"
     },
     {
       "path": ".github/workflows/research-feed.yml",
@@ -14114,6 +14114,14 @@
       "gitObject": "188a3d22fad6307024533047bb0761a48eb14e74"
     },
     {
+      "path": "docs/specs/NESTED_WEIGHT_TOKEN_FIELD.md",
+      "mode": "100644",
+      "kind": "blob",
+      "bytes": 5047,
+      "sha256": "75e847a65ed1610eab6e3daee9a5bdb8b138f37757b89144c8cdb62c0219678a",
+      "gitObject": "ace4812ab242f08e03273b4da99ffdd7938604a9"
+    },
+    {
       "path": "docs/specs/PERSONALITY_MATRIX_HYPERSHAPE_SPEC.md",
       "mode": "100644",
       "kind": "blob",
@@ -23616,6 +23624,14 @@
       "bytes": 12970,
       "sha256": "ba4eeb931e058844386b2068ce3ac2f5334d27285589b92f8c079c189168ed2a",
       "gitObject": "7f2e937a115270b44b8fdd9c9a5f71ebc0faf813"
+    },
+    {
+      "path": "python/scbe/nested_weight_token_field.py",
+      "mode": "100644",
+      "kind": "blob",
+      "bytes": 17584,
+      "sha256": "8100a7209e71edc25bb351803c241ac002a5dc127f5db5169fc88f49a9c01ecc",
+      "gitObject": "b6d0ce4bcd92ccf1893ad930d48114e65e2af6a2"
     },
     {
       "path": "python/scbe/observer_dynamics.py",
@@ -48749,9 +48765,9 @@
       "path": "tests/integrity/repositoryManifest.test.ts",
       "mode": "100644",
       "kind": "blob",
-      "bytes": 6927,
-      "sha256": "98022b7e81b246a94d7d3182585cee482a8a54cf83122a920d981fc0e41c1d91",
-      "gitObject": "a3ac79e371ee5d57bd8ac158e7614c5fc42baf21"
+      "bytes": 7245,
+      "sha256": "24fa88288b0ed2054d0cf73353de25983b2a5637170fc457424e18b0a585ddf0",
+      "gitObject": "2a1789d61b76830645eb5721e8d06ceff13c5dba"
     },
     {
       "path": "tests/interop/generate_vectors.py",
@@ -54768,6 +54784,14 @@
       "bytes": 10480,
       "sha256": "ddebb174f4b9907a7863d9ae8bf2bb7764fe863423f9c1aa10686105e6c0601c",
       "gitObject": "eb4f60b2ee6911ddacf99a4bcf67aa188a94f724"
+    },
+    {
+      "path": "tests/tokenizer/test_nested_weight_token_field.py",
+      "mode": "100644",
+      "kind": "blob",
+      "bytes": 6289,
+      "sha256": "b7894f69f57e759c0c68c35311dda6e7443c74480e270b9d3f2c2a5080d9299c",
+      "gitObject": "044c0a4ebb4f434d13a3c5d0f133b90884b1b927"
     },
     {
       "path": "tests/tokenizer/test_nsm_primes.py",
