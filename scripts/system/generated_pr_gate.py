@@ -7,7 +7,10 @@ every required branch-protection check must start before auto-merge can finish.
 
 This helper verifies the PR target, waits for the required workflow runs for
 one exact head SHA, approves those named runs, and then enables squash
-auto-merge. It never approves runs from another commit, workflow, or event.
+auto-merge. It remains alive until the PR merges. If ``main`` advances first,
+it updates the generated branch with an exact expected-head precondition and
+re-arms checks for the resulting SHA. It never approves runs from another
+commit, workflow, or event.
 """
 
 from __future__ import annotations
@@ -80,7 +83,9 @@ def _latest_by_workflow(runs: Iterable[dict[str, Any]]) -> dict[str, dict[str, A
     return latest
 
 
-def _required_state(runs: Iterable[dict[str, Any]], required_workflows: Iterable[str]) -> tuple[list[str], list[str]]:
+def _required_state(
+    runs: Iterable[dict[str, Any]], required_workflows: Iterable[str]
+) -> tuple[list[str], list[str]]:
     """Return missing and failed required workflow names."""
     latest = _latest_by_workflow(runs)
     missing: list[str] = []
@@ -97,13 +102,36 @@ def _required_state(runs: Iterable[dict[str, Any]], required_workflows: Iterable
 
 
 def _fetch_runs(repo: str, head_sha: str) -> list[dict[str, Any]]:
-    endpoint = f"repos/{repo}/actions/runs?head_sha={head_sha}&event=pull_request&per_page=100"
+    endpoint = (
+        f"repos/{repo}/actions/runs?head_sha={head_sha}&event=pull_request&per_page=100"
+    )
     result = _run_gh(["api", endpoint])
     try:
         payload = json.loads(result.stdout)
     except json.JSONDecodeError as exc:
         raise GateError(f"GitHub returned invalid workflow-run JSON: {exc}") from exc
     return _head_pr_runs(payload, head_sha)
+
+
+def _fetch_pr(repo: str, pr_number: int) -> dict[str, Any]:
+    result = _run_gh(
+        [
+            "pr",
+            "view",
+            str(pr_number),
+            "--repo",
+            repo,
+            "--json",
+            "headRefOid,baseRefName,state,mergeStateStatus,isCrossRepository",
+        ]
+    )
+    try:
+        payload = json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        raise GateError(f"GitHub returned invalid pull-request JSON: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise GateError("GitHub returned an invalid pull-request payload")
+    return payload
 
 
 def _pr_number_for_repo(repo: str, pr_url: str) -> int:
@@ -122,30 +150,21 @@ def _pr_number_for_repo(repo: str, pr_url: str) -> int:
     return int(parts[3])
 
 
-def verify_pr_target(repo: str, pr_url: str, head_sha: str, base_ref: str) -> None:
+def verify_pr_target(repo: str, pr_url: str, head_sha: str, base_ref: str) -> int:
     """Bind the supplied URL, head SHA, and base branch before approvals."""
     pr_number = _pr_number_for_repo(repo, pr_url)
-    result = _run_gh(
-        [
-            "pr",
-            "view",
-            str(pr_number),
-            "--repo",
-            repo,
-            "--json",
-            "headRefOid,baseRefName,state",
-        ]
-    )
-    try:
-        pull_request = json.loads(result.stdout)
-    except json.JSONDecodeError as exc:
-        raise GateError(f"GitHub returned invalid pull-request JSON: {exc}") from exc
+    pull_request = _fetch_pr(repo, pr_number)
     if str(pull_request.get("state", "")).upper() != "OPEN":
         raise GateError("Generated pull request is not open")
+    if pull_request.get("isCrossRepository"):
+        raise GateError(
+            "Generated pull request must use a branch in the same repository"
+        )
     if str(pull_request.get("headRefOid", "")).lower() != head_sha.lower():
         raise GateError("Generated pull request head does not match --head-sha")
     if pull_request.get("baseRefName") != base_ref:
         raise GateError(f"Generated pull request does not target {base_ref}")
+    return pr_number
 
 
 def wait_for_required_runs(
@@ -167,7 +186,9 @@ def wait_for_required_runs(
         if not missing:
             return runs
         if time.monotonic() >= deadline:
-            raise GateError("Timed out waiting for required workflow runs: " + ", ".join(missing))
+            raise GateError(
+                "Timed out waiting for required workflow runs: " + ", ".join(missing)
+            )
         print("Waiting for required workflow runs: " + ", ".join(missing), flush=True)
         time.sleep(poll_seconds)
 
@@ -190,7 +211,9 @@ def approve_gated_runs(
         if str(run.get("conclusion") or "").lower() != "action_required":
             continue
         run_id = int(run["id"])
-        _run_gh(["api", "--method", "POST", f"repos/{repo}/actions/runs/{run_id}/approve"])
+        _run_gh(
+            ["api", "--method", "POST", f"repos/{repo}/actions/runs/{run_id}/approve"]
+        )
         approved.append(run_id)
         print(f"Approved gated workflow run {run_id}: {run.get('name', 'unknown')}")
     return approved
@@ -199,7 +222,9 @@ def approve_gated_runs(
 def enable_auto_merge(pr_url: str) -> None:
     """Enable squash auto-merge, tolerating an already-enabled merge queue."""
     result = _run_gh(["pr", "merge", "--auto", "--squash", pr_url], check=False)
-    combined = "\n".join(part for part in (result.stdout, result.stderr) if part).strip()
+    combined = "\n".join(
+        part for part in (result.stdout, result.stderr) if part
+    ).strip()
     if result.returncode == 0:
         if combined:
             print(combined)
@@ -208,7 +233,133 @@ def enable_auto_merge(pr_url: str) -> None:
     if any(marker in combined for marker in tolerated):
         print(combined)
         return
-    raise GateError(f"Could not enable auto-merge: {combined or 'gh returned no error text'}")
+    raise GateError(
+        f"Could not enable auto-merge: {combined or 'gh returned no error text'}"
+    )
+
+
+def update_pr_branch(repo: str, pr_number: int, expected_head_sha: str) -> None:
+    """Update a behind branch only if it still has the verified head SHA."""
+    _run_gh(
+        [
+            "api",
+            "--method",
+            "PUT",
+            f"repos/{repo}/pulls/{pr_number}/update-branch",
+            "-f",
+            f"expected_head_sha={expected_head_sha}",
+        ]
+    )
+    print(f"Requested base update for generated PR at {expected_head_sha}.", flush=True)
+
+
+def arm_pr_head(
+    repo: str,
+    pr_url: str,
+    head_sha: str,
+    base_ref: str,
+    required_workflows: tuple[str, ...],
+    *,
+    timeout_seconds: float,
+    poll_seconds: float,
+) -> None:
+    """Approve and auto-merge one verified, exact PR head."""
+    verify_pr_target(repo, pr_url, head_sha, base_ref)
+    runs = wait_for_required_runs(
+        repo,
+        head_sha,
+        required_workflows,
+        timeout_seconds=timeout_seconds,
+        poll_seconds=poll_seconds,
+    )
+    verify_pr_target(repo, pr_url, head_sha, base_ref)
+    approved = approve_gated_runs(repo, head_sha, runs, required_workflows)
+    if not approved:
+        print("Required workflow runs were already started; no approvals needed.")
+    enable_auto_merge(pr_url)
+    print(f"Generated PR gate armed for {head_sha}.", flush=True)
+
+
+def wait_until_merged(
+    repo: str,
+    pr_url: str,
+    pr_number: int,
+    head_sha: str,
+    base_ref: str,
+    required_workflows: tuple[str, ...],
+    *,
+    timeout_seconds: float,
+    poll_seconds: float,
+    run_timeout_seconds: float,
+    run_poll_seconds: float,
+) -> str:
+    """Hold workflow concurrency until the PR merges, updating behind heads."""
+    deadline = time.monotonic() + timeout_seconds
+    current_head = head_sha.lower()
+    update_pending = False
+
+    while True:
+        pull_request = _fetch_pr(repo, pr_number)
+        state = str(pull_request.get("state", "")).upper()
+        observed_head = str(pull_request.get("headRefOid", "")).lower()
+        merge_state = str(pull_request.get("mergeStateStatus", "")).upper()
+
+        if pull_request.get("isCrossRepository"):
+            raise GateError(
+                "Generated pull request changed to a cross-repository branch"
+            )
+        if pull_request.get("baseRefName") != base_ref:
+            raise GateError(f"Generated pull request no longer targets {base_ref}")
+        if not SHA_RE.fullmatch(observed_head):
+            raise GateError("Generated pull request returned an invalid head SHA")
+        head_advanced = observed_head != current_head
+        if head_advanced:
+            if not update_pending:
+                raise GateError(
+                    "Generated pull request head changed without an authorized base update"
+                )
+            current_head = observed_head
+            update_pending = False
+            print(
+                f"Generated PR advanced to authorized head {current_head}.", flush=True
+            )
+
+        if state == "MERGED":
+            print(f"Generated pull request merged at head {current_head}.", flush=True)
+            return current_head
+        if state == "CLOSED":
+            raise GateError("Generated pull request closed before it merged")
+        if state != "OPEN":
+            raise GateError(
+                f"Generated pull request returned unexpected state: {state or 'empty'}"
+            )
+
+        if head_advanced:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise GateError("Timed out waiting for generated pull request to merge")
+            arm_pr_head(
+                repo,
+                pr_url,
+                current_head,
+                base_ref,
+                required_workflows,
+                timeout_seconds=min(run_timeout_seconds, remaining),
+                poll_seconds=run_poll_seconds,
+            )
+
+        if merge_state == "DIRTY":
+            raise GateError("Generated pull request has merge conflicts")
+        if merge_state == "BEHIND" and not update_pending:
+            update_pr_branch(repo, pr_number, current_head)
+            update_pending = True
+
+        if time.monotonic() >= deadline:
+            pending_note = " after requesting a base update" if update_pending else ""
+            raise GateError(
+                "Timed out waiting for generated pull request to merge" + pending_note
+            )
+        time.sleep(poll_seconds)
 
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -220,6 +371,8 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--required-workflow", action="append", default=[])
     parser.add_argument("--timeout-seconds", type=float, default=120.0)
     parser.add_argument("--poll-seconds", type=float, default=2.0)
+    parser.add_argument("--merge-timeout-seconds", type=float, default=2400.0)
+    parser.add_argument("--merge-poll-seconds", type=float, default=10.0)
     return parser.parse_args(argv)
 
 
@@ -230,22 +383,37 @@ def main(argv: list[str] | None = None) -> int:
         raise GateError("--repo must be in owner/name form")
     if not SHA_RE.fullmatch(args.head_sha):
         raise GateError("--head-sha must be a full 40-character Git SHA")
-    if args.timeout_seconds <= 0 or args.poll_seconds <= 0:
+    if (
+        args.timeout_seconds <= 0
+        or args.poll_seconds <= 0
+        or args.merge_timeout_seconds <= 0
+        or args.merge_poll_seconds <= 0
+    ):
         raise GateError("timeout and poll intervals must be positive")
 
-    verify_pr_target(args.repo, args.pr_url, args.head_sha, args.base_ref)
-    runs = wait_for_required_runs(
+    head_sha = args.head_sha.lower()
+    pr_number = verify_pr_target(args.repo, args.pr_url, head_sha, args.base_ref)
+    arm_pr_head(
         args.repo,
-        args.head_sha.lower(),
+        args.pr_url,
+        head_sha,
+        args.base_ref,
         required,
         timeout_seconds=args.timeout_seconds,
         poll_seconds=args.poll_seconds,
     )
-    approved = approve_gated_runs(args.repo, args.head_sha.lower(), runs, required)
-    if not approved:
-        print("Required workflow runs were already started; no approvals needed.")
-    enable_auto_merge(args.pr_url)
-    print(f"Generated PR gate armed for {args.head_sha.lower()}.")
+    wait_until_merged(
+        args.repo,
+        args.pr_url,
+        pr_number,
+        head_sha,
+        args.base_ref,
+        required,
+        timeout_seconds=args.merge_timeout_seconds,
+        poll_seconds=args.merge_poll_seconds,
+        run_timeout_seconds=args.timeout_seconds,
+        run_poll_seconds=args.poll_seconds,
+    )
     return 0
 
 
