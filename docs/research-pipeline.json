@@ -1,8 +1,8 @@
 {
-  "generated": "2026-11-27T06:10:42.997811+00:00",
-  "feed_generated": "2026-11-27T06:10:42.674361+00:00",
-  "items_processed": 54,
-  "sft_pairs_generated": 378,
+  "generated": "2026-11-27T07:02:35.470222+00:00",
+  "feed_generated": "2026-11-27T07:02:35.102364+00:00",
+  "items_processed": 55,
+  "sft_pairs_generated": 385,
   "errors": 0,
   "crypto_tier": "cryptography",
   "tokenizer_source": "src.crypto.sacred_tongues",
@@ -19,15 +19,15 @@
   "local_artifacts": {
     "records": {
       "path": "training-data/news-pipeline/records/2026-11-27.jsonl",
-      "sha256": "74996589f18f678f82155a5a96b9c0e31d996708d9bf3df2a9db33fa345f400c",
-      "bytes": 270738,
-      "rows": 54
+      "sha256": "01a2f51e34bc6ffb176b6dee6809d0ee6d845e02a349fd6baf8c554d7289529d",
+      "bytes": 273904,
+      "rows": 55
     },
     "sft": {
       "path": "training-data/news-pipeline/sft/2026-11-27.jsonl",
-      "sha256": "ac83ac33c431ab1b63ffea194983663f61d5afabaeb54c715e3876157b6e5b2a",
-      "bytes": 348424,
-      "rows": 378
+      "sha256": "158f5427540c74229251da1f641ecbffbcbe72dd2304496bbe73b5d9a5aae8ae",
+      "bytes": 353890,
+      "rows": 385
     }
   },
   "pipeline_stages": [
@@ -44,11 +44,11 @@
     "provider": "huggingface",
     "repo_id": "issdandavis/scbe-aethermoore-training-data",
     "path": "data/news-pipeline/train-00000-of-00001.parquet",
-    "commit_oid": "3fe8af0f94411a1d2565777165d19183e53a5be8",
-    "commit_url": "https://huggingface.co/datasets/issdandavis/scbe-aethermoore-training-data/commit/3fe8af0f94411a1d2565777165d19183e53a5be8",
-    "sha256": "2b09a446b2483f1b6ea671d40260f6e7432056737d013b2ab0922e05975b37b8",
-    "bytes": 143786,
-    "records": 378,
-    "published": "2026-11-27T06:10:45.437082+00:00"
+    "commit_oid": "0322ee03c3a677c8d591c125e10be2fbcd071532",
+    "commit_url": "https://huggingface.co/datasets/issdandavis/scbe-aethermoore-training-data/commit/0322ee03c3a677c8d591c125e10be2fbcd071532",
+    "sha256": "16454b6917202b423c450b98ce25c8fa334acb47f5d76438d53d2a582a64d019",
+    "bytes": 144631,
+    "records": 385,
+    "published": "2026-11-27T07:02:39.126231+00:00"
   }
 }

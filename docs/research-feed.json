@@ -1,8 +1,8 @@
 {
-  "generated": "2026-11-27T06:10:42.674361+00:00",
-  "count": 54,
+  "generated": "2026-11-27T07:02:35.102364+00:00",
+  "count": 55,
   "regions": {
-    "us": 14,
+    "us": 15,
     "eu": 12,
     "asia": 16,
     "me": 8,
@@ -12,6 +12,12 @@
     {
       "title": "AI made self-hosting fun again",
       "url": "https://janlukas.blog/posts/ai-self-hosting",
+      "source": "hn",
+      "region": "us"
+    },
+    {
+      "title": "The group chat where your AI talks behind your back",
+      "url": "https://construct22.com/",
       "source": "hn",
       "region": "us"
     },
@@ -28,8 +34,8 @@
       "region": "us"
     },
     {
-      "title": "AI agents now control part of DeepMind's compute for Gemini experiments",
-      "url": "https://the-decoder.com/ai-agents-now-control-part-of-deepminds-compute-for-gemini-experiments-but-recursive-self-improvement-remains-distant/",
+      "title": "The New York Times warns photographers not to update Photoshop over AI features",
+      "url": "https://www.theverge.com/ai-artificial-intelligence/1041227/the-new-york-times-warns-photographers-not-to-update-photoshop-over-ai-features",
       "source": "hn",
       "region": "us"
     },
@@ -40,8 +46,8 @@
       "region": "us"
     },
     {
-      "title": "The New York Times warns photographers not to update Photoshop over AI features",
-      "url": "https://www.theverge.com/ai-artificial-intelligence/1041227/the-new-york-times-warns-photographers-not-to-update-photoshop-over-ai-features",
+      "title": "AI agents now control part of DeepMind's compute for Gemini experiments",
+      "url": "https://the-decoder.com/ai-agents-now-control-part-of-deepminds-compute-for-gemini-experiments-but-recursive-self-improvement-remains-distant/",
       "source": "hn",
       "region": "us"
     },
@@ -70,8 +76,8 @@
       "region": "eu"
     },
     {
-      "title": "India ranks 40th in AI-Human Skills Synergy Index: Coursera report - Business Standard",
-      "url": "https://news.google.com/rss/articles/CBMi9gFBVV95cUxQQkxmd3Y1bEo4V3NrTEJWb050TTBaUVBJSGNOOUZCVVVQTTdaWEVEZDFzWGJqVlZtdm4wTkswLUxULVFZWlZ0a3B2LVJfVlhieHk3MUY0cXhJUEhXbUs2cWd2WFB4em5xWU1mSUpHd25NZDgxZmRsbmN5blZsNjF4b3pSWWQxQndTV1NOd2QyWHI1QmtjV0w1bURPa1dlbXEyQXJzNGlva3c5aXVEMWxqQ0RaVU8yOG51VGduQ2ptRUUxRUZMOUNSUnI0cmNOdHU0VS1HY1ZHVktiRVlaQ1BIVnZSdWNJZ1NkaTNVZmRqT0tISTU4N1HSAfsBQVVfeXFMTkdsMmZUNTFtNm82cGU1WnFDWFdwS0xuNERvM2pkZUU5WjBsSmFOZU1lM2V0NkFsX0phWDBCVWRRdkN2dDNsaXNaYWQwNHk0ZHdkQnpFeENvRmJzSVp0OG1PLVVCOUtwTDhQcDJpWm1paXVtbmF4ZnFsM0ZWN1dDU1pSS2VxUXRTNUxFWkNYbTFUV1piM29GVWYwNzJySnEzTlZjTFo4amZtVFlyU1JVY3htZTlXWWQ2eWNSYURCWDFsMFNVWEdsQzQ5dlYtN2hqNVF1clNIQjV2cXFYTzBRcXZDRDlWUC1kd0ROazRvNVpSOEJLN3ZGNjlQcTQ?oc=5",
+      "title": "Nvidia CEO Jensen Huang's Return Creates Ripples in AI Landscape - India News Network",
+      "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxPVmlKVm9fSHprczl2SXBqc2ZEb1NhdzFsa3JNUWEzWTY3WENyZ01vYjJ1LVdSS1Z6cnJqLUo3eTdvUzJWZ3NfR2VMbjRmLUxad3BOLWU3R3pSYVB2clVCUnh2R2w5c0xnNFBNVFRFNVRpTE44emY5VjRrZFNRb1BGbVdjWG9fS0JxWjllcDlRT3JtdElxVlg5RU9hYzJqMzh2YXRHTzFiQQ?oc=5",
       "source": "gnews-asia",
       "region": "asia"
     },
@@ -136,8 +142,8 @@
       "region": "africa"
     },
     {
-      "title": "Africa Tech Festival 2026: Driving Digital Sovereignty and AI Leadership Across the Continent - FF News",
-      "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxOdlhPUFpIOFRTdGhYdm44Z2FsdF9iaF9hQnZlT296VUFiOFJJdkpIYUViR3R6TVR2TThkVkhqUHdaRThpZXBnajUzSWluNGNYU1pEZE1VbmJGZkh4eHJJbjA3ZnBpX25uUTFaTjZ3c3VYYU1zNkFVdFZXUTdXOE84WThB?oc=5",
+      "title": "2026 Africa Tech Festival puts spotlight on continent's digital economy - Bizcommunity",
+      "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxOdGVVVkFfb3NhaDNPVGtReExmc2ZlZmZQTXBXRTFWQ2pNdWIwQ2FlcFNiQVdRel9hNVZrX0w2b2hOV0l3TVBwaDdnWnVqVmZXcm1yTXpMbDJZV2Vvb3RmUWpSaDFjOXRaM3oyT1pKRjAyRVBXZ1BTa2ZOTXF2d093dUZUanRGajhIaGZXa1ZVRDU4MFVyVG1RUlJCZGstODZuS1l6bVlkQmtBeGVRMG41Uk1CMGg?oc=5",
       "source": "gnews-af",
       "region": "africa"
     },
@@ -154,14 +160,14 @@
       "region": "us"
     },
     {
-      "title": "Cueva defende aprovação de marco legal da inteligência artificial no Brasil - Migalhas",
-      "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxQVWpFZXdfYkRTWUNvYTRhV0o0TDd0eGl3UEdSdEp4NGtiM3NZNjkxb2RnSUpKZXpqekU5ZURHN1lfQjFSLXYtYkdQekJ5dFRUejBLQklZbmxqa3FBVDA5cGh6V19RQVBCR01NcmJybHBCUmoySFJPazBMTlhlSXg2WFBLYUtPbjdfbkVCbC1CdnNrVlRDbXpxb2RLU0c3UQ?oc=5",
+      "title": "25ª CNAB: Painel 2 - Especialistas debatem os desafios da regulação da inteligência artificial no Brasil - OAB",
+      "url": "https://news.google.com/rss/articles/CBMi0wFBVV95cUxPQWhSRlBpcjBvZEM5N3I2VWNhdEVWTU41TFQ1WUJPMlA0ZEdWeXlMMU9uU0lISmIyRmdiUFRDY01WR0VibXhYV1RLZWVFM0t5alh3SW9pOENaOG8zdlA2NDNSMjAtY1RCMnlrMjRRdnUxc1JWZEtxQ3ZyTFphQllMdmVDVDR1S0xSU2ZtQzdYaDY4NTFLeEVaR3pMbjVHUlFwOTBnZWJWQXhVaFlfRDk5eXFSZ29IVTFCWDBkdHlHUEhlT3ZNQ0J2OXMwR3JobG1PaHN3?oc=5",
       "source": "gnews-latam",
       "region": "us"
     },
     {
-      "title": "25ª CNAB: Painel 2 - Especialistas debatem os desafios da regulação da inteligência artificial no Brasil - OAB",
-      "url": "https://news.google.com/rss/articles/CBMi0wFBVV95cUxPQWhSRlBpcjBvZEM5N3I2VWNhdEVWTU41TFQ1WUJPMlA0ZEdWeXlMMU9uU0lISmIyRmdiUFRDY01WR0VibXhYV1RLZWVFM0t5alh3SW9pOENaOG8zdlA2NDNSMjAtY1RCMnlrMjRRdnUxc1JWZEtxQ3ZyTFphQllMdmVDVDR1S0xSU2ZtQzdYaDY4NTFLeEVaR3pMbjVHUlFwOTBnZWJWQXhVaFlfRDk5eXFSZ29IVTFCWDBkdHlHUEhlT3ZNQ0J2OXMwR3JobG1PaHN3?oc=5",
+      "title": "Capacitação em inteligência artificial e ecossistema móvel ganha escala com trilhas formativas gratuitas do Mackenzie - ",
+      "url": "https://news.google.com/rss/articles/CBMi4gFBVV95cUxPUGlIa2JYTkhObnlPc1RkQ0JsY1BubWJPcEI3ZmNURjRRLTJkTnExVWQ1aWNxN2Z5UlNldWZyQk5uZHZwa0dWWGgzNnlGa0ljblNGZE5ralVTNGxWVzBZTHA5NzlJRDFYUENma1JjNUJObVNobkpoYlc1VTVnUUp0bTZITi1WX2FVV25SeFh1VHc2TnVTb3haMmpJdUM3elZ1cmlGOVFoMXBjb3NndXdVd1VxSEFTeUN2LTllNzhYRG5KTUJVTlNMUWtJSkhJQ0ZpS2NZTFdrMFlrRVlxQnh6S2V3?oc=5",
       "source": "gnews-latam",
       "region": "us"
     },
@@ -178,14 +184,14 @@
       "region": "asia"
     },
     {
-      "title": "アジアのAIブーム、後退の兆し見られず - WSJ",
-      "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxNSXBWZzJtVVFxZWswUWdnMVcwOE5XVkZLYWV1NU9RTlhVMW92bGhoU1BBQXZRemVVNWNzWWRjU2dwbV9zUk5vU2RzVzBZTVU3UXo3V1JNdWtaRkkzWW1qdURvWHFWRkMwa0x1VUxzRXpWaGE4ekh3TGJPWHBrbWcyWGlHYw?oc=5",
+      "title": "ＡＩ生成の架空発言掲載 - 福井新聞社",
+      "url": "https://news.google.com/rss/articles/CBMiXkFVX3lxTE9hbmxXZUdWcG9yZ3NnalJDRmJsTzhoNVVKZE9GX2xrbFpaSnh3ZE5KdEtzMUVERktxUmJ3OFhscXFWcGptck9pUWZiQ01hTEpUT2NoSjBrRWFoNUJBdnc?oc=5",
       "source": "gnews-jp",
       "region": "asia"
     },
     {
-      "title": "家事動画を投稿すれば5万ウォン…韓国でAIを教える副業族が登場（中央日報日本語版） - Yahoo!ニュース",
-      "url": "https://news.google.com/rss/articles/CBMif0FVX3lxTE5YVTQ3SWxJcGJwalNyZE9xVUE5aFBEVFpfSm1mSUF6UnBFcHNUQ2tSNWlDTXFaVW5Ic284MF9VQnNNd19BQmJ0ci11YXA4VWkyQjhBOUozeUNQN2JhNzAzNHlTekdPcXZaRnd6MlhrbkxNQ1VKd0R1NFlKajNTeVk?oc=5",
+      "title": "『知能爆発 ＡＩの次に来るＡＧＩとは何か、そして人類に何が起きるのか』ｂｉｏｓｈｏｋ／有路翔太著（講談社） - 読売新聞",
+      "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTE9WX0g1SHZEWWNDenBqWVpSWEJZcWxPa1lXOW5oeWJGMzdQWUhSdDBVdm1JYll0MlRYQWZ6SnhVVWw0WURUdUtmbG1zVDhBRENZcnRWTjJvSDVsYVIzZERHa29NMEVLZTM3NGduN3dDZ2steUNQa1E?oc=5",
       "source": "gnews-jp",
       "region": "asia"
     },
@@ -214,28 +220,40 @@
       "region": "eu"
     },
     {
-      "title": "Israel uses south Lebanon Christian villages to try to divide and conquer",
-      "url": "https://www.aljazeera.com/features/2026/11/27/israel-uses-christian-villages-in-southern-lebanon-to-divide-and-conquer?traffic_source=rss",
+      "title": "French, Bulgarian presidents slam Marseille violence, five fans in hospital",
+      "url": "https://www.aljazeera.com/sports/2026/11/27/french-bulgarian-presidents-slam-marseille-violence-five-fans-in-hospital?traffic_source=rss",
       "source": "aje",
       "region": "me"
     },
     {
-      "title": "New Zealand’s Opportunity Party poised to become election kingmaker",
-      "url": "https://www.aljazeera.com/video/newsfeed/2026/11/27/new-zealands-opportunity-party-poised-to-become-election-kingmaker?traffic_source=rss",
+      "title": "‘You can’t stop it’: Indians embrace Pakistani dramas, defying bans",
+      "url": "https://www.aljazeera.com/news/2026/11/27/you-cant-stop-it-indians-embrace-pakistani-dramas-defying-bans?traffic_source=rss",
       "source": "aje",
       "region": "me"
     },
     {
-      "title": "Estonia closing land borders with Russia to keep out spies",
-      "url": "https://www.aljazeera.com/video/newsfeed/2026/11/27/estonia-closing-land-borders-with-russia-to-keep-out-spies?traffic_source=rss",
+      "title": "India’s Pant plays for New Zealand side under false name ‘Stan Stan’",
+      "url": "https://www.aljazeera.com/sports/2026/11/27/indias-pant-plays-for-new-zealand-side-under-false-name-stan-stan?traffic_source=rss",
       "source": "aje",
       "region": "me"
     },
     {
-      "title": "Thanksgiving storms leave nearly a million without power across the US",
-      "url": "https://www.aljazeera.com/news/2026/11/27/thanksgiving-storms-leave-nearly-a-million-without-power-across-the-us?traffic_source=rss",
+      "title": "Spain’s 2026 election explained in maps and charts",
+      "url": "https://www.aljazeera.com/news/2026/11/27/spains-2026-election-explained-in-maps-and-charts?traffic_source=rss",
       "source": "aje",
       "region": "me"
+    },
+    {
+      "title": "Israel's Eisenkot agrees to coalition deal with left-wing Democrats",
+      "url": "https://www.france24.com/en/middle-east/20261127-israel-s-eisenkot-agrees-to-coalition-deal-with-left-wing-democrats",
+      "source": "f24",
+      "region": "eu"
+    },
+    {
+      "title": "Lyon held and Marseille pushed in mixed Europa League night for French clubs",
+      "url": "https://www.france24.com/en/tv-shows/sports/20261127-lyon-held-and-marseille-pushed-in-mixed-europa-league-night-for-french-clubs",
+      "source": "f24",
+      "region": "eu"
     },
     {
       "title": "Black Friday hype stems from a desire 'to be part of a collective event', expert says",
@@ -246,18 +264,6 @@
     {
       "title": "RN’s antisemitic past ‘coming back to haunt them’: Will Le Pen ‘distance herself’ from Bardella?",
       "url": "https://www.france24.com/en/rn-s-antisemitic-past-coming-back-to-haunt-them-will-le-pen-distance-herself-from-bardella",
-      "source": "f24",
-      "region": "eu"
-    },
-    {
-      "title": "Is Spain's snap election being rigged? Debunking viral claims",
-      "url": "https://www.france24.com/en/tv-shows/truth-or-fake/20261126-is-spain-s-snap-election-being-rigged-debunking-viral-claims",
-      "source": "f24",
-      "region": "eu"
-    },
-    {
-      "title": "'Citizens angry with the establishment' as Spain heads to the polls",
-      "url": "https://www.france24.com/en/tv-shows/a-propos/20261126-citizens-angry-with-the-establishment-as-spain-heads-to-the-polls",
       "source": "f24",
       "region": "eu"
     },
@@ -286,26 +292,26 @@
       "region": "asia"
     },
     {
-      "title": "Rs 11L chandelier, Rs 5.5L sofa': Delhi govt opens doors of 'Kejriwal's Sheesh Mahal'",
-      "url": "https://timesofindia.indiatimes.com/city/delhi/delhi-govt-opens-arvind-kejriwals-sheesh-mahal-to-media-plans-public-tours-with-rs-20-entry-fee/articleshow/136208848.cms",
-      "source": "toi",
-      "region": "asia"
-    },
-    {
-      "title": "Chinese bazaar near Xi-Trump summit venue selling banned Nvidia chips: Report",
-      "url": "https://timesofindia.indiatimes.com/business/international-business/close-to-where-xi-hosted-trump-days-ago-chinese-bazaar-openly-sells-banned-nvidia-chips-report/articleshow/136210989.cms",
-      "source": "toi",
-      "region": "asia"
-    },
-    {
       "title": "'Delimitation BJP's biggest political mistake': Akhilesh; how numbers stack-up in Parl",
       "url": "https://timesofindia.indiatimes.com/india/bjps-biggest-political-mistake-akhilesh-slams-delimitation-bill-ahead-of-parliaments-special-session/articleshow/136209808.cms",
       "source": "toi",
       "region": "asia"
     },
     {
-      "title": "'Is he crying?': Mohammed Siraj's live TV visuals spark reaction",
-      "url": "https://timesofindia.indiatimes.com/sports/cricket/india-vs-new-zealand/is-he-crying-mohammed-sirajs-live-tv-visuals-spark-reaction-from-ajinkya-rahane-murali-kartik-watch/articleshow/136209441.cms",
+      "title": "DMK 'ready' to back BJP's Delimitation Bill if TN's representation remains unchanged",
+      "url": "https://timesofindia.indiatimes.com/city/chennai/dmk-ready-to-support-bjps-delimitation-bill-if-tamil-nadus-representation-remains-unchanged/articleshow/136212236.cms",
+      "source": "toi",
+      "region": "asia"
+    },
+    {
+      "title": "'Don't waste court's time': SC declines urgent hearing on plea against Ranbir's Ramayana",
+      "url": "https://timesofindia.indiatimes.com/india/dont-waste-courts-time-sc-declines-urgent-hearing-on-plea-against-ranbirs-ramayana/articleshow/136211733.cms",
+      "source": "toi",
+      "region": "asia"
+    },
+    {
+      "title": "PM Modi to chair key Cabinet meet at 1 pm; delimitation-women's quota Bill on agenda",
+      "url": "https://timesofindia.indiatimes.com/india/pm-modi-to-hold-key-cabinet-meet-at-1-pm-tweaks-to-delimitation-linked-womens-quota-bill-on-agenda/articleshow/136209372.cms",
       "source": "toi",
       "region": "asia"
     },
@@ -348,8 +354,8 @@
       "chg": -3.91
     },
     "BTC": {
-      "price": 61776.67,
-      "chg": 2.12
+      "price": 61631.26,
+      "chg": 1.88
     }
   }
 }
