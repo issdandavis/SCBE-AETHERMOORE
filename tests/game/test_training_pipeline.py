@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import sys
+from types import SimpleNamespace
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "src"))
@@ -23,6 +24,7 @@ from symphonic_cipher.scbe_aethermoore.game.training_pipeline import (
     GameEvent,
     create_game_event,
 )
+from symphonic_cipher.scbe_aethermoore.game import training_pipeline as training_pipeline_module
 
 # ---------------------------------------------------------------------------
 #  Helpers
@@ -249,6 +251,21 @@ class TestFineTune:
         job = p.create_fine_tune_job()
         p.complete_fine_tune_job(job.job_id, "ckpt_1")
         assert p.complete_fine_tune_job(job.job_id, "ckpt_2") is False
+
+    def test_repeated_clock_and_entropy_cannot_drop_threshold_records(self, monkeypatch):
+        monkeypatch.setattr(training_pipeline_module.time, "time", lambda: 1.0)
+        monkeypatch.setattr(training_pipeline_module.time, "time_ns", lambda: 1)
+        monkeypatch.setattr(
+            training_pipeline_module.uuid,
+            "uuid4",
+            lambda: SimpleNamespace(hex="0" * 32),
+        )
+        p = self._ready_pipeline()
+        assert p.total_records == FINE_TUNE_THRESHOLD
+        assert p.total_pairs == FINE_TUNE_THRESHOLD
+        job = p.create_fine_tune_job()
+        assert job is not None
+        assert job.total_pairs == FINE_TUNE_THRESHOLD
 
 
 class TestSummary:
