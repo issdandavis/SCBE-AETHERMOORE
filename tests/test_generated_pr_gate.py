@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import subprocess
+from pathlib import Path
 
 import pytest
 
@@ -117,6 +118,135 @@ def test_verify_pr_target_binds_head_and_base(monkeypatch):
     gate.verify_pr_target("owner/repo", "https://github.com/owner/repo/pull/12", HEAD, "main")
     with pytest.raises(gate.GateError, match="head does not match"):
         gate.verify_pr_target("owner/repo", "https://github.com/owner/repo/pull/12", "b" * 40, "main")
+
+
+def test_update_pr_branch_uses_exact_expected_head(monkeypatch):
+    commands: list[list[str]] = []
+
+    def fake_run(args: list[str], *, check: bool = True):
+        commands.append(args)
+        return subprocess.CompletedProcess(args, 0, '{"message":"Updating pull request branch."}', "")
+
+    monkeypatch.setattr(gate, "_run_gh", fake_run)
+
+    gate.update_pr_branch("owner/repo", 12, HEAD)
+
+    assert commands == [
+        [
+            "api",
+            "--method",
+            "PUT",
+            "repos/owner/repo/pulls/12/update-branch",
+            "-f",
+            f"expected_head_sha={HEAD}",
+        ]
+    ]
+
+
+def test_wait_until_merged_updates_behind_and_rearms_exact_new_head(monkeypatch):
+    updated_head = "b" * 40
+    pull_requests = iter(
+        [
+            {
+                "headRefOid": HEAD,
+                "baseRefName": "main",
+                "state": "OPEN",
+                "mergeStateStatus": "BEHIND",
+                "isCrossRepository": False,
+            },
+            {
+                "headRefOid": HEAD,
+                "baseRefName": "main",
+                "state": "OPEN",
+                "mergeStateStatus": "BEHIND",
+                "isCrossRepository": False,
+            },
+            {
+                "headRefOid": updated_head,
+                "baseRefName": "main",
+                "state": "OPEN",
+                "mergeStateStatus": "BLOCKED",
+                "isCrossRepository": False,
+            },
+            {
+                "headRefOid": updated_head,
+                "baseRefName": "main",
+                "state": "MERGED",
+                "mergeStateStatus": "UNKNOWN",
+                "isCrossRepository": False,
+            },
+        ]
+    )
+    updates: list[tuple[str, int, str]] = []
+    armed: list[str] = []
+    monkeypatch.setattr(gate, "_fetch_pr", lambda _repo, _number: next(pull_requests))
+    monkeypatch.setattr(
+        gate,
+        "update_pr_branch",
+        lambda repo, number, sha: updates.append((repo, number, sha)),
+    )
+    monkeypatch.setattr(
+        gate,
+        "arm_pr_head",
+        lambda _repo, _url, sha, _base, _required, **_kwargs: armed.append(sha),
+    )
+    monkeypatch.setattr(gate.time, "sleep", lambda _seconds: None)
+
+    merged_head = gate.wait_until_merged(
+        "owner/repo",
+        "https://github.com/owner/repo/pull/12",
+        12,
+        HEAD,
+        "main",
+        gate.DEFAULT_REQUIRED_WORKFLOWS,
+        timeout_seconds=5,
+        poll_seconds=0.01,
+        run_timeout_seconds=1,
+        run_poll_seconds=0.01,
+    )
+
+    assert updates == [("owner/repo", 12, HEAD)]
+    assert armed == [updated_head]
+    assert merged_head == updated_head
+
+
+def test_wait_until_merged_rejects_unexpected_head_change(monkeypatch):
+    monkeypatch.setattr(
+        gate,
+        "_fetch_pr",
+        lambda _repo, _number: {
+            "headRefOid": "b" * 40,
+            "baseRefName": "main",
+            "state": "OPEN",
+            "mergeStateStatus": "BLOCKED",
+            "isCrossRepository": False,
+        },
+    )
+
+    with pytest.raises(gate.GateError, match="without an authorized base update"):
+        gate.wait_until_merged(
+            "owner/repo",
+            "https://github.com/owner/repo/pull/12",
+            12,
+            HEAD,
+            "main",
+            gate.DEFAULT_REQUIRED_WORKFLOWS,
+            timeout_seconds=5,
+            poll_seconds=0.01,
+            run_timeout_seconds=1,
+            run_poll_seconds=0.01,
+        )
+
+
+def test_generated_workflows_share_serial_merge_concurrency():
+    repo_root = Path(__file__).resolve().parents[1]
+    for relative_path in (
+        ".github/workflows/daily-repo-stats.yml",
+        ".github/workflows/research-feed.yml",
+    ):
+        workflow = (repo_root / relative_path).read_text(encoding="utf-8")
+        assert "\nconcurrency:\n  group: generated-content-pr\n  cancel-in-progress: false\n" in workflow
+        assert "timeout-minutes: 60" in workflow
 
 
 @pytest.mark.parametrize("message", ["Merge already in progress", "Base branch was modified"])

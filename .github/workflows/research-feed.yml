@@ -13,9 +13,14 @@ permissions:
   contents: write
   pull-requests: write
 
+concurrency:
+  group: generated-content-pr
+  cancel-in-progress: false
+
 jobs:
   generate:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     permissions:
       actions: write
       contents: write
