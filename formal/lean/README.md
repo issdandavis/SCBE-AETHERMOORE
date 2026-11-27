@@ -10,9 +10,12 @@ and hypotheses written in these files. Python correspondence is a separate,
 bounded executable audit. No theorem establishes complete system security,
 post-quantum hardness, patent scope, or correctness of every runtime profile.
 
-The latest saved check is [evidence/proof-portable-20260918.json](evidence/proof-portable-20260918.json).
-The earlier receipt preserves the proof before cross-platform vocabulary-hash
-normalization; the theorem statements are unchanged.
+The latest saved check is
+[evidence/proof-token-arrays-20261127.json](evidence/proof-token-arrays-20261127.json),
+with its CI/artifact envelope in
+[evidence/proof-token-arrays-20261127.metadata.json](evidence/proof-token-arrays-20261127.metadata.json).
+The September receipts preserve the earlier proof before the token-array
+extension and cross-platform vocabulary-hash normalization.
 
 ## What is proved
 
