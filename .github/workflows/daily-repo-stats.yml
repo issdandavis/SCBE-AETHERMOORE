@@ -114,10 +114,10 @@ jobs:
             This workflow updates the generated badge JSON files under `docs/static/badges/`
             through a pull request so it complies with branch protection on `main`.
 
-      # Pull requests created with GITHUB_TOKEN require approval before their
-      # pull_request workflows run. Approve only the required guard for the
-      # generated commit, then let GitHub merge after that guard succeeds.
-      - name: Validate and auto-merge stats update
+      # Pull requests created with GITHUB_TOKEN leave their pull_request
+      # workflows in action_required. Start every required run for the exact
+      # generated SHA, then let branch protection and auto-merge do their jobs.
+      - name: Start required checks and auto-merge stats update
         if: >-
           steps.stats_pr.outputs.pull-request-url != '' &&
           steps.stats_pr.outputs.pull-request-operation != 'closed' &&
@@ -127,43 +127,9 @@ jobs:
           PR_SHA: ${{ steps.stats_pr.outputs.pull-request-head-sha }}
           PR_URL: ${{ steps.stats_pr.outputs.pull-request-url }}
         run: |
-          set -euo pipefail
-
-          guard_run=""
-          for attempt in {1..10}; do
-            guard_run="$(
-              gh api "repos/${GITHUB_REPOSITORY}/actions/runs?event=pull_request&per_page=100" |
-                jq -r --arg sha "$PR_SHA" '
-                  .workflow_runs[] |
-                  select(
-                    .head_sha == $sha and
-                    .name == "Conflict Marker Guard" and
-                    .conclusion == "action_required"
-                  ) |
-                  .id
-                ' |
-                head -n 1
-            )"
-            if [ -n "$guard_run" ]; then
-              break
-            fi
-            sleep 2
-          done
-
-          if [ -z "$guard_run" ]; then
-            echo "Required Conflict Marker Guard approval run was not found for $PR_SHA" >&2
-            exit 1
-          fi
-
-          gh api --method POST "repos/${GITHUB_REPOSITORY}/actions/runs/${guard_run}/approve"
-
-          rc=0
-          out="$(gh pr merge --auto --squash "$PR_URL" 2>&1)" || rc=$?
-          echo "$out"
-          if [ "$rc" -eq 0 ]; then
-            exit 0
-          fi
-          if echo "$out" | grep -Eq "Merge already in progress|Base branch was modified"; then
-            exit 0
-          fi
-          exit "$rc"
+          python scripts/system/generated_pr_gate.py \
+            --repo "$GITHUB_REPOSITORY" \
+            --head-sha "$PR_SHA" \
+            --pr-url "$PR_URL" \
+            --required-workflow "CI" \
+            --required-workflow "Conflict Marker Guard"

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import hashlib
 import builtins
 import json
+from types import SimpleNamespace
 
 from scripts.system import news_pipeline, pipeline_to_hf
 
@@ -117,7 +119,10 @@ def test_main_writes_summary_with_braid_flag(monkeypatch, tmp_path):
     sft_dir = tmp_path / "sft"
     records_dir.mkdir()
     sft_dir.mkdir()
-    feed_path.write_text(json.dumps({"generated": "2026-04-17T00:00:00Z", "items": [_sample_item()]}), encoding="utf-8")
+    feed_path.write_text(
+        json.dumps({"generated": "2026-04-17T00:00:00Z", "items": [_sample_item()]}),
+        encoding="utf-8",
+    )
 
     monkeypatch.setattr(news_pipeline, "_BRAID_AVAILABLE", True)
     monkeypatch.setattr(news_pipeline, "_braid_score", lambda payload, tongue: _fake_braid())
@@ -137,6 +142,36 @@ def test_main_writes_summary_with_braid_flag(monkeypatch, tmp_path):
     assert summary["sft_pairs_generated"] == 8
     assert summary["crypto_tier"] == "hmac-only"
     assert summary["braid_available"] is True
+    assert summary["local_artifacts"]["records"]["rows"] == 1
+    assert summary["local_artifacts"]["sft"]["rows"] == 8
+    assert (
+        summary["local_artifacts"]["records"]["sha256"]
+        == hashlib.sha256(next(records_dir.glob("*.jsonl")).read_bytes()).hexdigest()
+    )
+    assert (
+        summary["local_artifacts"]["sft"]["sha256"]
+        == hashlib.sha256(next(sft_dir.glob("*.jsonl")).read_bytes()).hexdigest()
+    )
+
+
+def test_publish_receipt_binds_hf_commit_and_parquet_hash(tmp_path):
+    summary_path = tmp_path / "research-pipeline.json"
+    parquet_path = tmp_path / "train.parquet"
+    summary_path.write_text('{"items_processed": 1}', encoding="utf-8")
+    parquet_path.write_bytes(b"content-addressed-parquet")
+
+    receipt = pipeline_to_hf.write_publish_receipt(
+        summary_path,
+        commit_info=SimpleNamespace(oid="abc123", commit_url="https://huggingface.co/commit/abc123"),
+        parquet_path=parquet_path,
+        records=8,
+    )
+
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    assert summary["sft_publish"] == receipt
+    assert receipt["commit_oid"] == "abc123"
+    assert receipt["records"] == 8
+    assert receipt["sha256"] == hashlib.sha256(parquet_path.read_bytes()).hexdigest()
 
 
 def test_load_oqs_gracefully_handles_system_exit(monkeypatch):

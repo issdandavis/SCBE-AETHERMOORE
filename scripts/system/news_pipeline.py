@@ -17,7 +17,6 @@ Output destinations:
   training-data/news-pipeline/records/YYYY-MM-DD.jsonl  — full per-item records
   training-data/news-pipeline/sft/YYYY-MM-DD.jsonl      — training pairs (JSONL)
   docs/research-pipeline.json                           — run summary (public)
-  docs/research-pipeline.json                           — public-facing summary
 
 Usage:
   python scripts/system/news_pipeline.py
@@ -217,7 +216,7 @@ def _braid_score(payload: bytes, tongue: str) -> dict | None:
             "tongue_matrix": matrix,
             "worst_mismatch_score": worst,
             "best_mismatch_score": best_other,
-            "discriminatory_delta": round(aligned.overall_score - worst, 6) if worst is not None else None,
+            "discriminatory_delta": (round(aligned.overall_score - worst, 6) if worst is not None else None),
         }
     except Exception as exc:
         return {"error": str(exc)}
@@ -247,7 +246,11 @@ def tongue_decode(tokens: list[str], tongue: str = "KO") -> bytes:
 # Crypto tier detection
 # ──────────────────────────────────────────────────────────────────────────────
 
-_FORCE_SKIP = os.getenv("SCBE_FORCE_SKIP_LIBOQS", "").strip().lower() in {"1", "true", "yes"}
+_FORCE_SKIP = os.getenv("SCBE_FORCE_SKIP_LIBOQS", "").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+}
 
 
 def _load_oqs():
@@ -696,8 +699,8 @@ def _sft(
     return {
         "id": pair_id,
         "instruction": instruction,
-        "input": json.dumps(inp, ensure_ascii=False) if not isinstance(inp, str) else inp,
-        "output": json.dumps(output, ensure_ascii=False) if not isinstance(output, str) else output,
+        "input": (json.dumps(inp, ensure_ascii=False) if not isinstance(inp, str) else inp),
+        "output": (json.dumps(output, ensure_ascii=False) if not isinstance(output, str) else output),
         "pipeline": "news-pipeline",
         "version": "v1",
     }
@@ -948,7 +951,10 @@ def run_item(item: dict, idx: int) -> tuple[dict, list[dict]]:
             "geotagged": {k: v for k, v in geotagged.items()},
             "tokenized": {
                 "tokenization_summary": {
-                    t: {"token_count": d.get("token_count"), "roundtrip_ok": d.get("roundtrip_ok")}
+                    t: {
+                        "token_count": d.get("token_count"),
+                        "roundtrip_ok": d.get("roundtrip_ok"),
+                    }
                     for t, d in tokenized.get("tokenization", {}).get("tongue_matrix", {}).items()
                 },
                 "all_roundtrip_ok": tokenized.get("tokenization", {}).get("all_roundtrip_ok"),
@@ -1003,7 +1009,10 @@ def main() -> None:
     # Overwrite mode: each run writes a clean snapshot for today.
     # Daily accumulation happens naturally across calendar-day files; within a
     # day the latest run wins, preventing duplicate records from static feeds.
-    with records_path.open("w", encoding="utf-8") as rec_f, sft_path.open("w", encoding="utf-8") as sft_f:
+    with (
+        records_path.open("w", encoding="utf-8") as rec_f,
+        sft_path.open("w", encoding="utf-8") as sft_f,
+    ):
         for idx, item in enumerate(items):
             try:
                 record, sft_pairs = run_item(item, idx)
@@ -1016,7 +1025,18 @@ def main() -> None:
                 errors += 1
                 print(f"[news_pipeline] item {idx} failed: {exc}", file=sys.stderr)
 
-    # Write public summary
+    def artifact_receipt(path: Path, rows: int) -> dict[str, Any]:
+        payload = path.read_bytes()
+        return {
+            "path": path.relative_to(REPO_ROOT).as_posix(),
+            "sha256": hashlib.sha256(payload).hexdigest(),
+            "bytes": len(payload),
+            "rows": rows,
+        }
+
+    # Write a public, content-addressed summary. The JSONL files are ignored by
+    # Git because training data lives on Hugging Face; their hashes keep the
+    # generated receipt independently verifiable.
     summary = {
         "generated": datetime.now(tz=timezone.utc).isoformat(),
         "feed_generated": feed.get("generated", ""),
@@ -1028,7 +1048,19 @@ def main() -> None:
         "tongue_coverage": list(TONGUE_PHI_WEIGHTS.keys()),
         "records_file": records_path.relative_to(REPO_ROOT).as_posix(),
         "sft_file": sft_path.relative_to(REPO_ROOT).as_posix(),
-        "pipeline_stages": ["raw", "geotagged", "tokenized", "hashed", "egged", "encrypted", "signed"],
+        "local_artifacts": {
+            "records": artifact_receipt(records_path, total_records),
+            "sft": artifact_receipt(sft_path, total_sft),
+        },
+        "pipeline_stages": [
+            "raw",
+            "geotagged",
+            "tokenized",
+            "hashed",
+            "egged",
+            "encrypted",
+            "signed",
+        ],
         "braid_available": _BRAID_AVAILABLE,
     }
     SUMMARY_PATH.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")

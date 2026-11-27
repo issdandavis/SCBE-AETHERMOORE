@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import yaml
+
 from scripts.security import npm_audit_all
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -15,7 +17,9 @@ def _write_dependency_tree(root: Path, relative: str) -> None:
     (directory / "package-lock.json").write_text('{"lockfileVersion":3}\n', encoding="utf-8")
 
 
-def test_discovery_finds_nested_projects_and_prunes_generated_or_archived_trees(tmp_path: Path) -> None:
+def test_discovery_finds_nested_projects_and_prunes_generated_or_archived_trees(
+    tmp_path: Path,
+) -> None:
     _write_dependency_tree(tmp_path, ".")
     _write_dependency_tree(tmp_path, "apps/active")
     _write_dependency_tree(tmp_path, "archive/retired")
@@ -37,7 +41,16 @@ def test_discovery_reports_orphan_lockfile_for_auditor_error(tmp_path: Path) -> 
 
 def test_parser_recovers_json_after_cli_warning() -> None:
     payload = {
-        "metadata": {"vulnerabilities": {"info": 0, "low": 0, "moderate": 1, "high": 0, "critical": 0, "total": 1}}
+        "metadata": {
+            "vulnerabilities": {
+                "info": 0,
+                "low": 0,
+                "moderate": 1,
+                "high": 0,
+                "critical": 0,
+                "total": 1,
+            }
+        }
     }
 
     parsed = npm_audit_all.parse_json_document("npm warning fixture\n" + json.dumps(payload))
@@ -125,3 +138,16 @@ def test_dependabot_recursively_covers_monorepo_manifests() -> None:
 
     assert config.count('- "**/*"') >= 2
     assert 'package-ecosystem: "github-actions"' in config
+
+
+def test_dependabot_keeps_notion_sdk_on_node20_compatible_releases() -> None:
+    config = yaml.safe_load((REPO_ROOT / ".github" / "dependabot.yml").read_text(encoding="utf-8"))
+    npm_updates = next(update for update in config["updates"] if update["package-ecosystem"] == "npm")
+    notion_rule = next(rule for rule in npm_updates["ignore"] if rule["dependency-name"] == "@notionhq/client")
+    package = json.loads((REPO_ROOT / "package.json").read_text(encoding="utf-8"))
+    lock = json.loads((REPO_ROOT / "package-lock.json").read_text(encoding="utf-8"))
+
+    assert notion_rule["versions"] == [">=5.30.0"]
+    assert package["dependencies"]["@notionhq/client"] == "5.29.0"
+    assert lock["packages"]["node_modules/@notionhq/client"]["version"] == "5.29.0"
+    assert lock["packages"]["node_modules/@notionhq/client"]["engines"]["node"] == ">=18"
