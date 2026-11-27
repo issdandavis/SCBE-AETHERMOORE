@@ -62,6 +62,9 @@ Start here if you just want to see the safety gate work: [DEMO.md](DEMO.md).
 
 ## Choose your entry path
 
+For the exact package call paths, CLI exit behavior, and contributor checks, see
+[Public scan code flow and contributor procedure](docs/PUBLIC_SCAN_FLOW.md).
+
 | Audience | Start here |
 |---|---|
 | Security engineer / AI safety reviewer | [Engineering Overview](#engineering-overview) — math, decision tiers, benchmarks, PQC |
@@ -86,7 +89,7 @@ The installable package surface is the simplest public entry point.
 
 | Package | Runtime | Install |
 |---|---|---|
-| [`scbe-aethermoore`](https://www.npmjs.com/package/scbe-aethermoore) | TypeScript / Node 18+ | `npm install scbe-aethermoore` |
+| [`scbe-aethermoore`](https://www.npmjs.com/package/scbe-aethermoore) | TypeScript / Node 20.19.0+ | `npm install scbe-aethermoore` |
 | [`scbe-aethermoore`](https://pypi.org/project/scbe-aethermoore/) | Python 3.11+ | `pip install scbe-aethermoore` |
 | [`scbe-agent-bus`](https://pypi.org/project/scbe-agent-bus/) | Python agent bus | `pip install scbe-agent-bus` |
 | [`@scbe/kernel`](https://www.npmjs.com/package/@scbe/kernel) | Lightweight kernel | `npm install @scbe/kernel` |
