@@ -52,8 +52,16 @@ jobs:
           lake exe cache get Mathlib.Data.Real.Sqrt
           Mathlib.Algebra.BigOperators.Group.Finset.Basic Mathlib.Tactic.Linarith
           Mathlib.Tactic.Positivity Mathlib.Tactic.Ring Mathlib.Data.List.Basic
+          Mathlib.Data.Nat.Basic
           Mathlib.Logic.Equiv.List Mathlib.Analysis.SpecialFunctions.Pow.Real
       - name: Check vocabulary source binding
         run: python export_vocabulary.py --check
       - name: Build, audit axioms, and reject false fixtures
         run: python verify.py --output validation.json
+      - name: Preserve validation receipt
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: lean-validation-${{ github.sha }}
+          path: formal/lean/validation.json
+          if-no-files-found: error
+          retention-days: 30

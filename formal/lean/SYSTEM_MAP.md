@@ -23,6 +23,10 @@ flowchart TD
     A --> R[Final ALLOW admits reference candidate]
     EXEC --> LOG[L14 and audit receipt]
     H -. distinct formula .-> COST[Patent exponential cost: separate regime]
+    TOK[Quantized weighted tokens] --> NAT[Exact natural-number sum]
+    NAT --> CHUNK[Chunked reduction: same sum]
+    NAT --> WORD[Fixed-width modulo accumulator]
+    FIELD[Nested layer sides] --> RATIO[Common growth preserves ratio]
 ```
 
 Arrows describe intended contracts, not a claim that every path is connected in
@@ -62,6 +66,8 @@ the deployed product. The executable audit traces the named Python sources.
 | PHDM / manifold state | `src/harmonic/`, package `unified.py`, `ManifoldController` | Supplies geometry and state diagnostics. No global stability or containment proof. |
 | Clay, Loom/Rubix, Hydra and tools | Learners/proposers and adapters consuming shared encodings | Must pass proposals through the authoritative checks; training correctness is not assumed. No worker or model was changed here. |
 | Patent cost regime | Registered `QUADRATIC_EXP_COST` and local draft equation `R^(d^2)` | Exact-real monotonic cost proved independently of the L12 score. |
+| Nested weighted token field | `python/scbe/nested_weight_token_field.py`; common growth over geometrically nested sides | Exact-real recurrence and positivity are proved. Python rounding, frames and receipts remain executable-test correspondence. |
+| Quantized token-array reduction | `SCBE/TokenArrays.lean`; non-negative integer contributions | Exact chunk composition and the fixed-width no-overflow boundary are proved. Model quality and speedup require the controlled benchmark. |
 
 ## Authority, resources and rollback
 
@@ -97,4 +103,4 @@ An isolated prototype connects those cells to this branch's L6 transform and
 Jacobian, with 16 mechanical tests. It normalizes exact local coordinates before
 floating-point execution, preserves parent paths, and reports wall crossings.
 It does not alter live authorization or Clay's running model. Its mathematical
-contract and future gate integration are separate from the 47 Lean theorems.
+contract and future gate integration are separate from the 60 Lean theorems.
