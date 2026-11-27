@@ -1076,7 +1076,7 @@ requires-dist = [
     { name = "certifi", specifier = ">=2026.10.23" },
     { name = "mcp", specifier = ">=1.30.0,<2.0.0" },
     { name = "numpy", specifier = ">=2.4.6" },
-    { name = "opentelemetry-api", specifier = ">=1.45.1" },
+    { name = "opentelemetry-api", specifier = ">=1.45.2" },
     { name = "pygments", specifier = ">=2.20.0" },
     { name = "pytest", specifier = ">=9.0.3" },
     { name = "pytest-asyncio", specifier = ">=0.21.0" },
