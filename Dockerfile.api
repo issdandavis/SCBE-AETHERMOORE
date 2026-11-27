@@ -42,6 +42,7 @@ COPY --from=builder /install /usr/local/lib/python3.11/site-packages/
 # Copy application code
 COPY --chown=scbe:scbe api/ ./api/
 COPY --chown=scbe:scbe src/ ./src/
+COPY --chown=scbe:scbe packages/agent-bus-py/src/scbe_agent_bus/ ./packages/agent-bus-py/src/scbe_agent_bus/
 
 # Ensure runtime-writable directory exists for sqlite metering store.
 RUN mkdir -p /app/data && chown -R scbe:scbe /app

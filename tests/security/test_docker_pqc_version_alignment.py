@@ -28,3 +28,18 @@ def test_docker_python_runtime_includes_local_import_packages() -> None:
     assert "COPY --from=py-builder /app/api ./api" in dockerfile
     assert "COPY packages/agent-bus-py/src/scbe_agent_bus/ ./packages/agent-bus-py/src/scbe_agent_bus/" in dockerfile
     assert "COPY --from=py-builder /app/packages/agent-bus-py ./packages/agent-bus-py" in dockerfile
+
+
+def test_api_docker_runtime_includes_agent_bus_and_preserves_crash_logs() -> None:
+    dockerfile = (ROOT / "Dockerfile.api").read_text(encoding="utf-8")
+    workflow = (ROOT / ".github" / "workflows" / "docker-remote-build.yml").read_text(encoding="utf-8")
+
+    assert (
+        "COPY --chown=scbe:scbe packages/agent-bus-py/src/scbe_agent_bus/ "
+        "./packages/agent-bus-py/src/scbe_agent_bus/" in dockerfile
+    )
+    assert "docker run -d --name scbe-api-smoke" in workflow
+    assert "docker run --rm -d --name scbe-api-smoke" not in workflow
+    assert "docker logs scbe-api-smoke" in workflow
+    assert "docker rm -f scbe-api-smoke" in workflow
+    assert "API container exited before the health check passed" in workflow
