@@ -13,12 +13,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 def _write_dependency_tree(root: Path, relative: str) -> None:
     directory = root / relative
     directory.mkdir(parents=True, exist_ok=True)
-    (directory / "package.json").write_text(
-        '{"name":"fixture","version":"1.0.0"}\n', encoding="utf-8"
-    )
-    (directory / "package-lock.json").write_text(
-        '{"lockfileVersion":3}\n', encoding="utf-8"
-    )
+    (directory / "package.json").write_text('{"name":"fixture","version":"1.0.0"}\n', encoding="utf-8")
+    (directory / "package-lock.json").write_text('{"lockfileVersion":3}\n', encoding="utf-8")
 
 
 def test_discovery_finds_nested_projects_and_prunes_generated_or_archived_trees(
@@ -35,9 +31,7 @@ def test_discovery_finds_nested_projects_and_prunes_generated_or_archived_trees(
 
 
 def test_discovery_reports_orphan_lockfile_for_auditor_error(tmp_path: Path) -> None:
-    (tmp_path / "package-lock.json").write_text(
-        '{"lockfileVersion":3}\n', encoding="utf-8"
-    )
+    (tmp_path / "package-lock.json").write_text('{"lockfileVersion":3}\n', encoding="utf-8")
 
     projects = npm_audit_all.discover_projects(tmp_path)
 
@@ -59,9 +53,7 @@ def test_parser_recovers_json_after_cli_warning() -> None:
         }
     }
 
-    parsed = npm_audit_all.parse_json_document(
-        "npm warning fixture\n" + json.dumps(payload)
-    )
+    parsed = npm_audit_all.parse_json_document("npm warning fixture\n" + json.dumps(payload))
 
     assert npm_audit_all.vulnerability_counts(parsed)["moderate"] == 1
 
@@ -136,9 +128,7 @@ def test_agent_bus_ci_does_not_rewrite_the_lockfile() -> None:
 
 
 def test_weekly_scan_does_not_reintroduce_trivy() -> None:
-    workflow = (
-        REPO_ROOT / ".github" / "workflows" / "weekly-security-scan.yml"
-    ).read_text(encoding="utf-8")
+    workflow = (REPO_ROOT / ".github" / "workflows" / "weekly-security-scan.yml").read_text(encoding="utf-8")
 
     assert "trivy" not in workflow.lower()
 
@@ -151,23 +141,13 @@ def test_dependabot_recursively_covers_monorepo_manifests() -> None:
 
 
 def test_dependabot_keeps_notion_sdk_on_node20_compatible_releases() -> None:
-    config = yaml.safe_load(
-        (REPO_ROOT / ".github" / "dependabot.yml").read_text(encoding="utf-8")
-    )
-    npm_updates = next(
-        update for update in config["updates"] if update["package-ecosystem"] == "npm"
-    )
-    notion_rule = next(
-        rule
-        for rule in npm_updates["ignore"]
-        if rule["dependency-name"] == "@notionhq/client"
-    )
+    config = yaml.safe_load((REPO_ROOT / ".github" / "dependabot.yml").read_text(encoding="utf-8"))
+    npm_updates = next(update for update in config["updates"] if update["package-ecosystem"] == "npm")
+    notion_rule = next(rule for rule in npm_updates["ignore"] if rule["dependency-name"] == "@notionhq/client")
     package = json.loads((REPO_ROOT / "package.json").read_text(encoding="utf-8"))
     lock = json.loads((REPO_ROOT / "package-lock.json").read_text(encoding="utf-8"))
 
     assert notion_rule["versions"] == [">=5.30.0"]
     assert package["dependencies"]["@notionhq/client"] == "5.29.0"
     assert lock["packages"]["node_modules/@notionhq/client"]["version"] == "5.29.0"
-    assert (
-        lock["packages"]["node_modules/@notionhq/client"]["engines"]["node"] == ">=18"
-    )
+    assert lock["packages"]["node_modules/@notionhq/client"]["engines"]["node"] == ">=18"

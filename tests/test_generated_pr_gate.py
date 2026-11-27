@@ -90,9 +90,7 @@ def test_approve_gated_runs_approves_only_named_workflows_on_exact_head(monkeypa
         _run(13, "Other", sha="b" * 40),
     ]
 
-    approved = gate.approve_gated_runs(
-        "owner/repo", HEAD, runs, gate.DEFAULT_REQUIRED_WORKFLOWS
-    )
+    approved = gate.approve_gated_runs("owner/repo", HEAD, runs, gate.DEFAULT_REQUIRED_WORKFLOWS)
 
     assert approved == [10, 12]
     assert commands == [
@@ -102,10 +100,7 @@ def test_approve_gated_runs_approves_only_named_workflows_on_exact_head(monkeypa
 
 
 def test_pr_number_rejects_cross_repo_or_non_github_url():
-    assert (
-        gate._pr_number_for_repo("owner/repo", "https://github.com/owner/repo/pull/12")
-        == 12
-    )
+    assert gate._pr_number_for_repo("owner/repo", "https://github.com/owner/repo/pull/12") == 12
     with pytest.raises(gate.GateError):
         gate._pr_number_for_repo("owner/repo", "https://github.com/other/repo/pull/12")
     with pytest.raises(gate.GateError):
@@ -119,18 +114,12 @@ def test_verify_pr_target_binds_head_and_base(monkeypatch):
 
     monkeypatch.setattr(gate, "_run_gh", fake_run)
 
-    gate.verify_pr_target(
-        "owner/repo", "https://github.com/owner/repo/pull/12", HEAD, "main"
-    )
+    gate.verify_pr_target("owner/repo", "https://github.com/owner/repo/pull/12", HEAD, "main")
     with pytest.raises(gate.GateError, match="head does not match"):
-        gate.verify_pr_target(
-            "owner/repo", "https://github.com/owner/repo/pull/12", "b" * 40, "main"
-        )
+        gate.verify_pr_target("owner/repo", "https://github.com/owner/repo/pull/12", "b" * 40, "main")
 
 
-@pytest.mark.parametrize(
-    "message", ["Merge already in progress", "Base branch was modified"]
-)
+@pytest.mark.parametrize("message", ["Merge already in progress", "Base branch was modified"])
 def test_enable_auto_merge_tolerates_known_queue_races(monkeypatch, message):
     monkeypatch.setattr(
         gate,
@@ -145,9 +134,7 @@ def test_enable_auto_merge_rejects_unknown_failure(monkeypatch):
     monkeypatch.setattr(
         gate,
         "_run_gh",
-        lambda _args, check=False: subprocess.CompletedProcess(
-            _args, 1, "", "permission denied"
-        ),
+        lambda _args, check=False: subprocess.CompletedProcess(_args, 1, "", "permission denied"),
     )
 
     with pytest.raises(gate.GateError, match="permission denied"):

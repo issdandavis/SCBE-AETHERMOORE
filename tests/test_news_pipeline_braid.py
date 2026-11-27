@@ -43,9 +43,7 @@ def _fake_braid() -> dict:
 
 def test_stage_tokenize_includes_braid_payload(monkeypatch):
     monkeypatch.setattr(news_pipeline, "_BRAID_AVAILABLE", True)
-    monkeypatch.setattr(
-        news_pipeline, "_braid_score", lambda payload, tongue: _fake_braid()
-    )
+    monkeypatch.setattr(news_pipeline, "_braid_score", lambda payload, tongue: _fake_braid())
 
     tokenized = news_pipeline.stage_tokenize(news_pipeline.stage_geotag(_sample_item()))
 
@@ -82,9 +80,7 @@ def test_sft_braid_alignment_emits_cross_tongue_pair():
 
 def test_run_item_appends_braid_pair(monkeypatch):
     monkeypatch.setattr(news_pipeline, "_BRAID_AVAILABLE", True)
-    monkeypatch.setattr(
-        news_pipeline, "_braid_score", lambda payload, tongue: _fake_braid()
-    )
+    monkeypatch.setattr(news_pipeline, "_braid_score", lambda payload, tongue: _fake_braid())
     monkeypatch.setattr(news_pipeline, "LIBOQS_AVAILABLE", False)
     monkeypatch.setattr(news_pipeline, "CRYPTOGRAPHY_AVAILABLE", False)
     monkeypatch.setattr(news_pipeline, "CRYPTO_TIER", "hmac-only")
@@ -112,10 +108,7 @@ def test_to_chatml_preserves_instruction_input_and_output():
     assert record["id"] == pair["id"]
     assert record["pipeline"] == "news-pipeline"
     assert record["conversations"][0]["role"] == "system"
-    assert (
-        record["conversations"][1]["content"]
-        == 'Explain the braid score.\n\n{"source":"hn"}'
-    )
+    assert record["conversations"][1]["content"] == 'Explain the braid score.\n\n{"source":"hn"}'
     assert record["conversations"][2]["content"] == '{"aligned_score":1.0}'
 
 
@@ -132,9 +125,7 @@ def test_main_writes_summary_with_braid_flag(monkeypatch, tmp_path):
     )
 
     monkeypatch.setattr(news_pipeline, "_BRAID_AVAILABLE", True)
-    monkeypatch.setattr(
-        news_pipeline, "_braid_score", lambda payload, tongue: _fake_braid()
-    )
+    monkeypatch.setattr(news_pipeline, "_braid_score", lambda payload, tongue: _fake_braid())
     monkeypatch.setattr(news_pipeline, "LIBOQS_AVAILABLE", False)
     monkeypatch.setattr(news_pipeline, "CRYPTOGRAPHY_AVAILABLE", False)
     monkeypatch.setattr(news_pipeline, "CRYPTO_TIER", "hmac-only")
@@ -171,9 +162,7 @@ def test_publish_receipt_binds_hf_commit_and_parquet_hash(tmp_path):
 
     receipt = pipeline_to_hf.write_publish_receipt(
         summary_path,
-        commit_info=SimpleNamespace(
-            oid="abc123", commit_url="https://huggingface.co/commit/abc123"
-        ),
+        commit_info=SimpleNamespace(oid="abc123", commit_url="https://huggingface.co/commit/abc123"),
         parquet_path=parquet_path,
         records=8,
     )

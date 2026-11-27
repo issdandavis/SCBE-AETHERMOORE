@@ -80,9 +80,7 @@ def _latest_by_workflow(runs: Iterable[dict[str, Any]]) -> dict[str, dict[str, A
     return latest
 
 
-def _required_state(
-    runs: Iterable[dict[str, Any]], required_workflows: Iterable[str]
-) -> tuple[list[str], list[str]]:
+def _required_state(runs: Iterable[dict[str, Any]], required_workflows: Iterable[str]) -> tuple[list[str], list[str]]:
     """Return missing and failed required workflow names."""
     latest = _latest_by_workflow(runs)
     missing: list[str] = []
@@ -99,9 +97,7 @@ def _required_state(
 
 
 def _fetch_runs(repo: str, head_sha: str) -> list[dict[str, Any]]:
-    endpoint = (
-        f"repos/{repo}/actions/runs?head_sha={head_sha}&event=pull_request&per_page=100"
-    )
+    endpoint = f"repos/{repo}/actions/runs?head_sha={head_sha}&event=pull_request&per_page=100"
     result = _run_gh(["api", endpoint])
     try:
         payload = json.loads(result.stdout)
@@ -171,9 +167,7 @@ def wait_for_required_runs(
         if not missing:
             return runs
         if time.monotonic() >= deadline:
-            raise GateError(
-                "Timed out waiting for required workflow runs: " + ", ".join(missing)
-            )
+            raise GateError("Timed out waiting for required workflow runs: " + ", ".join(missing))
         print("Waiting for required workflow runs: " + ", ".join(missing), flush=True)
         time.sleep(poll_seconds)
 
@@ -196,9 +190,7 @@ def approve_gated_runs(
         if str(run.get("conclusion") or "").lower() != "action_required":
             continue
         run_id = int(run["id"])
-        _run_gh(
-            ["api", "--method", "POST", f"repos/{repo}/actions/runs/{run_id}/approve"]
-        )
+        _run_gh(["api", "--method", "POST", f"repos/{repo}/actions/runs/{run_id}/approve"])
         approved.append(run_id)
         print(f"Approved gated workflow run {run_id}: {run.get('name', 'unknown')}")
     return approved
@@ -207,9 +199,7 @@ def approve_gated_runs(
 def enable_auto_merge(pr_url: str) -> None:
     """Enable squash auto-merge, tolerating an already-enabled merge queue."""
     result = _run_gh(["pr", "merge", "--auto", "--squash", pr_url], check=False)
-    combined = "\n".join(
-        part for part in (result.stdout, result.stderr) if part
-    ).strip()
+    combined = "\n".join(part for part in (result.stdout, result.stderr) if part).strip()
     if result.returncode == 0:
         if combined:
             print(combined)
@@ -218,9 +208,7 @@ def enable_auto_merge(pr_url: str) -> None:
     if any(marker in combined for marker in tolerated):
         print(combined)
         return
-    raise GateError(
-        f"Could not enable auto-merge: {combined or 'gh returned no error text'}"
-    )
+    raise GateError(f"Could not enable auto-merge: {combined or 'gh returned no error text'}")
 
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:

@@ -197,9 +197,7 @@ def _braid_score(payload: bytes, tongue: str) -> dict | None:
                 matrix[other] = round(aligned.overall_score, 6)
             else:
                 try:
-                    r = evaluate_semantic_atomic_braid(
-                        payload, tongue_lc, other.lower()
-                    )
+                    r = evaluate_semantic_atomic_braid(payload, tongue_lc, other.lower())
                     matrix[other] = round(r.overall_score, 6)
                 except Exception:
                     matrix[other] = None  # type: ignore
@@ -218,9 +216,7 @@ def _braid_score(payload: bytes, tongue: str) -> dict | None:
             "tongue_matrix": matrix,
             "worst_mismatch_score": worst,
             "best_mismatch_score": best_other,
-            "discriminatory_delta": (
-                round(aligned.overall_score - worst, 6) if worst is not None else None
-            ),
+            "discriminatory_delta": (round(aligned.overall_score - worst, 6) if worst is not None else None),
         }
     except Exception as exc:
         return {"error": str(exc)}
@@ -275,19 +271,13 @@ LIBOQS_AVAILABLE = _OQS_MODULE is not None
 CRYPTOGRAPHY_AVAILABLE = False
 try:
     CRYPTOGRAPHY_AVAILABLE = (
-        importlib.util.find_spec("cryptography.hazmat.primitives.ciphers.aead")
-        is not None
-        and importlib.util.find_spec("cryptography.hazmat.primitives.asymmetric.x25519")
-        is not None
+        importlib.util.find_spec("cryptography.hazmat.primitives.ciphers.aead") is not None
+        and importlib.util.find_spec("cryptography.hazmat.primitives.asymmetric.x25519") is not None
     )
 except Exception:
     CRYPTOGRAPHY_AVAILABLE = False
 
-CRYPTO_TIER = (
-    "liboqs"
-    if LIBOQS_AVAILABLE
-    else ("cryptography" if CRYPTOGRAPHY_AVAILABLE else "hmac-only")
-)
+CRYPTO_TIER = "liboqs" if LIBOQS_AVAILABLE else ("cryptography" if CRYPTOGRAPHY_AVAILABLE else "hmac-only")
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -371,9 +361,7 @@ def stage_geotag(item: dict) -> dict:
 
 def stage_tokenize(geotagged: dict) -> dict:
     """Stage 2: encode title+URL through all 6 Sacred Tongues; verify round-trip."""
-    payload = (geotagged.get("title", "") + " " + geotagged.get("url", "")).encode(
-        "utf-8"
-    )
+    payload = (geotagged.get("title", "") + " " + geotagged.get("url", "")).encode("utf-8")
     primary_tongue = geotagged.get("geo", {}).get("tongue", "KO")
 
     tongue_matrix: dict[str, Any] = {}
@@ -494,9 +482,7 @@ def stage_egg(hashed: dict) -> dict:
         "geo": hashed.get("geo", {}),
         "hashes": hashed.get("hashes", {}),
     }
-    yolk_bytes = json.dumps(yolk_data, sort_keys=True, ensure_ascii=False).encode(
-        "utf-8"
-    )
+    yolk_bytes = json.dumps(yolk_data, sort_keys=True, ensure_ascii=False).encode("utf-8")
     yolk_b64 = base64.b64encode(yolk_bytes).decode("ascii")
 
     # Egg ID = UUID v5 from SCBE namespace + chain_root
@@ -567,9 +553,7 @@ def stage_encrypt(egged: dict) -> dict:
     egg_id = egg.get("egg_id", "")
 
     # Derive transport key from egg identity (deterministic, session-specific)
-    key_material = hashlib.sha256(
-        f"SCBE-TRANSPORT-KEY:{egg_id}:{chain_root}".encode()
-    ).digest()
+    key_material = hashlib.sha256(f"SCBE-TRANSPORT-KEY:{egg_id}:{chain_root}".encode()).digest()
 
     plaintext = base64.b64decode(egg.get("yolk", ""))
 
@@ -687,11 +671,7 @@ def stage_sign(encrypted: dict) -> dict:
         "chain_root": chain_root,
         "source": encrypted.get("source", ""),
         "region": encrypted.get("region", ""),
-        "geo": {
-            k: v
-            for k, v in encrypted.get("geo", {}).items()
-            if k in ("lat", "lon", "country", "tongue", "seal")
-        },
+        "geo": {k: v for k, v in encrypted.get("geo", {}).items() if k in ("lat", "lon", "country", "tongue", "seal")},
         # Ciphertext omitted from records; auth_tag + ciphertext_len are sufficient
         # for training data — the actual bytes add ~2KB bloat per record.
         "encrypted_payload": {k: v for k, v in enc.items() if k != "ciphertext"},
@@ -719,14 +699,8 @@ def _sft(
     return {
         "id": pair_id,
         "instruction": instruction,
-        "input": (
-            json.dumps(inp, ensure_ascii=False) if not isinstance(inp, str) else inp
-        ),
-        "output": (
-            json.dumps(output, ensure_ascii=False)
-            if not isinstance(output, str)
-            else output
-        ),
+        "input": (json.dumps(inp, ensure_ascii=False) if not isinstance(inp, str) else inp),
+        "output": (json.dumps(output, ensure_ascii=False) if not isinstance(output, str) else output),
         "pipeline": "news-pipeline",
         "version": "v1",
     }
@@ -777,12 +751,7 @@ def sft_geo_to_tok_encode(geo: dict, tok: dict, idx: int) -> dict:
 def sft_tok_decode_roundtrip(tok: dict, idx: int) -> dict:
     tongue = tok.get("tokenization", {}).get("primary_tongue", "KO")
     tname = TONGUE_NAMES.get(tongue, tongue)
-    preview = (
-        tok.get("tokenization", {})
-        .get("tongue_matrix", {})
-        .get(tongue, {})
-        .get("tokens_preview", [])
-    )
+    preview = tok.get("tokenization", {}).get("tongue_matrix", {}).get(tongue, {}).get("tokens_preview", [])
     title = tok.get("title", "")
     return _sft(
         f"news:tok-decode-roundtrip:{tongue}:{idx}",
@@ -799,12 +768,9 @@ def sft_tok_decode_roundtrip(tok: dict, idx: int) -> dict:
         },
         {
             "decoded_title": title,
-            "all_roundtrip_ok": tok.get("tokenization", {}).get(
-                "all_roundtrip_ok", False
-            ),
+            "all_roundtrip_ok": tok.get("tokenization", {}).get("all_roundtrip_ok", False),
             "tongue_matrix_summary": {
-                t: d.get("roundtrip_ok", False)
-                for t, d in tok.get("tokenization", {}).get("tongue_matrix", {}).items()
+                t: d.get("roundtrip_ok", False) for t, d in tok.get("tokenization", {}).get("tongue_matrix", {}).items()
             },
         },
     )
@@ -824,10 +790,7 @@ def sft_tok_to_hash(tok: dict, hashed: dict, idx: int) -> dict:
             "title": tok.get("title", ""),
             "source": tok.get("source", ""),
             "primary_tongue": tongue,
-            "token_count": tok.get("tokenization", {})
-            .get("tongue_matrix", {})
-            .get(tongue, {})
-            .get("token_count", 0),
+            "token_count": tok.get("tokenization", {}).get("tongue_matrix", {}).get(tongue, {}).get("token_count", 0),
         },
         {
             "raw_hash": h.get("raw", ""),
@@ -936,12 +899,7 @@ def sft_braid_alignment(tok: dict, idx: int) -> dict | None:
     tname = TONGUE_NAMES.get(tongue, tongue)
     title = tok.get("title", "")
     source = tok.get("source", "?")
-    preview_tokens = (
-        tok.get("tokenization", {})
-        .get("tongue_matrix", {})
-        .get(tongue, {})
-        .get("tokens_preview", [])
-    )
+    preview_tokens = tok.get("tokenization", {}).get("tongue_matrix", {}).get(tongue, {}).get("tokens_preview", [])
     return _sft(
         f"news:braid-align:{tongue}:{idx}",
         "Score the semantic-atomic braid alignment for this news article. "
@@ -997,24 +955,14 @@ def run_item(item: dict, idx: int) -> tuple[dict, list[dict]]:
                         "token_count": d.get("token_count"),
                         "roundtrip_ok": d.get("roundtrip_ok"),
                     }
-                    for t, d in tokenized.get("tokenization", {})
-                    .get("tongue_matrix", {})
-                    .items()
+                    for t, d in tokenized.get("tokenization", {}).get("tongue_matrix", {}).items()
                 },
-                "all_roundtrip_ok": tokenized.get("tokenization", {}).get(
-                    "all_roundtrip_ok"
-                ),
-                "tokenizer_source": tokenized.get("tokenization", {}).get(
-                    "tokenizer_source"
-                ),
+                "all_roundtrip_ok": tokenized.get("tokenization", {}).get("all_roundtrip_ok"),
+                "tokenizer_source": tokenized.get("tokenization", {}).get("tokenizer_source"),
             },
             "hashes": hashed.get("hashes", {}),
             "egg": signed.get("egg", {}),
-            "encrypted": {
-                k: v
-                for k, v in signed.get("encrypted", {}).items()
-                if k != "ciphertext"
-            },
+            "encrypted": {k: v for k, v in signed.get("encrypted", {}).items() if k != "ciphertext"},
             "transport": signed.get("transport", {}),
         },
         "crypto_tier": CRYPTO_TIER,
@@ -1115,9 +1063,7 @@ def main() -> None:
         ],
         "braid_available": _BRAID_AVAILABLE,
     }
-    SUMMARY_PATH.write_text(
-        json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8"
-    )
+    SUMMARY_PATH.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
 
     print(
         f"[news_pipeline] {total_records} items -> {total_sft} SFT pairs | "

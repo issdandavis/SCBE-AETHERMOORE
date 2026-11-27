@@ -124,9 +124,7 @@ def write_publish_receipt(
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
     summary["sft_publish"] = receipt
     staged = summary_path.with_suffix(summary_path.suffix + ".tmp")
-    staged.write_text(
-        json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8"
-    )
+    staged.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
     staged.replace(summary_path)
     return receipt
 
@@ -194,8 +192,7 @@ def main() -> None:
             repo_id=HF_DATASET,
             repo_type="dataset",
             commit_message=(
-                f"news-pipeline SFT: {len(dataset)} pairs "
-                "(8-stage PQC transport + semantic-atomic braid)"
+                f"news-pipeline SFT: {len(dataset)} pairs " "(8-stage PQC transport + semantic-atomic braid)"
             ),
         )
         receipt = write_publish_receipt(
@@ -204,10 +201,7 @@ def main() -> None:
             parquet_path=pq_path,
             records=len(dataset),
         )
-        print(
-            "[pipeline_to_hf] Receipt: "
-            f"commit={receipt['commit_oid']} sha256={receipt['sha256']}"
-        )
+        print("[pipeline_to_hf] Receipt: " f"commit={receipt['commit_oid']} sha256={receipt['sha256']}")
 
     print(f"[pipeline_to_hf] Done. https://huggingface.co/datasets/{HF_DATASET}")
 
