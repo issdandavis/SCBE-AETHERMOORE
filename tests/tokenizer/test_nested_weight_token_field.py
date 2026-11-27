@@ -33,9 +33,7 @@ def test_default_build_is_ten_nested_matrices_with_one_growth_ratio() -> None:
 
     assert len(field.layers) == DEFAULT_LAYER_COUNT == 10
     assert ratios_are_preserved(field)
-    assert all(
-        inner.side < outer.side for outer, inner in zip(field.layers, field.layers[1:])
-    )
+    assert all(inner.side < outer.side for outer, inner in zip(field.layers, field.layers[1:]))
     assert field.common_growth_ratio >= 1.0
     assert field.common_growth_ratio <= math.exp(NestedWeightFieldSpec().growth_gain)
 
@@ -50,10 +48,7 @@ def test_nested_vertices_round_trip_through_each_layer_matrix() -> None:
     )
 
     for layer in field.layers:
-        recovered = tuple(
-            world_to_layer_local(field, layer.index, vertex)
-            for vertex in layer.vertices
-        )
+        recovered = tuple(world_to_layer_local(field, layer.index, vertex) for vertex in layer.vertices)
         for actual, wanted in zip(recovered, expected, strict=True):
             assert actual == pytest.approx(wanted, abs=3e-11)
 
@@ -68,25 +63,16 @@ def test_token_path_is_tangent_axis_and_key_region_is_behind_it() -> None:
     field = build_nested_weight_token_field(path, field_seed="axis", spec=spec)
 
     assert field.tangent_axis == pytest.approx((1.0, 0.0, 0.0), abs=1e-12)
-    offset = tuple(
-        anchor - center
-        for anchor, center in zip(field.key_anchor, field.path_centroid, strict=True)
-    )
+    offset = tuple(anchor - center for anchor, center in zip(field.key_anchor, field.path_centroid, strict=True))
     assert math.sqrt(sum(value * value for value in offset)) == pytest.approx(0.25)
-    assert sum(
-        a * b for a, b in zip(offset, field.tangent_axis, strict=True)
-    ) == pytest.approx(0.0)
+    assert sum(a * b for a, b in zip(offset, field.tangent_axis, strict=True)) == pytest.approx(0.0)
 
 
 def test_replay_is_deterministic_but_path_and_seed_changes_are_visible() -> None:
     first = build_nested_weight_token_field(sample_path(), field_seed="same")
     replay = build_nested_weight_token_field(sample_path(), field_seed="same")
-    changed_weight = build_nested_weight_token_field(
-        sample_path(middle_weight=-0.5), field_seed="same"
-    )
-    changed_seed = build_nested_weight_token_field(
-        sample_path(), field_seed="different"
-    )
+    changed_weight = build_nested_weight_token_field(sample_path(middle_weight=-0.5), field_seed="same")
+    changed_seed = build_nested_weight_token_field(sample_path(), field_seed="different")
 
     assert first == replay
     assert first.receipt_sha256 != changed_weight.receipt_sha256
@@ -95,24 +81,16 @@ def test_replay_is_deterministic_but_path_and_seed_changes_are_visible() -> None
     assert first.token_path_sha256 != changed_weight.token_path_sha256
     assert first.token_path_sha256 == changed_seed.token_path_sha256
     assert first.receipt_is_valid()
-    assert not replace(
-        first, common_growth_ratio=first.common_growth_ratio + 0.001
-    ).receipt_is_valid()
+    assert not replace(first, common_growth_ratio=first.common_growth_ratio + 0.001).receipt_is_valid()
 
 
 def test_weight_magnitude_grows_while_weight_sign_orients() -> None:
-    negative = build_nested_weight_token_field(
-        sample_path(middle_weight=-0.75), field_seed="weight-channels"
-    )
-    positive = build_nested_weight_token_field(
-        sample_path(middle_weight=0.75), field_seed="weight-channels"
-    )
+    negative = build_nested_weight_token_field(sample_path(middle_weight=-0.75), field_seed="weight-channels")
+    positive = build_nested_weight_token_field(sample_path(middle_weight=0.75), field_seed="weight-channels")
 
     assert negative.path_energy == positive.path_energy
     assert negative.common_growth_ratio == positive.common_growth_ratio
-    assert tuple(layer.side for layer in negative.layers) == tuple(
-        layer.side for layer in positive.layers
-    )
+    assert tuple(layer.side for layer in negative.layers) == tuple(layer.side for layer in positive.layers)
     assert negative.rotation_radians != positive.rotation_radians
     assert negative.receipt_sha256 != positive.receipt_sha256
 

@@ -60,9 +60,7 @@ class WeightedTokenPoint:
         if not _finite(self.weight):
             raise NestedWeightFieldError("token weight must be finite")
         if len(self.xyz) != 3 or not all(_finite(value) for value in self.xyz):
-            raise NestedWeightFieldError(
-                "token coordinates must be three finite values"
-            )
+            raise NestedWeightFieldError("token coordinates must be three finite values")
 
 
 @dataclass(frozen=True, slots=True)
@@ -85,9 +83,7 @@ class NestedWeightFieldSpec:
         ):
             raise NestedWeightFieldError(f"layer_count must be in 1..{MAX_LAYER_COUNT}")
         if not _finite(self.nesting_ratio) or not 0.0 < self.nesting_ratio < 1.0:
-            raise NestedWeightFieldError(
-                "nesting_ratio must be strictly between 0 and 1"
-            )
+            raise NestedWeightFieldError("nesting_ratio must be strictly between 0 and 1")
         if not _finite(self.base_side) or self.base_side <= 0.0:
             raise NestedWeightFieldError("base_side must be positive and finite")
         if not _finite(self.growth_power) or not 0.0 < self.growth_power <= 8.0:
@@ -161,11 +157,7 @@ class NestedWeightTokenField:
 
 
 def _finite(value: object) -> bool:
-    return (
-        isinstance(value, (int, float))
-        and not isinstance(value, bool)
-        and math.isfinite(value)
-    )
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
 
 
 def _add(left: Vector3, right: Vector3) -> Vector3:
@@ -222,9 +214,7 @@ def _round_vector(vector: Vector3, decimals: int) -> Vector3:
 
 
 def _round_matrix(matrix: Matrix4, decimals: int) -> Matrix4:
-    return tuple(
-        tuple(round(value, decimals) for value in row) for row in matrix
-    )  # type: ignore[return-value]
+    return tuple(tuple(round(value, decimals) for value in row) for row in matrix)  # type: ignore[return-value]
 
 
 def _seed_phase(seed_digest: bytes) -> float:
@@ -236,14 +226,9 @@ def _path_centroid(points: Sequence[WeightedTokenPoint]) -> Vector3:
     masses = [abs(point.weight) for point in points]
     total = math.fsum(masses)
     if total <= _EPSILON:
-        raise NestedWeightFieldError(
-            "the token path needs at least one non-zero weight"
-        )
+        raise NestedWeightFieldError("the token path needs at least one non-zero weight")
     return tuple(
-        math.fsum(
-            mass * point.xyz[axis] for mass, point in zip(masses, points, strict=True)
-        )
-        / total
+        math.fsum(mass * point.xyz[axis] for mass, point in zip(masses, points, strict=True)) / total
         for axis in range(3)
     )  # type: ignore[return-value]
 
@@ -277,9 +262,7 @@ def _orthogonal_frame(tangent: Vector3) -> tuple[Vector3, Vector3]:
     return first, second
 
 
-def _rotate_plane(
-    first: Vector3, second: Vector3, angle: float
-) -> tuple[Vector3, Vector3]:
+def _rotate_plane(first: Vector3, second: Vector3, angle: float) -> tuple[Vector3, Vector3]:
     cosine = math.cos(angle)
     sine = math.sin(angle)
     return (
@@ -289,9 +272,7 @@ def _rotate_plane(
 
 
 def _path_energy(points: Sequence[WeightedTokenPoint]) -> float:
-    magnitude_rms = math.sqrt(
-        math.fsum(point.weight * point.weight for point in points) / len(points)
-    )
+    magnitude_rms = math.sqrt(math.fsum(point.weight * point.weight for point in points) / len(points))
     weighted_length = math.fsum(
         (abs(left.weight) + abs(right.weight)) * 0.5 * _distance(left.xyz, right.xyz)
         for left, right in zip(points, points[1:])
@@ -308,12 +289,8 @@ def _path_rotation(
     second: Vector3,
     seed_phase: float,
 ) -> float:
-    first_moment = math.fsum(
-        point.weight * _dot(_subtract(point.xyz, centroid), first) for point in points
-    )
-    second_moment = math.fsum(
-        point.weight * _dot(_subtract(point.xyz, centroid), second) for point in points
-    )
+    first_moment = math.fsum(point.weight * _dot(_subtract(point.xyz, centroid), first) for point in points)
+    second_moment = math.fsum(point.weight * _dot(_subtract(point.xyz, centroid), second) for point in points)
     if math.hypot(first_moment, second_moment) <= _EPSILON:
         return seed_phase
     return seed_phase + math.atan2(second_moment, first_moment)
@@ -396,9 +373,7 @@ def build_nested_weight_token_field(
     # axis. It is not claimed to hide the key region from an observer.
     key_anchor = _subtract(centroid, _scale(second, spec.key_depth))
     energy = _path_energy(path)
-    raw_growth = tuple(
-        energy * spec.nesting_ratio**index for index in range(spec.layer_count)
-    )
+    raw_growth = tuple(energy * spec.nesting_ratio**index for index in range(spec.layer_count))
     mean_growth = math.fsum(raw_growth) / spec.layer_count
     powered_growth = mean_growth**spec.growth_power
     common_ratio = math.exp(spec.growth_gain * math.tanh(powered_growth))
@@ -445,9 +420,7 @@ def build_nested_weight_token_field(
     return replace(field, receipt_sha256=receipt_sha256)
 
 
-def world_to_layer_local(
-    field: NestedWeightTokenField, layer_index: int, point: Vector3
-) -> Vector3:
+def world_to_layer_local(field: NestedWeightTokenField, layer_index: int, point: Vector3) -> Vector3:
     """Invert one layer's affine frame for audit and round-trip tests."""
 
     if not 0 <= layer_index < len(field.layers):
@@ -473,9 +446,7 @@ def world_to_layer_local(
     )
 
 
-def ratios_are_preserved(
-    field: NestedWeightTokenField, tolerance: float = 1e-10
-) -> bool:
+def ratios_are_preserved(field: NestedWeightTokenField, tolerance: float = 1e-10) -> bool:
     """Check the load-bearing invariant across all adjacent layers."""
 
     if not _finite(tolerance) or tolerance < 0.0:
