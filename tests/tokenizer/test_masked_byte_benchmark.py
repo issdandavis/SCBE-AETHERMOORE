@@ -19,6 +19,18 @@ def _observation(case, *, exact: bool = True, extra_work: int = 0) -> CaseObserv
     reconstruction = bytearray(case.target)
     if not exact:
         reconstruction[case.masked_positions[0]] ^= 1
+    distributions = []
+    for position in case.masked_positions:
+        predicted = reconstruction[position]
+        target = case.target[position]
+        row = [0.1 / 254.0] * 256
+        if predicted == target:
+            row = [0.1 / 255.0] * 256
+            row[target] = 0.9
+        else:
+            row[predicted] = 0.7
+            row[target] = 0.2
+        distributions.append(tuple(row))
     trace = tuple(
         RoutingStep(
             step=step,
@@ -33,7 +45,7 @@ def _observation(case, *, exact: bool = True, extra_work: int = 0) -> CaseObserv
     return CaseObservation(
         case_id=case.case_id,
         reconstruction=bytes(reconstruction),
-        target_probabilities=tuple(0.9 if exact else 0.2 for _ in case.masked_positions),
+        candidate_distributions=tuple(distributions),
         trace=trace,
         forward_passes=len(trace),
     )
@@ -99,6 +111,15 @@ def test_evaluator_rejects_trace_that_disagrees_with_reconstruction() -> None:
 
     with pytest.raises(BenchmarkContractError, match="trace prediction"):
         evaluate_run(cases, run)
+
+
+def test_observation_rejects_non_normalized_candidate_distribution() -> None:
+    cases = generate_structured_cases(split="test", seed=18, count=1)
+    observation = _observation(cases[0])
+    malformed = ((0.0,) * 256, *observation.candidate_distributions[1:])
+
+    with pytest.raises(BenchmarkContractError, match="sum to one"):
+        replace(observation, candidate_distributions=malformed)
 
 
 def test_comparison_separates_representation_and_routing_gains() -> None:

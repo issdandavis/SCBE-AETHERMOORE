@@ -9,7 +9,9 @@ adaptive candidate routing add a gain beyond the representation alone?
 
 The runtime generates split-bound deterministic structured cases, validates
 per-step work receipts, rejects hidden budget or parameter mismatches, computes
-exact recovery and target NLL, and reports `B - A` separately from `C - B`.
+exact recovery and target NLL from normalized 256-byte candidate distributions,
+checks that committed bytes are distribution argmaxes, and reports `B - A`
+separately from `C - B`.
 Model training and the first three-seed run remain open work.
 
 ## Three arms

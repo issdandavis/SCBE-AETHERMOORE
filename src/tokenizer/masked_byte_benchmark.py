@@ -81,7 +81,7 @@ class RoutingStep:
 class CaseObservation:
     case_id: str
     reconstruction: bytes
-    target_probabilities: tuple[float, ...]
+    candidate_distributions: tuple[tuple[float, ...], ...]
     trace: tuple[RoutingStep, ...]
     forward_passes: int
 
@@ -90,8 +90,13 @@ class CaseObservation:
             raise BenchmarkContractError("observation case_id is required")
         if self.forward_passes < 0:
             raise BenchmarkContractError("forward_passes must be non-negative")
-        if any(not math.isfinite(value) or not 0.0 < value <= 1.0 for value in self.target_probabilities):
-            raise BenchmarkContractError("target probabilities must be finite and in (0, 1]")
+        for distribution in self.candidate_distributions:
+            if len(distribution) != 256:
+                raise BenchmarkContractError("each candidate distribution must contain 256 byte probabilities")
+            if any(not math.isfinite(value) or value < 0.0 for value in distribution):
+                raise BenchmarkContractError("candidate probabilities must be finite and non-negative")
+            if not math.isclose(math.fsum(distribution), 1.0, rel_tol=1e-9, abs_tol=1e-9):
+                raise BenchmarkContractError("candidate distributions must sum to one")
 
 
 @dataclass(frozen=True, slots=True)
@@ -183,8 +188,8 @@ def evaluate_run(cases: Sequence[MaskedByteCase], run: ArmRun) -> dict[str, obje
         observation = observation_by_id[case_id]
         if len(observation.reconstruction) != len(case.target):
             raise BenchmarkContractError("reconstruction length must match its target")
-        if len(observation.target_probabilities) != len(case.masked_positions):
-            raise BenchmarkContractError("one target probability is required per masked byte")
+        if len(observation.candidate_distributions) != len(case.masked_positions):
+            raise BenchmarkContractError("one candidate distribution is required per masked byte")
         if observation.forward_passes < len(observation.trace):
             raise BenchmarkContractError("forward-pass count cannot be smaller than the routing trace")
         _validate_trace(case, observation)
@@ -198,7 +203,11 @@ def evaluate_run(cases: Sequence[MaskedByteCase], run: ArmRun) -> dict[str, obje
         if is_exact:
             exact_work.append(candidate_work)
         buckets[case.mask_kind.value].append(is_exact)
-        losses.extend(-math.log(probability) for probability in observation.target_probabilities)
+        for position, distribution in zip(case.masked_positions, observation.candidate_distributions, strict=True):
+            target_probability = distribution[case.target[position]]
+            if target_probability <= 0.0:
+                raise BenchmarkContractError("target byte probability must be positive for finite NLL")
+            losses.append(-math.log(target_probability))
         work.append(candidate_work)
         passes.append(observation.forward_passes)
 
@@ -227,9 +236,14 @@ def _validate_trace(case: MaskedByteCase, observation: CaseObservation) -> None:
         raise BenchmarkContractError("a masked position may be committed at most once")
     if not set(positions) <= set(case.masked_positions):
         raise BenchmarkContractError("routing trace may select only masked positions")
+    distribution_by_position = dict(zip(case.masked_positions, observation.candidate_distributions, strict=True))
     for step in observation.trace:
         if observation.reconstruction[step.position] != step.predicted_byte:
             raise BenchmarkContractError("trace prediction must match the submitted reconstruction")
+        distribution = distribution_by_position[step.position]
+        predicted = max(range(256), key=distribution.__getitem__)
+        if predicted != step.predicted_byte:
+            raise BenchmarkContractError("trace prediction must be the candidate-distribution argmax")
 
 
 def compare_three_arms(
