@@ -101,3 +101,19 @@ def test_benign_keyword_warmup_is_held_not_permanently_denied(text):
     assert _action_hash(text) not in gate._immune
     retry = gate.evaluate(text)
     assert retry.decision != Decision.DENY
+
+
+def test_withheld_warmup_does_not_exhaust_calibration():
+    """Quarantined suspects must not consume the calibration budget: the centroid
+    stays uninitialized, so a later clean request still calibrates instead of being
+    spin-denied against the placeholder reference."""
+    gate = RuntimeGate()
+    for i in range(5):  # five keyword-bearing requests -> all withheld, none admitted
+        gate.evaluate(f"please review the configuration for item {i}")
+    assert gate._centroid_count == 0
+
+    clean = "please summarize the meeting notes for tomorrow"
+    result = gate.evaluate(clean)
+    assert result.decision == Decision.ALLOW
+    assert _action_hash(clean) not in gate._immune
+    assert gate._centroid_count == 1

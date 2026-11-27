@@ -1220,8 +1220,12 @@ class RuntimeGate:
         calibration_suspect = _is_high_confidence_override_attempt(full_text) or self._has_intent_spike_keyword(
             full_text
         )
+        # The window stays open while the centroid is still uninitialized even past
+        # the fifth request: otherwise a run of withheld (quarantined) suspect inputs
+        # could exhaust the request budget without ever seeding a trusted reference,
+        # leaving the first clean request to be spin_denied against the placeholder.
         if (
-            self._query_count <= 5
+            (self._query_count <= 5 or self._centroid_count == 0)
             and action_hash not in self._immune
             and reroute_rule is None
             and not classifier_quarantine
