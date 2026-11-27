@@ -875,6 +875,7 @@ def _default_cli_context() -> dict[str, object]:
         "defaults": {
             "workflow_dir": ".github/workflows",
             "n8n_dir": "workflows/n8n",
+            "pipeline_dir": "workflows/pipelines",
         },
         "contexts": {},
     }
@@ -960,6 +961,24 @@ def _colab_bridge_status(repo_root: Path) -> dict[str, object]:
 
 def _colab_bridge_script(repo_root: Path) -> Path:
     return repo_root / "scripts" / "colab" / "colab_n8n_bridge.py"
+
+
+@functools.lru_cache(maxsize=1)
+def _load_cube_pipeline_module_cached(repo_root_str: str):
+    module_path = Path(repo_root_str) / "scripts" / "system" / "scbe_cube_pipeline.py"
+    if not module_path.exists():
+        raise FileNotFoundError(f"SCBE cube pipeline module not found: {module_path}")
+    spec = importlib.util.spec_from_file_location("scbe_cube_pipeline_runtime", module_path)
+    if not spec or not spec.loader:
+        raise ImportError(f"Unable to load SCBE cube pipeline module: {module_path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def _load_cube_pipeline_module(repo_root: Path):
+    return _load_cube_pipeline_module_cached(str(repo_root.resolve()))
 
 
 def _run_colab_bridge(
@@ -1123,8 +1142,13 @@ def _parse_key_value(raw: str) -> tuple[str, str]:
 
 
 def _workflow_output_paths(
-    repo_root: Path, config: dict[str, object], workflow_name: str, workflow_path: str, queue_path: str
-) -> tuple[Path, Path]:
+    repo_root: Path,
+    config: dict[str, object],
+    workflow_name: str,
+    workflow_path: str,
+    queue_path: str,
+    pipeline_path: str,
+) -> tuple[Path, Path, Path]:
     defaults = dict(config.get("defaults") or {})
     active_context = safe_text(config.get("active_context"))
     context = dict((config.get("contexts") or {}).get(active_context) or {}) if active_context else {}
@@ -1134,14 +1158,22 @@ def _workflow_output_paths(
         or str(defaults.get("workflow_dir") or ".github/workflows")
     )
     queue_dir = queue_path or safe_text(context.get("n8n_dir")) or str(defaults.get("n8n_dir") or "workflows/n8n")
+    pipeline_dir = (
+        pipeline_path
+        or safe_text(context.get("pipeline_dir"))
+        or str(defaults.get("pipeline_dir") or "workflows/pipelines")
+    )
     slug = _flow_slug(workflow_name)
     workflow_file = _repo_path(repo_root, workflow_dir)
-    if workflow_file.suffix.lower() != ".yml":
+    if workflow_file.suffix.lower() not in {".yml", ".yaml"}:
         workflow_file = workflow_file / f"{slug}.yml"
     queue_file = _repo_path(repo_root, queue_dir)
     if queue_file.suffix.lower() != ".json":
         queue_file = queue_file / f"{slug}.queue.json"
-    return workflow_file, queue_file
+    pipeline_file = _repo_path(repo_root, pipeline_dir)
+    if pipeline_file.suffix.lower() != ".json":
+        pipeline_file = pipeline_file / f"{slug}.pipeline.json"
+    return workflow_file, queue_file, pipeline_file
 
 
 def _parse_workflow_steps(raw_steps: list[str]) -> list[dict[str, str]]:
@@ -1150,6 +1182,10 @@ def _parse_workflow_steps(raw_steps: list[str]) -> list[dict[str, str]]:
         label, sep, command = raw.partition("::")
         if not sep:
             raise ValueError("Workflow steps must use LABEL::COMMAND format")
+        if not safe_text(label):
+            raise ValueError("Workflow step labels cannot be empty")
+        if not command.strip():
+            raise ValueError("Workflow step commands cannot be empty")
         parsed.append(
             {
                 "id": f"step_{index:02d}_{_flow_slug(label, fallback='step')}",
@@ -1160,96 +1196,28 @@ def _parse_workflow_steps(raw_steps: list[str]) -> list[dict[str, str]]:
     return parsed
 
 
-def _yaml_quote(value: str) -> str:
-    return "'" + value.replace("'", "''") + "'"
+def _pipeline_artifact_references(
+    repo_root: Path,
+    workflow_path: Path,
+    queue_path: Path,
+    pipeline_path: Path,
+) -> tuple[str, dict[str, str]]:
+    resolved_root = repo_root.resolve()
+    resolved_paths = [workflow_path.resolve(), queue_path.resolve(), pipeline_path.resolve()]
+    if all(_is_relative_to(path, resolved_root) for path in resolved_paths):
+        base = resolved_root
+        path_base = "repo-root"
+    else:
+        base = pipeline_path.resolve().parent
+        path_base = "spec-dir"
 
+    def reference(path: Path) -> str:
+        return os.path.relpath(path.resolve(), base).replace("\\", "/")
 
-def _render_workflow_yaml(
-    name: str,
-    triggers: list[str],
-    cron: str,
-    runs_on: str,
-    shell: str,
-    node_version: str,
-    python_version: str,
-    env_vars: dict[str, str],
-    steps: list[dict[str, str]],
-) -> str:
-    lines = [f"name: {_yaml_quote(name)}", "on:"]
-    if not triggers:
-        triggers = ["workflow_dispatch"]
-    for trigger in triggers:
-        if trigger == "workflow_dispatch":
-            lines.append("  workflow_dispatch:")
-        elif trigger == "push":
-            lines.append("  push:")
-            lines.append("    branches: [main]")
-        elif trigger == "pull_request":
-            lines.append("  pull_request:")
-            lines.append("    branches: [main]")
-        elif trigger == "schedule":
-            lines.append("  schedule:")
-            lines.append(f"    - cron: {_yaml_quote(cron or '0 9 * * *')}")
-    lines.extend(["permissions:", "  contents: read", "", "jobs:", "  orchestrate:", f"    runs-on: {runs_on}"])
-    if env_vars:
-        lines.append("    env:")
-        for key in sorted(env_vars):
-            lines.append(f"      {key}: {_yaml_quote(env_vars[key])}")
-    lines.extend(
-        [
-            "    steps:",
-            "      - name: Checkout",
-            "        uses: actions/checkout@v6",
-            "      - name: Setup Node",
-            "        uses: actions/setup-node@v6",
-            "        with:",
-            f"          node-version: {_yaml_quote(node_version)}",
-            "      - name: Setup Python",
-            "        uses: actions/setup-python@v6",
-            "        with:",
-            f"          python-version: {_yaml_quote(python_version)}",
-        ]
-    )
-    for step in steps:
-        lines.extend(
-            [
-                f"      - name: {_yaml_quote(step['name'])}",
-                f"        id: {step['id']}",
-                f"        shell: {shell}",
-                "        run: |",
-            ]
-        )
-        for command_line in step["command"].splitlines():
-            lines.append(f"          {command_line}")
-    return "\n".join(lines) + "\n"
-
-
-def _render_n8n_style_queue(
-    name: str, workflow_path: Path, steps: list[dict[str, str]], triggers: list[str], env_vars: dict[str, str]
-) -> dict[str, object]:
-    items: list[dict[str, object]] = []
-    for index, step in enumerate(steps, start=1):
-        dependencies = [] if index == 1 else [steps[index - 2]["id"]]
-        items.append(
-            {
-                "id": step["id"],
-                "action": "command",
-                "label": step["name"],
-                "command": step["command"],
-                "depends_on": dependencies,
-                "metadata": {
-                    "order": index,
-                    "source": "scbe workflow styleize",
-                    "github_workflow": str(workflow_path).replace("\\", "/"),
-                },
-            }
-        )
-    return {
-        "schema_version": "scbe_n8_style_queue_v1",
-        "workflow_name": name,
-        "triggers": triggers or ["workflow_dispatch"],
-        "env": env_vars,
-        "items": items,
+    return path_base, {
+        "spec": reference(pipeline_path),
+        "github_workflow": reference(workflow_path),
+        "n8_queue": reference(queue_path),
     }
 
 
@@ -4100,6 +4068,7 @@ def cmd_use(args: argparse.Namespace) -> int:
         "notion_workspace": safe_text(args.notion_workspace),
         "workflow_dir": safe_text(args.workflow_dir),
         "n8n_dir": safe_text(args.n8n_dir),
+        "pipeline_dir": safe_text(args.pipeline_dir),
     }
     for key, value in updates.items():
         if value:
@@ -4378,7 +4347,8 @@ def cmd_workflow_styleize(args: argparse.Namespace) -> int:
     config = _load_cli_context(config_path)
     try:
         steps = _parse_workflow_steps(args.step)
-    except ValueError as exc:
+        cube_pipeline = _load_cube_pipeline_module(repo_root)
+    except (ValueError, FileNotFoundError, ImportError) as exc:
         print(str(exc))
         return 2
 
@@ -4391,47 +4361,132 @@ def cmd_workflow_styleize(args: argparse.Namespace) -> int:
             return 2
         env_vars[key] = value
 
-    workflow_path, queue_path = _workflow_output_paths(
+    workflow_path, queue_path, pipeline_path = _workflow_output_paths(
         repo_root,
         config,
         args.name,
         args.workflow_path,
         args.queue_path,
+        args.pipeline_path,
     )
-    workflow_path.parent.mkdir(parents=True, exist_ok=True)
-    queue_path.parent.mkdir(parents=True, exist_ok=True)
-
-    yaml_text = _render_workflow_yaml(
-        name=args.name,
-        triggers=args.trigger or [],
-        cron=args.cron,
-        runs_on=args.runs_on,
-        shell=args.shell,
-        node_version=args.node_version,
-        python_version=args.python_version,
-        env_vars=env_vars,
-        steps=steps,
-    )
-    queue_payload = _render_n8n_style_queue(args.name, workflow_path, steps, args.trigger or [], env_vars)
-
-    workflow_path.write_text(yaml_text, encoding="utf-8")
-    queue_path.write_text(json.dumps(queue_payload, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+    try:
+        path_base, artifacts = _pipeline_artifact_references(
+            repo_root,
+            workflow_path,
+            queue_path,
+            pipeline_path,
+        )
+        pipeline_payload = cube_pipeline.build_pipeline_spec(
+            name=args.name,
+            steps=steps,
+            triggers=args.trigger or [],
+            cron=args.cron,
+            runs_on=args.runs_on,
+            shell=args.shell,
+            node_version=args.node_version,
+            python_version=args.python_version,
+            env=env_vars,
+            artifacts=artifacts,
+            path_base=path_base,
+        )
+        cube_pipeline.write_bundle(
+            pipeline_path,
+            workflow_path,
+            queue_path,
+            pipeline_payload,
+        )
+        audit = cube_pipeline.audit_surfaces(pipeline_path)
+    except (ValueError, OSError) as exc:
+        print(str(exc))
+        return 2
 
     payload = {
-        "schema_version": "scbe_workflow_styleize_v1",
+        "schema_version": "scbe_workflow_styleize_v2",
         "name": args.name,
+        "pipeline_path": _display_path(pipeline_path, repo_root),
         "workflow_path": _display_path(workflow_path, repo_root),
         "queue_path": _display_path(queue_path, repo_root),
+        "pipeline_sha256": pipeline_payload["pipeline_sha256"],
         "step_count": len(steps),
         "triggers": args.trigger or ["workflow_dispatch"],
         "runs_on": args.runs_on,
+        "shell": pipeline_payload["workflow"]["shell"],
+        "solved": audit["solved"],
     }
     lines = [
+        f"Saved pipeline: {pipeline_path}",
         f"Saved workflow: {workflow_path}",
         f"Saved n8n queue: {queue_path}",
         f"Steps: {len(steps)}",
+        f"Solved: {'yes' if audit['solved'] else 'no'}",
     ]
     return _json_result(args, payload, lines)
+
+
+def cmd_workflow_validate(args: argparse.Namespace) -> int:
+    try:
+        cube_pipeline = _load_cube_pipeline_module(args.repo_root)
+        report = cube_pipeline.audit_surfaces(_repo_path(args.repo_root, args.spec_path).expanduser().resolve())
+    except (ValueError, OSError, ImportError) as exc:
+        print(str(exc))
+        return 2
+    _json_result(
+        args,
+        report,
+        [
+            f"Pipeline: {report['pipeline']}",
+            f"Solved: {'yes' if report['solved'] else 'no'}",
+            f"Issues: {len(report['issues'])}",
+        ],
+    )
+    return 0 if report["solved"] else 1
+
+
+def cmd_workflow_repair(args: argparse.Namespace) -> int:
+    try:
+        cube_pipeline = _load_cube_pipeline_module(args.repo_root)
+        report = cube_pipeline.rotate_surfaces(
+            _repo_path(args.repo_root, args.spec_path).expanduser().resolve(),
+            apply=args.apply,
+        )
+    except (ValueError, OSError, ImportError) as exc:
+        print(str(exc))
+        return 2
+    _json_result(
+        args,
+        report,
+        [
+            f"Applied: {'yes' if report['applied'] else 'no'}",
+            f"Changed: {'yes' if report['changed'] else 'no'}",
+            f"Solved: {'yes' if report['after']['solved'] else 'no'}",
+        ],
+    )
+    return 0 if report["after"]["solved"] else 1
+
+
+def cmd_workflow_run(args: argparse.Namespace) -> int:
+    try:
+        cube_pipeline = _load_cube_pipeline_module(args.repo_root)
+        report = cube_pipeline.execute_pipeline(
+            _repo_path(args.repo_root, args.spec_path).expanduser().resolve(),
+            run_id=args.run_id,
+            receipt_dir=args.receipt_dir,
+            dry_run=args.dry_run,
+        )
+    except (ValueError, OSError, ImportError) as exc:
+        print(str(exc))
+        return 2
+    _json_result(
+        args,
+        report,
+        [
+            f"Pipeline: {report['pipeline']}",
+            f"Run: {report['run_id']}",
+            f"Dry run: {'yes' if report['dry_run'] else 'no'}",
+            f"Succeeded: {'yes' if report['ok'] else 'no'}",
+        ],
+    )
+    return 0 if report["ok"] else 1
 
 
 def cmd_status(args: argparse.Namespace) -> int:
@@ -5072,7 +5127,7 @@ def cmd_gh_scan(args: argparse.Namespace) -> int:
 def cmd_gh_fix(args: argparse.Namespace) -> int:
     """Auto-fix CI failures - delegates to auto_fix.py."""
     script = Path(args.repo_root) / "scripts" / "ci" / "auto_fix.py"
-    cmd = [sys.executable, str(script), "--detect"]
+    cmd = [sys.executable, str(script), "--detect", "--no-pr"]
     if args.run_id:
         cmd.extend(["--run-id", str(args.run_id)])
     if args.dry_run:
@@ -5301,7 +5356,7 @@ def cmd_gh_sweep(args: argparse.Namespace) -> int:
     fix_payload: dict[str, object] | None = None
     if args.fix_ci:
         script = Path(args.repo_root) / "scripts" / "ci" / "auto_fix.py"
-        cmd = [sys.executable, str(script), "--detect"]
+        cmd = [sys.executable, str(script), "--detect", "--no-pr"]
         if args.fix_dry_run:
             cmd.append("--dry-run")
         fix_rc = subprocess.call(cmd)
@@ -5443,8 +5498,16 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
 
     def add_runtime_cli_flags(p: argparse.ArgumentParser) -> None:
-        p.add_argument("--json", dest="json_output", action="store_true", help=argparse.SUPPRESS)
-        p.add_argument("--config-path", default="", help=argparse.SUPPRESS)
+        # Suppressed defaults preserve a value supplied before the subcommand.
+        # Ordinary nested defaults overwrite parent-parser values in argparse.
+        p.add_argument(
+            "--json",
+            dest="json_output",
+            action="store_true",
+            default=argparse.SUPPRESS,
+            help=argparse.SUPPRESS,
+        )
+        p.add_argument("--config-path", default=argparse.SUPPRESS, help=argparse.SUPPRESS)
 
     tongues = sub.add_parser("tongues", help="Six-Tongues toolkit passthrough")
     add_runtime_cli_flags(tongues)
@@ -5619,6 +5682,7 @@ def build_parser() -> argparse.ArgumentParser:
     use.add_argument("--notion-workspace", default="")
     use.add_argument("--workflow-dir", default="")
     use.add_argument("--n8n-dir", default="")
+    use.add_argument("--pipeline-dir", default="")
     use.set_defaults(func=cmd_use)
 
     config = sub.add_parser("config", help="Inspect or update repo-local CLI context")
@@ -5675,10 +5739,12 @@ def build_parser() -> argparse.ArgumentParser:
     model_train.add_argument("--execute", action="store_true", help="Execute the generated training script immediately")
     model_train.set_defaults(func=cmd_model_train)
 
-    workflow = sub.add_parser("workflow", help="Generate GitHub + n8-style multistep workflow assets")
+    workflow = sub.add_parser("workflow", help="Build, validate, repair, and run SCBE cube pipelines")
     add_runtime_cli_flags(workflow)
     workflow_sub = workflow.add_subparsers(dest="workflow_cmd", required=True)
-    workflow_styleize = workflow_sub.add_parser("styleize", help="Emit GitHub Actions YAML and n8n-style queue JSON")
+    workflow_styleize = workflow_sub.add_parser(
+        "styleize", help="Emit one canonical pipeline plus GitHub and n8-style projections"
+    )
     add_runtime_cli_flags(workflow_styleize)
     workflow_styleize.add_argument("--name", required=True, help="Workflow name")
     workflow_styleize.add_argument(
@@ -5695,14 +5761,36 @@ def build_parser() -> argparse.ArgumentParser:
         help="Workflow trigger; repeat to add more than one",
     )
     workflow_styleize.add_argument("--cron", default="0 9 * * *", help="Cron expression for schedule trigger")
+    workflow_styleize.add_argument("--pipeline-path", default="", help="Canonical pipeline JSON path or directory")
     workflow_styleize.add_argument("--workflow-path", default="", help="Workflow file path or directory")
     workflow_styleize.add_argument("--queue-path", default="", help="n8-style queue file path or directory")
     workflow_styleize.add_argument("--runs-on", default="ubuntu-latest")
-    workflow_styleize.add_argument("--shell", default="bash")
+    workflow_styleize.add_argument("--shell", default="auto", help="auto, bash, pwsh, or powershell")
     workflow_styleize.add_argument("--node-version", default="20")
     workflow_styleize.add_argument("--python-version", default="3.11")
     workflow_styleize.add_argument("--env", action="append", default=[], help="KEY=VALUE environment binding")
     workflow_styleize.set_defaults(func=cmd_workflow_styleize)
+
+    workflow_validate = workflow_sub.add_parser("validate", help="Validate a canonical pipeline and all projections")
+    add_runtime_cli_flags(workflow_validate)
+    workflow_validate.add_argument("--spec-path", required=True)
+    workflow_validate.set_defaults(func=cmd_workflow_validate)
+
+    workflow_repair = workflow_sub.add_parser(
+        "repair", help="Detect drift and optionally regenerate projections from the canonical pipeline"
+    )
+    add_runtime_cli_flags(workflow_repair)
+    workflow_repair.add_argument("--spec-path", required=True)
+    workflow_repair.add_argument("--apply", action="store_true", help="Apply deterministic projection repairs")
+    workflow_repair.set_defaults(func=cmd_workflow_repair)
+
+    workflow_run = workflow_sub.add_parser("run", help="Run the canonical pipeline without shell=True")
+    add_runtime_cli_flags(workflow_run)
+    workflow_run.add_argument("--spec-path", required=True)
+    workflow_run.add_argument("--run-id", default="")
+    workflow_run.add_argument("--receipt-dir", default="")
+    workflow_run.add_argument("--dry-run", action="store_true")
+    workflow_run.set_defaults(func=cmd_workflow_run)
 
     colab = sub.add_parser("colab", help="Inspect and route the SCBE Colab notebook lane")
     add_runtime_cli_flags(colab)

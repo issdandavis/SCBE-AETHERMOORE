@@ -1,0 +1,83 @@
+{
+  "schema_version": "scbe_cube_pipeline_v1",
+  "name": "cli-nightly-ops",
+  "path_base": "repo-root",
+  "faces": [
+    {
+      "id": "canonical",
+      "role": "fixed-center",
+      "surface": "pipeline-spec"
+    },
+    {
+      "id": "github",
+      "role": "projection",
+      "surface": "github-actions"
+    },
+    {
+      "id": "n8",
+      "role": "projection",
+      "surface": "n8-style-queue"
+    },
+    {
+      "id": "windows",
+      "role": "execution",
+      "surface": "direct-python-pwsh"
+    },
+    {
+      "id": "posix",
+      "role": "execution",
+      "surface": "direct-python-bash"
+    },
+    {
+      "id": "receipt",
+      "role": "verification",
+      "surface": "hashed-run-receipts"
+    }
+  ],
+  "workflow": {
+    "triggers": [
+      "workflow_dispatch"
+    ],
+    "cron": "0 9 * * *",
+    "runs_on": "ubuntu-latest",
+    "shell": "bash",
+    "node_version": "20",
+    "python_version": "3.11",
+    "env": {}
+  },
+  "artifacts": {
+    "spec": "workflows/pipelines/cli-nightly-ops.pipeline.json",
+    "github_workflow": ".github/workflows/cli-nightly-ops.yml",
+    "n8_queue": "workflows/n8n/cli-nightly-ops.queue.json"
+  },
+  "steps": [
+    {
+      "id": "step_01_smoke",
+      "label": "Smoke",
+      "argv": [
+        "python",
+        "scbe.py",
+        "selftest"
+      ],
+      "depends_on": [],
+      "timeout_seconds": 900,
+      "command_sha256": "a868c77464fd497cb16dc0f971488d7dd9b426ea34366f7d12f24588b9c2dd9e"
+    },
+    {
+      "id": "step_02_doctor",
+      "label": "Doctor",
+      "argv": [
+        "python",
+        "scbe.py",
+        "doctor",
+        "--json"
+      ],
+      "depends_on": [
+        "step_01_smoke"
+      ],
+      "timeout_seconds": 900,
+      "command_sha256": "db5307b48fedb86847319152fed556ed2703a414573157ded9404332a68a85a6"
+    }
+  ],
+  "pipeline_sha256": "8384daccac56324a9a7d4ff45a41892075cb1dbb6ca810cec08872b7566d27ca"
+}

@@ -271,13 +271,15 @@ def generate_fix_commands(failures: list[FailureMatch]) -> list[str]:
             commands.append("npm audit fix")
         elif f.fix_strategy == "build_fix":
             commands.append("npm run build 2>&1 | head -30")
+        elif f.fix_strategy == "cube_pipeline_repair" and f.file_path:
+            commands.append(f"python scripts/system/scbe_cube_pipeline.py rotate --spec {f.file_path} --apply")
 
     return commands
 
 
 def detect(run_id: Optional[int] = None, branch: Optional[str] = None) -> Optional[FailureReport]:
     if run_id:
-        info_raw = run_gh(["run", "view", str(run_id), "--json", "databaseId,name,headBranch"])
+        info_raw = run_gh(["run", "view", str(run_id), "--json", "databaseId,name,headBranch,conclusion,status"])
         info = json.loads(info_raw) if info_raw else {}
     else:
         info = get_latest_failed_run(branch)
@@ -295,6 +297,21 @@ def detect(run_id: Optional[int] = None, branch: Optional[str] = None) -> Option
 
     logs = get_run_logs(run_id)
     report.failures = classify_failures(logs)
+    if info.get("conclusion") == "failure" and not report.failing_jobs and not logs.strip():
+        workflow_file = report.workflow_name.replace("\\", "/").rsplit("/", 1)[-1]
+        workflow_stem = re.sub(r"\.ya?ml$", "", workflow_file, flags=re.IGNORECASE)
+        workflow_slug = re.sub(r"[^a-z0-9]+", "-", workflow_stem.lower()).strip("-")
+        report.failures.append(
+            FailureMatch(
+                pattern_id="workflow_zero_job",
+                category="workflow",
+                fix_strategy="cube_pipeline_repair",
+                description="Workflow failed before GitHub could create a job",
+                raw_match="failed run contains zero jobs and no step logs",
+                file_path=f"workflows/pipelines/{workflow_slug}.pipeline.json",
+                details="Use the canonical cube pipeline to validate and regenerate workflow projections.",
+            )
+        )
 
     # Also capture raw error lines for unclassified failures
     for line in logs.split("\n"):

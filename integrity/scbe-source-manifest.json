@@ -9,13 +9,13 @@
     "integrity/scbe-source-manifest.sig.json"
   ],
   "summary": {
-    "entryCount": 6978,
-    "totalBytes": 94859488,
-    "blobCount": 6966,
+    "entryCount": 6985,
+    "totalBytes": 94934697,
+    "blobCount": 6973,
     "symlinkCount": 1,
     "gitlinkCount": 11
   },
-  "merkleRoot": "fa93403d8af9567811dfb57f4215557e4e000baec366ab33a3d715eda9d30302",
+  "merkleRoot": "03f3ded242927712a0ddd4b07c7b3a4fb24386ca75e772d759ef65ccd125eb98",
   "entries": [
     {
       "path": ".agents/plugins/marketplace.json",
@@ -1402,6 +1402,14 @@
       "gitObject": "b43423fac9cc118281e8684f9d97fe0df0581946"
     },
     {
+      "path": ".github/workflows/cli-nightly-ops.yml",
+      "mode": "100644",
+      "kind": "blob",
+      "bytes": 869,
+      "sha256": "23607bde7eae2f90369c998475b54a8be1256bae35d49acd2b45276e42d7811c",
+      "gitObject": "3b73325996737cdf2d8d513588606549c0fb5616"
+    },
+    {
       "path": ".github/workflows/cloud-kernel-data-pipeline.yml",
       "mode": "100644",
       "kind": "blob",
@@ -1589,9 +1597,9 @@
       "path": ".github/workflows/nightly-ops.yml",
       "mode": "100644",
       "kind": "blob",
-      "bytes": 1003,
-      "sha256": "76f540f9b530e6ca0bf2d8cd3f570332e2cb86d8d1c4a1dbaa66806a898c96be",
-      "gitObject": "7d69fdb4aa70dd7a843528634a341a15362b12e7"
+      "bytes": 1147,
+      "sha256": "546ea287dad811590652269534346af063487585bd40208ef0e63ed1f1706cde",
+      "gitObject": "91d8ac4376393f46ee6ae88fc78f3915d54cd224"
     },
     {
       "path": ".github/workflows/nightly-python-full.yml",
@@ -2005,9 +2013,9 @@
       "path": ".prettierignore",
       "mode": "100644",
       "kind": "blob",
-      "bytes": 139,
-      "sha256": "c4d1ea1e63908d64104e4bed89ffe6e44f02bf4c5e70fc8562caf7325e830966",
-      "gitObject": "3e4a289361928833174ad0ce18cd213360e20876"
+      "bytes": 279,
+      "sha256": "c7c6a8ec0995202844c45630b8a705be372d3b4176d68247c0dad3e5f3058528",
+      "gitObject": "cb63cc0485acbdc993851e2613448716ff0faa76"
     },
     {
       "path": ".prettierrc",
@@ -14200,6 +14208,14 @@
       "bytes": 33551,
       "sha256": "37dd0285a0b85878d17e3ebc95ed917c7c58abd6e0b03bfa1ebe42b213fd604d",
       "gitObject": "babd7c6c5e125f2c92d239b35fb3bca2d2db0335"
+    },
+    {
+      "path": "docs/specs/SCBE_CUBE_PIPELINE.md",
+      "mode": "100644",
+      "kind": "blob",
+      "bytes": 5266,
+      "sha256": "7742fed7745f9c9e24c22f93a51dea0b4372a8b24a9eaca460823bb578166171",
+      "gitObject": "5728237ea23a1ebb4d767bc6011222fcd61e8852"
     },
     {
       "path": "docs/specs/SCBE_FLEET_GOVERNANCE_GATE.md",
@@ -27445,17 +27461,17 @@
       "path": "scripts/ci/auto_fix.py",
       "mode": "100644",
       "kind": "blob",
-      "bytes": 11204,
-      "sha256": "c419802210a28eedcc88144b70a53f1a7f7c03e16e0cedde9d87f1a57dcdffd2",
-      "gitObject": "a5e2a147c351442419f06e4b0a2ea74152e7f197"
+      "bytes": 12944,
+      "sha256": "d475679db909f19e11184dd81930586b5462ee8aeeabf2fa93fa1d24e84d2324",
+      "gitObject": "06caba0d768759bb46e9b200cf5328ff8cdbb2f1"
     },
     {
       "path": "scripts/ci/detect_failures.py",
       "mode": "100644",
       "kind": "blob",
-      "bytes": 13869,
-      "sha256": "73d3789002f31235397dcec0f23b0a4470b11307109bb34982a59820e74ad175",
-      "gitObject": "61e449a8b9f106ed9ead72bb54ff44d1348ad50f"
+      "bytes": 14979,
+      "sha256": "2bcb4afb53b125d60f6b63d5b03d49a2d7369e9544747ab3b2c92c54c32a6878",
+      "gitObject": "9bf86d6a03d5ac9fd0f04436fbae55fb447f3d3c"
     },
     {
       "path": "scripts/ci/determinism_scan.py",
@@ -30597,9 +30613,9 @@
       "path": "scripts/scbe-system-cli.py",
       "mode": "100644",
       "kind": "blob",
-      "bytes": 249090,
-      "sha256": "22086d5106f265b95cc797cb857f200e188de9e31530cdfe696b6bf0cb3b1311",
-      "gitObject": "0b2b4e5facbebfb7cc816e1605c40ffc700f6843"
+      "bytes": 252698,
+      "sha256": "b34788259db386d700ca8eb69da44960ce9d9554264b73e104aa289d3f42a866",
+      "gitObject": "7ecf8df62cb125cae8b04b904fd19c064b0597ce"
     },
     {
       "path": "scripts/scbe.py",
@@ -31789,9 +31805,9 @@
       "path": "scripts/system/github_workflow_audit.py",
       "mode": "100644",
       "kind": "blob",
-      "bytes": 15345,
-      "sha256": "196e769ed82de4320329a0b5249447f7446c4fa792ba03f2189e1892d68acb52",
-      "gitObject": "a6986b7cb7722f61f51bd164508334732122604f"
+      "bytes": 17185,
+      "sha256": "76dcb19c91b690b72d8e4672d159e2f31c2e31852bf2c1bb0d0d80abc398d991",
+      "gitObject": "3578914213c2ff5e304e7becefd020c65b9b3330"
     },
     {
       "path": "scripts/system/goal_race_loop.py",
@@ -32552,6 +32568,14 @@
       "bytes": 17016,
       "sha256": "9df10ea2fd07b81373122c7af1232586866e214021ca1874fa132a9d42c7cf5d",
       "gitObject": "4b319c09be11f36f3fee34c903534322381695e9"
+    },
+    {
+      "path": "scripts/system/scbe_cube_pipeline.py",
+      "mode": "100644",
+      "kind": "blob",
+      "bytes": 30803,
+      "sha256": "134b071ff453ced6d3569bdb0f0189fbc3b49c2223dae01daf0138f79710d889",
+      "gitObject": "a2ef001baaeb8d53cfda20ead2a512f6a28e6478"
     },
     {
       "path": "scripts/system/scbe_hook_router.py",
@@ -46426,6 +46450,14 @@
       "gitObject": "52c09279c5d51a7c10bb27f581d6a51eee9717f0"
     },
     {
+      "path": "tests/ci/test_cube_pipeline_auto_fix.py",
+      "mode": "100644",
+      "kind": "blob",
+      "bytes": 3219,
+      "sha256": "6e3faad969a612d538cb7c054d9865f6d638dc836de40ad105b09f2028b45c52",
+      "gitObject": "19a8f91fcb76c92114b1734c6380ab03a75f824a"
+    },
+    {
       "path": "tests/ci/test_harness_release_readiness.py",
       "mode": "100644",
       "kind": "blob",
@@ -49245,9 +49277,9 @@
       "path": "tests/security/test_independent_github_workflows.py",
       "mode": "100644",
       "kind": "blob",
-      "bytes": 1734,
-      "sha256": "4c6dd4615833e4c253d0bb6ce7a6694788c4260598cdd0464ddf00887d9c950f",
-      "gitObject": "171c1fbae902ec37bb4429bdb0f46fa4d5480451"
+      "bytes": 4427,
+      "sha256": "8c27b0132f43e54c3b8a49c1b638443a064448138ce37407b930559545ff0923",
+      "gitObject": "6e7a481cfdf1596b58d228e1a82b0ad38d5af11c"
     },
     {
       "path": "tests/security/test_pangram_content_gate.py",
@@ -49728,6 +49760,14 @@
       "bytes": 1890,
       "sha256": "acdfa82b82951ced129718c031a9f89a9c16a89d5f2524a2433b5313de6586b6",
       "gitObject": "9a4d856e439dddcf619601dd5ad4141ce3b2b0b2"
+    },
+    {
+      "path": "tests/system/test_scbe_cube_pipeline.py",
+      "mode": "100644",
+      "kind": "blob",
+      "bytes": 10683,
+      "sha256": "23511f49325cea3d6504e9dff5b3c547d5e410d7b23adc8ed176ad22c7710e53",
+      "gitObject": "19887cad5e185c7b4761db474d9e0048455a7a6a"
     },
     {
       "path": "tests/system/test_scbe_hook_router.py",
@@ -51621,9 +51661,9 @@
       "path": "tests/test_github_workflow_audit.py",
       "mode": "100644",
       "kind": "blob",
-      "bytes": 1883,
-      "sha256": "aec0ee068b1c5a363b0c9b3db883e0214d6a0c8e43fec6430e303b52a7247589",
-      "gitObject": "8fe2f0547d6111e98c9fcaa3b3061264da9e48fc"
+      "bytes": 3200,
+      "sha256": "fb43df09383170fa30a1717bfa80d5d91c1b88608555c2bc6c482d5108fec8c6",
+      "gitObject": "b2c472c49471c9b2737cee4016ae4772f9dbcfbe"
     },
     {
       "path": "tests/test_goal_race_loop.py",
@@ -53701,9 +53741,9 @@
       "path": "tests/test_scbe_system_cli_operator.py",
       "mode": "100644",
       "kind": "blob",
-      "bytes": 5376,
-      "sha256": "c0a10f33c6f67fc3387eba727ae47c08d9fef15125b1054e6784cf6aa08efcb8",
-      "gitObject": "d91a40000fab230707af31ccfde4274feab7117d"
+      "bytes": 9455,
+      "sha256": "ae0e1c342c9a52c1ebbc946dca69ba9f9bae87ea89ce7d2147c35e9aca7b96db",
+      "gitObject": "390a6b1675c7ccd0c58dccdd766db2a7b760b9e9"
     },
     {
       "path": "tests/test_scbe_system_cli_runtime.py",
@@ -55661,9 +55701,9 @@
       "path": "workflows/n8n/cli-nightly-ops.queue.json",
       "mode": "100644",
       "kind": "blob",
-      "bytes": 904,
-      "sha256": "d9027a895d0c702ac1b49bade6cf14dfd34c5f22b043905f3993e11ec94e98a4",
-      "gitObject": "c2781f81470c4b61cef3abdf21f873486def4fa1"
+      "bytes": 2142,
+      "sha256": "a9d3d60e1d809d4940ec76f6c2b54574d3f3245da311a246c07b8ed04df373d7",
+      "gitObject": "8a09d11eeb33962e553bf91c006c8cc8ad960512"
     },
     {
       "path": "workflows/n8n/game_events.workflow.json",
@@ -55709,9 +55749,9 @@
       "path": "workflows/n8n/nightly-ops.queue.json",
       "mode": "100644",
       "kind": "blob",
-      "bytes": 974,
-      "sha256": "fe88da01f2a88b97efee23949a3646c65e3b8f6b4da5b081a74f12862789b087",
-      "gitObject": "e5698f57b77e5b7a07804262442a7fd04e5e2195"
+      "bytes": 3026,
+      "sha256": "c39a3deccefd748c12b434d9ae9bad85ec8bb7ec145bee83d24adf46ffd09b1b",
+      "gitObject": "2f1acc51a98d341145da905d8c43dee1e17328f9"
     },
     {
       "path": "workflows/n8n/scbe_ai2ai_research_debate.workflow.json",
@@ -55800,6 +55840,22 @@
       "bytes": 7245,
       "sha256": "7f5e624989f0d71944f02d3a9909679290de79e02e366e568b618090796f19e7",
       "gitObject": "0141c1f66eaf52e722d1cbb9d9c99dc9a411b39d"
+    },
+    {
+      "path": "workflows/pipelines/cli-nightly-ops.pipeline.json",
+      "mode": "100644",
+      "kind": "blob",
+      "bytes": 1887,
+      "sha256": "2fd9309ae3e4090f2e0ee2b72ca96b1e9b968888ed8cc1e4ce2ffe467a9c2e2e",
+      "gitObject": "445c8268fdfed829eb57cee730a74e03c2932160"
+    },
+    {
+      "path": "workflows/pipelines/nightly-ops.pipeline.json",
+      "mode": "100644",
+      "kind": "blob",
+      "bytes": 2521,
+      "sha256": "95f56b445673e19bd342f5f5370a6f2f30f5922de98ab80722ff872047e2db2e",
+      "gitObject": "274aee006e1462f80569fc1aab244e3d916ebd66"
     },
     {
       "path": "workflows/scbe_ai_kernel/manager_agent_prompt.md",

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import importlib.util
+import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -40,3 +42,40 @@ def test_audit_local_workflows_builds_offline_inventory(tmp_path: Path) -> None:
     assert all(result.last_conclusion == "local_only" for result in results)
     assert all("local workflow inventory" in (result.fix_suggestion or "") for result in results)
     assert all(result.failure_reason == "socket blocked" for result in results)
+
+
+def test_cube_projection_fix_calls_direct_runner_with_apply(monkeypatch, tmp_path: Path) -> None:
+    module = _load_module()
+    runner = tmp_path / "scripts" / "system" / "scbe_cube_pipeline.py"
+    pipeline = tmp_path / "workflows" / "pipelines" / "nightly-ops.pipeline.json"
+    runner.parent.mkdir(parents=True)
+    pipeline.parent.mkdir(parents=True)
+    runner.write_text("# runner\n", encoding="utf-8")
+    pipeline.write_text("{}\n", encoding="utf-8")
+    seen: list[list[str]] = []
+
+    def fake_run(command: list[str], **kwargs) -> subprocess.CompletedProcess[str]:
+        seen.append(command)
+        assert kwargs["shell"] is False
+        return subprocess.CompletedProcess(
+            command,
+            0,
+            stdout=json.dumps({"changed": True, "after": {"solved": True}}),
+            stderr="",
+        )
+
+    monkeypatch.setattr(module.subprocess, "run", fake_run)
+
+    reports = module.repair_cube_pipeline_projections(tmp_path, apply=True)
+
+    assert reports == [
+        {
+            "spec": "workflows/pipelines/nightly-ops.pipeline.json",
+            "returncode": 0,
+            "applied": True,
+            "changed": True,
+            "solved": True,
+        }
+    ]
+    assert seen[0][0] == sys.executable
+    assert seen[0][-1] == "--apply"

@@ -1,0 +1,110 @@
+{
+  "schema_version": "scbe_cube_pipeline_v1",
+  "name": "nightly-ops",
+  "path_base": "repo-root",
+  "faces": [
+    {
+      "id": "canonical",
+      "role": "fixed-center",
+      "surface": "pipeline-spec"
+    },
+    {
+      "id": "github",
+      "role": "projection",
+      "surface": "github-actions"
+    },
+    {
+      "id": "n8",
+      "role": "projection",
+      "surface": "n8-style-queue"
+    },
+    {
+      "id": "windows",
+      "role": "execution",
+      "surface": "direct-python-pwsh"
+    },
+    {
+      "id": "posix",
+      "role": "execution",
+      "surface": "direct-python-bash"
+    },
+    {
+      "id": "receipt",
+      "role": "verification",
+      "surface": "hashed-run-receipts"
+    }
+  ],
+  "workflow": {
+    "triggers": [
+      "workflow_dispatch",
+      "push"
+    ],
+    "cron": "0 9 * * *",
+    "runs_on": "ubuntu-latest",
+    "shell": "bash",
+    "node_version": "20",
+    "python_version": "3.11",
+    "env": {
+      "SCBE_MODE": "ci"
+    }
+  },
+  "artifacts": {
+    "spec": "workflows/pipelines/nightly-ops.pipeline.json",
+    "github_workflow": ".github/workflows/nightly-ops.yml",
+    "n8_queue": "workflows/n8n/nightly-ops.queue.json"
+  },
+  "steps": [
+    {
+      "id": "step_01_smoke",
+      "label": "Smoke",
+      "argv": [
+        "python",
+        "scbe.py",
+        "selftest"
+      ],
+      "depends_on": [],
+      "timeout_seconds": 900,
+      "command_sha256": "a868c77464fd497cb16dc0f971488d7dd9b426ea34366f7d12f24588b9c2dd9e"
+    },
+    {
+      "id": "step_02_plan",
+      "label": "Plan",
+      "argv": [
+        "python",
+        "scbe.py",
+        "flow",
+        "plan",
+        "--task",
+        "nightly ops packetize smoke",
+        "--workflow-template",
+        "implementation-loop",
+        "--output",
+        "artifacts/flow_plans/demo.json",
+        "--no-action-map"
+      ],
+      "depends_on": [
+        "step_01_smoke"
+      ],
+      "timeout_seconds": 900,
+      "command_sha256": "bc35137e016cbcb7e46406c0c10098140f35a02ac938a52526618d444283d055"
+    },
+    {
+      "id": "step_03_packetize",
+      "label": "Packetize",
+      "argv": [
+        "python",
+        "scbe.py",
+        "flow",
+        "packetize",
+        "--plan",
+        "artifacts/flow_plans/demo.json"
+      ],
+      "depends_on": [
+        "step_02_plan"
+      ],
+      "timeout_seconds": 900,
+      "command_sha256": "24f96e94f02177f80a842ef1e3ab16588bd3ab5a61e00629d01596d1cede2451"
+    }
+  ],
+  "pipeline_sha256": "e0b43351bbe6a31a2f58eecb21c1ea217bf567c72f37d89a68b2bb2a30297659"
+}
