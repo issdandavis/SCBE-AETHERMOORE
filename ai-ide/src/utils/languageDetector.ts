@@ -383,7 +383,7 @@ export function getAllLanguages(): LanguageInfo[] {
   return Object.values(LANGUAGE_MAP);
 }
 
-export function getLanguagesByCategory() {
+export function getLanguagesByCategory(): Record<string, string[]> {
   return {
     'Web Development': ['.html', '.css', '.scss', '.js', '.jsx', '.ts', '.tsx'],
     'Backend': ['.py', '.java', '.php', '.rb', '.go', '.rs', '.cs'],
