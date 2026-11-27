@@ -151,3 +151,41 @@ def test_dependabot_keeps_notion_sdk_on_node20_compatible_releases() -> None:
     assert package["dependencies"]["@notionhq/client"] == "5.29.0"
     assert lock["packages"]["node_modules/@notionhq/client"]["version"] == "5.29.0"
     assert lock["packages"]["node_modules/@notionhq/client"]["engines"]["node"] == ">=18"
+
+
+def test_security_overrides_remove_hono_and_minimatch_advisory_ranges() -> None:
+    manifests = {
+        relative: json.loads((REPO_ROOT / relative).read_text(encoding="utf-8"))
+        for relative in ("package.json", "packages/cli/package.json", "scbe-visual-system/package.json")
+    }
+    locks = {
+        relative: json.loads((REPO_ROOT / relative).read_text(encoding="utf-8"))
+        for relative in (
+            "package-lock.json",
+            "packages/cli/package-lock.json",
+            "scbe-visual-system/package-lock.json",
+        )
+    }
+
+    assert manifests["package.json"]["overrides"]["hono"] == "4.13.16"
+    assert manifests["packages/cli/package.json"]["overrides"]["hono"] == "4.13.16"
+    for relative in ("package.json", "scbe-visual-system/package.json"):
+        assert manifests[relative]["overrides"]["minimatch@>=7.0.0 <11.0.1"] == "11.0.9"
+
+    for relative in ("package-lock.json", "packages/cli/package-lock.json"):
+        assert locks[relative]["packages"]["node_modules/hono"]["version"] == "4.13.16"
+
+    for lock in locks.values():
+        minimatch_versions = {
+            metadata["version"]
+            for path, metadata in lock["packages"].items()
+            if path == "node_modules/minimatch" or path.endswith("/node_modules/minimatch")
+        }
+        assert not any(7 <= int(version.split(".", maxsplit=1)[0]) < 11 for version in minimatch_versions)
+
+    visual_versions = {
+        metadata["version"]
+        for path, metadata in locks["scbe-visual-system/package-lock.json"]["packages"].items()
+        if path == "node_modules/minimatch" or path.endswith("/node_modules/minimatch")
+    }
+    assert visual_versions == {"3.1.5", "5.1.9", "11.0.9"}
