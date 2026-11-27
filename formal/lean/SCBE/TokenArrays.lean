@@ -1,3 +1,4 @@
+import SCBE.Geometry
 import Mathlib.Data.List.Basic
 import Mathlib.Data.Nat.Basic
 import Mathlib.Tactic.Positivity
@@ -41,7 +42,7 @@ theorem naturalWeightedSum_chunks (chunks : List (List QuantizedWeightedToken)) 
 def wordModulus (width : Nat) : Nat := 2 ^ width
 
 theorem wordModulus_positive (width : Nat) : 0 < wordModulus width := by
-  positivity
+  simp [wordModulus]
 
 /-- Hardware accumulation modeled as unsigned fixed-width wraparound. -/
 def hardwareWeightedSum (width : Nat) (tokens : List QuantizedWeightedToken) : Nat :=

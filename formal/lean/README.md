@@ -4,7 +4,7 @@ This project formalizes selected SCBE formulas and the contracts between encodin
 geometric scoring, directed routing, decisions and reference-state admission.
 It extends the repository's existing system map; it does not replace the runtime.
 
-The proof project contains **50 Lean theorems**. The build and axiom
+The proof project contains **60 Lean theorems**. The build and axiom
 audit are reproducible with `verify.py`. Formal results apply to the definitions
 and hypotheses written in these files. Python correspondence is a separate,
 bounded executable audit. No theorem establishes complete system security,
@@ -25,10 +25,13 @@ normalization; the theorem statements are unchanged.
 | `SCBE/Codecs.lean` | Byte-sequence round trip; cross-tongue translation composition and reversal; symbol-count preservation | Each valid tongue vocabulary is equivalent to `Fin 256` |
 | `SCBE/Vocabulary.lean` | The exported fixture has six tables, each with 256 entries | Fixture matches the named Python source; checked separately by the exporter |
 | `SCBE/ProofLab.lean` | Readable examples showing that DENY blocks ALLOW, a two-check ALLOW exposes both obligations, and the safety score is one at the origin | Reuses the production definitions and theorems above; adds no independent runtime claim |
+| `SCBE/TokenArrays.lean` | Exact weighted-token sums compose across chunks; fixed-width hardware is modulo `2^width`; no-overflow refinement; an explicit eight-bit overflow witness; common nested growth preserves adjacent layer ratios | Non-negative integer quantization for hardware sums; exact real arithmetic for layer sides; no tokenizer-quality or throughput claim |
 
 For an annotated first session, start with [PROOF_LAB.md](PROOF_LAB.md). A
 dedicated Codespaces configuration installs Lean, opens the Lean 4 extension,
 fetches the selective Mathlib cache, and runs the same verifier as CI.
+The engineering-only patent and implementation boundaries are summarized in
+[PATENT_HARDWARE_CROSSWALK.md](PATENT_HARDWARE_CROSSWALK.md).
 
 `Codecs.lean` supports a different token type for each tongue. Its equivalences
 apply to valid vocabulary members, not arbitrary text. The concrete Python table
@@ -49,7 +52,7 @@ From `formal/lean`, with `lean` and `lake` available:
 
 ```sh
 lake update
-lake exe cache get Mathlib.Data.Real.Sqrt Mathlib.Algebra.BigOperators.Group.Finset.Basic Mathlib.Tactic.Linarith Mathlib.Tactic.Positivity Mathlib.Tactic.Ring Mathlib.Data.List.Basic Mathlib.Logic.Equiv.List Mathlib.Analysis.SpecialFunctions.Pow.Real
+lake exe cache get Mathlib.Data.Real.Sqrt Mathlib.Algebra.BigOperators.Group.Finset.Basic Mathlib.Tactic.Linarith Mathlib.Tactic.Positivity Mathlib.Tactic.Ring Mathlib.Data.List.Basic Mathlib.Data.Nat.Basic Mathlib.Logic.Equiv.List Mathlib.Analysis.SpecialFunctions.Pow.Real
 python -X utf8 verify.py --output validation.json
 ```
 
