@@ -83,15 +83,22 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          docker run --rm -d --name scbe-api-smoke -p 8080:8080 "${IMAGE_SHA}"
+          docker run -d --name scbe-api-smoke -p 8080:8080 "${IMAGE_SHA}"
           cleanup() {
-            docker logs scbe-api-smoke 2>/dev/null
-            docker stop scbe-api-smoke 2>/dev/null
+            docker logs scbe-api-smoke 2>/dev/null || true
+            docker rm -f scbe-api-smoke 2>/dev/null || true
             return 0
           }
           trap cleanup EXIT
 
           for attempt in $(seq 1 30); do
+            if ! docker ps \
+              --filter 'name=^/scbe-api-smoke$' \
+              --filter 'status=running' \
+              --format '{{.Names}}' | grep -qx scbe-api-smoke; then
+              echo "API container exited before the health check passed" >&2
+              exit 1
+            fi
             if curl -fsS "${SMOKE_URL}"; then
               echo
               echo "Smoke test passed on attempt ${attempt}"
