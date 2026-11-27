@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 interface CodeEditorProps {
   code: string;
@@ -9,11 +9,7 @@ interface CodeEditorProps {
 }
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({ code, onChange, readOnly = false }) => {
-  const [lines, setLines] = useState(1);
-
-  useEffect(() => {
-    setLines(code.split('\n').length);
-  }, [code]);
+  const lines = code.split('\n').length;
 
   return (
     <div className="flex h-full w-full bg-[#1e1e1e] font-mono text-sm overflow-hidden">
