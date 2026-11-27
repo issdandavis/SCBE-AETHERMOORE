@@ -98,6 +98,6 @@ theorem nestedSide_positive
     (hbase : 0 < base) (hratio : 0 < ratio) (hcommon : 0 < common)
     (index : Nat) :
     0 < nestedSide base ratio common index := by
-  positivity
+  exact mul_pos (mul_pos hbase (pow_pos hratio index)) hcommon
 
 end SCBE

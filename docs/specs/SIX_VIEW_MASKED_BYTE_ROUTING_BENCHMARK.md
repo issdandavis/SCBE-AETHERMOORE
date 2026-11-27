@@ -1,8 +1,16 @@
 # Six-view masked-byte routing benchmark
 
-**Status:** executable-contract target; no model-quality result is claimed yet.
+**Status:** dataset/evaluator contract implemented; no model-quality result is claimed yet.
 **Question:** do six reversible byte views improve reconstruction, and does
 adaptive candidate routing add a gain beyond the representation alone?
+
+**Runtime:** `src/tokenizer/masked_byte_benchmark.py`
+**Tests:** `tests/tokenizer/test_masked_byte_benchmark.py`
+
+The runtime generates split-bound deterministic structured cases, validates
+per-step work receipts, rejects hidden budget or parameter mismatches, computes
+exact recovery and target NLL, and reports `B - A` separately from `C - B`.
+Model training and the first three-seed run remain open work.
 
 ## Three arms
 
