@@ -98,4 +98,3 @@ Related comparison points are D3PM structured transition matrices
 (`arXiv:2602.03769`). ClassDiffusion (`arXiv:2405.17532`) concerns
 image-personalization semantic preservation and is not the direct routing
 baseline for this byte experiment.
-
