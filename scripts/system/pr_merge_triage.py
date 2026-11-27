@@ -17,8 +17,23 @@ def run_gh(args: list[str]) -> Any:
         capture_output=True,
         text=True,
         timeout=60,
-        check=True,
+        check=False,
     )
+    if completed.returncode != 0:
+        no_checks_reported = (
+            args[:2] == ["pr", "checks"]
+            and completed.returncode == 1
+            and not completed.stdout.strip()
+            and "no checks reported" in completed.stderr.lower()
+        )
+        if no_checks_reported:
+            return []
+        raise subprocess.CalledProcessError(
+            completed.returncode,
+            completed.args,
+            output=completed.stdout,
+            stderr=completed.stderr,
+        )
     return json.loads(completed.stdout or "[]")
 
 
@@ -31,6 +46,8 @@ def classify_pr(pr: dict[str, Any], checks: list[dict[str, Any]]) -> tuple[str, 
         return "hold", "draft"
     if "needs-rebase" in label_names:
         return "blocked", "needs-rebase"
+    if not checks:
+        return "wait", "no checks reported"
     if failing:
         return "blocked", f"{len(failing)} failing checks"
     if pending:
