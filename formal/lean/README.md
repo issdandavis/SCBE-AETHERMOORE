@@ -4,7 +4,7 @@ This project formalizes selected SCBE formulas and the contracts between encodin
 geometric scoring, directed routing, decisions and reference-state admission.
 It extends the repository's existing system map; it does not replace the runtime.
 
-The September 18, 2026 proof pass contains **47 Lean theorems**. The build and axiom
+The proof project contains **50 Lean theorems**. The build and axiom
 audit are reproducible with `verify.py`. Formal results apply to the definitions
 and hypotheses written in these files. Python correspondence is a separate,
 bounded executable audit. No theorem establishes complete system security,
@@ -24,6 +24,11 @@ normalization; the theorem statements are unchanged.
 | `SCBE/Composition.lean` | Decision composition preserves both restrictions; associativity and commutativity; an aggregate allows only when every check allows; a fourteen-result specialization; rejected candidates do not update the reference; an authorized step requires a legal edge and all checks allowing | All mandatory checks reach the aggregator and all execution uses the guarded step |
 | `SCBE/Codecs.lean` | Byte-sequence round trip; cross-tongue translation composition and reversal; symbol-count preservation | Each valid tongue vocabulary is equivalent to `Fin 256` |
 | `SCBE/Vocabulary.lean` | The exported fixture has six tables, each with 256 entries | Fixture matches the named Python source; checked separately by the exporter |
+| `SCBE/ProofLab.lean` | Readable examples showing that DENY blocks ALLOW, a two-check ALLOW exposes both obligations, and the safety score is one at the origin | Reuses the production definitions and theorems above; adds no independent runtime claim |
+
+For an annotated first session, start with [PROOF_LAB.md](PROOF_LAB.md). A
+dedicated Codespaces configuration installs Lean, opens the Lean 4 extension,
+fetches the selective Mathlib cache, and runs the same verifier as CI.
 
 `Codecs.lean` supports a different token type for each tongue. Its equivalences
 apply to valid vocabulary members, not arbitrary text. The concrete Python table
@@ -48,7 +53,7 @@ lake exe cache get Mathlib.Data.Real.Sqrt Mathlib.Algebra.BigOperators.Group.Fin
 python -X utf8 verify.py --output validation.json
 ```
 
-The toolchain is Lean 4.19.0. `lake-manifest.json` pins Mathlib to
+The toolchain is Lean 4.19.0. `lake-manifest.json` pins Issac's Mathlib fork to
 `c44e0c8ee63ca166450922a373c7409c5d26b00b` and pins its transitive dependencies.
 No runtime Python/TypeScript dependency is added by this project. For a first
 setup that should avoid fetching the entire Mathlib cache, set
@@ -155,4 +160,4 @@ Next obligations, in dependency order:
 
 Training gains, attack detection rates, latency, Lyapunov stability and
 cryptographic indistinguishability require their own evidence and are not
-consequences of these 47 theorems.
+consequences of these 50 theorems.
