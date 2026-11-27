@@ -1,386 +1,269 @@
 {
-  "generated": "2026-06-11T01:04:50.154367+00:00",
-  "count": 67,
+  "generated": "2026-11-27T06:10:42.674361+00:00",
+  "count": 54,
   "regions": {
-    "us": 12,
-    "global": 16,
-    "eu": 11,
+    "us": 14,
+    "eu": 12,
     "asia": 16,
     "me": 8,
     "africa": 4
   },
   "items": [
     {
-      "title": "AI agent runs amok in Fedora and elsewhere",
-      "url": "https://lwn.net/SubscriberLink/1077035/c7e7c14fbd60fae9/",
+      "title": "AI made self-hosting fun again",
+      "url": "https://janlukas.blog/posts/ai-self-hosting",
       "source": "hn",
       "region": "us"
     },
     {
-      "title": "Deficient executive control in transformer attention",
-      "url": "https://academic.oup.com/pnasnexus/article/5/6/pgag149/8698838",
+      "title": "\"What's Claude's Fursona?\" and Other Questions",
+      "url": "https://herecomesthemoon.net/2026/11/whats-claudes-fursona/",
       "source": "hn",
       "region": "us"
     },
     {
-      "title": "Claude Desktop spawns 1.8 GB Hyper-V VM on every launch, even for chat-only use",
-      "url": "https://github.com/anthropics/claude-code/issues/29045",
+      "title": "Google Will Make AI Agents Use Its MCP Servers. The Gmail One Can't Send Email",
+      "url": "https://techstackups.com/articles/google-workspace-ai-agents-mcp/",
       "source": "hn",
       "region": "us"
     },
     {
-      "title": "Apache Burr: Build reliable AI agents and applications",
-      "url": "https://burr.apache.org/",
+      "title": "AI agents now control part of DeepMind's compute for Gemini experiments",
+      "url": "https://the-decoder.com/ai-agents-now-control-part-of-deepminds-compute-for-gemini-experiments-but-recursive-self-improvement-remains-distant/",
       "source": "hn",
       "region": "us"
     },
     {
-      "title": "Anthropic's model naming, extrapolated",
-      "url": "https://samwilkinson.io/posts/2026-06-09-anthropics-model-naming-extrapolated",
+      "title": "OpenAI may be in cost control mode",
+      "url": "https://micjm.com/blog/openai-is-in-cost-control-mode/",
       "source": "hn",
       "region": "us"
     },
     {
-      "title": "A €0.01 bank transfer could compromise a banking AI agent",
-      "url": "https://blue41.com/blog/how-we-helped-bunq-secure-their-financial-ai-assistant/",
+      "title": "The New York Times warns photographers not to update Photoshop over AI features",
+      "url": "https://www.theverge.com/ai-artificial-intelligence/1041227/the-new-york-times-warns-photographers-not-to-update-photoshop-over-ai-features",
       "source": "hn",
       "region": "us"
     },
     {
-      "title": "Policy on the AI Exponential",
-      "url": "https://darioamodei.com/post/policy-on-the-ai-exponential",
-      "source": "hn",
-      "region": "us"
+      "title": "The world can’t agree on AI safety. So why does the EU keep trying? - The Parliament Magazine",
+      "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxOVHU3VGlmamVWUHk3UG9fS19sdWJjbVJ2bjgwRUFEYWhZaUZvcnp3TW85LWlsY3lLQnAxZkNtM2pEbnFmbnN0NzQxdGF0dHVLR0RoSTlMeTkwaDl5dHRxSXNQTFhNMWdmTVJ1X0Z1OXViT2ZLbC1IeGEwLUEtTll2TWpGMFc0UEVWUGVxZ09jTk5QRjJCWTloTXhCS2RzSmVkSVYwM3hjQ0RVOTg?oc=5",
+      "source": "gnews-eu",
+      "region": "eu"
     },
     {
-      "title": "Claude Fable 5",
-      "url": "https://www.anthropic.com/news/claude-fable-5-mythos-5",
-      "source": "hn",
-      "region": "us"
+      "title": "Insights from table-top exercises in Europe on AI safety and cyber misuse - RAND",
+      "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTFA0Xy1waWZWMVE3UW95cHNHRjlNU0RJd1hfWW1pUnkyR3RPX3ZGRWpkRHJfVy0tckpXMy1aRVItMnZkbGdLUzNFZDNRRmNsc0lzUzZrTEIxM21VaFdNRWg5NGZLZkpPS0pI?oc=5",
+      "source": "gnews-eu",
+      "region": "eu"
     },
     {
-      "title": "Mechanistic Analysis of Alignment Algorithms in Language Models",
-      "url": "https://arxiv.org/abs/2606.09850",
-      "source": "arxiv",
-      "region": "global"
+      "title": "Advancing responsible AI across Europe - OpenAI",
+      "url": "https://news.google.com/rss/articles/CBMickFVX3lxTE55UlFLV3cyX2JQVHFFMF9HUjhJcVFhSWFSXzNPdEJ1Y0NwTEs0QlBtN0VNQ3NJam43SzJrbG91T2xCR3hWaTZ0TkN1aUpTVmlGSzAyNmgxeFBlRFBlNTc3dzktNlpZNkNQeUFMZkZuVWlEQQ?oc=5",
+      "source": "gnews-eu",
+      "region": "eu"
     },
     {
-      "title": "SynIB: Informational Bottleneck for Maximizing Synergy in Multimodal Learning",
-      "url": "https://arxiv.org/abs/2606.09853",
-      "source": "arxiv",
-      "region": "global"
-    },
-    {
-      "title": "Uncertainty-aware Multi-fidelity Closure via Conditional Normalizing Flows",
-      "url": "https://arxiv.org/abs/2606.09857",
-      "source": "arxiv",
-      "region": "global"
-    },
-    {
-      "title": "Mitigating Manifold Departure: Uncertainty-Aware Subspace Rectification for Trustworthy MLLM Decoding",
-      "url": "https://arxiv.org/abs/2606.09859",
-      "source": "arxiv",
-      "region": "global"
-    },
-    {
-      "title": "Conformal Risk Prediction for Non-Alcoholic Fatty Liver Disease Using Gradient Boosting with Distribution-Free Coverages",
-      "url": "https://arxiv.org/abs/2606.09860",
-      "source": "arxiv",
-      "region": "global"
-    },
-    {
-      "title": "Time Series as Language: A Universal Tokenizer for General-Purpose Time Series Foundation Models",
-      "url": "https://arxiv.org/abs/2606.09861",
-      "source": "arxiv",
-      "region": "global"
-    },
-    {
-      "title": "Blurry Window Attention",
-      "url": "https://arxiv.org/abs/2606.09862",
-      "source": "arxiv",
-      "region": "global"
-    },
-    {
-      "title": "From Confident Closing to Silent Failure: Characterizing False Success in LLM Agents",
-      "url": "https://arxiv.org/abs/2606.09863",
-      "source": "arxiv",
-      "region": "global"
-    },
-    {
-      "title": "光象科技Phi - Bot X1发布 ： 工业级具身智能机器人引领产线智能化升级新潮流 - 人工智能 - ITBear科技资讯",
-      "url": "https://www.itbear.com.cn/html/2026-06/1388079.html",
-      "source": "gdelt",
-      "region": "global",
-      "lang": "Chinese"
-    },
-    {
-      "title": "Software Developer in AI / Machine Learning Engineer",
-      "url": "https://it-online.co.za/2026/06/09/software-developer-in-ai-machine-learning-engineer/",
-      "source": "gdelt",
-      "region": "global",
-      "lang": "English"
-    },
-    {
-      "title": "Software Developer in AI / Machine Learning Engineer - Gauteng Johannesburg",
-      "url": "https://it-online.co.za/2026/06/09/software-developer-in-ai-machine-learning-engineer-gauteng-johannesburg/",
-      "source": "gdelt",
-      "region": "global",
-      "lang": "English"
-    },
-    {
-      "title": "Robotiq Announced AI - Enabled Platform for Workcell Integration",
-      "url": "https://www.automationworld.com/analytics/news/55383401/robotiq-announced-ai-enabled-platform-for-workcell-integration",
-      "source": "gdelt",
-      "region": "global",
-      "lang": "English"
-    },
-    {
-      "title": "From Models to Agents : Rethinking Intelligence in Financial Systems | Ankura",
-      "url": "https://www.jdsupra.com:443/legalnews/from-models-to-agents-rethinking-3989688/",
-      "source": "gdelt",
-      "region": "global",
-      "lang": "English"
-    },
-    {
-      "title": "当AI成为  超级员工  |AI _ 新浪财经 _ 新浪网",
-      "url": "https://finance.sina.com.cn/jjxw/2026-06-11/doc-iniayfvi1051346.shtml",
-      "source": "gdelt",
-      "region": "global",
-      "lang": "Chinese"
-    },
-    {
-      "title": "赛豆科技发布汽车品牌AIVA 国资 、 赛力斯 、 宁德时代 、 火山引擎联手打造了一款怎样的AI汽车 ？ _ 东方财富网",
-      "url": "https://finance.eastmoney.com/a/202606113767125065.html",
-      "source": "gdelt",
-      "region": "global",
-      "lang": "Chinese"
-    },
-    {
-      "title": "Nebius Group ( NASDAQ : NBIS ) Shares Down 3 . 8 % – What Next ?",
-      "url": "https://www.themarketsdaily.com/2026/06/10/nebius-group-nasdaqnbis-shares-down-3-8-whats-next.html",
-      "source": "gdelt",
-      "region": "global",
-      "lang": "English"
-    },
-    {
-      "title": "The UK government is safety testing AI toys - politico.eu",
+      "title": "The UK government is safety testing AI toys - POLITICO.eu",
       "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxPbzZUcU1kdGJ6dDZONF9vb3RoSGJlWUJQV183MDNpbm5HWk5sNzhiM0tmc1FtZHVKdUhDUGRSVDhCUE1RSkNnQzRWRWs3cjBITC15Y2dtTE9yRWk4Z05aY094WTZKTGNpOVlfYWdWLUdqbEl1Rzd2Qk1COWlOX2ZXVDU1MXNUR2t0MVJSODhPWS1XU0FD?oc=5",
       "source": "gnews-eu",
       "region": "eu"
     },
     {
-      "title": "Most European firms rolling out AI without proper safety or governance, ISACA warns - National Technology News",
-      "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxOVkRfWUhWMy1idUhkX3M5MnppQ0R5a19MZUFJbFoxTWJISkhyYVZBTXlfR3Z1UHdzd0ZjR2VpUzEtdDF2d1BzY09ZUEQ5Y3RyVWU2NXFpZVZoTDBkYXc4eF9Fa1F3eF82WU5FdWNlRlpjc0kxX0VZMHZ5YmR6MXlyX0R3eFdRNG1LaGRQV01tVG82eG9XWlBSc3FNM2NRT2JUdEZHUEw0WmRDamZ4VHB3VnNyTWRaRGpubDM4?oc=5",
-      "source": "gnews-eu",
-      "region": "eu"
-    },
-    {
-      "title": "How the global effort to keep AI safe went off the rails - politico.eu",
-      "url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxNUjk2QWl4cUhKVm5xSk9ScDRHOHB3WTBkOWhMUVotV0trajVZM25fTUFwRzRydmJpdlhheURBOVJHcVdOTkRCMzRjaGNwUVIzTVpSbFc5QXpCV2F5VWNLX0VjWHAxMVlZVUR3VmdxdDUxcFloSDRteWNmeHRPVjlYX1hJSFFqMWUzTlRHd3RtekhJZ0U?oc=5",
-      "source": "gnews-eu",
-      "region": "eu"
-    },
-    {
-      "title": "The UK’s Contribution to Developing the International Governance of AI Safety and How its Policy Took a Sharp Turn - Opi",
-      "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxON0JYNVFPOFZPRXpjY3BRaEpiMlMyVDUzaXhfS3RYUFBoelhzOEVKd0pSdW1rdU43SXJfYi1RMEFfWUJ1QjZZT2NFdWx4NkV3d1BRMUF4RTZ0Nno3cVk3ZGdpX0V0Z2c5VmtpWVVuWGJZWWYxMkRDdDg1Vm03cTZ0YkVISVdBdXJRY09YOURNd045MkJsR0Qzb1ozdEJ0YVEtVnlXQ1Y4TU91RzZZVks4bjFBMFp1ZThsRjdYYVBhSXZmVVRCSnEtajc0VkJWZHlacVc5Y2pzajdZSDhzd1hxcko4Zw?oc=5",
-      "source": "gnews-eu",
-      "region": "eu"
-    },
-    {
-      "title": "India's AI infrastructure buildup will bolster Southeast Asian tech hubs - Indiatimes",
-      "url": "https://news.google.com/rss/articles/CBMi5gFBVV95cUxORnR5T2h6YnlKQmtQRWs3OW04Smp1STZDM1JZRTVmLU9xUkpoQmpDS0wxWll6cVNKQWhSQ0NKZXlYdkpqeXU0UklmLWlTR2ZXUms3VVg5ZE1aY1hRUVhJTGxUZUkwQWo1VXRUUVY2VTVlc3luZHZhdTQyanhuZXVRUUZwLS1KYTFDY3JndVJiU2pDcXR4bWlXaXE3SWQwVDF3UVBVZkU0d2pfNHFCU0FYTkpPZGsybHRLNDgyNWY5ZmJuXzk4VWpRZWZZNGZFZFg4Sl8tcnB3dDU0TUdDM3VpN284aWE5UQ?oc=5",
+      "title": "India ranks 40th in AI-Human Skills Synergy Index: Coursera report - Business Standard",
+      "url": "https://news.google.com/rss/articles/CBMi9gFBVV95cUxQQkxmd3Y1bEo4V3NrTEJWb050TTBaUVBJSGNOOUZCVVVQTTdaWEVEZDFzWGJqVlZtdm4wTkswLUxULVFZWlZ0a3B2LVJfVlhieHk3MUY0cXhJUEhXbUs2cWd2WFB4em5xWU1mSUpHd25NZDgxZmRsbmN5blZsNjF4b3pSWWQxQndTV1NOd2QyWHI1QmtjV0w1bURPa1dlbXEyQXJzNGlva3c5aXVEMWxqQ0RaVU8yOG51VGduQ2ptRUUxRUZMOUNSUnI0cmNOdHU0VS1HY1ZHVktiRVlaQ1BIVnZSdWNJZ1NkaTNVZmRqT0tISTU4N1HSAfsBQVVfeXFMTkdsMmZUNTFtNm82cGU1WnFDWFdwS0xuNERvM2pkZUU5WjBsSmFOZU1lM2V0NkFsX0phWDBCVWRRdkN2dDNsaXNaYWQwNHk0ZHdkQnpFeENvRmJzSVp0OG1PLVVCOUtwTDhQcDJpWm1paXVtbmF4ZnFsM0ZWN1dDU1pSS2VxUXRTNUxFWkNYbTFUV1piM29GVWYwNzJySnEzTlZjTFo4amZtVFlyU1JVY3htZTlXWWQ2eWNSYURCWDFsMFNVWEdsQzQ5dlYtN2hqNVF1clNIQjV2cXFYTzBRcXZDRDlWUC1kd0ROazRvNVpSOEJLN3ZGNjlQcTQ?oc=5",
       "source": "gnews-asia",
       "region": "asia"
     },
     {
-      "title": "Notes from the Asia-Pacific region: India's AI governance push advances as courts, regulators weigh in - IAPP",
-      "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxPN2VvRVNCbzN3eXlHUWpHTlBSTEptVV9maW12eXg0bUtoRkM4YW5kdzN6YTh4RS1NQ1d3RUt6anFQelNTbTNteEtBUk1QM2VEaTNwSTBzc19GZFhONmJNQ1VKR2pNSUNmUkZza3kyM2RrbV9HT1YxdXlEZ092M3Rxb2xYUWNucnNZMHJmY25xeHllTnhXS3dMX3pVWHhXZVp5Z0d6UklpaU1PanFHVVMyUlNaUmNoNm9pMmFOaER4YjRuUQ?oc=5",
+      "title": "Macroscope | Jensen Huang’s return adds more uncertainty to Asia’s AI trade - South China Morning Post",
+      "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxOV3BKZlliczdjMHR5WDZZYndFS0Z5d1B2cWs0dTNlc2lHa0lRMWRnVTJNbjRreEJjZWVNejV4UURlejhJNWM1ZFptX3k2ZTBFVmtCQzY0RTBURDdpTlpCdndJZGd5bnc0ZV81bmtYTFlmOGdkNUNhQ215T0E5VlhsbmUtdER0OVpKSmdjTFR5RWVFRjlFc055ZVlQR0g4OHMtRXhZNWt2dDlZYnhGS3RvaTJYaGhJQdIBtgFBVV95cUxPUk1DYnlqWjhBQnhsN3BUeTlNYWtud1hJbm5MNWszNzZIVVM2cG1FV3AzQjl3Z1ZVUy1yd1BpbEE2SGFyYjVheEhPRFRyd3dtWEJWQ1kyVzEwb0JWd2xaS1dIbk91eXI0S1l1akYzb2dNV2VDWnNiaFRWWkZnRm1PamlUc3dBdkcxYkZyRkNXQWlRSVFqeDR2dk5Bd2lhRHRpeTBQZTU3OHM4M2JJcmZCeWVKdGt1Zw?oc=5",
       "source": "gnews-asia",
       "region": "asia"
     },
     {
-      "title": "Asia Pacific moves from AI adoption to AI advantage - KPMG",
-      "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxPSWI1anJGSTVDZDhFWjBacUk2VEpUWVZmLVFrdTZsTEo2ZTBJei1yLXBUaDJIMmhtdlA5cC12aUZ0ZzFuMzdQRmNpVE5ROENWNG1TOVhXb1Y4UGxHbmU5TU9oVF9xTmg3VjhjUTNEOElURi1QQXNYWU5QQTFFb19XQ3dOTDJYVVlkczJjbzAwN2VuVFMyTjVJSQ?oc=5",
+      "title": "India's IT lobby chief warns grads could struggle to find jobs due to AI - Nikkei Asia",
+      "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxPNlZ1bUFyRWItOXhub29yNU8xZXpWUkJmSlhWTTZpWFZGWGhKdkxZRkFYdWlRbmxWRWYyczdTOWJ6SmxlNnJtMThXR191R0VjWVFKT3g0RmRjQW9Ia2FpTUZLTGhONkp4WUJfMXk5XzBMZllVa1Y3MHBjRFJ0dkFZazdaNGlZZWJFc0xDS3NITG45ZEdsaWxXX3A0bnVqTGRtQnUwcUVCakRNLTBwd3djSDNKUGktbkdoWUFQS2xn?oc=5",
       "source": "gnews-asia",
       "region": "asia"
     },
     {
-      "title": "Microsoft's biggest India data center on track to go live in mid-2026, executive says - Reuters",
-      "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxNLXhqRV9lNGVPSktCNFNpSE1FMVhyNjZESmpndzZETmFqcENfSXkwaXc3eDV5elpuY1h3WGF1SXhWWkFFOVpDSkR3WGNGSUswemx5NGtTdG52UGdBR0NCLVNPVDVVR1o3QW5LVTZGaVQtOVc4UFhNaExXNkFtMHVibEFZUGhtMTZBNTNIZDV4UFVaNlVFa1d3YWJocU1LQkhsbUxfSXdZenNIcHhaTFVyWlh1aEtMaG10OEw0ZEdaeVFRR3U4aUhvWA?oc=5",
+      "title": "Wired World: How Artificial Intelligence is Reshaping South Asia - Asia Society",
+      "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxPbXVFNkMtdERoY0E4bElCTEo2TzNIYW9sblBWRFU5THlkTkpuYVBzV1pQZl9LaXRKWlRkQ2M5bTlqb3BTRThQYmhMYzdMQ0pwLVVISHZocWZZY3BBZG9ycXFPcVlpMHZWbDNSYmhKY01FcG96NmRHSFRsbm5NR2VmWmFIeFdzX0gwSGJYa0s1Tzl6ZWZ2NmdEZDJwYkhaUQ?oc=5",
       "source": "gnews-asia",
       "region": "asia"
     },
     {
-      "title": "«البيان» تسأل نماذج الذكاء الاصطناعي.. من سيفوز بكأس العالم ومن هو المنتخب العربي الأوفر حظاً؟ - البيان",
-      "url": "https://news.google.com/rss/articles/CBMiYkFVX3lxTE1XQUdJX2wzbWxSYlNSU0pTWkNDcW9HSE5TWG9Td012OWVSTGJmQ1RQZmE2SWUwUzR6Q2Q3V1hzdGMwUEpSOGRYTS1XWEd0VTVOTGtlVFY2YUdyZGRaYm9DMmpR?oc=5",
+      "title": "توسيع الذكاء الاصطناعي في أعمال «أبوظبي للاستثمار» - البيان",
+      "url": "https://news.google.com/rss/articles/CBMiUEFVX3lxTE9DWkgxampMVG5sLTFHR0RHNEVmZm1Rb0RiUXJfZ2k1RVRfNHBjZkZOX2ZYMGlrTGVROGd1dkoza0NCMVQ1cndURzdvSU4tZXl2?oc=5",
       "source": "gnews-me",
       "region": "me"
     },
     {
-      "title": "ما العمل عندما يصبح الذكاء الاصطناعي صديقا للطفل؟ - الإمارات اليوم",
-      "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE0wMDdZX2VFdDEyN1hQbV9GMm1zNGtfVjhZY0hCbUd2TW5uRHd3Q1JsRDZNSUtjNzNiOTQ2RlVWWXFGUmdVdHFCaldYV2xuNlptREJVZjVHRHlQUU1xQUVSTkFwbXNKXy1BYm9nYVlwR1ZLbWfSAY4BQVVfeXFMTVNmaGhVY2l0UVZ1STRkSzhCbTRScTQzQWJCc0RjbE9GZnRNemRXblpPU2pHajE5NjNUMmVzMV9oMEMybWNZbmxvQmJCUWp1YURvVWlQTDJGMGZxZVFmV2JEQmE4RWc0MzFZSF95OUEzcF9FWkpOOWhhQlowMmotZ3BBTUVyUnJNdV8xUUE1Zw?oc=5",
+      "title": "كيف حل الذكاء الاصطناعي لغزًا عمره 200 عام في 22 دقيقة - الإمارات اليوم",
+      "url": "https://news.google.com/rss/articles/CBMifEFVX3lxTE5GMVZJVnNLXzJrY1hOMGpfNmVCSXVlM01EbUE3ZHJlYXkwVXJrNzZUUVV1UzYtcW8zS09vWC1DWllPVkhjQ3MwZVdxV0s0Y2ZpcXotT3ExaDBDU0VPc1B0M0FMUmhZdndXUHkzRDdZNXJrX01QQzRtYjk0UnI?oc=5",
       "source": "gnews-me",
       "region": "me"
     },
     {
-      "title": "ماستركارد تتيح للذكاء الاصطناعي تنفيذ عمليات الدفع والشراء - موقع 24",
-      "url": "https://news.google.com/rss/articles/CBMi5ANBVV95cUxOS2lObmtMUGxoVTVxX0xvT3hvWk00ZzNGZm5ua0RzT0xkWFRTT0k3MzE4QjZTcndINEhpdENrTWJVRHVhc09XS0ktb21xM0xqT3JCLWVHWURLeXVvU0NaZWsyTl9VWWcwazI2NXRxRE1iQnRBWlhJdUktNGVTV1NSVUZ5dTl0Y2h1WTcxM2NNZ3ZLckQySjBLRUd3VnJEdjEzaEN2YUMxdno2S3o4dmFWU3hoYkNLZHdsVVNKWjMwWk9UWlpRY1Bqc2p3eGp0R2dVSDNmZVZqLTZSeXJMWGZnOF9HSkJmWFRYUW11QkpWeWhaTVR1X2JkekQ3S3VJeHFXSmluay1NN1lOdUl3aUs3NkUwbkpuV05YWDduQmxlbWZHc1VKVTNWT1dXR1Z2TzVLdjZuZUNhdjVjX1BBMnRzNHdpeWtsSU12TUJKc21TNUhKOE85R1lEZmU4RmpITGFMN2t6MWU4R3plTkVMcFZvYlBpS1U3NHZ0anZ2UWZkMGxoRWxwUVA0cjFiWEo1RnV3VkFqWFZSQ0kwb3k3Z1RIRWY3TnM1b3pDcjlpM2pfZ0hZMlpXcDRqdHNRZGg3T2tuVW1lbkQ5NzIyVEViNVJnOGtnRGd2alk0b2Z6VTFkeHBWQUwz?oc=5",
+      "title": "أسهم الذكاء الاصطناعي تقود \"نيكي\" إلى مكاسب أسبوعية 2.7% - موقع 24",
+      "url": "https://news.google.com/rss/articles/CBMiPEFVX3lxTE96dDZaakl0dkI5NU1EeHduYmNkQUgwLUpfV0pjRkdmWGxsT3hGX0NLeFhkc1hXaTBTRHcwNw?oc=5",
       "source": "gnews-me",
       "region": "me"
     },
     {
-      "title": "50 وزارة وجهة اتحادية تبحث تطبيق الذكاء الاصطناعي المساعد (فيديو) - صحيفة الخليج",
-      "url": "https://news.google.com/rss/articles/CBMi5gRBVV95cUxNd2thX21yR0s4UEpoZy1ZYURBUkliaTRGUXRqYmJXc1pYSTJwcTlYRnhGU00zckY3S3V5T2o1WFUtejVKeVR0NndXNGYyRy1ITGl2aVBhWmUyMzR2RUYtdW96RGlXZWc2SzVjWkNEcEdmUmdYSEc0YWtta2hVV0FueGtHWnBxVVpoUnFnQTBEQkFraWRwVDk4X1pUN19YMUZDUFN5WmR6RDNLeldDRlQ4TTRBblR0WTNKRjFTSjBQeTJOQ1liblpTYXlVb05DeEttWGNOeGZXN3hxNXZDanZBZmwzSktVRl9NdXY1OC1XaWYtaTFyeDFKR2FKS1Q2X2NSTjUycW1GYkxNZTg2N1YzSjBiTERlb1ZEQlp5eFJMeUhDUXhGcGNqNXZydDRZM3B6ZWNYb1RzaTFJOUpicVhybVE1UWoyb0xraXFrWEV0d2RDOXk4MjJzMEpibEZxSmxoYS02dEtFUTVzTk1ncFRjd2d6MDhLdTJIUGZVRTNSaXJFTTBSbjBQSzlhYUJpZWh1TDBSQ2x1T3R0NXVPM0ZQdjRmak5fMW8wbU8xdURNVkhUc2s3UURJU09qSlM3aTdaLTNwaFIwN2MxVFEtdUVtQVV1SGp6YXZ0QkxCVEl4Z1R2Z0dFRTBNZmkzalNSNm9PaVdERWJKSVBiMmNINzFEdUJJdVAwSmgyTHpsYm9XbFl1SVdmQ0R2ZFcyTEc3T1lRc0h5dzJZSTlWZ2h2bWZaZzVvVXg0Ti1kREFxLXR0a2NCR2dpWXhYQS04U04tbHhkR2RFRlktRDQ3aHpyeU1jRF85aXFWZw?oc=5",
+      "title": "«التربية»: منهج الذكاء الاصطناعي إلزامي حتى الصف الـ10 - صحيفة الخليج",
+      "url": "https://news.google.com/rss/articles/CBMitARBVV95cUxNbFowVEtncXVmOWg3UG9rWkJ3SE9NUDFVM3ltb20xQzhhT1MtaUdtMTBaazNNb3FaUjdnWFU5V0g0d1JabzdnYTdGcmRTdnZzNVZnQlhXbGVBVTJNN3dkajVqdzJVYjZHTGQzeFk3V0pKSVJ6Z2xoR2Q0amZlczlWZ2J0WEhycGFBa00wOUlqZklvdlRnZVJ5OXBaTzVxS2wwbmdtSDNycFNTNjF4d1piTXprUWZjaVFKcHRCMVhBb3ZfOUs3UmpmeUY5ZnV0UXg2dXJjclAxbndKanZpSXNVNWd5cXpUUV9RTUcxWmZ6Rm8zN2VMSi16dWtwcVFoV1o2LWtNaWlNN0xtdjF3S21MMC1HSHRfLVVPNlRBS1dCSnRKejlQRnRWN0FyckJEMHgtVy1tY25tTEg2aFp3LUtqa2RoaWJmclB1MlJGRkQ1S1FxWS1zSXZXMG1hSzFMRkt2akFBcldCUGpFWlFhS012Qk9ZM19zc0hldWZwTHZRLTk5X1BYbU5McDFMTGVUdU1JYmxOelMwR1JkVG5pbEd4Yk1YM2dfVlZHQXUwbWVTV1FEQjBySGdvWmJYRHZnZ0xhRmg2N2h6aHp2RFprYWpsZFdjanhRaEI3eHVmbEk3SFNrZm5xUnA1TWtubmRzbDdtUEczUXc2dHNJcGlnbUtZdXBrbGx6UXRhYUxDaUtTdmdEWnRJSVBvSnl1cDVCdmtna1duSDg0aHpBRGduelNWbE1relI?oc=5",
       "source": "gnews-me",
       "region": "me"
     },
     {
-      "title": "UJ Convenes National AI Leaders to Shape South Africa’s Digital Future - University of Johannesburg",
-      "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxPcnlhVy1faUhrRTl0TVVGOTd4RnlfNGVrd0VKVTMzUGUtOTFQak1FcVE2OGZWd1YzSnNvVFBfaTZOZ0kxM3R3SmZQUnBMY3Vnd1pwRWhSc0FsWTNpZ0NaajZiZTN2TkpvcWhGQmdpazlrZHdndElodnZ6bHVxLXlTRzhhWnZrZE1ZSTJVTXdPWHlrN3FzaXJYOEZqWWRHQQ?oc=5",
+      "title": "Building the capabilities behind Africa’s digital transformation - iAfrica.com",
+      "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxQY3o2RUR3bVd2OFlPTXFpOWFFTkRaeDBDc0pvbmFxRHYzVTJnREJRei1ZdXptTnRRaU5tUXgtRkdWU1oyTEZ2bEZ4Um9ZX1FIdFNLNVRrVXF6WDBOcG5ILXJaaDcyRktZV0xfT0FDUjlyT2FmaWkxOWU2RWx4cnJ1bDhjNmNwWGk0QUIzcw?oc=5",
       "source": "gnews-af",
       "region": "africa"
     },
     {
-      "title": "Digital Equity Africa Launches Shenzhen Innovation Camp to Expose Young Africans to AI and Emerging Technologies - MSME ",
-      "url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxOS2d0QmY2dnU0RE5yRzV2d1hPV2hjdjdkSnl3cU92dHpGR1Aya0ZTRm5hd3JPRkp1NTNLTnhDM29HWFlQa3ZYbTZlTnNabmdBYmFzdDVfNkd2Ylh1NDAxOF8teDl5ejZsUW5zY2Q1S01PVGwtS2J3RTBwdFJjd25HR0otY1RaVFF4QnY5bXJpTGcwRl9GWlo5cEdwT2MxWkVLemQ1MTNWUlJhcEJSeFAxQk9lZWhUd01SZU51eUIzQ3ppdWUzc2hUMHhsTWNCWXFrOTJIZWhWOWlIdw?oc=5",
+      "title": "President explores deeper AI, technology partnerships with Silicon Valley giants - South African Government News Agency",
+      "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxPejNXallnWEZVaVlSUG1QV1RKMHB1VC1sSTBrQl9zYU84cjRkOC14UTB5T21NNFdfMkd1bWxvNF9GYTNNUExlbjlkeXVORV8ta05RY196dk5HUWRpRy1saHhXNkUwZm1HTkotbTYzbWZGX1I1M0Y4ekVqc0tfYVpoYTlycnUwNDhtMlhMc0I4aGRsYnlWdEFOdTVmUjI2UEZ1WlVjYmhGV1JuZkpEZDBWZ1RVbw?oc=5",
       "source": "gnews-af",
       "region": "africa"
     },
     {
-      "title": "African women driving innovation: From barriers to breakthroughs - UNESCO",
-      "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxNNjNuMHlDYTA4RkQwLTUtMlNMRE5HZkpoX285ZDJDSHdKZGppUk1OV2NNUkNWY25NVk41STJNLW1iRFdJSTdaV1phSF9FWUJpNU01ZDMwRE9NV1hVUERNVUI1RHg0cjJ2SkM2SVVUSjl0WXpwSjBpTFhiSkdydFZCODdLYVZXaS1oaEdVOVdhVjhLRnh3?oc=5",
+      "title": "Africa urged to turn home-grown AI technology into engine for economic growth - The EastAfrican",
+      "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxPQ0UzV1ZBU2FTQ0g1Z2REVlVPSF80d3Z1ZVR4NmJVbm9YWFlZLWRobExBY01TTEFIS2x0YjJRWE9KdWRGc09xRzhiWTliR2lvbmRxMnEwNjk0QTB2dG1MVS0yQWNYQmh3QVVzaS1TNG5zVGFPSlZPdmJMbTRDLWlIaTU2Rm95X2RrTGY3QTZaN1l1STFQMVFDT1B6enV1T2NRSTJLRDBUN2tBbnhLZ3R2VWRhTTMxRVF6VDVPNFpNUU1WZUVyVVVjZVUtNVBTdk5M?oc=5",
       "source": "gnews-af",
       "region": "africa"
     },
     {
-      "title": "Zoom Launches New Saudi Data Center to Support AI and Digital Transformation - TechAfrica News",
-      "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxNSUZWYkJoR0RuLXFVQ25FVzhGN0tIc3h0ZGN4NndUS0t6RXVoTW45MURCWFo0U0xzNUFDTkJVNWNVaGp6ajBETXd0VjZVTVdjdzItaWhPNmNlcUJRLXIydkI1WTJqZFpHYkJXUnl3d2dYUGx4a2tQNHJHRUptYWVTSmxjcDR1RDVCZ211OHJUSi1CMng2eU8xYV8xQl9Jak9BNUpWSjczSXBybmZpTy15Z0xjR0RJQQ?oc=5",
+      "title": "Africa Tech Festival 2026: Driving Digital Sovereignty and AI Leadership Across the Continent - FF News",
+      "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxOdlhPUFpIOFRTdGhYdm44Z2FsdF9iaF9hQnZlT296VUFiOFJJdkpIYUViR3R6TVR2TThkVkhqUHdaRThpZXBnajUzSWluNGNYU1pEZE1VbmJGZkh4eHJJbjA3ZnBpX25uUTFaTjZ3c3VYYU1zNkFVdFZXUTdXOE84WThB?oc=5",
       "source": "gnews-af",
       "region": "africa"
     },
     {
-      "title": "CFM lança inteligência artificial para revolucionar a fiscalização médica no Brasil - Conselho Federal de Medicina.",
-      "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxQN1Bic09xQ2k5WjdUbmZadEN5UzBUSFNTX2NZeFpKR1cyek1NOUNkbW84d3hNZW9wMktld3VienIwUFNZT2s5dDdkcU5VLUxHdmxkdkVkWkJ5dEhLdWFjV2FIZmRBZFhHd1RkYmhFQWQ2VnBRMXc2ZG9UdFVITzRmMlY0WmFjTkd5bENxaXpYYkVYRU5lSHRQbUpZWk5Hd05KQlpqUDRuNGtTaTJzR3J3Ry1VcGNodFFzcFhJ?oc=5",
+      "title": "Despreparado para a IA - Estadão",
+      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE12R3o2Nk0xVUJ2bUF6OTFQbWVVcDR3VmhYZ3hJNFhBaXhoRndBaGFvQ1Q1OXI5cGlNbXZBNlNYbUtTTUgyTjUxbkpyZ0tPb3dmZHZZLVVkYndaamh0a25VYVNwQUdNSHZzaVE?oc=5",
       "source": "gnews-latam",
       "region": "us"
     },
     {
-      "title": "Google estende para o Brasil estratégia de IA 'onipresente' em seus produtos - O Globo",
-      "url": "https://news.google.com/rss/articles/CBMi3AFBVV95cUxPZWZ3Sk9CRjFWWkthS3IwQUhPcldBbDluX196LXJBZUFPZVBRMUtvXzNSOVQtODlxeFltQkhLN2dPTFFlVWx5REZvYVZHZU9Ib2dvYlpNODdfbDZ0NHVMXzVPcUtKd29LUDlXRy10MVEzSVRHcVFQRzdSeGdlUl9WREtCaE1XaWVKV2lwTHRzVFZGaXVtRW5FOVVRMVV1Y3BJTnRUM1dUZHEzS1BxdWt0ckVueHlTb3JvTWZId1RkTVh5eTkxcWNkRF9zRG5GSzJqSjlWOUtZdkhHTEIy0gHrAUFVX3lxTE5sX2VRa2gzUmFGdlA0WlJHcXViMmpsd2k5MXo1R3ZGRmVlN1FYMklyUHhUWkpHYXVwTlc4WWZHQzJTamQ2c3Y1b0tsRENXNmEyQlZ4TTU2TElQdC04c1Z0R0tWRldpMnpna3lyZmpUeS1NQmp4RGxoaFB0OE04UmJpeEwtdF8ydGFHczlIMVZUN2pzejdSVE4zRWxKZVhmVFBUTXZ1NXJIY2IwWE5jSlhuQlN2c0o1bG1sa1NpX1MxcHZ5V2xtQTQyTEphYXBfcjBOUHJ6SmFKMEROQ2ZWcWp6ZXJoVlR1MlJDWkE?oc=5",
+      "title": "Inteligência Artificial está por toda a parte, mas o ROI ainda não aconteceu - ConvergenciaDigital",
+      "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxNTF9zeGxwaWw4cDZFdVVTOHlpeGpBYXg1NEtmUDlVdWRhYkZxd1A0ZmZrTGFfbklmWUQzZGNxdFZKNjZFSVA4RllHM0xSVVVhcXh5aDJzSGtsbTZQRGR6eGVLaW9sdHVVbXdhdWhYNnA5SS15cXhERkFIcDlJdG1EVi1VVGZmN25VVXR4bHlYeHFvdWRac09qYnBOaTBQRnRQRXg2bEp2cjFaMmMtSFVsS0djUVJnQXZReDVR?oc=5",
       "source": "gnews-latam",
       "region": "us"
     },
     {
-      "title": "Google for Brasil 2026: ajudando as pessoas a aproveitarem ao máximo a IA - blog.google",
-      "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxNbXFNWV9lekNIakxwM3R6OXNJMG4xMEx0QmpiRkhoNXRmSnNPWHJ4WHFzMjNDLTZsNHhIQU5sVVN4bXdaY3JjZ0JJS09KUkhNeFYzODhCTjkyR2laeU0zVFpjbWtXYjVHLVctYmhQLUZzMWZJWkJpUHdfYm9mdE9GVw?oc=5",
+      "title": "Cueva defende aprovação de marco legal da inteligência artificial no Brasil - Migalhas",
+      "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxQVWpFZXdfYkRTWUNvYTRhV0o0TDd0eGl3UEdSdEp4NGtiM3NZNjkxb2RnSUpKZXpqekU5ZURHN1lfQjFSLXYtYkdQekJ5dFRUejBLQklZbmxqa3FBVDA5cGh6V19RQVBCR01NcmJybHBCUmoySFJPazBMTlhlSXg2WFBLYUtPbjdfbkVCbC1CdnNrVlRDbXpxb2RLU0c3UQ?oc=5",
       "source": "gnews-latam",
       "region": "us"
     },
     {
-      "title": "'Não podemos depender da OpenAI nem das chinesas': criador do Marco Civil da Internet faz alerta sobre o futuro da intel",
-      "url": "https://news.google.com/rss/articles/CBMijgJBVV95cUxOODdsRlZxc2ZJZlZ5VW9JbTExQnp6TTdXVy13dzN4dXpnQm5xTWtRTUdpUTJGbldBekVQbGFrMXU2UjFTNVJkSjdYNVpUTWF2SnZqQnhjY3pjWmlYYXpuTmpNNjZvM2VUb2ZiRkUyV1pfZzRDSVdGREh2dVh6YkZPQ3Q0MTNLS1hQbTdQS05QOW5Bd09oMG9pTm9oa0FYSWRKcUNsWEJ3Qmd4czNIeUtiUHZDMWJvN0JfSHgyQmItclRuaHowWGRvOGE2aWs1WVB6VGhDb0Y4ckIwVnROV2hRcjdvNUdDdkk4WVd3QW9XY2d1QzdIYjh5T1JHZXZQLVdmYXdzeTNQdDVoV09GSXc?oc=5",
+      "title": "25ª CNAB: Painel 2 - Especialistas debatem os desafios da regulação da inteligência artificial no Brasil - OAB",
+      "url": "https://news.google.com/rss/articles/CBMi0wFBVV95cUxPQWhSRlBpcjBvZEM5N3I2VWNhdEVWTU41TFQ1WUJPMlA0ZEdWeXlMMU9uU0lISmIyRmdiUFRDY01WR0VibXhYV1RLZWVFM0t5alh3SW9pOENaOG8zdlA2NDNSMjAtY1RCMnlrMjRRdnUxc1JWZEtxQ3ZyTFphQllMdmVDVDR1S0xSU2ZtQzdYaDY4NTFLeEVaR3pMbjVHUlFwOTBnZWJWQXhVaFlfRDk5eXFSZ29IVTFCWDBkdHlHUEhlT3ZNQ0J2OXMwR3JobG1PaHN3?oc=5",
       "source": "gnews-latam",
       "region": "us"
     },
     {
-      "title": "米アンソロピック、「一般向けには強力過ぎる」AIツールを一般公開 - BBC",
-      "url": "https://news.google.com/rss/articles/CBMiX0FVX3lxTE9iZnVMUkxFOFVCV1Z6UjY4VHI3TmdCbjhrZWZNTTZ0ZUxmZVZyZ1NQd2xiTng4LVRFWnhLSF8xM2VRcGlFT0pFY0NjRElTcnhQVnNORzZMcGNMU3FSLTBn0gFkQVVfeXFMTWU0a1lSOE1FRktRMkFfa1ktVXREVXg4UVNyS2ZZNEVhenVILXd5bEdscERLSlc5X3h3ajRyRXYyOU5zN2ZkbjZhSVMxTmt6WnZFellkaFpNX09wcDUzTWhOUEd1UQ?oc=5",
+      "title": "「AIは漫画を描けるようになりますか？」→「島耕作」を生んだ弘兼憲史の結論が深すぎた… | ニュースな本 - ダイヤモンド・オンライン",
+      "url": "https://news.google.com/rss/articles/CBMiTEFVX3lxTE0tdW1hSVVxUnMzR3I5TmFVRXRkeTd3d2lMbGpoaHFBVjJYam44S2V0SFBXTFBfRzN3UEtvdVJNUXJnaVhXZUNwemFkeFo?oc=5",
       "source": "gnews-jp",
       "region": "asia"
     },
     {
-      "title": "急速なAIの進化は「文明の転換点」 人工知能学会が開幕、過去最多の5000人超が参加 - ITmedia エグゼクティブ",
-      "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxORXQ5SlFuRWJkNDJlQ2RhNU8ycnUtLWpuVEtINndRNlN5TkdBVGdUVHBkN1QtVzFpTVJ3aXo1M1QtdGdYUDBBTXVEMmFaZ1Znd1ZNSVM2M2FVeXI5Y09pLVVMZEtKbXRxcHNHVHg0b2FLWDBzOHRoc1FBUXBxb1RfXw?oc=5",
+      "title": "AI法改正案の概要判明 罰則新設 - Yahoo!ニュース",
+      "url": "https://news.google.com/rss/articles/CBMiUEFVX3lxTFBORTRjbTgtOGE0ejRfcGNUZjlGWU10Z2xNNGh0d0VjVkd2TWZPSG1fYmJ4UjBKcl9PeHBaelFHU0lhLTRlMEZleVhjbU9odUJI?oc=5",
       "source": "gnews-jp",
       "region": "asia"
     },
     {
-      "title": "中国工作員、米関税批判など世論操作でチャットＧＰＴ利用＝オープンＡＩ - Reuters",
-      "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxNM0hWNWpNd25JMXFuQkhfbWhzYi1HcV9ENndXb1RfVW1VcmVQZUZZQ25hVEhEZEphemczcDJqUkNVMUNUZVpINGNlZmFsQ3R1bEF4ZkdyX29STHplSVJmWE9Sc3ZuUDhCN2FhSm9kR094ajd5eW1reDFBdGcwZ2w0akN3?oc=5",
+      "title": "アジアのAIブーム、後退の兆し見られず - WSJ",
+      "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxNSXBWZzJtVVFxZWswUWdnMVcwOE5XVkZLYWV1NU9RTlhVMW92bGhoU1BBQXZRemVVNWNzWWRjU2dwbV9zUk5vU2RzVzBZTVU3UXo3V1JNdWtaRkkzWW1qdURvWHFWRkMwa0x1VUxzRXpWaGE4ekh3TGJPWHBrbWcyWGlHYw?oc=5",
       "source": "gnews-jp",
       "region": "asia"
     },
     {
-      "title": "人工知能に欠けた「誠実性」の3つの次元――倫理・道徳・社会の統合が必要な理由 - Forbes JAPAN",
-      "url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE9rSFpDUXlZRUNFbnVyTlRqX1p0T1hza0psRXdaajZ0NXZVRE1Rc3p6c2x0cm5nYko3Y1lSNFJ4cGE1MXJMSmg3c1Jpd2REY19YOXdXclNEWVQ?oc=5",
+      "title": "家事動画を投稿すれば5万ウォン…韓国でAIを教える副業族が登場（中央日報日本語版） - Yahoo!ニュース",
+      "url": "https://news.google.com/rss/articles/CBMif0FVX3lxTE5YVTQ3SWxJcGJwalNyZE9xVUE5aFBEVFpfSm1mSUF6UnBFcHNUQ2tSNWlDTXFaVW5Ic284MF9VQnNNd19BQmJ0ci11YXA4VWkyQjhBOUozeUNQN2JhNzAzNHlTekdPcXZaRnd6MlhrbkxNQ1VKd0R1NFlKajNTeVk?oc=5",
       "source": "gnews-jp",
       "region": "asia"
     },
     {
-      "title": "Iran says it struck ships in Strait of Hormuz after US launches new strikes",
-      "url": "https://www.bbc.com/news/articles/c4gyp9v0e93o?at_medium=RSS&at_campaign=rss",
+      "title": "US too focused on Middle East and not pushing Russia hard enough, Zelensky tells BBC",
+      "url": "https://www.bbc.co.uk/news/articles/c820q9wgrpyyo?at_medium=RSS&at_campaign=rss",
       "source": "bbc",
       "region": "eu"
     },
     {
-      "title": "Trump says he 'loves the inflation' as US prices rise at fastest rate in three years",
-      "url": "https://www.bbc.com/news/articles/c0myzxjkw99o?at_medium=RSS&at_campaign=rss",
+      "title": "Major Thanksgiving storm brings flooding, flight delays across US",
+      "url": "https://www.bbc.co.uk/news/articles/ckm2mz3prq77o?at_medium=RSS&at_campaign=rss",
       "source": "bbc",
       "region": "eu"
     },
     {
-      "title": "The furious dispute over what caused Air India flight 171 to crash",
-      "url": "https://www.bbc.com/news/articles/cwyk9exxp2qo?at_medium=RSS&at_campaign=rss",
+      "title": "Watch: Roofs torn off and streets under water as severe weather hits US",
+      "url": "https://www.bbc.co.uk/news/videos/cq808d704m22o?at_medium=RSS&at_campaign=rss",
       "source": "bbc",
       "region": "eu"
     },
     {
-      "title": "Three Indian sailors missing after US says it hit tanker in Gulf of Oman",
-      "url": "https://www.bbc.com/news/articles/c0rygjw1kqxo?at_medium=RSS&at_campaign=rss",
+      "title": "New Zealand's ruling coalition falls short of parliamentary majority by one seat",
+      "url": "https://www.bbc.co.uk/news/articles/c670278qk879o?at_medium=RSS&at_campaign=rss",
       "source": "bbc",
       "region": "eu"
     },
     {
-      "title": "Mexico braces for celebrations, protests as World Cup opens amid tensions",
-      "url": "https://www.aljazeera.com/sports/2026/6/11/mexico-braced-for-celebrations-protests-as-world-cup-opens-amid-tensions?traffic_source=rss",
+      "title": "Israel uses south Lebanon Christian villages to try to divide and conquer",
+      "url": "https://www.aljazeera.com/features/2026/11/27/israel-uses-christian-villages-in-southern-lebanon-to-divide-and-conquer?traffic_source=rss",
       "source": "aje",
       "region": "me"
     },
     {
-      "title": "Iran war live: US launches attacks on ‘multiple’ Iranian targets",
-      "url": "https://www.aljazeera.com/news/liveblog/2026/6/11/iran-war-live-us-launches-attacks-on-multiple-iranian-targets?traffic_source=rss",
+      "title": "New Zealand’s Opportunity Party poised to become election kingmaker",
+      "url": "https://www.aljazeera.com/video/newsfeed/2026/11/27/new-zealands-opportunity-party-poised-to-become-election-kingmaker?traffic_source=rss",
       "source": "aje",
       "region": "me"
     },
     {
-      "title": "US bombs Iran after Trump threat, Tehran closes Hormuz Strait to all ships",
-      "url": "https://www.aljazeera.com/news/2026/6/10/us-bombs-iran-after-trump-threat-tehran-closes-hormuz-strait-to-all-ships?traffic_source=rss",
+      "title": "Estonia closing land borders with Russia to keep out spies",
+      "url": "https://www.aljazeera.com/video/newsfeed/2026/11/27/estonia-closing-land-borders-with-russia-to-keep-out-spies?traffic_source=rss",
       "source": "aje",
       "region": "me"
     },
     {
-      "title": "Trump’s claim of escorting oil through Hormuz won’t ease crisis",
-      "url": "https://www.aljazeera.com/video/quotable/2026/6/10/trumps-claim-of-escorting-oil-through-hormuz-wont-ease-crisis?traffic_source=rss",
+      "title": "Thanksgiving storms leave nearly a million without power across the US",
+      "url": "https://www.aljazeera.com/news/2026/11/27/thanksgiving-storms-leave-nearly-a-million-without-power-across-the-us?traffic_source=rss",
       "source": "aje",
       "region": "me"
     },
     {
-      "title": "Iran announces closure of Strait of Hormuz after US attacks",
-      "url": "https://www.france24.com/en/middle-east/20260610-middle-east-live-iran-announces-closure-of-strait-of-hormuz-after-us-attacks",
+      "title": "Black Friday hype stems from a desire 'to be part of a collective event', expert says",
+      "url": "https://www.france24.com/en/video/20261126-black-friday-hype-stems-from-a-desire-to-be-part-of-a-collective-event-expert-says",
       "source": "f24",
       "region": "eu"
     },
     {
-      "title": "Infantino defends World Cup ticket prices, dismisses referee US entry dispute",
-      "url": "https://www.france24.com/en/sport/20260610-infantino-defends-world-cup-ticket-prices-dismisses-referee-us-entry-dispute",
+      "title": "RN’s antisemitic past ‘coming back to haunt them’: Will Le Pen ‘distance herself’ from Bardella?",
+      "url": "https://www.france24.com/en/rn-s-antisemitic-past-coming-back-to-haunt-them-will-le-pen-distance-herself-from-bardella",
       "source": "f24",
       "region": "eu"
     },
     {
-      "title": "Bill Gates calls Epstein meetings a ‘grave error’ while defending actions in house testimony",
-      "url": "https://www.france24.com/en/americas/20260610-bill-gates-calls-epstein-meetings-a-grave-error-while-defending-actions-in-house-testimony",
+      "title": "Is Spain's snap election being rigged? Debunking viral claims",
+      "url": "https://www.france24.com/en/tv-shows/truth-or-fake/20261126-is-spain-s-snap-election-being-rigged-debunking-viral-claims",
       "source": "f24",
       "region": "eu"
     },
     {
-      "title": "Why Japan is obsessed with 3D bubble stickers",
-      "url": "https://www3.nhk.or.jp/nhkworld/en/news/backstories/4842/",
-      "source": "nhk",
-      "region": "asia"
+      "title": "'Citizens angry with the establishment' as Spain heads to the polls",
+      "url": "https://www.france24.com/en/tv-shows/a-propos/20261126-citizens-angry-with-the-establishment-as-spain-heads-to-the-polls",
+      "source": "f24",
+      "region": "eu"
     },
     {
-      "title": "How wig making in Thailand helps cancer patients and prisoners",
-      "url": "https://www3.nhk.or.jp/nhkworld/en/news/backstories/4847/",
+      "title": "Thailand's 'Death Railway' emerges after years underwater",
+      "url": "https://www3.nhk.or.jp/nhkworld/en/news/backstories/5003/",
       "source": "nhk",
       "region": "asia"
     },
@@ -391,52 +274,82 @@
       "region": "asia"
     },
     {
-      "title": "Japan recruits foreign bus drivers amid worsening labor shortage",
-      "url": "https://www3.nhk.or.jp/nhkworld/en/news/backstories/4824/",
+      "title": "Japanese know-how and Fourth of July fireworks",
+      "url": "https://www3.nhk.or.jp/nhkworld/en/news/backstories/4988/",
       "source": "nhk",
       "region": "asia"
     },
     {
-      "title": "US launches fresh waves of strikes at Iran; Tehran closes Strait of Hormuz",
-      "url": "https://timesofindia.indiatimes.com/world/middle-east/iran-closes-strait-of-hormuz-after-fresh-us-strikes-reports-clashes-with-american-forces/articleshow/131646470.cms",
+      "title": "World Cup legacy for New York kids",
+      "url": "https://www3.nhk.or.jp/nhkworld/en/news/backstories/4993/",
+      "source": "nhk",
+      "region": "asia"
+    },
+    {
+      "title": "Rs 11L chandelier, Rs 5.5L sofa': Delhi govt opens doors of 'Kejriwal's Sheesh Mahal'",
+      "url": "https://timesofindia.indiatimes.com/city/delhi/delhi-govt-opens-arvind-kejriwals-sheesh-mahal-to-media-plans-public-tours-with-rs-20-entry-fee/articleshow/136208848.cms",
       "source": "toi",
       "region": "asia"
     },
     {
-      "title": "Trump announces secret Hormuz mission; claims 100M barrels of oil moved through Hormuz",
-      "url": "https://timesofindia.indiatimes.com/world/us/us-announces-secret-hormuz-mission-trump-claims-100-million-barrels-of-oil-moved-through-hormuz/articleshow/131644284.cms",
+      "title": "Chinese bazaar near Xi-Trump summit venue selling banned Nvidia chips: Report",
+      "url": "https://timesofindia.indiatimes.com/business/international-business/close-to-where-xi-hosted-trump-days-ago-chinese-bazaar-openly-sells-banned-nvidia-chips-report/articleshow/136210989.cms",
       "source": "toi",
       "region": "asia"
     },
     {
-      "title": "India lodges protest with the US for ship attack as 3 Indians go missing",
-      "url": "https://timesofindia.indiatimes.com/india/lives-of-seafarers-important-india-lodges-protest-with-the-us-for-ship-attack-as-3-indians-go-missing/articleshow/131643930.cms",
+      "title": "'Delimitation BJP's biggest political mistake': Akhilesh; how numbers stack-up in Parl",
+      "url": "https://timesofindia.indiatimes.com/india/bjps-biggest-political-mistake-akhilesh-slams-delimitation-bill-ahead-of-parliaments-special-session/articleshow/136209808.cms",
       "source": "toi",
       "region": "asia"
     },
     {
-      "title": "Vaibhav Sooryavanshi: The sacrifice behind the sensation, ancestral land a father gave",
-      "url": "https://timesofindia.indiatimes.com/sports/cricket/news/vaibhav-sooryavanshi-the-sacrifice-behind-the-sensation-and-the-ancestral-land-a-father-gave-up/articleshow/131638215.cms",
+      "title": "'Is he crying?': Mohammed Siraj's live TV visuals spark reaction",
+      "url": "https://timesofindia.indiatimes.com/sports/cricket/india-vs-new-zealand/is-he-crying-mohammed-sirajs-live-tv-visuals-spark-reaction-from-ajinkya-rahane-murali-kartik-watch/articleshow/136209441.cms",
       "source": "toi",
       "region": "asia"
+    },
+    {
+      "title": "MXO Office-wide Innovative Solutions Opening",
+      "url": "https://sam.gov/opp/c374e165a8df4e8ba832984fe8cc4d20/view",
+      "source": "darpa",
+      "region": "us"
+    },
+    {
+      "title": "Protein Palace",
+      "url": "https://sam.gov/opp/6aacad41dde746d89b153fe765ef3ab1/view",
+      "source": "darpa",
+      "region": "us"
+    },
+    {
+      "title": "DARPA Research Solutions Opening",
+      "url": "https://sam.gov/opp/138bc7e3ca8943819357a27b61d15afc/view",
+      "source": "darpa",
+      "region": "us"
+    },
+    {
+      "title": "DARPA Lift Challenge 2",
+      "url": "https://sam.gov/opp/83b9f9f9891f40229c3a879983bf9d2d/view",
+      "source": "darpa",
+      "region": "us"
     }
   ],
   "markets": {
     "SPY": {
-      "price": 725.43,
-      "chg": -1.58
+      "price": 716.7,
+      "chg": -0.29
     },
     "QQQ": {
-      "price": 693.69,
-      "chg": -2.0
+      "price": 633.93,
+      "chg": -0.65
     },
     "NVDA": {
-      "price": 200.42,
-      "chg": -3.73
+      "price": 149.3,
+      "chg": -3.91
     },
     "BTC": {
-      "price": 61892.02,
-      "chg": 0.71
+      "price": 61776.67,
+      "chg": 2.12
     }
   }
 }

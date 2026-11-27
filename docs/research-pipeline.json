@@ -1,8 +1,8 @@
 {
-  "generated": "2026-06-11T01:04:50.413823+00:00",
-  "feed_generated": "2026-06-11T01:04:50.154367+00:00",
-  "items_processed": 67,
-  "sft_pairs_generated": 469,
+  "generated": "2026-11-27T06:10:42.997811+00:00",
+  "feed_generated": "2026-11-27T06:10:42.674361+00:00",
+  "items_processed": 54,
+  "sft_pairs_generated": 378,
   "errors": 0,
   "crypto_tier": "cryptography",
   "tokenizer_source": "src.crypto.sacred_tongues",
@@ -14,8 +14,22 @@
     "UM",
     "DR"
   ],
-  "records_file": "training-data/news-pipeline/records/2026-06-11.jsonl",
-  "sft_file": "training-data/news-pipeline/sft/2026-06-11.jsonl",
+  "records_file": "training-data/news-pipeline/records/2026-11-27.jsonl",
+  "sft_file": "training-data/news-pipeline/sft/2026-11-27.jsonl",
+  "local_artifacts": {
+    "records": {
+      "path": "training-data/news-pipeline/records/2026-11-27.jsonl",
+      "sha256": "74996589f18f678f82155a5a96b9c0e31d996708d9bf3df2a9db33fa345f400c",
+      "bytes": 270738,
+      "rows": 54
+    },
+    "sft": {
+      "path": "training-data/news-pipeline/sft/2026-11-27.jsonl",
+      "sha256": "ac83ac33c431ab1b63ffea194983663f61d5afabaeb54c715e3876157b6e5b2a",
+      "bytes": 348424,
+      "rows": 378
+    }
+  },
   "pipeline_stages": [
     "raw",
     "geotagged",
@@ -25,5 +39,16 @@
     "encrypted",
     "signed"
   ],
-  "braid_available": false
+  "braid_available": false,
+  "sft_publish": {
+    "provider": "huggingface",
+    "repo_id": "issdandavis/scbe-aethermoore-training-data",
+    "path": "data/news-pipeline/train-00000-of-00001.parquet",
+    "commit_oid": "3fe8af0f94411a1d2565777165d19183e53a5be8",
+    "commit_url": "https://huggingface.co/datasets/issdandavis/scbe-aethermoore-training-data/commit/3fe8af0f94411a1d2565777165d19183e53a5be8",
+    "sha256": "2b09a446b2483f1b6ea671d40260f6e7432056737d013b2ab0922e05975b37b8",
+    "bytes": 143786,
+    "records": 378,
+    "published": "2026-11-27T06:10:45.437082+00:00"
+  }
 }
