@@ -327,7 +327,7 @@
     "@netlify/blobs": "9.1.5",
     "@noble/hashes": "^2.0.1",
     "@noble/post-quantum": "^0.7.0",
-    "@notionhq/client": "^5.9.0",
+    "@notionhq/client": "5.27.0",
     "express": "^5.2.1",
     "express-rate-limit": "^8.3.1"
   },

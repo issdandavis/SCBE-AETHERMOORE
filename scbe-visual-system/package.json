@@ -21,20 +21,20 @@
   },
   "dependencies": {
     "@google/genai": "^2.26.0",
-    "lucide-react": "^1.49.0",
-    "react": "^19.3.0",
-    "react-dom": "^19.3.0"
+    "lucide-react": "^1.78.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   },
   "devDependencies": {
-    "@types/node": "^26.6.4",
-    "@vitejs/plugin-react": "^6.1.1",
+    "@types/node": "^26.6.6",
+    "@vitejs/plugin-react": "^6.3.0",
     "@vitest/coverage-v8": "^5.1.0",
-    "concurrently": "^10.0.5",
+    "concurrently": "^10.0.7",
     "electron": "^44.5.1",
-    "electron-builder": "^26.15.3",
+    "electron-builder": "^26.18.0",
     "jsdom": "^30.1.1",
     "typescript": "~7.0.2",
-    "vite": "^8.3.2",
+    "vite": "^8.3.8",
     "vitest": "^5.0.1",
     "wait-on": "^9.5.1"
   },
@@ -42,7 +42,7 @@
     "tar": ">=7.0.0",
     "esbuild": ">=0.25.0",
     "yauzl": "^3.2.1",
-    "ws": "^8.22.0",
+    "ws": "^8.23.0",
     "js-yaml": "^4.3.2",
     "fast-uri": "^3.1.8",
     "protobufjs": "^7.6.5",
