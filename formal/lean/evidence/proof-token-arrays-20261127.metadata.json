@@ -1,0 +1,16 @@
+{
+  "schema": "scbe-lean-proof-artifact/v1",
+  "source_branch": "feat/lean-token-array-bridge-20261127",
+  "source_head_sha": "447cfd874f16aa6ca3387adebc9f19ec8b51e6d3",
+  "pull_request_merge_ref_sha": "aba103da506332bdaf7ec1c491ec04d573ef3f7c",
+  "github_actions_run_id": 45961844911,
+  "github_actions_artifact_id": 15180934019,
+  "artifact_name": "lean-validation-aba103da506332bdaf7ec1c491ec04d573ef3f7c",
+  "receipt": "proof-token-arrays-20261127.json",
+  "receipt_sha256": "5f7a763d4346d7222385ee552e8d0fa399b1e9011d99938571f59762527e4ca9",
+  "artifact_receipt_sha256": "43ecdcf7ebb4b72c95383276fce291bfd7e7bf77c565363d4821dcfc2cdde957",
+  "normalization": "JSON whitespace only; parsed object equality verified before commit",
+  "result": "passed",
+  "theorem_count": 60,
+  "false_fixtures_rejected": 3
+}

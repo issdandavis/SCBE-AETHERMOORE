@@ -5,3 +5,4 @@ import SCBE.Composition
 import SCBE.Codecs
 import SCBE.Vocabulary
 import SCBE.ProofLab
+import SCBE.TokenArrays
