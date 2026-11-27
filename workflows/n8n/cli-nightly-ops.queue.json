@@ -1,35 +1,64 @@
 {
-  "schema_version": "scbe_n8_style_queue_v1",
+  "schema_version": "scbe_n8_style_queue_v2",
   "workflow_name": "cli-nightly-ops",
+  "pipeline_sha256": "8384daccac56324a9a7d4ff45a41892075cb1dbb6ca810cec08872b7566d27ca",
   "triggers": [
     "workflow_dispatch"
   ],
+  "runtime": {
+    "executor": "python-direct",
+    "shell": "bash",
+    "working_directory": "repo-root",
+    "requires_run_id_env": "SCBE_CUBE_RUN_ID"
+  },
   "env": {},
   "items": [
     {
       "id": "step_01_smoke",
-      "action": "command",
+      "action": "scbe_cube_step",
       "label": "Smoke",
-      "command": "python scbe.py selftest",
+      "argv": [
+        "python",
+        "scripts/system/scbe_cube_pipeline.py",
+        "run-step",
+        "--spec",
+        "workflows/pipelines/cli-nightly-ops.pipeline.json",
+        "--step",
+        "step_01_smoke"
+      ],
+      "command": "python scripts/system/scbe_cube_pipeline.py run-step --spec workflows/pipelines/cli-nightly-ops.pipeline.json --step step_01_smoke",
       "depends_on": [],
+      "command_sha256": "a868c77464fd497cb16dc0f971488d7dd9b426ea34366f7d12f24588b9c2dd9e",
       "metadata": {
         "order": 1,
-        "source": "scbe workflow styleize",
-        "github_workflow": "C:/Users/issda/SCBE-AETHERMOORE/.github/workflows/cli-nightly-ops.yml"
+        "source": "scbe cube pipeline",
+        "pipeline_sha256": "8384daccac56324a9a7d4ff45a41892075cb1dbb6ca810cec08872b7566d27ca",
+        "github_workflow": ".github/workflows/cli-nightly-ops.yml"
       }
     },
     {
       "id": "step_02_doctor",
-      "action": "command",
+      "action": "scbe_cube_step",
       "label": "Doctor",
-      "command": "python scbe.py doctor --json",
+      "argv": [
+        "python",
+        "scripts/system/scbe_cube_pipeline.py",
+        "run-step",
+        "--spec",
+        "workflows/pipelines/cli-nightly-ops.pipeline.json",
+        "--step",
+        "step_02_doctor"
+      ],
+      "command": "python scripts/system/scbe_cube_pipeline.py run-step --spec workflows/pipelines/cli-nightly-ops.pipeline.json --step step_02_doctor",
       "depends_on": [
         "step_01_smoke"
       ],
+      "command_sha256": "db5307b48fedb86847319152fed556ed2703a414573157ded9404332a68a85a6",
       "metadata": {
         "order": 2,
-        "source": "scbe workflow styleize",
-        "github_workflow": "C:/Users/issda/SCBE-AETHERMOORE/.github/workflows/cli-nightly-ops.yml"
+        "source": "scbe cube pipeline",
+        "pipeline_sha256": "8384daccac56324a9a7d4ff45a41892075cb1dbb6ca810cec08872b7566d27ca",
+        "github_workflow": ".github/workflows/cli-nightly-ops.yml"
       }
     }
   ]

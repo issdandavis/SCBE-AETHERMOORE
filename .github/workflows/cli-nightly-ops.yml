@@ -1,0 +1,30 @@
+name: 'cli-nightly-ops'
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+
+jobs:
+  orchestrate:
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: 'Smoke'
+        id: step_01_smoke
+        shell: 'bash'
+        run: |
+          python scripts/system/scbe_cube_pipeline.py run-step --spec workflows/pipelines/cli-nightly-ops.pipeline.json --step step_01_smoke
+      - name: 'Doctor'
+        id: step_02_doctor
+        shell: 'bash'
+        run: |
+          python scripts/system/scbe_cube_pipeline.py run-step --spec workflows/pipelines/cli-nightly-ops.pipeline.json --step step_02_doctor

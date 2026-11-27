@@ -1,38 +1,92 @@
 {
-  "schema_version": "scbe_n8_style_queue_v1",
+  "schema_version": "scbe_n8_style_queue_v2",
   "workflow_name": "nightly-ops",
+  "pipeline_sha256": "e0b43351bbe6a31a2f58eecb21c1ea217bf567c72f37d89a68b2bb2a30297659",
   "triggers": [
     "workflow_dispatch",
     "push"
   ],
+  "runtime": {
+    "executor": "python-direct",
+    "shell": "bash",
+    "working_directory": "repo-root",
+    "requires_run_id_env": "SCBE_CUBE_RUN_ID"
+  },
   "env": {
     "SCBE_MODE": "ci"
   },
   "items": [
     {
       "id": "step_01_smoke",
-      "action": "command",
+      "action": "scbe_cube_step",
       "label": "Smoke",
-      "command": "python scbe.py selftest",
+      "argv": [
+        "python",
+        "scripts/system/scbe_cube_pipeline.py",
+        "run-step",
+        "--spec",
+        "workflows/pipelines/nightly-ops.pipeline.json",
+        "--step",
+        "step_01_smoke"
+      ],
+      "command": "python scripts/system/scbe_cube_pipeline.py run-step --spec workflows/pipelines/nightly-ops.pipeline.json --step step_01_smoke",
       "depends_on": [],
+      "command_sha256": "a868c77464fd497cb16dc0f971488d7dd9b426ea34366f7d12f24588b9c2dd9e",
       "metadata": {
         "order": 1,
-        "source": "scbe workflow styleize",
-        "github_workflow": "C:/Users/issda/SCBE-AETHERMOORE/.github/workflows/nightly-ops.yml"
+        "source": "scbe cube pipeline",
+        "pipeline_sha256": "e0b43351bbe6a31a2f58eecb21c1ea217bf567c72f37d89a68b2bb2a30297659",
+        "github_workflow": ".github/workflows/nightly-ops.yml"
       }
     },
     {
-      "id": "step_02_packetize",
-      "action": "command",
-      "label": "Packetize",
-      "command": "python scbe.py flow packetize --plan artifacts/flow_plans/demo.json",
+      "id": "step_02_plan",
+      "action": "scbe_cube_step",
+      "label": "Plan",
+      "argv": [
+        "python",
+        "scripts/system/scbe_cube_pipeline.py",
+        "run-step",
+        "--spec",
+        "workflows/pipelines/nightly-ops.pipeline.json",
+        "--step",
+        "step_02_plan"
+      ],
+      "command": "python scripts/system/scbe_cube_pipeline.py run-step --spec workflows/pipelines/nightly-ops.pipeline.json --step step_02_plan",
       "depends_on": [
         "step_01_smoke"
       ],
+      "command_sha256": "bc35137e016cbcb7e46406c0c10098140f35a02ac938a52526618d444283d055",
       "metadata": {
         "order": 2,
-        "source": "scbe workflow styleize",
-        "github_workflow": "C:/Users/issda/SCBE-AETHERMOORE/.github/workflows/nightly-ops.yml"
+        "source": "scbe cube pipeline",
+        "pipeline_sha256": "e0b43351bbe6a31a2f58eecb21c1ea217bf567c72f37d89a68b2bb2a30297659",
+        "github_workflow": ".github/workflows/nightly-ops.yml"
+      }
+    },
+    {
+      "id": "step_03_packetize",
+      "action": "scbe_cube_step",
+      "label": "Packetize",
+      "argv": [
+        "python",
+        "scripts/system/scbe_cube_pipeline.py",
+        "run-step",
+        "--spec",
+        "workflows/pipelines/nightly-ops.pipeline.json",
+        "--step",
+        "step_03_packetize"
+      ],
+      "command": "python scripts/system/scbe_cube_pipeline.py run-step --spec workflows/pipelines/nightly-ops.pipeline.json --step step_03_packetize",
+      "depends_on": [
+        "step_02_plan"
+      ],
+      "command_sha256": "24f96e94f02177f80a842ef1e3ab16588bd3ab5a61e00629d01596d1cede2451",
+      "metadata": {
+        "order": 3,
+        "source": "scbe cube pipeline",
+        "pipeline_sha256": "e0b43351bbe6a31a2f58eecb21c1ea217bf567c72f37d89a68b2bb2a30297659",
+        "github_workflow": ".github/workflows/nightly-ops.yml"
       }
     }
   ]

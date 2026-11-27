@@ -12,7 +12,7 @@ This script:
 2. Groups failures by fix strategy
 3. Applies deterministic fixes (formatting, imports) directly
 4. Dispatches complex fixes to Claude Code CLI
-5. Creates a fix branch and PR if changes were made
+5. Creates a fix branch and PR only when --create-pr is explicitly requested
 """
 
 from __future__ import annotations
@@ -28,12 +28,12 @@ from datetime import datetime
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 
 
-def run(cmd: list[str], **kwargs) -> subprocess.CompletedProcess:
-    return subprocess.run(cmd, capture_output=True, text=True, cwd=str(REPO_ROOT), timeout=300, **kwargs)
+def run(cmd: list[str], *, timeout: int = 300, **kwargs) -> subprocess.CompletedProcess:
+    return subprocess.run(cmd, capture_output=True, text=True, cwd=str(REPO_ROOT), timeout=timeout, **kwargs)
 
 
 def git_has_changes() -> bool:
-    result = run(["git", "diff", "--stat"])
+    result = run(["git", "status", "--porcelain=v1"])
     return bool(result.stdout.strip())
 
 
@@ -54,6 +54,35 @@ def apply_npm_audit() -> bool:
     print("  [FIX] Running npm audit fix...")
     run(["npm", "audit", "fix"])
     return git_has_changes()
+
+
+def apply_cube_pipeline_repair(failure: dict, dry_run: bool = False) -> bool:
+    """Regenerate known workflow projections from a validated canonical spec."""
+    raw_path = str(failure.get("file_path") or "").strip()
+    spec_path = (REPO_ROOT / raw_path).resolve()
+    try:
+        spec_path.relative_to(REPO_ROOT.resolve())
+    except ValueError:
+        print("    Cube pipeline spec is outside the repository — refusing repair")
+        return False
+    if not spec_path.is_file():
+        print(f"    Canonical cube pipeline not found: {spec_path}")
+        return False
+    runner = REPO_ROOT / "scripts" / "system" / "scbe_cube_pipeline.py"
+    cmd = [sys.executable, str(runner), "rotate", "--spec", str(spec_path)]
+    if not dry_run:
+        cmd.append("--apply")
+    result = run(cmd)
+    if result.returncode != 0:
+        print(f"    Cube pipeline repair failed: {(result.stderr or result.stdout)[:300]}")
+        return False
+    try:
+        report = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        print("    Cube pipeline repair returned an unreadable receipt")
+        return False
+    print("    Cube pipeline projections validated" + (" and repaired" if not dry_run else ""))
+    return bool(report.get("changed")) if not dry_run else False
 
 
 def apply_claude_fix(prompt: str, dry_run: bool = False) -> bool:
@@ -117,6 +146,10 @@ def apply_fixes(failures: list[dict], fix_commands: list[str], dry_run: bool = F
         elif strategy == "build_fix":
             print("    Build errors need manual investigation")
             print(f"    Error: {failure.get('raw_match', 'unknown')[:200]}")
+
+        elif strategy == "cube_pipeline_repair":
+            if apply_cube_pipeline_repair(failure, dry_run):
+                fixes_applied += 1
 
     return fixes_applied
 
@@ -224,7 +257,8 @@ def main():
     parser.add_argument("--branch", type=str, help="Branch to check (with --detect)")
     parser.add_argument("--run-id", type=int, help="Specific run ID (with --detect)")
     parser.add_argument("--dry-run", action="store_true", help="Show fixes without applying")
-    parser.add_argument("--no-pr", action="store_true", help="Don't create a PR")
+    parser.add_argument("--create-pr", action="store_true", help="Create and push a fix PR after local changes")
+    parser.add_argument("--no-pr", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
 
     print(f"\n{'='*60}")
@@ -294,8 +328,10 @@ def main():
 
     print(f"\n  Applied {fixes_applied} fix(es)")
 
-    if fixes_applied > 0 and not args.no_pr:
+    if fixes_applied > 0 and args.create_pr and not args.no_pr:
         create_fix_branch_and_pr(run_id, fixes_applied)
+    elif fixes_applied > 0:
+        print("  Changes were left local for review; pass --create-pr to publish them.")
     elif fixes_applied == 0:
         print("  No automated fixes could be applied. Manual intervention needed.")
         if fix_commands:

@@ -11,3 +11,7 @@ __pycache__
 .pytest_tmp
 pytest-cache-files-*
 artifacts
+
+# Deterministic SCBE cube-pipeline projections own their exact JSON layout.
+workflows/n8n/*.queue.json
+workflows/pipelines/*.pipeline.json

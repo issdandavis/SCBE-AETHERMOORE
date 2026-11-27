@@ -288,6 +288,42 @@ def audit() -> list[WorkflowHealth]:
     return sorted(results, key=lambda r: {"red": 0, "yellow": 1, "green": 2}.get(r.triage, 3))
 
 
+def repair_cube_pipeline_projections(repo_root: Path, *, apply: bool) -> list[dict]:
+    """Validate or repair only workflows backed by canonical cube specs."""
+    runner = repo_root / "scripts" / "system" / "scbe_cube_pipeline.py"
+    pipeline_dir = repo_root / "workflows" / "pipelines"
+    if not runner.is_file() or not pipeline_dir.is_dir():
+        return []
+    reports = []
+    for spec_path in sorted(pipeline_dir.glob("*.pipeline.json")):
+        command = [sys.executable, str(runner), "rotate", "--spec", str(spec_path)]
+        if apply:
+            command.append("--apply")
+        completed = subprocess.run(
+            command,
+            cwd=str(repo_root),
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+            shell=False,
+        )
+        try:
+            receipt = json.loads(completed.stdout) if completed.stdout.strip() else {}
+        except json.JSONDecodeError:
+            receipt = {}
+        reports.append(
+            {
+                "spec": str(spec_path.relative_to(repo_root)).replace("\\", "/"),
+                "returncode": completed.returncode,
+                "applied": apply,
+                "changed": bool(receipt.get("changed")),
+                "solved": bool((receipt.get("after") or {}).get("solved")),
+            }
+        )
+    return reports
+
+
 def print_dashboard(results: list[WorkflowHealth]):
     """Print human-readable dashboard."""
     icons = {"green": "+", "yellow": "~", "red": "!"}
@@ -327,6 +363,10 @@ def main():
 
     print("Auditing GitHub workflows...")
     results = audit()
+    cube_repairs = repair_cube_pipeline_projections(
+        Path(__file__).resolve().parent.parent.parent,
+        apply="--fix" in args,
+    )
 
     if as_json:
         output = [
@@ -344,6 +384,11 @@ def main():
         print(json.dumps(output, indent=2))
     else:
         print_dashboard(results)
+        if cube_repairs:
+            changed = sum(1 for item in cube_repairs if item["changed"])
+            solved = sum(1 for item in cube_repairs if item["solved"])
+            mode = "repair" if "--fix" in args else "check"
+            print(f"Cube projection {mode}: {solved}/{len(cube_repairs)} solved, {changed} changed")
 
     # Save to artifacts
     out_dir = Path(__file__).resolve().parent.parent.parent / "artifacts" / "system-audit"
