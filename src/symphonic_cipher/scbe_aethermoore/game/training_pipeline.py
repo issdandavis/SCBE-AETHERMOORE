@@ -18,6 +18,7 @@ A5: Composition — full audit trail from payment → events → SFT → model.
 from __future__ import annotations
 
 import json
+import itertools
 import time
 import uuid
 from dataclasses import dataclass
@@ -160,6 +161,7 @@ AUTO_APPROVE_THRESHOLD = 0.8
 QUARANTINE_THRESHOLD = 0.4
 MIN_QUALITY_SCORE = 0.5
 FINE_TUNE_THRESHOLD = 100
+_EVENT_ID_SEQUENCE = itertools.count(1)
 
 
 # ---------------------------------------------------------------------------
@@ -185,6 +187,12 @@ class TrainingPipeline:
         self._pairs: List[SFTPair] = []
         self._batches: List[HFBatch] = []
         self._jobs: List[FineTuneJob] = []
+        self._id_sequence = 0
+
+    def _new_id(self, prefix: str) -> str:
+        """Return an ID that stays unique even if clock and random entropy repeat."""
+        self._id_sequence += 1
+        return f"{prefix}_{time.time_ns()}_{self._id_sequence}_{uuid.uuid4().hex}"
 
     @property
     def companion_id(self) -> str:
@@ -209,7 +217,7 @@ class TrainingPipeline:
     # ----- Tier 1: Ingest -----
 
     def ingest_event(self, event: GameEvent) -> str:
-        record_id = f"rec_{int(time.time())}_{uuid.uuid4().hex[:6]}"
+        record_id = self._new_id("rec")
         record = DatasetRecord(
             record_id=record_id,
             event=event,
@@ -324,7 +332,7 @@ class TrainingPipeline:
         )
 
         return SFTPair(
-            pair_id=f"sft_{int(time.time())}_{uuid.uuid4().hex[:6]}",
+            pair_id=self._new_id("sft"),
             source_record_id=record.record_id,
             companion_id=self._companion_id,
             instruction=instruction,
@@ -347,7 +355,7 @@ class TrainingPipeline:
             return None
 
         batch = HFBatch(
-            batch_id=f"batch_{int(time.time())}_{uuid.uuid4().hex[:6]}",
+            batch_id=self._new_id("batch"),
             companion_id=self._companion_id,
             pairs=list(unpushed),
             dataset_repo=self._dataset_repo,
@@ -400,7 +408,7 @@ class TrainingPipeline:
         pushed = [b for b in self._batches if b.status == "pushed"]
         total = sum(len(b.pairs) for b in pushed)
         job = FineTuneJob(
-            job_id=f"ft_{int(time.time())}_{uuid.uuid4().hex[:6]}",
+            job_id=self._new_id("ft"),
             companion_id=self._companion_id,
             dataset_repo=self._dataset_repo,
             model_repo=self._model_repo,
@@ -468,7 +476,7 @@ def create_game_event(
     outcome: EventOutcome,
 ) -> GameEvent:
     return GameEvent(
-        event_id=f"evt_{int(time.time())}_{uuid.uuid4().hex[:6]}",
+        event_id=f"evt_{time.time_ns()}_{next(_EVENT_ID_SEQUENCE)}_{uuid.uuid4().hex}",
         session_id=session_id,
         player_id=player_id,
         companion_id=companion_id,

@@ -153,9 +153,10 @@ def test_security_floors_and_example_lock_exclude_known_vulnerable_ranges() -> N
         "certifi>=2026.10.23",
         "filelock>=4.2.1",
         "mcp>=1.30.0,<2.0.0",
-        "opentelemetry-api>=1.45.1",
+        "opentelemetry-api>=1.45.2",
         "pillow>=13.0.0",
         "pygments>=2.20.0",
+        "soupsieve>=4.0",
         "strands-agents>=1.48.0",
         "urllib3>=2.8.0",
         "uv>=0.13.4",
@@ -172,7 +173,7 @@ def test_security_floors_and_example_lock_exclude_known_vulnerable_ranges() -> N
         assert "strands-agents-tools" not in example_dependencies
         assert "certifi>=2026.10.23" in example_dependencies
         assert "mcp >= 1.30.0, < 2.0.0" in example_dependencies
-        assert "opentelemetry-api>=1.45.1" in example_dependencies
+        assert "opentelemetry-api>=1.45.2" in example_dependencies
         assert "pygments>=2.20.0" in example_dependencies
         assert "strands-agents >= 1.48.0" in example_dependencies
         assert "urllib3>=2.8.0" in example_dependencies
