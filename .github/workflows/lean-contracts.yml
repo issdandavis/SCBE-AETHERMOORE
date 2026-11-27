@@ -4,12 +4,14 @@ on:
   pull_request:
     paths:
       - 'formal/lean/**'
+      - '.devcontainer/lean-proof/**'
       - 'src/crypto/sacred_tongues.py'
       - '.github/workflows/lean-contracts.yml'
   push:
     branches: [main]
     paths:
       - 'formal/lean/**'
+      - '.devcontainer/lean-proof/**'
       - 'src/crypto/sacred_tongues.py'
       - '.github/workflows/lean-contracts.yml'
   workflow_dispatch:
