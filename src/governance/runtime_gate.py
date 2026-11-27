@@ -1208,11 +1208,15 @@ class RuntimeGate:
         #
         # Calibration poisoning guard: an attacker who speaks first must not be
         # able to define the trusted baseline. Overt override language and
-        # intent-spike keywords are routed through full evaluation (where they are
-        # quarantined/denied and therefore never admitted to the session centroid)
-        # rather than silently seeding it. Encoding-tamper / identifier-canonicality
-        # signals are intentionally left to the calibration branch below, which
-        # already escalates them to QUARANTINE without admitting them to the centroid.
+        # intent-spike keywords are handled inside the calibration branch below:
+        # they are held as QUARANTINE (reviewed, never admitted to the centroid and
+        # never granted positive trust) rather than silently seeding it. They are
+        # deliberately NOT routed to full evaluation during warm-up, because the
+        # session centroid is still uninitialized there and a geometric comparison
+        # against the placeholder reference would spuriously spin_deny a benign
+        # keyword-bearing request (e.g. "collect", "configuration") and add it to
+        # immune memory permanently. Encoding-tamper / identifier-canonicality
+        # signals are likewise escalated to QUARANTINE in the calibration branch.
         calibration_suspect = _is_high_confidence_override_attempt(full_text) or self._has_intent_spike_keyword(
             full_text
         )
@@ -1221,7 +1225,6 @@ class RuntimeGate:
             and action_hash not in self._immune
             and reroute_rule is None
             and not classifier_quarantine
-            and not calibration_suspect
         ):
             coords = self._validated_coords(self._text_to_coords(full_text)).tolist()
             if self._trichromatic_engine is not None:
@@ -1241,7 +1244,7 @@ class RuntimeGate:
                 trichromatic_state_hash = tri_state.state_hash
                 trichromatic_strongest_bridge = tri_scores.strongest_bridge
             self._cumulative_cost += 1.0  # nominal cost during calibration
-            calib_signals = [*_carry, "calibrating"]
+            calib_signals = [*_carry, "calibration_withheld(suspect)" if calibration_suspect else "calibrating"]
             calib_decision = Decision.ALLOW
             if tamper_data is not None:
                 calib_signals.append(
@@ -1274,6 +1277,11 @@ class RuntimeGate:
                         f"identifier_canonicality_veto_quarantine(kind={identifier_canonicality_kind},score={identifier_canonicality_score:.2f})"  # noqa: E501
                     )
                 calib_decision = escalated
+            if calibration_suspect:
+                # Hold suspicious warm-up input for review without trusting it and
+                # without a geometry-driven permanent denial. Not added to immune
+                # memory, so a later clean request is not blocked.
+                calib_decision = _escalate_decision(calib_decision, Decision.QUARANTINE)
             self._trust_history.append(1 if calib_decision == Decision.ALLOW else -1)
             fib = fibonacci_trust_level(self._trust_history)
             if calib_decision == Decision.ALLOW and self._trichromatic_engine is not None:
