@@ -19,14 +19,41 @@ import { detectLanguage, getLanguagesByCategory, LANGUAGE_MAP } from './utils/la
 
 const API_BASE = 'http://localhost:8100/api';
 
+interface SavedHfPairState {
+  installed: boolean;
+  activeAgentId: HfAgentId | null;
+}
+
+function readSavedHfPairState(): SavedHfPairState {
+  const emptyState: SavedHfPairState = { installed: false, activeAgentId: null };
+  if (typeof window === 'undefined') return emptyState;
+
+  try {
+    const raw = window.localStorage.getItem(HF_PAIR_STORAGE_KEY);
+    if (!raw) return emptyState;
+
+    const saved = JSON.parse(raw) as { installed?: boolean; activeAgentId?: HfAgentId | null };
+    return {
+      installed: Boolean(saved.installed),
+      activeAgentId: saved.activeAgentId ?? null,
+    };
+  } catch {
+    window.localStorage.removeItem(HF_PAIR_STORAGE_KEY);
+    return emptyState;
+  }
+}
+
 export default function App() {
   const [files, setFiles] = useState<FileNode[]>(INITIAL_FILES);
-  const [activeFile, setActiveFile] = useState<FileNode | null>(null);
+  const [activeFile, setActiveFile] = useState<FileNode | null>(() => {
+    const root = INITIAL_FILES.find(f => f.id === 'root');
+    return root?.children?.find(f => f.name === 'README.md') ?? null;
+  });
   const [logs, setLogs] = useState<string[]>([
     'Welcome to SCBE-AETHERMOORE Training Lab v1.0.0',
     '----------------------------------------',
     'Multi-Language Support: 40+ programming languages! ✨',
-    'Type \"languages\" to see all supported languages.',
+    'Type "languages" to see all supported languages.',
     'New here? Type "intro" for a quick tour.',
     'Try "@hf-pair install" to wire the Hugging Face clone-trooper pair.',
     'Type "help" to see all commands.',
@@ -34,31 +61,11 @@ export default function App() {
   ]);
   const [mode, setMode] = useState<'show-me' | 'do-it'>('show-me');
   const [isAiOpen, setIsAiOpen] = useState(false);
-  const [hfPairInstalled, setHfPairInstalled] = useState(false);
-  const [activeHfAgentId, setActiveHfAgentId] = useState<HfAgentId | null>(null);
-
-  // Load README by default on mount
-  useEffect(() => {
-    const root = INITIAL_FILES.find(f => f.id === 'root');
-    const readme = root?.children?.find(f => f.name === 'README.md');
-    if (readme) {
-      setActiveFile(readme);
-    }
-  }, []);
-
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(HF_PAIR_STORAGE_KEY);
-      if (!raw) {
-        return;
-      }
-      const saved = JSON.parse(raw) as { installed?: boolean; activeAgentId?: HfAgentId | null };
-      setHfPairInstalled(Boolean(saved.installed));
-      setActiveHfAgentId(saved.activeAgentId ?? null);
-    } catch {
-      window.localStorage.removeItem(HF_PAIR_STORAGE_KEY);
-    }
-  }, []);
+  const [initialHfPairState] = useState(readSavedHfPairState);
+  const [hfPairInstalled, setHfPairInstalled] = useState(initialHfPairState.installed);
+  const [activeHfAgentId, setActiveHfAgentId] = useState<HfAgentId | null>(
+    initialHfPairState.activeAgentId
+  );
 
   useEffect(() => {
     window.localStorage.setItem(
@@ -383,7 +390,7 @@ export default function App() {
       for (const category of Object.keys(categories)) {
         addLog(`${category}:`);
         for (const ext of categories[category]) {
-          const info = (LANGUAGE_MAP as any)[ext];
+          const info = LANGUAGE_MAP[ext as keyof typeof LANGUAGE_MAP];
           if (!info) continue;
           const icon = String(info.icon || '').padEnd(7, ' ');
           const name = String(info.name || ext);

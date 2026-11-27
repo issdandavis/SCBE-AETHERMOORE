@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getHfAgent, HfAgentId, parseHfAgentPrompt } from '../data/hfAgentPair';
 
 const API_BASE = 'http://localhost:8100/api';
+const INITIAL_MESSAGE_TIMESTAMP = Date.now();
 
 interface Message {
   id: string;
@@ -38,7 +39,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
       id: 'init',
       role: 'ai',
       content: 'Hello! I am your AI Architect. I can help you write code, explain concepts, or debug issues. What are we building today?',
-      timestamp: Date.now()
+      timestamp: INITIAL_MESSAGE_TIMESTAMP
     }
   ]);
   const [isTyping, setIsTyping] = useState(false);
@@ -115,7 +116,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
 
     // Demo fallback (offline-friendly)
     setTimeout(() => {
-      let response = "I'm not sure how to help with that yet.";
+      let response: string;
 
       const lowerInput = userMsg.content.toLowerCase();
 
