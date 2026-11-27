@@ -192,6 +192,8 @@ export const MIN_QUALITY_SCORE = 0.5;
 /** Number of approved pairs needed before triggering a fine-tune */
 export const FINE_TUNE_THRESHOLD = 100;
 
+let eventIdSequence = 0;
+
 // ---------------------------------------------------------------------------
 //  Training Pipeline
 // ---------------------------------------------------------------------------
@@ -205,6 +207,7 @@ export class TrainingPipeline {
   private _jobs: FineTuneJob[] = [];
   private _datasetRepo: string;
   private _modelRepo: string;
+  private _idSequence = 0;
 
   constructor(
     companionId: string,
@@ -216,6 +219,11 @@ export class TrainingPipeline {
     this._playerId = playerId;
     this._datasetRepo = datasetRepo || `scbe-companion-${companionId}`;
     this._modelRepo = modelRepo || `scbe-model-${companionId}`;
+  }
+
+  private _newId(prefix: string): string {
+    this._idSequence += 1;
+    return `${prefix}_${Date.now()}_${this._idSequence}_${Math.random().toString(36).slice(2)}`;
   }
 
   get companionId(): string {
@@ -239,7 +247,7 @@ export class TrainingPipeline {
    * Returns the dataset record ID.
    */
   ingestEvent(event: GameEvent): string {
-    const recordId = `rec_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const recordId = this._newId('rec');
 
     const record: DatasetRecord = {
       recordId,
@@ -394,7 +402,7 @@ export class TrainingPipeline {
     const qualityScore = outcome.safetyScore * successFactor * Math.max(action.confidence, 0.5);
 
     return {
-      pairId: `sft_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      pairId: this._newId('sft'),
       sourceRecordId: record.recordId,
       companionId: this._companionId,
       instruction,
@@ -421,7 +429,7 @@ export class TrainingPipeline {
     if (unpushed.length === 0) return null;
 
     const batch: HFBatch = {
-      batchId: `batch_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      batchId: this._newId('batch'),
       companionId: this._companionId,
       pairs: [...unpushed],
       datasetRepo: this._datasetRepo,
@@ -495,7 +503,7 @@ export class TrainingPipeline {
     const totalPairs = pushedBatches.reduce((sum, b) => sum + b.pairs.length, 0);
 
     const job: FineTuneJob = {
-      jobId: `ft_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      jobId: this._newId('ft'),
       companionId: this._companionId,
       datasetRepo: this._datasetRepo,
       modelRepo: this._modelRepo,
@@ -639,8 +647,9 @@ export function createGameEvent(
   action: EventAction,
   outcome: EventOutcome
 ): GameEvent {
+  eventIdSequence += 1;
   return {
-    eventId: `evt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    eventId: `evt_${Date.now()}_${eventIdSequence}_${Math.random().toString(36).slice(2)}`,
     sessionId,
     playerId,
     companionId,

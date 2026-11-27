@@ -8,7 +8,7 @@
  * batch creation, JSONL formatting, fine-tune job tracking.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   AUTO_APPROVE_THRESHOLD,
   QUARANTINE_THRESHOLD,
@@ -389,6 +389,22 @@ describe('Fine-Tune Jobs', () => {
     pipeline.completeFineTuneJob(job.jobId, 'ckpt_1');
 
     expect(pipeline.completeFineTuneJob(job.jobId, 'ckpt_2')).toBe(false);
+  });
+
+  it('keeps threshold records distinct when clock and entropy repeat', () => {
+    const dateNow = vi.spyOn(Date, 'now').mockReturnValue(1);
+    const random = vi.spyOn(Math, 'random').mockReturnValue(0.5);
+    try {
+      const pipeline = pipelineWithPushedBatches(FINE_TUNE_THRESHOLD);
+      expect(pipeline.totalRecords).toBe(FINE_TUNE_THRESHOLD);
+      expect(pipeline.totalPairs).toBe(FINE_TUNE_THRESHOLD);
+      const job = pipeline.createFineTuneJob();
+      expect(job).not.toBeNull();
+      expect(job?.totalPairs).toBe(FINE_TUNE_THRESHOLD);
+    } finally {
+      dateNow.mockRestore();
+      random.mockRestore();
+    }
   });
 });
 
