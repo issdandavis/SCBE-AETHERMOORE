@@ -817,6 +817,22 @@ class RuntimeGate:
             coords[4] = min(1.0, coords[4] * 1.8)  # UM dimension
         return coords
 
+    def _has_intent_spike_keyword(self, text: str) -> bool:
+        """Token-aware intent-spike detection for the calibration guard.
+
+        Single-word keywords must match on word boundaries so incidental
+        substrings (e.g. "dan" inside "attendance") do not flag benign input;
+        multi-word phrases (e.g. "developer mode") keep substring matching.
+        """
+        lowered = text.lower()
+        for keyword in self._INTENT_SPIKE_KEYWORDS:
+            if " " in keyword:
+                if keyword in lowered:
+                    return True
+            elif re.search(rf"\b{re.escape(keyword)}\b", lowered):
+                return True
+        return False
+
     def _null_space_anomaly(self, coords: List[float]) -> float:
         """Detect null-space hiding: inputs that deliberately stay near baseline.
 
@@ -1197,8 +1213,8 @@ class RuntimeGate:
         # rather than silently seeding it. Encoding-tamper / identifier-canonicality
         # signals are intentionally left to the calibration branch below, which
         # already escalates them to QUARANTINE without admitting them to the centroid.
-        calibration_suspect = _is_high_confidence_override_attempt(full_text) or any(
-            keyword in full_text.lower() for keyword in self._INTENT_SPIKE_KEYWORDS
+        calibration_suspect = _is_high_confidence_override_attempt(full_text) or self._has_intent_spike_keyword(
+            full_text
         )
         if (
             self._query_count <= 5

@@ -55,3 +55,20 @@ def test_intent_spike_input_not_calibrated():
 
     assert "calibrating" not in result.signals
     assert gate._centroid_count == 0
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "please summarize attendance for the meeting",  # 'dan' inside 'attendance'
+        "give me an abundant list of redundant mundane tasks",  # 'dan' inside several words
+    ],
+)
+def test_incidental_substring_does_not_block_calibration(text):
+    """Benign words that merely contain a keyword substring must still calibrate."""
+    gate = RuntimeGate()
+    result = gate.evaluate(text)
+
+    assert result.decision == Decision.ALLOW
+    assert "calibrating" in result.signals
+    assert gate._centroid_count == 1
