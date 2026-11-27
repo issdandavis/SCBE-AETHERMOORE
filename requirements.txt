@@ -40,12 +40,12 @@ cryptography>=50.0.0
 # chains, bedrock-agentcore via the example agent. Floored so a fresh resolve
 # cannot pick the vulnerable range back up.
 pillow>=13.0.0            # Dependabot: OOB read/write, decompression-bomb
-soupsieve>=2.8.4          # Dependabot #315/#316: selector ReDoS + memory exhaustion
+soupsieve>=4.0            # CVE-2026-126190: selector ReDoS + recursion
 bedrock-agentcore>=1.18.1 # Dependabot #389/#393: arg-delimiter injection
 aiohttp>=3.14.4
 black>=26.10.1
 filelock>=4.2.1
-opentelemetry-api>=1.45.1
+opentelemetry-api>=1.45.2
 pygments>=2.20.0
 strands-agents>=1.48.0
 virtualenv>=21.14.13
