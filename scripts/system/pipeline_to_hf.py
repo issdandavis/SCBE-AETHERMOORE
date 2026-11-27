@@ -19,15 +19,20 @@ The SFT format (instruction / input / output) is converted to ChatML:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SFT_DIR = REPO_ROOT / "training-data" / "news-pipeline" / "sft"
+SUMMARY_PATH = REPO_ROOT / "docs" / "research-pipeline.json"
 HF_DATASET = "issdandavis/scbe-aethermoore-training-data"
 HF_SUBSET = "news-pipeline"
+HF_DEST = f"data/{HF_SUBSET}/train-00000-of-00001.parquet"
 
 SYSTEM_PROMPT = (
     "You are an SCBE-AETHERMOORE post-quantum news pipeline assistant. "
@@ -81,6 +86,49 @@ def to_chatml(pair: dict) -> dict:
         "input": inp,
         "output": output,
     }
+
+
+def _commit_field(commit_info: Any, name: str) -> str:
+    if isinstance(commit_info, dict):
+        return str(commit_info.get(name) or "")
+    return str(getattr(commit_info, name, "") or "")
+
+
+def write_publish_receipt(
+    summary_path: Path,
+    *,
+    commit_info: Any,
+    parquet_path: Path,
+    records: int,
+) -> dict[str, Any]:
+    """Attach the exact Hugging Face commit and content hash to the summary."""
+    if not summary_path.exists():
+        raise RuntimeError(f"Pipeline summary does not exist: {summary_path}")
+    commit_oid = _commit_field(commit_info, "oid")
+    commit_url = _commit_field(commit_info, "commit_url")
+    if not commit_oid or not commit_url:
+        raise RuntimeError("Hugging Face upload did not return a commit receipt")
+
+    payload = parquet_path.read_bytes()
+    receipt = {
+        "provider": "huggingface",
+        "repo_id": HF_DATASET,
+        "path": HF_DEST,
+        "commit_oid": commit_oid,
+        "commit_url": commit_url,
+        "sha256": hashlib.sha256(payload).hexdigest(),
+        "bytes": len(payload),
+        "records": records,
+        "published": datetime.now(tz=timezone.utc).isoformat(),
+    }
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    summary["sft_publish"] = receipt
+    staged = summary_path.with_suffix(summary_path.suffix + ".tmp")
+    staged.write_text(
+        json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    staged.replace(summary_path)
+    return receipt
 
 
 def main() -> None:
@@ -139,16 +187,26 @@ def main() -> None:
         # Upload directly via HfApi to avoid dataset-card YAML validation
         # conflicts with existing configs that use slash-syntax split names.
         api = HfApi(token=token)
-        dest = f"data/{HF_SUBSET}/train-00000-of-00001.parquet"
-        print(f"[pipeline_to_hf] Uploading {pq_size:,} bytes -> {HF_DATASET}/{dest}")
-        api.upload_file(
+        print(f"[pipeline_to_hf] Uploading {pq_size:,} bytes -> {HF_DATASET}/{HF_DEST}")
+        commit_info = api.upload_file(
             path_or_fileobj=str(pq_path),
-            path_in_repo=dest,
+            path_in_repo=HF_DEST,
             repo_id=HF_DATASET,
             repo_type="dataset",
             commit_message=(
-                f"news-pipeline SFT: {len(dataset)} pairs " "(8-stage PQC transport + semantic-atomic braid)"
+                f"news-pipeline SFT: {len(dataset)} pairs "
+                "(8-stage PQC transport + semantic-atomic braid)"
             ),
+        )
+        receipt = write_publish_receipt(
+            SUMMARY_PATH,
+            commit_info=commit_info,
+            parquet_path=pq_path,
+            records=len(dataset),
+        )
+        print(
+            "[pipeline_to_hf] Receipt: "
+            f"commit={receipt['commit_oid']} sha256={receipt['sha256']}"
         )
 
     print(f"[pipeline_to_hf] Done. https://huggingface.co/datasets/{HF_DATASET}")

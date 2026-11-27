@@ -9,6 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: write
   contents: write
   pull-requests: write
 
@@ -16,6 +17,7 @@ jobs:
   generate:
     runs-on: ubuntu-latest
     permissions:
+      actions: write
       contents: write
       pull-requests: write
 
@@ -28,7 +30,7 @@ jobs:
           cache: pip
 
       - name: Install deps
-        run: pip install requests cryptography --quiet
+        run: pip install requests cryptography datasets huggingface_hub --quiet
 
       - name: Generate research-feed.json
         env:
@@ -44,10 +46,26 @@ jobs:
           PYTHONPATH: "."
         run: python scripts/system/news_pipeline.py
 
+      - name: Publish hashed SFT snapshot to Hugging Face
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: python scripts/system/pipeline_to_hf.py --push
+
+      - name: Preserve raw pipeline snapshot
+        uses: actions/upload-artifact@v7
+        with:
+          name: news-pipeline-${{ github.run_id }}
+          path: |
+            training-data/news-pipeline/records/*.jsonl
+            training-data/news-pipeline/sft/*.jsonl
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Create PR for updated feed and pipeline outputs
+        id: feed_pr
         uses: peter-evans/create-pull-request@v7
         with:
-          commit_message: "chore(feed): update research-feed.json + pipeline SFT [skip ci]"
+          commit-message: "chore(feed): update research feed and pipeline receipt"
           branch: automation/research-feed
           delete-branch: true
           title: "chore(feed): update research feed outputs"
@@ -57,13 +75,31 @@ jobs:
             This PR refreshes:
             - `docs/research-feed.json`
             - `docs/research-pipeline.json`
-            - `training-data/news-pipeline/records/*.jsonl`
-            - `training-data/news-pipeline/sft/*.jsonl`
-          file_pattern: >
+            - the content-addressed SFT parquet in `issdandavis/scbe-aethermoore-training-data`
+
+            The raw records and SFT JSONL are retained as a 30-day workflow artifact.
+            The pipeline summary records the source hashes, Hugging Face commit, and
+            uploaded parquet hash.
+          add-paths: |
             docs/research-feed.json
             docs/research-pipeline.json
-            training-data/news-pipeline/records/*.jsonl
-            training-data/news-pipeline/sft/*.jsonl
-          commit_user_name: github-actions[bot]
-          commit_user_email: github-actions[bot]@users.noreply.github.com
+          committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+
+      - name: Start required checks and auto-merge feed update
+        if: >-
+          steps.feed_pr.outputs.pull-request-url != '' &&
+          steps.feed_pr.outputs.pull-request-operation != 'closed' &&
+          steps.feed_pr.outputs.pull-request-operation != 'none'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_SHA: ${{ steps.feed_pr.outputs.pull-request-head-sha }}
+          PR_URL: ${{ steps.feed_pr.outputs.pull-request-url }}
+        run: |
+          python scripts/system/generated_pr_gate.py \
+            --repo "$GITHUB_REPOSITORY" \
+            --head-sha "$PR_SHA" \
+            --pr-url "$PR_URL" \
+            --required-workflow "CI" \
+            --required-workflow "Conflict Marker Guard"
 
