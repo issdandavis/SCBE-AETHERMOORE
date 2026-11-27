@@ -205,7 +205,7 @@ jobs:
       - name: Deploy Pages data
         if: steps.task.outputs.publish == 'true'
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5
 
       - name: Commit and push results via PR
         if: steps.task.outputs.publish == 'true'
